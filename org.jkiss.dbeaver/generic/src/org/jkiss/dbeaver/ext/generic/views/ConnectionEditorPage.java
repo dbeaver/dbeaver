@@ -1,0 +1,642 @@
+package org.jkiss.dbeaver.ext.generic.views;
+
+import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.dialogs.DialogPage;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.window.ToolTip;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
+import org.jkiss.dbeaver.ext.ui.IDataSourceEditorSite;
+import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.DBPDriverProperty;
+import org.jkiss.dbeaver.model.DBPDriverPropertyGroup;
+
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+/**
+ * ConnectionEditorPage
+ */
+public class ConnectionEditorPage extends DialogPage implements IDataSourceEditor
+{
+    static Log log = LogFactory.getLog(ConnectionEditorPage.class);
+
+    private static final String PROP_HOST = "host";
+    private static final String PROP_PORT = "port";
+    private static final String PROP_DATABASE = "database";
+
+    private static final String PATTERN_HOST = "{" + PROP_HOST + "}";
+    private static final String PATTERN_PORT = "{" + PROP_PORT + "}";
+    private static final String PATTERN_DATABASE = "{" + PROP_DATABASE + "}";
+
+    private IDataSourceEditorSite site;
+    private Text hostText;
+    private Text portText;
+    private Text dbText;
+    private Text usernameText;
+    private Text passwordText;
+    private Text urlText;
+    private Button testButton;
+    private TreeViewer propsTree;
+    private boolean isCustom;
+    private List<String> urlComponents = new ArrayList<String>();
+    private Set<String> requiredProperties = new HashSet<String>();
+    private DBPDriverPropertyGroup driverProvidedProperties;
+
+    public void createControl(Composite composite)
+    {
+        //Composite group = new Composite(composite, SWT.NONE);
+        //group.setLayout(new GridLayout(1, true));
+
+        TabFolder optionsFolder = new TabFolder(composite, SWT.NONE);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        optionsFolder.setLayoutData(gd);
+
+        TabItem addrTab = new TabItem(optionsFolder, SWT.NONE);
+        addrTab.setText("General");
+        addrTab.setToolTipText("General connection properties");
+        addrTab.setControl(createGeneralTab(optionsFolder));
+
+        final TabItem propsTab = new TabItem(optionsFolder, SWT.NONE);
+        propsTab.setText("Advanced");
+        propsTab.setToolTipText("Advanced/custom driver properties");
+        propsTab.setControl(createPropertiesTab(optionsFolder));
+
+        optionsFolder.addSelectionListener(
+            new SelectionListener()
+            {
+                public void widgetSelected(SelectionEvent e)
+                {
+                    if (e.item == propsTab) {
+                        loadDriverProperties();
+                    }
+                }
+
+                public void widgetDefaultSelected(SelectionEvent e)
+                {
+                }
+            }
+        );
+        setControl(optionsFolder);
+    }
+
+    private Composite createGeneralTab(Composite parent)
+    {
+        ModifyListener textListener = new ModifyListener()
+        {
+            public void modifyText(ModifyEvent e)
+            {
+                evaluateURL();
+            }
+        };
+
+        Composite addrGroup = new Composite(parent, SWT.NONE);
+        GridLayout gl = new GridLayout(4, false);
+        gl.marginHeight = 20;
+        gl.marginWidth = 20;
+        addrGroup.setLayout(gl);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        addrGroup.setLayoutData(gd);
+
+        Label hostLabel = new Label(addrGroup, SWT.NONE);
+        hostLabel.setText("Server Host:");
+        hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+        hostText = new Text(addrGroup, SWT.BORDER);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        hostText.setLayoutData(gd);
+        hostText.addModifyListener(textListener);
+
+        Label portLabel = new Label(addrGroup, SWT.NONE);
+        portLabel.setText("Port:");
+        gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END);
+        gd.verticalSpan = 4;
+        portLabel.setLayoutData(gd);
+
+        portText = new Text(addrGroup, SWT.BORDER);
+        gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
+        gd.verticalSpan = 4;
+        gd.widthHint = 40;
+        portText.setLayoutData(gd);
+        portText.addModifyListener(textListener);
+
+        Label dbLabel = new Label(addrGroup, SWT.NONE);
+        dbLabel.setText("Database/Schema:");
+        dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+        dbText = new Text(addrGroup, SWT.BORDER);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        //gd.horizontalSpan = 3;
+        dbText.setLayoutData(gd);
+        dbText.addModifyListener(textListener);
+
+        Label usernameLabel = new Label(addrGroup, SWT.NONE);
+        usernameLabel.setText("Username:");
+        usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+        usernameText = new Text(addrGroup, SWT.BORDER);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        //gd.horizontalSpan = 3;
+        usernameText.setLayoutData(gd);
+        usernameText.addModifyListener(textListener);
+
+        Label passwordLabel = new Label(addrGroup, SWT.NONE);
+        passwordLabel.setText("Password:");
+        passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+
+        passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        passwordText.setLayoutData(gd);
+        passwordText.addModifyListener(textListener);
+
+        {
+            Composite urlGroup = new Composite(addrGroup, SWT.NONE);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 4;
+            gd.verticalIndent = 10;
+            urlGroup.setLayoutData(gd);
+            gl = new GridLayout(2, false);
+            gl.marginWidth = 0;
+            gl.marginHeight = 0;
+            urlGroup.setLayout(gl);
+
+            Label urlLabel = new Label(urlGroup, SWT.NONE);
+            urlLabel.setText("JDBC URL:");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+            urlLabel.setLayoutData(gd);
+
+            urlText = new Text(urlGroup, SWT.BORDER);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.grabExcessHorizontalSpace = true;
+            urlText.setLayoutData(gd);
+        }
+
+        Button driverButton = new Button(addrGroup, SWT.PUSH);
+        driverButton.setText("Edit Driver Settings");
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        driverButton.setLayoutData(gd);
+        driverButton.addSelectionListener(new SelectionListener()
+        {
+            public void widgetSelected(SelectionEvent e)
+            {
+                if (site.openDriverEditor()) {
+                    parseSampleURL(site.getDriver());
+                    evaluateURL();
+                }
+            }
+
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
+            }
+        });
+
+        testButton = new Button(addrGroup, SWT.PUSH);
+        testButton.setText("Test Connection ... ");
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        gd.horizontalSpan = 3;
+        testButton.setLayoutData(gd);
+        testButton.addSelectionListener(new SelectionListener()
+        {
+            public void widgetSelected(SelectionEvent e)
+            {
+                site.testConnection();
+            }
+
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
+            }
+        });
+        testButton.setEnabled(false);
+        return addrGroup;
+    }
+
+    private Control createPropertiesTab(Composite parent)
+    {
+        Composite propsGroup = new Composite(parent, SWT.NONE);
+        GridLayout gl = new GridLayout(1, false);
+        gl.marginHeight = 10;
+        gl.marginWidth = 10;
+        propsGroup.setLayout(gl);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        propsGroup.setLayoutData(gd);
+
+        propsTree = new TreeViewer(propsGroup, SWT.BORDER);
+        propsTree.setContentProvider(new PropsContentProvider());
+        //propsTree.setLabelProvider(new PropsLabelProvider());
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
+        gd.minimumHeight = 120;
+        propsTree.getTree().setLayoutData(gd);
+        propsTree.getTree().setHeaderVisible(true);
+
+        ColumnViewerToolTipSupport.enableFor(propsTree, ToolTip.NO_RECREATE);
+
+        TreeViewerColumn column = new TreeViewerColumn(propsTree, SWT.NONE);
+        column.getColumn().setWidth(200);
+        column.getColumn().setMoveable(true);
+        column.getColumn().setText("Name");
+        column.setLabelProvider(new PropsLabelProvider());
+
+        column = new TreeViewerColumn(propsTree, SWT.NONE);
+        column.getColumn().setWidth(120);
+        column.getColumn().setMoveable(true);
+        column.getColumn().setText("Value");
+        column.setLabelProvider(new ColumnLabelProvider()
+        {
+            public String getText(Object obj)
+            {
+                return "";
+            }
+        });
+
+        return propsGroup;
+    }
+
+    private void loadDriverProperties()
+    {
+        if (driverProvidedProperties != null) {
+            return;
+        }
+        if (site.getDriver().supportsDriverProperties()) {
+            DBPConnectionInfo info = new DBPConnectionInfo();
+            saveSettings(info);
+            try {
+                Properties properties = new Properties();
+                properties.putAll(info.getProperties());
+                final DriverPropertyInfo[] propInfos = site.getDriver().getDriverInstance().getPropertyInfo(
+                    info.getJdbcURL(),
+                    properties);
+                if (!CommonUtils.isEmpty(propInfos)) {
+                    driverProvidedProperties = new DriverProvidedPropertyGroup(propInfos);
+                }
+
+            } catch (SQLException ex) {
+                //log.warn("Can't read driver properties", ex);
+
+            } catch (DBException e) {
+                log.warn("Can't obtain driver instance", e);
+            }
+        } else {
+            driverProvidedProperties = new DriverProvidedPropertyGroup(new DriverPropertyInfo[0]);
+        }
+    }
+
+    public void setSite(IDataSourceEditorSite site)
+    {
+        this.site = site;
+    }
+
+    public boolean isComplete()
+    {
+        if (isCustom) {
+            return !CommonUtils.isEmpty(urlText.getText());
+        } else {
+            for (String prop : requiredProperties) {
+                if (
+                    (prop.equals(PROP_HOST) && CommonUtils.isEmpty(hostText.getText())) ||
+                        (prop.equals(PROP_PORT) && CommonUtils.isEmpty(portText.getText())) ||
+                        (prop.equals(PROP_DATABASE) && CommonUtils.isEmpty(dbText.getText()))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    public void loadSettings()
+    {
+        // Load values from new connection info
+        DBPConnectionInfo connectionInfo = site.getConnectionInfo();
+        if (connectionInfo != null) {
+            this.parseSampleURL(site.getDriver());
+            if (hostText != null) {
+                hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
+            }
+            if (portText != null) {
+                portText.setText(CommonUtils.getString(connectionInfo.getHostPort()));
+            }
+            if (dbText != null) {
+                dbText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+            }
+            if (usernameText != null) {
+                usernameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
+            }
+            if (passwordText != null) {
+                passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
+            }
+            if (urlText != null) {
+                urlText.setText(CommonUtils.getString(connectionInfo.getJdbcURL()));
+            }
+        }
+        // Reset driver provided props
+        this.driverProvidedProperties = null;
+        this.loadDriverProperties();
+        // Set props model
+        if (propsTree != null) {
+            propsTree.setInput(getPropertiesModel());
+        }
+    }
+
+    public void saveSettings()
+    {
+        saveSettings(site.getConnectionInfo());
+    }
+
+    private void saveSettings(DBPConnectionInfo connectionInfo)
+    {
+        if (connectionInfo != null) {
+            if (hostText != null) {
+                connectionInfo.setHostName(hostText.getText());
+            }
+            if (portText != null) {
+                connectionInfo.setHostPort(portText.getText());
+            }
+            if (dbText != null) {
+                connectionInfo.setDatabaseName(dbText.getText());
+            }
+            if (usernameText != null) {
+                connectionInfo.setUserName(usernameText.getText());
+            }
+            if (passwordText != null) {
+                connectionInfo.setUserPassword(passwordText.getText());
+            }
+            if (urlText != null) {
+                connectionInfo.setJdbcURL(urlText.getText());
+            }
+        }
+    }
+
+    private void parseSampleURL(DBPDriver driver)
+    {
+        this.urlComponents.clear();
+        this.requiredProperties.clear();
+
+        if (driver.getSampleURL() != null) {
+            isCustom = false;
+            String sampleURL = driver.getSampleURL();
+            int offsetPos = 0;
+            for (; ;) {
+                int divPos = sampleURL.indexOf('[', offsetPos);
+                if (divPos == -1) {
+                    break;
+                }
+                int divPos2 = sampleURL.indexOf(']', divPos);
+                if (divPos2 == -1) {
+                    setErrorMessage("Bad sample URL: " + sampleURL);
+                    break;
+                }
+                if (divPos > offsetPos) {
+                    urlComponents.add(sampleURL.substring(offsetPos, divPos));
+                }
+                urlComponents.add(sampleURL.substring(divPos, divPos2 + 1));
+                offsetPos = divPos2 + 1;
+            }
+            if (offsetPos < sampleURL.length() - 1) {
+                urlComponents.add(sampleURL.substring(offsetPos));
+            }
+            // Check for required parts
+            for (String component : urlComponents) {
+                if (!component.startsWith("[")) {
+                    int divPos = component.indexOf('{');
+                    if (divPos != -1) {
+                        int divPos2 = component.indexOf('}', divPos);
+                        if (divPos2 != -1) {
+                            String propName = component.substring(divPos + 1, divPos2);
+                            requiredProperties.add(propName);
+                        }
+                    }
+                }
+            }
+        } else {
+            isCustom = true;
+        }
+
+        hostText.setEnabled(!isCustom);
+        portText.setEnabled(!isCustom);
+        dbText.setEnabled(!isCustom);
+        urlText.setEnabled(isCustom);
+    }
+
+    private void evaluateURL()
+    {
+        if (!isCustom) {
+            StringBuilder url = new StringBuilder();
+            for (String component : urlComponents) {
+                String newComponent = component;
+                if (!CommonUtils.isEmpty(hostText.getText())) {
+                    newComponent = newComponent.replace(PATTERN_HOST, hostText.getText());
+                }
+                if (!CommonUtils.isEmpty(portText.getText())) {
+                    newComponent = newComponent.replace(PATTERN_PORT, portText.getText());
+                }
+                if (!CommonUtils.isEmpty(dbText.getText())) {
+                    newComponent = newComponent.replace(PATTERN_DATABASE, dbText.getText());
+                }
+                if (newComponent.startsWith("[")) {
+                    if (!newComponent.equals(component)) {
+                        url.append(newComponent.substring(1, newComponent.length() - 1));
+                    }
+                } else {
+                    url.append(newComponent);
+                }
+            }
+            urlText.setText(url.toString());
+        }
+        site.updateButtons();
+        testButton.setEnabled(this.isComplete());
+    }
+
+    private Object getPropertiesModel()
+    {
+        return this.site.getDriver();
+    }
+
+    class PropsContentProvider implements IStructuredContentProvider,
+        ITreeContentProvider
+    {
+
+        public void inputChanged(Viewer v, Object oldInput, Object newInput)
+        {
+        }
+
+        public void dispose()
+        {
+        }
+
+        public Object[] getElements(Object parent)
+        {
+            return getChildren(parent);
+        }
+
+        public Object getParent(Object child)
+        {
+            if (child instanceof DBPDriverPropertyGroup) {
+                return ((DBPDriverPropertyGroup) child).getDriver();
+            } else if (child instanceof DBPDriverProperty) {
+                return ((DBPDriverProperty) child).getGroup();
+            } else {
+                return null;
+            }
+        }
+
+        public Object[] getChildren(Object parent)
+        {
+            if (parent instanceof DBPDriver) {
+                List<DBPDriverPropertyGroup> groups = new ArrayList<DBPDriverPropertyGroup>();
+                if (driverProvidedProperties != null) {
+                    groups.add(driverProvidedProperties);
+                }
+                groups.addAll(((DBPDriver)parent).getPropertyGroups());
+                return groups.toArray();
+            } else if (parent instanceof DBPDriverPropertyGroup) {
+                return ((DBPDriverPropertyGroup) parent).getProperties().toArray();
+            } else {
+                return new Object[0];
+            }
+        }
+
+        public boolean hasChildren(Object parent)
+        {
+            return getChildren(parent).length > 0;
+        }
+    }
+
+    private static class PropsLabelProvider extends CellLabelProvider
+    {
+        public String getText(Object obj)
+        {
+            if (obj instanceof DBPDriverPropertyGroup) {
+                return ((DBPDriverPropertyGroup) obj).getName();
+            } else if (obj instanceof DBPDriverProperty) {
+                return ((DBPDriverProperty) obj).getName();
+            } else {
+                return obj.toString();
+            }
+        }
+
+        public String getToolTipText(Object obj)
+        {
+            if (obj instanceof DBPDriverPropertyGroup) {
+                return ((DBPDriverPropertyGroup) obj).getDescription();
+            } else if (obj instanceof DBPDriverProperty) {
+                return ((DBPDriverProperty) obj).getDescription();
+            } else {
+                return obj.toString();
+            }
+        }
+
+        public Point getToolTipShift(Object object)
+        {
+            return new Point(5, 5);
+        }
+
+        public void update(ViewerCell cell)
+        {
+            cell.setText(getText(cell.getElement()));
+        }
+    }
+
+    private class DriverProvidedPropertyGroup implements DBPDriverPropertyGroup
+    {
+        private final DriverPropertyInfo[] propInfos;
+        private List<DBPDriverProperty> propList;
+
+        public DriverProvidedPropertyGroup(DriverPropertyInfo[] propInfos)
+        {
+            this.propInfos = propInfos;
+            this.propList = null;
+        }
+
+        public DBPDriver getDriver()
+        {
+            return site.getDriver();
+        }
+
+        public String getName()
+        {
+            return "Driver Properties";
+        }
+
+        public String getDescription()
+        {
+            return "Driver Properties";
+        }
+
+        public List<? extends DBPDriverProperty> getProperties()
+        {
+            if (propList == null) {
+                propList = new ArrayList<DBPDriverProperty>();
+                for (final DriverPropertyInfo propInfo : propInfos) {
+                    if ("user".equals(propInfo.name) || "password".equals(propInfo.name)) {
+                        continue;
+                    }
+                    DBPDriverProperty prop = new DBPDriverProperty()
+                    {
+                        public DBPDriverPropertyGroup getGroup()
+                        {
+                            return DriverProvidedPropertyGroup.this;
+                        }
+
+                        public String getName()
+                        {
+                            return propInfo.name;
+                        }
+
+                        public String getDescription()
+                        {
+                            return propInfo.description;
+                        }
+
+                        public String getDefaultValue()
+                        {
+                            return propInfo.value;
+                        }
+
+                        public PropertyType getType()
+                        {
+                            return PropertyType.STRING;
+                        }
+                    };
+                    propList.add(prop);
+                }
+            }
+            return propList;
+        }
+    }
+}

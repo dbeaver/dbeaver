@@ -1,0 +1,97 @@
+package org.jkiss.dbeaver.ui.dialogs.connection;
+
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IWorkbench;
+import org.jkiss.dbeaver.ext.ui.DBeaverExtensions;
+import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+
+import java.util.Date;
+
+/**
+ * This is a sample new wizard.
+ */
+
+public class EditConnectionWizard extends ConnectionWizard<EditConnectionDialog>
+{
+    private DataSourceDescriptor dataSource;
+    private DBPConnectionInfo oldData;
+    private ConnectionPageSettings pageSettings;
+    private ConnectionPageFinal pageFinal;
+
+    /**
+     * Constructor for SampleNewWizard.
+     */
+    EditConnectionWizard(DataSourceDescriptor dataSource)
+    {
+        super();
+        this.dataSource = dataSource;
+        this.oldData = this.dataSource.getConnectionInfo();
+        setWindowTitle("Edit connection");
+        setNeedsProgressMonitor(true);
+    }
+
+    public ConnectionPageFinal getPageFinal()
+    {
+        return pageFinal;
+    }
+
+    public DriverDescriptor getSelectedDriver()
+    {
+        return dataSource.getDriver();
+    }
+
+    public ConnectionPageSettings getPageSettings()
+    {
+        return this.pageSettings;
+    }
+
+    /**
+     * Adding the page to the wizard.
+     */
+    public void addPages()
+    {
+        DataSourceViewDescriptor view = dataSource.getDriver().getProviderDescriptor().getView(DBeaverExtensions.EDIT_CONNECTION_POINT);
+        if (view != null) {
+            pageSettings = new ConnectionPageSettings(this, view, dataSource);
+            addPage(pageSettings);
+        }
+
+        pageFinal = new ConnectionPageFinal(this, dataSource);
+        addPage(pageFinal);
+    }
+
+    /**
+     * This method is called when 'Finish' button is pressed in
+     * the wizard. We will create an operation and run it
+     * using wizard as execution context.
+     */
+    public boolean performFinish()
+    {
+        super.performFinish();
+        dataSource.setUpdateDate(new Date());
+        pageFinal.saveSettings(dataSource);
+        DataSourceRegistry.getDefault().updateDataSource(dataSource);
+        return true;
+    }
+
+    public boolean performCancel()
+    {
+        dataSource.setConnectionInfo(oldData);
+        return true;
+    }
+
+    /**
+     * We will accept the selection in the workbench to see if
+     * we can initialize from it.
+     *
+     * @see org.eclipse.ui.IWorkbenchWizard#init(org.eclipse.ui.IWorkbench, org.eclipse.jface.viewers.IStructuredSelection)
+     */
+    public void init(IWorkbench workbench, IStructuredSelection selection)
+    {
+    }
+
+}

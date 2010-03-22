@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates>
+
+<template name="iter" description="Iterate Iterable | Array in J2SDK 5.0 syntax" id="intellijidea.iter" context="java" enabled="true" autoinsert="false">for (${iterable_type} ${iterable_element} : ${iterable}) {
+	${cursor}
+}</template>
+
+<template name="itar" description="Iterate elements of array" id="intellijidea.itar" context="java" enabled="true" autoinsert="false">for (int ${index} = 0; ${index} &lt; ${array}.length; ${index}++) {
+	${array_type} ${array_element} = ${array}[${index}];
+	${cursor}
+}</template>
+
+<template name="itco" description="Iterate elements of java.util.Collection" id="intellijidea.itco" context="java" enabled="true" autoinsert="false">for (Iterator ${iterator} = ${collection}.iterator(); ${iterator}.hasNext(); ) {
+	${type:elem(collection)} ${name:name(type)} = (${type}) ${iterator}.next();
+	${cursor}
+}</template>
+
+<template name="iten" description="Iterate java.util.Enumeration" id="intellijidea.iten" context="java" enabled="true" autoinsert="false">while (${en:var(java.util.Enumeration)}.hasMoreElements()) {
+	${type:arg(en)} ${elem:name(type)} = (${type}) ${en}.nextElement();
+	${cursor}
+}</template>
+
+<template name="itit" description="Iterate java.util.Iterator" id="intellijidea.itit" context="java" enabled="true" autoinsert="false">while (${it:var(java.util.Iterator)}.hasNext()) {
+	${type:arg(it)} ${elem:name(type)} = (${type}) ${it}.next();
+	${cursor}
+}</template>
+
+<template name="sout" description="Prints a string to System.out" id="intellijidea.sout" context="java" enabled="true" autoinsert="true">System.out.println(${word_selection}${});${cursor}</template>
+
+<template name="serr" description="Prints a string to System.err" id="intellijidea.serr" context="java" enabled="true" autoinsert="true">System.err.println(${word_selection}${});${cursor}</template>
+
+<template name="soutm" description="Prints current class and method names to System.out" id="intellijidea.soutm" context="java" enabled="true" autoinsert="true">System.out.println(&quot;${enclosing_type}.${enclosing_method}()&quot;);</template>
+
+<template name="psvm" description="main() method declaration" id="intellijidea.psvm" context="java" enabled="true" autoinsert="false">public static void main(String[] args) {
+	${cursor}
+}</template>
+
+<template name="inst" description="Checks object type with instanceof and down-casts it" id="intellijidea.inst" context="java" enabled="true" autoinsert="false">if (${name:var} instanceof ${type}) {
+	${type} ${new_name} = (${type})${name};
+	${cursor}
+}</template>
+
+<template name="toar" description="Stores elements of java.util.Collection into array" id="intellijidea.toar" context="java" enabled="true" autoinsert="false">(${type:elem(collection)}[]) ${collection}.toArray(new ${type}[${collection}.size()])</template>
+
+<template name="St" description="String" id="intellijidea.St" context="java" enabled="true" autoinsert="false">String</template>
+<template name="psf" description="public static final" id="intellijidea.psf" context="java" enabled="true" autoinsert="false">public static final</template>
+<template name="psfi" description="public static final int" id="intellijidea.psfi" context="java" enabled="true" autoinsert="false">public static final int</template>
+<template name="psfs" description="public static final String" id="intellijidea.psfs" context="java" enabled="true" autoinsert="false">public static final String</template>
+<template name="thr" description="throw new" id="intellijidea.thr" context="java" enabled="true" autoinsert="false">throw new</template>
+
+</templates>

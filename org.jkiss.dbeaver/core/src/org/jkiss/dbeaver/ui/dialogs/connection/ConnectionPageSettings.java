@@ -1,0 +1,160 @@
+package org.jkiss.dbeaver.ui.dialogs.connection;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
+import org.jkiss.dbeaver.ext.ui.IDataSourceEditorSite;
+import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.ui.dialogs.driver.EditDriverDialog;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * The "New" wizard page allows setting the container for the new file as well
+ * as the file name. The page will only accept file name without the extension
+ * OR with the extension that matches the expected one (mpe).
+ */
+
+class ConnectionPageSettings extends WizardPage implements IDataSourceEditorSite
+{
+    static Log log = LogFactory.getLog(DriverDescriptor.class);
+
+    private ConnectionWizard wizard;
+    private DataSourceViewDescriptor viewDescriptor;
+    private IDataSourceEditor editor;
+    private DataSourceDescriptor dataSource;
+    private Map<DriverDescriptor, DBPConnectionInfo> infoMap = new HashMap<DriverDescriptor, DBPConnectionInfo>();
+
+    /**
+     * Constructor for SampleNewWizardPage.
+     */
+    ConnectionPageSettings(
+        ConnectionWizard wizard,
+        DataSourceViewDescriptor viewDescriptor)
+    {
+        super("newConnectionSettings");
+        this.wizard = wizard;
+        this.viewDescriptor = viewDescriptor;
+
+        setTitle(viewDescriptor.getLabel());
+        setDescription("Driver specific settings.");
+    }
+
+    /**
+     * Constructor for SampleNewWizardPage.
+     */
+    ConnectionPageSettings(
+        ConnectionWizard wizard,
+        DataSourceViewDescriptor viewDescriptor,
+        DataSourceDescriptor dataSource)
+    {
+        this(wizard, viewDescriptor);
+        this.dataSource = dataSource;
+    }
+
+    public void setVisible(boolean visible)
+    {
+        if (visible) {
+            this.editor.loadSettings();
+        }
+        super.setVisible(visible);
+    }
+
+    void activate()
+    {
+        setMessage(getDriver().getName() + " connection settings");
+        //this.editor.loadSettings();
+    }
+
+    void deactivate()
+    {
+        this.editor.saveSettings();
+    }
+
+    void saveSettings()
+    {
+        if (editor != null) {
+            editor.saveSettings();
+        }
+    }
+    public void createControl(Composite parent)
+    {
+        try {
+            this.editor = viewDescriptor.createView(IDataSourceEditor.class);
+            this.editor.setSite(this);
+            this.editor.createControl(parent);
+            setControl(this.editor.getControl());
+        }
+        catch (Exception ex) {
+            log.warn(ex);
+            setErrorMessage("Can't create settings dialog: " + ex.getMessage());
+            setControl(new Composite(parent, SWT.BORDER));
+        }
+    }
+
+    public boolean canFlipToNextPage()
+    {
+        return true;
+    }
+
+    public boolean isPageComplete()
+    {
+        if (wizard.getPageSettings() != this) {
+            return true;
+        }
+        return this.editor != null && this.editor.isComplete();
+    }
+
+    public DriverDescriptor getDriver()
+    {
+        return wizard.getSelectedDriver();
+    }
+
+    public DBPConnectionInfo getConnectionInfo()
+    {
+        if (dataSource != null) {
+            return dataSource.getConnectionInfo();
+        }
+        DriverDescriptor driver = getDriver();
+        DBPConnectionInfo info = infoMap.get(driver);
+        if (info == null) {
+            info = new DBPConnectionInfo();
+            infoMap.put(driver, info);
+        }
+        return info;
+    }
+
+    public void updateButtons()
+    {
+        getWizard().getContainer().updateButtons();
+    }
+
+    public void updateMessage()
+    {
+        getWizard().getContainer().updateMessage();
+        getWizard().getContainer().updateTitleBar();
+    }
+
+    public void testConnection()
+    {
+        if (this.editor != null) {
+            this.editor.saveSettings();
+            this.wizard.testConnection(getConnectionInfo());
+        }
+    }
+
+    public boolean openDriverEditor()
+    {
+        EditDriverDialog dialog = new EditDriverDialog(wizard.getShell(), this.getDriver());
+        return dialog.open() == IDialogConstants.OK_ID;
+    }
+
+}

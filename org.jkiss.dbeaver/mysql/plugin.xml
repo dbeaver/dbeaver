@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+    <extension
+        point="org.eclipse.ui.views">
+        <category
+            name="DBeaver"
+            id="org.jkiss.dbeaver.ext.mysql">
+        </category>
+    </extension>
+    <extension
+        point="org.eclipse.help.contexts">
+        <contexts
+            file="contexts.xml">
+        </contexts>
+    </extension>
+    <extension
+        point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+            class="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"
+            id="org.jkiss.dbeaver.ext.mysql.datasource"
+            label="MySQL"
+            description="MySQL connector">
+            <tree path="mysql" label="MySQL data source">
+                <icon icon="icons/tree/connection_disabled.png" default="true"/>
+                <icon icon="icons/tree/connection_enabled.png" if="object.connected"/>
+
+                <folder type="org.jkiss.dbeaver.model.struct.DBSCatalog" label="Catalogs" icon="#catalogs" description="Catalogs">
+                    <items label="Catalogs" path="catalog" property="catalogs" icon="#catalog" optional="true">
+                        <items label="Schemas" path="schema" property="schemas" icon="#schema" optional="true">
+                            <folder type="org.jkiss.dbeaver.model.struct.DBSTable" label="Tables" icon="#tables" description="Tables">
+                                <items label="Tables" path="table" property="tables">
+                                    <icon icon="#table" default="true"/>
+                                    <icon icon="#view" if="object.view"/>
+                                    <folder type="org.jkiss.dbeaver.model.struct.DBSTableColumn" label="Columns" icon="#columns" description="Table columns">
+                                        <items label="Column" path="column" property="columns" icon="#column">
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.model.struct.DBSIndex" label="Indexes" icon="#indexes" description="Table indexes">
+                                        <items label="Indexes" path="index" property="indexes" icon="#index">
+                                            <items label="Index columns" path="column" property="columns" icon="#column">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="Foreign Keys" icon="#fks" description="Table foreign keys">
+                                        <items label="Foreign Keys" path="foreignKey" property="importedKeys" icon="#fk">
+                                            <items label="Foreign key columns" path="column" property="columns" icon="#column">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.model.struct.DBSPrimaryKey" label="References" icon="#refs" description="Table references">
+                                        <items label="Primary Keys" path="primaryKey" property="exportedKeys" icon="#ref">
+                                            <items label="Primary key columns" path="column" property="columns" icon="#column">
+                                            </items>
+                                        </items>
+                                    </folder>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.model.struct.DBSIndex" label="Indexes" icon="#indexes" description="Indexes">
+                                <items label="Indexes" path="indexe" property="indexes" icon="#index">
+                                    <items label="Index columns" path="column" property="columns" icon="#column">
+                                    </items>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.model.struct.DBSProcedure" label="Procedures" icon="#procedures" description="Procedures">
+                                <items label="Procedures" path="procedure" property="procedures" icon="#procedure">
+                                    <items label="Procedure columns" path="column" property="columns" icon="#column">
+                                    </items>
+                                </items>
+                            </folder>
+                        </items>
+                    </items>
+                </folder>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSSecurity" label="Security" icon="#security" description="Security">
+                    <folder type="org.jkiss.dbeaver.model.struct.DBSUser" label="Users" icon="#users" description="Users">
+                        <items label="Users" path="users" property="users" icon="#user">
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.model.struct.DBSPrivilegy" label="Privileges" icon="#roles" description="Privileges">
+                        <items label="Privileges" path="privileges" property="privileges" icon="#role">
+                        </items>
+                    </folder>
+                </folder>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSMaintance" label="Maintance/Settings" icon="#settings" description="Maintance/Settings">
+                    <folder type="org.jkiss.dbeaver.model.struct.DBSSessions" label="Connections" icon="#connections" description="Server session manager"/>
+                    <folder type="org.jkiss.dbeaver.model.struct.DBSVariables" label="Variables" icon="#variables" description="Server variables"/>
+                    <folder type="org.jkiss.dbeaver.model.struct.DBSLogs" label="Server Logs" icon="#logs" description="Server logs"/>
+                    <folder type="org.jkiss.dbeaver.model.struct.DBSRepl" label="Replication Status" icon="#repl" description="Replication Status"/>
+                </folder>
+            </tree>
+            <drivers managable="true">
+                <driver
+                    id="mysql5"
+                    label="MySQL 5.x"
+                    icon="icons/driver.png"
+                    class="com.mysql.jdbc.Driver"
+                    sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                    webURL="http://mysql.com"
+                    description="MySQL standard driver">
+                    <propertyGroup label="Connection/Authentication">
+                        <property label="connectTimeout" description="Timeout for socket connect (in milliseconds), with 0 being no timeout. Only works on JDK-1.4 or newer. Defaults to '0'."/>
+                        <property label="socketTimeout" description="Timeout on network socket operations (0, the default means no timeout)."/>
+                        <property label="useCompression" description="Use zlib compression when communicating with the server (true/false)? Defaults to 'false'."/>
+                    </propertyGroup>
+                    <propertyGroup label="Debuging/Profiling">
+                        <property label="profileSQL" description="Trace queries and their execution/fetch times to the configured logger (true/false) defaults to 'false'"/>
+                        <property label="reportMetricsIntervalMillis" description="If 'gatherPerfMetrics' is enabled, how often should they be logged (in ms)?"/>
+                        <property label="maxQuerySizeToLog" description="Controls the maximum length/size of a query that will get logged when profiling or tracing"/>
+                        <property label="packetDebugBufferSize" description="The maximum number of packets to retain when 'enablePacketDebug' is true"/>
+                        <property label="slowQueryThresholdMillis" description="If 'logSlowQueries' is enabled, how long should a query (in ms) before it is logged as 'slow'?"/>
+                        <property label="useUsageAdvisor" description="Should the driver issue 'usage' warnings advising proper and efficient usage of JDBC and MySQL Connector/J to the log (true/false, defaults to 'false')?"/>
+                        <property label="autoGenerateTestcaseScript" description="Should the driver dump the SQL it is executing, including server-side prepared statements to STDERR?"/>
+                        <property label="dumpQueriesOnException" description="Should the driver dump the contents of the query sent to the server in the message for SQLExceptions?"/>
+                        <property label="enablePacketDebug" description="When enabled, a ring-buffer of 'packetDebugBufferSize' packets will be kept, and dumped when exceptions are thrown in key areas in the driver's code"/>
+                        <property label="explainSlowQueries" description="If 'logSlowQueries' is enabled, should the driver automatically issue an 'EXPLAIN' on the server and send the results to the configured log at a WARN level?"/>
+                        <property label="logSlowQueries" description="Should queries that take longer than 'slowQueryThresholdMillis' be logged?"/>
+                        <property label="traceProtocol" description="Should trace-level network protocol be logged?"/>
+                    </propertyGroup>
+                    <query label="GET_ACTIVE_DB">select database()</query>
+                    <query label="SET_ACTIVE_DB">use ?</query>
+                    <library path="drivers/mysql-connector-java-5.1.5-bin.jar"/>
+                </driver>
+            </drivers>
+            <views>
+                <view
+                    id="org.jkiss.dbeaver.ext.mysql.dataSourceWizardView"
+                    targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                    label="MySQL Connection Settings"
+                    class="org.jkiss.dbeaver.ext.mysql.views.MySQLConnectionPage"
+                    icon="icons/mysql.gif">
+                </view>
+                <view
+                    id="org.jkiss.dbeaver.ext.mysql.dataSourceEditorView"
+                    targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                    label="MySQL Connection Settings"
+                    class="org.jkiss.dbeaver.ext.mysql.views.MySQLConnectionPage">
+                </view>
+            </views>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor
+            id="org.jkiss.dbeaver.ext.mysql.views.MySQLDDLEditor"
+            class="org.jkiss.dbeaver.ext.mysql.views.MySQLDDLEditor"
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"
+            main="false"
+            label="DDL"
+            description="Table DDL"
+            position="additions_end"
+            icon="icons/ddl_script.png">
+
+        </editor>
+    </extension>
+
+    <extension
+        point="org.eclipse.ui.popupMenus">
+    </extension>
+
+</plugin>

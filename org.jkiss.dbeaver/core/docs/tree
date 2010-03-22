@@ -1,0 +1,15 @@
+DBMS type
+	Instance
+		Database
+			[Schema]
+			[Catalog]
+				Tables
+				Views
+				Procedures
+				Triggers
+				Indexes
+				Constraints
+				Sequences]
+				Tablespaces
+				...
+				Security

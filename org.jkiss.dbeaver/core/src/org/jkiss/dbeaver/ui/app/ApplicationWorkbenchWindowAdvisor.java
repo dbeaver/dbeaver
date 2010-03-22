@@ -1,0 +1,72 @@
+package org.jkiss.dbeaver.ui.app;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.ui.*;
+import org.eclipse.ui.application.ActionBarAdvisor;
+import org.eclipse.ui.application.IActionBarConfigurer;
+import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
+import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import org.eclipse.ui.part.EditorInputTransfer;
+
+public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
+{
+    static Log log = LogFactory.getLog(ApplicationWorkbenchWindowAdvisor.class);
+
+    public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
+    {
+        super(configurer);
+    }
+
+    public ActionBarAdvisor createActionBarAdvisor(IActionBarConfigurer configurer)
+    {
+        return new ApplicationActionBarAdvisor(configurer);
+    }
+
+    public void preWindowOpen()
+    {
+        IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
+        configurer.setInitialSize(new Point(600, 400));
+        configurer.setShowCoolBar(true);
+        configurer.setShowStatusLine(true);
+        configurer.setShowProgressIndicator(true);
+        configurer.configureEditorAreaDropListener(new EditorAreaDropAdapter());
+        configurer.addEditorAreaTransfer(EditorInputTransfer.getInstance());
+
+        //configurer.set
+
+        PreferenceManager preferenceManager = PlatformUI.getWorkbench().getPreferenceManager();
+        preferenceManager.remove("org.eclipse.ui.preferencePages.Workbench/org.eclipse.ui.preferencePages.Perspectives");
+        preferenceManager.remove("org.eclipse.ui.preferencePages.Workbench/org.eclipse.ui.preferencePages.Workspace");
+
+    }
+
+    /*
+    org.eclipse.ui.preferencePages.Editors
+    org.eclipse.ui.preferencePages.Views
+    org.eclipse.ui.preferencePages.Keys
+    org.eclipse.ui.preferencePages.ContentTypes
+    */
+    public void postWindowCreate()
+    {
+        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().setMaximized(true);
+    }
+
+    public boolean preWindowShellClose()
+    {
+        return super.preWindowShellClose();
+    }
+
+    public class EditorAreaDropAdapter extends DropTargetAdapter
+    {
+        public void handleDrop(IWorkbenchPage page, DropTargetEvent event)
+        {
+        }
+    }
+
+}
+

@@ -1,0 +1,68 @@
+package org.jkiss.dbeaver.ui;
+
+import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.core.DBeaverIcons;
+
+/**
+ * DBIcon
+ */
+public enum DBIcon
+{
+    TREE_DATABASE("database", "icons/tree/database.png"),
+    TREE_CATALOG("catalog", "icons/tree/catalog.png"),
+    TREE_SCHEMA("schema", "icons/tree/schema.png"),
+    TREE_TABLES("tables", "icons/tree/tables.png"),
+    TREE_TABLE("table", "icons/tree/table.png"),
+    TREE_VIEW("view", "icons/tree/view.png"),
+    TREE_PROCEDURE("view", "icons/tree/procedure.png"),
+    TREE_COLUMNS("columns", "icons/tree/columns.png"),
+    TREE_COLUMN("column", "icons/tree/column.png"),
+
+    LOADING1("loading1", "icons/tree/load/loading1.gif"),
+    LOADING2("loading2", "icons/tree/load/loading2.gif"),
+    LOADING3("loading3", "icons/tree/load/loading3.gif"),
+    LOADING4("loading4", "icons/tree/load/loading4.gif"),
+
+    ROTATE1("rotate1", "icons/tree/load/rotate1.png"),
+    ROTATE2("rotate2", "icons/tree/load/rotate2.png"),
+    ROTATE3("rotate3", "icons/tree/load/rotate3.png"),
+    ROTATE4("rotate4", "icons/tree/load/rotate4.png"),
+
+    RS_MODE_GRID("rs_toggle_grid", "/icons/sql/resultset_grid.png"),
+    RS_MODE_RECORD("rs_toggle_record", "/icons/sql/resultset_record.png"),
+    RS_FIRST("rs_first", "/icons/sql/resultset_first.png"),
+    RS_LAST("rs_last", "/icons/sql/resultset_last.png"),
+    RS_NEXT("rs_next", "/icons/sql/resultset_next.png"),
+    RS_PREV("rs_prev", "/icons/sql/resultset_previous.png"),
+    RS_REFRESH("rs_refresh", "/icons/sql/resultset_refresh.png"),
+
+    ZOOM("zoom", "/icons/misc/zoom.png"),
+    ZOOM_IN("zoom_in", "/icons/misc/zoom_in.png"),
+    ZOOM_OUT("zoom_out", "/icons/misc/zoom_out.png"),
+    ;
+
+    private final String token;
+    private final String path;
+
+    DBIcon(String token, String path)
+    {
+        this.token = token;
+        this.path = path;
+    }
+
+    public String getToken()
+    {
+        return token;
+    }
+
+    public String getPath()
+    {
+        return path;
+    }
+
+    public Image getImage()
+    {
+        return DBeaverIcons.getImage(this);
+    }
+
+}

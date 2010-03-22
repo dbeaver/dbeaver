@@ -1,0 +1,227 @@
+package org.jkiss.dbeaver.ui.views.properties;
+
+import net.sf.jkiss.utils.BeanUtils;
+import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UIUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.text.NumberFormat;
+
+/**
+ * PropertyAnnoDescriptor
+*/
+public class PropertyAnnoDescriptor implements IPropertyDescriptor
+{
+    private IPropertySource propertySource;
+    private IPropertyDescriptor propertyDescriptor;
+    private int orderNumber;
+    private String id;
+    private Property propInfo;
+    private Method getter;
+    private Method setter;
+
+    public PropertyAnnoDescriptor(Property propInfo, Method getter)
+    {
+        this.propInfo = propInfo;
+        this.getter = getter;
+        this.id = BeanUtils.getPropertyNameFromGetter(getter.getName());
+        this.setter = BeanUtils.getSetMethod(getter.getDeclaringClass(), id);
+    }
+
+    public PropertyAnnoDescriptor(IPropertySource propertySource, IPropertyDescriptor propertyDescriptor, int orderNumber)
+    {
+        this.propertySource = propertySource;
+        this.propertyDescriptor = propertyDescriptor;
+        this.orderNumber = orderNumber;
+    }
+
+/*
+    public Property getPropInfo()
+    {
+        return propInfo;
+    }
+*/
+
+    public int getOrder()
+    {
+        return propInfo == null ? orderNumber : propInfo.order();
+    }
+
+    public boolean isViewable()
+    {
+        return propInfo == null || propInfo.viewable();
+    }
+
+    public CellEditor createPropertyEditor(Composite parent)
+    {
+        if (propertyDescriptor != null) {
+            return propertyDescriptor.createPropertyEditor(parent);
+        } else {
+            return null;
+        }
+    }
+
+    public String getCategory()
+    {
+        if (propertyDescriptor != null) {
+            return propertyDescriptor.getCategory();
+        } else {
+            return CommonUtils.isEmpty(propInfo.category()) ? null : propInfo.category();
+        }
+    }
+
+    public String getDescription()
+    {
+        if (propertyDescriptor != null) {
+            return propertyDescriptor.getDescription();
+        } else {
+            return CommonUtils.isEmpty(propInfo.description()) ? null : propInfo.description();
+        }
+    }
+
+    public String getDisplayName()
+    {
+        if (propertyDescriptor != null) {
+            return propertyDescriptor.getDisplayName();
+        } else {
+            return propInfo.name();
+        }
+    }
+
+    public String[] getFilterFlags()
+    {
+        if (propertyDescriptor != null) {
+            return propertyDescriptor.getFilterFlags();
+        } else {
+            return null;
+        }
+    }
+
+    public Object getHelpContextIds()
+    {
+        if (propertyDescriptor != null) {
+            return propertyDescriptor.getHelpContextIds();
+        } else {
+            return null;
+        }
+    }
+
+    public Object getId()
+    {
+        if (propertyDescriptor != null) {
+            return propertyDescriptor.getId();
+        } else {
+            return id;
+        }
+    }
+
+    public ILabelProvider getLabelProvider()
+    {
+        if (propertyDescriptor != null) {
+            return propertyDescriptor.getLabelProvider();
+        } else {
+            return new LabelProvider() {
+
+                public Image getImage(Object element)
+                {
+/*
+                    if (element instanceof DBSObject) {
+                        DBMNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject((DBSObject) element, true);
+                        if (node != null) {
+                            return node.getNodeIconDefault();
+                        }
+                    }
+                    return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
+*/
+                    return null;
+                }
+
+                public String getText(Object element)
+                {
+                    return element == null ?
+                        "" :
+                        element instanceof DBSObject ?
+                            ((DBSObject)element).getName() :
+                            element.toString();
+                }
+            };
+        }
+    }
+
+    public boolean isCompatibleWith(IPropertyDescriptor anotherProperty)
+    {
+        return propertyDescriptor != null && propertyDescriptor.isCompatibleWith(anotherProperty);
+    }
+
+    public Object readValue(Object object)
+        throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    {
+        Object value;
+        if (propertyDescriptor != null) {
+            value = propertySource.getPropertyValue(propertyDescriptor.getId());
+        } else {
+            value = getter.invoke(object);
+        }
+        return value;
+    }
+
+    public void writeValue(Object object, Object value)
+        throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
+    {
+        if (propertyDescriptor != null) {
+            propertySource.setPropertyValue(propertyDescriptor.getId(), value);
+        } else if (setter != null) {
+            setter.invoke(object, value);
+        } else {
+            throw new IllegalAccessError("No setter found for property " + id);
+        }
+    }
+
+    public static List<PropertyAnnoDescriptor> extractProperties(IPropertySource propertySource)
+    {
+        List<PropertyAnnoDescriptor> annoProps = new ArrayList<PropertyAnnoDescriptor>();
+        IPropertyDescriptor[] descs = propertySource.getPropertyDescriptors();
+        for (int i = 0; i < descs.length; i++) {
+            IPropertyDescriptor descriptor = descs[i];
+            annoProps.add(new PropertyAnnoDescriptor(propertySource, descriptor, i));
+        }
+        return annoProps;
+    }
+
+    public static List<PropertyAnnoDescriptor> extractAnnotations(Object object)
+    {
+        Class theClass = object.getClass();
+        Method[] methods = theClass.getMethods();
+        List<PropertyAnnoDescriptor> annoProps = new ArrayList<PropertyAnnoDescriptor>();
+        for (Method method : methods) {
+            final Property propInfo = method.getAnnotation(Property.class);
+            if (propInfo == null || !BeanUtils.isGetterName(method.getName()) || method.getReturnType() == null || method.getParameterTypes().length > 0) {
+                continue;
+            }
+            PropertyAnnoDescriptor desc = new PropertyAnnoDescriptor(propInfo, method);
+            annoProps.add(desc);
+        }
+        Collections.sort(annoProps, new Comparator<PropertyAnnoDescriptor>()
+        {
+            public int compare(PropertyAnnoDescriptor o1, PropertyAnnoDescriptor o2)
+            {
+                return o1.getOrder() - o2.getOrder();
+            }
+        });
+        return annoProps;
+    }
+}

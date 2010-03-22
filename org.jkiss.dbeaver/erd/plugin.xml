@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+    <extension
+        point="org.eclipse.ui.views">
+        <category
+            name="DBeaver"
+            id="org.jkiss.dbeaver.ext.erd">
+        </category>
+    </extension>
+    <extension
+        point="org.eclipse.help.contexts">
+        <contexts
+            file="contexts.xml">
+        </contexts>
+    </extension>
+
+    <extension
+        point="org.eclipse.ui.popupMenus">
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor
+            id="org.jkiss.dbeaver.ext.erd.views.ERDEditor"
+            class="org.jkiss.dbeaver.ext.erd.views.ERDEditor"
+            objectType="org.jkiss.dbeaver.model.struct.DBSStructureContainer"
+            main="false"
+            label="Diagram"
+            description="ERD Diagram"
+            position="additions_end"
+            icon="icons/erd.png">
+
+        </editor>
+    </extension>
+
+</plugin>
