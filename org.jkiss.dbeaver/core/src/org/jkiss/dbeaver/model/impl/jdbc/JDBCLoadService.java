@@ -17,12 +17,11 @@ public abstract class JDBCLoadService<RESULT> extends AbstractLoadService<RESULT
 
     static Log log = LogFactory.getLog(JDBCLoadService.class);
 
-    private static final Object NULL_RESULT = new Object();
-
     private DBSObject curObject;
     private boolean cacheResult;
     private Statement statement;
-    private Object savedResult;
+    private RESULT savedResult;
+    private boolean resultCached = false;
 
     protected JDBCLoadService(String serviceName, DBSObject curObject)
     {
@@ -38,32 +37,37 @@ public abstract class JDBCLoadService<RESULT> extends AbstractLoadService<RESULT
 
     public RESULT getCachedResult()
     {
-        return savedResult == NULL_RESULT ? null : (RESULT)savedResult;
+        return savedResult;
     }
 
     public synchronized RESULT evaluate()
         throws InvocationTargetException, InterruptedException
     {
-        if (savedResult != null) {
-            return getCachedResult();
+        if (resultCached) {
+            return savedResult;
         }
         try {
             JDBCSession session = (JDBCSession)curObject.getDataSource().getSession(false);
-            this.statement = session.getConnection().createStatement();
-            try {
-                RESULT result = evaluateQuery(this.statement);
-                if (cacheResult) {
-                    savedResult = result == null ? NULL_RESULT : result;
-                }
-                return result;
-            }
-            finally {
-                if (this.statement != null) {
-                    try {
-                        this.statement.close();
+            // Synchronize on session to prevent multiple queries
+            // on the same connection from different threads
+            synchronized (session) {
+                this.statement = session.getConnection().createStatement();
+                try {
+                    RESULT result = evaluateQuery(this.statement);
+                    if (cacheResult) {
+                        savedResult = result;
+                        resultCached = true;
                     }
-                    finally {
-                        this.statement = null;
+                    return result;
+                }
+                finally {
+                    if (this.statement != null) {
+                        try {
+                            this.statement.close();
+                        }
+                        finally {
+                            this.statement = null;
+                        }
                     }
                 }
             }

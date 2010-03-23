@@ -107,6 +107,10 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                     String tableType = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_TYPE);
                     String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
 
+                    boolean isSystemTable = tableType != null && tableType.toUpperCase().indexOf("SYSTEM") != -1;
+                    if (isSystemTable && !getDataSource().getContainer().isShowSystemObjects()) {
+                        continue;
+                    }
                     String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
                     String typeCatalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_CAT);
                     String typeSchemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_SCHEM);
