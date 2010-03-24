@@ -2,20 +2,19 @@ package org.jkiss.dbeaver.runtime.sql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
-import org.jkiss.dbeaver.ui.editors.sql.SQLScriptLine;
 import org.jkiss.dbeaver.runtime.DataSourceJob;
+import org.jkiss.dbeaver.ui.editors.sql.SQLScriptLine;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.util.ArrayList;
@@ -76,7 +75,7 @@ public class SQLQueryJob extends DataSourceJob
         this.queryListeners.remove(listener);
     }
 
-    protected IStatus run(IProgressMonitor monitor)
+    protected IStatus run(DBPProgressMonitor monitor)
     {
         startJob();
         try {
@@ -203,7 +202,7 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeSingleQuery(IProgressMonitor monitor, SQLScriptLine query)
+    private boolean executeSingleQuery(DBPProgressMonitor monitor, SQLScriptLine query)
     {
         lastError = null;
 
@@ -269,7 +268,7 @@ public class SQLQueryJob extends DataSourceJob
         return true;
     }
 
-    private void fetchQueryData(SQLQueryResult result, IProgressMonitor monitor)
+    private void fetchQueryData(SQLQueryResult result, DBPProgressMonitor monitor)
         throws DBCException
     {
         monitor.subTask("Fetch result set");

@@ -2,19 +2,18 @@ package org.jkiss.dbeaver.runtime;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.progress.IProgressConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
 /**
  * ConnectJob
  */
-public class ConnectJob extends Job
+public class ConnectJob extends AbstractJob
 {
     static Log log = LogFactory.getLog(ConnectJob.class);
 
@@ -36,7 +35,7 @@ public class ConnectJob extends Job
         return dataSource;
     }
 
-    protected IStatus run(IProgressMonitor monitor)
+    protected IStatus run(DBPProgressMonitor monitor)
     {
         monitor.beginTask("Open Datasource ...", 2);
         try {

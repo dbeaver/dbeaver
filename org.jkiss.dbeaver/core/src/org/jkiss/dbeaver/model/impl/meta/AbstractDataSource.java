@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.model.dbc.DBCConnector;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
@@ -15,7 +16,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
-import org.eclipse.core.runtime.IProgressMonitor;
 
 import java.sql.*;
 import java.util.Properties;
@@ -131,7 +131,7 @@ public abstract class AbstractDataSource
         }
     }
 
-    public void initialize(IProgressMonitor monitor)
+    public void initialize(DBPProgressMonitor monitor)
         throws DBException
     {
         try {

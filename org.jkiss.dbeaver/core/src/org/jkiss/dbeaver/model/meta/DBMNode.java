@@ -1,19 +1,18 @@
 package org.jkiss.dbeaver.model.meta;
 
+import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.load.ILoadService;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.runtime.load.ILoadService;
 
 import java.util.List;
-
-import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * DBMNode
@@ -92,7 +91,7 @@ public abstract class DBMNode
      * @return real refreshed node or null if nothing was refreshed
      * @throws DBException on any internal exception
      */
-    public abstract DBMNode refreshNode(IProgressMonitor monitor) throws DBException;
+    public abstract DBMNode refreshNode(DBPProgressMonitor monitor) throws DBException;
 
     public abstract IAction getDefaultAction();
 

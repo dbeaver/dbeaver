@@ -1,6 +1,6 @@
 package org.jkiss.dbeaver.runtime.load;
 
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -12,9 +12,9 @@ public interface ILoadService<RESULT> {
 
     String getServiceName();
 
-    IProgressMonitor getProgressMonitor();
+    DBPProgressMonitor getProgressMonitor();
 
-    void setProgressMonitor(IProgressMonitor monitor);
+    void setProgressMonitor(DBPProgressMonitor monitor);
 
     void setNestedService(ILoadService nested);
 

@@ -7,7 +7,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.DBeaverUtils;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.runtime.load.tree.TreeLoadService;
 import org.jkiss.dbeaver.runtime.load.tree.TreeLoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.NullLoadService;

@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceUser;
 /**
  * DataSourceJob
  */
-public abstract class DataSourceJob extends Job implements DBPDataSourceUser
+public abstract class DataSourceJob extends AbstractJob implements DBPDataSourceUser
 {
     private DBPDataSource dataSource;
 

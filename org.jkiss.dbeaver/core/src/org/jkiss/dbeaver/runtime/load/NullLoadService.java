@@ -1,7 +1,7 @@
 package org.jkiss.dbeaver.runtime.load;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.runtime.NullProgressMonitor;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -10,7 +10,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class NullLoadService extends AbstractLoadService<Object> {
 
-    public static final IProgressMonitor NULL_MONITOR = new NullProgressMonitor();
+    public static final DBPProgressMonitor NULL_MONITOR = new NullProgressMonitor();
 
     public NullLoadService()
     {

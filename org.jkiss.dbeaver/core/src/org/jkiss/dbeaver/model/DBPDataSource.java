@@ -3,7 +3,6 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * DBPDataSource
@@ -35,17 +34,15 @@ public interface DBPDataSource extends DBPObject
 
     /**
      * Reads base metadata from remote database or do any neccessary initialization routines.
-     * @throws DBException on any DB error
-     * @param monitor progress monitor
+     * @throws DBException on any DB error  @param monitor progress monitor
      */
-    void initialize(IProgressMonitor monitor) throws DBException;
+    void initialize(DBPProgressMonitor monitor) throws DBException;
 
     /**
      * Refresh data source
-     * @throws DBException on any DB error
-     * @param monitor progress monitor
+     * @throws DBException on any DB error  @param monitor progress monitor
      */
-    void refreshDataSource(IProgressMonitor monitor)
+    void refreshDataSource(DBPProgressMonitor monitor)
         throws DBException;
 
     /**

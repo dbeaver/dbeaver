@@ -16,9 +16,12 @@ import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.utils.ViewUtils;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -104,13 +107,18 @@ class EntityNodeEditor extends EditorPart implements IMetaModelView, IEmbeddedWo
     {
         if (!activated) {
             try {
-                getSite().getWorkbenchWindow().run(false, false, new IRunnableWithProgress() {
-                    public void run(IProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                    {
-                        itemControl.fillData(metaNode);
+                DBeaverUtils.run(
+                    getSite().getWorkbenchWindow(),
+                    false,
+                    false,
+                    new DBPRunnableWithProgress() {
+                        public void run(DBPProgressMonitor monitor)
+                            throws InvocationTargetException, InterruptedException
+                        {
+                            itemControl.fillData(metaNode);
+                        }
                     }
-                });
+                );
             } catch (InvocationTargetException e) {
                 log.error(e.getTargetException());
             } catch (InterruptedException e) {

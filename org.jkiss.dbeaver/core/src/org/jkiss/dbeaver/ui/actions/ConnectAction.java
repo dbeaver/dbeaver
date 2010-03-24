@@ -4,7 +4,7 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.ui.DBeaverUtils;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 
 public class ConnectAction extends ConnectionAction

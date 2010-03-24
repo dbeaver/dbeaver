@@ -1,8 +1,8 @@
 package org.jkiss.dbeaver.ui.actions.sql;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.ui.DBeaverUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 

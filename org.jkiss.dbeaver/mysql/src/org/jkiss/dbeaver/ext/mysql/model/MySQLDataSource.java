@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.meta.AbstractDataSource;
 import org.jkiss.dbeaver.model.struct.*;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -49,7 +49,7 @@ public class MySQLDataSource extends AbstractDataSource implements DBSStructureA
         return DBSUtils.findObject(catalogs, name);
     }
 
-    public void initialize(IProgressMonitor monitor)
+    public void initialize(DBPProgressMonitor monitor)
         throws DBException
     {
         super.initialize(monitor);
@@ -87,7 +87,7 @@ public class MySQLDataSource extends AbstractDataSource implements DBSStructureA
         this.catalogs = tmpCatalogs;
     }
 
-    public void refreshDataSource(IProgressMonitor monitor)
+    public void refreshDataSource(DBPProgressMonitor monitor)
         throws DBException
     {
         this.catalogs = null;

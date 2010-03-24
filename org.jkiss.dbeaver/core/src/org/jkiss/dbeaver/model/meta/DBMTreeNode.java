@@ -1,21 +1,25 @@
 package org.jkiss.dbeaver.model.meta;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.jexl.JexlContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.jexl.JexlContext;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.load.ILoadService;
-import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
+import org.jkiss.dbeaver.registry.tree.DBXTreeIcon;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
-import org.jkiss.dbeaver.registry.tree.DBXTreeIcon;
+import org.jkiss.dbeaver.runtime.load.ILoadService;
+import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DBMTreeNode
@@ -154,7 +158,7 @@ public abstract class DBMTreeNode extends DBMNode {
         if (!meta.hasChildren()) {
             return;
         }
-        IProgressMonitor monitor = loadService.getProgressMonitor();
+        DBPProgressMonitor monitor = loadService.getProgressMonitor();
         List<DBXTreeNode> childMetas = meta.getChildren();
         monitor.beginTask("Load items ...", childMetas.size());
 

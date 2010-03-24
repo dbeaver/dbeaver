@@ -2,30 +2,25 @@ package org.jkiss.dbeaver.runtime;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.ui.progress.IProgressConstants;
-import org.eclipse.ui.progress.UIJob;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.progress.IProgressConstants;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.ext.ui.IMetaModelView;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.meta.DBMNode;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.event.IDataSourceListener;
-import org.jkiss.dbeaver.ext.ui.IMetaModelView;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.DBeaverUtils;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.util.Iterator;
 
 /**
  * ConnectJob
  */
-public class RefreshJob extends Job
+public class RefreshJob extends AbstractJob
 {
     static Log log = LogFactory.getLog(RefreshJob.class);
 
@@ -44,7 +39,7 @@ public class RefreshJob extends Job
         this.structSelection = structSelection;
     }
 
-    protected IStatus run(IProgressMonitor monitor)
+    protected IStatus run(DBPProgressMonitor monitor)
     {
         monitor.beginTask("Refresh selected objects ...", 5);
         try {
@@ -69,7 +64,7 @@ public class RefreshJob extends Job
         }
     }
 
-    private void refreshObject(IProgressMonitor monitor, Object object)
+    private void refreshObject(DBPProgressMonitor monitor, Object object)
     {
         if (this.targetPart instanceof IMetaModelView) {
             IMetaModelView view = (IMetaModelView)this.targetPart;
@@ -89,8 +84,8 @@ public class RefreshJob extends Job
             }
             if (node != null) {
                 final DBMNode refNode = node;
-                new UIJob("Refresh tree node") {
-                    public IStatus runInUIThread(IProgressMonitor monitor)
+                new AbstractUIJob("Refresh tree node") {
+                    public IStatus runInUIThread(DBPProgressMonitor monitor)
                     {
                         model.fireNodeRefresh(targetPart, refNode);
                         return Status.OK_STATUS;

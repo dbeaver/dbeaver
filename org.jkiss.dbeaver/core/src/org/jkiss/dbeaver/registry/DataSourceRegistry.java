@@ -7,16 +7,20 @@ import net.sf.jkiss.utils.xml.XMLBuilder;
 import net.sf.jkiss.utils.xml.XMLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.model.DBPRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
+import org.jkiss.dbeaver.runtime.AbstractUIJob;
+import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.xml.sax.Attributes;
 
 import java.io.File;
@@ -175,8 +179,8 @@ public class DataSourceRegistry implements DBPRegistry
         final List<IDataSourceListener> listeners = new ArrayList<IDataSourceListener>(dataSourceListeners);
         Display display = this.core.getWorkbench().getDisplay();
         if (!display.isDisposed()) {
-            new UIJob("Notify datasource listeners") {
-                public IStatus runInUIThread(IProgressMonitor monitor)
+            new AbstractUIJob("Notify datasource listeners") {
+                public IStatus runInUIThread(DBPProgressMonitor monitor)
                 {
                     for (IDataSourceListener listener : listeners) {
                         listener.dataSourceChanged(event, monitor);

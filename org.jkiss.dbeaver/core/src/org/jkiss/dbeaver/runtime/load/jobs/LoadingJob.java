@@ -1,16 +1,16 @@
 package org.jkiss.dbeaver.runtime.load.jobs;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.jkiss.dbeaver.ui.DBeaverConstants;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.ui.DBeaverConstants;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class LoadingJob<RESULT>  extends Job {
+public class LoadingJob<RESULT>  extends AbstractJob {
 
     public static final Object LOADING_FAMILY = new Object();
 
@@ -36,7 +36,7 @@ public class LoadingJob<RESULT>  extends Job {
         return visualizer;
     }
 
-    protected IStatus run(IProgressMonitor monitor)
+    protected IStatus run(DBPProgressMonitor monitor)
     {
         LoadingUIJob<RESULT> updateUIJob = new LoadingUIJob<RESULT>(this, monitor);
         updateUIJob.schedule();

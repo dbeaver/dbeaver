@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ui;
+package org.jkiss.dbeaver.utils;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
@@ -6,10 +6,17 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * DBeaverUtils
@@ -74,5 +81,26 @@ public class DBeaverUtils
             msg.append(" - ").append(ex.getMessage());
         }
         return msg.toString();
+    }
+    
+    public static DBPProgressMonitor makeMonitor(IProgressMonitor monitor)
+    {
+        return new DefaultProgressMonitor(monitor);
+    }
+
+    public static void run(
+        IRunnableContext runnableContext,
+        boolean fork,
+        boolean cancelable,
+        final DBPRunnableWithProgress runnableWithProgress)
+        throws InvocationTargetException, InterruptedException
+    {
+        runnableContext.run(fork, cancelable, new IRunnableWithProgress() {
+            public void run(IProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException
+            {
+                runnableWithProgress.run(makeMonitor(monitor));
+            }
+        });
     }
 }

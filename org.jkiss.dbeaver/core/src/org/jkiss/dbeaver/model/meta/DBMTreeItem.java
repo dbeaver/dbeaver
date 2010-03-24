@@ -1,11 +1,11 @@
 package org.jkiss.dbeaver.model.meta;
 
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.actions.OpenEntityEditorAction;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * DBMTreeItem
@@ -51,7 +51,7 @@ public class DBMTreeItem extends DBMTreeNode
         return object;
     }
 
-    public DBMNode refreshNode(IProgressMonitor monitor)
+    public DBMNode refreshNode(DBPProgressMonitor monitor)
         throws DBException
     {
         if (object.refreshObject()) {

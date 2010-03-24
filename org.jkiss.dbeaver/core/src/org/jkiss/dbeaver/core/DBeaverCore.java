@@ -16,8 +16,10 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.DBPApplication;
-import org.jkiss.dbeaver.model.DBPViewCallback;
+import org.jkiss.dbeaver.model.DBPRunnableContext;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
@@ -25,6 +27,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -33,7 +36,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * DBeaverCore
  */
-public class DBeaverCore implements DBPApplication, DBPViewCallback {
+public class DBeaverCore implements DBPApplication, DBPRunnableContext {
 
     static Log log = LogFactory.getLog(DBeaverCore.class);
 
@@ -185,10 +188,10 @@ public class DBeaverCore implements DBPApplication, DBPViewCallback {
         return propertiesAdapter;
     }
 
-    public void run(boolean fork, boolean cancelable, IRunnableWithProgress runnable)
+    public void run(boolean fork, boolean cancelable, final DBPRunnableWithProgress runnable)
         throws InvocationTargetException, InterruptedException
     {
-        this.getWorkbench().getProgressService().run(fork, cancelable, runnable);
+        DBeaverUtils.run(this.getWorkbench().getProgressService(), fork, cancelable, runnable);
     }
 
     public IFolder getTempFolder()

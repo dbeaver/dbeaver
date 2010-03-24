@@ -1,8 +1,6 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
@@ -10,9 +8,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.ui.DBeaverUtils;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -44,9 +44,9 @@ public abstract class ConnectionWizard<CONTAINER extends IWizardContainer>  exte
 
     public void testConnection(final DBPConnectionInfo connectionInfo)
     {
-        IRunnableWithProgress op = new IRunnableWithProgress()
+        DBPRunnableWithProgress op = new DBPRunnableWithProgress()
         {
-            public void run(IProgressMonitor monitor)
+            public void run(DBPProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException
             {
                 monitor.beginTask("Obtain connection", 3);
@@ -68,18 +68,18 @@ public abstract class ConnectionWizard<CONTAINER extends IWizardContainer>  exte
                         throw new InvocationTargetException(
                             new DBException("Internal error: null datasource returned from provider " + provider));
                     } else {
-                        monitor.setTaskName("Test connection");
+                        monitor.subTask("Test connection");
                         try {
                             // test connection
                             dataSource.checkConnection();
                             monitor.done();
                         }
                         finally {
-                            monitor.setTaskName("Close connection");
+                            monitor.subTask("Close connection");
                             dataSource.close();
                         }
                     }
-                    monitor.setTaskName("Success");
+                    monitor.subTask("Success");
                 }
                 catch (DBException ex) {
                     throw new InvocationTargetException(ex);
@@ -88,7 +88,7 @@ public abstract class ConnectionWizard<CONTAINER extends IWizardContainer>  exte
         };
 
         try {
-            getContainer().run(true, true, op);
+            DBeaverUtils.run(getContainer(), true, true, op);
 
             MessageDialog.openInformation(
                 getShell(), "Success", "Successfully connected!");
@@ -122,39 +122,4 @@ public abstract class ConnectionWizard<CONTAINER extends IWizardContainer>  exte
         }
     }
 
-/*
-    private class CancelTask extends Thread
-    {
-        private Thread targetThread;
-        private IProgressMonitor monitor;
-        private boolean isStopped = false;
-
-        private CancelTask(Thread targetThread, IProgressMonitor monitor)
-        {
-            this.targetThread = targetThread;
-            this.monitor = monitor;
-        }
-
-        public void setStopped(boolean stopped)
-        {
-            isStopped = stopped;
-        }
-
-        public void run()
-        {
-            while (!isStopped) {
-                if (monitor.isCanceled()) {
-                    targetThread.interrupt();
-                    break;
-                }
-                try {
-                    Thread.sleep(100);
-                }
-                catch (InterruptedException ex) {
-                    break;
-                }
-            }
-        }
-    }
-*/
 }

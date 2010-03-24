@@ -3,8 +3,8 @@ package org.jkiss.dbeaver.model.meta;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.actions.EditConnectionAction;
@@ -63,7 +63,7 @@ public class DBMDataSource extends DBMTreeNode
         return dataSource.getDescription();
     }
 
-    public DBMNode refreshNode(IProgressMonitor monitor)
+    public DBMNode refreshNode(DBPProgressMonitor monitor)
         throws DBException
     {
         if (dataSource.isConnected()) {

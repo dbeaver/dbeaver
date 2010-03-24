@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.model.dbc.DBCConnector;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -17,7 +18,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
-import org.eclipse.core.runtime.IProgressMonitor;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -139,7 +139,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
 
     public GenericCatalog getCatalog(String name)
     {
-        return DBSUtils.findObject(catalogs, name);
+        return DBSUtils.findObject(getCatalogs(), name);
     }
 
     public List<GenericSchema> getSchemas()
@@ -149,7 +149,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
 
     public GenericSchema getSchema(String name)
     {
-        return DBSUtils.findObject(schemas, name);
+        return DBSUtils.findObject(getSchemas(), name);
     }
 
     public void checkConnection()
@@ -172,7 +172,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         }
     }
 
-    public void initialize(IProgressMonitor monitor)
+    public void initialize(DBPProgressMonitor monitor)
         throws DBException
     {
         try {
@@ -273,7 +273,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         }
     }
 
-    public void refreshDataSource(IProgressMonitor monitor)
+    public void refreshDataSource(DBPProgressMonitor monitor)
         throws DBException
     {
         this.tableTypes = null;

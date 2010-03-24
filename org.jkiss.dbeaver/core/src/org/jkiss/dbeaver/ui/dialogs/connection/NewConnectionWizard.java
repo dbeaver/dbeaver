@@ -1,17 +1,17 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.ui.DBeaverExtensions;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.ui.DBeaverUtils;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -89,9 +89,9 @@ public class NewConnectionWizard extends ConnectionWizard<NewConnectionDialog>
         addPage(pageDrivers);
 
         try {
-            registry.getCore().run(true, true, new IRunnableWithProgress()
+            registry.getCore().run(true, true, new DBPRunnableWithProgress()
             {
-                public void run(IProgressMonitor monitor)
+                public void run(DBPProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
 /*
@@ -111,7 +111,8 @@ public class NewConnectionWizard extends ConnectionWizard<NewConnectionDialog>
                             continue;
                         }
                         availableProvides.add(provider);
-                        ConnectionPageSettings pageSettings = new ConnectionPageSettings(NewConnectionWizard.this,
+                        ConnectionPageSettings pageSettings = new ConnectionPageSettings(
+                            NewConnectionWizard.this,
                             view);
                         settingsPages.put(provider, pageSettings);
                         addPage(pageSettings);

@@ -64,21 +64,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
             // Wait for all datasource jobs to finish
             try {
                 Job.getJobManager().join(DBPDataSource.class, new NullProgressMonitor());
-/*
-
-                DBeaverCore.getInstance().run(true, true, new IRunnableWithProgress()
-                {
-                    public void run(IProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        try {
-                            Job.getJobManager().join(DBPDataSource.class, monitor);
-                        } catch (Exception e) {
-                            log.error(e);
-                        }
-                    }
-                });
-*/
             } catch (Exception e) {
                 log.error(e);
             }

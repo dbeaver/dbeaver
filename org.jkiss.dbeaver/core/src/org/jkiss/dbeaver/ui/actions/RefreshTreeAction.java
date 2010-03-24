@@ -4,22 +4,18 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.RefreshJob;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.ui.DBeaverUtils;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
-import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.model.meta.DBMModel;
-
-import java.util.Iterator;
-import java.lang.reflect.InvocationTargetException;
+import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.runtime.RefreshJob;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**
  * RefreshTreeAction
@@ -87,7 +83,7 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
         }
     }
 
-    private void refreshObject(IProgressMonitor monitor, Object object)
+    private void refreshObject(DBPProgressMonitor monitor, Object object)
     {
         if (this.targetPart instanceof IMetaModelView) {
             IMetaModelView view = (IMetaModelView)this.targetPart;

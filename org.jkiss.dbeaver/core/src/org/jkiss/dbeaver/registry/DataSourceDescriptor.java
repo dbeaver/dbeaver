@@ -4,12 +4,10 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertySource;
@@ -19,6 +17,8 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
@@ -197,37 +197,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
                 throw new DBException("Authentification canceled");
             }
         }
-/*
-        try {
-            this.getDriver().getProviderDescriptor().getRegistry().getCore().run(
-                true,
-                true,
-                new IRunnableWithProgress() {
-                    public void run(IProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        monitor.beginTask("Open Datasource ...", 2);
-                        try {
-                            monitor.subTask("Connecting to Remote Database");
-                            dataSource = driver.getDataSourceProvider().openDataSource(DataSourceDescriptor.this);
-                            monitor.worked(1);
-                            monitor.subTask("Initializing Datasource");
-                            dataSource.initialize();
-                            monitor.done();
-                        }
-                        catch (Exception ex) {
-                            throw new InvocationTargetException(ex);
-                        }
-                    }
-                }
-            );
-        } catch (Throwable ex) {
-            if (ex instanceof InvocationTargetException) {
-                ex = ((InvocationTargetException)ex).getTargetException();
-            }
-            throw new DBException("Error opening database connection: " + ex.getMessage(), ex);
-        }
-*/
+
         ConnectJob connectJob = new ConnectJob(this);
         connectJob.addJobChangeListener(new JobChangeAdapter() {
             public void done(IJobChangeEvent event)
@@ -273,13 +243,13 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
         }
 */
         try {
-            DBeaverCore.getInstance().run(true, true, new IRunnableWithProgress()
+            DBeaverCore.getInstance().run(true, true, new DBPRunnableWithProgress()
             {
-                public void run(IProgressMonitor monitor)
+                public void run(DBPProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        Job.getJobManager().join(dataSource, monitor);
+                        Job.getJobManager().join(dataSource, monitor.getNestedMonitor());
                     } catch (Exception e) {
                         log.error(e);
                         return;
