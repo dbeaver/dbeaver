@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import java.sql.*;
 import java.util.Properties;
@@ -130,7 +131,7 @@ public abstract class AbstractDataSource
         }
     }
 
-    public void initialize()
+    public void initialize(IProgressMonitor monitor)
         throws DBException
     {
         try {

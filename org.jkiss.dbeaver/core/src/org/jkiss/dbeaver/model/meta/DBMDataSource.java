@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.model.meta;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
@@ -62,11 +63,11 @@ public class DBMDataSource extends DBMTreeNode
         return dataSource.getDescription();
     }
 
-    public DBMNode refreshNode()
+    public DBMNode refreshNode(IProgressMonitor monitor)
         throws DBException
     {
         if (dataSource.isConnected()) {
-            dataSource.getDataSource().refreshDataSource();
+            dataSource.getDataSource().refreshDataSource(monitor);
         }
         this.clearChildren();
         return this;

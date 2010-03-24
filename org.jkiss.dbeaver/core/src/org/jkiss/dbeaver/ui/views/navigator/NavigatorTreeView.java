@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.actions.RefreshTreeAction;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -140,7 +141,7 @@ public class NavigatorTreeView extends ViewPart implements IDataSourceListener, 
         viewer.getControl().setFocus();
     }
 
-    public void dataSourceChanged(DataSourceEvent event)
+    public void dataSourceChanged(DataSourceEvent event, IProgressMonitor monitor)
     {
         if (viewer.getControl().isDisposed()) {
             return;
@@ -156,7 +157,7 @@ public class NavigatorTreeView extends ViewPart implements IDataSourceListener, 
                 DBMNode dbmNode = model.getNodeByObject(event.getDataSource());
                 if (dbmNode != null) {
                     try {
-                        dbmNode.refreshNode();
+                        dbmNode.refreshNode(monitor);
                     } catch (DBException ex) {
                         log.warn(ex);
                     }

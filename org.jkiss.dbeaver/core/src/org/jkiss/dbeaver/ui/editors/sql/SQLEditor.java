@@ -7,6 +7,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -31,7 +32,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.ISaveablePart2;
@@ -70,7 +70,6 @@ import org.jkiss.dbeaver.ui.views.console.ConsoleManager;
 import org.jkiss.dbeaver.ui.views.console.ConsoleMessageType;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -812,7 +811,7 @@ public class SQLEditor extends TextEditor
         super.dispose();
     }
 
-    public void dataSourceChanged(DataSourceEvent event)
+    public void dataSourceChanged(DataSourceEvent event, IProgressMonitor monitor)
     {
         if (event.getDataSource() == getDataSourceContainer()) {
             switch (event.getAction()) {

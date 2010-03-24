@@ -4,6 +4,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -87,10 +88,11 @@ public abstract class DBMNode
     /**
      * Refreshes node.
      * If refresh cannot be done in this level then refreshes parent node.
+     * @param monitor progress monitor
      * @return real refreshed node or null if nothing was refreshed
      * @throws DBException on any internal exception
      */
-    public abstract DBMNode refreshNode() throws DBException;
+    public abstract DBMNode refreshNode(IProgressMonitor monitor) throws DBException;
 
     public abstract IAction getDefaultAction();
 

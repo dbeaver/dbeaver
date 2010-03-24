@@ -179,7 +179,7 @@ public class DataSourceRegistry implements DBPRegistry
                 public IStatus runInUIThread(IProgressMonitor monitor)
                 {
                     for (IDataSourceListener listener : listeners) {
-                        listener.dataSourceChanged(event);
+                        listener.dataSourceChanged(event, monitor);
                     }
                     return Status.OK_STATUS;
                 }

@@ -4,9 +4,14 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.RefreshJob;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.DBeaverUtils;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
@@ -14,6 +19,7 @@ import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 
 import java.util.Iterator;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * RefreshTreeAction
@@ -44,22 +50,44 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
         this.targetPart = targetPart;
     }
 
+    @Override
     public void run()
     {
         ISelection selection = null;
         if (targetPart != null && targetPart.getSite().getSelectionProvider() != null) {
             selection = targetPart.getSite().getSelectionProvider().getSelection();
         }
+        final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+
         if (selection instanceof IStructuredSelection) {
-            IStructuredSelection structSelection = (IStructuredSelection)selection;
-            for (Iterator iter = structSelection.iterator(); iter.hasNext(); ){
-                Object object = iter.next();
-                refreshObject(object);
+            final IStructuredSelection structSelection = (IStructuredSelection)selection;
+            RefreshJob job = new RefreshJob(targetPart, structSelection);
+            job.schedule();
+/*
+            try {
+                workbenchWindow.run(true, true, new IRunnableWithProgress() {
+                   public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                       int count = 1;
+                       for (Iterator iter = structSelection.iterator(); iter.hasNext(); ){
+                           Object object = iter.next();
+                           monitor.beginTask("Refresh selected object", count++);
+                           refreshObject(monitor, object);
+                           monitor.done();
+                       }
+                   }
+                });
+            } catch (InvocationTargetException e) {
+                DBeaverUtils.showErrorDialog(
+                    workbenchWindow.getShell(),
+                    "Connect", "Can't connect to ", e.getTargetException());
+            } catch (InterruptedException e) {
+                // Do nothing
             }
+*/
         }
     }
 
-    private void refreshObject(Object object)
+    private void refreshObject(IProgressMonitor monitor, Object object)
     {
         if (this.targetPart instanceof IMetaModelView) {
             IMetaModelView view = (IMetaModelView)this.targetPart;
@@ -67,7 +95,7 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
             DBMNode node = model.findNode(object);
             if (node != null) {
                 try {
-                    node = node.refreshNode();
+                    node = node.refreshNode(monitor);
                 }
                 catch (DBException ex) {
                     DBeaverUtils.showErrorDialog(

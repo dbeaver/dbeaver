@@ -2,6 +2,7 @@ package org.jkiss.dbeaver.model.meta;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -79,7 +80,7 @@ public class DBMRoot extends DBMNode implements IDataSourceListener, DBSObject
         return dataSources;
     }
 
-    public DBMNode refreshNode()
+    public DBMNode refreshNode(IProgressMonitor monitor)
         throws DBException
     {
         // Nothing to do
@@ -96,7 +97,7 @@ public class DBMRoot extends DBMNode implements IDataSourceListener, DBSObject
         return false;
     }
 
-    public void dataSourceChanged(DataSourceEvent event)
+    public void dataSourceChanged(DataSourceEvent event, IProgressMonitor monitor)
     {
         switch (event.getAction()) {
             case ADD:

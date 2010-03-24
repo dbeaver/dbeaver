@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -158,7 +159,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
             throw new DBException("Not connected");
         }
         try {
-            ResultSet dbResult = connection.getMetaData().getTables(null, null, null, null);
+            ResultSet dbResult = connection.getMetaData().getTables("noname", "noname", "noname", null);
             try {
                 dbResult.next();
             }
@@ -171,14 +172,18 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         }
     }
 
-    public void initialize()
+    public void initialize(IProgressMonitor monitor)
         throws DBException
     {
         try {
+            monitor.subTask("Getting connection metdata");
+            monitor.worked(1);
             DatabaseMetaData metaData = getConnection().getMetaData();
             info = new JDBCDataSourceInfo(metaData);
             {
                 // Read table types
+                monitor.subTask("Extract table types");
+                monitor.worked(1);
                 this.tableTypes = new ArrayList<String>();
                 ResultSet dbResult = metaData.getTableTypes();
                 try {
@@ -196,6 +201,8 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
             }
             {
                 // Read catalogs
+                monitor.subTask("Extract catalogs");
+                monitor.worked(1);
                 List<String> catalogNames = new ArrayList<String>();
                 try {
                     ResultSet dbResult = metaData.getCatalogs();
@@ -204,6 +211,10 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                             String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
                             if (!CommonUtils.isEmpty(catalogName)) {
                                 catalogNames.add(catalogName);
+                            }
+                            monitor.subTask("Extract catalogs - " + catalogName);
+                            if (monitor.isCanceled()) {
+                                break;
                             }
                         }
                     } finally {
@@ -223,6 +234,8 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
 
             if (catalogs == null) {
                 // Catalogs not supported - try to read root schemas
+                monitor.subTask("Extract schemas");
+                monitor.worked(1);
                 List<String> schemaNames = new ArrayList<String>();
                 try {
                     ResultSet dbResult = metaData.getSchemas();
@@ -235,6 +248,10 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                             }
                             if (!CommonUtils.isEmpty(catalogName)) {
                                 log.debug("No catalogs was read but catalog name returned with schema");
+                            }
+                            monitor.subTask("Extract schemas - " + schemaName);
+                            if (monitor.isCanceled()) {
+                                break;
                             }
                         }
                     } finally {
@@ -256,14 +273,14 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         }
     }
 
-    public void refreshDataSource()
+    public void refreshDataSource(IProgressMonitor monitor)
         throws DBException
     {
         this.tableTypes = null;
         this.catalogs = null;
         this.schemas = null;
 
-        this.initialize();
+        this.initialize(monitor);
     }
 
     private void reconnect()

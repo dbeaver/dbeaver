@@ -10,7 +10,6 @@ import org.eclipse.ui.progress.IProgressConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 /**
  * ConnectJob
@@ -44,8 +43,8 @@ public class ConnectJob extends Job
             monitor.subTask("Connecting to Remote Database");
             dataSource = container.getDriver().getDataSourceProvider().openDataSource(container);
             monitor.worked(1);
-            monitor.subTask("Initializing Datasource");
-            dataSource.initialize();
+            monitor.beginTask("Initializing Datasource", 10);
+            dataSource.initialize(monitor);
             // Change connection properties
             monitor.done();
 

@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -578,7 +579,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         }
     }
 
-    public void dataSourceChanged(DataSourceEvent event)
+    public void dataSourceChanged(DataSourceEvent event, IProgressMonitor monitor)
     {
         SQLEditor editor = getEditor();
         if (editor != null) {

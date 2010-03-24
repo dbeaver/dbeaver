@@ -5,6 +5,7 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.actions.OpenEntityEditorAction;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * DBMTreeItem
@@ -50,14 +51,14 @@ public class DBMTreeItem extends DBMTreeNode
         return object;
     }
 
-    public DBMNode refreshNode()
+    public DBMNode refreshNode(IProgressMonitor monitor)
         throws DBException
     {
         if (object.refreshObject()) {
             this.clearChildren();
             return this;
         } else if (this.getParentNode() != null) {
-            return this.getParentNode().refreshNode();
+            return this.getParentNode().refreshNode(monitor);
         } else {
             return null;
         }

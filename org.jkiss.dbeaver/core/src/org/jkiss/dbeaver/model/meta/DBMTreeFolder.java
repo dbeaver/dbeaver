@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.actions.OpenFolderEditorAction;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * DBMTreeFolder
@@ -74,10 +75,10 @@ public class DBMTreeFolder extends DBMTreeNode implements DBSFolder
         return false;
     }
 
-    public DBMNode refreshNode()
+    public DBMNode refreshNode(IProgressMonitor monitor)
         throws DBException
     {
-        return this.getParentNode().refreshNode();
+        return this.getParentNode().refreshNode(monitor);
     }
 
     public IAction getDefaultAction()
