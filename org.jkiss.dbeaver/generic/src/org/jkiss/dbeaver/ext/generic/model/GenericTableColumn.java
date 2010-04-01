@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 /**
  * GenericTable
  */
-public class GenericTableColumn extends AbstractColumn implements DBSTableColumn
+public class GenericTableColumn extends AbstractColumn<GenericDataSource> implements DBSTableColumn<GenericDataSource>
 {
     private GenericTable table;
     private String defaultValue;

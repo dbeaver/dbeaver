@@ -5,7 +5,7 @@ Bundle-SymbolicName: org.jkiss.dbeaver.core;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: net.sf.jkiss.utils,
  net.sf.jkiss.utils.net;uses:="net.sf.jkiss.utils.streams",
  net.sf.jkiss.utils.streams;uses:="javax.activation",
@@ -24,7 +24,6 @@ Export-Package: net.sf.jkiss.utils,
    org.eclipse.ui,
    org.eclipse.jface.viewers,
    org.eclipse.jface.dialogs",
- org.jkiss.dbeaver.ext.ui.dialogs,
  org.jkiss.dbeaver.model;
   uses:="org.jkiss.dbeaver.model.meta,
    org.eclipse.jface.operation,
@@ -50,7 +49,8 @@ Export-Package: net.sf.jkiss.utils,
    org.apache.commons.logging,
    org.eclipse.swt.events,
    org.eclipse.swt.graphics,
-   org.eclipse.swt.widgets"
+   org.eclipse.swt.widgets",
+ org.jkiss.dbeaver.ui.dialogs.connection
 Bundle-ClassPath: lib/jkiss-utils-1.0.1.jar,
  lib/commons-logging-1.0.4.jar,
  lib/commons-jexl-1.1.jar,

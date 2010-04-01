@@ -18,5 +18,5 @@ public interface DBSForeignKey<DATASOURCE extends DBPDataSource, TABLE extends D
 
     DBSConstraintDefferability getDefferability();
 
-    Collection<? extends DBSForeignKeyColumn> getColumns();
+    Collection<? extends DBSForeignKeyColumn<DATASOURCE>> getColumns();
 }

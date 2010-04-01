@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.DBException;
 /**
  * GenericConstraintColumn
  */
-public class MySQLConstraintColumn implements DBSConstraintColumn
+public class MySQLConstraintColumn implements DBSConstraintColumn<MySQLDataSource>
 {
     private AbstractConstraint constraint;
     private MySQLTableColumn tableColumn;
@@ -24,7 +24,7 @@ public class MySQLConstraintColumn implements DBSConstraintColumn
         this.ordinalPosition = ordinalPosition;
     }
 
-    public DBSConstraint getConstraint()
+    public AbstractConstraint getConstraint()
     {
         return constraint;
     }
@@ -56,9 +56,9 @@ public class MySQLConstraintColumn implements DBSConstraintColumn
         return constraint;
     }
 
-    public DBPDataSource getDataSource()
+    public MySQLDataSource getDataSource()
     {
-        return constraint.getDataSource();
+        return (MySQLDataSource)constraint.getDataSource();
     }
 
     public boolean refreshObject()

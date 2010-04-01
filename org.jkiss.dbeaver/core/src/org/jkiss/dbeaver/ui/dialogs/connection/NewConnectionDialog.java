@@ -5,7 +5,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 /**
  * NewConnectionDialog
  */
-public class NewConnectionDialog extends ConnectionDialog
+public class NewConnectionDialog extends ConnectionDialog<NewConnectionDialog>
 {
     public NewConnectionDialog(IWorkbenchWindow window)
     {

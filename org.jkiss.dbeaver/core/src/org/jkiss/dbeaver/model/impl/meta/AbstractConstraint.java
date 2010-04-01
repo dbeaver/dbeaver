@@ -38,7 +38,7 @@ public abstract class AbstractConstraint<
         return table;
     }
 
-    public DBSConstraintColumn getColumn(DBSTableColumn tableColumn)
+    public DBSConstraintColumn<DATASOURCE> getColumn(DBSTableColumn tableColumn)
     {
         Collection<? extends DBSConstraintColumn> columns = getColumns();
         for (DBSConstraintColumn constraintColumn : columns) {

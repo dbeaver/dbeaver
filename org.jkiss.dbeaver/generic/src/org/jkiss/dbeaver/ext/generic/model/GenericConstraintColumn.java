@@ -10,7 +10,7 @@ import org.jkiss.dbeaver.DBException;
 /**
  * GenericConstraintColumn
  */
-public class GenericConstraintColumn implements DBSConstraintColumn
+public class GenericConstraintColumn implements DBSConstraintColumn<GenericDataSource>
 {
     private GenericConstraint constraint;
     private GenericTableColumn tableColumn;
@@ -55,7 +55,7 @@ public class GenericConstraintColumn implements DBSConstraintColumn
         return constraint;
     }
 
-    public DBPDataSource getDataSource()
+    public GenericDataSource getDataSource()
     {
         return constraint.getDataSource();
     }

@@ -6,7 +6,7 @@ import org.jkiss.dbeaver.model.anno.Property;
 /**
  * GenericConstraintColumn
  */
-public class MySQLForeignKeyColumn extends MySQLConstraintColumn implements DBSForeignKeyColumn
+public class MySQLForeignKeyColumn extends MySQLConstraintColumn implements DBSForeignKeyColumn<MySQLDataSource>
 {
     private MySQLTableColumn referencedColumn;
 

@@ -17,7 +17,7 @@ import java.util.Hashtable;
  */
 public class DBeaverAdapterFactory implements IAdapterFactory
 {
-    private static final Class[] ADAPTER_LIST = { IPropertySource.class, IWorkbenchAdapter.class };
+    private static final Class<?>[] ADAPTER_LIST = { IPropertySource.class, IWorkbenchAdapter.class };
 
     private Map<Object, IPropertySource> propertySourceCache = new Hashtable<Object, IPropertySource>();
 

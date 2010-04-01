@@ -6,7 +6,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 /**
  * NewConnectionDialog
  */
-public class EditConnectionDialog extends ConnectionDialog
+public class EditConnectionDialog extends ConnectionDialog<EditConnectionDialog>
 {
     private DataSourceDescriptor dataSource;
 

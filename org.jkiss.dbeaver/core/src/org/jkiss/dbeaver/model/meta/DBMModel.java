@@ -117,7 +117,7 @@ public class DBMModel implements IDataSourceListener
                 List<? extends DBMNode> children = node.getChildren(loadService);
                 for (DBMNode child : children) {
                     if (child instanceof DBMTreeFolder) {
-                        Class itemsClass = ((DBMTreeFolder) child).getItemsClass();
+                        Class<?> itemsClass = ((DBMTreeFolder) child).getItemsClass();
                         if (itemsClass != null && itemsClass.isAssignableFrom(nextItem.getClass())) {
                             child.getChildren(loadService);
                         }

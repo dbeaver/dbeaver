@@ -93,7 +93,7 @@ public class DBMTreeFolder extends DBMTreeNode implements DBSFolder
         return meta.getType();
     }
 
-    public Class getItemsClass()
+    public Class<?> getItemsClass()
     {
         try {
             return Class.forName(getItemsType());

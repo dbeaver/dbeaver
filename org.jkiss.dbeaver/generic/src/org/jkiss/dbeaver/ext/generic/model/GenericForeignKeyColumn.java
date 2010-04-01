@@ -6,7 +6,7 @@ import org.jkiss.dbeaver.model.anno.Property;
 /**
  * GenericConstraintColumn
  */
-public class GenericForeignKeyColumn extends GenericConstraintColumn implements DBSForeignKeyColumn
+public class GenericForeignKeyColumn extends GenericConstraintColumn implements DBSForeignKeyColumn<GenericDataSource>
 {
     private GenericTableColumn referencedColumn;
 

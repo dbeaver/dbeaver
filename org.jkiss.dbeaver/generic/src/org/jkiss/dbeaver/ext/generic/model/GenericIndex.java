@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * GenericTable
  */
-public class GenericIndex extends AbstractIndex
+public class GenericIndex extends AbstractIndex<GenericDataSource>
 {
     private GenericTable table;
     private boolean nonUnique;

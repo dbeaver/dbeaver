@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.model.anno.Property;
 /**
  * GenericTable
  */
-public class GenericProcedureColumn extends AbstractColumn implements DBSProcedureColumn
+public class GenericProcedureColumn extends AbstractColumn<GenericDataSource> implements DBSProcedureColumn<GenericDataSource>
 {
     private GenericProcedure procedure;
     private DBSProcedureColumnType columnType;

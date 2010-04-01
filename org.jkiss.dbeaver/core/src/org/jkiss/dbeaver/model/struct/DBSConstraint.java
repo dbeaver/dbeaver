@@ -11,7 +11,7 @@ public interface DBSConstraint<DATASOURCE extends DBPDataSource, TABLE extends D
 {
     TABLE getTable();
 
-    Collection<? extends DBSConstraintColumn> getColumns();
+    Collection<? extends DBSConstraintColumn<DATASOURCE>> getColumns();
 
-    DBSConstraintColumn getColumn(DBSTableColumn tableColumn);
+    DBSConstraintColumn<DATASOURCE> getColumn(DBSTableColumn tableColumn);
 }
