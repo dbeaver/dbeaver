@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ui.app;
+package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.jface.action.GroupMarker;

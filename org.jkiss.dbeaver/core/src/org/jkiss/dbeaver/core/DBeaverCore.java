@@ -7,26 +7,30 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdapterManager;
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.DBPApplication;
-import org.jkiss.dbeaver.model.DBPRunnableContext;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPRunnableContext;
 import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.ByteArrayInputStream;
@@ -46,6 +50,7 @@ public class DBeaverCore implements DBPApplication, DBPRunnableContext {
     private static DBeaverCore instance;
     private DBeaverActivator plugin;
     private DBeaverAdapterFactory propertiesAdapter;
+    //private DBeaverProgressProvider progressProvider;
     private IWorkspace workspace;
     private IWorkbench workbench;
     private IProject defaultProject;
@@ -69,6 +74,8 @@ public class DBeaverCore implements DBPApplication, DBPRunnableContext {
     {
         this.plugin = plugin;
 
+        //progressProvider = new DBeaverProgressProvider();
+
         // Register properties adapter
         propertiesAdapter = new DBeaverAdapterFactory();
         IAdapterManager mgr = Platform.getAdapterManager();
@@ -82,26 +89,38 @@ public class DBeaverCore implements DBPApplication, DBPRunnableContext {
         this.editorsRegistry = new EntityEditorsRegistry(this, Platform.getExtensionRegistry());
         this.metaModel = new DBMModel(dataSourceRegistry);
         // Make default project
-        IProgressMonitor monitor = new NullProgressMonitor();
         defaultProject = this.workspace.getRoot().getProject(DEFAULT_PROJECT_NAME);
 
         try {
-            if (!defaultProject.exists()) {
-                defaultProject.create(monitor);
-            }
-            defaultProject.open(monitor);
+            PlatformUI.getWorkbench().getProgressService().run(false, false, new IRunnableWithProgress() {
+                public void run(IProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        if (!defaultProject.exists()) {
+                            defaultProject.create(monitor);
+                        }
+                        defaultProject.open(monitor);
+                    }
+                    catch (CoreException ex) {
+                        throw new InvocationTargetException(ex);
+                    }
+                }
+            });
         }
-        catch (CoreException ex) {
-            throw new RuntimeException("Can't open default project", ex);
+        catch (InvocationTargetException e) {
+            log.error(e.getTargetException());
+        }
+        catch (InterruptedException e) {
+            // do nothing
         }
 
         // Init preferences
         initDefaultPreferences();
     }
 
-    public synchronized void dispose()
+    public synchronized void dispose(IProgressMonitor monitor)
     {
-        IProgressMonitor monitor = new NullProgressMonitor();
         if (defaultProject != null) {
             try {
                 //defaultProject.
@@ -126,6 +145,9 @@ public class DBeaverCore implements DBPApplication, DBPRunnableContext {
 
         // Unregister properties adapter
         Platform.getAdapterManager().unregisterAdapters(propertiesAdapter);
+
+        //progressProvider.shutdown();
+        //progressProvider = null;
 
         instance = null;
     }
@@ -194,13 +216,13 @@ public class DBeaverCore implements DBPApplication, DBPRunnableContext {
         DBeaverUtils.run(this.getWorkbench().getProgressService(), fork, cancelable, runnable);
     }
 
-    public IFolder getTempFolder()
+    public IFolder getTempFolder(IProgressMonitor monitor)
     {
         IPath tempPath = defaultProject.getProjectRelativePath().append(AUTOSAVE_DIR);
         IFolder tempFolder = defaultProject.getFolder(tempPath);
         if (!tempFolder.exists()) {
             try {
-                tempFolder.create(true, true, new NullProgressMonitor());
+                tempFolder.create(true, true, monitor);
             }
             catch (CoreException ex) {
                 log.warn("Can't create temp directory '" + tempFolder.toString() + "'", ex);
@@ -210,11 +232,9 @@ public class DBeaverCore implements DBPApplication, DBPRunnableContext {
         return tempFolder;
     }
 
-    public IFile makeTempFile(String name, String extension)
+    public IFile makeTempFile(String name, String extension, IProgressMonitor monitor)
     {
-        IProgressMonitor monitor = new NullProgressMonitor();
-
-        IFolder tempFolder = getTempFolder();
+        IFolder tempFolder = getTempFolder(monitor);
         if (tempFolder == null) {
             return null;
         }

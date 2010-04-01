@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ui.app;
+package org.jkiss.dbeaver.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

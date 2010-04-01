@@ -15,7 +15,7 @@
     <extension point="org.eclipse.ui.perspectives">
         <perspective
             name="RCP Perspective"
-            class="org.jkiss.dbeaver.ui.app.DBeaverPerspective"
+            class="org.jkiss.dbeaver.core.DBeaverPerspective"
             id="org.jkiss.dbeaver.core.perspective">
         </perspective>
     </extension>
@@ -541,5 +541,16 @@
     <extension point="org.eclipse.ui.editors.templates">
        <include file="schema/editor-templates.xml">
        </include>
+    </extension>
+    <extension
+          point="org.eclipse.ui.splashHandlers">
+       <splashHandler
+             class="org.jkiss.dbeaver.ui.splash.DBeaverSplashHandler"
+             id="org.jkiss.dbeaver.ui.splash.interactive">
+       </splashHandler>
+       <splashHandlerProductBinding
+             productId="org.jkiss.dbeaver.core.product"
+             splashId="org.jkiss.dbeaver.ui.splash.interactive">
+       </splashHandlerProductBinding>
     </extension>
 </plugin>

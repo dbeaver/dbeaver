@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.ui.actions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorReference;
@@ -60,8 +61,10 @@ public class OpenSQLEditorAction extends NavigatorAction
                 dataSourceContainer = SelectDataSourceDialog.selectDataSource(getActiveWindow().getShell());
             }
             if (dataSourceContainer != null) {
-                IFile tempFile = DBeaverCore.getInstance().makeTempFile(dataSourceContainer.getName(),
-                    "sql");
+                IFile tempFile = DBeaverCore.getInstance().makeTempFile(
+                    dataSourceContainer.getName(),
+                    "sql",
+                    new NullProgressMonitor());
                 SQLEditorInput sqlInput = new SQLEditorInput(
                     tempFile,
                     dataSourceContainer,

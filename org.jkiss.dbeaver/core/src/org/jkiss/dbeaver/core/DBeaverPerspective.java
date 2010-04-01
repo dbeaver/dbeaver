@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ui.app;
+package org.jkiss.dbeaver.core;
 
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;

@@ -35,6 +35,7 @@ public class ConnectJob extends AbstractJob
         return dataSource;
     }
 
+    @Override
     protected IStatus run(DBPProgressMonitor monitor)
     {
         monitor.beginTask("Open Datasource ...", 2);

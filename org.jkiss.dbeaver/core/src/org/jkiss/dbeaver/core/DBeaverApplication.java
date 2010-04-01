@@ -5,7 +5,7 @@ import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.ui.app.ApplicationWorkbenchAdvisor;
+import org.jkiss.dbeaver.core.ApplicationWorkbenchAdvisor;
 
 /**
  * This class controls all aspects of the application's execution
@@ -20,18 +20,12 @@ public class DBeaverApplication implements IApplication
     {
         Display display = PlatformUI.createDisplay();
         try {
-            DBeaverCore.createInstance(DBeaverActivator.getInstance());
-
             int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
             if (returnCode == PlatformUI.RETURN_RESTART) {
                 return IApplication.EXIT_RESTART;
             }
             return IApplication.EXIT_OK;
         } finally {
-
-            if (DBeaverCore.getInstance() != null) {
-                DBeaverCore.getInstance().dispose();
-            }
 /*
             try {
                 Job.getJobManager().join(null, new NullProgressMonitor());
