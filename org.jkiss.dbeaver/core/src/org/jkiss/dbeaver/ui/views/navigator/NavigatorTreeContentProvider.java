@@ -83,29 +83,30 @@ class NavigatorTreeContentProvider implements IStructuredContentProvider, ITreeC
                     }
                 }
             });
-        }
-        try {
-            return DBMNode.convertNodesToObjects(
-                parentNode.getChildren(new NullLoadService()));
-        }
-        catch (Throwable ex) {
-            if (ex instanceof InvocationTargetException) {
-                ex = ((InvocationTargetException)ex).getTargetException();
+        } else {
+            try {
+                return DBMNode.convertNodesToObjects(
+                    parentNode.getChildren(new NullLoadService()));
             }
-            DBeaverUtils.showErrorDialog(
-                view.getSite().getShell(),
-                "Navigator error",
-                ex.getMessage(),
-                ex);
-            // Collapse this item
-            view.getSite().getShell().getDisplay().asyncExec(new Runnable() {
-                public void run()
-                {
-                    view.getViewer().collapseToLevel(parent, 1);
-                    view.getViewer().refresh(parent);
+            catch (Throwable ex) {
+                if (ex instanceof InvocationTargetException) {
+                    ex = ((InvocationTargetException)ex).getTargetException();
                 }
-            });
-            return EMPTY_CHILDREN;
+                DBeaverUtils.showErrorDialog(
+                    view.getSite().getShell(),
+                    "Navigator error",
+                    ex.getMessage(),
+                    ex);
+                // Collapse this item
+                view.getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                    public void run()
+                    {
+                        view.getViewer().collapseToLevel(parent, 1);
+                        view.getViewer().refresh(parent);
+                    }
+                });
+                return EMPTY_CHILDREN;
+            }
         }
     }
 

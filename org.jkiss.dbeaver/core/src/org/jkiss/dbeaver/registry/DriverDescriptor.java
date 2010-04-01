@@ -219,6 +219,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return driverDefaultPort;
     }
 
+    public void setDriverDefaultPort(Integer driverDefaultPort)
+    {
+        this.driverDefaultPort = driverDefaultPort;
+    }
+
     public String getSampleURL()
     {
         return sampleURL;

@@ -3,42 +3,37 @@ package org.jkiss.dbeaver.ui.views.navigator;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.actions.RefreshTreeAction;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.utils.ViewUtils;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.event.DataSourceEvent;
-import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshableView;
-import org.jkiss.dbeaver.model.meta.IDBMListener;
+import org.jkiss.dbeaver.model.meta.DBMDataSource;
+import org.jkiss.dbeaver.model.meta.DBMEvent;
 import org.jkiss.dbeaver.model.meta.DBMModel;
-import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.meta.DBMNode;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.meta.IDBMListener;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.actions.RefreshTreeAction;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
-public class NavigatorTreeView extends ViewPart implements IDataSourceListener, IDBMListener, IMetaModelView, IRefreshableView, IDoubleClickListener
+public class NavigatorTreeView extends ViewPart implements IDBMListener, IMetaModelView, IRefreshableView, IDoubleClickListener
 {
     static Log log = LogFactory.getLog(NavigatorTreeView.class);
 
     public static final String ID = "org.jkiss.dbeaver.core.navigationView";
 
-    private DataSourceRegistry registry;
     private TreeViewer viewer;
     private DBMModel model;
     private RefreshTreeAction refreshAction;
@@ -46,7 +41,6 @@ public class NavigatorTreeView extends ViewPart implements IDataSourceListener, 
     public NavigatorTreeView()
     {
         super();
-        registry = DataSourceRegistry.getDefault();
         model = DBeaverCore.getInstance().getMetaModel();
         model.addListener(this);
     }
@@ -110,7 +104,6 @@ public class NavigatorTreeView extends ViewPart implements IDataSourceListener, 
         // Add drag and drop support
         ViewUtils.addDragAndDropSupport(this);
 
-        this.registry.addDataSourceListener(this);
         getViewSite().setSelectionProvider(viewer);
 
         // Add refresh action binding
@@ -124,9 +117,6 @@ public class NavigatorTreeView extends ViewPart implements IDataSourceListener, 
 
     public void dispose()
     {
-        if (registry != null) {
-            registry.removeDataSourceListener(this);
-        }
         if (model != null) {
             model.removeListener(this);
             model = null;
@@ -141,44 +131,29 @@ public class NavigatorTreeView extends ViewPart implements IDataSourceListener, 
         viewer.getControl().setFocus();
     }
 
-    public void dataSourceChanged(DataSourceEvent event, DBPProgressMonitor monitor)
-    {
-        if (viewer.getControl().isDisposed()) {
-            return;
-        }
-        switch (event.getAction()) {
-            case ADD:
-            case REMOVE:
-                if (!viewer.isBusy()) {
-                    viewer.refresh();
-                }
-                break;
-            case DISCONNECT:
-                DBMNode dbmNode = model.getNodeByObject(event.getDataSource());
-                if (dbmNode != null) {
-                    try {
-                        dbmNode.refreshNode(monitor);
-                    } catch (DBException ex) {
-                        log.warn(ex);
-                    }
-                }
-                viewer.collapseToLevel(event.getDataSource(), -1);
-                viewer.refresh(event.getDataSource());
-            case CHANGE:
-            case CONNECT:
-            case CONNECT_FAIL:
-                viewer.refresh(event.getDataSource(), true);
-                if (event.getSource() instanceof DBMNode && event.getAction() == DataSourceEvent.Action.CONNECT) {
-                    viewer.expandToLevel(event.getDataSource(), 1);
-                }
-                break;
-        }
-    }
-
     public void nodeChanged(DBMEvent event)
     {
         switch (event.getAction()) {
+            case ADD:
+            case REMOVE:
+                if (event.getNode() instanceof DBMDataSource) {
+                    if (!viewer.isBusy()) {
+                        viewer.refresh();
+                    }
+                }
+                break;
             case REFRESH:
+                switch (event.getNodeChange()) {
+                    case LOADED:
+                        viewer.expandToLevel(event.getNode().getObject(), 1);
+                        break;
+                    case UNLOADED:
+                        viewer.collapseToLevel(event.getNode().getObject(), -1);
+                        break;
+                    case CHANGED:
+                        this.getViewer().refresh(event.getNode().getObject());
+                        break;
+                }
                 this.getViewer().refresh(event.getNode().getObject());
                 break;
             default:

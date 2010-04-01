@@ -165,6 +165,18 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
         super.dispose();
     }
 
+    public void clearData()
+    {
+        for (TableColumn column : columns) {
+            column.dispose();
+        }
+        columns.clear();
+
+        itemsViewer.getTable().clearAll();
+        itemsViewer.setItemCount(0);
+        itemMap.clear();
+    }
+
     public void fillData()
     {
         this.fillData(null);

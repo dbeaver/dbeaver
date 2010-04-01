@@ -1,15 +1,13 @@
 package org.jkiss.dbeaver.model.meta;
 
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.jface.action.IAction;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.event.DataSourceEvent;
-import org.jkiss.dbeaver.registry.event.IDataSourceListener;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 
 import java.util.ArrayList;
@@ -19,26 +17,17 @@ import java.util.List;
 /**
  * DBMRoot
  */
-public class DBMRoot extends DBMNode implements IDataSourceListener, DBSObject
+public class DBMRoot extends DBMNode implements DBSObject
 {
-    private DataSourceRegistry registry;
     private List<DBMDataSource> dataSources = new ArrayList<DBMDataSource>();
 
-    public DBMRoot(DBMModel model, DataSourceRegistry registry)
+    public DBMRoot(DBMModel model)
     {
         super(model);
-
-        this.registry = registry;
-        this.registry.addDataSourceListener(this);
-
-        for (DataSourceDescriptor dataSource : registry.getDataSources()) {
-            dataSources.add(new DBMDataSource(this, dataSource));
-        }
     }
 
     void dispose()
     {
-        this.registry.removeDataSourceListener(this);
         for (DBMDataSource dataSource : dataSources) {
             dataSource.dispose();
         }
@@ -97,21 +86,21 @@ public class DBMRoot extends DBMNode implements IDataSourceListener, DBSObject
         return false;
     }
 
-    public void dataSourceChanged(DataSourceEvent event, DBPProgressMonitor monitor)
+    void addDataSource(DataSourceDescriptor descriptor)
     {
-        switch (event.getAction()) {
-            case ADD:
-                dataSources.add(new DBMDataSource(this, event.getDataSource()));
+        dataSources.add(
+            new DBMDataSource(this, descriptor));
+    }
+
+    void removeDataSource(DataSourceDescriptor descriptor)
+    {
+        for (Iterator<DBMDataSource> iter = dataSources.iterator(); iter.hasNext(); ) {
+            DBMDataSource dataSource = iter.next();
+            if (dataSource.getObject() == descriptor) {
+                iter.remove();
+                dataSource.dispose();
                 break;
-            case REMOVE:
-                for (Iterator<DBMDataSource> iter = dataSources.iterator(); iter.hasNext(); ) {
-                    DBMDataSource dataSource = iter.next();
-                    if (dataSource.getObject() == event.getDataSource()) {
-                        iter.remove();
-                        break;
-                    }
-                }
-                break;
+            }
         }
     }
 

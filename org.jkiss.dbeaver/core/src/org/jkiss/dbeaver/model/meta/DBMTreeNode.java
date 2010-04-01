@@ -112,7 +112,7 @@ public abstract class DBMTreeNode extends DBMNode {
         throws DBException
     {
         if (this.hasChildren() && childNodes == null) {
-            if (this.initializeNode()) {
+            if (this.initializeNode(loadService.getProgressMonitor())) {
                 this.childNodes = loadChildren(getMeta(), loadService);
             }
         }
@@ -124,7 +124,7 @@ public abstract class DBMTreeNode extends DBMNode {
         return true;
     }
 
-    protected boolean initializeNode()
+    protected boolean initializeNode(DBPProgressMonitor monitor)
         throws DBException
     {
         return true;

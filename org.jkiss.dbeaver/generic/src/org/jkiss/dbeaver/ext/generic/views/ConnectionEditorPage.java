@@ -123,11 +123,31 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
 
         Composite addrGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(4, false);
-        gl.marginHeight = 20;
-        gl.marginWidth = 20;
+        gl.marginHeight = 10;
+        gl.marginWidth = 10;
         addrGroup.setLayout(gl);
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
+
+        {
+            Label urlLabel = new Label(addrGroup, SWT.NONE);
+            urlLabel.setText("JDBC URL:");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+            urlLabel.setLayoutData(gd);
+
+            urlText = new Text(addrGroup, SWT.BORDER);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 3;
+            gd.grabExcessHorizontalSpace = true;
+            urlText.setLayoutData(gd);
+            urlText.addModifyListener(new ModifyListener() {
+                public void modifyText(ModifyEvent e)
+                {
+                    site.updateButtons();
+                    testButton.setEnabled(isComplete());
+                }
+            });
+        }
 
         Label hostLabel = new Label(addrGroup, SWT.NONE);
         hostLabel.setText("Server Host:");
@@ -141,13 +161,11 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
 
         Label portLabel = new Label(addrGroup, SWT.NONE);
         portLabel.setText("Port:");
-        gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END);
-        gd.verticalSpan = 4;
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
         portLabel.setLayoutData(gd);
 
         portText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-        gd.verticalSpan = 4;
+        gd = new GridData(GridData.CENTER);
         gd.widthHint = 40;
         portText.setLayoutData(gd);
         portText.addModifyListener(textListener);
@@ -162,6 +180,13 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
         //gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
+
+        Label emptyLabel = new Label(addrGroup, SWT.NONE);
+        emptyLabel.setText("");
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        gd.horizontalSpan = 2;
+        gd.verticalSpan = 3;
+        emptyLabel.setLayoutData(gd);
 
         Label usernameLabel = new Label(addrGroup, SWT.NONE);
         usernameLabel.setText("Username:");
@@ -183,28 +208,6 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
         gd.grabExcessHorizontalSpace = true;
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
-
-        {
-            Composite urlGroup = new Composite(addrGroup, SWT.NONE);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 4;
-            gd.verticalIndent = 10;
-            urlGroup.setLayoutData(gd);
-            gl = new GridLayout(2, false);
-            gl.marginWidth = 0;
-            gl.marginHeight = 0;
-            urlGroup.setLayout(gl);
-
-            Label urlLabel = new Label(urlGroup, SWT.NONE);
-            urlLabel.setText("JDBC URL:");
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            urlLabel.setLayoutData(gd);
-
-            urlText = new Text(urlGroup, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            urlText.setLayoutData(gd);
-        }
 
         Button driverButton = new Button(addrGroup, SWT.PUSH);
         driverButton.setText("Edit Driver Settings");
@@ -345,14 +348,28 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
         DBPConnectionInfo connectionInfo = site.getConnectionInfo();
         if (connectionInfo != null) {
             this.parseSampleURL(site.getDriver());
-            if (hostText != null) {
-                hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
-            }
-            if (portText != null) {
-                portText.setText(CommonUtils.getString(connectionInfo.getHostPort()));
-            }
-            if (dbText != null) {
-                dbText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+            if (!isCustom) {
+                if (hostText != null) {
+                    if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
+                        hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
+                    } else {
+                        hostText.setText("localhost");
+                    }
+                }
+                if (portText != null) {
+                    if (connectionInfo.getHostPort() != null) {
+                        portText.setText(CommonUtils.getString(connectionInfo.getHostPort()));
+                    } else if (site.getDriver().getDefaultPort() != null) {
+                        portText.setText(site.getDriver().getDefaultPort().toString());
+                    }
+                }
+                if (dbText != null) {
+                    dbText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+                }
+            } else {
+                hostText.setText("");
+                portText.setText("");
+                dbText.setText("");
             }
             if (usernameText != null) {
                 usernameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
@@ -360,8 +377,17 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
             if (passwordText != null) {
                 passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
             }
+
             if (urlText != null) {
-                urlText.setText(CommonUtils.getString(connectionInfo.getJdbcURL()));
+                if (connectionInfo.getJdbcURL() != null) {
+                    urlText.setText(CommonUtils.getString(connectionInfo.getJdbcURL()));
+                } else {
+                    if (!isCustom) {
+                        evaluateURL();
+                    } else {
+                        urlText.setText("");
+                    }
+                }
             }
         }
         // Reset driver provided props
@@ -407,7 +433,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
         this.urlComponents.clear();
         this.requiredProperties.clear();
 
-        if (driver.getSampleURL() != null) {
+        if (!CommonUtils.isEmpty(driver.getSampleURL())) {
             isCustom = false;
             String sampleURL = driver.getSampleURL();
             int offsetPos = 0;
@@ -447,10 +473,10 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
             isCustom = true;
         }
 
-        hostText.setEnabled(!isCustom);
-        portText.setEnabled(!isCustom);
-        dbText.setEnabled(!isCustom);
-        urlText.setEnabled(isCustom);
+        hostText.setEditable(!isCustom);
+        portText.setEditable(!isCustom);
+        dbText.setEditable(!isCustom);
+        urlText.setEditable(isCustom);
     }
 
     private void evaluateURL()
@@ -463,7 +489,10 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
                     newComponent = newComponent.replace(PATTERN_HOST, hostText.getText());
                 }
                 if (!CommonUtils.isEmpty(portText.getText())) {
-                    newComponent = newComponent.replace(PATTERN_PORT, portText.getText());
+                    Integer defaultPort = site.getDriver().getDefaultPort();
+                    if (defaultPort == null || !portText.getText().equals(defaultPort.toString())) {
+                        newComponent = newComponent.replace(PATTERN_PORT, portText.getText());
+                    }
                 }
                 if (!CommonUtils.isEmpty(dbText.getText())) {
                     newComponent = newComponent.replace(PATTERN_DATABASE, dbText.getText());

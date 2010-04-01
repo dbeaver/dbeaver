@@ -3,7 +3,6 @@ package org.jkiss.dbeaver.ui.editors.entity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -14,8 +13,10 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
+import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.meta.DBMEvent;
 import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
 import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
@@ -28,7 +29,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * EntityNodeEditor
  */
-class EntityNodeEditor extends EditorPart implements IMetaModelView, IEmbeddedWorkbenchPart
+class EntityNodeEditor extends EditorPart implements IRefreshablePart, IMetaModelView, IEmbeddedWorkbenchPart
 {
     static Log log = LogFactory.getLog(EntityNodeEditor.class);
 
@@ -130,6 +131,27 @@ class EntityNodeEditor extends EditorPart implements IMetaModelView, IEmbeddedWo
 
     public void deactivatePart()
     {
+    }
+
+    public void refreshPart(Object source)
+    {
+        // Check - do we need to load new content in editor
+        // If this is DBM event then check node change type
+        // UNLOADED usually means that connection was closed on connection's node is not removed but
+        // is in "unloaded" state.
+        // Without this check editor will try to reload it's content and thus will reopen just closed connection
+        // (by calling getChildren() on DBMNode)
+        boolean loadNewData = true;
+        if (source instanceof DBMEvent) {
+            DBMEvent.NodeChange nodeChange = ((DBMEvent) source).getNodeChange();
+            if (nodeChange == DBMEvent.NodeChange.UNLOADED) {
+                loadNewData = false;
+            }
+        }
+        itemControl.clearData();
+        if (loadNewData) {
+            itemControl.fillData(metaNode);
+        }
     }
 
 }

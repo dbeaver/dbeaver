@@ -287,6 +287,9 @@ public class DataSourceRegistry implements DBPRegistry
         xml.addAttribute("name", driver.getName());
         xml.addAttribute("class", driver.getDriverClassName());
         xml.addAttribute("url", driver.getSampleURL());
+        if (driver.getDefaultPort() != null) {
+            xml.addAttribute("port", driver.getDefaultPort().toString());
+        }
         xml.addAttribute("description", CommonUtils.getString(driver.getDescription()));
         for (DriverLibraryDescriptor lib : driver.getLibraries()) {
             if (lib.isCustom() || lib.isDisabled()) {
@@ -465,6 +468,15 @@ public class DataSourceRegistry implements DBPRegistry
                 curDriver.setDescription(atts.getValue("description"));
                 curDriver.setDriverClassName(atts.getValue("class"));
                 curDriver.setSampleURL(atts.getValue("url"));
+                String portStr = atts.getValue("port");
+                if (portStr != null) {
+                    try {
+                        curDriver.setDriverDefaultPort(new Integer(portStr));
+                    }
+                    catch (NumberFormatException e) {
+                        log.warn("Bad driver '" + curDriver.getName() + "' port specified: " + portStr);
+                    }
+                }
                 curDriver.setModified(true);
                 String disabledAttr = atts.getValue("disabled");
                 if ("true".equals(disabledAttr)) {

@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.NullLoadService;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IObjectEditor;
+import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.meta.DBMNode;
@@ -212,11 +213,25 @@ public class EntityEditor extends SplitterEditorPart implements IDBMListener, IM
         }
     }
 
+    private void refreshContent(DBMEvent event)
+    {
+        int pageCount = getPageCount();
+        for (int i = 0; i < pageCount; i++) {
+            IWorkbenchPart part = getPart(i);
+            if (part instanceof IRefreshablePart) {
+                ((IRefreshablePart)part).refreshPart(event);
+            }
+        }
+        setTitleImage(this.entityInput.getImageDescriptor().createImage());
+    }
+
     public void nodeChanged(DBMEvent event)
     {
         if (event.getNode() == entityInput.getNode()) {
             if (event.getAction() == DBMEvent.Action.REMOVE) {
                 this.getSite().getWorkbenchWindow().getActivePage().closeEditor(this, false);
+            } else if (event.getAction() == DBMEvent.Action.REFRESH) {
+                this.refreshContent(event);
             }
         }
     }

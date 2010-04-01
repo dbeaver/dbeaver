@@ -24,6 +24,7 @@ Export-Package: net.sf.jkiss.utils,
    org.eclipse.ui,
    org.eclipse.jface.viewers,
    org.eclipse.jface.dialogs",
+ org.jkiss.dbeaver.ext.ui.dialogs,
  org.jkiss.dbeaver.model;
   uses:="org.jkiss.dbeaver.model.meta,
    org.eclipse.jface.operation,

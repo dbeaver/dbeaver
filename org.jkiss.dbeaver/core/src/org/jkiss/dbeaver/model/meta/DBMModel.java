@@ -5,7 +5,11 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.event.DataSourceEvent;
+import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 
 import java.util.ArrayList;
@@ -16,7 +20,7 @@ import java.util.Map;
 /**
  * DBMModel
  */
-public class DBMModel
+public class DBMModel implements IDataSourceListener
 {
     static Log log = LogFactory.getLog(DBMModel.class);
 
@@ -30,7 +34,25 @@ public class DBMModel
     public DBMModel(DataSourceRegistry registry)
     {
         this.registry = registry;
-        this.root = new DBMRoot(this, registry);
+        this.root = new DBMRoot(this);
+        for (DataSourceDescriptor dataSource : registry.getDataSources()) {
+            root.addDataSource(dataSource);
+        }
+
+        this.registry.addDataSourceListener(this);
+    }
+
+    public void dispose()
+    {
+        this.registry.removeDataSourceListener(this);
+        this.root.dispose();
+        this.nodeMap.clear();
+        if (!listeners.isEmpty()) {
+            for (IDBMListener listener : listeners) {
+                log.warn("Listener '" + listener + "' is not unregistered from DBM model");
+            }
+        }
+        this.listeners.clear();
     }
 
     public DBeaverCore getApplication()
@@ -144,9 +166,9 @@ public class DBMModel
         }
     }
 
-    public void fireNodeRefresh(Object source, DBMNode node)
+    public void fireNodeRefresh(Object source, DBMNode node, DBMEvent.NodeChange nodeChange)
     {
-        this.fireNodeEvent(new DBMEvent(source, DBMEvent.Action.REFRESH, node));
+        this.fireNodeEvent(new DBMEvent(source, DBMEvent.Action.REFRESH, nodeChange, node));
     }
 
     void fireNodeEvent(DBMEvent event)
@@ -156,8 +178,45 @@ public class DBMModel
         }
     }
 
-    public void dispose()
+    public void dataSourceChanged(DataSourceEvent event, DBPProgressMonitor monitor)
     {
-        root.dispose();
+        switch (event.getAction()) {
+            case ADD:
+                root.addDataSource(event.getDataSource());
+                break;
+            case REMOVE:
+                root.removeDataSource(event.getDataSource());
+                break;
+            case DISCONNECT:
+            {
+                DBMNode dbmNode = getNodeByObject(event.getDataSource());
+                if (dbmNode != null) {
+                    try {
+                        dbmNode.refreshNode(monitor);
+                    }
+                    catch (DBException e) {
+                        log.error("Error refreshing datasource tree node");
+                    }
+                    fireNodeRefresh(event.getSource(), dbmNode, DBMEvent.NodeChange.UNLOADED);
+                }
+                break;
+            }
+            case CHANGE:
+            case CONNECT:
+            case CONNECT_FAIL:
+            {
+                DBMNode dbmNode = getNodeByObject(event.getDataSource());
+                if (dbmNode != null) {
+                    fireNodeRefresh(
+                        event.getSource(),
+                        dbmNode, 
+                        event.getAction() == DataSourceEvent.Action.CONNECT ?
+                            DBMEvent.NodeChange.LOADED :
+                            DBMEvent.NodeChange.CHANGED);
+                }
+                break;
+            }
+        }
     }
+
 }

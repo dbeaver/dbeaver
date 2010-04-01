@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.ext.ui.IRefreshableView;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.NewConnectionAction;
-import org.jkiss.dbeaver.ui.views.navigator.NavigatorTreeView;
 
 import java.util.Iterator;
 
@@ -119,18 +118,22 @@ public class ViewUtils
                     return;
                 }
                 IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+/*
                 if (selection.isEmpty()) {
                     manager.add(new NewConnectionAction(
                         PlatformUI.getWorkbench().getActiveWorkbenchWindow()));
                 }
+*/
                 if (selection.size() == 1) {
                     Object selectedObject = selection.getFirstElement();
                     if (selectedObject instanceof DBSObject) {
                         DBMNode selectedNode = metaModelView.getMetaModel().getNodeByObject((DBSObject)selectedObject);
-                        IAction defaultAction = selectedNode.getDefaultAction();
-                        if (defaultAction != null) {
-                            initAction(defaultAction, metaModelView.getWorkbenchPart(), selection);
-                            manager.add(defaultAction);
+                        if (selectedNode != null) {
+                            IAction defaultAction = selectedNode.getDefaultAction();
+                            if (defaultAction != null) {
+                                initAction(defaultAction, metaModelView.getWorkbenchPart(), selection);
+                                manager.add(defaultAction);
+                            }
                         }
                     }
                 }

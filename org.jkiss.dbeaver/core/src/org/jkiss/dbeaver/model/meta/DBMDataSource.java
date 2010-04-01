@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.model.DBPProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.actions.EditConnectionAction;
+import org.jkiss.dbeaver.ui.actions.OpenEntityEditorAction;
 
 /**
  * DBMDataSource
@@ -18,7 +19,6 @@ public class DBMDataSource extends DBMTreeNode
 
     private DataSourceDescriptor dataSource;
     private DBXTreeNode treeRoot;
-    private IAction defaultAction = new EditConnectionAction();
 
     public DBMDataSource(DBMRoot parentNode, DataSourceDescriptor dataSource)
     {
@@ -75,7 +75,13 @@ public class DBMDataSource extends DBMTreeNode
 
     public IAction getDefaultAction()
     {
-        return defaultAction;
+        if (dataSource.isConnected()) {
+            OpenEntityEditorAction action = new OpenEntityEditorAction();
+            action.setText("Edit");
+            return action;
+        } else {
+            return null;
+        }
     }
 
     public boolean isLazyNode()
@@ -88,7 +94,7 @@ public class DBMDataSource extends DBMTreeNode
         return treeRoot;
     }
 
-    protected boolean initializeNode()
+    protected boolean initializeNode(DBPProgressMonitor monitor)
         throws DBException
     {
         if (!dataSource.isConnected()) {

@@ -44,6 +44,7 @@ public class EditDriverDialog extends Dialog
     private Text driverDescText;
     private Text driverClassText;
     private Text driverURLText;
+    private Text driverPortText;
 
     public EditDriverDialog(Shell shell, DriverDescriptor driver)
     {
@@ -125,11 +126,24 @@ public class EditDriverDialog extends Dialog
             });
 
             Label driverURLLabel = new Label(propsGroup, SWT.NONE);
-            driverURLLabel.setText("JDBC URL: ");
+            driverURLLabel.setText("Sample URL: ");
             driverURLText = new Text(propsGroup, SWT.BORDER);
             driverURLText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             driverURLText.setText(CommonUtils.getString(driver.getSampleURL()));
             driverURLText.addModifyListener(new ModifyListener()
+            {
+                public void modifyText(ModifyEvent e)
+                {
+                    onChangeProperty();
+                }
+            });
+
+            Label defaultPortLabel = new Label(propsGroup, SWT.NONE);
+            defaultPortLabel.setText("Default Port: ");
+            driverPortText= new Text(propsGroup, SWT.BORDER);
+            //driverPortText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            driverPortText.setText(driver.getDefaultPort() == null ? "" : driver.getDefaultPort().toString());
+            driverPortText.addModifyListener(new ModifyListener()
             {
                 public void modifyText(ModifyEvent e)
                 {
@@ -297,17 +311,29 @@ public class EditDriverDialog extends Dialog
     {
         getButton(IDialogConstants.OK_ID).setEnabled(
             !CommonUtils.isEmpty(driverNameText.getText()) &&
-            !CommonUtils.isEmpty(driverClassText.getText()) &&
-            !CommonUtils.isEmpty(driverURLText.getText()));
+            !CommonUtils.isEmpty(driverClassText.getText()));
     }
 
     protected void okPressed()
     {
+        // Check props
+        Integer portNumber = null;
+        if (!CommonUtils.isEmpty(driverPortText.getText())) {
+            try {
+                portNumber = new Integer(driverPortText.getText());
+            }
+            catch (NumberFormatException e) {
+                DBeaverUtils.showErrorDialog(getShell(), "Invalid parameters", "Bad driver port specified");
+                return;
+            }
+        }
+
         // Set props
         driver.setName(driverNameText.getText());
         driver.setDescription(CommonUtils.getString(driverDescText.getText()));
         driver.setDriverClassName(driverClassText.getText());
         driver.setSampleURL(driverURLText.getText());
+        driver.setDriverDefaultPort(portNumber);
         driver.setModified(true);
 
         // Set libraries

@@ -223,6 +223,12 @@
                 </enablement>
             </action>
             <action
+                class="org.jkiss.dbeaver.ui.actions.EditConnectionAction"
+                id="org.jkiss.dbeaver.core.editConnectionAction"
+                label="Edit Connection"
+                icon="icons/tree/edit_item.png">
+            </action>
+            <action
                 class="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
                 id="org.jkiss.dbeaver.core.openSQLEditor"
                 label="SQL Editor"

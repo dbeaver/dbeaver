@@ -204,6 +204,9 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
             {
                 if (event.getResult().isOK()) {
                     DataSourceDescriptor.this.dataSource = ((ConnectJob)event.getJob()).getDataSource();
+                    if (DataSourceDescriptor.this.dataSource == null) {
+                        log.error("Null datasource returned from connector");
+                    }
                     if (!isSavePassword()) {
                         // Rest password back to null
                         getConnectionInfo().setUserName(oldName);
