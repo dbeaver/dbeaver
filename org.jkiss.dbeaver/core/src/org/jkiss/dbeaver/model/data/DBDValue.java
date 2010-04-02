@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 
 /**
  * Data value container
@@ -11,6 +12,7 @@ public class DBDValue {
 
     private DBPDataSource dataSource;
     private DBCResultSet resultSet;
+    private DBCColumnMetaData columnMetaData;
     private int columnIndex;
     private Object columnValue;
     private DBSDataType dataType;
@@ -35,6 +37,14 @@ public class DBDValue {
 
     public void setResultSet(DBCResultSet resultSet) {
         this.resultSet = resultSet;
+    }
+
+    public DBCColumnMetaData getColumnMetaData() {
+        return columnMetaData;
+    }
+
+    public void setColumnMetaData(DBCColumnMetaData columnMetaData) {
+        this.columnMetaData = columnMetaData;
     }
 
     public int getColumnIndex() {

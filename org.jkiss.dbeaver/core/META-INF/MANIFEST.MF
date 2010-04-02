@@ -42,6 +42,7 @@ Export-Package: net.sf.jkiss.utils,
    org.jkiss.dbeaver.model,
    org.jkiss.dbeaver.model.struct,
    org.jkiss.dbeaver.model.dbc",
+ org.jkiss.dbeaver.model.runtime;uses:="org.jkiss.dbeaver.model",
  org.jkiss.dbeaver.model.struct;uses:="org.eclipse.jface.preference,org.jkiss.dbeaver.model",
  org.jkiss.dbeaver.runtime.load;uses:="org.eclipse.core.runtime,org.apache.commons.logging",
  org.jkiss.dbeaver.ui;

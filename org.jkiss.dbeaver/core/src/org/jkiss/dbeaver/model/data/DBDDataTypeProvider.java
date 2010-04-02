@@ -1,7 +1,5 @@
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSource;
 
 /**
@@ -17,5 +15,7 @@ public interface DBDDataTypeProvider
 
     DBDValueHandler createHandler(
         DBPDataSource dataSource,
+        int typeNumber,
         String typeName);
+
 }

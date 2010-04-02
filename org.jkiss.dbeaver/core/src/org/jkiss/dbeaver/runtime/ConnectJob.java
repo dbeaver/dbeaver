@@ -53,7 +53,7 @@ public class ConnectJob extends AbstractJob
                 DBeaverCore.getInstance().getPluginID(),
                 "Connected");
         }
-        catch (Exception ex) {
+        catch (Throwable ex) {
             return new Status(
                 Status.ERROR,
                 DBeaverCore.getInstance().getPluginID(),
