@@ -71,8 +71,7 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
 
     public void createPartControl(Composite parent)
     {
-        resultSetView = new ResultSetViewer(parent, getSite());
-        resultSetView.setResultSetProvider(this);
+        resultSetView = new ResultSetViewer(parent, getSite(), this);
     }
 
     public void setFocus()
@@ -140,7 +139,7 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
 
     public boolean isConnected()
     {
-        return table.getDataSource().getContainer().isConnected();
+        return table != null && table.getDataSource().getContainer().isConnected();
     }
 
     public void extractResultSetData(int offset)
@@ -157,7 +156,8 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
         final SQLQueryJob job = new SQLQueryJob(
             "Table " + tableName,
             curSession,
-            Collections.singletonList(scriptLine));
+            Collections.singletonList(scriptLine),
+            resultSetView.getDataPump());
 
         job.addQueryListener(new DefaultQueryListener()
         {
@@ -169,8 +169,8 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
                         if (result.getError() != null) {
                             resultSetView.setStatus(result.getError().getMessage(), true);
                             log.error(result.getError().getMessage());
-                        } else if (result.getRows() != null) {
-                            resultSetView.setData(result.getMetaData(), result.getRows());
+                        } else if (result.getRowCount() != null) {
+                            resultSetView.setStatus(result.getRowCount() + " row(s)", false);
                         } else {
                             resultSetView.setStatus("Empty resultset", false);
                         }

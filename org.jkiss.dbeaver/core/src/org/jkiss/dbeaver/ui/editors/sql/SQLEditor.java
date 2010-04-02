@@ -240,8 +240,7 @@ public class SQLEditor extends TextEditor
             });
             resultTabs.setSimple(true);
 
-            resultsView = new ResultSetViewer(resultTabs, getSite());
-            resultsView.setResultSetProvider(this);
+            resultsView = new ResultSetViewer(resultTabs, getSite(), this);
 
             planView = new ExplainPlanViewer(resultTabs);
             logViewer = new SQLLogViewer(resultTabs);
@@ -504,7 +503,7 @@ public class SQLEditor extends TextEditor
             }
             startPos = document.getLineOffset(firstLine);
             endPos = document.getLineOffset(lastLine) + document.getLineLength(lastLine);
-            String lastDelimiter = document.getLineDelimiter(lastLine);
+            //String lastDelimiter = document.getLineDelimiter(lastLine);
             //if (lastDelimiter != null) {
             //    endPos += lastDelimiter.length();
             //}
@@ -656,7 +655,8 @@ public class SQLEditor extends TextEditor
             final SQLQueryJob job = new SQLQueryJob(
                 isSingleQuery ? "Execute query" : "Execute script",
                 curSession,
-                queries);
+                queries,
+                resultsView.getDataPump());
             job.addQueryListener(new SQLQueryListener() {
                 public void onStartJob()
                 {
@@ -692,9 +692,8 @@ public class SQLEditor extends TextEditor
                         {
                             if (result.getError() == null) {
                                 String status;
-                                if (result.getRows() != null) {
-                                    resultsView.setData(result.getMetaData(), result.getRows());
-                                    status = String.valueOf(result.getRows().size()) + " row(s) fetched";
+                                if (result.getRowCount() != null) {
+                                    status = result.getRowCount() + " row(s) fetched";
                                 } else if (result.getUpdateCount() != null) {
                                     if (result.getUpdateCount() == 0) {
                                         status = "No rows updated";

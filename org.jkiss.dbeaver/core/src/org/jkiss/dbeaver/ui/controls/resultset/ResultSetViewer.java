@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.view.TextViewDialog;
 import org.jkiss.dbeaver.ui.controls.resultset.view.ValueViewDialog;
 import org.jkiss.dbeaver.ui.controls.resultset.view.LobViewDialog;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.sql.SQLQueryDataPump;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     private ResultSetMode mode;
     private GridControl grid;
     private ResultSetProvider resultSetProvider;
+    private ResultSetDataPump dataPump;
     private IThemeManager themeManager;
 
     private DBCResultSetMetaData metaData;
@@ -67,11 +69,11 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     private ToolItem itemLast;
     private ToolItem itemRefresh;
 
-    public ResultSetViewer(Composite parent, IWorkbenchPartSite site)
+    public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
     {
         super();
-        mode = ResultSetMode.GRID;
-        grid = new GridControl(
+        this.mode = ResultSetMode.GRID;
+        this.grid = new GridControl(
             parent,
             SWT.FULL_SELECTION | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
             site,
@@ -79,23 +81,24 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
         createStatusBar(grid);
 
-        themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
-        themeManager.addPropertyChangeListener(this);
-        grid.addDisposeListener(new DisposeListener() {
+        this.resultSetProvider = resultSetProvider;
+        this.dataPump = new ResultSetDataPump(this);
+
+        this.themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
+        this.themeManager.addPropertyChangeListener(this);
+        this.grid.addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e)
             {
                 dispose();
             }
         });
-        grid.addCursorChangeListener(new Listener() {
+        this.grid.addCursorChangeListener(new Listener() {
             public void handleEvent(Event event)
             {
                 onChangeGridCursor(event.x, event.y);
             }
         });
         applyThemeSettings();
-
-        updateGridCursor();
     }
 
     private void updateGridCursor()
@@ -260,9 +263,9 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         return resultSetProvider;
     }
 
-    public void setResultSetProvider(ResultSetProvider resultSetProvider)
+    public ResultSetDataPump getDataPump()
     {
-        this.resultSetProvider = resultSetProvider;
+        return dataPump;
     }
 
     public void dispose()
@@ -533,6 +536,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         if (resultSetProvider != null) {
             resultSetProvider.extractResultSetData(0);
         }
+        updateGridCursor();
     }
 
 }

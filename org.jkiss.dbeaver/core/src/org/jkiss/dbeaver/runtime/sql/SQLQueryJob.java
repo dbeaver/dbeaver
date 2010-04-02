@@ -7,12 +7,11 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DataSourceJob;
 import org.jkiss.dbeaver.ui.editors.sql.SQLScriptLine;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
@@ -32,8 +31,8 @@ public class SQLQueryJob extends DataSourceJob
 
     private DBCSession session;
     private List<SQLScriptLine> queries;
+    private SQLQueryDataPump dataPump;
 
-    private IPreferenceStore preferenceStore;
     private SQLScriptCommitType commitType;
     private SQLScriptErrorHandling errorHandling;
     private boolean fetchResultSets;
@@ -49,7 +48,8 @@ public class SQLQueryJob extends DataSourceJob
     public SQLQueryJob(
         String name,
         DBCSession session,
-        List<SQLScriptLine> queries)
+        List<SQLScriptLine> queries,
+        SQLQueryDataPump dataPump)
     {
         super(
             name,
@@ -57,12 +57,16 @@ public class SQLQueryJob extends DataSourceJob
             session.getDataSource());
         this.session = session;
         this.queries = queries;
+        this.dataPump = dataPump;
 
-        this.preferenceStore = session.getDataSource().getContainer().getPreferenceStore();
-        this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_COMMIT_TYPE));
-        this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_ERROR_HANDLING));
-        this.fetchResultSets = (queries.size() == 1);
-        this.maxResults = preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
+        {
+            // Read config form preference store
+            IPreferenceStore preferenceStore = session.getDataSource().getContainer().getPreferenceStore();
+            this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_COMMIT_TYPE));
+            this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_ERROR_HANDLING));
+            this.fetchResultSets = (queries.size() == 1);
+            this.maxResults = preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
+        }
     }
 
     public void addQueryListener(SQLQueryListener listener)
@@ -275,6 +279,24 @@ public class SQLQueryJob extends DataSourceJob
         if (curStatement.hasResultSet()) {
             DBCResultSet resultSet = curStatement.getResultSet();
             if (resultSet != null) {
+                int rowCount = 0;
+                dataPump.fetchStart(resultSet);
+                try {
+                    while (rowCount < maxResults && resultSet.next()) {
+                        rowCount++;
+                        
+                        if (rowCount % 10 == 0) {
+                            monitor.subTask(rowCount + " rows fetched");
+                        }
+
+                        dataPump.fetchRow(resultSet);
+                    }
+                }
+                finally {
+                    dataPump.fetchEnd(resultSet);
+                }
+                result.setRowCount(rowCount);
+/*
                 DBCResultSetMetaData metaData = resultSet.getMetaData();
                 List<Object[]> rows = new ArrayList<Object[]>();
                 result.setResultSet(metaData, rows);
@@ -296,7 +318,8 @@ public class SQLQueryJob extends DataSourceJob
                         monitor.subTask(rows.size() + " rows fetched");
                     }
                 }
-                monitor.subTask(rows.size() + " rows fetched");
+*/
+                monitor.subTask(rowCount + " rows fetched");
             }
         }
     }

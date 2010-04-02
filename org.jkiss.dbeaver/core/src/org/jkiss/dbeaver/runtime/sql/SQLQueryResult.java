@@ -1,17 +1,14 @@
 package org.jkiss.dbeaver.runtime.sql;
 
-import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
-
-import java.util.List;
-
 /**
  * SQLQueryResult
  */
 public class SQLQueryResult
 {
     private String query;
-    private DBCResultSetMetaData metaData;
-    private List<Object[]> rows;
+    //private DBCResultSetMetaData metaData;
+    //private List<Object[]> rows;
+    private Integer rowCount;
     private Integer updateCount;
     private Throwable error;
     private long queryTime;
@@ -26,6 +23,7 @@ public class SQLQueryResult
         return query;
     }
 
+/*
     public DBCResultSetMetaData getMetaData()
     {
         return metaData;
@@ -40,6 +38,18 @@ public class SQLQueryResult
     {
         this.metaData = metaData;
         this.rows = rows;
+    }
+
+*/
+
+    public Integer getRowCount()
+    {
+        return rowCount;
+    }
+
+    public void setRowCount(Integer rowCount)
+    {
+        this.rowCount = rowCount;
     }
 
     public Integer getUpdateCount()
