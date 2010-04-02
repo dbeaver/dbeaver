@@ -2,7 +2,7 @@ package org.jkiss.dbeaver.runtime.load.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
@@ -13,9 +13,9 @@ class LoadingUIJob<RESULT> extends AbstractUIJob {
 
     private ILoadService<RESULT> loadService;
     private ILoadVisualizer<RESULT> visualizer;
-    private DBPProgressMonitor mainMonitor;
+    private DBRProgressMonitor mainMonitor;
 
-    LoadingUIJob(LoadingJob<RESULT> loadingJob, DBPProgressMonitor mainMonitor)
+    LoadingUIJob(LoadingJob<RESULT> loadingJob, DBRProgressMonitor mainMonitor)
     {
         super(loadingJob.getName());
         this.loadService = loadingJob.getLoadingService();
@@ -25,7 +25,7 @@ class LoadingUIJob<RESULT> extends AbstractUIJob {
         setRule(new NonConflictingRule());
     }
 
-    public IStatus runInUIThread(DBPProgressMonitor monitor)
+    public IStatus runInUIThread(DBRProgressMonitor monitor)
     {
         if (mainMonitor.isCanceled()) {
             // Try to cancel current load service

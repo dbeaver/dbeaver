@@ -6,7 +6,7 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDriver;
-import org.jkiss.dbeaver.model.DBPRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
 /**
  * DBSDataSourceContainer
@@ -31,7 +31,7 @@ public interface DBSDataSourceContainer extends DBSObject
      */
     DBPDataSource getDataSource();
 
-    DBPRunnableContext getViewCallback();
+    DBRRunnableContext getViewCallback();
 
     boolean isShowSystemObjects();
 

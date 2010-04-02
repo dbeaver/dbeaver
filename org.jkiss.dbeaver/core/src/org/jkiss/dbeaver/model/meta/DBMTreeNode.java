@@ -6,7 +6,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeIcon;
@@ -124,7 +124,7 @@ public abstract class DBMTreeNode extends DBMNode {
         return true;
     }
 
-    protected boolean initializeNode(DBPProgressMonitor monitor)
+    protected boolean initializeNode(DBRProgressMonitor monitor)
         throws DBException
     {
         return true;
@@ -158,7 +158,7 @@ public abstract class DBMTreeNode extends DBMNode {
         if (!meta.hasChildren()) {
             return;
         }
-        DBPProgressMonitor monitor = loadService.getProgressMonitor();
+        DBRProgressMonitor monitor = loadService.getProgressMonitor();
         List<DBXTreeNode> childMetas = meta.getChildren();
         monitor.beginTask("Load items ...", childMetas.size());
 

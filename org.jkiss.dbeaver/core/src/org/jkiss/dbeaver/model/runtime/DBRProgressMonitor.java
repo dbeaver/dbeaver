@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.runtime;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -6,7 +6,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
  * Database progress monitor.
  * Similar to IProgressMonitor but with DBP specific features
  */
-public interface DBPProgressMonitor {
+public interface DBRProgressMonitor {
 
     /**
      * Obtains eclipse progress monitor.

@@ -2,7 +2,7 @@ package org.jkiss.dbeaver.runtime.load.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
@@ -37,7 +37,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         return visualizer;
     }
 
-    protected IStatus run(DBPProgressMonitor monitor)
+    protected IStatus run(DBRProgressMonitor monitor)
     {
         LoadingUIJob<RESULT> updateUIJob = new LoadingUIJob<RESULT>(this, monitor);
         updateUIJob.schedule();

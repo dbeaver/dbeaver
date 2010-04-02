@@ -6,7 +6,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * DisconnectJob
@@ -21,7 +21,7 @@ public class DisconnectJob extends DataSourceJob
         super("Disconnect from " + dataSource.getContainer().getName(), null, dataSource);
     }
 
-    protected IStatus run(DBPProgressMonitor monitor)
+    protected IStatus run(DBRProgressMonitor monitor)
     {
         try {
             getDataSource().close();

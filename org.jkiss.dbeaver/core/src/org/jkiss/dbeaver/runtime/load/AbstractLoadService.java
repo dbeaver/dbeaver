@@ -1,6 +1,6 @@
 package org.jkiss.dbeaver.runtime.load;
 
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Lazy loading service
@@ -8,7 +8,7 @@ import org.jkiss.dbeaver.model.DBPProgressMonitor;
  */
 public abstract class AbstractLoadService<RESULT> implements ILoadService<RESULT> {
     private String serviceName;
-    private DBPProgressMonitor progressMonitor;
+    private DBRProgressMonitor progressMonitor;
     private ILoadService nestedService;
 
     protected AbstractLoadService(String serviceName)
@@ -26,12 +26,12 @@ public abstract class AbstractLoadService<RESULT> implements ILoadService<RESULT
         return serviceName;
     }
 
-    public DBPProgressMonitor getProgressMonitor()
+    public DBRProgressMonitor getProgressMonitor()
     {
         return progressMonitor;
     }
 
-    public void setProgressMonitor(DBPProgressMonitor monitor)
+    public void setProgressMonitor(DBRProgressMonitor monitor)
     {
         this.progressMonitor = monitor;
     }

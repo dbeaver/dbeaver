@@ -3,7 +3,7 @@ package org.jkiss.dbeaver.runtime.sql;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
@@ -23,7 +23,7 @@ public class SQLQueryErrorJob extends AbstractUIJob {
         this.script = script;
     }
 
-    public IStatus runInUIThread(DBPProgressMonitor monitor)
+    public IStatus runInUIThread(DBRProgressMonitor monitor)
     {
         SQLQueryErrorDialog dialog = new SQLQueryErrorDialog(
             null,

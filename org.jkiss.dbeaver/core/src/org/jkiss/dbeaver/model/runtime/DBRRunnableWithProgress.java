@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.runtime;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -6,9 +6,9 @@ import java.lang.reflect.InvocationTargetException;
  * Database progress monitor.
  * Similar to IProgressMonitor but with DBP specific features
  */
-public interface DBPRunnableWithProgress {
+public interface DBRRunnableWithProgress {
 
-    public void run(DBPProgressMonitor monitor)
+    public void run(DBRProgressMonitor monitor)
         throws InvocationTargetException, InterruptedException;
 
 }

@@ -3,7 +3,7 @@ package org.jkiss.dbeaver.model.meta;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.actions.OpenFolderEditorAction;
@@ -75,7 +75,7 @@ public class DBMTreeFolder extends DBMTreeNode implements DBSFolder
         return false;
     }
 
-    public DBMNode refreshNode(DBPProgressMonitor monitor)
+    public DBMNode refreshNode(DBRProgressMonitor monitor)
         throws DBException
     {
         return this.getParentNode().refreshNode(monitor);

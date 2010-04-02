@@ -22,8 +22,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPRunnableContext;
-import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
@@ -40,7 +40,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * DBeaverCore
  */
-public class DBeaverCore implements DBPApplication, DBPRunnableContext {
+public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     static Log log = LogFactory.getLog(DBeaverCore.class);
 
@@ -210,7 +210,7 @@ public class DBeaverCore implements DBPApplication, DBPRunnableContext {
         return propertiesAdapter;
     }
 
-    public void run(boolean fork, boolean cancelable, final DBPRunnableWithProgress runnable)
+    public void run(boolean fork, boolean cancelable, final DBRRunnableWithProgress runnable)
         throws InvocationTargetException, InterruptedException
     {
         DBeaverUtils.run(this.getWorkbench().getProgressService(), fork, cancelable, runnable);

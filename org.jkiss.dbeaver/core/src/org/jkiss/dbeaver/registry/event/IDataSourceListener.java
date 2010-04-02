@@ -1,11 +1,11 @@
 package org.jkiss.dbeaver.registry.event;
 
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * IDataSourceListener
  */
 public interface IDataSourceListener
 {
-    void dataSourceChanged(DataSourceEvent event, DBPProgressMonitor monitor);
+    void dataSourceChanged(DataSourceEvent event, DBRProgressMonitor monitor);
 }

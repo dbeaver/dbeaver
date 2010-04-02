@@ -7,7 +7,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
@@ -75,7 +75,7 @@ public class SQLQueryJob extends DataSourceJob
         this.queryListeners.remove(listener);
     }
 
-    protected IStatus run(DBPProgressMonitor monitor)
+    protected IStatus run(DBRProgressMonitor monitor)
     {
         startJob();
         try {
@@ -202,7 +202,7 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeSingleQuery(DBPProgressMonitor monitor, SQLScriptLine query)
+    private boolean executeSingleQuery(DBRProgressMonitor monitor, SQLScriptLine query)
     {
         lastError = null;
 
@@ -268,7 +268,7 @@ public class SQLQueryJob extends DataSourceJob
         return true;
     }
 
-    private void fetchQueryData(SQLQueryResult result, DBPProgressMonitor monitor)
+    private void fetchQueryData(SQLQueryResult result, DBRProgressMonitor monitor)
         throws DBCException
     {
         monitor.subTask("Fetch result set");

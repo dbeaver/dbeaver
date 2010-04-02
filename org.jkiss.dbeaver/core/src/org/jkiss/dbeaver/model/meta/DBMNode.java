@@ -8,7 +8,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 
@@ -91,7 +91,7 @@ public abstract class DBMNode
      * @return real refreshed node or null if nothing was refreshed
      * @throws DBException on any internal exception
      */
-    public abstract DBMNode refreshNode(DBPProgressMonitor monitor) throws DBException;
+    public abstract DBMNode refreshNode(DBRProgressMonitor monitor) throws DBException;
 
     public abstract IAction getDefaultAction();
 

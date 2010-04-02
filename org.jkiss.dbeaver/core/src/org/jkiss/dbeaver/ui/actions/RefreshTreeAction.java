@@ -13,8 +13,8 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
-import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.meta.DBMEvent;
@@ -70,8 +70,8 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
 
             try {
-                DBeaverUtils.run(workbenchWindow, true, true, new DBPRunnableWithProgress() {
-                    public void run(DBPProgressMonitor monitor)
+                DBeaverUtils.run(workbenchWindow, true, true, new DBRRunnableWithProgress() {
+                    public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
                         int count = 1;
@@ -93,7 +93,7 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
         }
     }
 
-    private void refreshObject(DBPProgressMonitor monitor, Object object)
+    private void refreshObject(DBRProgressMonitor monitor, Object object)
     {
         if (this.targetPart instanceof IMetaModelView) {
             IMetaModelView view = (IMetaModelView)this.targetPart;
@@ -110,7 +110,7 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
             if (node != null) {
                 final DBMNode refNode = node;
                 new AbstractUIJob("Refresh tree node") {
-                    public IStatus runInUIThread(DBPProgressMonitor monitor)
+                    public IStatus runInUIThread(DBRProgressMonitor monitor)
                     {
                         model.fireNodeRefresh(targetPart, refNode, DBMEvent.NodeChange.CHANGED);
                         return Status.OK_STATUS;

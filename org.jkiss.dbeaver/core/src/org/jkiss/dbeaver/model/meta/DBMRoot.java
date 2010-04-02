@@ -4,10 +4,9 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 
 import java.util.ArrayList;
@@ -69,7 +68,7 @@ public class DBMRoot extends DBMNode implements DBSObject
         return dataSources;
     }
 
-    public DBMNode refreshNode(DBPProgressMonitor monitor)
+    public DBMNode refreshNode(DBRProgressMonitor monitor)
         throws DBException
     {
         // Nothing to do

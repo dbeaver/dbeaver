@@ -3,7 +3,7 @@ package org.jkiss.dbeaver.runtime;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**
@@ -22,6 +22,6 @@ public abstract class AbstractJob extends Job
         return this.run(DBeaverUtils.makeMonitor(monitor));
     }
 
-    protected abstract IStatus run(DBPProgressMonitor monitor);
+    protected abstract IStatus run(DBRProgressMonitor monitor);
 
 }

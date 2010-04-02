@@ -17,8 +17,8 @@ import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.meta.DBMEvent;
-import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.utils.ViewUtils;
@@ -112,8 +112,8 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, IMetaMode
                     getSite().getWorkbenchWindow(),
                     false,
                     false,
-                    new DBPRunnableWithProgress() {
-                        public void run(DBPProgressMonitor monitor)
+                    new DBRRunnableWithProgress() {
+                        public void run(DBRProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException
                         {
                             itemControl.fillData(metaNode);

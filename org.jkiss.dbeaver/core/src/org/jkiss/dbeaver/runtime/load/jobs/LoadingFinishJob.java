@@ -2,7 +2,7 @@ package org.jkiss.dbeaver.runtime.load.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 
@@ -19,7 +19,7 @@ class LoadingFinishJob<RESULT> extends AbstractUIJob {
         setRule(new NonConflictingRule());
     }
 
-    public IStatus runInUIThread(DBPProgressMonitor monitor)
+    public IStatus runInUIThread(DBRProgressMonitor monitor)
     {
         visualizer.completeLoading(result);
         return Status.OK_STATUS;

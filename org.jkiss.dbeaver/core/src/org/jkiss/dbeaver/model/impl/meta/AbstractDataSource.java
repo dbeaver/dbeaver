@@ -7,7 +7,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.dbc.DBCConnector;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
@@ -131,7 +131,7 @@ public abstract class AbstractDataSource
         }
     }
 
-    public void initialize(DBPProgressMonitor monitor)
+    public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
         try {

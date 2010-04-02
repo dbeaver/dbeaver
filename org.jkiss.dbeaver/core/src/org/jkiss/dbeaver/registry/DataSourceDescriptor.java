@@ -17,8 +17,8 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
-import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
@@ -246,9 +246,9 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
         }
 */
         try {
-            DBeaverCore.getInstance().run(true, true, new DBPRunnableWithProgress()
+            DBeaverCore.getInstance().run(true, true, new DBRRunnableWithProgress()
             {
-                public void run(DBPProgressMonitor monitor)
+                public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
                     try {

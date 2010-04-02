@@ -4,8 +4,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.ui.DBeaverExtensions;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
-import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -89,9 +89,9 @@ public class NewConnectionWizard extends ConnectionWizard<NewConnectionDialog>
         addPage(pageDrivers);
 
         try {
-            registry.getCore().run(true, true, new DBPRunnableWithProgress()
+            registry.getCore().run(true, true, new DBRRunnableWithProgress()
             {
-                public void run(DBPProgressMonitor monitor)
+                public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
 /*

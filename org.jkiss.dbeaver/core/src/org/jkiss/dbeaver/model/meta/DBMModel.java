@@ -5,7 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
@@ -178,7 +178,7 @@ public class DBMModel implements IDataSourceListener
         }
     }
 
-    public void dataSourceChanged(DataSourceEvent event, DBPProgressMonitor monitor)
+    public void dataSourceChanged(DataSourceEvent event, DBRProgressMonitor monitor)
     {
         switch (event.getAction()) {
             case ADD:

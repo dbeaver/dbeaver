@@ -1,12 +1,12 @@
 package org.jkiss.dbeaver.runtime;
 
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * Progress monitor null implementation
  */
-public class NullProgressMonitor implements DBPProgressMonitor {
+public class NullProgressMonitor implements DBRProgressMonitor {
 
     public IProgressMonitor getNestedMonitor()
     {

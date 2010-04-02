@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.DBPRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
@@ -180,7 +180,7 @@ public class DataSourceRegistry implements DBPRegistry
         Display display = this.core.getWorkbench().getDisplay();
         if (!display.isDisposed()) {
             new AbstractUIJob("Notify datasource listeners") {
-                public IStatus runInUIThread(DBPProgressMonitor monitor)
+                public IStatus runInUIThread(DBRProgressMonitor monitor)
                 {
                     for (IDataSourceListener listener : listeners) {
                         listener.dataSourceChanged(event, monitor);

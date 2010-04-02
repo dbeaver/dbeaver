@@ -8,8 +8,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
-import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -44,9 +44,9 @@ public abstract class ConnectionWizard<CONTAINER extends IWizardContainer>  exte
 
     public void testConnection(final DBPConnectionInfo connectionInfo)
     {
-        DBPRunnableWithProgress op = new DBPRunnableWithProgress()
+        DBRRunnableWithProgress op = new DBRRunnableWithProgress()
         {
-            public void run(DBPProgressMonitor monitor)
+            public void run(DBRProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException
             {
                 monitor.beginTask("Obtain connection", 3);

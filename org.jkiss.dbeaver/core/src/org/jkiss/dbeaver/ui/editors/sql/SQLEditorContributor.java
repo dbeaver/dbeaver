@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -579,7 +579,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         }
     }
 
-    public void dataSourceChanged(DataSourceEvent event, DBPProgressMonitor monitor)
+    public void dataSourceChanged(DataSourceEvent event, DBRProgressMonitor monitor)
     {
         SQLEditor editor = getEditor();
         if (editor != null) {

@@ -12,8 +12,8 @@ import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
-import org.jkiss.dbeaver.model.DBPRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 
 import java.lang.reflect.InvocationTargetException;
@@ -97,7 +97,7 @@ public class DBeaverUtils
         return msg.toString().trim();
     }
     
-    public static DBPProgressMonitor makeMonitor(IProgressMonitor monitor)
+    public static DBRProgressMonitor makeMonitor(IProgressMonitor monitor)
     {
         return new DefaultProgressMonitor(monitor);
     }
@@ -106,7 +106,7 @@ public class DBeaverUtils
         IRunnableContext runnableContext,
         boolean fork,
         boolean cancelable,
-        final DBPRunnableWithProgress runnableWithProgress)
+        final DBRRunnableWithProgress runnableWithProgress)
         throws InvocationTargetException, InterruptedException
     {
         runnableContext.run(fork, cancelable, new IRunnableWithProgress() {

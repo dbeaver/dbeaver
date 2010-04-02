@@ -7,7 +7,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.progress.IProgressConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
 /**
@@ -36,7 +36,7 @@ public class ConnectJob extends AbstractJob
     }
 
     @Override
-    protected IStatus run(DBPProgressMonitor monitor)
+    protected IStatus run(DBRProgressMonitor monitor)
     {
         monitor.beginTask("Open Datasource ...", 2);
         try {
