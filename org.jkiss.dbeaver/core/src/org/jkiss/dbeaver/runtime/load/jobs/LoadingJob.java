@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -46,10 +47,10 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             result = this.loadingService.evaluate();
         }
         catch (InvocationTargetException e) {
-            return new Status(Status.ERROR, DBeaverConstants.PLUGIN_ID, "Loading error", e.getTargetException());
+            return DBeaverUtils.makeExceptionStatus("Loading error", e.getTargetException());
         }
         catch (InterruptedException e) {
-            return new Status(Status.CANCEL, DBeaverConstants.PLUGIN_ID, "Loading interrupted", e);
+            return new Status(Status.CANCEL, DBeaverConstants.PLUGIN_ID, "Loading interrupted");
         }
         finally {
             new LoadingFinishJob<RESULT>(visualizer, result).schedule();

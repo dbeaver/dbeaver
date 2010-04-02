@@ -55,6 +55,8 @@ public class DBeaverUtils
             new Status(IStatus.ERROR, DBeaverCore.getInstance().getPluginID(), message));
     }
 
+
+
     public static IStatus makeExceptionStatus(Throwable ex)
     {
         Throwable cause = ex.getCause();
@@ -74,13 +76,25 @@ public class DBeaverUtils
         }
     }
 
+    public static IStatus makeExceptionStatus(String message, Throwable ex)
+    {
+        return new MultiStatus(
+            DBeaverCore.getInstance().getPluginID(),
+            0,
+            new IStatus[]{makeExceptionStatus(ex)},
+            message + " - " + getExceptionMessage(CommonUtils.getRootCause(ex)),
+            null);
+    }
+
     public static String getExceptionMessage(Throwable ex)
     {
-        StringBuilder msg = new StringBuilder(CommonUtils.getShortClassName(ex.getClass()));
+        StringBuilder msg = new StringBuilder(/*CommonUtils.getShortClassName(ex.getClass())*/);
         if (ex.getMessage() != null) {
-            msg.append(" - ").append(ex.getMessage());
+            msg.append(ex.getMessage());
+        } else {
+            msg.append(CommonUtils.getShortClassName(ex.getClass()));
         }
-        return msg.toString();
+        return msg.toString().trim();
     }
     
     public static DBPProgressMonitor makeMonitor(IProgressMonitor monitor)

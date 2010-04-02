@@ -484,6 +484,7 @@ public class SQLEditor extends TextEditor
         int endPos = document.getLength();
         try {
             int currentLine = document.getLineOfOffset(currentPos);
+            int lineOffset = document.getLineOffset(currentLine);
             int linesCount = document.getNumberOfLines();
             int firstLine = currentLine, lastLine = currentLine;
             while (firstLine > 0) {
@@ -507,10 +508,14 @@ public class SQLEditor extends TextEditor
             //if (lastDelimiter != null) {
             //    endPos += lastDelimiter.length();
             //}
+
+            // Move currentPos at line begin
+            currentPos = lineOffset;
         }
         catch (BadLocationException e) {
             log.warn(e);
         }
+
         // Parse range
         syntaxManager.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
@@ -518,7 +523,7 @@ public class SQLEditor extends TextEditor
             IToken token = syntaxManager.nextToken();
             int tokenOffset = syntaxManager.getTokenOffset();
             if (token.isEOF() ||
-                (token instanceof SQLDelimiterToken && tokenOffset > currentPos)||
+                (token instanceof SQLDelimiterToken && tokenOffset >= currentPos)||
                 tokenOffset > endPos) 
             {
                 // get position before last token start

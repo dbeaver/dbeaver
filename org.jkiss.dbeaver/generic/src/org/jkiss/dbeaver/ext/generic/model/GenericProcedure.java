@@ -31,7 +31,8 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     public GenericProcedure(
         GenericStructureContainer container,
         String procedureName,
-        String description, DBSProcedureType procedureType
+        String description,
+        DBSProcedureType procedureType
     )
     {
         super(container, procedureName, description);
