@@ -25,6 +25,11 @@ public class JDBCResultSet implements DBCResultSet
         this.resultSet = resultSet;
     }
 
+    public Object getNestedResultSet()
+    {
+        return resultSet;
+    }
+
     public JDBCStatement getStatement()
     {
         return this.statement;
