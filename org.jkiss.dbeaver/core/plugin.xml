@@ -4,6 +4,7 @@
     <extension-point id="org.jkiss.dbeaver.dataSourceProvider" name="DataSource provider"
                      schema="schema/org.jkiss.dbeaver.dataSourceProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.databaseEditor" name="Custom Entity Editor" schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
 
     <extension id="application" point="org.eclipse.core.runtime.applications">
         <application>
@@ -553,4 +554,57 @@
              splashId="org.jkiss.dbeaver.ui.splash.interactive">
        </splashHandlerProductBinding>
     </extension>
+    <extension
+          point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+            class="org.jkiss.dbeaver.model.impl.data.JDBCStandardDataTypeProvider"
+            description="Standard JDBC data types provider"
+            id="org.jkiss.dbeaver.core.standardDataTypeProvider"
+            label="Standard JDBC data types provider">
+            <type standard="BIT"/>
+            <type standard="TINYINT"/>
+            <type standard="SMALLINT"/>
+            <type standard="INTEGER"/>
+            <type standard="BIGINT"/>
+            <type standard="FLOAT"/>
+            <type standard="REAL"/>
+            <type standard="DOUBLE"/>
+            <type standard="DECIMAL"/>
+            <type standard="CHAR"/>
+            <type standard="VARCHAR"/>
+            <type standard="LONGVARCHAR"/>
+            <type standard="DATE"/>
+            <type standard="TIME"/>
+            <type standard="TIMESTAMP"/>
+            <!--
+            <type standard="BINARY"/>
+            <type standard="VARBINARY"/>
+            <type standard="LONGVARBINARY"/>
+            <type standard="NULL"/>
+            <type standard="OTHER"/>
+            -->
+
+            <!--
+            <type standard="JAVA_OBJECT"/>
+            <type standard="DISTINCT"/>
+            <type standard="STRUCT"/>
+            <type standard="ARRAY"/>
+            <type standard="BLOB"/>
+            <type standard="CLOB"/>
+            <type standard="REF"/>
+            <type standard="DATALINK"/>
+            -->
+            <type standard="BOOLEAN"/>
+            <type standard="ROWID"/>
+            <type standard="NCHAR"/>
+            <type standard="NVARCHAR"/>
+            <type standard="LONGNVARCHAR"/>
+            <!--
+            <type standard="NCLOB"/>
+            <type standard="SQLXML"/>
+            -->
+          
+        </provider>
+    </extension>
+
 </plugin>

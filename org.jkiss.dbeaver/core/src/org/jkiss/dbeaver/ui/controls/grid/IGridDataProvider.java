@@ -9,7 +9,7 @@ public interface IGridDataProvider {
 
     boolean isInsertable();
 
-    void fillLazyRow(IGridRow row);
+    void fillRowData(IGridRow row);
 
     void showRowViewer(IGridRow row, boolean editable);
 

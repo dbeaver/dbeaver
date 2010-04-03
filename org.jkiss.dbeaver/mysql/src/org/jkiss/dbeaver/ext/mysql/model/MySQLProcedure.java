@@ -5,13 +5,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.meta.AbstractProcedure;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
-import org.jkiss.dbeaver.model.anno.Property;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -118,7 +117,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
                     int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
                     int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
                     String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-                    DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName);
+                    //DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName);
                     DBSProcedureColumnType columnType;
                     switch (columnTypeNum) {
                         case DatabaseMetaData.procedureColumnIn: columnType = DBSProcedureColumnType.IN; break;
@@ -134,7 +133,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
                     MySQLProcedureColumn procedureColumn = new MySQLProcedureColumn(
                         this,
                         columnName,
-                        dataType,
+                        typeName,
                         valueType,
                         columnList.size(),
                         columnSize,

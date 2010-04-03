@@ -4,6 +4,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.dbc.DBCException;
 
 /**
  * Data value container
@@ -12,39 +13,27 @@ public class DBDValue {
 
     private DBPDataSource dataSource;
     private DBCResultSet resultSet;
-    private DBCColumnMetaData columnMetaData;
     private int columnIndex;
-    private Object columnValue;
-    private DBSDataType dataType;
 
-    public DBDValue(DBPDataSource dataSource, DBCResultSet resultSet)
+    public DBDValue(DBPDataSource dataSource, DBCResultSet resultSet, int columnIndex)
     {
         this.dataSource = dataSource;
         this.resultSet = resultSet;
+        this.columnIndex = columnIndex;
     }
 
     public DBPDataSource getDataSource() {
         return dataSource;
     }
 
-    public void setDataSource(DBPDataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
     public DBCResultSet getResultSet() {
         return resultSet;
     }
 
-    public void setResultSet(DBCResultSet resultSet) {
-        this.resultSet = resultSet;
-    }
-
-    public DBCColumnMetaData getColumnMetaData() {
-        return columnMetaData;
-    }
-
-    public void setColumnMetaData(DBCColumnMetaData columnMetaData) {
-        this.columnMetaData = columnMetaData;
+    public DBCColumnMetaData getColumnMetaData()
+        throws DBCException
+    {
+        return resultSet.getMetaData().getColumns().get(columnIndex);
     }
 
     public int getColumnIndex() {
@@ -55,19 +44,4 @@ public class DBDValue {
         this.columnIndex = columnIndex;
     }
 
-    public Object getColumnValue() {
-        return columnValue;
-    }
-
-    public void setColumnValue(Object columnValue) {
-        this.columnValue = columnValue;
-    }
-
-    public DBSDataType getDataType() {
-        return dataType;
-    }
-
-    public void setDataType(DBSDataType dataType) {
-        this.dataType = dataType;
-    }
 }

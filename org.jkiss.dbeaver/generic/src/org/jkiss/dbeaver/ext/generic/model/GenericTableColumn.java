@@ -2,7 +2,6 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.meta.AbstractColumn;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
@@ -19,7 +18,10 @@ public class GenericTableColumn extends AbstractColumn<GenericDataSource> implem
     public GenericTableColumn(
         GenericTable table,
         String columnName,
-        DBSDataType dataType, int valueType, int sourceType, int ordinalPosition,
+        String typeName,
+        int valueType,
+        int sourceType,
+        int ordinalPosition,
         int columnSize,
         int charLength,
         int scale,
@@ -31,7 +33,7 @@ public class GenericTableColumn extends AbstractColumn<GenericDataSource> implem
     )
     {
         super(columnName,
-            dataType,
+            typeName,
             valueType,
             ordinalPosition,
             columnSize,

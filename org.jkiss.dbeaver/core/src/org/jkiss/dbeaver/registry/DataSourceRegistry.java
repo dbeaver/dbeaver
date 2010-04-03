@@ -15,8 +15,10 @@ import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.DBPRegistry;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
@@ -43,6 +45,7 @@ public class DataSourceRegistry implements DBPRegistry
     private DBeaverCore core;
     private File workspaceRoot;
     private List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<DataSourceProviderDescriptor>();
+    private List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();
     private List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private List<IDataSourceListener> dataSourceListeners = new ArrayList<IDataSourceListener>();
 
@@ -52,10 +55,21 @@ public class DataSourceRegistry implements DBPRegistry
         this.workspaceRoot = core.getRootPath().toFile();
 
         // Load datasource providers from external plugins
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID);
-        for (IConfigurationElement ext : extElements) {
-            DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, ext);
-            dataSourceProviders.add(provider);
+        {
+            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID);
+            for (IConfigurationElement ext : extElements) {
+                DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, ext);
+                dataSourceProviders.add(provider);
+            }
+        }
+
+        // Load data type providers from external plugins
+        {
+            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataTypeProviderDescriptor.EXTENSION_ID);
+            for (IConfigurationElement ext : extElements) {
+                DataTypeProviderDescriptor provider = new DataTypeProviderDescriptor(this, ext);
+                dataTypeProviders.add(provider);
+            }
         }
 
         // Load drivers
@@ -107,6 +121,17 @@ public class DataSourceRegistry implements DBPRegistry
     public List<DataSourceProviderDescriptor> getDataSourceProviders()
     {
         return dataSourceProviders;
+    }
+
+    public List<DataTypeProviderDescriptor> getDataTypeProviders()
+    {
+        return dataTypeProviders;
+    }
+
+    public DataTypeProviderDescriptor getDataTypeProvider(DBPDataSource dataSource, DBSTypedObject type)
+    {
+        // First try to find type provider for specific datasource type
+        return null;
     }
 
     public DataSourceDescriptor getDataSource(String name)

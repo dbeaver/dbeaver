@@ -8,7 +8,6 @@ import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.meta.AbstractProcedure;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
 
@@ -98,7 +97,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                     int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
                     int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
                     String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-                    DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName);
+                    //DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName);
                     DBSProcedureColumnType columnType;
                     switch (columnTypeNum) {
                         case DatabaseMetaData.procedureColumnIn: columnType = DBSProcedureColumnType.IN; break;
@@ -114,7 +113,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                     GenericProcedureColumn procedureColumn = new GenericProcedureColumn(
                         this,
                         columnName,
-                        dataType,
+                        typeName,
                         valueType,
                         columnList.size(),
                         columnSize,

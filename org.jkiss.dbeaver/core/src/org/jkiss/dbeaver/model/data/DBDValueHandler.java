@@ -3,6 +3,8 @@ package org.jkiss.dbeaver.model.data;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 
 /**
  * DBPDataTypeEditor
@@ -15,7 +17,7 @@ public interface DBDValueHandler
      * @return string
      * @throws DBException on error
      */
-    String getValueText(DBDValue value)
+    Object getValueObject(DBCResultSet resultSet, int columnIndex)
         throws DBException;
 
     /**
@@ -24,7 +26,7 @@ public interface DBDValueHandler
      * @return annotations array or null
      * @throws DBException on error
      */
-    DBDValueAnnotation[] getValueAnnotations(DBDValue value)
+    DBDValueAnnotation[] getValueAnnotations(DBCColumnMetaData column)
         throws DBException;
 
     /**
@@ -37,7 +39,8 @@ public interface DBDValueHandler
      * @throws DBException on error
      */
     void editValue(
-        DBDValue value,
+        DBCColumnMetaData column,
+        Object value,
         DBDValueLocator valueLocator,
         boolean inlineEdit,
         IWorkbenchPartSite valueSite,

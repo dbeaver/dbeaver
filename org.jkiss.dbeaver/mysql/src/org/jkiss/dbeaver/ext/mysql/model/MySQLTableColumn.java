@@ -34,11 +34,13 @@ public class MySQLTableColumn extends AbstractColumn<MySQLDataSource> implements
         setName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_ORDINAL_POSITION));
         String typeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DATA_TYPE);
+        setTypeName(typeName);
         DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName.toUpperCase());
-        setDataType(dataType);
         this.charLength = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_CHARACTER_MAXIMUM_LENGTH);
         if (this.charLength <= 0) {
-            setMaxLength(dataType.getPrecision());
+            if (dataType != null) {
+                setMaxLength(dataType.getPrecision());
+            }
         } else {
             setMaxLength(this.charLength);
         }

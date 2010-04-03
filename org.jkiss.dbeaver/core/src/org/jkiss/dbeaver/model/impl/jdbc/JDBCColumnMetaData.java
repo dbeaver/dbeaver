@@ -134,7 +134,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
         return tableName;
     }
 
-    public int getType()
+    public int getValueType()
     {
         return type;
     }

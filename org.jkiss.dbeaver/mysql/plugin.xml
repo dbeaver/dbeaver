@@ -19,7 +19,7 @@
         point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
             class="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"
-            id="org.jkiss.dbeaver.ext.mysql.datasource"
+            id="mysql"
             label="MySQL"
             description="MySQL connector">
             <tree path="mysql" label="MySQL data source">

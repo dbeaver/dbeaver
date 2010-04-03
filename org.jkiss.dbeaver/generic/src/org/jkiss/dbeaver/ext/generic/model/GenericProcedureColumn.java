@@ -1,12 +1,11 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.impl.meta.AbstractColumn;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumn;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
-import org.jkiss.dbeaver.model.anno.Property;
 
 /**
  * GenericTable
@@ -19,7 +18,7 @@ public class GenericProcedureColumn extends AbstractColumn<GenericDataSource> im
     public GenericProcedureColumn(
         GenericProcedure procedure,
         String columnName,
-        DBSDataType dataType,
+        String typeName,
         int valueType,
         int ordinalPosition,
         int columnSize,
@@ -31,7 +30,7 @@ public class GenericProcedureColumn extends AbstractColumn<GenericDataSource> im
         DBSProcedureColumnType columnType)
     {
         super(columnName,
-            dataType,
+            typeName,
             valueType,
             ordinalPosition,
             columnSize,

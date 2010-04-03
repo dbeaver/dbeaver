@@ -101,7 +101,7 @@ public class SQLAssistProposal {
 */
 
             fType = TABLECOLUMN_OBJTYPE;
-            fName = dbObject.getName() + " - " + ((DBSTableColumn) dbObject).getDataType().getName(); //$NON-NLS-1$;
+            fName = dbObject.getName() + " - " + ((DBSTableColumn) dbObject).getTypeName(); //$NON-NLS-1$;
             fParentName = ((DBSTableColumn) dbObject).getTable().getParentObject().getName()
                     + "." + ((DBSTableColumn) dbObject).getTable().getName();
             fParentObject = dbObject.getParentObject();

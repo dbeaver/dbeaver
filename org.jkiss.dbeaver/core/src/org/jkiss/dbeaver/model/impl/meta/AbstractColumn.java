@@ -1,7 +1,6 @@
 package org.jkiss.dbeaver.model.impl.meta;
 
 import org.jkiss.dbeaver.model.struct.DBSColumnDefinition;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.DBPDataSource;
 
@@ -18,7 +17,7 @@ public abstract class AbstractColumn<DATASOURCE extends DBPDataSource> implement
     private int precision;
     private int radix;
     private String description;
-    protected DBSDataType dataType;
+    protected String typeName;
     protected int ordinalPosition;
 
     protected AbstractColumn()
@@ -27,7 +26,7 @@ public abstract class AbstractColumn<DATASOURCE extends DBPDataSource> implement
 
     protected AbstractColumn(
         String name,
-        DBSDataType dataType,
+        String typeName,
         int valueType,
         int ordinalPosition,
         int maxLength,
@@ -46,7 +45,7 @@ public abstract class AbstractColumn<DATASOURCE extends DBPDataSource> implement
         this.precision = precision;
         this.nullable = nullable;
         this.description = description;
-        this.dataType = dataType;
+        this.typeName = typeName;
         this.ordinalPosition = ordinalPosition;
     }
 
@@ -62,14 +61,14 @@ public abstract class AbstractColumn<DATASOURCE extends DBPDataSource> implement
     }
 
     @Property(name = "Data Type", viewable = true, order = 2)
-    public DBSDataType getDataType()
+    public String getTypeName()
     {
-        return dataType;
+        return typeName;
     }
 
-    protected void setDataType(DBSDataType dataType)
+    protected void setTypeName(String typeName)
     {
-        this.dataType = dataType;
+        this.typeName = typeName;
     }
 
     @Property(name = "Ordinal Position", viewable = true, order = 5)

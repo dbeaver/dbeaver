@@ -287,7 +287,7 @@ public class GridControl extends Composite implements Listener
                 lazyRow.item = (TableItem)event.item;
                 lazyRow.index = event.index;
                 if (dataProvider != null) {
-                    dataProvider.fillLazyRow(lazyRow);
+                    dataProvider.fillRowData(lazyRow);
                 }
                 break;
             }

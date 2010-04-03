@@ -5,12 +5,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 /**
  * DBSColumnDefinition
  */
-public interface DBSColumnDefinition<DATASOURCE extends DBPDataSource> extends DBSStructureObject<DATASOURCE>
+public interface DBSColumnDefinition<DATASOURCE extends DBPDataSource> extends DBSStructureObject<DATASOURCE>, DBSTypedObject
 {
-    DBSDataType getDataType();
-
-    int getValueType();
-
     int getMaxLength();
 
     int getScale();

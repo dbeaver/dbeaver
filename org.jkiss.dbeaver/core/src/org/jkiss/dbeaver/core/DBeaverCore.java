@@ -65,15 +65,20 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return instance;
     }
 
-    static void createInstance(DBeaverActivator plugin)
+    static DBeaverCore createInstance(DBeaverActivator plugin)
     {
         instance = new DBeaverCore(plugin);
+        instance.initialize();
+        return instance;
     }
 
     DBeaverCore(DBeaverActivator plugin)
     {
         this.plugin = plugin;
+    }
 
+    private void initialize()
+    {
         //progressProvider = new DBeaverProgressProvider();
 
         // Register properties adapter

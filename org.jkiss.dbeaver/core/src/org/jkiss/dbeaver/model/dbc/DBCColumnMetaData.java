@@ -1,6 +1,7 @@
 package org.jkiss.dbeaver.model.dbc;
 
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
 /**
  * DBCColumnMetaData
  */
-public interface DBCColumnMetaData
+public interface DBCColumnMetaData extends DBSTypedObject
 {
     int getIndex();
 
@@ -28,10 +29,6 @@ public interface DBCColumnMetaData
 
     String getTableName();
 
-    int getType();
-
-    String getTypeName();
-
     boolean isReadOnly();
 
     boolean isWritable();
@@ -41,7 +38,7 @@ public interface DBCColumnMetaData
      * @return table metadata
      * @throws DBCException on any DB error
      */
-    DBCTableMetaData getTable() throws DBException;
+    DBCTableMetaData getTable();
 
     /**
      * Check this column is a reference.

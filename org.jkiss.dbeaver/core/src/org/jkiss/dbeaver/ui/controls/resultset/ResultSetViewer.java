@@ -409,7 +409,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         return false;
     }
 
-    public void fillLazyRow(IGridRow row)
+    public void fillRowData(IGridRow row)
     {
         if (mode == ResultSetMode.RECORD) {
             // Fill record
@@ -435,12 +435,6 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     {
         if (colValue == null) {
             return "[NULL]";
-/*
-        } else if (colValue instanceof Blob) {
-            return "[BLOB]";
-        } else if (colValue instanceof Clob) {
-            return "[CLOB]";
-*/
         } else {
             return colValue.toString();
         }

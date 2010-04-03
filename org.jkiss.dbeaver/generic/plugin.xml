@@ -38,7 +38,7 @@
         point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
             class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider"
-            id="org.jkiss.dbeaver.ext.generic.datasource"
+            id="generic"
             label="Generic"
             description="Generic JDBC connector">
             <tree path="generic" label="Generic data source">

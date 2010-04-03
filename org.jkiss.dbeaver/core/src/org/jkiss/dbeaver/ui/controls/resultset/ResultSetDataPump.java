@@ -17,6 +17,7 @@ class ResultSetDataPump implements SQLQueryDataPump {
     private ResultSetViewer resultSetViewer;
     private Display display;
     private DBCResultSetMetaData metaData;
+    private int columnsCount;
     private List<Object[]> rows = new ArrayList<Object[]>();
 
     ResultSetDataPump(ResultSetViewer resultSetViewer)
@@ -29,13 +30,13 @@ class ResultSetDataPump implements SQLQueryDataPump {
         throws DBCException
     {
         metaData = resultSet.getMetaData();
+        columnsCount = metaData.getColumns().size();
         rows.clear();
     }
 
     public void fetchRow(DBCResultSet resultSet)
         throws DBCException
     {
-        int columnsCount = metaData.getColumns().size();
         Object[] row = new Object[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
             row[i] = resultSet.getObject(i + 1);

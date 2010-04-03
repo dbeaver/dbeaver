@@ -3,7 +3,6 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCBLOB;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -46,7 +45,7 @@ public class JDBCResultSet implements DBCResultSet
         Object object = JDBCUtils.getParameter(
             resultSet,
             index,
-            metaData.getColumns().get(index - 1).getType());
+            metaData.getColumns().get(index - 1).getValueType());
         if (object instanceof Blob) {
             object = new JDBCBLOB((Blob)object);
         } else if (object instanceof Clob) {

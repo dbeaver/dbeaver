@@ -232,11 +232,11 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                     int charLength = JDBCUtils.safeGetInt(dbResult, JDBCConstants.CHAR_OCTET_LENGTH);
                     int ordinalPos = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
 
-                    DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName);
+                    //DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName);
                     GenericTableColumn tableColumn = new GenericTableColumn(
                         this,
                         columnName,
-                        dataType, valueType, sourceType, ordinalPos,
+                        typeName, valueType, sourceType, ordinalPos,
                         columnSize,
                         charLength, scale, precision, radix, isNullable,
                         remarks, defaultValue
