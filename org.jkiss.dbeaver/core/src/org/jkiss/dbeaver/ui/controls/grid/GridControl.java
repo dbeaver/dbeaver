@@ -5,6 +5,8 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -306,7 +308,9 @@ public class GridControl extends Composite implements Listener
                 break;
             }
             case SWT.MouseDown: {
-                startMouseSelection(event, false);
+                if (!startMouseSelection(event, false)) {
+                    openCellViewer(event, true);
+                }
                 break;
             }
             case SWT.MouseUp: {
@@ -323,7 +327,7 @@ public class GridControl extends Composite implements Listener
             }
             case SWT.MouseDoubleClick: {
                 endMouseSelection();
-                openCellViewer(event);
+                openCellViewer(event, false);
                 break;
             }
             case SWT.KeyDown: {
@@ -489,20 +493,29 @@ public class GridControl extends Composite implements Listener
         }
     }
 
-    private void startMouseSelection(Event event, boolean move)
+    private boolean startMouseSelection(Event event, boolean move)
     {
         GridPos pos = getPosFromPoint(event.x, event.y);
         if (pos == null) {
-            return;
+            return true;
         }
         boolean contextMenu = (event.button == 3);
         if (!contextMenu) {
             inMouseSelection = true;
+
+            if (!move && selection.size() == 1) {
+                // Check for click on the same cell - it'll open inline cell editor
+                GridPos selPos = selection.iterator().next();
+                if (selPos.col == pos.col && selPos.row == pos.row) {
+                    return false;
+                }
+            }
         }
         if (currentPosition == null || currentPosition.col != pos.col || currentPosition.row != pos.row) {
             changeSelection(event, pos.col, pos.row, contextMenu, move);
             currentPosition = pos;
         }
+        return true;
     }
 
     private void endMouseSelection()
@@ -906,7 +919,7 @@ public class GridControl extends Composite implements Listener
         this.redrawItems(toRedraw);
     }
 
-    void openCellViewer(Event event)
+    void openCellViewer(Event event, boolean inline)
     {
         // The control that will be the editor must be a child of the Table
         GridPos pos = getPosFromPoint(event.x, event.y);
@@ -916,28 +929,31 @@ public class GridControl extends Composite implements Listener
 
         TableItem item = table.getItem(pos.row);
 
-        if (dataProvider != null) {
-            lazyRow.item = item;
-            lazyRow.index = pos.row;
-            lazyRow.column = pos.col;
-            dataProvider.showRowViewer(lazyRow, false);
-        }
-/*
-        Control oldEditor = tableEditor.getEditor();
-        if (oldEditor != null) oldEditor.dispose();
+        if (inline) {
 
-        Text newEditor = new Text(table, SWT.NONE);
-        //newEditor.setSize(200, 200);
-        newEditor.setText(item.getText(pos.col));
-        newEditor.setFont(table.getFont());
-        newEditor.addModifyListener(new ModifyListener() {
-            public void modifyText(ModifyEvent me) {
+            Control oldEditor = tableEditor.getEditor();
+            if (oldEditor != null) oldEditor.dispose();
+
+            Text newEditor = new Text(table, SWT.NONE);
+            //newEditor.setSize(200, 200);
+            newEditor.setText(item.getText(pos.col));
+            newEditor.setFont(table.getFont());
+            newEditor.addModifyListener(new ModifyListener() {
+                public void modifyText(ModifyEvent me) {
+                }
+            });
+            newEditor.selectAll();
+            newEditor.setFocus();
+            tableEditor.setEditor(newEditor, item, pos.col);
+
+        } else {
+            if (dataProvider != null) {
+                lazyRow.item = item;
+                lazyRow.index = pos.row;
+                lazyRow.column = pos.col;
+                dataProvider.showRowViewer(lazyRow, false);
             }
-        });
-        newEditor.selectAll();
-        newEditor.setFocus();
-        tableEditor.setEditor(newEditor, item, pos.col);
-*/
+        }
     }
 
     public int getItemCount()

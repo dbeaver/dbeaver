@@ -15,10 +15,11 @@ import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.DBPRegistry;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.DBPRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
@@ -130,7 +131,26 @@ public class DataSourceRegistry implements DBPRegistry
 
     public DataTypeProviderDescriptor getDataTypeProvider(DBPDataSource dataSource, DBSTypedObject type)
     {
+        DBPDriver driver = dataSource.getContainer().getDriver();
+        if (!(driver instanceof DriverDescriptor)) {
+            log.warn("Bad datasource specified (driver is not recognized by registry) - " + dataSource);
+            return null;
+        }
+        DataSourceProviderDescriptor dsProvider = ((DriverDescriptor) driver).getProviderDescriptor();
+
         // First try to find type provider for specific datasource type
+        for (DataTypeProviderDescriptor dtProvider : dataTypeProviders) {
+            if (!dtProvider.isDefault() && dtProvider.supportsDataSource(dsProvider) && dtProvider.supportsType(type)) {
+                return dtProvider;
+            }
+        }
+
+        // Find in default providers
+        for (DataTypeProviderDescriptor dtProvider : dataTypeProviders) {
+            if (dtProvider.isDefault() && dtProvider.supportsType(type)) {
+                return dtProvider;
+            }
+        }
         return null;
     }
 

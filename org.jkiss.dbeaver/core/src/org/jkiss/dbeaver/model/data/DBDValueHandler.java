@@ -5,6 +5,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
+import org.jkiss.dbeaver.model.dbc.DBCException;
 
 /**
  * DBPDataTypeEditor
@@ -18,7 +19,7 @@ public interface DBDValueHandler
      * @throws DBException on error
      */
     Object getValueObject(DBCResultSet resultSet, int columnIndex)
-        throws DBException;
+        throws DBCException;
 
     /**
      * Returns any additional annotations of value
@@ -27,22 +28,23 @@ public interface DBDValueHandler
      * @throws DBException on error
      */
     DBDValueAnnotation[] getValueAnnotations(DBCColumnMetaData column)
-        throws DBException;
+        throws DBCException;
 
     /**
      * Shows value editor
      * @param value value
      * @param valueLocator value locator
      * @param inlineEdit true if inline editor requested
-     * @param valueSite site of callee
-     * @param valueWidget widged where inline editor should be placed
-     * @throws DBException on error
+     * @param readOnly
+     *@param valueSite site of callee
+     * @param valueWidget widged where inline editor should be placed   @throws DBException on error
      */
     void editValue(
         DBCColumnMetaData column,
         Object value,
         DBDValueLocator valueLocator,
         boolean inlineEdit,
+        boolean readOnly,
         IWorkbenchPartSite valueSite,
         Widget valueWidget)
         throws DBException;

@@ -9,34 +9,34 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCLOB;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.grid.GridControl;
+import org.jkiss.dbeaver.ui.controls.grid.GridPos;
 import org.jkiss.dbeaver.ui.controls.grid.IGridDataProvider;
 import org.jkiss.dbeaver.ui.controls.grid.IGridRow;
-import org.jkiss.dbeaver.ui.controls.grid.GridPos;
-import org.jkiss.dbeaver.ui.controls.resultset.view.TextViewDialog;
-import org.jkiss.dbeaver.ui.controls.resultset.view.ValueViewDialog;
-import org.jkiss.dbeaver.ui.controls.resultset.view.LobViewDialog;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryDataPump;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +54,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     private ResultSetDataPump dataPump;
     private IThemeManager themeManager;
 
-    private DBCResultSetMetaData metaData;
+    private ResultSetColumn[] metaColumns;
     private List<Object[]> curRows = new ArrayList<Object[]>();
     private GridPos curRowNum = null;
 
@@ -232,11 +232,11 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         } else {
             // Calculate width of grid panel - use longest column title
             int defaultWidth = 0;
-            if (metaData != null) {
+            if (metaColumns != null) {
                 GC gc = new GC(grid);
                 gc.setFont(grid.getFont());
-                for (DBCColumnMetaData column : metaData.getColumns()) {
-                    Point ext = gc.stringExtent(column.getName());
+                for (ResultSetColumn column : metaColumns) {
+                    Point ext = gc.stringExtent(column.metaData.getName());
                     if (ext.x > defaultWidth) {
                         defaultWidth = ext.x;
                     }
@@ -333,9 +333,13 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         statusLabel.setText(status);
     }
 
-    public void setData(DBCResultSetMetaData metaData, List<Object[]> rows)
+    public void setColumnsInfo(ResultSetColumn[] metaColumns)
     {
-        this.metaData = metaData;
+        this.metaColumns = metaColumns;
+    }
+
+    public void setData(List<Object[]> rows)
+    {
         this.curRows = rows;
         this.initResultSet();
     }
@@ -360,16 +364,16 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         grid.clearGrid();
         if (mode == ResultSetMode.RECORD) {
             grid.addColumn("Value", "Column Value");
-            grid.setItemCount(metaData == null ? 0 : metaData.getColumns().size());
+            grid.setItemCount(metaColumns == null ? 0 : metaColumns.length);
             this.showCurrentRows();
         } else {
-            if (metaData != null) {
-                for (DBCColumnMetaData columnMeta : metaData.getColumns()) {
+            if (metaColumns != null) {
+                for (ResultSetColumn column : metaColumns) {
                     grid.addColumn(
-                        columnMeta.getLabel(),
-                        CommonUtils.isEmpty(columnMeta.getTableName()) ?
-                            columnMeta.getName() :
-                            columnMeta.getTableName() + "." + columnMeta.getName());
+                        column.metaData.getLabel(),
+                        CommonUtils.isEmpty(column.metaData.getTableName()) ?
+                            column.metaData.getName() :
+                            column.metaData.getTableName() + "." + column.metaData.getName());
                 }
             }
             grid.setItemCount(curRows.size());
@@ -442,18 +446,19 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
     public void showRowViewer(IGridRow row, boolean editable)
     {
+/*
         Object data = row.getData();
-        DBCColumnMetaData columnInfo;
+        ResultSetColumn columnInfo;
         if (data instanceof Object[]) {
             data = ((Object[])data)[row.getColumn()];
-            columnInfo = metaData.getColumns().get(row.getColumn());
+            columnInfo = metaColumns[row.getColumn()];
         } else {
-            columnInfo = metaData.getColumns().get(row.getIndex());
+            columnInfo = metaColumns[row.getIndex()];
         }
         // Determine column type and use appropriate viewer
         DBSDataType dataType = null;
         try {
-            dataType = resultSetProvider.getDataSource().getInfo().getSupportedDataType(columnInfo.getTypeName());
+            dataType = resultSetProvider.getDataSource().getInfo().getSupportedDataType(columnInfo.metaData.getTypeName());
         } catch (DBException e) {
             log.warn("Can't determine column datatype", e);
         }
@@ -472,16 +477,16 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             viewDialog = new TextViewDialog(grid.getShell(), row, columnInfo, data);
         }
         viewDialog.open();
+*/
     }
 
     public String getRowTitle(int rowNum)
     {
         if (mode == ResultSetMode.RECORD) {
-            List<DBCColumnMetaData> columns = metaData.getColumns();
-            if (rowNum < 0 || rowNum >= columns.size()) {
+            if (rowNum < 0 || rowNum >= metaColumns.length) {
                 return "";
             }
-            return columns.get(rowNum).getName();
+            return metaColumns[rowNum].metaData.getName();
         } else {
             return String.valueOf(rowNum + 1);
         }

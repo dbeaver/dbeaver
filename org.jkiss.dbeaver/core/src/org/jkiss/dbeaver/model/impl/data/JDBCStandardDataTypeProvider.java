@@ -16,7 +16,7 @@ public class JDBCStandardDataTypeProvider implements DBDDataTypeProvider {
         return null;
     }
 
-    public DBDValueHandler createHandler(DBPDataSource dataSource, DBSTypedObject type)
+    public DBDValueHandler getHandler(DBPDataSource dataSource, DBSTypedObject type)
     {
         return null;
     }

@@ -11,7 +11,7 @@ public interface DBDDataTypeProvider
 {
     Image getTypeImage(DBSTypedObject type);
 
-    DBDValueHandler createHandler(
+    DBDValueHandler getHandler(
         DBPDataSource dataSource,
         DBSTypedObject type);
 

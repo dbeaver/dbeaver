@@ -4,6 +4,12 @@ import org.jkiss.dbeaver.runtime.sql.SQLQueryDataPump;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.data.JDBCUnsupportedValueHandler;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.eclipse.swt.widgets.Display;
 
 import java.util.List;
@@ -14,10 +20,12 @@ import java.util.ArrayList;
  */
 class ResultSetDataPump implements SQLQueryDataPump {
 
+    private static DBDValueHandler DEFAULT_VALUE_HANDLER = new JDBCUnsupportedValueHandler();
+
     private ResultSetViewer resultSetViewer;
     private Display display;
-    private DBCResultSetMetaData metaData;
     private int columnsCount;
+    private ResultSetColumn[] metaColumns;
     private List<Object[]> rows = new ArrayList<Object[]>();
 
     ResultSetDataPump(ResultSetViewer resultSetViewer)
@@ -29,9 +37,30 @@ class ResultSetDataPump implements SQLQueryDataPump {
     public void fetchStart(DBCResultSet resultSet)
         throws DBCException
     {
-        metaData = resultSet.getMetaData();
-        columnsCount = metaData.getColumns().size();
         rows.clear();
+        DBCResultSetMetaData metaData = resultSet.getMetaData();
+
+        List<DBCColumnMetaData> rsColumns = metaData.getColumns();
+        columnsCount = rsColumns.size();
+
+        // Determine type handlers for all columns
+        DataSourceRegistry dsRegistry = DataSourceRegistry.getDefault();
+        DBPDataSource dataSource = resultSet.getStatement().getSession().getDataSource();
+
+        metaColumns = new ResultSetColumn[columnsCount];
+        for (int i = 0; i < columnsCount; i++) {
+            DBCColumnMetaData columnMeta = rsColumns.get(i);
+            DBDValueHandler typeHandler = null;
+            DataTypeProviderDescriptor typeProvider = dsRegistry.getDataTypeProvider(dataSource, columnMeta);
+            if (typeProvider != null) {
+                typeHandler = typeProvider.getInstance().getHandler(dataSource, columnMeta);
+            }
+            if (typeHandler == null) {
+                typeHandler = DEFAULT_VALUE_HANDLER;
+            }
+            metaColumns[i] = new ResultSetColumn(columnMeta, typeHandler);
+        }
+        resultSetViewer.setColumnsInfo(metaColumns);
     }
 
     public void fetchRow(DBCResultSet resultSet)
@@ -39,10 +68,7 @@ class ResultSetDataPump implements SQLQueryDataPump {
     {
         Object[] row = new Object[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
-            row[i] = resultSet.getObject(i + 1);
-            if (resultSet.wasNull()) {
-                row[i] = null;
-            }
+            row[i] = metaColumns[i].valueHandler.getValueObject(resultSet, i + 1);
         }
         rows.add(row);
     }
@@ -53,7 +79,7 @@ class ResultSetDataPump implements SQLQueryDataPump {
         display.asyncExec(new Runnable() {
             public void run()
             {
-                resultSetViewer.setData(metaData, rows);
+                resultSetViewer.setData(rows);
             }
         });
     }
