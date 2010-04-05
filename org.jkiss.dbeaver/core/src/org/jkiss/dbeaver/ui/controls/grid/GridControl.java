@@ -287,7 +287,7 @@ public class GridControl extends Composite implements Listener
 
         tableEditor = new TableEditor(table);
         tableEditor.horizontalAlignment = SWT.LEFT;
-        tableEditor.verticalAlignment = SWT.CENTER;
+        tableEditor.verticalAlignment = SWT.TOP;
         tableEditor.grabHorizontal = true;
         tableEditor.grabVertical = true;
         tableEditor.minimumWidth = 50;
@@ -969,6 +969,8 @@ public class GridControl extends Composite implements Listener
             GridLayout layout = new GridLayout(1, true);
             layout.marginWidth = 0;
             layout.marginHeight = 0;
+            layout.horizontalSpacing = 0;
+            layout.verticalSpacing = 0;
             placeholder.setLayout(layout);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalIndent = 0;
@@ -976,19 +978,6 @@ public class GridControl extends Composite implements Listener
             gd.grabExcessHorizontalSpace = true;
             gd.grabExcessVerticalSpace = true;
             placeholder.setLayoutData(gd);
-/*
-            Text newEditor = new Text(table, SWT.NONE);
-            //newEditor.setSize(200, 200);
-            newEditor.setText(item.getText(pos.col));
-            newEditor.setFont(table.getFont());
-            newEditor.addModifyListener(new ModifyListener() {
-                public void modifyText(ModifyEvent me) {
-                }
-            });
-            newEditor.selectAll();
-            newEditor.setFocus();
-            tableEditor.setEditor(newEditor, item, pos.col);
-*/
         }
         lazyRow.index = pos.row;
         lazyRow.column = pos.col;
@@ -996,32 +985,25 @@ public class GridControl extends Composite implements Listener
         boolean editSuccess = dataProvider.showCellEditor(lazyRow, inline, placeholder);
         if (inline) {
             if (editSuccess) {
-                int columnWidth = curColumns.get(pos.col).getWidth();
-                int columnHeight = table.getItemHeight();
-                int minHeight = 0;
-                //Point editorSize = placeholder.computeSize(curColumns.get(pos.col).getWidth(), table.getItemHeight());
-                for (Control child : placeholder.getChildren()) {
-                    Point childSize = child.computeSize(columnWidth, columnHeight);
-                    if (childSize.y > minHeight) {
-                        minHeight = childSize.y;
-                    }
+                int minHeight = 0, minWidth = 50;
+                Point editorSize = placeholder.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                minHeight = editorSize.y;
+                minWidth = editorSize.x;
+                tableEditor.minimumHeight = minHeight;// + placeholder.getBorderWidth() * 2;//placeholder.getBounds().height;
+                tableEditor.minimumWidth = minWidth;
+/*
+                if (pos.row == 0) {
+                    tableEditor.verticalAlignment = SWT.TOP;
+                } else {
+                    tableEditor.verticalAlignment = SWT.CENTER;
                 }
-                tableEditor.minimumHeight = minHeight + placeholder.getBorderWidth() * 2;//placeholder.getBounds().height;
-                //tableEditor.minimumWidth = columnWidth + placeholder.getBorderWidth() * 2;
+*/
                 tableEditor.setEditor(placeholder, item, pos.col);
             } else {
                 // No editor was created so just drop placeholder
                 placeholder.dispose();
             }
         }
-/*
-            if (dataProvider != null) {
-                lazyRow.item = item;
-                lazyRow.index = pos.row;
-                lazyRow.column = pos.col;
-                dataProvider.showRowViewer(lazyRow, false);
-            }
-*/
     }
 
     public void cancelInlineEditor()

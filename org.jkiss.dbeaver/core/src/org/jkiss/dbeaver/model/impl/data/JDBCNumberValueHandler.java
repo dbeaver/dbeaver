@@ -30,16 +30,16 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
             if (controller.getColumnMetaData().getValueType() == java.sql.Types.BIT) {
                 Combo editor = new Combo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
-                editor.add("");
                 editor.add("0");
                 editor.add("1");
-                editor.setText(value == null ? "" : value.toString());
+                editor.setText(value == null ? "0" : value.toString());
+                editor.setFocus();
                 initInlineControl(controller, editor, new ValueExtractor<Combo>() {
                     public Object getValueFromControl(Combo control)
                     {
                         switch (control.getSelectionIndex()) {
-                            case 1: return (byte)0;
-                            case 2: return (byte)1;
+                            case 0: return (byte)0;
+                            case 1: return (byte)1;
                             default: return null;
                         }
                     }
@@ -50,6 +50,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 editor.setEditable(!controller.isReadOnly());
                 editor.setTextLimit(MAX_NUMBER_LENGTH);
                 editor.selectAll();
+                editor.setFocus();
 
                 editor.addListener(SWT.Verify, new Listener() {
                     public void handleEvent(Event e)

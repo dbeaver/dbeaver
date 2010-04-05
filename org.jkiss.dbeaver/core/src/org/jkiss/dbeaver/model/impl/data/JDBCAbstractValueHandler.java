@@ -42,7 +42,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         control.addKeyListener(new KeyListener() {
             public void keyPressed(KeyEvent e)
             {
-                if (e.keyCode == SWT.CR) {
+                if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) {
                     controller.updateValue(extractor.getValueFromControl(control));
                     controller.closeInlineEditor();
                 } else if (e.keyCode == SWT.ESC) {
@@ -53,7 +53,6 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             {
             }
         });
-        control.setFocus();
     }
 
 }

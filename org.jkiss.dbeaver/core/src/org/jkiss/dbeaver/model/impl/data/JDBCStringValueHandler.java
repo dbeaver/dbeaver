@@ -41,6 +41,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
             editor.setEditable(!controller.isReadOnly());
             editor.setTextLimit(MAX_STRING_LENGTH);
             editor.selectAll();
+            editor.setFocus();
             initInlineControl(controller, editor, new ValueExtractor<Text>() {
                 public Object getValueFromControl(Text control)
                 {

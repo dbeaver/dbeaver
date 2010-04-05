@@ -23,13 +23,13 @@ public class JDBCStandardDataTypeProvider implements DBDDataTypeProvider {
         DBSDataKind dataKind = JDBCUtils.getDataKind(type.getValueType());
         switch (dataKind) {
             case BOOLEAN:
-                return null;
+                return JDBCBooleanValueHandler.INSTANCE;
             case STRING:
                 return JDBCStringValueHandler.INSTANCE;
             case NUMERIC:
                 return JDBCNumberValueHandler.INSTANCE;
             case DATETIME:
-                return null;
+                return JDBCDateTimeValueHandler.INSTANCE;
             default:
                 return null;
         }
