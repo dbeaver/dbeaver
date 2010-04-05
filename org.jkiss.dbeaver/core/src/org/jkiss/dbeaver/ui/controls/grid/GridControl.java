@@ -2,19 +2,34 @@ package org.jkiss.dbeaver.ui.controls.grid;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.handlers.IHandlerActivation;
@@ -22,8 +37,13 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * ResultSetControl
@@ -228,6 +248,7 @@ public class GridControl extends Composite implements Listener
         table = new Table(group, (style & ~SWT.BORDER));
         table.setLinesVisible(true);
         table.setHeaderVisible(true);
+        
         gd = new GridData(GridData.FILL_BOTH);
         table.setLayoutData(gd);
 
@@ -245,6 +266,7 @@ public class GridControl extends Composite implements Listener
         table.addListener(SWT.KeyUp, this);
         table.addListener(SWT.FocusIn, this);
         table.addListener(SWT.FocusOut, this);
+        table.addListener(SWT.MeasureItem, this);
 
         if ((style & SWT.VIRTUAL) != 0) {
             lazyRow = new LazyGridRow();
@@ -265,6 +287,7 @@ public class GridControl extends Composite implements Listener
 
         tableEditor = new TableEditor(table);
         tableEditor.horizontalAlignment = SWT.LEFT;
+        tableEditor.verticalAlignment = SWT.CENTER;
         tableEditor.grabHorizontal = true;
         tableEditor.grabVertical = true;
         tableEditor.minimumWidth = 50;
@@ -308,7 +331,9 @@ public class GridControl extends Composite implements Listener
                 break;
             }
             case SWT.MouseDown: {
+                cancelInlineEditor();
                 if (!startMouseSelection(event, false)) {
+                    endMouseSelection();
                     openCellViewer(event, true);
                 }
                 break;
@@ -326,6 +351,7 @@ public class GridControl extends Composite implements Listener
                 break;
             }
             case SWT.MouseDoubleClick: {
+                cancelInlineEditor();
                 endMouseSelection();
                 openCellViewer(event, false);
                 break;
@@ -343,6 +369,9 @@ public class GridControl extends Composite implements Listener
                 break;
             case SWT.FocusOut:
                 registerActions(false);
+                break;
+            case SWT.MeasureItem:
+                event.height = event.gc.getFontMetrics().getHeight() + 3;
                 break;
         }
     }
@@ -419,7 +448,7 @@ public class GridControl extends Composite implements Listener
                     event.gc.setClipping(bounds.x, bounds.y, bounds.width, bounds.height);
                     event.gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
                     //event.gc.drawFocus(bounds.x, bounds.y, bounds.width, bounds.height);
-                    event.gc.drawText(item.getText(x), bounds.x + 5, bounds.y);
+                    event.gc.drawText(item.getText(x), bounds.x + 5, bounds.y + 1);
                 }
             }
         }
@@ -921,6 +950,9 @@ public class GridControl extends Composite implements Listener
 
     void openCellViewer(Event event, boolean inline)
     {
+        if (dataProvider == null) {
+            return;
+        }
         // The control that will be the editor must be a child of the Table
         GridPos pos = getPosFromPoint(event.x, event.y);
         if (pos == null || pos.row < 0 || pos.col < 0) {
@@ -929,11 +961,22 @@ public class GridControl extends Composite implements Listener
 
         TableItem item = table.getItem(pos.row);
 
+        Composite placeholder = null;
         if (inline) {
+            cancelInlineEditor();
 
-            Control oldEditor = tableEditor.getEditor();
-            if (oldEditor != null) oldEditor.dispose();
-
+            placeholder = new Composite(table, SWT.BORDER);
+            GridLayout layout = new GridLayout(1, true);
+            layout.marginWidth = 0;
+            layout.marginHeight = 0;
+            placeholder.setLayout(layout);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.horizontalIndent = 0;
+            gd.verticalIndent = 0;
+            gd.grabExcessHorizontalSpace = true;
+            gd.grabExcessVerticalSpace = true;
+            placeholder.setLayoutData(gd);
+/*
             Text newEditor = new Text(table, SWT.NONE);
             //newEditor.setSize(200, 200);
             newEditor.setText(item.getText(pos.col));
@@ -945,15 +988,46 @@ public class GridControl extends Composite implements Listener
             newEditor.selectAll();
             newEditor.setFocus();
             tableEditor.setEditor(newEditor, item, pos.col);
-
-        } else {
+*/
+        }
+        lazyRow.index = pos.row;
+        lazyRow.column = pos.col;
+        lazyRow.item = item;
+        boolean editSuccess = dataProvider.showCellEditor(lazyRow, inline, placeholder);
+        if (inline) {
+            if (editSuccess) {
+                int columnWidth = curColumns.get(pos.col).getWidth();
+                int columnHeight = table.getItemHeight();
+                int minHeight = 0;
+                //Point editorSize = placeholder.computeSize(curColumns.get(pos.col).getWidth(), table.getItemHeight());
+                for (Control child : placeholder.getChildren()) {
+                    Point childSize = child.computeSize(columnWidth, columnHeight);
+                    if (childSize.y > minHeight) {
+                        minHeight = childSize.y;
+                    }
+                }
+                tableEditor.minimumHeight = minHeight + placeholder.getBorderWidth() * 2;//placeholder.getBounds().height;
+                //tableEditor.minimumWidth = columnWidth + placeholder.getBorderWidth() * 2;
+                tableEditor.setEditor(placeholder, item, pos.col);
+            } else {
+                // No editor was created so just drop placeholder
+                placeholder.dispose();
+            }
+        }
+/*
             if (dataProvider != null) {
                 lazyRow.item = item;
                 lazyRow.index = pos.row;
                 lazyRow.column = pos.col;
                 dataProvider.showRowViewer(lazyRow, false);
             }
-        }
+*/
+    }
+
+    public void cancelInlineEditor()
+    {
+        Control oldEditor = tableEditor.getEditor();
+        if (oldEditor != null) oldEditor.dispose();
     }
 
     public int getItemCount()

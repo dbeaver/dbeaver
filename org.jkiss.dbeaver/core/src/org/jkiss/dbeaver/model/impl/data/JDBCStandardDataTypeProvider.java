@@ -3,7 +3,9 @@ package org.jkiss.dbeaver.model.impl.data;
 import org.jkiss.dbeaver.model.data.DBDDataTypeProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.eclipse.swt.graphics.Image;
 
 /**
@@ -18,7 +20,19 @@ public class JDBCStandardDataTypeProvider implements DBDDataTypeProvider {
 
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBSTypedObject type)
     {
-        return null;
+        DBSDataKind dataKind = JDBCUtils.getDataKind(type.getValueType());
+        switch (dataKind) {
+            case BOOLEAN:
+                return null;
+            case STRING:
+                return JDBCStringValueHandler.INSTANCE;
+            case NUMERIC:
+                return JDBCNumberValueHandler.INSTANCE;
+            case DATETIME:
+                return null;
+            default:
+                return null;
+        }
     }
 
 }

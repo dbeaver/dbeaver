@@ -1,11 +1,9 @@
 package org.jkiss.dbeaver.model.data;
 
-import org.eclipse.swt.widgets.Widget;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 
 /**
  * DBPDataTypeEditor
@@ -32,25 +30,8 @@ public interface DBDValueHandler
 
     /**
      * Shows value editor
-     * @param value value
-     * @param valueLocator value locator
-     * @param inlineEdit true if inline editor requested
-     * @param readOnly
-     *@param valueSite site of callee
-     * @param valueWidget widged where inline editor should be placed   @throws DBException on error
      */
-    void editValue(
-        DBCColumnMetaData column,
-        Object value,
-        DBDValueLocator valueLocator,
-        boolean inlineEdit,
-        boolean readOnly,
-        IWorkbenchPartSite valueSite,
-        Widget valueWidget)
+    boolean editValue(DBDValueController controller)
         throws DBException;
 
-    /**
-     * Frees all obtained resources
-     */
-    void dispose();
 }

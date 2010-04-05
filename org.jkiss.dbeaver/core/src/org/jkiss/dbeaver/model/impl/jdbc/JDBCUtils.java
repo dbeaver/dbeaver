@@ -1,6 +1,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -47,6 +48,43 @@ public class JDBCUtils
         }
     }
 
+    public static DBSDataKind getDataKind(int type)
+    {
+        switch (type) {
+            case java.sql.Types.BOOLEAN:
+                return DBSDataKind.BOOLEAN;
+            case java.sql.Types.CHAR:
+            case java.sql.Types.VARCHAR:
+            case java.sql.Types.LONGVARCHAR:
+                return DBSDataKind.STRING;
+            case java.sql.Types.BIGINT:
+            case java.sql.Types.BIT:
+            case java.sql.Types.DECIMAL:
+            case java.sql.Types.DOUBLE:
+            case java.sql.Types.FLOAT:
+            case java.sql.Types.INTEGER:
+            case java.sql.Types.NUMERIC:
+            case java.sql.Types.REAL:
+            case java.sql.Types.SMALLINT:
+            case java.sql.Types.TINYINT:
+                return DBSDataKind.NUMERIC;
+            case java.sql.Types.DATE:
+            case java.sql.Types.TIME:
+            case java.sql.Types.TIMESTAMP:
+                return DBSDataKind.DATETIME;
+            case java.sql.Types.BLOB:
+            case java.sql.Types.CLOB:
+            case java.sql.Types.VARBINARY:
+            case java.sql.Types.LONGVARBINARY:
+                return DBSDataKind.LOB;
+            case java.sql.Types.STRUCT:
+                return DBSDataKind.STRUCT;
+            case java.sql.Types.ARRAY:
+                return DBSDataKind.ARRAY;
+        }
+        return null;
+    }
+
     public static Object getParameter(ResultSet dbResult, int columnIndex, int columnType)
         throws DBCException
     {
@@ -55,10 +93,10 @@ public class JDBCUtils
                 case java.sql.Types.BOOLEAN:
                 case java.sql.Types.BIT:
                     try {
-                        return dbResult.getBoolean(columnIndex);
+                        return dbResult.getByte(columnIndex);
                     } catch (SQLException e) {
-                        // Try to get as integer
-                        return dbResult.getInt(columnIndex) != 0;
+                        // Try to get as int
+                        return dbResult.getInt(columnIndex);
                     }
                 case java.sql.Types.CHAR:
                 case java.sql.Types.VARCHAR:

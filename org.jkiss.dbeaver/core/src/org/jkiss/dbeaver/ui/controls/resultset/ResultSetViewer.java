@@ -25,11 +25,16 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueLocator;
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -48,6 +53,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 {
     static Log log = LogFactory.getLog(ResultSetViewer.class);
 
+    private IWorkbenchPartSite site;
     private ResultSetMode mode;
     private GridControl grid;
     private ResultSetProvider resultSetProvider;
@@ -72,6 +78,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
     {
         super();
+        this.site = site;
         this.mode = ResultSetMode.GRID;
         this.grid = new GridControl(
             parent,
@@ -386,23 +393,6 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         this.updateGridCursor();
     }
 
-/*
-    private void showUpdateCount(int updateCount)
-    {
-        TableColumn column = new TableColumn (resultsView, SWT.NONE);
-        column.setText("Updated Rows");
-        column.setToolTipText("Updated rows count");
-        curColumns.add(column);
-
-        TableItem item = new TableItem(resultsView, SWT.NONE);
-        item.setText(String.valueOf(updateCount));
-
-        resultsView.setItemCount(1);
-
-        column.pack();
-    }
-*/
-
     public boolean isEditable()
     {
         return false;
@@ -444,40 +434,72 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         }
     }
 
-    public void showRowViewer(IGridRow row, boolean editable)
+    public boolean showCellEditor(
+        final IGridRow row,
+        final boolean inline,
+        final Composite inlinePlaceholder)
     {
-/*
-        Object data = row.getData();
-        ResultSetColumn columnInfo;
-        if (data instanceof Object[]) {
-            data = ((Object[])data)[row.getColumn()];
-            columnInfo = metaColumns[row.getColumn()];
-        } else {
-            columnInfo = metaColumns[row.getIndex()];
-        }
-        // Determine column type and use appropriate viewer
-        DBSDataType dataType = null;
-        try {
-            dataType = resultSetProvider.getDataSource().getInfo().getSupportedDataType(columnInfo.metaData.getTypeName());
-        } catch (DBException e) {
-            log.warn("Can't determine column datatype", e);
-        }
-        boolean isLOB = false;
-        if (dataType != null && dataType.getDataKind() == DBSDataKind.LOB) {
-            isLOB = true;
-            if (data != null && !(data instanceof DBCLOB)) {
-                log.warn("Bad LOB data value");
-                isLOB = false;
+        final int columnIndex = (mode == ResultSetMode.GRID ? row.getColumn() : row.getIndex());
+        final Object[] curRow = (mode == ResultSetMode.GRID ? curRows.get(row.getIndex()) : curRows.get(curRowNum.row));
+        DBDValueController valueController = new DBDValueController() {
+            public DBCColumnMetaData getColumnMetaData()
+            {
+                return metaColumns[columnIndex].metaData;
             }
+
+            public Object getValue()
+            {
+                return curRow[columnIndex];
+            }
+
+            public void updateValue(Object value)
+            {
+                curRow[columnIndex] = value;
+                row.setText(row.getColumn(), getCellValue(value));
+            }
+
+            public DBDValueLocator getValueLocator()
+            {
+                return null;
+            }
+
+            public boolean isInlineEdit()
+            {
+                return inline;
+            }
+
+            public boolean isReadOnly()
+            {
+                return false;
+            }
+
+            public IWorkbenchPartSite getValueSite()
+            {
+                return site;
+            }
+
+            public Composite getInlinePlaceholder()
+            {
+                return inlinePlaceholder;
+            }
+
+            public void closeInlineEditor()
+            {
+                grid.cancelInlineEditor();
+            }
+
+            public void showMessage(String message, boolean error)
+            {
+                setStatus(message, error);
+            }
+        };
+        try {
+            return metaColumns[columnIndex].valueHandler.editValue(valueController);
         }
-        ValueViewDialog viewDialog;
-        if (isLOB) {
-            viewDialog = new LobViewDialog(grid.getShell(), row, columnInfo, (DBCLOB)data);
-        } else {
-            viewDialog = new TextViewDialog(grid.getShell(), row, columnInfo, data);
+        catch (Exception e) {
+            log.error(e);
+            return false;
         }
-        viewDialog.open();
-*/
     }
 
     public String getRowTitle(int rowNum)

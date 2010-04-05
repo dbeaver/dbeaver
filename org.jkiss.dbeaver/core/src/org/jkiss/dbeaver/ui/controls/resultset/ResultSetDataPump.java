@@ -20,7 +20,7 @@ import java.util.ArrayList;
  */
 class ResultSetDataPump implements SQLQueryDataPump {
 
-    private static DBDValueHandler DEFAULT_VALUE_HANDLER = new JDBCUnsupportedValueHandler();
+    private static DBDValueHandler DEFAULT_VALUE_HANDLER = JDBCUnsupportedValueHandler.INSTANCE;
 
     private ResultSetViewer resultSetViewer;
     private Display display;

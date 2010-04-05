@@ -1,5 +1,9 @@
 package org.jkiss.dbeaver.ui.controls.grid;
 
+import org.eclipse.swt.widgets.Widget;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.TableItem;
+
 /**
  * GridDataProvider
  */
@@ -11,7 +15,10 @@ public interface IGridDataProvider {
 
     void fillRowData(IGridRow row);
 
-    void showRowViewer(IGridRow row, boolean editable);
-
+    boolean showCellEditor(
+        IGridRow row,
+        boolean inline,
+        Composite inlinePlaceholder);
+    
     String getRowTitle(int rowNum);
 }
