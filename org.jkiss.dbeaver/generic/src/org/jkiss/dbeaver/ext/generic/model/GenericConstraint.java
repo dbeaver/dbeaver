@@ -1,28 +1,38 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
+import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.DBException;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * GenericConstraint
  */
-public abstract class GenericConstraint implements DBSConstraint<GenericDataSource, GenericTable>
+public class GenericConstraint implements DBSConstraint<GenericDataSource, GenericTable>
 {
+    private DBSConstraintType constraintType;
     private GenericTable table;
     private String name;
     private String remarks;
+    private List<GenericConstraintColumn> columns;
 
-    protected GenericConstraint(GenericTable table, String name, String remarks)
+    protected GenericConstraint(DBSConstraintType constraintType, GenericTable table, String name, String remarks)
     {
+        this.constraintType = constraintType;
         this.table = table;
         this.name = name;
         this.remarks = remarks;
+    }
+
+    public DBSConstraintType getConstraintType()
+    {
+        return constraintType;
     }
 
     @Property(name = "Owner", viewable = true, order = 2)
@@ -73,5 +83,18 @@ public abstract class GenericConstraint implements DBSConstraint<GenericDataSour
             }
         }
         return null;
+    }
+
+    public List<GenericConstraintColumn> getColumns()
+    {
+        return columns;
+    }
+
+    void addColumn(GenericConstraintColumn column)
+    {
+        if (columns == null) {
+            columns = new ArrayList<GenericConstraintColumn>();
+        }
+        this.columns.add(column);
     }
 }

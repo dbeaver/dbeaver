@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * GenericForeignKey
  */
-public class MySQLForeignKey extends AbstractForeignKey<MySQLDataSource, MySQLCatalog, MySQLTable, MySQLPrimaryKey>
+public class MySQLForeignKey extends AbstractForeignKey<MySQLDataSource, MySQLCatalog, MySQLTable, MySQLConstraint>
 {
     private DBSConstraintDefferability defferability;
     private List<MySQLForeignKeyColumn> columns;
@@ -20,7 +20,7 @@ public class MySQLForeignKey extends AbstractForeignKey<MySQLDataSource, MySQLCa
         MySQLTable table,
         String name,
         String remarks,
-        MySQLPrimaryKey referencedKey,
+        MySQLConstraint referencedKey,
         DBSConstraintCascade deleteRule,
         DBSConstraintCascade updateRule,
         DBSConstraintDefferability defferability)

@@ -6,10 +6,10 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
-import org.jkiss.dbeaver.model.struct.DBSPrimaryKey;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -83,15 +83,15 @@ public class ERDTable extends ERDNode {
         return false;
     }
 
-    DBSPrimaryKey getPrimaryKey()
+    DBSConstraint getPrimaryKey()
         throws DBException
     {
         // Try to get key number from primary key constraint column
         Collection<? extends DBSConstraint> constraints = getTable().getConstraints();
         if (constraints != null) {
             for (DBSConstraint constraint : constraints) {
-                if (constraint instanceof DBSPrimaryKey) {
-                    return (DBSPrimaryKey) constraint;
+                if (constraint.getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
+                    return constraint;
                 }
             }
         }
@@ -130,7 +130,7 @@ public class ERDTable extends ERDNode {
 
         // check independence
         independent = true;
-        DBSPrimaryKey primaryKey = getPrimaryKey();
+        DBSConstraint primaryKey = getPrimaryKey();
         if (primaryKey != null) {
             Collection<DBSConstraintColumn> constrColumns = primaryKey.getColumns();
             for (DBSConstraintColumn constrCol : constrColumns) {

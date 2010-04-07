@@ -1,10 +1,10 @@
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.DBSUniqueKey;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * Value locator.
@@ -13,24 +13,36 @@ import java.util.Map;
 public class DBDValueLocator {
 
     private DBSTable table;
-    private DBSUniqueKey uniqueKey;
-    private Map<DBSTableColumn, Object> keyValues;
+    private DBSConstraint uniqueKey;
+    private List<? extends DBCColumnMetaData> keyColumns;
 
-    public DBDValueLocator(DBSTable table, DBSUniqueKey uniqueKey, Map<DBSTableColumn, Object> keyValues) {
+    public DBDValueLocator(DBSTable table, DBSConstraint uniqueKey, List<? extends DBCColumnMetaData> keyColumns)
+    {
         this.table = table;
         this.uniqueKey = uniqueKey;
-        this.keyValues = keyValues;
+        this.keyColumns = keyColumns;
     }
 
     public DBSTable getTable() {
         return table;
     }
 
-    public DBSUniqueKey getUniqueKey() {
+    public DBSConstraint getUniqueKey() {
         return uniqueKey;
     }
 
-    public Map<DBSTableColumn, Object> getKeyValues() {
+    public List<? extends DBCColumnMetaData> getKeyColumns()
+    {
+        return keyColumns;
+    }
+
+/*
+    public Object[] getKeyValues(Object[] row) {
+        Object[] keyValues = new Object[keyColumns.size()];
+        for (DBSTableColumn column : keyColumns) {
+            keyColumns
+        }
         return keyValues;
     }
+*/
 }

@@ -1,23 +1,21 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.struct.DBSUtils;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.ResultSetMetaData;
-import java.util.List;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
-
-import net.sf.jkiss.utils.CommonUtils;
+import java.util.List;
+import java.util.Map;
 
 /**
  * JDBCResultSetMetaData

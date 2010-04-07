@@ -1,33 +1,32 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
-import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
 import org.jkiss.dbeaver.model.anno.Property;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
+import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
+import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 
 /**
  * GenericForeignKey
  */
-public class GenericForeignKey extends GenericConstraint implements DBSForeignKey<GenericDataSource, GenericTable>
+public class GenericForeignKey extends GenericConstraint implements DBSForeignKey<
+    GenericDataSource,
+    GenericTable>
 {
-    private GenericPrimaryKey referencedKey;
+    private GenericConstraint referencedKey;
     private DBSConstraintCascade deleteRule;
     private DBSConstraintCascade updateRule;
     private DBSConstraintDefferability defferability;
-    private List<GenericForeignKeyColumn> columns;
 
     public GenericForeignKey(GenericTable table,
         String name,
         String remarks,
-        GenericPrimaryKey referencedKey,
+        GenericConstraint referencedKey,
         DBSConstraintCascade deleteRule,
         DBSConstraintCascade updateRule,
         DBSConstraintDefferability defferability)
     {
-        super(table, name, remarks);
+        super(DBSConstraintType.FOREIGN_KEY, table, name, remarks);
         this.referencedKey = referencedKey;
         this.deleteRule = deleteRule;
         this.updateRule = updateRule;
@@ -41,7 +40,7 @@ public class GenericForeignKey extends GenericConstraint implements DBSForeignKe
     }
 
     @Property(name = "Ref Constraint", viewable = true, order = 4)
-    public GenericPrimaryKey getReferencedKey()
+    public GenericConstraint getReferencedKey()
     {
         return referencedKey;
     }
@@ -64,16 +63,4 @@ public class GenericForeignKey extends GenericConstraint implements DBSForeignKe
         return defferability;
     }
 
-    public List<GenericForeignKeyColumn> getColumns()
-    {
-        return columns;
-    }
-
-    void addColumn(GenericForeignKeyColumn column)
-    {
-        if (columns == null) {
-            columns = new ArrayList<GenericForeignKeyColumn>();
-        }
-        columns.add(column);
-    }
 }

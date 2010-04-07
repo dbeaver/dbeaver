@@ -11,7 +11,7 @@ public abstract class AbstractForeignKey<
     DATASOURCE extends DBPDataSource,
     CONTAINER extends DBSStructureContainer<DATASOURCE>,
     TABLE extends DBSTable<DATASOURCE, CONTAINER>,
-    PRIMARY_KEY extends DBSPrimaryKey<DATASOURCE, TABLE>>
+    PRIMARY_KEY extends DBSConstraint<DATASOURCE, TABLE>>
     extends AbstractConstraint<DATASOURCE, CONTAINER, TABLE>
     implements DBSForeignKey<DATASOURCE, TABLE>
 {
@@ -31,6 +31,11 @@ public abstract class AbstractForeignKey<
         this.referencedKey = referencedKey;
         this.deleteRule = deleteRule;
         this.updateRule = updateRule;
+    }
+
+    public DBSConstraintType getConstraintType()
+    {
+        return DBSConstraintType.FOREIGN_KEY;
     }
 
     @Property(name = "Ref Table", viewable = true, order = 3)

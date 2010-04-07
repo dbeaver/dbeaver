@@ -25,13 +25,11 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
@@ -243,7 +241,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                 GC gc = new GC(grid);
                 gc.setFont(grid.getFont());
                 for (ResultSetColumn column : metaColumns) {
-                    Point ext = gc.stringExtent(column.metaData.getName());
+                    Point ext = gc.stringExtent(column.metaData.getColumnName());
                     if (ext.x > defaultWidth) {
                         defaultWidth = ext.x;
                     }
@@ -379,8 +377,8 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                     grid.addColumn(
                         column.metaData.getLabel(),
                         CommonUtils.isEmpty(column.metaData.getTableName()) ?
-                            column.metaData.getName() :
-                            column.metaData.getTableName() + "." + column.metaData.getName());
+                            column.metaData.getColumnName() :
+                            column.metaData.getTableName() + "." + column.metaData.getColumnName());
                 }
             }
             grid.setItemCount(curRows.size());
@@ -508,7 +506,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             if (rowNum < 0 || rowNum >= metaColumns.length) {
                 return "";
             }
-            return metaColumns[rowNum].metaData.getName();
+            return metaColumns[rowNum].metaData.getColumnName();
         } else {
             return String.valueOf(rowNum + 1);
         }

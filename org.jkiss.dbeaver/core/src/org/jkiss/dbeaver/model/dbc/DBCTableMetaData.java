@@ -1,11 +1,20 @@
 package org.jkiss.dbeaver.model.dbc;
 
+import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.DBException;
+
 import java.util.List;
 
 /**
  * Result set table metadata
  */
 public interface DBCTableMetaData {
+
+    /**
+     * Table reference
+     * @return table
+     */
+    DBSTable getTable();
 
     /**
      * Table name
@@ -25,7 +34,8 @@ public interface DBCTableMetaData {
      * identify table row
      * @return true if this table has at least one unique identitier in the whole resultset.
      */
-    boolean isIdentitied();
+    boolean isIdentitied()
+        throws DBException;
 
     /**
      * Gets best table identifier.
@@ -33,6 +43,7 @@ public interface DBCTableMetaData {
      * @return list of identifier columns which identifies this table row the best way
      * or null if no identifiers found.
      */
-    List<DBCColumnMetaData> getBestIdentifier();
+    DBCTableIdentifier getBestIdentifier()
+        throws DBException;
 
 }

@@ -54,7 +54,7 @@ public abstract class ValueViewDialog extends Dialog {
             Label label = new Label(infoGroup, SWT.NONE);
             label.setText("Column Name: ");
             Text text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-            text.setText(columnInfo.getName());
+            text.setText(columnInfo.getColumnName());
 
             label = new Label(infoGroup, SWT.NONE);
             label.setText("Column Type: ");
@@ -72,7 +72,7 @@ public abstract class ValueViewDialog extends Dialog {
 
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        shell.setText(columnInfo.getName());
+        shell.setText(columnInfo.getColumnName());
     }
 
 }

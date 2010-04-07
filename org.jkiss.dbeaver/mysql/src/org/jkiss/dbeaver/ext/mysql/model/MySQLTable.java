@@ -34,7 +34,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
 
     private List<MySQLTableColumn> columns;
     private List<MySQLIndex> indexes;
-    private List<MySQLPrimaryKey> primaryKeys;
+    private List<MySQLConstraint> constraints;
     private List<MySQLForeignKey> foreignKeys;
 
     private long rowCount;
@@ -105,10 +105,10 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
     public List<? extends AbstractConstraint> getConstraints()
         throws DBException
     {
-        if (primaryKeys == null) {
-            primaryKeys = loadConstraints();
+        if (constraints == null) {
+            constraints = loadConstraints();
         }
-        return primaryKeys;
+        return constraints;
     }
 
     public List<MySQLForeignKey> getExportedKeys()
@@ -305,12 +305,12 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
-    private List<MySQLPrimaryKey> loadConstraints()
+    private List<MySQLConstraint> loadConstraints()
         throws DBException
     {
         try {
-            List<MySQLPrimaryKey> pkList = new ArrayList<MySQLPrimaryKey>();
-            Map<String, MySQLPrimaryKey> pkMap = new HashMap<String, MySQLPrimaryKey>();
+            List<MySQLConstraint> pkList = new ArrayList<MySQLConstraint>();
+            Map<String, MySQLConstraint> pkMap = new HashMap<String, MySQLConstraint>();
             DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
             // Load indexes
             ResultSet dbResult = metaData.getPrimaryKeys(
@@ -322,9 +322,10 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                     String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
                     int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
                     String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
-                    MySQLPrimaryKey pk = pkMap.get(pkName);
+                    MySQLConstraint pk = pkMap.get(pkName);
                     if (pk == null) {
-                        pk = new MySQLPrimaryKey(
+                        pk = new MySQLConstraint(
+                            DBSConstraintType.PRIMARY_KEY,
                             this,
                             pkName,
                             null);
@@ -362,7 +363,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         try {
             List<MySQLForeignKey> fkList = new ArrayList<MySQLForeignKey>();
             Map<String, MySQLForeignKey> fkMap = new HashMap<String, MySQLForeignKey>();
-            Map<String, MySQLPrimaryKey> pkMap = new HashMap<String, MySQLPrimaryKey>();
+            Map<String, MySQLConstraint> pkMap = new HashMap<String, MySQLConstraint>();
             DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
             // Load indexes
             ResultSet dbResult;
@@ -428,9 +429,9 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                     }
 
                     String pkFullName = pkTableFullName + "." + pkName;
-                    MySQLPrimaryKey pk = pkMap.get(pkFullName);
+                    MySQLConstraint pk = pkMap.get(pkFullName);
                     if (pk == null) {
-                        pk = new MySQLPrimaryKey(pkTable, pkName, null);
+                        pk = new MySQLConstraint(DBSConstraintType.PRIMARY_KEY, pkTable, pkName, null);
                         pkMap.put(pkFullName, pk);
                     }
                     MySQLForeignKey fk = fkMap.get(fkName);

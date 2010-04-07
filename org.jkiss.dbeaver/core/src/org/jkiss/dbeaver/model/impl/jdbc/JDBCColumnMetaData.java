@@ -1,15 +1,18 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Collection;
+
+import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * JDBCColumnMetaData
@@ -114,7 +117,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
         return label;
     }
 
-    public String getName()
+    public String getColumnName()
     {
         return name;
     }
@@ -132,6 +135,16 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
     public String getTableName()
     {
         return tableName;
+    }
+
+    public String getCatalogName()
+    {
+        return catalogName;
+    }
+
+    public String getSchemaName()
+    {
+        return schemaName;
     }
 
     public int getValueType()
@@ -178,7 +191,8 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
         if (getTableColumn() == null) {
             return false;
         }
-        for (DBSForeignKey fk : getTable().getTable().getImportedKeys()) {
+        Collection<? extends DBSForeignKey> foreignKeys = getTable().getTable().getImportedKeys();
+        for (DBSForeignKey fk : foreignKeys) {
             if (fk.getColumn(tableColumn) != null) {
                 return true;
             }
@@ -192,4 +206,25 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
         return null;
     }
 
+    @Override
+    public String toString()
+    {
+        StringBuilder db = new StringBuilder();
+        if (!CommonUtils.isEmpty(catalogName)) {
+            db.append(catalogName).append('.');
+        }
+        if (!CommonUtils.isEmpty(schemaName)) {
+            db.append(schemaName).append('.');
+        }
+        if (!CommonUtils.isEmpty(tableName)) {
+            db.append(tableName).append('.');
+        }
+        if (!CommonUtils.isEmpty(name)) {
+            db.append(name);
+        }
+        if (!CommonUtils.isEmpty(label)) {
+            db.append(" as ").append(label);
+        }
+        return db.toString();
+    }
 }

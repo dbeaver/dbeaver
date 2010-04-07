@@ -2,6 +2,7 @@ package org.jkiss.dbeaver.model.dbc;
 
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public interface DBCColumnMetaData extends DBSTypedObject
 
     String getLabel();
 
-    String getName();
+    String getColumnName();
 
     int getPrecision();
 
@@ -29,16 +30,28 @@ public interface DBCColumnMetaData extends DBSTypedObject
 
     String getTableName();
 
+    String getCatalogName();
+
+    String getSchemaName();
+
     boolean isReadOnly();
 
     boolean isWritable();
+
 
     /**
      * Owner table metadata
      * @return table metadata
      * @throws DBCException on any DB error
      */
-    DBCTableMetaData getTable();
+    DBSTableColumn getTableColumn() throws DBException;
+
+    /**
+     * Owner table metadata
+     * @return table metadata
+     * @throws DBCException on any DB error
+     */
+    DBCTableMetaData getTable() throws DBException;
 
     /**
      * Check this column is a reference.
