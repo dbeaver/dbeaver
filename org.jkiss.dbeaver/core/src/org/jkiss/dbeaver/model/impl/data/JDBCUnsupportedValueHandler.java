@@ -1,24 +1,13 @@
 package org.jkiss.dbeaver.model.impl.data;
 
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
-import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
-import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.swt.widgets.Widget;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.SWT;
-import org.eclipse.jface.dialogs.MessageDialog;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.PreparedStatement;
 
 /**
  * Standard JDBC value handler
@@ -26,6 +15,18 @@ import org.eclipse.jface.dialogs.MessageDialog;
 public class JDBCUnsupportedValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCUnsupportedValueHandler INSTANCE = new JDBCUnsupportedValueHandler();
+
+    protected Object getValueObject(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+        throws DBCException, SQLException
+    {
+        return resultSet.getObject(columnIndex);
+    }
+
+    protected void bindParameter(PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
+        throws DBCException, SQLException
+    {
+        throw new DBCException("Unsupported parameter type: " + paramType.getTypeName());
+    }
 
     public boolean editValue(DBDValueController controller)
         throws DBException

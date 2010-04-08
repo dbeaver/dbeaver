@@ -15,20 +15,33 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.SWT;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Standard JDBC value handler
  */
 public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
 
-    public Object getValueObject(DBCResultSet resultSet, int columnIndex)
+
+    public final Object getValueObject(DBCResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException
     {
-        return resultSet.getObject(columnIndex);
+        try {
+            return getValueObject((ResultSet) resultSet.getNestedResultSet(), columnType, columnIndex + 1);
+        }
+        catch (SQLException e) {
+            throw new DBCException("Could not get result set value", e);
+        }
     }
 
-    public void bindParameter(DBCStatement statement, DBSTypedObject columnMetaData, int paramIndex, Object value) throws DBCException {
-        throw new DBCException(columnMetaData.getTypeName() + " parameters binding not implemented");
+    public final void bindParameter(DBCStatement statement, DBSTypedObject columnMetaData, int paramIndex, Object value) throws DBCException {
+        try {
+            this.bindParameter((PreparedStatement) statement.getNestedStatement(), columnMetaData, paramIndex + 1, value);
+        }
+        catch (SQLException e) {
+            throw new DBCException("Could not bind statement parameter", e);
+        }
     }
 
     public DBDValueAnnotation[] getValueAnnotations(DBCColumnMetaData column)
@@ -40,6 +53,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     protected static interface ValueExtractor <T extends Control> {
          Object getValueFromControl(T control);
     }
+
     protected <T extends Control> void initInlineControl(
         final DBDValueController controller,
         final T control,
@@ -63,8 +77,9 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         });
     }
 
-    protected PreparedStatement getPreparedStatement(DBCStatement statement) {
-        return (PreparedStatement)statement.getNestedStatement();
-    }
+    protected abstract Object getValueObject(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+        throws DBCException, SQLException;
 
+    protected abstract void bindParameter(PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
+        throws DBCException, SQLException;
 }

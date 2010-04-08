@@ -44,8 +44,6 @@ public class SplitterEditorSite implements IEditorSite
     }
 
     /*
-      * (non-Javadoc)
-      *
       * @see org.eclipse.core.runtime.IAdaptable#getAdapter(java.lang.Class)
       */
     public Object getAdapter(Class adapter)

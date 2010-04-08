@@ -2,14 +2,12 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
+import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -40,7 +38,7 @@ public class ERDTable extends ERDNode {
         return table.getName();
     }
 
-    public DBSTable<DBPDataSource, DBSStructureContainer<DBPDataSource>> getTable()
+    public DBSTable getTable()
     {
         return table;
     }
@@ -132,8 +130,7 @@ public class ERDTable extends ERDNode {
         independent = true;
         DBSConstraint primaryKey = getPrimaryKey();
         if (primaryKey != null) {
-            Collection<DBSConstraintColumn> constrColumns = primaryKey.getColumns();
-            for (DBSConstraintColumn constrCol : constrColumns) {
+            for (DBSConstraintColumn constrCol : primaryKey.getColumns()) {
                 if (isInForeignKey(constrCol.getTableColumn())) {
                     independent = false;
                 }

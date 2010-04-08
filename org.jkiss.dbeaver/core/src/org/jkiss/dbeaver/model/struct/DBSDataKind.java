@@ -9,6 +9,7 @@ public enum DBSDataKind
     NUMERIC,
     STRING,
     DATETIME,
+    BINARY,
     LOB,
     STRUCT,
     ARRAY,

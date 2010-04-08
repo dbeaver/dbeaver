@@ -1,11 +1,9 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
-import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.DBException;
-
-import java.util.Collection;
+import org.jkiss.dbeaver.model.struct.DBSConstraint;
+import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 /**
  * ERDTableColumn
@@ -27,8 +25,7 @@ public class ERDTableColumn implements Comparable<ERDTableColumn> {
         // Try to get key number from primary key constraint metaColumn
         DBSConstraint primaryKey = table.getPrimaryKey();
         if (primaryKey != null) {
-            Collection<DBSConstraintColumn> constrColumns = primaryKey.getColumns();
-            for (DBSConstraintColumn constrCol : constrColumns) {
+            for (DBSConstraintColumn constrCol : primaryKey.getColumns()) {
                 if (constrCol.getTableColumn().equals(metaColumn)) {
                     keyNumber = constrCol.getOrdinalPosition();
                     break;

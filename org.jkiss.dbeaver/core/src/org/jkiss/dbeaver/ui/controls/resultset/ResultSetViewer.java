@@ -45,6 +45,9 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 {
     static Log log = LogFactory.getLog(ResultSetViewer.class);
 
+    private static final String NULL_VALUE_LABEL = "[NULL]";
+    private static final String ARRAY_VALUE_LABEL = "ARR";
+
     private static class CellInfo {
         int col;
         int row;
@@ -510,7 +513,10 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     private String getCellValue(Object colValue)
     {
         if (colValue == null) {
-            return "[NULL]";
+            return NULL_VALUE_LABEL;
+        } else if (colValue.getClass().isArray()) {
+            // Array of objects
+            return colValue.getClass().getComponentType().getName() + " array (" + java.lang.reflect.Array.getLength(colValue) + ")";
         } else {
             return colValue.toString();
         }
@@ -656,6 +662,20 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         updateGridCursor();
     }
 
+    private void applyChanges()
+    {
+        try {
+            new CellDataSaver().applyChanges();
+        } catch (DBException e) {
+            log.error("Could not obtain result set metdata", e);
+        }
+    }
+
+    private void rejectChanges()
+    {
+        new CellDataSaver().rejectChanges();
+    }
+
     class TableRowInfo {
         DBSTable table;
         DBCTableIdentifier id;
@@ -666,11 +686,24 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             this.id = id;
         }
     }
-    private void applyChanges()
-    {
-        try {
+
+    private class CellDataSaver {
+
+        private Map<Integer, Map<DBSTable, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSTable, TableRowInfo>>();
+        private List<SQLStatementInfo> statements = new ArrayList<SQLStatementInfo>();
+
+        void applyChanges()
+            throws DBException
+        {
+            prepareRows();
+            prepareStatements();
+            execute();
+        }
+
+        private void prepareRows()
+            throws DBException
+        {
             // Prepare rows
-            Map<Integer, Map<DBSTable, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSTable, TableRowInfo>>();
             for (CellInfo cell : editedValues) {
                 Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(cell.row);
                 if (tableMap == null) {
@@ -686,9 +719,12 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                 }
                 tableRowInfo.tableCells.add(cell);
             }
+        }
 
+        private void prepareStatements()
+            throws DBException
+        {
             // Make statements
-            List<SQLStatementInfo> statements = new ArrayList<SQLStatementInfo>();
             for (Integer rowNum : updatedRows.keySet()) {
                 Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(rowNum);
                 for (DBSTable table : tableMap.keySet()) {
@@ -725,7 +761,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                         int columnIndex = -1;
                         for (int i = 0; i < metaColumns.length; i++) {
                             ResultSetColumn tmpColumn = metaColumns[i];
-                            if (tmpColumn.metaData.getTableColumn() == idColumn.getTableColumn()) {
+                            if (idColumn.getTableColumn() == tmpColumn.metaData.getTableColumn()) {
                                 metaColumn = tmpColumn;
                                 columnIndex = i;
                                 break;
@@ -755,8 +791,11 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                     statements.add(statement);
                 }
             }
+        }
 
-
+        private void execute()
+            throws DBException
+        {
             // Execute statements
             SQLQueryJob executor = new SQLQueryJob(
                 "Update ResultSet",
@@ -787,7 +826,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                     site.getShell().getDisplay().asyncExec(new Runnable() {
                         public void run()
                         {
-                            grid.redraw();
+                            grid.redrawGrid();
                             updateEditControls();
                             updateInProgress = false;
                         }
@@ -795,20 +834,17 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                 }
             });
             executor.schedule();
-
-        } catch (DBException e) {
-            log.error("Could not obtain result set metdata", e);
         }
-    }
 
-    private void rejectChanges()
-    {
-        for (CellInfo cell : editedValues) {
-            curRows.get(cell.row)[cell.col] = cell.value;
+        public void rejectChanges()
+        {
+            for (CellInfo cell : editedValues) {
+                curRows.get(cell.row)[cell.col] = cell.value;
+            }
+            editedValues.clear();
+            grid.redrawGrid();
+            updateEditControls();
         }
-        editedValues.clear();
-        initResultSet();
-        updateEditControls();
     }
 
 }

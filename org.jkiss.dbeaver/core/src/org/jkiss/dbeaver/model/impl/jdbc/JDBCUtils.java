@@ -72,10 +72,12 @@ public class JDBCUtils
             case java.sql.Types.TIME:
             case java.sql.Types.TIMESTAMP:
                 return DBSDataKind.DATETIME;
-            case java.sql.Types.BLOB:
-            case java.sql.Types.CLOB:
+            case java.sql.Types.BINARY:
             case java.sql.Types.VARBINARY:
             case java.sql.Types.LONGVARBINARY:
+                return DBSDataKind.BINARY;
+            case java.sql.Types.BLOB:
+            case java.sql.Types.CLOB:
                 return DBSDataKind.LOB;
             case java.sql.Types.STRUCT:
                 return DBSDataKind.STRUCT;

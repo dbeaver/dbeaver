@@ -4,12 +4,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.ResultSet;
 
 /**
  * JDBC string value handler
@@ -18,6 +17,23 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCStringValueHandler INSTANCE = new JDBCStringValueHandler();
     private static final int MAX_STRING_LENGTH = 0xffff;
+
+    protected Object getValueObject(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+        throws SQLException
+    {
+        return resultSet.getString(columnIndex);
+    }
+
+    @Override
+    public void bindParameter(PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
+        throws SQLException
+    {
+        if (value == null) {
+            statement.setNull(paramIndex, paramType.getValueType());
+        } else {
+            statement.setString(paramIndex, value.toString());
+        }
+    }
 
     public boolean editValue(final DBDValueController controller)
         throws DBException
@@ -40,21 +56,6 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
             return true;
         } else {
             return false;
-        }
-    }
-
-    @Override
-    public void bindParameter(DBCStatement statement, DBSTypedObject columnMetaData, int paramIndex, Object value) throws DBCException
-    {
-        PreparedStatement dbStat = getPreparedStatement(statement);
-        try {
-            if (value == null) {
-                dbStat.setNull(paramIndex + 1, columnMetaData.getValueType());
-            } else {
-                dbStat.setString(paramIndex + 1, value.toString());
-            }
-        } catch (SQLException e) {
-            throw new DBCException("Could not bind string parameter", e);
         }
     }
 

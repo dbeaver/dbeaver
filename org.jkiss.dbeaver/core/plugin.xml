@@ -576,10 +576,10 @@
             <type standard="DATE"/>
             <type standard="TIME"/>
             <type standard="TIMESTAMP"/>
-            <!--
             <type standard="BINARY"/>
             <type standard="VARBINARY"/>
             <type standard="LONGVARBINARY"/>
+            <!--
             <type standard="NULL"/>
             <type standard="OTHER"/>
             -->

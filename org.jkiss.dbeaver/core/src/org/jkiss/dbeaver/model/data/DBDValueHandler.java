@@ -16,11 +16,11 @@ public interface DBDValueHandler
     /**
      * Extract string representation of spcified value
      * @param resultSet result set
-     * @param columnIndex column index
-     * @return string
+     * @param columnType
+     *@param columnIndex column index  @return string
      * @throws DBCException on error
      */
-    Object getValueObject(DBCResultSet resultSet, int columnIndex)
+    Object getValueObject(DBCResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException;
 
     /**

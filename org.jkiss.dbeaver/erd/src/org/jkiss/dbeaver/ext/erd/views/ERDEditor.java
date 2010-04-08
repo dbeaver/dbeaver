@@ -61,7 +61,7 @@ public class ERDEditor extends EditorPart implements IObjectEditor
 {
     static Log log = LogFactory.getLog(ERDEditor.class);
 
-    private DBSStructureContainer<DBPDataSource> container;
+    private DBSStructureContainer container;
     private ERDModel graphModel;
     private boolean loaded = false;
 
@@ -281,7 +281,7 @@ public class ERDEditor extends EditorPart implements IObjectEditor
         if (!(object instanceof DBSStructureContainer)) {
             throw new IllegalArgumentException("object must be of type " + DBSStructureContainer.class);
         }
-        container = (DBSStructureContainer<DBPDataSource>)object;
+        container = (DBSStructureContainer)object;
     }
 
     private void loadModel()

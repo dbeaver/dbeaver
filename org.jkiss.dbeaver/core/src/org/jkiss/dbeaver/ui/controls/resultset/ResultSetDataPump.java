@@ -111,7 +111,10 @@ class ResultSetDataPump implements SQLQueryDataPump {
     {
         Object[] row = new Object[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
-            row[i] = metaColumns[i].valueHandler.getValueObject(resultSet, i + 1);
+            row[i] = metaColumns[i].valueHandler.getValueObject(
+                resultSet,
+                metaColumns[i].metaData,
+                i);
         }
         rows.add(row);
     }

@@ -1,20 +1,20 @@
 package org.jkiss.dbeaver.model.impl.data;
 
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.DBException;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.SWT;
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -27,6 +27,56 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     static Log log = LogFactory.getLog(JDBCNumberValueHandler.class);
 
     private static final int MAX_NUMBER_LENGTH = 100;
+
+    protected Object getValueObject(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+        throws DBCException, SQLException
+    {
+        switch (columnType.getValueType()) {
+        case java.sql.Types.BIGINT:
+            return resultSet.getLong(columnIndex);
+        case java.sql.Types.FLOAT:
+            return resultSet.getFloat(columnIndex);
+        case java.sql.Types.INTEGER:
+            return resultSet.getInt(columnIndex);
+        case java.sql.Types.SMALLINT:
+            return resultSet.getShort(columnIndex);
+        case java.sql.Types.TINYINT:
+        case java.sql.Types.BIT:
+            return resultSet.getByte(columnIndex);
+        default:
+            return resultSet.getDouble(columnIndex);
+        }
+    }
+
+    protected void bindParameter(PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws SQLException
+    {
+        if (value == null) {
+            statement.setNull(paramIndex, paramType.getValueType());
+        } else {
+            Number number = (Number)value;
+            switch (paramType.getValueType()) {
+            case java.sql.Types.BIGINT:
+                statement.setLong(paramIndex, number.longValue());
+                break;
+            case java.sql.Types.FLOAT:
+                statement.setFloat(paramIndex, number.floatValue());
+                break;
+            case java.sql.Types.INTEGER:
+                statement.setInt(paramIndex, number.intValue());
+                break;
+            case java.sql.Types.SMALLINT:
+                statement.setShort(paramIndex, number.shortValue());
+                break;
+            case java.sql.Types.TINYINT:
+            case java.sql.Types.BIT:
+                statement.setByte(paramIndex, number.byteValue());
+                break;
+            default:
+                statement.setDouble(paramIndex, number.doubleValue());
+                break;
+            }
+        }
+    }
 
     public boolean editValue(final DBDValueController controller)
         throws DBException
@@ -112,41 +162,6 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             return true;
         } else {
             return false;
-        }
-    }
-
-    @Override
-    public void bindParameter(DBCStatement statement, DBSTypedObject columnMetaData, int paramIndex, Object value) throws DBCException
-    {
-        PreparedStatement dbStat = getPreparedStatement(statement);
-        try {
-            if (value == null) {
-                dbStat.setNull(paramIndex + 1, columnMetaData.getValueType());
-            } else {
-                Number number = (Number)value;
-                switch (columnMetaData.getValueType()) {
-                case java.sql.Types.BIGINT:
-                    dbStat.setLong(paramIndex + 1, number.longValue());
-                    break;
-                case java.sql.Types.FLOAT:
-                    dbStat.setFloat(paramIndex + 1, number.floatValue());
-                    break;
-                case java.sql.Types.INTEGER:
-                    dbStat.setInt(paramIndex + 1, number.intValue());
-                    break;
-                case java.sql.Types.SMALLINT:
-                    dbStat.setShort(paramIndex + 1, number.shortValue());
-                    break;
-                case java.sql.Types.TINYINT:
-                    dbStat.setByte(paramIndex + 1, number.byteValue());
-                    break;
-                default:
-                    dbStat.setDouble(paramIndex + 1, number.doubleValue());
-                    break;
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBCException("Could not bind numeric parameter", e);
         }
     }
 

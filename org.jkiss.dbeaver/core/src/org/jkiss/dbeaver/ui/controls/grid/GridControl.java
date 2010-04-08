@@ -52,6 +52,9 @@ public class GridControl extends Composite implements Listener
 {
     static Log log = LogFactory.getLog(GridControl.class);
 
+    public static final int MAX_DEF_COLUMN_WIDTH = 300;
+    public static final int MAX_INLINE_EDIT_WITH = 300;
+
     private static final int Event_ChangeCursor = 1000;
 
     private Table table;
@@ -434,6 +437,8 @@ public class GridControl extends Composite implements Listener
                     newRow = totalRows - 1;
                 }
                 break;
+            default:
+                return;
         }
         moveCursor(newCol, newRow, (event.stateMask & SWT.SHIFT) != 0);
         event.doit = false;
@@ -819,6 +824,9 @@ public class GridControl extends Composite implements Listener
         } else {
             for (TableColumn curColumn : curColumns) {
                 curColumn.pack();
+                if (curColumn.getWidth() > MAX_DEF_COLUMN_WIDTH) {
+                    curColumn.setWidth(MAX_DEF_COLUMN_WIDTH);
+                }
             }
         }
         // Reinit selection state
@@ -1012,6 +1020,9 @@ public class GridControl extends Composite implements Listener
                 Point editorSize = placeholder.computeSize(SWT.DEFAULT, SWT.DEFAULT);
                 minHeight = editorSize.y;
                 minWidth = editorSize.x;
+                if (minWidth > MAX_INLINE_EDIT_WITH) {
+                    minWidth = MAX_INLINE_EDIT_WITH;
+                }
                 tableEditor.minimumHeight = minHeight;// + placeholder.getBorderWidth() * 2;//placeholder.getBounds().height;
                 tableEditor.minimumWidth = minWidth;
 /*
@@ -1070,7 +1081,7 @@ public class GridControl extends Composite implements Listener
                 service.deactivateHandler(actionInfo.handlerActivation);
                 actionInfo.handlerActivation = null;
             }
-            // TODO: want to remove but can't. It's still needed for splitted editor (like SQL)
+            // TODO: want to remove but can't
             // where one editor page have many controls each with its own behavior
             if (register) {
                 site.getKeyBindingService().registerAction(actionInfo.action);
@@ -1109,6 +1120,12 @@ public class GridControl extends Composite implements Listener
         if (!curColumns.isEmpty() && this.getItemCount() > 0) {
             selection.add(cursorPosition);
         }
+    }
+
+    public void redrawGrid()
+    {
+        Rectangle bounds = table.getBounds();
+        table.redraw(bounds.x, bounds.y, bounds.width, bounds.height, true);
     }
 
     private static class ActionInfo {

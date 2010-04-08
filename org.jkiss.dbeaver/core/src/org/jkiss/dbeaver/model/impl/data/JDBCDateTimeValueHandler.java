@@ -5,7 +5,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -14,6 +13,7 @@ import java.util.Date;
 import java.sql.Timestamp;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.ResultSet;
 
 /**
  * JDBC string value handler
@@ -21,7 +21,38 @@ import java.sql.SQLException;
 public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCDateTimeValueHandler INSTANCE = new JDBCDateTimeValueHandler();
-    private static final int MAX_STRING_LENGTH = 0xffff;
+
+    protected Object getValueObject(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+        throws DBCException, SQLException
+    {
+        switch (columnType.getValueType()) {
+        case java.sql.Types.TIME:
+            return resultSet.getTime(columnIndex);
+        case java.sql.Types.DATE:
+            return resultSet.getDate(columnIndex);
+        default:
+            return resultSet.getTimestamp(columnIndex);
+        }
+    }
+
+    protected void bindParameter(PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws SQLException
+    {
+        if (value == null) {
+            statement.setNull(paramIndex + 1, paramType.getValueType());
+        } else {
+            switch (paramType.getValueType()) {
+            case java.sql.Types.TIME:
+                statement.setTime(paramIndex, (java.sql.Time)value);
+                break;
+            case java.sql.Types.DATE:
+                statement.setDate(paramIndex, (java.sql.Date)value);
+                break;
+            default:
+                statement.setTimestamp(paramIndex, (Timestamp)value);
+                break;
+            }
+        }
+    }
 
     public boolean editValue(final DBDValueController controller)
         throws DBException
@@ -106,31 +137,6 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
             return new java.sql.Time(cl.getTimeInMillis());
         } else {
             return new Timestamp(cl.getTimeInMillis());
-        }
-    }
-
-    @Override
-    public void bindParameter(DBCStatement statement, DBSTypedObject columnMetaData, int paramIndex, Object value) throws DBCException
-    {
-        PreparedStatement dbStat = getPreparedStatement(statement);
-        try {
-            if (value == null) {
-                dbStat.setNull(paramIndex + 1, columnMetaData.getValueType());
-            } else {
-                switch (columnMetaData.getValueType()) {
-                case java.sql.Types.TIME:
-                    dbStat.setTime(paramIndex + 1, (java.sql.Time)value);
-                    break;
-                case java.sql.Types.DATE:
-                    dbStat.setDate(paramIndex + 1, (java.sql.Date)value);
-                    break;
-                default:
-                    dbStat.setTimestamp(paramIndex + 1, (Timestamp)value);
-                    break;
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBCException("Could not bind date-time parameter", e);
         }
     }
 
