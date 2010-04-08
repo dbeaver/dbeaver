@@ -9,7 +9,9 @@ public interface IGridDataProvider {
 
     boolean isEditable();
 
-    boolean isCellEditable(int column, int row);
+    boolean isCellEditable(int col, int row);
+
+    boolean isCellModified(int col, int row);
 
     boolean isInsertable();
 

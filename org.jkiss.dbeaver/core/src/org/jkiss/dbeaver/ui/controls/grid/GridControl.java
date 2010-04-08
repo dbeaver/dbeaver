@@ -78,6 +78,7 @@ public class GridControl extends Composite implements Listener
     private Color foregroundNormal;
     private Color foregroundLines;
     private Color foregroundSelected;
+    private Color backgroundModified;
     private Color cursorRectangle;
     private Color backgroundNormal;
     private Color backgroundControl;
@@ -108,6 +109,7 @@ public class GridControl extends Composite implements Listener
         foregroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
         foregroundLines = getDisplay().getSystemColor(SWT.COLOR_GRAY);
         foregroundSelected = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
+        backgroundModified = new Color(getDisplay(), 0xFF, 0xE4, 0xB5);//getDisplay().getSystemColor(SWT.COLOR_DARK_RED);
         cursorRectangle = getDisplay().getSystemColor(SWT.COLOR_DARK_RED);
         backgroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
         backgroundSelected = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
@@ -255,7 +257,7 @@ public class GridControl extends Composite implements Listener
 
         //TableCursor cyr = new TableCursor(table, SWT.NONE);
         //table.addListener(SWT.PaintItem, this);
-        //table.addListener(SWT.EraseItem, this);
+        table.addListener(SWT.EraseItem, this);
         table.addListener(SWT.Paint, this);
         table.addListener(SWT.Selection, this);
         table.addListener(SWT.MouseDown, this);
@@ -322,11 +324,12 @@ public class GridControl extends Composite implements Listener
                 paintItem(event);
                 break;
             }
+*/
             case SWT.EraseItem: {
                 eraseItem(event);
                 break;
             }
-*/
+
             case SWT.Selection: {
                 table.setSelection(-1);
                 break;
@@ -374,84 +377,6 @@ public class GridControl extends Composite implements Listener
             case SWT.MeasureItem:
                 event.height = event.gc.getFontMetrics().getHeight() + 3;
                 break;
-        }
-    }
-
-    private void paintSelection(Event event)
-    {
-        int headerHeight = table.getHeaderVisible() ? table.getHeaderHeight() : 0;
-        int eventY = event.y;
-        int eventHeight = event.height;
-        int eventX = event.x;
-        int eventWidth = event.width;
-        if (headerHeight > 0) {
-            if (eventY > 0) {
-                eventY -= headerHeight;
-            } else {
-                eventHeight -= headerHeight;
-            }
-        }
-
-        int itemHeight = table.getItemHeight();
-        int topIndex = table.getTopIndex() + eventY / itemHeight;
-        int itemCount = table.getItemCount();
-        if (itemCount == 0) {
-            return;
-        }
-        int bottomIndex = topIndex + eventHeight / itemHeight;
-        if (bottomIndex >= itemCount) {
-            bottomIndex = itemCount - 1;
-        }
-        if (topIndex < 0) {
-            topIndex = 0;
-        }
-        int leftIndex = 0;
-        int rightIndex = 0;
-
-        TableColumn[] columns = table.getColumns();
-        int leftOffset = table.getHorizontalBar().getSelection();
-
-        {
-            int tmpOffset = 0;
-            for (int i = 0; i < columns.length; i++) {
-                TableColumn column = columns[i];
-                tmpOffset += column.getWidth();
-                if (tmpOffset > leftOffset + eventX) {
-                    leftIndex = i;
-                    break;
-                }
-            }
-        }
-        {
-            int tmpOffset = 0;
-            boolean found = false;
-            for (int i = leftIndex + 1; i < columns.length; i++) {
-                tmpOffset += columns[i].getWidth();
-                if (tmpOffset > eventWidth) {
-                    rightIndex = i;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found || rightIndex >= columns.length) {
-                rightIndex = columns.length - 1;
-            }
-        }
-
-        // Draw selection
-        event.gc.setBackground(backgroundSelected);
-        event.gc.setForeground(foregroundSelected);
-        for (int y = topIndex; y <= bottomIndex; y++) {
-            TableItem item = table.getItem(y);
-            for (int x = leftIndex; x <= rightIndex; x++) {
-                if (isCellSelected(x, y)) {
-                    Rectangle bounds = item.getBounds(x);
-                    event.gc.setClipping(bounds.x, bounds.y, bounds.width, bounds.height);
-                    event.gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
-                    //event.gc.drawFocus(bounds.x, bounds.y, bounds.width, bounds.height);
-                    event.gc.drawText(item.getText(x), bounds.x + 5, bounds.y + 1);
-                }
-            }
         }
     }
 
@@ -663,13 +588,20 @@ public class GridControl extends Composite implements Listener
         GC gc = event.gc;
         TableItem item = (TableItem) event.item;
         int rowIndex = table.indexOf(item);
-        boolean isSelected = isCellSelected(event.index, rowIndex);
-        boolean isCursorCell = (cursorPosition != null && cursorPosition.col == event.index && cursorPosition.row == rowIndex);
+        //boolean isSelected = isCellSelected(event.index, rowIndex);
+        //boolean isCursorCell = (cursorPosition != null && cursorPosition.col == event.index && cursorPosition.row == rowIndex);
         Rectangle itemBounds = item.getBounds(event.index);
         if (itemBounds.x + itemBounds.width < 0 || itemBounds.x > table.getSize().x) {
             return;
         }
-        //System.out.println(event.index + ":" + rowIndex);
+
+        Color oldBackground = gc.getBackground();
+        if (dataProvider.isCellModified(event.index, rowIndex)) {
+            gc.setBackground(backgroundModified);
+            gc.fillRectangle(itemBounds.x, itemBounds.y, itemBounds.width, itemBounds.height);
+        }
+        gc.setBackground(oldBackground);
+/*
         // Erase background
         Color oldBackground = gc.getBackground();
         gc.setBackground(isSelected ? backgroundSelected : backgroundNormal);
@@ -686,6 +618,7 @@ public class GridControl extends Composite implements Listener
 
         gc.setBackground(oldBackground);
         gc.setForeground(foregroundNormal);
+*/
     }
 
     private void paintItem(Event event)
@@ -716,6 +649,86 @@ public class GridControl extends Composite implements Listener
             event.gc.drawRectangle(itemBounds.x, itemBounds.y, itemBounds.width - 2, itemBounds.height - 2);
         }
         event.doit = false;
+    }
+
+    private void paintSelection(Event event)
+    {
+        int headerHeight = table.getHeaderVisible() ? table.getHeaderHeight() : 0;
+        int eventY = event.y;
+        int eventHeight = event.height;
+        int eventX = event.x;
+        int eventWidth = event.width;
+        if (headerHeight > 0) {
+            if (eventY > 0) {
+                eventY -= headerHeight;
+            } else {
+                eventHeight -= headerHeight;
+            }
+        }
+
+        int itemHeight = table.getItemHeight();
+        int topIndex = table.getTopIndex() + eventY / itemHeight;
+        int itemCount = table.getItemCount();
+        if (itemCount == 0) {
+            return;
+        }
+        int bottomIndex = topIndex + eventHeight / itemHeight;
+        if (bottomIndex >= itemCount) {
+            bottomIndex = itemCount - 1;
+        }
+        if (topIndex < 0) {
+            topIndex = 0;
+        }
+        int leftIndex = 0;
+        int rightIndex = 0;
+
+        TableColumn[] columns = table.getColumns();
+        int leftOffset = table.getHorizontalBar().getSelection();
+
+        {
+            int tmpOffset = 0;
+            for (int i = 0; i < columns.length; i++) {
+                TableColumn column = columns[i];
+                tmpOffset += column.getWidth();
+                if (tmpOffset > leftOffset + eventX) {
+                    leftIndex = i;
+                    break;
+                }
+            }
+        }
+        {
+            int tmpOffset = 0;
+            boolean found = false;
+            for (int i = leftIndex + 1; i < columns.length; i++) {
+                tmpOffset += columns[i].getWidth();
+                if (tmpOffset > eventWidth) {
+                    rightIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found || rightIndex >= columns.length) {
+                rightIndex = columns.length - 1;
+            }
+        }
+
+        // Draw selection
+        event.gc.setBackground(backgroundSelected);
+        event.gc.setForeground(foregroundSelected);
+        for (int y = topIndex; y <= bottomIndex; y++) {
+            TableItem item = table.getItem(y);
+            for (int x = leftIndex; x <= rightIndex; x++) {
+                if (isCellSelected(x, y)) {
+                    event.gc.setBackground(backgroundSelected);
+                    event.gc.setForeground(foregroundSelected);
+                    Rectangle bounds = item.getBounds(x);
+                    event.gc.setClipping(bounds.x, bounds.y, bounds.width, bounds.height);
+                    event.gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
+                    //event.gc.drawFocus(bounds.x, bounds.y, bounds.width, bounds.height);
+                    event.gc.drawText(item.getText(x), bounds.x + 5, bounds.y + 1);
+                }
+            }
+        }
     }
 
     private void redrawItems(Collection<GridPos> posList)
@@ -1035,6 +1048,11 @@ public class GridControl extends Composite implements Listener
     public int getColumnsCount()
     {
         return table.getColumnCount();
+    }
+
+    public void refreshCell(int col, int row)
+    {
+        
     }
 
     private void registerActions(boolean register)

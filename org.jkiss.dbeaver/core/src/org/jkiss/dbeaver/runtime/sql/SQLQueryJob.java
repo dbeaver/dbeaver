@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DataSourceJob;
-import org.jkiss.dbeaver.ui.editors.sql.SQLScriptLine;
+import org.jkiss.dbeaver.ui.editors.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class SQLQueryJob extends DataSourceJob
     private static final int DEFAULT_MAX_ROWS = 500;
 
     private DBCSession session;
-    private List<SQLScriptLine> queries;
+    private List<SQLStatementInfo> queries;
     private SQLQueryDataPump dataPump;
 
     private SQLScriptCommitType commitType;
@@ -48,7 +48,7 @@ public class SQLQueryJob extends DataSourceJob
     public SQLQueryJob(
         String name,
         DBCSession session,
-        List<SQLScriptLine> queries,
+        List<SQLStatementInfo> queries,
         SQLQueryDataPump dataPump)
     {
         super(
@@ -99,7 +99,7 @@ public class SQLQueryJob extends DataSourceJob
 
             for (int queryNum = 0; queryNum < queries.size(); ) {
                 // Execute query
-                SQLScriptLine query = queries.get(queryNum);
+                SQLStatementInfo query = queries.get(queryNum);
 
                 boolean runNext = executeSingleQuery(monitor, query);
                 if (!runNext) {
@@ -206,7 +206,7 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeSingleQuery(DBRProgressMonitor monitor, SQLScriptLine query)
+    private boolean executeSingleQuery(DBRProgressMonitor monitor, SQLStatementInfo query)
     {
         lastError = null;
 
@@ -275,6 +275,10 @@ public class SQLQueryJob extends DataSourceJob
     private void fetchQueryData(SQLQueryResult result, DBRProgressMonitor monitor)
         throws DBCException
     {
+        if (dataPump == null) {
+            // No data pump - skip fetching stage
+            return;
+        }
         monitor.subTask("Fetch result set");
         if (curStatement.hasResultSet()) {
             DBCResultSet resultSet = curStatement.getResultSet();

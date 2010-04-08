@@ -16,26 +16,25 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
+import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
+import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.grid.*;
+import org.jkiss.dbeaver.DBException;
 
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -44,6 +43,28 @@ import java.util.List;
 public class ResultSetViewer extends Viewer implements IGridDataProvider, IPropertyChangeListener
 {
     static Log log = LogFactory.getLog(ResultSetViewer.class);
+
+    private static class CellInfo {
+        int col;
+        int row;
+        Object value;
+
+        private CellInfo(int col, int row, Object value) {
+            this.col = col;
+            this.row = row;
+            this.value = value;
+        }
+        public boolean equals (Object cell)
+        {
+            return cell instanceof CellInfo &&
+                this.col == ((CellInfo)cell).col &&
+                this.row == ((CellInfo)cell).row;
+        }
+        boolean equals (int col, int row)
+        {
+            return this.col == col && this.row == row;
+        }
+    }
 
     private IWorkbenchPartSite site;
     private ResultSetMode mode;
@@ -60,12 +81,17 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     private Color colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
     private Color colorBlack = Display.getDefault().getSystemColor(SWT.COLOR_BLACK);
 
+    private ToolItem itemAccept;
+    private ToolItem itemReject;
+
     private ToolItem itemToggleView;
     private ToolItem itemNext;
     private ToolItem itemPrevious;
     private ToolItem itemFirst;
     private ToolItem itemLast;
     private ToolItem itemRefresh;
+
+    private List<CellInfo> editedValues = new ArrayList<CellInfo>();
 
     public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
     {
@@ -139,6 +165,13 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         this.initResultSet();
     }
 
+    private void updateEditControls()
+    {
+        boolean hasChanges = !editedValues.isEmpty();
+        itemAccept.setEnabled(hasChanges);
+        itemReject.setEnabled(hasChanges);
+    }
+
     private void createStatusBar(Composite parent)
     {
         Composite statusBar = new Composite(parent, SWT.NONE);
@@ -157,6 +190,20 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             ToolBar toolBar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
             toolBar.setLayoutData(gd);
+
+            itemAccept = UIUtils.createToolItem(toolBar, "Apply changes", DBIcon.ACCEPT, new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+                    applyChanges();
+                }
+            });
+            itemReject = UIUtils.createToolItem(toolBar, "Reject changes", DBIcon.REJECT, new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+                    rejectChanges();
+                }
+            });
+            new ToolItem(toolBar, SWT.SEPARATOR);
             itemToggleView = UIUtils.createToolItem(toolBar, "Toggle View", DBIcon.RS_MODE_GRID, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
@@ -220,6 +267,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                 }
             });
         }
+        updateEditControls();
     }
 
     private void changeMode(ResultSetMode resultSetMode)
@@ -273,6 +321,8 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         if (!grid.isDisposed()) {
             grid.dispose();
         }
+        itemAccept.dispose();
+        itemReject.dispose();
         itemToggleView.dispose();
         itemNext.dispose();
         itemPrevious.dispose();
@@ -360,6 +410,8 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
     private void initResultSet()
     {
+        this.editedValues.clear();
+
         grid.setRedraw(false);
         grid.clearGrid();
         if (mode == ResultSetMode.RECORD) {
@@ -396,20 +448,34 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         return true;
     }
 
-    public boolean isCellEditable(int column, int row) {
+    public boolean isCellEditable(int col, int row) {
         if (mode == ResultSetMode.RECORD) {
             if (row < 0 || row >= metaColumns.length) {
-                log.warn("Bad cell requsted - " + column + ":" + row);
+                log.warn("Bad cell requsted - " + col + ":" + row);
                 return false;
             }
             return metaColumns[row].editable;
         } else {
-            if (column < 0 || column >= metaColumns.length) {
-                log.warn("Bad cell requsted - " + column + ":" + row);
+            if (col < 0 || col >= metaColumns.length) {
+                log.warn("Bad cell requsted - " + col + ":" + row);
                 return false;
             }
-            return metaColumns[column].editable;
+            return metaColumns[col].editable;
         }
+    }
+
+    public boolean isCellModified(int col, int row) {
+        if (mode == ResultSetMode.RECORD) {
+            int oldcol = col;
+            col = row;
+            row = oldcol;
+        }
+        for (int i = 0; i < editedValues.size(); i++) {
+            if (editedValues.get(i).equals(col, row)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isInsertable()
@@ -454,7 +520,8 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         final Composite inlinePlaceholder)
     {
         final int columnIndex = (mode == ResultSetMode.GRID ? row.getColumn() : row.getIndex());
-        final Object[] curRow = (mode == ResultSetMode.GRID ? curRows.get(row.getIndex()) : curRows.get(curRowNum.row));
+        final int rowIndex = (mode == ResultSetMode.GRID ? row.getIndex() : row.getColumn());
+        final Object[] curRow = curRows.get(rowIndex);
         DBDValueController valueController = new DBDValueController() {
             public DBCColumnMetaData getColumnMetaData()
             {
@@ -468,8 +535,16 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
             public void updateValue(Object value)
             {
-                curRow[columnIndex] = value;
-                row.setText(row.getColumn(), getCellValue(value));
+                Object oldValue = curRow[columnIndex];
+                if (!CommonUtils.equalObjects(oldValue, value)) {
+                    CellInfo cell = new CellInfo(columnIndex, rowIndex, oldValue);
+                    if (!editedValues.contains(cell)) {
+                        editedValues.add(cell);
+                    }
+                    curRow[columnIndex] = value;
+                    row.setText(row.getColumn(), getCellValue(value));
+                    updateEditControls();
+                }
             }
 
             public DBDValueLocator getValueLocator()
@@ -569,12 +644,93 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     public void refresh()
     {
         // Refresh all rows
+        this.editedValues.clear();
+
         this.curRows.clear();
         this.clearResultsView();
         if (resultSetProvider != null) {
             resultSetProvider.extractResultSetData(0);
         }
         updateGridCursor();
+    }
+
+    class TableRowInfo {
+        DBSTable table;
+        DBCTableIdentifier id;
+        List<CellInfo> tableCells = new ArrayList<CellInfo>();
+
+        TableRowInfo(DBSTable table, DBCTableIdentifier id) {
+            this.table = table;
+            this.id = id;
+        }
+    }
+    private void applyChanges()
+    {
+        // Prepare rows
+        Map<Integer, Map<DBSTable, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSTable, TableRowInfo>>();
+        for (CellInfo cell : editedValues) {
+            Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(cell.row);
+            if (tableMap == null) {
+                tableMap = new HashMap<DBSTable, TableRowInfo>();
+                updatedRows.put(cell.row, tableMap);
+            }
+
+            try {
+                DBCTableMetaData metaTable = metaColumns[cell.col].metaData.getTable();
+                TableRowInfo tableRowInfo = tableMap.get(metaTable.getTable());
+                if (tableRowInfo == null) {
+                    tableRowInfo = new TableRowInfo(metaTable.getTable(), metaTable.getBestIdentifier());
+                    tableMap.put(metaTable.getTable(), tableRowInfo);
+                }
+                tableRowInfo.tableCells.add(cell);
+            } catch (DBException e) {
+                log.error("Could not obtain result set metdata", e);
+                return;
+            }
+        }
+
+        // Update each row
+        for (Integer rowNum : updatedRows.keySet()) {
+            Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(rowNum);
+            for (DBSTable table : tableMap.keySet()) {
+                TableRowInfo rowInfo = tableMap.get(table);
+
+                String tableName = rowInfo.table.getFullQualifiedName();
+
+                StringBuilder query = new StringBuilder();
+                query.append("UPDATE ").append(tableName).append(" SET ");
+                for (int i = 0; i < rowInfo.tableCells.size(); i++) {
+                    CellInfo cell = rowInfo.tableCells.get(i);
+                    if (i > 0) {
+                        query.append(",");
+                    }
+                    query.append(metaColumns[cell.col].metaData.getColumnName()).append("=?");
+                }
+                query.append(" WHERE ");
+                Collection<DBSConstraintColumn> idColumns = rowInfo.id.getConstraint().getColumns();
+                boolean firstCol = true;
+                for (DBSConstraintColumn idColumn : idColumns) {
+                    if (!firstCol) {
+                        query.append(" AND ");
+                    }
+                    query.append(idColumn.getName()).append("=?");
+                    firstCol = false;
+                }
+                System.out.println("QUERY: " + query.toString());
+            }
+        }
+
+        updateEditControls();
+    }
+
+    private void rejectChanges()
+    {
+        for (CellInfo cell : editedValues) {
+            curRows.get(cell.row)[cell.col] = cell.value;
+        }
+        editedValues.clear();
+        initResultSet();
+        updateEditControls();
     }
 
 }

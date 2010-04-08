@@ -1,6 +1,6 @@
 package org.jkiss.dbeaver.runtime.sql;
 
-import org.jkiss.dbeaver.ui.editors.sql.SQLScriptLine;
+import org.jkiss.dbeaver.ui.editors.sql.SQLStatementInfo;
 
 /**
  * DefaultQueryListener
@@ -11,7 +11,7 @@ public class DefaultQueryListener implements SQLQueryListener
     {
     }
 
-    public void onStartQuery(SQLScriptLine query)
+    public void onStartQuery(SQLStatementInfo query)
     {
     }
 

@@ -230,7 +230,10 @@ public class EntityEditor extends SplitterEditorPart implements IDBMListener, IM
         if (event.getNode() == entityInput.getNode()) {
             if (event.getAction() == DBMEvent.Action.REMOVE) {
                 getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
-                    getSite().getWorkbenchWindow().getActivePage().closeEditor(EntityEditor.this, false);
+                    IWorkbenchPage workbenchPage = getSite().getWorkbenchWindow().getActivePage();
+                    if (workbenchPage != null) {
+                        workbenchPage.closeEditor(EntityEditor.this, false);
+                    }
                 }});
             } else if (event.getAction() == DBMEvent.Action.REFRESH) {
                 getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {

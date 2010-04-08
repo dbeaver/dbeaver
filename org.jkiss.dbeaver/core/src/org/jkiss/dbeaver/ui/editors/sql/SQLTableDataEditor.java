@@ -152,11 +152,11 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
         StringBuilder query = new StringBuilder();
         String tableName = table.getFullQualifiedName();
         query.append("SELECT * FROM ").append(tableName);
-        SQLScriptLine scriptLine = new SQLScriptLine(query.toString(), 0, query.length());
+        SQLStatementInfo statementInfo = new SQLStatementInfo(query.toString());
         final SQLQueryJob job = new SQLQueryJob(
             "Table " + tableName,
             curSession,
-            Collections.singletonList(scriptLine),
+            Collections.singletonList(statementInfo),
             resultSetView.getDataPump());
 
         job.addQueryListener(new DefaultQueryListener()

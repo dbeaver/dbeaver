@@ -6,6 +6,8 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
+import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.events.KeyListener;
@@ -21,6 +23,10 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         throws DBCException
     {
         return resultSet.getObject(columnIndex);
+    }
+
+    public void bindParameter(DBCStatement statement, DBSTypedObject columnMetaData, int paramIndex, Object value) throws DBCException {
+        throw new DBCException(columnMetaData.getTypeName() + " parameters binding not implemented");
     }
 
     public DBDValueAnnotation[] getValueAnnotations(DBCColumnMetaData column)

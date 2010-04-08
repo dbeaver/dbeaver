@@ -40,6 +40,9 @@ public enum DBIcon
     ZOOM_IN("zoom_in", "/icons/misc/zoom_in.png"),
     ZOOM_OUT("zoom_out", "/icons/misc/zoom_out.png"),
 
+    ACCEPT("accept", "/icons/sql/accept.png"),
+    REJECT("reject", "/icons/sql/cancel.png"),
+
     EDIT_DATABSE("edit_database", "/icons/misc/edit_database.png"),
     EDIT_TABLE("edit_table", "/icons/misc/edit_table.png"),
     EDIT_COLUMN("edit_column", "/icons/misc/edit_column.png"),

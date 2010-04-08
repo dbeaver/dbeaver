@@ -419,17 +419,17 @@ public class SQLEditor extends TextEditor
         }
         if (script) {
             // Execute all SQL statements consequently
-            List<SQLScriptLine> scriptLines;
+            List<SQLStatementInfo> statementInfos;
             ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
             if (selection.getLength() > 1) {
-                scriptLines = extractScriptQueries(selection.getOffset(), selection.getLength());
+                statementInfos = extractScriptQueries(selection.getOffset(), selection.getLength());
             } else {
-                scriptLines = extractScriptQueries(0, document.getLength());
+                statementInfos = extractScriptQueries(0, document.getLength());
             }
-            processQuery(scriptLines);
+            processQuery(statementInfos);
         } else {
             // Execute statement under cursor or selected text (if selection present)
-            SQLScriptLine sqlQuery = extractActiveQuery();
+            SQLStatementInfo sqlQuery = extractActiveQuery();
             if (sqlQuery == null) {
                 setStatus("Empty query string", ConsoleMessageType.ERROR);
             } else {
@@ -438,9 +438,9 @@ public class SQLEditor extends TextEditor
         }
     }
 
-    private SQLScriptLine extractActiveQuery()
+    private SQLStatementInfo extractActiveQuery()
     {
-        SQLScriptLine sqlQuery;
+        SQLStatementInfo sqlQuery;
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
         String selText = selection.getText().trim();
         selText = selText.trim();
@@ -448,7 +448,9 @@ public class SQLEditor extends TextEditor
             selText = selText.substring(0, selText.length() - syntaxManager.getStatementDelimiter().length());
         }
         if (!CommonUtils.isEmpty(selText)) {
-            sqlQuery = new SQLScriptLine(selText, selection.getOffset(), selection.getLength());
+            sqlQuery = new SQLStatementInfo(selText);
+            sqlQuery.setOffset(selection.getOffset());
+            sqlQuery.setLength(selection.getLength());
         } else {
             sqlQuery = extractQueryAtPos(selection.getOffset());
         }
@@ -471,7 +473,7 @@ public class SQLEditor extends TextEditor
         return str.trim().length() == 0;
     }
 
-    public SQLScriptLine extractQueryAtPos(int currentPos)
+    public SQLStatementInfo extractQueryAtPos(int currentPos)
     {
         IDocument document = getDocument();
         if (document.getLength() == 0) {
@@ -550,10 +552,10 @@ public class SQLEditor extends TextEditor
                         queryText = queryText.substring(0, queryText.length() - syntaxManager.getStatementDelimiter().length()); 
                     }
                     // make script line
-                    return new SQLScriptLine(
-                        queryText.trim(),
-                        statementStart,
-                        tokenOffset - statementStart);
+                    SQLStatementInfo statementInfo = new SQLStatementInfo(queryText.trim());
+                    statementInfo.setOffset(statementStart);
+                    statementInfo.setLength(tokenOffset - statementStart);
+                    return statementInfo;
                 } catch (BadLocationException ex) {
                     log.warn("Can't extract query", ex);
                     return null;
@@ -568,7 +570,7 @@ public class SQLEditor extends TextEditor
         }
     }
 
-    private List<SQLScriptLine> extractScriptQueries(int startOffset, int length)
+    private List<SQLStatementInfo> extractScriptQueries(int startOffset, int length)
     {
         IDocument document = getDocument();
 /*
@@ -585,7 +587,7 @@ public class SQLEditor extends TextEditor
         }
 */
 
-        List<SQLScriptLine> queryList = new ArrayList<SQLScriptLine>();
+        List<SQLStatementInfo> queryList = new ArrayList<SQLStatementInfo>();
         syntaxManager.setRange(document, startOffset, length);
         int statementStart = startOffset;
         for (;;) {
@@ -603,7 +605,10 @@ public class SQLEditor extends TextEditor
                     String query = document.get(statementStart, queryLength);
                     query = query.trim();
                     if (query.length() > 0) {
-                        queryList.add(new SQLScriptLine(query, statementStart, queryLength));
+                        SQLStatementInfo statementInfo = new SQLStatementInfo(query);
+                        statementInfo.setOffset(statementStart);
+                        statementInfo.setLength(queryLength);
+                        queryList.add(statementInfo);
                     }
                 } catch (BadLocationException ex) {
                     log.error("Error extracting script query", ex);
@@ -623,7 +628,7 @@ public class SQLEditor extends TextEditor
         ConsoleManager.writeMessage(status, messageType);
     }
 
-    private void processQuery(List<SQLScriptLine> queries)
+    private void processQuery(List<SQLStatementInfo> queries)
     {
         if (queries.isEmpty()) {
             // Nothing to process
@@ -670,7 +675,7 @@ public class SQLEditor extends TextEditor
                         }
                     });
                 }
-                public void onStartQuery(final SQLScriptLine query)
+                public void onStartQuery(final SQLStatementInfo query)
                 {
                     asyncExec(new Runnable() {
                         public void run()
