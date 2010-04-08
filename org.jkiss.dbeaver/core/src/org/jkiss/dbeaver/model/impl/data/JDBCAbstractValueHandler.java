@@ -14,6 +14,8 @@ import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.SWT;
 
+import java.sql.PreparedStatement;
+
 /**
  * Standard JDBC value handler
  */
@@ -59,6 +61,10 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             {
             }
         });
+    }
+
+    protected PreparedStatement getPreparedStatement(DBCStatement statement) {
+        return (PreparedStatement)statement.getNestedStatement();
     }
 
 }

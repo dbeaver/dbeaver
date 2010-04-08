@@ -1,14 +1,12 @@
 package org.jkiss.dbeaver.model.dbc;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-
 /**
  * DBCStatement
  */
 public interface DBCStatement
 {
+    Object getNestedStatement();
+
     DBCSession getSession();
 
     void execute() throws DBCException;

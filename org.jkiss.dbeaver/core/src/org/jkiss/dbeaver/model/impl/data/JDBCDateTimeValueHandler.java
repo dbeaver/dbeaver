@@ -5,10 +5,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.sql.Timestamp;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 /**
  * JDBC string value handler
@@ -101,6 +106,31 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
             return new java.sql.Time(cl.getTimeInMillis());
         } else {
             return new Timestamp(cl.getTimeInMillis());
+        }
+    }
+
+    @Override
+    public void bindParameter(DBCStatement statement, DBSTypedObject columnMetaData, int paramIndex, Object value) throws DBCException
+    {
+        PreparedStatement dbStat = getPreparedStatement(statement);
+        try {
+            if (value == null) {
+                dbStat.setNull(paramIndex + 1, columnMetaData.getValueType());
+            } else {
+                switch (columnMetaData.getValueType()) {
+                case java.sql.Types.TIME:
+                    dbStat.setTime(paramIndex + 1, (java.sql.Time)value);
+                    break;
+                case java.sql.Types.DATE:
+                    dbStat.setDate(paramIndex + 1, (java.sql.Date)value);
+                    break;
+                default:
+                    dbStat.setTimestamp(paramIndex + 1, (Timestamp)value);
+                    break;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Could not bind date-time parameter", e);
         }
     }
 

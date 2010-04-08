@@ -1,26 +1,15 @@
 package org.jkiss.dbeaver.model.impl.data;
 
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
-import org.jkiss.dbeaver.model.data.DBDValueLocator;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
-import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.swt.widgets.Widget;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.SWT;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 /**
  * JDBC string value handler
@@ -51,6 +40,21 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
             return true;
         } else {
             return false;
+        }
+    }
+
+    @Override
+    public void bindParameter(DBCStatement statement, DBSTypedObject columnMetaData, int paramIndex, Object value) throws DBCException
+    {
+        PreparedStatement dbStat = getPreparedStatement(statement);
+        try {
+            if (value == null) {
+                dbStat.setNull(paramIndex + 1, columnMetaData.getValueType());
+            } else {
+                dbStat.setString(paramIndex + 1, value.toString());
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Could not bind string parameter", e);
         }
     }
 

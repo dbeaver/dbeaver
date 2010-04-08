@@ -33,6 +33,10 @@ public class JDBCStatement implements DBCStatement
         this.statement = connection.prepareStatement(sqlQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
     }
 
+    public Object getNestedStatement() {
+        return statement;
+    }
+
     public DBCSession getSession()
     {
         return session;

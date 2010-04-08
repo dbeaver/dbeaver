@@ -1,6 +1,9 @@
 package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.DBException;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Combo;
@@ -10,6 +13,9 @@ import org.eclipse.swt.SWT;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import net.sf.jkiss.utils.CommonUtils;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 /**
  * JDBC number value handler
@@ -45,6 +51,21 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
             return true;
         } else {
             return false;
+        }
+    }
+
+    @Override
+    public void bindParameter(DBCStatement statement, DBSTypedObject columnMetaData, int paramIndex, Object value) throws DBCException
+    {
+        PreparedStatement dbStat = getPreparedStatement(statement);
+        try {
+            if (value == null) {
+                dbStat.setNull(paramIndex + 1, columnMetaData.getValueType());
+            } else {
+                dbStat.setBoolean(paramIndex + 1, (Boolean)value);
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Could not bind string parameter", e);
         }
     }
 
