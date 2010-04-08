@@ -5,7 +5,7 @@ package org.jkiss.dbeaver.runtime.sql;
  */
 public class SQLQueryResult
 {
-    private String query;
+    private SQLStatementInfo statement;
     //private DBCResultSetMetaData metaData;
     //private List<Object[]> rows;
     private Integer rowCount;
@@ -13,14 +13,13 @@ public class SQLQueryResult
     private Throwable error;
     private long queryTime;
 
-    public SQLQueryResult(String query)
+    public SQLQueryResult(SQLStatementInfo statement)
     {
-        this.query = query;
+        this.statement = statement;
     }
 
-    public String getQuery()
-    {
-        return query;
+    public SQLStatementInfo getStatement() {
+        return statement;
     }
 
 /*

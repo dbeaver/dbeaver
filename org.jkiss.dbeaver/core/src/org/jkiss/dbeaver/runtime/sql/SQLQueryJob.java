@@ -218,7 +218,7 @@ public class SQLQueryJob extends DataSourceJob
         int subTasksPerformed = 0;
         long startTime = System.currentTimeMillis();
         String sqlQuery = query.getQuery();
-        SQLQueryResult result = new SQLQueryResult(sqlQuery);
+        SQLQueryResult result = new SQLQueryResult(query);
         try {
             monitor.subTask(sqlQuery);
             curStatement = session.makeStatement(sqlQuery);

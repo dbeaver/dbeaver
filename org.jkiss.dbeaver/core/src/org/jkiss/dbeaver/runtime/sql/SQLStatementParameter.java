@@ -12,6 +12,13 @@ public class SQLStatementParameter {
     private int index;
     private Object value;
 
+    public SQLStatementParameter(DBDValueHandler valueHandler, DBSTypedObject paramType, int index, Object value) {
+        this.valueHandler = valueHandler;
+        this.paramType = paramType;
+        this.index = index;
+        this.value = value;
+    }
+
     public DBDValueHandler getValueHandler() {
         return valueHandler;
     }

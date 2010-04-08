@@ -134,6 +134,10 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
         return this;
     }
 
+    public DBCSession getSession() throws DBException {
+        return curSession;
+    }
+
     public DBPDataSource getDataSource() {
         return table.getDataSource();
     }

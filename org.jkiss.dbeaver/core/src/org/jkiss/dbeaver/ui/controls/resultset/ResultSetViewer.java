@@ -25,16 +25,15 @@ import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
+import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.grid.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
-import org.jkiss.dbeaver.runtime.sql.SQLStatementParameter;
+import org.jkiss.dbeaver.runtime.sql.*;
 
 import java.util.*;
 import java.util.List;
@@ -94,6 +93,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     private ToolItem itemRefresh;
 
     private List<CellInfo> editedValues = new ArrayList<CellInfo>();
+    private boolean updateInProgress = false;
 
     public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
     {
@@ -447,7 +447,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
     public boolean isEditable()
     {
-        return true;
+        return !updateInProgress;
     }
 
     public boolean isCellEditable(int col, int row) {
@@ -668,16 +668,16 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     }
     private void applyChanges()
     {
-        // Prepare rows
-        Map<Integer, Map<DBSTable, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSTable, TableRowInfo>>();
-        for (CellInfo cell : editedValues) {
-            Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(cell.row);
-            if (tableMap == null) {
-                tableMap = new HashMap<DBSTable, TableRowInfo>();
-                updatedRows.put(cell.row, tableMap);
-            }
+        try {
+            // Prepare rows
+            Map<Integer, Map<DBSTable, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSTable, TableRowInfo>>();
+            for (CellInfo cell : editedValues) {
+                Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(cell.row);
+                if (tableMap == null) {
+                    tableMap = new HashMap<DBSTable, TableRowInfo>();
+                    updatedRows.put(cell.row, tableMap);
+                }
 
-            try {
                 DBCTableMetaData metaTable = metaColumns[cell.col].metaData.getTable();
                 TableRowInfo tableRowInfo = tableMap.get(metaTable.getTable());
                 if (tableRowInfo == null) {
@@ -685,49 +685,120 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                     tableMap.put(metaTable.getTable(), tableRowInfo);
                 }
                 tableRowInfo.tableCells.add(cell);
-            } catch (DBException e) {
-                log.error("Could not obtain result set metdata", e);
-                return;
             }
-        }
 
-        // Make statements
-        List<SQLStatementInfo> statements = new ArrayList<SQLStatementInfo>();
-        for (Integer rowNum : updatedRows.keySet()) {
-            Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(rowNum);
-            for (DBSTable table : tableMap.keySet()) {
-                TableRowInfo rowInfo = tableMap.get(table);
+            // Make statements
+            List<SQLStatementInfo> statements = new ArrayList<SQLStatementInfo>();
+            for (Integer rowNum : updatedRows.keySet()) {
+                Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(rowNum);
+                for (DBSTable table : tableMap.keySet()) {
+                    TableRowInfo rowInfo = tableMap.get(table);
 
-                String tableName = rowInfo.table.getFullQualifiedName();
-                List<SQLStatementParameter> parameters = new ArrayList<SQLStatementParameter>();
-                StringBuilder query = new StringBuilder();
-                query.append("UPDATE ").append(tableName).append(" SET ");
-                for (int i = 0; i < rowInfo.tableCells.size(); i++) {
-                    CellInfo cell = rowInfo.tableCells.get(i);
-                    if (i > 0) {
-                        query.append(",");
+                    String tableName = rowInfo.table.getFullQualifiedName();
+                    List<SQLStatementParameter> parameters = new ArrayList<SQLStatementParameter>();
+                    StringBuilder query = new StringBuilder();
+                    query.append("UPDATE ").append(tableName).append(" SET ");
+                    for (int i = 0; i < rowInfo.tableCells.size(); i++) {
+                        CellInfo cell = rowInfo.tableCells.get(i);
+                        if (i > 0) {
+                            query.append(",");
+                        }
+                        ResultSetColumn metaColumn = metaColumns[cell.col];
+                        query.append(metaColumn.metaData.getTableColumn().getName()).append("=?");
+                        parameters.add(new SQLStatementParameter(
+                            metaColumn.valueHandler,
+                            metaColumn.metaData,
+                            parameters.size(),
+                            curRows.get(rowNum)[cell.col]));
                     }
-                    query.append(metaColumns[cell.col].metaData.getColumnName()).append("=?");
-                }
-                query.append(" WHERE ");
-                Collection<? extends DBSConstraintColumn> idColumns = rowInfo.id.getConstraint().getColumns();
-                boolean firstCol = true;
-                for (DBSConstraintColumn idColumn : idColumns) {
-                    if (!firstCol) {
-                        query.append(" AND ");
+                    query.append(" WHERE ");
+                    Collection<? extends DBSConstraintColumn> idColumns = rowInfo.id.getConstraint().getColumns();
+                    boolean firstCol = true;
+                    for (DBSConstraintColumn idColumn : idColumns) {
+                        if (!firstCol) {
+                            query.append(" AND ");
+                        }
+                        query.append(idColumn.getName()).append("=?");
+                        firstCol = false;
+                        // Find meta column and add statement parameter
+                        ResultSetColumn metaColumn = null;
+                        int columnIndex = -1;
+                        for (int i = 0; i < metaColumns.length; i++) {
+                            ResultSetColumn tmpColumn = metaColumns[i];
+                            if (tmpColumn.metaData.getTableColumn() == idColumn.getTableColumn()) {
+                                metaColumn = tmpColumn;
+                                columnIndex = i;
+                                break;
+                            }
+                        }
+                        if (metaColumn == null) {
+                            throw new DBCException("Can't find meta column for ID column " + idColumn.getName());
+                        }
+                        Object keyValue = curRows.get(rowNum)[columnIndex];
+                        // Try to find old key value
+                        for (CellInfo cell : editedValues) {
+                            if (cell.equals(rowNum, columnIndex)) {
+                                keyValue = cell.value;
+                            }
+                        }
+                        // Add key parameter
+                        parameters.add(new SQLStatementParameter(
+                            metaColumn.valueHandler,
+                            metaColumn.metaData,
+                            parameters.size(),
+                            keyValue));
                     }
-                    query.append(idColumn.getName()).append("=?");
-                    firstCol = false;
-                }
 
-                SQLStatementInfo statement = new SQLStatementInfo(query.toString(), parameters);
-                statement.setOffset(rowNum);
+                    SQLStatementInfo statement = new SQLStatementInfo(query.toString(), parameters);
+                    statement.setOffset(rowNum);
+                    statement.setData(rowInfo);
+                    statements.add(statement);
+                }
             }
-        }
 
-        // Execute statements
-        System.out.println("EXECUTE: " + statements.size());
-        updateEditControls();
+
+            // Execute statements
+            SQLQueryJob executor = new SQLQueryJob(
+                "Update ResultSet",
+                resultSetProvider.getSession(),
+                statements,
+                null);
+            executor.addQueryListener(new DefaultQueryListener() {
+                @Override
+                public void onStartJob() {
+                    updateInProgress = true;
+                }
+
+                @Override
+                public void onEndQuery(SQLQueryResult result) {
+                    if (result.getError() == null) {
+                        // Remove edited values
+                        TableRowInfo rowInfo = (TableRowInfo)result.getStatement().getData();
+                        if (rowInfo != null) {
+                            for (CellInfo cell : rowInfo.tableCells) {
+                                editedValues.remove(cell);
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void onEndJob(final boolean hasErrors) {
+                    site.getShell().getDisplay().asyncExec(new Runnable() {
+                        public void run()
+                        {
+                            grid.redraw();
+                            updateEditControls();
+                            updateInProgress = false;
+                        }
+                    });
+                }
+            });
+            executor.schedule();
+
+        } catch (DBException e) {
+            log.error("Could not obtain result set metdata", e);
+        }
     }
 
     private void rejectChanges()

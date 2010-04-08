@@ -11,6 +11,7 @@ public class SQLStatementInfo {
     private List<SQLStatementParameter> parameters;
     private int offset;
     private int length;
+    private Object data;
 
     public SQLStatementInfo(String query)
     {
@@ -47,5 +48,17 @@ public class SQLStatementInfo {
 
     public void setLength(int length) {
         this.length = length;
+    }
+
+    /**
+     * User defined data object. May be used to identify statements.
+     * @return data or null
+     */
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
     }
 }
