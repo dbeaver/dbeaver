@@ -8,7 +8,8 @@ import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
- * DBPDataTypeEditor
+ * DBD Value Handler.
+ * Extract, edit and bind database values.
  */
 public interface DBDValueHandler
 {
