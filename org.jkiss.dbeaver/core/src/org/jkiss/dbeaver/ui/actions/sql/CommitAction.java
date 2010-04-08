@@ -14,7 +14,7 @@ public class CommitAction extends AbstractSQLAction
     {
         setId(ICommandIds.CMD_COMMIT);
         setActionDefinitionId(ICommandIds.CMD_COMMIT);
-        setImageDescriptor(DBeaverActivator.getImageDescriptor("/icons/sql/accept.png"));
+        setImageDescriptor(DBeaverActivator.getImageDescriptor("/icons/sql/commit.png"));
         setText("Commit");
         setToolTipText("Commit");
     }

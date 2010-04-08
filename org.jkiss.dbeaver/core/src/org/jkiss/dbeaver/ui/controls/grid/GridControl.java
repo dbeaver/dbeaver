@@ -63,6 +63,7 @@ public class GridControl extends Composite implements Listener
     private IWorkbenchPartSite site;
     private IGridDataProvider dataProvider;
     private GridSelectionProvider selectionProvider;
+    private GridRowInfo rowInfo = new GridRowInfo();
 
     private GridPos cursorPosition;
     private Set<GridPos> selection;
@@ -783,11 +784,16 @@ public class GridControl extends Composite implements Listener
         return selection.contains(pos) || (!tempSelection.isEmpty() && tempSelection.contains(pos));
     }
 
-    public TableColumn addColumn(String text, String toolTipText)
+    public TableColumn addColumn(String text, String toolTipText, Image image)
     {
         TableColumn column = new TableColumn(table, SWT.NONE);
         column.setText(text);
-        column.setToolTipText(toolTipText);
+        if (toolTipText != null) {
+            column.setToolTipText(toolTipText);
+        }
+        if (image != null) {
+            column.setImage(image);
+        }
         curColumns.add(column);
         return column;
     }
@@ -834,6 +840,7 @@ public class GridControl extends Composite implements Listener
 
     public void clearGrid()
     {
+        cancelInlineEditor();
         table.removeAll();
         this.clearColumns();
     }
@@ -958,7 +965,9 @@ public class GridControl extends Composite implements Listener
         if (pos == null || pos.row < 0 || pos.col < 0) {
             return;
         }
-
+        if (!dataProvider.isEditable() || !dataProvider.isCellEditable(pos.col, pos.row)) {
+            return;
+        }
         TableItem item = table.getItem(pos.row);
 
         Composite placeholder = null;
@@ -966,6 +975,7 @@ public class GridControl extends Composite implements Listener
             cancelInlineEditor();
 
             placeholder = new Composite(table, SWT.BORDER);
+            placeholder.setFont(table.getFont());
             GridLayout layout = new GridLayout(1, true);
             layout.marginWidth = 0;
             layout.marginHeight = 0;
@@ -1052,13 +1062,15 @@ public class GridControl extends Composite implements Listener
         }
     }
 
-    public String getRowTitle(int rowNum)
+    public IGridRowInfo getRowInfo(int rowNum)
     {
+        rowInfo.clear();
         if (dataProvider != null) {
-            return dataProvider.getRowTitle(rowNum);
+            dataProvider.fillRowInfo(rowNum, rowInfo);
         } else {
-            return String.valueOf(rowNum);
+            rowInfo.setText(String.valueOf(rowNum));
         }
+        return rowInfo;
     }
 
     public void setPanelWidth(int width)
@@ -1132,7 +1144,7 @@ public class GridControl extends Composite implements Listener
         }
     }
 
-    private static class LazyGridRow implements IGridRow {
+    private static class LazyGridRow implements IGridRowData {
 
         private TableItem item;
         private int index;
@@ -1174,4 +1186,40 @@ public class GridControl extends Composite implements Listener
 
     }
 
+    private static class GridRowInfo implements IGridRowInfo {
+        private String text;
+        private String toolTip;
+        private Image image;
+
+        public String getText() {
+            return text;
+        }
+
+        public void setText(String text) {
+            this.text = text;
+        }
+
+        public String getToolTip() {
+            return toolTip;
+        }
+
+        public void setToolTip(String toolTip) {
+            this.toolTip = toolTip;
+        }
+
+        public Image getImage() {
+            return image;
+        }
+
+        public void setImage(Image image) {
+            this.image = image;
+        }
+
+        void clear()
+        {
+            this.text = null;
+            this.toolTip = null;
+            this.image = null;
+        }
+    }
 }

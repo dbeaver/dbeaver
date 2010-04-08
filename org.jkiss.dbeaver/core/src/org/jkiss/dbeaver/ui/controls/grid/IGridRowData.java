@@ -5,7 +5,7 @@ import org.eclipse.swt.graphics.Image;
 /**
  * GridRow
  */
-public interface IGridRow
+public interface IGridRowData
 {
     int getIndex();
 

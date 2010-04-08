@@ -9,8 +9,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -18,11 +16,9 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPRegistry;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
-import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.xml.sax.Attributes;
 
@@ -222,17 +218,10 @@ public class DataSourceRegistry implements DBPRegistry
         }
         final DataSourceEvent event = new DataSourceEvent(source, action, dataSource);
         final List<IDataSourceListener> listeners = new ArrayList<IDataSourceListener>(dataSourceListeners);
-        Display display = this.core.getWorkbench().getDisplay();
-        if (!display.isDisposed()) {
-            new AbstractUIJob("Notify datasource listeners") {
-                public IStatus runInUIThread(DBRProgressMonitor monitor)
-                {
-                    for (IDataSourceListener listener : listeners) {
-                        listener.dataSourceChanged(event, monitor);
-                    }
-                    return Status.OK_STATUS;
-                }
-            }.schedule();
+        //Display display = this.core.getWorkbench().getDisplay();
+        for (IDataSourceListener listener : listeners) {
+            listener.dataSourceChanged(event);
+        }
 /*
             display.asyncExec(
                 new Runnable() {
@@ -244,7 +233,6 @@ public class DataSourceRegistry implements DBPRegistry
                 }
             );
 */
-        }
     }
 
     public static DataSourceRegistry getDefault()

@@ -7,12 +7,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdapterManager;
-import org.eclipse.core.runtime.ILog;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.*;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
@@ -124,8 +119,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         initDefaultPreferences();
     }
 
-    public synchronized void dispose(IProgressMonitor monitor)
+    public synchronized void dispose()
     {
+        IProgressMonitor monitor = new NullProgressMonitor();
         if (defaultProject != null) {
             try {
                 //defaultProject.

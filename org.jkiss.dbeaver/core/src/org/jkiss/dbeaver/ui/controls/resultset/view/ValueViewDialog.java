@@ -6,7 +6,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.ui.controls.grid.IGridRow;
+import org.jkiss.dbeaver.ui.controls.grid.IGridRowData;
 
 /**
  * ValueViewDialog
@@ -15,22 +15,22 @@ import org.jkiss.dbeaver.ui.controls.grid.IGridRow;
  */
 public abstract class ValueViewDialog extends Dialog {
 
-    private IGridRow row;
+    private IGridRowData row;
     private DBCColumnMetaData columnInfo;
     private Composite infoGroup;
 
-    protected ValueViewDialog(Shell shell, IGridRow row, DBCColumnMetaData columnInfo) {
+    protected ValueViewDialog(Shell shell, IGridRowData row, DBCColumnMetaData columnInfo) {
         super(shell);
         this.row = row;
         this.columnInfo = columnInfo;
     }
 
-    public IGridRow getRow()
+    public IGridRowData getRow()
     {
         return row;
     }
 
-    public void setRow(IGridRow row)
+    public void setRow(IGridRowData row)
     {
         this.row = row;
     }

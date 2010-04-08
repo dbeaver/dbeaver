@@ -13,7 +13,7 @@ public class RollbackAction extends AbstractSQLAction
     {
         setId(ICommandIds.CMD_ROLLBACK);
         setActionDefinitionId(ICommandIds.CMD_ROLLBACK);
-        setImageDescriptor(DBeaverActivator.getImageDescriptor("/icons/sql/cancel.png"));
+        setImageDescriptor(DBeaverActivator.getImageDescriptor("/icons/sql/rollback.png"));
         setText("Rollback");
         setToolTipText("Rollback");
     }

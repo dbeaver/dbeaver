@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -815,19 +814,25 @@ public class SQLEditor extends TextEditor
         super.dispose();
     }
 
-    public void dataSourceChanged(DataSourceEvent event, DBRProgressMonitor monitor)
+    public void dataSourceChanged(final DataSourceEvent event)
     {
         if (event.getDataSource() == getDataSourceContainer()) {
-            switch (event.getAction()) {
-                case DISCONNECT:
-                    closeSession();
-                case CONNECT:
-                    refreshSyntax();
-                    break;
-                case REMOVE:
-                    getSite().getWorkbenchWindow().getActivePage().closeEditor(this, false);
-                    break;
-            }
+            getSite().getShell().getDisplay().asyncExec(
+                new Runnable() {
+                    public void run() {
+                        switch (event.getAction()) {
+                            case DISCONNECT:
+                                closeSession();
+                            case CONNECT:
+                                refreshSyntax();
+                                break;
+                            case REMOVE:
+                                getSite().getWorkbenchWindow().getActivePage().closeEditor(SQLEditor.this, false);
+                                break;
+                        }
+                    }
+                }
+            );
         }
     }
 

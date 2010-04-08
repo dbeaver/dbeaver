@@ -13,10 +13,7 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -36,10 +33,7 @@ import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.grid.GridControl;
-import org.jkiss.dbeaver.ui.controls.grid.GridPos;
-import org.jkiss.dbeaver.ui.controls.grid.IGridDataProvider;
-import org.jkiss.dbeaver.ui.controls.grid.IGridRow;
+import org.jkiss.dbeaver.ui.controls.grid.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -246,6 +240,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                         defaultWidth = ext.x;
                     }
                 }
+                defaultWidth += DBIcon.EDIT_COLUMN.getImage().getBounds().width + 2;
             }
             grid.setPanelWidth(defaultWidth + 30);
             itemToggleView.setImage(DBIcon.RS_MODE_RECORD.getImage());
@@ -368,17 +363,22 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         grid.setRedraw(false);
         grid.clearGrid();
         if (mode == ResultSetMode.RECORD) {
-            grid.addColumn("Value", "Column Value");
+            grid.addColumn("Value", "Column Value", null);
             grid.setItemCount(metaColumns == null ? 0 : metaColumns.length);
             this.showCurrentRows();
         } else {
             if (metaColumns != null) {
                 for (ResultSetColumn column : metaColumns) {
+                    Image columnImage = null;
+                    if (column.editable) {
+                        columnImage = DBIcon.EDIT_COLUMN.getImage();
+                    }
                     grid.addColumn(
                         column.metaData.getLabel(),
                         CommonUtils.isEmpty(column.metaData.getTableName()) ?
                             column.metaData.getColumnName() :
-                            column.metaData.getTableName() + "." + column.metaData.getColumnName());
+                            column.metaData.getTableName() + "." + column.metaData.getColumnName(),
+                        columnImage);
                 }
             }
             grid.setItemCount(curRows.size());
@@ -393,7 +393,23 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
     public boolean isEditable()
     {
-        return false;
+        return true;
+    }
+
+    public boolean isCellEditable(int column, int row) {
+        if (mode == ResultSetMode.RECORD) {
+            if (row < 0 || row >= metaColumns.length) {
+                log.warn("Bad cell requsted - " + column + ":" + row);
+                return false;
+            }
+            return metaColumns[row].editable;
+        } else {
+            if (column < 0 || column >= metaColumns.length) {
+                log.warn("Bad cell requsted - " + column + ":" + row);
+                return false;
+            }
+            return metaColumns[column].editable;
+        }
     }
 
     public boolean isInsertable()
@@ -401,7 +417,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         return false;
     }
 
-    public void fillRowData(IGridRow row)
+    public void fillRowData(IGridRowData row)
     {
         if (mode == ResultSetMode.RECORD) {
             // Fill record
@@ -433,7 +449,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     }
 
     public boolean showCellEditor(
-        final IGridRow row,
+        final IGridRowData row,
         final boolean inline,
         final Composite inlinePlaceholder)
     {
@@ -500,15 +516,18 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         }
     }
 
-    public String getRowTitle(int rowNum)
+    public void fillRowInfo(int rowNum, IGridRowInfo rowInfo)
     {
         if (mode == ResultSetMode.RECORD) {
             if (rowNum < 0 || rowNum >= metaColumns.length) {
-                return "";
+                return;
             }
-            return metaColumns[rowNum].metaData.getColumnName();
+            rowInfo.setText(metaColumns[rowNum].metaData.getColumnName());
+            if (metaColumns[rowNum].editable) {
+                rowInfo.setImage(DBIcon.EDIT_COLUMN.getImage());
+            }
         } else {
-            return String.valueOf(rowNum + 1);
+            rowInfo.setText(String.valueOf(rowNum + 1));
         }
     }
 

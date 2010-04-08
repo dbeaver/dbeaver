@@ -5,12 +5,13 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
+import org.jkiss.dbeaver.runtime.NullProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
+import org.eclipse.swt.widgets.Display;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -171,14 +172,14 @@ public class DBMModel implements IDataSourceListener
         this.fireNodeEvent(new DBMEvent(source, DBMEvent.Action.REFRESH, nodeChange, node));
     }
 
-    void fireNodeEvent(DBMEvent event)
+    void fireNodeEvent(final DBMEvent event)
     {
         for (IDBMListener listener :  new ArrayList<IDBMListener>(listeners)) {
             listener.nodeChanged(event);
         }
     }
 
-    public void dataSourceChanged(DataSourceEvent event, DBRProgressMonitor monitor)
+    public void dataSourceChanged(DataSourceEvent event)
     {
         switch (event.getAction()) {
             case ADD:
@@ -192,7 +193,7 @@ public class DBMModel implements IDataSourceListener
                 DBMNode dbmNode = getNodeByObject(event.getDataSource());
                 if (dbmNode != null) {
                     try {
-                        dbmNode.refreshNode(monitor);
+                        dbmNode.refreshNode(NullProgressMonitor.INSTANCE);
                     }
                     catch (DBException e) {
                         log.error("Error refreshing datasource tree node");

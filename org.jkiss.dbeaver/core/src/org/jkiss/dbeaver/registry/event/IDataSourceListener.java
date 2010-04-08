@@ -7,5 +7,5 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface IDataSourceListener
 {
-    void dataSourceChanged(DataSourceEvent event, DBRProgressMonitor monitor);
+    void dataSourceChanged(DataSourceEvent event);
 }

@@ -8,6 +8,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
  */
 public class NullProgressMonitor implements DBRProgressMonitor {
 
+    public static final NullProgressMonitor INSTANCE = new NullProgressMonitor();
+
     public IProgressMonitor getNestedMonitor()
     {
         return null;

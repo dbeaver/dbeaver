@@ -3,7 +3,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.view;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ui.controls.grid.IGridRow;
+import org.jkiss.dbeaver.ui.controls.grid.IGridRowData;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 
 /**
@@ -13,7 +13,7 @@ public class TextViewDialog extends ValueViewDialog {
 
     private Object data;
 
-    public TextViewDialog(Shell shell, IGridRow row, DBCColumnMetaData columnInfo, Object data) {
+    public TextViewDialog(Shell shell, IGridRowData row, DBCColumnMetaData columnInfo, Object data) {
         super(shell, row, columnInfo);
         this.data = data;
     }

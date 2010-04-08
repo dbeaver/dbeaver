@@ -4,12 +4,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
@@ -18,11 +13,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshableView;
-import org.jkiss.dbeaver.model.meta.DBMDataSource;
-import org.jkiss.dbeaver.model.meta.DBMEvent;
-import org.jkiss.dbeaver.model.meta.DBMModel;
-import org.jkiss.dbeaver.model.meta.DBMNode;
-import org.jkiss.dbeaver.model.meta.IDBMListener;
+import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.RefreshTreeAction;
@@ -131,30 +122,36 @@ public class NavigatorTreeView extends ViewPart implements IDBMListener, IMetaMo
         viewer.getControl().setFocus();
     }
 
-    public void nodeChanged(DBMEvent event)
+    public void nodeChanged(final DBMEvent event)
     {
         switch (event.getAction()) {
             case ADD:
             case REMOVE:
                 if (event.getNode() instanceof DBMDataSource) {
-                    if (!viewer.isBusy()) {
-                        viewer.refresh();
-                    }
+                    asyncExec(new Runnable() { public void run() {
+                        if (!viewer.getControl().isDisposed()) {
+                            viewer.refresh();
+                        }
+                    }});
                 }
                 break;
             case REFRESH:
-                switch (event.getNodeChange()) {
-                    case LOADED:
-                        viewer.expandToLevel(event.getNode().getObject(), 1);
-                        break;
-                    case UNLOADED:
-                        viewer.collapseToLevel(event.getNode().getObject(), -1);
-                        break;
-                    case CHANGED:
-                        this.getViewer().refresh(event.getNode().getObject());
-                        break;
-                }
-                this.getViewer().refresh(event.getNode().getObject());
+                asyncExec(new Runnable() { public void run() {
+                    if (!viewer.getControl().isDisposed()) {
+                        switch (event.getNodeChange()) {
+                            case LOADED:
+                                viewer.expandToLevel(event.getNode().getObject(), 1);
+                                break;
+                            case UNLOADED:
+                                viewer.collapseToLevel(event.getNode().getObject(), -1);
+                                break;
+                            case CHANGED:
+                                getViewer().refresh(event.getNode().getObject());
+                                break;
+                        }
+                        viewer.refresh(event.getNode().getObject());
+                    }
+                }});
                 break;
             default:
                 break;
@@ -190,4 +187,10 @@ public class NavigatorTreeView extends ViewPart implements IDBMListener, IMetaMo
         return null;
     }
 
+    private void asyncExec(Runnable runnable)
+    {
+        if (!getSite().getShell().isDisposed() && !getSite().getShell().getDisplay().isDisposed()) {
+            getSite().getShell().getDisplay().asyncExec(runnable);
+        }
+    }
 }

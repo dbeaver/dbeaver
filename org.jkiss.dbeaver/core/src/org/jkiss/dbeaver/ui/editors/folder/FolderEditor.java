@@ -84,7 +84,9 @@ public class FolderEditor extends EditorPart implements IDBMListener, IMetaModel
     {
         if (event.getNode() == folderInput.getFolder()) {
             if (event.getAction() == DBMEvent.Action.REMOVE) {
-                this.getSite().getWorkbenchWindow().getActivePage().closeEditor(this, false);
+                getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
+                    getSite().getWorkbenchWindow().getActivePage().closeEditor(FolderEditor.this, false);
+                }});
             }
         }
     }

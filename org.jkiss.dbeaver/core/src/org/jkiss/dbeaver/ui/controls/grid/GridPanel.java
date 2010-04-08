@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.ui.controls.grid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Event;
@@ -95,7 +96,12 @@ class GridPanel extends Composite implements Listener
                 break;
             }
 
-            String text = grid.getRowTitle(topPos);
+            IGridRowInfo rowInfo = grid.getRowInfo(topPos);
+            Image image = rowInfo.getImage();
+            if (image != null) {
+                event.gc.drawImage(image, 0, offset + 2);
+            }
+            String text = rowInfo.getText();
             Point textSize = event.gc.textExtent(text);
             event.gc.setForeground(grid.getForegroundNormal());
             event.gc.drawText(text, panelWidth - textSize.x - 2, offset + 2);

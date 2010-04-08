@@ -6,9 +6,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IStorage;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IEditorInput;
@@ -24,6 +22,8 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.AbstractUIJob;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -88,21 +88,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     {
         super.postShutdown();
         // Dispose core
-        try {
-            getWorkbenchConfigurer().getWorkbench().getProgressService().run(false, false, new IRunnableWithProgress() {
-                public void run(IProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    if (DBeaverCore.getInstance() != null) {
-                        DBeaverCore.getInstance().dispose(monitor);
-                    }
-                }
-            });
-        } catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
-        }
-        catch (InterruptedException e) {
-            // do nothing
+        if (DBeaverCore.getInstance() != null) {
+            DBeaverCore.getInstance().dispose();
         }
     }
 

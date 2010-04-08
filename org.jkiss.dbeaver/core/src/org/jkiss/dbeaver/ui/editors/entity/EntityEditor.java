@@ -225,13 +225,17 @@ public class EntityEditor extends SplitterEditorPart implements IDBMListener, IM
         setTitleImage(this.entityInput.getImageDescriptor().createImage());
     }
 
-    public void nodeChanged(DBMEvent event)
+    public void nodeChanged(final DBMEvent event)
     {
         if (event.getNode() == entityInput.getNode()) {
             if (event.getAction() == DBMEvent.Action.REMOVE) {
-                this.getSite().getWorkbenchWindow().getActivePage().closeEditor(this, false);
+                getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
+                    getSite().getWorkbenchWindow().getActivePage().closeEditor(EntityEditor.this, false);
+                }});
             } else if (event.getAction() == DBMEvent.Action.REFRESH) {
-                this.refreshContent(event);
+                getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
+                    refreshContent(event);
+                }});
             }
         }
     }

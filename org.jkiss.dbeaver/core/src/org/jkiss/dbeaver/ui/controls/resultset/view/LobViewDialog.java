@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCLOB;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.grid.IGridRow;
+import org.jkiss.dbeaver.ui.controls.grid.IGridRowData;
 
 /**
  * TextViewDialog
@@ -24,7 +24,7 @@ public class LobViewDialog extends ValueViewDialog {
 
     private DBCLOB lob;
 
-    public LobViewDialog(Shell shell, IGridRow row, DBCColumnMetaData columnInfo, DBCLOB lob) {
+    public LobViewDialog(Shell shell, IGridRowData row, DBCColumnMetaData columnInfo, DBCLOB lob) {
         super(shell, row, columnInfo);
         this.lob = lob;
     }
