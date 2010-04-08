@@ -1,15 +1,11 @@
 package org.jkiss.dbeaver.model.data;
 
-import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCException;
 
 /**
- * DBDValueController
+ * DBD Value Controller
  */
 public interface DBDValueController
 {
