@@ -19,6 +19,8 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.jkiss.utils.CommonUtils;
+
 /**
  * SQLQueryJob
  */
@@ -26,7 +28,7 @@ public class SQLQueryJob extends DataSourceJob
 {
     static Log log = LogFactory.getLog(SQLQueryJob.class);
 
-    private static final int SUBTASK_COUNT = 4;
+    private static final int SUBTASK_COUNT = 5;
     private static final int DEFAULT_MAX_ROWS = 500;
 
     private DBCSession session;
@@ -220,12 +222,23 @@ public class SQLQueryJob extends DataSourceJob
         String sqlQuery = query.getQuery();
         SQLQueryResult result = new SQLQueryResult(query);
         try {
+            // Prepare statement
             monitor.subTask(sqlQuery);
             curStatement = session.makeStatement(sqlQuery);
             curStatement.setMaxResults(maxResults);
             monitor.worked(1);
             subTasksPerformed++;
 
+            // Bind parameters
+            if (!CommonUtils.isEmpty(query.getParameters())) {
+                for (SQLStatementParameter param : query.getParameters()) {
+                    param.getValueHandler().bindParameter(curStatement, param.getParamType(), param.getIndex(), param.getValue());
+                }
+            }
+            monitor.worked(1);
+            subTasksPerformed++;
+
+            // Execute statement
             try {
                 //monitor.subTask("Execute query");
                 curStatement.execute();
