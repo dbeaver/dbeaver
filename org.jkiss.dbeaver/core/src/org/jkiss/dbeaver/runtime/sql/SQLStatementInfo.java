@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ui.editors.sql;
+package org.jkiss.dbeaver.runtime.sql;
 
 import java.util.List;
 

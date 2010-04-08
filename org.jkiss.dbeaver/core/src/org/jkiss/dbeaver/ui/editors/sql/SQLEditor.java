@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
+import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptAction;

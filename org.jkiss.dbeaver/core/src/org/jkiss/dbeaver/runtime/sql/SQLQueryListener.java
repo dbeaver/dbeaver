@@ -1,6 +1,6 @@
 package org.jkiss.dbeaver.runtime.sql;
 
-import org.jkiss.dbeaver.ui.editors.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 
 /**
  * SQLQueryListener

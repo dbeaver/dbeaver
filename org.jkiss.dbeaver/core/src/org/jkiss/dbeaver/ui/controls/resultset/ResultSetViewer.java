@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.grid.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.runtime.sql.SQLStatementParameter;
 
 import java.util.*;
 import java.util.List;
@@ -689,14 +691,15 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             }
         }
 
-        // Update each row
+        // Make statements
+        List<SQLStatementInfo> statements = new ArrayList<SQLStatementInfo>();
         for (Integer rowNum : updatedRows.keySet()) {
             Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(rowNum);
             for (DBSTable table : tableMap.keySet()) {
                 TableRowInfo rowInfo = tableMap.get(table);
 
                 String tableName = rowInfo.table.getFullQualifiedName();
-
+                List<SQLStatementParameter> parameters = new ArrayList<SQLStatementParameter>();
                 StringBuilder query = new StringBuilder();
                 query.append("UPDATE ").append(tableName).append(" SET ");
                 for (int i = 0; i < rowInfo.tableCells.size(); i++) {
@@ -716,10 +719,14 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                     query.append(idColumn.getName()).append("=?");
                     firstCol = false;
                 }
-                System.out.println("QUERY: " + query.toString());
+
+                SQLStatementInfo statement = new SQLStatementInfo(query.toString(), parameters);
+                statement.setOffset(rowNum);
             }
         }
 
+        // Execute statements
+        System.out.println("EXECUTE: " + statements.size());
         updateEditControls();
     }
 

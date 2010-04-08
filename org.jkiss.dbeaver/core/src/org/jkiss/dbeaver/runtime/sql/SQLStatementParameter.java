@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ui.editors.sql;
+package org.jkiss.dbeaver.runtime.sql;
 
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;

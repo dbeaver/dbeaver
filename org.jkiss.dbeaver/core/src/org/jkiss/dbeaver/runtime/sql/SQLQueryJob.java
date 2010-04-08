@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DataSourceJob;
-import org.jkiss.dbeaver.ui.editors.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.util.ArrayList;

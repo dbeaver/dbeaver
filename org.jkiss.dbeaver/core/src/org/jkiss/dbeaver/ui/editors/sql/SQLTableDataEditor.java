@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
+import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
