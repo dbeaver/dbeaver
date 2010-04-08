@@ -12,8 +12,8 @@ import org.jkiss.dbeaver.DBException;
  */
 public abstract class AbstractProcedure<
     DATASOURCE extends DBPDataSource,
-    CONTAINER extends DBSStructureContainer<DATASOURCE>>
-    implements DBSProcedure<DATASOURCE, CONTAINER>
+    CONTAINER extends DBSStructureContainer>
+    implements DBSProcedure
 {
     private CONTAINER container;
     private String name;
@@ -60,7 +60,7 @@ public abstract class AbstractProcedure<
 
     public DATASOURCE getDataSource()
     {
-        return container.getDataSource();
+        return (DATASOURCE) container.getDataSource();
     }
 
     public DBSObject getParentObject()

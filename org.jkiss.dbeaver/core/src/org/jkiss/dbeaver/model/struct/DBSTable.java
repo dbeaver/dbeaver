@@ -1,17 +1,13 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 
 import java.util.Collection;
 
 /**
  * Table
  */
-public interface DBSTable<
-    DATASOURCE extends DBPDataSource,
-    CONTAINER extends DBSStructureContainer<DATASOURCE>>
-    extends DBSStructureObject<DATASOURCE>
+public interface DBSTable extends DBSStructureObject
 {
     String getFullQualifiedName();
 
@@ -19,7 +15,7 @@ public interface DBSTable<
 
     boolean isView();
 
-    CONTAINER getContainer();
+    DBSStructureContainer getContainer();
 
     /**
      * Table columns

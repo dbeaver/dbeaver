@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * GenericConstraint
  */
-public class GenericConstraint implements DBSConstraint<GenericDataSource, GenericTable>
+public class GenericConstraint implements DBSConstraint
 {
     private DBSConstraintType constraintType;
     private GenericTable table;

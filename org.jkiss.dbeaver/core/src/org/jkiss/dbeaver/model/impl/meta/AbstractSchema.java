@@ -6,7 +6,7 @@ import org.jkiss.dbeaver.model.struct.DBSSchema;
 /**
  * AbstractSchema
  */
-public abstract class AbstractSchema<DATASOURCE extends DBPDataSource> implements DBSSchema<DATASOURCE>
+public abstract class AbstractSchema implements DBSSchema
 {
     @Override
     public String toString()

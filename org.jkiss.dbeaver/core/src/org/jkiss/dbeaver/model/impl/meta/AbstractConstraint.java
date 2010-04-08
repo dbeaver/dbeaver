@@ -1,14 +1,9 @@
 package org.jkiss.dbeaver.model.impl.meta;
 
-import org.jkiss.dbeaver.model.struct.DBSConstraint;
-import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
-import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.Collection;
 
@@ -17,9 +12,8 @@ import java.util.Collection;
  */
 public abstract class AbstractConstraint<
     DATASOURCE extends DBPDataSource,
-    CONTAINER extends DBSStructureContainer<DATASOURCE>,
-    TABLE extends DBSTable<DATASOURCE, CONTAINER>>
-    implements DBSConstraint<DATASOURCE, TABLE>
+    TABLE extends DBSTable>
+    implements DBSConstraint
 {
     private TABLE table;
     private String name;
@@ -38,7 +32,7 @@ public abstract class AbstractConstraint<
         return table;
     }
 
-    public DBSConstraintColumn<DATASOURCE> getColumn(DBSTableColumn tableColumn)
+    public DBSConstraintColumn getColumn(DBSTableColumn tableColumn)
     {
         Collection<? extends DBSConstraintColumn> columns = getColumns();
         for (DBSConstraintColumn constraintColumn : columns) {
@@ -73,7 +67,7 @@ public abstract class AbstractConstraint<
 
     public DATASOURCE getDataSource()
     {
-        return table.getDataSource();
+        return (DATASOURCE) table.getDataSource();
     }
 
     public boolean refreshObject()

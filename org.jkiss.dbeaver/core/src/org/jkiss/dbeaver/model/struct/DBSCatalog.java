@@ -8,8 +8,7 @@ import java.util.Collection;
 /**
  * DBSCatalog
  */
-public interface DBSCatalog<DATASOURCE extends DBPDataSource>
-    extends DBSStructureObject<DATASOURCE>, DBSStructureContainer<DATASOURCE>
+public interface DBSCatalog extends DBSStructureObject, DBSStructureContainer
 {
     Collection<? extends DBSSchema> getSchemas() throws DBException;
 }

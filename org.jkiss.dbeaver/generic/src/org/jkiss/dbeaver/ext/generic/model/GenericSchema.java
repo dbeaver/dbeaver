@@ -8,7 +8,7 @@ import org.jkiss.dbeaver.model.anno.Property;
 /**
  * GenericSchema
  */
-public class GenericSchema extends GenericStructureContainer implements DBSSchema<GenericDataSource>
+public class GenericSchema extends GenericStructureContainer implements DBSSchema
 {
     private GenericDataSource dataSource;
     private GenericCatalog catalog;

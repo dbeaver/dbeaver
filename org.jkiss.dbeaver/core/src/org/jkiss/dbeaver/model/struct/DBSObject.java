@@ -7,7 +7,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 /**
  * Meta object
  */
-public interface DBSObject<DATASOURCE extends DBPDataSource> extends DBPObject
+public interface DBSObject extends DBPObject
 {
     /**
      * Object name
@@ -34,12 +34,13 @@ public interface DBSObject<DATASOURCE extends DBPDataSource> extends DBPObject
      * Datasource which this object belongs
      * @return datasource reference
      */
-    DATASOURCE getDataSource();
+    DBPDataSource getDataSource();
 
     /**
      * Refresh object's (and all ща шеэы children) state
      * @return true if object refreshed and false if parent object have to be refreshed
      * to perform requested operation
+     * @throws org.jkiss.dbeaver.DBException on error
      */
     boolean refreshObject()
         throws DBException;

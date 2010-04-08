@@ -9,9 +9,7 @@ import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 /**
  * GenericForeignKey
  */
-public class GenericForeignKey extends GenericConstraint implements DBSForeignKey<
-    GenericDataSource,
-    GenericTable>
+public class GenericForeignKey extends GenericConstraint implements DBSForeignKey
 {
     private GenericConstraint referencedKey;
     private DBSConstraintCascade deleteRule;

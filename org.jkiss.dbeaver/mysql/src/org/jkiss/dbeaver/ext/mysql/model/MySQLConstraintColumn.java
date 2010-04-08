@@ -1,17 +1,15 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.impl.meta.AbstractConstraint;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSConstraint;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.impl.meta.AbstractConstraint;
-import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.DBException;
 
 /**
  * GenericConstraintColumn
  */
-public class MySQLConstraintColumn implements DBSConstraintColumn<MySQLDataSource>
+public class MySQLConstraintColumn implements DBSConstraintColumn
 {
     private AbstractConstraint constraint;
     private MySQLTableColumn tableColumn;

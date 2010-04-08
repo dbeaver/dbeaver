@@ -5,6 +5,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 /**
  * DBSStructureObject
  */
-public interface DBSStructureObject<DATASOURCE extends DBPDataSource> extends DBSObject<DATASOURCE>
+public interface DBSStructureObject extends DBSObject
 {
 }

@@ -12,7 +12,7 @@ import java.util.Collection;
 /**
  * AbstractCatalog
  */
-public abstract class AbstractCatalog<DATASOURCE extends DBPDataSource> implements DBSCatalog<DATASOURCE>
+public abstract class AbstractCatalog<DATASOURCE extends DBPDataSource> implements DBSCatalog
 {
     private DATASOURCE dataSource;
     private String catalogName;

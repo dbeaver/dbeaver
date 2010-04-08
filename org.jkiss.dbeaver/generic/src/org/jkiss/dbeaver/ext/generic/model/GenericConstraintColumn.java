@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * GenericConstraintColumn
  */
-public class GenericConstraintColumn implements DBSConstraintColumn<GenericDataSource>
+public class GenericConstraintColumn implements DBSConstraintColumn
 {
     private GenericConstraint constraint;
     private GenericTableColumn tableColumn;

@@ -1,13 +1,11 @@
 package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
-
 import java.util.Collection;
 
 /**
  * DBSIndex
  */
-public interface DBSIndex<DATASOURCE extends DBPDataSource> extends DBSStructureObject<DATASOURCE>
+public interface DBSIndex extends DBSStructureObject
 {
     DBSTable getTable();
 

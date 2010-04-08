@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * GenericPrimaryKey
  */
-public class MySQLConstraint extends AbstractConstraint<MySQLDataSource,MySQLCatalog,MySQLTable> implements DBSConstraint<MySQLDataSource, MySQLTable> {
+public class MySQLConstraint extends AbstractConstraint<MySQLDataSource,MySQLTable> implements DBSConstraint {
     private DBSConstraintType constraintType;
     private List<MySQLConstraintColumn> columns;
 

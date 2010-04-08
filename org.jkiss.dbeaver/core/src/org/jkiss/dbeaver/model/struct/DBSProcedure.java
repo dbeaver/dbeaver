@@ -1,19 +1,15 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 
 import java.util.Collection;
 
 /**
  * DBSIndex
  */
-public interface DBSProcedure<
-    DATASOURCE extends DBPDataSource,
-    CONTAINER extends DBSStructureContainer<DATASOURCE>>
-    extends DBSStructureObject<DATASOURCE>
+public interface DBSProcedure extends DBSStructureObject
 {
-    CONTAINER getContainer();
+    DBSStructureContainer getContainer();
 
     DBSProcedureType getProcedureType();
 

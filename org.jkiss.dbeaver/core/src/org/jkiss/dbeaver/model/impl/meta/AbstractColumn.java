@@ -1,13 +1,12 @@
 package org.jkiss.dbeaver.model.impl.meta;
 
-import org.jkiss.dbeaver.model.struct.DBSColumnDefinition;
 import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.struct.DBSColumnDefinition;
 
 /**
  * AbstractColumn
  */
-public abstract class AbstractColumn<DATASOURCE extends DBPDataSource> implements DBSColumnDefinition<DATASOURCE>
+public abstract class AbstractColumn implements DBSColumnDefinition
 {
     private String name;
     private int valueType;

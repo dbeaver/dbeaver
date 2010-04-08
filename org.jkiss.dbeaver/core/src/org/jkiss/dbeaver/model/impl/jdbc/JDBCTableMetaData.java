@@ -63,12 +63,12 @@ public class JDBCTableMetaData implements DBCTableMetaData {
             // Load identifiers
             identifiers = new ArrayList<JDBCTableIdentifier>();
 
-            Collection<DBSConstraint> constraints = table.getConstraints();
+            Collection<? extends DBSConstraint> constraints = table.getConstraints();
             for (DBSConstraint constraint : constraints) {
                 if (constraint.getConstraintType().isUnique()) {
                     // We need ALL columns from this constraint
                     List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
-                    Collection<DBSConstraintColumn> constrColumns = constraint.getColumns();
+                    Collection<? extends DBSConstraintColumn> constrColumns = constraint.getColumns();
                     for (DBSConstraintColumn constrColumn : constrColumns) {
                         JDBCColumnMetaData rsColumn = getColumnMetaData(constrColumn);
                         if (rsColumn == null) {

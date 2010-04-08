@@ -1,14 +1,13 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 
 import java.util.Collection;
 
 /**
  * DBSStructureContainer
  */
-public interface DBSStructureContainer<DATASOURCE extends DBPDataSource> extends DBSObject<DATASOURCE>
+public interface DBSStructureContainer extends DBSObject
 {
     /**
      * Retrieve list of immediate child objects (not recursive)

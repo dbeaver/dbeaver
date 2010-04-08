@@ -13,7 +13,7 @@ import java.sql.ResultSet;
 /**
  * GenericTable
  */
-public class MySQLTableColumn extends AbstractColumn<MySQLDataSource> implements DBSTableColumn<MySQLDataSource>
+public class MySQLTableColumn extends AbstractColumn implements DBSTableColumn
 {
     private MySQLTable table;
     private String defaultValue;

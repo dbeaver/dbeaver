@@ -7,7 +7,7 @@ import org.jkiss.dbeaver.model.anno.Property;
 /**
  * GenericIndexColumn
  */
-public class GenericIndexColumn extends AbstractIndexColumn<GenericDataSource>
+public class GenericIndexColumn extends AbstractIndexColumn
 {
     private GenericIndex index;
     private GenericTableColumn tableColumn;

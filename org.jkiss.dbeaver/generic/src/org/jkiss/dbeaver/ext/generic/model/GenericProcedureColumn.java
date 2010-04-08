@@ -10,7 +10,7 @@ import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
 /**
  * GenericTable
  */
-public class GenericProcedureColumn extends AbstractColumn<GenericDataSource> implements DBSProcedureColumn<GenericDataSource>
+public class GenericProcedureColumn extends AbstractColumn implements DBSProcedureColumn
 {
     private GenericProcedure procedure;
     private DBSProcedureColumnType columnType;

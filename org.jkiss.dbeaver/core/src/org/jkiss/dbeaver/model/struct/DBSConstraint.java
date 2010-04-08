@@ -1,20 +1,18 @@
 package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
-
 import java.util.Collection;
 
 /**
  * DBSConstraint
  */
-public interface DBSConstraint<DATASOURCE extends DBPDataSource, TABLE extends DBSTable> extends DBSObject<DATASOURCE>
+public interface DBSConstraint extends DBSObject
 {
     DBSConstraintType getConstraintType();
 
-    TABLE getTable();
+    DBSTable getTable();
 
-    Collection<? extends DBSConstraintColumn<DATASOURCE>> getColumns();
+    Collection<? extends DBSConstraintColumn> getColumns();
 
-    DBSConstraintColumn<DATASOURCE> getColumn(DBSTableColumn tableColumn);
+    DBSConstraintColumn getColumn(DBSTableColumn tableColumn);
 
 }

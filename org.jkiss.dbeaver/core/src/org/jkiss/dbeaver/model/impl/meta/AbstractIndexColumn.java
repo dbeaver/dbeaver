@@ -6,6 +6,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 /**
  * AbstractIndexColumn
  */
-public abstract class AbstractIndexColumn<DATASOURCE extends DBPDataSource> implements DBSIndexColumn<DATASOURCE>
+public abstract class AbstractIndexColumn implements DBSIndexColumn
 {
 }

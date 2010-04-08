@@ -710,7 +710,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                     query.append(metaColumns[cell.col].metaData.getColumnName()).append("=?");
                 }
                 query.append(" WHERE ");
-                Collection<DBSConstraintColumn> idColumns = rowInfo.id.getConstraint().getColumns();
+                Collection<? extends DBSConstraintColumn> idColumns = rowInfo.id.getConstraint().getColumns();
                 boolean firstCol = true;
                 for (DBSConstraintColumn idColumn : idColumns) {
                     if (!firstCol) {

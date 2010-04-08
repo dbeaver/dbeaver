@@ -12,8 +12,8 @@ import java.util.Collection;
  */
 public abstract class AbstractTable<
     DATASOURCE extends DBPDataSource,
-    CONTAINER extends DBSStructureContainer<DATASOURCE>>
-    implements DBSTable<DATASOURCE, CONTAINER>, DBSStructureContainer<DATASOURCE>
+    CONTAINER extends DBSStructureContainer>
+    implements DBSTable, DBSStructureContainer
 {
     private CONTAINER container;
     private String tableName;
@@ -73,7 +73,7 @@ public abstract class AbstractTable<
 
     public DATASOURCE getDataSource()
     {
-        return container.getDataSource();
+        return (DATASOURCE) container.getDataSource();
     }
 
     public DBSObject getParentObject()

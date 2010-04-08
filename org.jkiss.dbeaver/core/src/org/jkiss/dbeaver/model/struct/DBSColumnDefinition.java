@@ -1,11 +1,9 @@
 package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
-
 /**
  * DBSColumnDefinition
  */
-public interface DBSColumnDefinition<DATASOURCE extends DBPDataSource> extends DBSStructureObject<DATASOURCE>, DBSTypedObject
+public interface DBSColumnDefinition extends DBSStructureObject, DBSTypedObject
 {
     int getMaxLength();
 

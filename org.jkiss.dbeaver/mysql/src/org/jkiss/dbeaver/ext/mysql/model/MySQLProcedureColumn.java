@@ -10,7 +10,7 @@ import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
 /**
  * GenericTable
  */
-public class MySQLProcedureColumn extends AbstractColumn<MySQLDataSource> implements DBSProcedureColumn<MySQLDataSource>
+public class MySQLProcedureColumn extends AbstractColumn implements DBSProcedureColumn
 {
     private MySQLProcedure procedure;
     private DBSProcedureColumnType columnType;

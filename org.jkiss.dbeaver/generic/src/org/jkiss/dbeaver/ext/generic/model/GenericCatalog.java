@@ -18,7 +18,7 @@ import java.util.Collection;
 /**
  * GenericCatalog
  */
-public class GenericCatalog extends GenericStructureContainer implements DBSCatalog<GenericDataSource>
+public class GenericCatalog extends GenericStructureContainer implements DBSCatalog
 {
     private GenericDataSource dataSource;
     private String catalogName;

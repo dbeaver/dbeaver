@@ -20,7 +20,7 @@ import java.util.Collection;
 /**
  * GenericStructureContainer
  */
-public abstract class GenericStructureContainer implements DBSStructureContainer<GenericDataSource>, DBSStructureAssistant
+public abstract class GenericStructureContainer implements DBSStructureContainer, DBSStructureAssistant
 {
     static Log log = LogFactory.getLog(GenericStructureContainer.class);
 
@@ -31,6 +31,8 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     protected GenericStructureContainer()
     {
     }
+
+    public abstract GenericDataSource getDataSource();
 
     public abstract GenericCatalog getCatalog();
 

@@ -9,11 +9,10 @@ import org.jkiss.dbeaver.model.struct.*;
  */
 public abstract class AbstractForeignKey<
     DATASOURCE extends DBPDataSource,
-    CONTAINER extends DBSStructureContainer<DATASOURCE>,
-    TABLE extends DBSTable<DATASOURCE, CONTAINER>,
-    PRIMARY_KEY extends DBSConstraint<DATASOURCE, TABLE>>
-    extends AbstractConstraint<DATASOURCE, CONTAINER, TABLE>
-    implements DBSForeignKey<DATASOURCE, TABLE>
+    TABLE extends DBSTable,
+    PRIMARY_KEY extends AbstractConstraint<DATASOURCE, TABLE>>
+    extends AbstractConstraint<DATASOURCE, TABLE>
+    implements DBSForeignKey
 {
     private PRIMARY_KEY referencedKey;
     private DBSConstraintCascade deleteRule;
