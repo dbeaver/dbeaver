@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ui.controls.resultset.view;
+package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;

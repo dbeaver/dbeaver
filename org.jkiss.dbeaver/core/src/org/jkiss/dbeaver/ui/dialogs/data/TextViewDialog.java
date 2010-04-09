@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ui.controls.resultset.view;
+package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;

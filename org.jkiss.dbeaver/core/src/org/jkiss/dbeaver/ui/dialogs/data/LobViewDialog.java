@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ui.controls.resultset.view;
+package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
