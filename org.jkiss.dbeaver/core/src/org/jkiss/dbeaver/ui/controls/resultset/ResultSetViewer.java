@@ -46,7 +46,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     static Log log = LogFactory.getLog(ResultSetViewer.class);
 
     private static final String NULL_VALUE_LABEL = "[NULL]";
-    private static final String ARRAY_VALUE_LABEL = "ARR";
+    private static final int DEFAULT_ROW_HEADER_WIDTH = 50;
 
     private static class CellInfo {
         int col;
@@ -105,7 +105,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         this.mode = ResultSetMode.GRID;
         this.grid = new GridControl(
             parent,
-            SWT.FULL_SELECTION | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
+            SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
             site,
             this);
 
@@ -279,7 +279,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     {
         this.mode = resultSetMode;
         if (mode == ResultSetMode.GRID) {
-            grid.setPanelWidth(30);
+            grid.setRowHeaderWidth(DEFAULT_ROW_HEADER_WIDTH);
             itemToggleView.setImage(DBIcon.RS_MODE_GRID.getImage());
         } else {
             // Calculate width of grid panel - use longest column title
@@ -295,7 +295,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                 }
                 defaultWidth += DBIcon.EDIT_COLUMN.getImage().getBounds().width + 2;
             }
-            grid.setPanelWidth(defaultWidth + 30);
+            grid.setRowHeaderWidth(defaultWidth + DEFAULT_ROW_HEADER_WIDTH);
             itemToggleView.setImage(DBIcon.RS_MODE_RECORD.getImage());
             curRowNum = grid.getCurrentPos();
             if (curRowNum == null) {
@@ -490,6 +490,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
     public void fillRowData(IGridRowData row)
     {
+        int rowNum = row.getIndex();
         if (mode == ResultSetMode.RECORD) {
             // Fill record
             if (curRowNum.row >= curRows.size()) {
@@ -500,15 +501,37 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             Object value = values[row.getIndex()];
             row.setData(value);
             row.setText(0, getCellValue(value));
+            row.setHeaderText(metaColumns[rowNum].metaData.getColumnName());
+            if (metaColumns[rowNum].editable) {
+                row.setHeaderImage(DBIcon.EDIT_COLUMN.getImage());
+            }
         } else {
             // Fill rows
-            Object[] values = curRows.get(row.getIndex());
+            Object[] values = curRows.get(rowNum);
             row.setData(values);
             for (int i = 0; i < values.length; i++) {
                 row.setText(i, getCellValue(values[i]));
             }
+            row.setHeaderText(String.valueOf(row.getIndex() + 1));
         }
     }
+
+/*
+    public void fillRowInfo(int rowNum, IGridRowInfo rowInfo)
+    {
+        if (mode == ResultSetMode.RECORD) {
+            if (rowNum < 0 || rowNum >= metaColumns.length) {
+                return;
+            }
+            rowInfo.setText(metaColumns[rowNum].metaData.getColumnName());
+            if (metaColumns[rowNum].editable) {
+                rowInfo.setImage(DBIcon.EDIT_COLUMN.getImage());
+            }
+        } else {
+            rowInfo.setText(String.valueOf(rowNum + 1));
+        }
+    }
+*/
 
     private String getCellValue(Object colValue)
     {
@@ -596,21 +619,6 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         catch (Exception e) {
             log.error(e);
             return false;
-        }
-    }
-
-    public void fillRowInfo(int rowNum, IGridRowInfo rowInfo)
-    {
-        if (mode == ResultSetMode.RECORD) {
-            if (rowNum < 0 || rowNum >= metaColumns.length) {
-                return;
-            }
-            rowInfo.setText(metaColumns[rowNum].metaData.getColumnName());
-            if (metaColumns[rowNum].editable) {
-                rowInfo.setImage(DBIcon.EDIT_COLUMN.getImage());
-            }
-        } else {
-            rowInfo.setText(String.valueOf(rowNum + 1));
         }
     }
 

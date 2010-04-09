@@ -2,34 +2,17 @@ package org.jkiss.dbeaver.ui.controls.grid;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.GroupMarker;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.commands.ActionHandler;
+import org.eclipse.nebula.widgets.grid.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.handlers.IHandlerActivation;
@@ -37,13 +20,8 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * ResultSetControl
@@ -57,11 +35,11 @@ public class GridControl extends Composite implements Listener
 
     private static final int Event_ChangeCursor = 1000;
 
-    private Table table;
-    private TableEditor tableEditor;
-    private List<TableColumn> curColumns = new ArrayList<TableColumn>();
+    private Grid grid;
+    private GridEditor tableEditor;
+    private List<GridColumn> curColumns = new ArrayList<GridColumn>();
 
-    private GridPanel gridPanel;
+    //private GridPanel gridPanel;
 
     private IWorkbenchPartSite site;
     private IGridDataProvider dataProvider;
@@ -131,9 +109,8 @@ public class GridControl extends Composite implements Listener
         this.createControl(style);
     }
 
-    Table getTable()
-    {
-        return table;
+    public Grid getGrid() {
+        return grid;
     }
 
     public Set<GridPos> getSelection()
@@ -159,7 +136,7 @@ public class GridControl extends Composite implements Listener
     public void setForegroundSelected(Color foregroundSelected)
     {
         this.foregroundSelected = foregroundSelected;
-        this.table.redraw();
+        this.grid.redraw();
     }
 
     public Color getBackgroundNormal()
@@ -180,13 +157,13 @@ public class GridControl extends Composite implements Listener
     public void setBackgroundSelected(Color backgroundSelected)
     {
         this.backgroundSelected = backgroundSelected;
-        this.table.redraw();
+        this.grid.redraw();
     }
 
     public void setFont(Font font)
     {
-        table.setFont(font);
-        gridPanel.setFont(font);
+        grid.setFont(font);
+        //gridPanel.setFont(font);
     }
 
     public Point getCursorPosition()
@@ -198,8 +175,14 @@ public class GridControl extends Composite implements Listener
         }
     }
 
+    public void setRowHeaderWidth(int width)
+    {
+        grid.setItemHeaderWidth(width);
+    }
+
     public void moveCursor(int newCol, int newRow, boolean keepSelection)
     {
+/*
         if (currentPosition == null) {
             currentPosition = cursorPosition;
         }
@@ -208,13 +191,6 @@ public class GridControl extends Composite implements Listener
             // Ensure seletion is visible
             TableItem tableItem = table.getItem(newRow);
             if (newCol != currentPosition.col) {
-/*
-                int newOffset = 0;
-                for (int i = 0; i < newCol; i++) {
-                    newOffset += curColumns.get(i).getWidth();
-                }
-                table.getHorizontalBar().setSelection(newOffset);
-*/
                 TableColumn newColumn = table.getColumn(newCol);
                 table.showColumn(newColumn);
             }
@@ -225,6 +201,7 @@ public class GridControl extends Composite implements Listener
 
             currentPosition = new GridPos(newCol, newRow);
         }
+*/
     }
 
     public void addCursorChangeListener(Listener listener)
@@ -251,23 +228,20 @@ public class GridControl extends Composite implements Listener
         layout.horizontalSpacing = 0;
         group.setLayout(layout);
 
-        gridPanel = new GridPanel(group, SWT.NONE, this);
-        gd = new GridData(GridData.FILL_VERTICAL);
-        gd.grabExcessVerticalSpace = true;
-        gd.grabExcessHorizontalSpace = false;
-        gd.minimumWidth = 20;
-        gd.widthHint = 20;
-        gridPanel.setLayoutData(gd);
+        grid = new Grid(group, style);
+        grid.setCellSelectionEnabled(true);
+        grid.setRowHeaderVisible(true);
+        //grid.setRowHeaderRenderer(new IRenderer() {
+        //});
 
-        table = new Table(group, (style & ~SWT.BORDER));
-        table.setLinesVisible(true);
-        table.setHeaderVisible(true);
+        grid.setLinesVisible(true);
+        grid.setHeaderVisible(true);
         
         gd = new GridData(GridData.FILL_BOTH);
-        table.setLayoutData(gd);
+        grid.setLayoutData(gd);
 
         //TableCursor cyr = new TableCursor(table, SWT.NONE);
-        //table.addListener(SWT.PaintItem, this);
+/*
         table.addListener(SWT.EraseItem, this);
         table.addListener(SWT.Paint, this);
         table.addListener(SWT.Selection, this);
@@ -281,25 +255,14 @@ public class GridControl extends Composite implements Listener
         table.addListener(SWT.FocusIn, this);
         table.addListener(SWT.FocusOut, this);
         table.addListener(SWT.MeasureItem, this);
+*/
 
         if ((style & SWT.VIRTUAL) != 0) {
             lazyRow = new LazyGridRow();
-            table.addListener(SWT.SetData, this);
+            grid.addListener(SWT.SetData, this);
         }
 
-        Listener resizeListener = new Listener()
-        {
-            public void handleEvent(Event event)
-            {
-                if (gridPanel != null) {
-                    gridPanel.redraw();
-                }
-            }
-        };
-        table.getHorizontalBar().addListener(SWT.Selection, resizeListener);
-        table.getVerticalBar().addListener(SWT.Selection, resizeListener);
-
-        tableEditor = new TableEditor(table);
+        tableEditor = new GridEditor(grid);
         tableEditor.horizontalAlignment = SWT.LEFT;
         tableEditor.verticalAlignment = SWT.TOP;
         tableEditor.grabHorizontal = true;
@@ -318,6 +281,21 @@ public class GridControl extends Composite implements Listener
     public void handleEvent(Event event)
     {
         switch (event.type) {
+            case SWT.SetData: {
+                lazyRow.item = (GridItem)event.item;
+                lazyRow.index = event.index;
+                if (dataProvider != null) {
+                    dataProvider.fillRowData(lazyRow);
+                }
+                break;
+            }
+        }
+    }
+
+/*
+    public void handleEvent(Event event)
+    {
+        switch (event.type) {
             case SWT.Paint: {
                 paintSelection(event);
                 break;
@@ -330,12 +308,14 @@ public class GridControl extends Composite implements Listener
                 }
                 break;
             }
+*/
 /*
             case SWT.PaintItem: {
                 paintItem(event);
                 break;
             }
 */
+/*
             case SWT.EraseItem: {
                 eraseItem(event);
                 break;
@@ -390,7 +370,9 @@ public class GridControl extends Composite implements Listener
                 break;
         }
     }
+*/
 
+/*
     private void processKeyDown(Event event)
     {
         inKeyboardSelection = (event.stateMask & SWT.SHIFT) != 0;
@@ -451,6 +433,8 @@ public class GridControl extends Composite implements Listener
         moveCursor(newCol, newRow, (event.stateMask & SWT.SHIFT) != 0);
         event.doit = false;
     }
+*/
+/*
 
     private void processKeyUp(Event event)
     {
@@ -614,24 +598,6 @@ public class GridControl extends Composite implements Listener
             gc.fillRectangle(itemBounds.x, itemBounds.y, itemBounds.width, itemBounds.height);
         }
         gc.setBackground(oldBackground);
-/*
-        // Erase background
-        Color oldBackground = gc.getBackground();
-        gc.setBackground(isSelected ? backgroundSelected : backgroundNormal);
-        gc.fillRectangle(itemBounds.x, itemBounds.y, itemBounds.width, itemBounds.height);
-
-        event.gc.setForeground(foregroundLines);
-        event.gc.drawLine(itemBounds.x, itemBounds.y + itemBounds.height - 1, itemBounds.x + itemBounds.width, itemBounds.y + itemBounds.height - 1);
-        event.gc.drawLine(itemBounds.x + itemBounds.width - 1, itemBounds.y, itemBounds.x + itemBounds.width - 1, itemBounds.y + itemBounds.height);
-
-        if (isCursorCell) {
-            event.gc.setForeground(cursorRectangle);
-            event.gc.drawRectangle(itemBounds.x, itemBounds.y, itemBounds.width - 2, itemBounds.height - 2);
-        }
-
-        gc.setBackground(oldBackground);
-        gc.setForeground(foregroundNormal);
-*/
     }
 
     private void paintItem(Event event)
@@ -743,20 +709,20 @@ public class GridControl extends Composite implements Listener
             }
         }
     }
-
+*/
     private void redrawItems(Collection<GridPos> posList)
     {
-        int topIndex = table.getTopIndex();
-        int bottomIndex = table.getTopIndex() + getVisibleRowsCount();
+        int topIndex = grid.getTopIndex();
+        int bottomIndex = grid.getTopIndex() + getVisibleRowsCount();
 
         for (GridPos pos : posList) {
             if (pos.row < topIndex || pos.row > bottomIndex) {
                 continue;
             }
-            TableItem tableItem = table.getItem(pos.row);
+            GridItem tableItem = grid.getItem(pos.row);
             if (tableItem != null) {
                 Rectangle cellBounds = tableItem.getBounds(pos.col);
-                table.redraw(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height, false);
+                grid.redraw(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height, false);
             }
         }
     }
@@ -764,14 +730,14 @@ public class GridControl extends Composite implements Listener
     private GridPos getPosFromPoint(int x, int y)
     {
         Point clickPoint = new Point(x, y);
-        TableItem tableItem = table.getItem(clickPoint);
+        GridItem tableItem = grid.getItem(clickPoint);
         if (tableItem == null) {
             return null;
         }
-        int rowSelected = table.indexOf(tableItem);
+        int rowSelected = grid.indexOf(tableItem);
         int columnSelected = -1;
         {
-            TableColumn[] columns = table.getColumns();
+            GridColumn[] columns = grid.getColumns();
             for (int i = 0; i < columns.length; i++) {
                 Rectangle cellBounds = tableItem.getBounds(i);
                 cellBounds.width += 1;
@@ -794,7 +760,7 @@ public class GridControl extends Composite implements Listener
         return rowPoses;
     }
 
-    public TableColumn getColumn(int index)
+    public GridColumn getColumn(int index)
     {
         return curColumns.get(index);
     }
@@ -810,12 +776,12 @@ public class GridControl extends Composite implements Listener
         return selection.contains(pos) || (!tempSelection.isEmpty() && tempSelection.contains(pos));
     }
 
-    public TableColumn addColumn(String text, String toolTipText, Image image)
+    public GridColumn addColumn(String text, String toolTipText, Image image)
     {
-        TableColumn column = new TableColumn(table, SWT.NONE);
+        GridColumn column = new GridColumn(grid, SWT.NONE);
         column.setText(text);
         if (toolTipText != null) {
-            column.setToolTipText(toolTipText);
+            column.setHeaderTooltip(toolTipText);
         }
         if (image != null) {
             column.setImage(image);
@@ -828,9 +794,9 @@ public class GridControl extends Composite implements Listener
     {
         // Repack columns
         if (curColumns.size() == 1) {
-            curColumns.get(0).setWidth(table.getSize().x - gridPanel.getPanelWidth());
+            curColumns.get(0).setWidth(grid.getSize().x);
         } else {
-            for (TableColumn curColumn : curColumns) {
+            for (GridColumn curColumn : curColumns) {
                 curColumn.pack();
                 if (curColumn.getWidth() > MAX_DEF_COLUMN_WIDTH) {
                     curColumn.setWidth(MAX_DEF_COLUMN_WIDTH);
@@ -842,14 +808,12 @@ public class GridControl extends Composite implements Listener
         tempSelection.clear();
         setCurrentRowNum(0);
         currentPosition = null;
-
-        gridPanel.redraw();
     }
 
     private void clearColumns()
     {
         if (!curColumns.isEmpty()) {
-            for (TableColumn column : curColumns) {
+            for (GridColumn column : curColumns) {
                 column.dispose();
             }
             curColumns.clear();
@@ -858,9 +822,9 @@ public class GridControl extends Composite implements Listener
 
     public int getVisibleRowsCount()
     {
-        Rectangle clientArea = table.getClientArea();
-        int itemHeight = table.getItemHeight();
-        int count = (clientArea.height - table.getHeaderHeight() + itemHeight - 1) / itemHeight;
+        Rectangle clientArea = grid.getClientArea();
+        int itemHeight = grid.getItemHeight();
+        int count = (clientArea.height - grid.getHeaderHeight() + itemHeight - 1) / itemHeight;
         if (count == 0) {
             count = 1;
         }
@@ -870,7 +834,7 @@ public class GridControl extends Composite implements Listener
     public void clearGrid()
     {
         cancelInlineEditor();
-        table.removeAll();
+        grid.removeAll();
         this.clearColumns();
     }
 
@@ -898,7 +862,7 @@ public class GridControl extends Composite implements Listener
         int prevRow = firstRow;
         int prevCol = firstCol;
         for (GridPos pos : selection) {
-            TableItem tableItem = table.getItem(pos.row);
+            GridItem tableItem = grid.getItem(pos.row);
             if (pos.row > prevRow) {
                 if (prevCol < lastCol) {
                     for (int i = prevCol; i < lastCol; i++) {
@@ -927,7 +891,7 @@ public class GridControl extends Composite implements Listener
     private void hookContextMenu()
     {
         MenuManager menuMgr = new MenuManager();
-        Menu menu = menuMgr.createContextMenu(table);
+        Menu menu = menuMgr.createContextMenu(grid);
         menuMgr.addMenuListener(new IMenuListener()
         {
             public void menuAboutToShow(IMenuManager manager)
@@ -953,20 +917,20 @@ public class GridControl extends Composite implements Listener
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
-        table.setMenu(menu);
+        grid.setMenu(menu);
         site.registerContextMenu(menuMgr, selectionProvider);
     }
 
     void selectAllRows()
     {
-        int rowCount = table.getItemCount();
+        int rowCount = grid.getItemCount();
         int colCount = curColumns.size();
         for (int i = 0; i < rowCount; i++) {
             for (int k = 0; k < colCount; k++) {
                 selection.add(new GridPos(k, i));
             }
         }
-        table.redraw();
+        grid.redraw();
     }
 
     void selectRow(int rowNum, boolean append)
@@ -997,14 +961,14 @@ public class GridControl extends Composite implements Listener
         if (!dataProvider.isEditable() || !dataProvider.isCellEditable(pos.col, pos.row)) {
             return;
         }
-        TableItem item = table.getItem(pos.row);
+        GridItem item = grid.getItem(pos.row);
 
         Composite placeholder = null;
         if (inline) {
             cancelInlineEditor();
 
-            placeholder = new Composite(table, SWT.BORDER);
-            placeholder.setFont(table.getFont());
+            placeholder = new Composite(grid, SWT.BORDER);
+            placeholder.setFont(grid.getFont());
             GridLayout layout = new GridLayout(1, true);
             layout.marginWidth = 0;
             layout.marginHeight = 0;
@@ -1056,17 +1020,17 @@ public class GridControl extends Composite implements Listener
 
     public int getItemCount()
     {
-        return table.getItemCount();
+        return grid.getItemCount();
     }
 
     public void setItemCount(int count)
     {
-        table.setItemCount(count);
+        grid.setItemCount(count);
     }
 
     public int getColumnsCount()
     {
-        return table.getColumnCount();
+        return grid.getColumnCount();
     }
 
     public void refreshCell(int col, int row)
@@ -1099,23 +1063,6 @@ public class GridControl extends Composite implements Listener
         }
     }
 
-    public IGridRowInfo getRowInfo(int rowNum)
-    {
-        rowInfo.clear();
-        if (dataProvider != null) {
-            dataProvider.fillRowInfo(rowNum, rowInfo);
-        } else {
-            rowInfo.setText(String.valueOf(rowNum));
-        }
-        return rowInfo;
-    }
-
-    public void setPanelWidth(int width)
-    {
-        gridPanel.setPanelWidth(width);
-        this.redraw();
-    }
-
     public GridPos getCurrentPos()
     {
         return cursorPosition;
@@ -1132,8 +1079,8 @@ public class GridControl extends Composite implements Listener
 
     public void redrawGrid()
     {
-        Rectangle bounds = table.getBounds();
-        table.redraw(bounds.x, bounds.y, bounds.width, bounds.height, true);
+        Rectangle bounds = grid.getBounds();
+        grid.redraw(bounds.x, bounds.y, bounds.width, bounds.height, true);
     }
 
     private static class ActionInfo {
@@ -1181,15 +1128,13 @@ public class GridControl extends Composite implements Listener
                 event.keyCode = SWT.END;
                 event.stateMask |= SWT.ALT;
             }
-            processKeyDown(event);
-            //event.stateMask = 0;
-            //processKeyUp(event);
+            //processKeyDown(event);
         }
     }
 
     private static class LazyGridRow implements IGridRowData {
 
-        private TableItem item;
+        private GridItem item;
         private int index;
         private int column;
 
@@ -1216,6 +1161,14 @@ public class GridControl extends Composite implements Listener
         public void setText(int column, String text)
         {
             item.setText(column, text);
+        }
+
+        public void setHeaderText(String text) {
+            item.setHeaderText(text);
+        }
+
+        public void setHeaderImage(Image image) {
+            item.setHeaderImage(image);
         }
 
         public Object getData() {

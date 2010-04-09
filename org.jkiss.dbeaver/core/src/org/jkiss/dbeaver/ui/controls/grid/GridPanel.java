@@ -11,18 +11,19 @@ import org.eclipse.swt.widgets.Event;
 /**
  * GridPanel
  */
-class GridPanel extends Composite implements Listener
+class GridPanel extends Composite //implements Listener
 {
-    private GridControl grid;
-    private int panelWidth = 30;
 
     public GridPanel(Composite parent, int style, GridControl grid)
     {
         super(parent, style);
-        this.addListener(SWT.Paint, this);
-        this.addListener(SWT.MouseDown, this);
-        this.grid = grid;
+        //this.addListener(SWT.Paint, this);
+        //this.addListener(SWT.MouseDown, this);
+        //this.grid = grid;
     }
+/*
+    private GridControl grid;
+    private int panelWidth = 30;
 
     GridControl getGrid()
     {
@@ -109,4 +110,5 @@ class GridPanel extends Composite implements Listener
             topPos++;
         }
     }
+*/
 }

@@ -22,6 +22,4 @@ public interface IGridDataProvider {
         boolean inline,
         Composite inlinePlaceholder);
     
-    void fillRowInfo(int rowNum, IGridRowInfo rowInfo);
-
 }
