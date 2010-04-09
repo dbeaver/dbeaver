@@ -1,5 +1,6 @@
 package org.jkiss.dbeaver.runtime.sql;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
@@ -12,14 +13,13 @@ import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DataSourceJob;
-import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * SQLQueryJob
@@ -29,11 +29,12 @@ public class SQLQueryJob extends DataSourceJob
     static Log log = LogFactory.getLog(SQLQueryJob.class);
 
     private static final int SUBTASK_COUNT = 5;
-    private static final int DEFAULT_MAX_ROWS = 500;
+    //private static final int DEFAULT_MAX_ROWS = 500;
 
     private DBCSession session;
     private List<SQLStatementInfo> queries;
     private SQLQueryDataPump dataPump;
+    private DBSObject dataContainer;
 
     private SQLScriptCommitType commitType;
     private SQLScriptErrorHandling errorHandling;
@@ -41,7 +42,7 @@ public class SQLQueryJob extends DataSourceJob
     private int maxResults;
 
     private DBCStatement curStatement;
-    private boolean statementCancel = false;
+    //private boolean statementCancel = false;
     private boolean statementCanceled = false;
     private Throwable lastError = null;
 
@@ -69,6 +70,14 @@ public class SQLQueryJob extends DataSourceJob
             this.fetchResultSets = (queries.size() == 1);
             this.maxResults = preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
         }
+    }
+
+    public DBSObject getDataContainer() {
+        return dataContainer;
+    }
+
+    public void setDataContainer(DBSObject dataContainer) {
+        this.dataContainer = dataContainer;
     }
 
     public void addQueryListener(SQLQueryListener listener)
@@ -225,6 +234,9 @@ public class SQLQueryJob extends DataSourceJob
             // Prepare statement
             monitor.subTask(sqlQuery);
             curStatement = session.makeStatement(sqlQuery);
+            if (dataContainer != null) {
+                curStatement.setDataContainer(dataContainer);
+            }
             curStatement.setMaxResults(maxResults);
             monitor.worked(1);
             subTasksPerformed++;

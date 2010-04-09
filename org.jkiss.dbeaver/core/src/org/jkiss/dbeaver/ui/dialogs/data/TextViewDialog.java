@@ -3,19 +3,15 @@ package org.jkiss.dbeaver.ui.dialogs.data;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ui.controls.grid.IGridRowData;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.data.DBDValueController;
 
 /**
  * TextViewDialog
  */
 public class TextViewDialog extends ValueViewDialog {
 
-    private Object data;
-
-    public TextViewDialog(Shell shell, IGridRowData row, DBCColumnMetaData columnInfo, Object data) {
-        super(shell, row, columnInfo);
-        this.data = data;
+    public TextViewDialog(DBDValueController valueController) {
+        super(valueController);
     }
 
     @Override
@@ -26,9 +22,14 @@ public class TextViewDialog extends ValueViewDialog {
         Label label = new Label(dialogGroup, SWT.NONE);
         label.setText("Value: ");
 
-        Text text = new Text(dialogGroup, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY);
+        int style = SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL;
+        if (getValueController().isReadOnly()) {
+            style |= SWT.READ_ONLY;
+        }
+        Text text = new Text(dialogGroup, style);
 
-        text.setText(data == null ? "[NULL]" : data.toString());
+        Object value = getValueController().getValue();
+        text.setText(value == null ? "" : value.toString());
         text.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
         
         GridData ld = new GridData(GridData.FILL_BOTH);

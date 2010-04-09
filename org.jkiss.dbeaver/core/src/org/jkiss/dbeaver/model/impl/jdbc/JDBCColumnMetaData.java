@@ -1,18 +1,19 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Collection;
-
-import net.sf.jkiss.utils.CommonUtils;
+import java.util.List;
 
 /**
  * JDBCColumnMetaData
@@ -77,9 +78,19 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
         }
 
         try {
-            tableMetaData = resultSetMeta.getTableMetaData(catalogName, schemaName, tableName);
-            if (tableMetaData != null) {
-                tableMetaData.addColumn(this);
+            if (!CommonUtils.isEmpty(tableName)) {
+                tableMetaData = resultSetMeta.getTableMetaData(catalogName, schemaName, tableName);
+                if (tableMetaData != null) {
+                    tableMetaData.addColumn(this);
+                }
+            } else {
+                DBSObject dataContainer = getResultSetMeta().getResultSet().getStatement().getDataContainer();
+                if (dataContainer instanceof DBSTable) {
+                    tableMetaData = resultSetMeta.getTableMetaData((DBSTable)dataContainer);
+                    if (tableMetaData != null) {
+                        tableMetaData.addColumn(this);
+                    }
+                }
             }
         }
         catch (DBException e) {

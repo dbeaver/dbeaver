@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.model.impl.data;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -55,7 +56,9 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
             });
             return true;
         } else {
-            return false;
+            TextViewDialog dialog = new TextViewDialog(controller);
+            dialog.open();
+            return true;
         }
     }
 

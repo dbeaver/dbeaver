@@ -64,14 +64,20 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData
         if (dataSource instanceof DBSStructureContainer) {
             DBSObject tableObject = DBSUtils.getObjectByPath((DBSStructureContainer) dataSource, catalogName, schemaName, tableName);
             if (tableObject instanceof DBSTable) {
-                JDBCTableMetaData tableMetaData = tables.get(tableObject);
-                if (tableMetaData == null) {
-                    tableMetaData = new JDBCTableMetaData(this, (DBSTable)tableObject, null);
-                    tables.put(tableObject, tableMetaData);
-                }
-                return tableMetaData;
+                return getTableMetaData((DBSTable)tableObject);
             }
         }
         return null;
+    }
+
+    public JDBCTableMetaData getTableMetaData(DBSTable table)
+        throws DBException
+    {
+        JDBCTableMetaData tableMetaData = tables.get(table);
+        if (tableMetaData == null) {
+            tableMetaData = new JDBCTableMetaData(this, table, null);
+            tables.put(table, tableMetaData);
+        }
+        return tableMetaData;
     }
 }

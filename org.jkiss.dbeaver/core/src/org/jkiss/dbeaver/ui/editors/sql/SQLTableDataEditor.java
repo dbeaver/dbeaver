@@ -163,6 +163,7 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
             curSession,
             Collections.singletonList(statementInfo),
             resultSetView.getDataPump());
+        job.setDataContainer(table);
 
         job.addQueryListener(new DefaultQueryListener()
         {

@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.dbc.DBCCLOB;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCLOB;
+import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.grid.IGridRowData;
@@ -22,11 +23,8 @@ public class LobViewDialog extends ValueViewDialog {
 
     static Log log = LogFactory.getLog(LobViewDialog.class);
 
-    private DBCLOB lob;
-
-    public LobViewDialog(Shell shell, IGridRowData row, DBCColumnMetaData columnInfo, DBCLOB lob) {
-        super(shell, row, columnInfo);
-        this.lob = lob;
+    public LobViewDialog(DBDValueController valueController) {
+        super(valueController);
     }
 
     @Override
@@ -34,6 +32,7 @@ public class LobViewDialog extends ValueViewDialog {
     {
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
+/*
         long lobLength = 0;
         if (lob != null) {
             try {
@@ -101,6 +100,7 @@ public class LobViewDialog extends ValueViewDialog {
                 });
             }
         }
+*/
 
         return dialogGroup;
     }

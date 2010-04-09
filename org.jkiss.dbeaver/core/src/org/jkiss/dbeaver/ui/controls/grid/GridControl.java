@@ -208,7 +208,15 @@ public class GridControl extends Composite implements Listener
             // Ensure seletion is visible
             TableItem tableItem = table.getItem(newRow);
             if (newCol != currentPosition.col) {
-                table.showColumn(table.getColumn(newCol));
+/*
+                int newOffset = 0;
+                for (int i = 0; i < newCol; i++) {
+                    newOffset += curColumns.get(i).getWidth();
+                }
+                table.getHorizontalBar().setSelection(newOffset);
+*/
+                TableColumn newColumn = table.getColumn(newCol);
+                table.showColumn(newColumn);
             }
             if (newRow != currentPosition.row) {
                 table.showItem(tableItem);

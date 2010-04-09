@@ -5,8 +5,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.ui.controls.grid.IGridRowData;
 
 /**
  * ValueViewDialog
@@ -15,24 +15,17 @@ import org.jkiss.dbeaver.ui.controls.grid.IGridRowData;
  */
 public abstract class ValueViewDialog extends Dialog {
 
-    private IGridRowData row;
-    private DBCColumnMetaData columnInfo;
+    private DBDValueController valueController;
     private Composite infoGroup;
 
-    protected ValueViewDialog(Shell shell, IGridRowData row, DBCColumnMetaData columnInfo) {
-        super(shell);
-        this.row = row;
-        this.columnInfo = columnInfo;
+    protected ValueViewDialog(DBDValueController valueController) {
+        super(valueController.getValueSite().getShell());
+        setShellStyle(SWT.SHELL_TRIM);
+        this.valueController = valueController;
     }
 
-    public IGridRowData getRow()
-    {
-        return row;
-    }
-
-    public void setRow(IGridRowData row)
-    {
-        this.row = row;
+    public DBDValueController getValueController() {
+        return valueController;
     }
 
     public Composite getInfoGroup() {
@@ -51,20 +44,26 @@ public abstract class ValueViewDialog extends Dialog {
             gd.verticalIndent = 0;
             infoGroup.setLayoutData(gd);
             infoGroup.setLayout(new GridLayout(2, false));
+
             Label label = new Label(infoGroup, SWT.NONE);
-            label.setText("Column Name: ");
+            label.setText("Table Name: ");
             Text text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-            text.setText(columnInfo.getColumnName());
+            text.setText(valueController.getColumnMetaData().getTableName());
+
+            label = new Label(infoGroup, SWT.NONE);
+            label.setText("Column Name: ");
+            text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
+            text.setText(valueController.getColumnMetaData().getColumnName());
 
             label = new Label(infoGroup, SWT.NONE);
             label.setText("Column Type: ");
             text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-            text.setText(columnInfo.getTypeName());
+            text.setText(valueController.getColumnMetaData().getTypeName());
 
             label = new Label(infoGroup, SWT.NONE);
             label.setText("Column Size: ");
             text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-            text.setText(String.valueOf(columnInfo.getDisplaySize()));
+            text.setText(String.valueOf(valueController.getColumnMetaData().getDisplaySize()));
         }
 
         return dialogGroup;
@@ -72,7 +71,8 @@ public abstract class ValueViewDialog extends Dialog {
 
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        shell.setText(columnInfo.getColumnName());
+        DBCColumnMetaData meta = valueController.getColumnMetaData();
+        shell.setText(meta.getTableName() + "." + meta.getColumnName());
     }
 
 }

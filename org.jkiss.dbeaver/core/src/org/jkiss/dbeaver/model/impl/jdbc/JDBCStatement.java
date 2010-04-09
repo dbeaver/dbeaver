@@ -4,15 +4,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 /**
  * JDBCStatement
@@ -25,6 +21,7 @@ public class JDBCStatement implements DBCStatement
     private PreparedStatement statement;
     private boolean hasResultSet;
     private JDBCResultSet resultSet;
+    private DBSObject dataContainer;
 
     public JDBCStatement(DBCSession session, Connection connection, String sqlQuery)
         throws SQLException
@@ -148,5 +145,13 @@ public class JDBCStatement implements DBCStatement
                 throw new DBCException(ex);
             }
         }
+    }
+
+    public DBSObject getDataContainer() {
+        return dataContainer;
+    }
+
+    public void setDataContainer(DBSObject container) {
+        dataContainer = container;
     }
 }
