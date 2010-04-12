@@ -11,18 +11,18 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public class MySQLConstraintColumn implements DBSConstraintColumn
 {
-    private AbstractConstraint constraint;
+    private AbstractConstraint<MySQLDataSource, MySQLTable> constraint;
     private MySQLTableColumn tableColumn;
     private int ordinalPosition;
 
-    public MySQLConstraintColumn(AbstractConstraint constraint, MySQLTableColumn tableColumn, int ordinalPosition)
+    public MySQLConstraintColumn(AbstractConstraint<MySQLDataSource, MySQLTable> constraint, MySQLTableColumn tableColumn, int ordinalPosition)
     {
         this.constraint = constraint;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
     }
 
-    public AbstractConstraint getConstraint()
+    public AbstractConstraint<MySQLDataSource, MySQLTable> getConstraint()
     {
         return constraint;
     }
@@ -56,7 +56,7 @@ public class MySQLConstraintColumn implements DBSConstraintColumn
 
     public MySQLDataSource getDataSource()
     {
-        return (MySQLDataSource)constraint.getDataSource();
+        return constraint.getDataSource();
     }
 
     public boolean refreshObject()

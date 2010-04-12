@@ -13,7 +13,7 @@ public class ConnectionDialog<CONTAINER extends IWizardContainer> extends Wizard
 {
     private IWorkbenchWindow window;
 
-    public ConnectionDialog(IWorkbenchWindow window, ConnectionWizard<CONTAINER> wizard)
+    public ConnectionDialog(IWorkbenchWindow window, ConnectionWizard wizard)
     {
         super(window.getShell(), wizard);
         this.window = window;
@@ -28,9 +28,9 @@ public class ConnectionDialog<CONTAINER extends IWizardContainer> extends Wizard
         });
     }
 
-    protected ConnectionWizard<CONTAINER> getWizard()
+    protected ConnectionWizard getWizard()
     {
-        return (ConnectionWizard<CONTAINER>) super.getWizard();
+        return (ConnectionWizard) super.getWizard();
     }
 
     public IWorkbenchWindow getWindow()

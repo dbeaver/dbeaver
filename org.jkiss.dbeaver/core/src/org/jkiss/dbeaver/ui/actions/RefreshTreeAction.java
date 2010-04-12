@@ -75,7 +75,7 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
                         throws InvocationTargetException, InterruptedException
                     {
                         int count = 1;
-                        for (Iterator iter = structSelection.iterator(); iter.hasNext(); ){
+                        for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ){
                             Object object = iter.next();
                             monitor.beginTask("Refresh selected object (" + (count++) + ")", 5);
                             refreshObject(monitor, object);

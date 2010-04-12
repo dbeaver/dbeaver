@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.runtime.NullProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
-import org.eclipse.swt.widgets.Display;
 
 import java.util.ArrayList;
 import java.util.HashMap;

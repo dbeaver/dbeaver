@@ -102,7 +102,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         return DBSUtils.findObject(getIndexes(), indexName);
     }
 
-    public List<? extends AbstractConstraint> getConstraints()
+    public List<? extends AbstractConstraint<MySQLDataSource, MySQLTable>> getConstraints()
         throws DBException
     {
         if (constraints == null) {

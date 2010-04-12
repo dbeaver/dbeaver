@@ -1,10 +1,5 @@
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.model.dbc.DBCStateType;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-
-import java.util.List;
-
 /**
  * DBPDataSourceUser
  */

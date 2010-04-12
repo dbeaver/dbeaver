@@ -1,6 +1,5 @@
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.action.IAction;

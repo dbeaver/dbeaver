@@ -282,10 +282,16 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private void loadTreeIcon(DBXTreeNode node, IConfigurationElement config)
     {
         String defaultIcon = config.getAttribute("icon");
+        if (defaultIcon == null) {
+            defaultIcon = config.getAttribute("iconId");
+        }
         IConfigurationElement[] iconElements = config.getChildren("icon");
         if (!CommonUtils.isEmpty(iconElements)) {
             for (IConfigurationElement iconElement : iconElements) {
                 String icon = iconElement.getAttribute("icon");
+                if (icon == null) {
+                    icon = iconElement.getAttribute("iconId");
+                }
                 String expr = iconElement.getAttribute("if");
                 boolean isDefault = "true".equals(iconElement.getAttribute("default"));
                 if (isDefault && CommonUtils.isEmpty(expr)) {

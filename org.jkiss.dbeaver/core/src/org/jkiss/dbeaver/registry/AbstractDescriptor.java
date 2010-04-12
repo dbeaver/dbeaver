@@ -13,6 +13,8 @@ import org.osgi.framework.Bundle;
 import java.io.IOException;
 import java.net.URL;
 
+import net.sf.jkiss.utils.CommonUtils;
+
 /**
  * EntityEditorDescriptor
  */
@@ -44,7 +46,9 @@ public class AbstractDescriptor {
 
     protected Image iconToImage(String icon)
     {
-        if (icon.startsWith("#")) {
+        if (CommonUtils.isEmpty(icon)) {
+            return null;
+        } else if (icon.startsWith("#")) {
             // Predefined image
             return DBeaverIcons.getImage(icon.substring(1));
         } else {

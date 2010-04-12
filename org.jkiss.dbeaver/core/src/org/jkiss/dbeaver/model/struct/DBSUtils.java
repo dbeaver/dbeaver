@@ -6,7 +6,6 @@ import net.sf.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * DBSUtils
@@ -111,6 +110,7 @@ public final class DBSUtils
         return null;
     }
 
+/*
     public static <T> Collection<T> getSafeCollection(Class<T> theClass, Collection theList)
     {
         if (theList == null) {
@@ -118,4 +118,5 @@ public final class DBSUtils
         }
         return (Collection<T>)theList;
     }
+*/
 }

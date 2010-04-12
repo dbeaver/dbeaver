@@ -15,7 +15,7 @@ import java.util.Date;
  * This is a sample new wizard.
  */
 
-public class EditConnectionWizard extends ConnectionWizard<EditConnectionDialog>
+public class EditConnectionWizard extends ConnectionWizard
 {
     private DataSourceDescriptor dataSource;
     private DBPConnectionInfo oldData;

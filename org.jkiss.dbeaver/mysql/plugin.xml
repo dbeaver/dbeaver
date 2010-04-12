@@ -26,67 +26,67 @@
                 <icon icon="icons/tree/connection_disabled.png" default="true"/>
                 <icon icon="icons/tree/connection_enabled.png" if="object.connected"/>
 
-                <folder type="org.jkiss.dbeaver.model.struct.DBSCatalog" label="Catalogs" icon="#catalogs" description="Catalogs">
-                    <items label="Catalogs" path="catalog" property="catalogs" icon="#catalog" optional="true">
-                        <items label="Schemas" path="schema" property="schemas" icon="#schema" optional="true">
-                            <folder type="org.jkiss.dbeaver.model.struct.DBSTable" label="Tables" icon="#tables" description="Tables">
+                <folder type="org.jkiss.dbeaver.model.struct.DBSCatalog" label="Catalogs" iconId="#catalogs" description="Catalogs">
+                    <items label="Catalogs" path="catalog" property="catalogs" iconId="#catalog" optional="true">
+                        <items label="Schemas" path="schema" property="schemas" iconId="#schema" optional="true">
+                            <folder type="org.jkiss.dbeaver.model.struct.DBSTable" label="Tables" iconId="#tables" description="Tables">
                                 <items label="Tables" path="table" property="tables">
-                                    <icon icon="#table" default="true"/>
-                                    <icon icon="#view" if="object.view"/>
-                                    <folder type="org.jkiss.dbeaver.model.struct.DBSTableColumn" label="Columns" icon="#columns" description="Table columns">
-                                        <items label="Column" path="column" property="columns" icon="#column">
+                                    <icon iconId="#table" default="true"/>
+                                    <icon iconId="#view" if="object.view"/>
+                                    <folder type="org.jkiss.dbeaver.model.struct.DBSTableColumn" label="Columns" iconId="#columns" description="Table columns">
+                                        <items label="Column" path="column" property="columns" iconId="#column">
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.model.struct.DBSIndex" label="Indexes" icon="#indexes" description="Table indexes">
-                                        <items label="Indexes" path="index" property="indexes" icon="#index">
-                                            <items label="Index columns" path="column" property="columns" icon="#column">
+                                    <folder type="org.jkiss.dbeaver.model.struct.DBSIndex" label="Indexes" iconId="#indexes" description="Table indexes">
+                                        <items label="Indexes" path="index" property="indexes" iconId="#index">
+                                            <items label="Index columns" path="column" property="columns" iconId="#column">
                                             </items>
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="Foreign Keys" icon="#fks" description="Table foreign keys">
-                                        <items label="Foreign Keys" path="foreignKey" property="importedKeys" icon="#fk">
-                                            <items label="Foreign key columns" path="column" property="columns" icon="#column">
+                                    <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="Foreign Keys" iconId="#fks" description="Table foreign keys">
+                                        <items label="Foreign Keys" path="foreignKey" property="importedKeys" iconId="#fk">
+                                            <items label="Foreign key columns" path="column" property="columns" iconId="#column">
                                             </items>
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.model.struct.DBSPrimaryKey" label="References" icon="#refs" description="Table references">
-                                        <items label="Primary Keys" path="primaryKey" property="exportedKeys" icon="#ref">
-                                            <items label="Primary key columns" path="column" property="columns" icon="#column">
+                                    <folder type="org.jkiss.dbeaver.model.struct.DBSPrimaryKey" label="References" iconId="#refs" description="Table references">
+                                        <items label="Primary Keys" path="primaryKey" property="exportedKeys" iconId="#ref">
+                                            <items label="Primary key columns" path="column" property="columns" iconId="#column">
                                             </items>
                                         </items>
                                     </folder>
                                 </items>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.model.struct.DBSIndex" label="Indexes" icon="#indexes" description="Indexes">
-                                <items label="Indexes" path="indexe" property="indexes" icon="#index">
-                                    <items label="Index columns" path="column" property="columns" icon="#column">
+                            <folder type="org.jkiss.dbeaver.model.struct.DBSIndex" label="Indexes" iconId="#indexes" description="Indexes">
+                                <items label="Indexes" path="indexe" property="indexes" iconId="#index">
+                                    <items label="Index columns" path="column" property="columns" iconId="#column">
                                     </items>
                                 </items>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.model.struct.DBSProcedure" label="Procedures" icon="#procedures" description="Procedures">
-                                <items label="Procedures" path="procedure" property="procedures" icon="#procedure">
-                                    <items label="Procedure columns" path="column" property="columns" icon="#column">
+                            <folder type="org.jkiss.dbeaver.model.struct.DBSProcedure" label="Procedures" iconId="#procedures" description="Procedures">
+                                <items label="Procedures" path="procedure" property="procedures" iconId="#procedure">
+                                    <items label="Procedure columns" path="column" property="columns" iconId="#column">
                                     </items>
                                 </items>
                             </folder>
                         </items>
                     </items>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSSecurity" label="Security" icon="#security" description="Security">
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSUser" label="Users" icon="#users" description="Users">
-                        <items label="Users" path="users" property="users" icon="#user">
+                <folder type="org.jkiss.dbeaver.model.struct.DBSSecurity" label="Security" iconId="#security" description="Security">
+                    <folder type="org.jkiss.dbeaver.model.struct.DBSUser" label="Users" iconId="#users" description="Users">
+                        <items label="Users" path="users" property="users" iconId="#user">
                         </items>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSPrivilegy" label="Privileges" icon="#roles" description="Privileges">
-                        <items label="Privileges" path="privileges" property="privileges" icon="#role">
+                    <folder type="org.jkiss.dbeaver.model.struct.DBSPrivilegy" label="Privileges" iconId="#roles" description="Privileges">
+                        <items label="Privileges" path="privileges" property="privileges" iconId="#role">
                         </items>
                     </folder>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSMaintance" label="Maintance/Settings" icon="#settings" description="Maintance/Settings">
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSSessions" label="Connections" icon="#connections" description="Server session manager"/>
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSVariables" label="Variables" icon="#variables" description="Server variables"/>
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSLogs" label="Server Logs" icon="#logs" description="Server logs"/>
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSRepl" label="Replication Status" icon="#repl" description="Replication Status"/>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSMaintance" label="Maintance/Settings" iconId="#settings" description="Maintance/Settings">
+                    <folder type="org.jkiss.dbeaver.model.struct.DBSSessions" label="Connections" iconId="#connections" description="Server session manager"/>
+                    <folder type="org.jkiss.dbeaver.model.struct.DBSVariables" label="Variables" iconId="#variables" description="Server variables"/>
+                    <folder type="org.jkiss.dbeaver.model.struct.DBSLogs" label="Server Logs" iconId="#logs" description="Server logs"/>
+                    <folder type="org.jkiss.dbeaver.model.struct.DBSRepl" label="Replication Status" iconId="#repl" description="Replication Status"/>
                 </folder>
             </tree>
             <drivers managable="true">

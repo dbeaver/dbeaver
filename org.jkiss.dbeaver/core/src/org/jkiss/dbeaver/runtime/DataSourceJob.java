@@ -1,6 +1,5 @@
 package org.jkiss.dbeaver.runtime;
 
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.progress.IProgressConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.dbeaver.model.DBPDataSource;

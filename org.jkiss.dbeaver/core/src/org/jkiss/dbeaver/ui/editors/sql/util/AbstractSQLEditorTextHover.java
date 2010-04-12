@@ -99,7 +99,7 @@ public abstract class AbstractSQLEditorTextHover implements ITextHover, ITextHov
     private KeySequence[] getKeySequences()
     {
         if (command != null) {
-            List list = command.getKeySequenceBindings();
+            List<?> list = command.getKeySequenceBindings();
             if (!list.isEmpty()) {
                 KeySequence[] keySequences = new KeySequence[list.size()];
                 for (int i = 0; i < keySequences.length; i++) {

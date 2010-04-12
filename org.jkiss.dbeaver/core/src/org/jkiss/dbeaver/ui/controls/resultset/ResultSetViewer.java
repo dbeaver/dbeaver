@@ -229,7 +229,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                         curRowNum = 0;
                         updateRecord();
                     } else {
-                        grid.shiftCursor(0, -grid.getItemCount());
+                        grid.shiftCursor(0, -grid.getItemCount(), false);
                     }
                 }
             });
@@ -240,7 +240,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                         curRowNum--;
                         updateRecord();
                     } else {
-                        grid.shiftCursor(0, -1);
+                        grid.shiftCursor(0, -1, false);
                     }
                 }
             });
@@ -251,7 +251,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                         curRowNum++;
                         updateRecord();
                     } else {
-                        grid.shiftCursor(0, 1);
+                        grid.shiftCursor(0, 1, false);
                     }
                 }
             });
@@ -262,7 +262,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                         curRowNum = curRows.size() - 1;
                         updateRecord();
                     } else {
-                        grid.shiftCursor(0, grid.getItemCount());
+                        grid.shiftCursor(0, grid.getItemCount(), false);
                     }
                 }
             });
@@ -299,9 +299,9 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             }
             grid.setRowHeaderWidth(defaultWidth + DEFAULT_ROW_HEADER_WIDTH);
             itemToggleView.setImage(DBIcon.RS_MODE_RECORD.getImage());
-            GridPos curPos = grid.getCurrentPos();
+            Point curPos = grid.getCursorPosition();
             if (curPos != null) {
-                curRowNum = curPos.row;
+                curRowNum = curPos.y;
             } else {
                 curRowNum = 0;
             }
@@ -628,7 +628,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
             public void nextInlineEditor(boolean next) {
                 grid.cancelInlineEditor();
-                grid.shiftCursor(1, 0);
+                grid.shiftCursor(1, 0, false);
                 grid.openCellViewer(true);
             }
         };

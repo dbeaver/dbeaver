@@ -1,7 +1,5 @@
 package org.jkiss.dbeaver.model.dbc;
 
-import java.sql.SQLException;
-
 /**
  * DBC LOB
  *

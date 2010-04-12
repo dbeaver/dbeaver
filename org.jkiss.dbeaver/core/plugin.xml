@@ -322,62 +322,72 @@
             label="ResultSet selection background"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"
             id="org.jkiss.dbeaver.sql.resultset.color.selection.background"
-            value="COLOR_LIST_SELECTION"
-            description="Selection background"/>
+            value="COLOR_LIST_SELECTION">
+            <description>Selection background</description>
+		</colorDefinition>        
         <colorDefinition
             label="ResultSet selection foreground"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"
             id="org.jkiss.dbeaver.sql.resultset.color.selection.foreground"
-            value="COLOR_LIST_SELECTION_TEXT"
-            description="Selection foreground"/>
+            value="COLOR_LIST_SELECTION_TEXT">
+            <description>Selection foreground</description>
+        </colorDefinition>
         <colorDefinition
             label="SQL keyword color"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"
             id="org.jkiss.dbeaver.sql.editor.color.keyword.foreground"
-            value="COLOR_DARK_RED"
-            description="SQL keyword color"/>
+            value="COLOR_DARK_RED">
+            <description>SQL keyword color</description>
+        </colorDefinition>
         <colorDefinition
             label="SQL datatype color"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"
             id="org.jkiss.dbeaver.sql.editor.color.datatype.foreground"
-            value="COLOR_DARK_BLUE"
-            description="SQL datatype color"/>
+            value="COLOR_DARK_BLUE">
+            <description>SQL datatype color</description>
+        </colorDefinition>
         <colorDefinition
             label="SQL string color"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"
             id="org.jkiss.dbeaver.sql.editor.color.string.foreground"
-            value="COLOR_DARK_GREEN"
-            description="SQL string color"/>
+            value="COLOR_DARK_GREEN">
+            <description>SQL string color</description>
+        </colorDefinition>
         <colorDefinition
             label="SQL number color"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"
             id="org.jkiss.dbeaver.sql.editor.color.number.foreground"
-            value="COLOR_BLUE"
-            description="SQL number color"/>
+            value="COLOR_BLUE">
+            <description>SQL number color</description>
+        </colorDefinition>
         <colorDefinition
             label="SQL comment color"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"
             id="org.jkiss.dbeaver.sql.editor.color.comment.foreground"
-            value="COLOR_DARK_GRAY"
-            description="SQL comment color"/>
+            value="COLOR_DARK_GRAY">
+            <description>SQL comment color</description>
+        </colorDefinition>
         <colorDefinition
             label="SQL delimiter foreground"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"
             id="org.jkiss.dbeaver.sql.editor.color.delimiter.foreground"
-            value="COLOR_RED"
-            description="SQL statement delimiter foreground"/>
+            value="COLOR_RED">
+            <description>SQL statement delimiter foreground</description>
+        </colorDefinition>
         <colorDefinition
             label="SQL text foreground"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"
             id="org.jkiss.dbeaver.sql.editor.color.text.foreground"
-            value="COLOR_BLACK"
-            description="SQL text foreground"/>
+            value="COLOR_BLACK">
+            <description>SQL text foreground</description>
+        </colorDefinition>
         <colorDefinition
             label="SQL text background"
             categoryId="org.jkiss.dbeaver.ui.presentation.sql"
             id="org.jkiss.dbeaver.sql.editor.color.text.background"
-            value="COLOR_WHITE"
-            description="SQL text background"/>
+            value="COLOR_WHITE">
+            <description>SQL text background</description>
+        </colorDefinition>
     </extension>
 
     <extension point="org.eclipse.ui.bindings">

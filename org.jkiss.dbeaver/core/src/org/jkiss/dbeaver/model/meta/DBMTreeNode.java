@@ -207,7 +207,7 @@ public abstract class DBMTreeNode extends DBMNode {
             log.warn("Bad property '" + propertyName + "' value: " + propertyValue.getClass().getName());
             return false;
         }
-        Collection itemList = (Collection) propertyValue;
+        Collection<?> itemList = (Collection<?>) propertyValue;
         if (itemList.isEmpty()) {
             return false;
         }

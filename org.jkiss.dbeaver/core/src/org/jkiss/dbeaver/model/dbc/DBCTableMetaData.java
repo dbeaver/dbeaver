@@ -3,8 +3,6 @@ package org.jkiss.dbeaver.model.dbc;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.DBException;
 
-import java.util.List;
-
 /**
  * Result set table metadata
  */

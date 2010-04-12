@@ -143,7 +143,7 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
         if (model == null) {
             return;
         }
-        for (Iterator it = model.getAnnotationIterator(); it.hasNext();) {
+        for (Iterator<?> it = model.getAnnotationIterator(); it.hasNext();) {
             Annotation annotation = (Annotation) it.next();
             Position position = model.getPosition(annotation);
 

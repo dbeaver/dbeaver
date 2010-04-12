@@ -28,7 +28,7 @@ class GridSelection implements IStructuredSelection
         return grid.getSelection().iterator().next();
     }
 
-    public Iterator iterator()
+    public Iterator<GridPos> iterator()
     {
         return grid.getSelection().iterator();
     }

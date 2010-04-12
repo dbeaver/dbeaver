@@ -193,6 +193,13 @@
                </appinfo>
             </annotation>
          </attribute>
+         <attribute name="iconId" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
@@ -238,6 +245,13 @@
                <appinfo>
                   <meta.attribute translatable="true"/>
                </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="iconId" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
             </annotation>
          </attribute>
       </complexType>
@@ -305,9 +319,6 @@
                <documentation>
                   Driver implementation class
                </documentation>
-               <appinfo>
-                  <meta.attribute kind="java"/>
-               </appinfo>
             </annotation>
          </attribute>
          <attribute name="sampleURL" type="string" use="required">

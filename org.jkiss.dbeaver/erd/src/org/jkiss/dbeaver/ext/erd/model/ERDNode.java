@@ -6,7 +6,6 @@ import org.jgraph.graph.GraphConstants;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 

@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public abstract class AbstractLoadService<RESULT> implements ILoadService<RESULT> {
     private String serviceName;
     private DBRProgressMonitor progressMonitor;
-    private ILoadService nestedService;
+    private ILoadService<RESULT> nestedService;
 
     protected AbstractLoadService(String serviceName)
     {
@@ -36,7 +36,7 @@ public abstract class AbstractLoadService<RESULT> implements ILoadService<RESULT
         this.progressMonitor = monitor;
     }
 
-    public void setNestedService(ILoadService nested)
+    public void setNestedService(ILoadService<RESULT> nested)
     {
         assert(this.nestedService == null);
         assert(nested != null);

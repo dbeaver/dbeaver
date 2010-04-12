@@ -1,7 +1,6 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.dbeaver.DBException;
@@ -20,13 +19,8 @@ import java.lang.reflect.InvocationTargetException;
  * This is a sample new wizard.
  */
 
-public abstract class ConnectionWizard<CONTAINER extends IWizardContainer>  extends Wizard implements INewWizard
+public abstract class ConnectionWizard extends Wizard implements INewWizard
 {
-
-    public CONTAINER getContainer()
-    {
-        return (CONTAINER) super.getContainer();
-    }
 
     public boolean performFinish()
     {

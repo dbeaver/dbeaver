@@ -16,7 +16,7 @@ public interface ILoadService<RESULT> {
 
     void setProgressMonitor(DBRProgressMonitor monitor);
 
-    void setNestedService(ILoadService nested);
+    void setNestedService(ILoadService<RESULT> nested);
 
     void clearNestedService();
 

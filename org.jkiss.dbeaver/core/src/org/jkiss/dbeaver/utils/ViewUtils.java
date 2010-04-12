@@ -186,7 +186,7 @@ public class ViewUtils
                 if (!selection.isEmpty()) {
                     String lineSeparator = CommonUtils.getLineSeparator();
                     StringBuilder buf = new StringBuilder();
-                    for (Iterator i = selection.iterator(); i.hasNext(); ) {
+                    for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {
                         DBSObject nextSelected = (DBSObject)i.next();
                         if (buf.length() > 0) {
                             buf.append(lineSeparator);

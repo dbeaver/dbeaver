@@ -23,7 +23,7 @@ import java.util.Map;
  * This is a sample new wizard.
  */
 
-public class NewConnectionWizard extends ConnectionWizard<NewConnectionDialog>
+public class NewConnectionWizard extends ConnectionWizard
 {
     private DataSourceRegistry registry;
     private List<DataSourceProviderDescriptor> availableProvides = new ArrayList<DataSourceProviderDescriptor>();
