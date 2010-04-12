@@ -115,6 +115,9 @@ public class SQLQueryJob extends DataSourceJob
                 boolean runNext = executeSingleQuery(monitor, query);
                 if (!runNext) {
                     // Ask to continue
+                    if (lastError != null) {
+                        log.error(lastError);
+                    }
                     SQLQueryErrorJob errorJob = new SQLQueryErrorJob(
                         lastError,
                         queryNum < queries.size() - 1);

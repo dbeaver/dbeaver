@@ -511,12 +511,18 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             if (metaColumns[rowNum].editable) {
                 row.setHeaderImage(DBIcon.EDIT_COLUMN.getImage());
             }
+            if (value == null) {
+                row.setEmpty(0, true);
+            }
         } else {
             // Fill rows
             Object[] values = curRows.get(rowNum);
             row.setData(values);
             for (int i = 0; i < values.length; i++) {
                 row.setText(i, getCellValue(values[i]));
+                if (values[i] == null) {
+                    row.setEmpty(i, true);
+                }
             }
             row.setHeaderText(String.valueOf(row.getIndex() + 1));
         }
@@ -580,6 +586,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                     }
                     curRow[columnIndex] = value;
                     row.setText(row.getColumn(), getCellValue(value));
+                    row.setModified(row.getColumn(), true);
                     updateEditControls();
                 }
             }
@@ -793,7 +800,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                         Object keyValue = curRows.get(rowNum)[columnIndex];
                         // Try to find old key value
                         for (CellInfo cell : editedValues) {
-                            if (cell.equals(rowNum, columnIndex)) {
+                            if (cell.equals(columnIndex, rowNum)) {
                                 keyValue = cell.value;
                             }
                         }

@@ -297,6 +297,8 @@ public class GridControl extends Composite implements Listener
         grid.addListener(SWT.MouseDoubleClick, this);
         grid.addListener(SWT.MouseDown, this);
         grid.addListener(SWT.KeyDown, this);
+        grid.addListener(SWT.FocusIn, this);
+        grid.addListener(SWT.FocusOut, this);
 
         if ((style & SWT.VIRTUAL) != 0) {
             lazyRow = new LazyGridRow();
@@ -365,14 +367,12 @@ public class GridControl extends Composite implements Listener
                 break;
             case SWT.MouseDown:
                 cancelInlineEditor();
-/*
-                Point newFocus = grid.getCell(new Point(event.x, event.y));
-                //Point curFocus = grid.getFocusCell();
-                if (prevMouseFocus != null && newFocus != null && newFocus.equals(prevMouseFocus)) {
-                    openCellViewer(event, true);
-                }
-                prevMouseFocus = newFocus;
-*/
+                break;
+            case SWT.FocusIn:
+                registerActions(true);
+                break;
+            case SWT.FocusOut:
+                registerActions(false);
                 break;
         }
     }
@@ -444,12 +444,6 @@ public class GridControl extends Composite implements Listener
                 processKeyUp(event);
                 break;
             }
-            case SWT.FocusIn:
-                registerActions(true);
-                break;
-            case SWT.FocusOut:
-                registerActions(false);
-                break;
             case SWT.MeasureItem:
                 event.height = event.gc.getFontMetrics().getHeight() + 3;
                 break;
@@ -810,30 +804,6 @@ public class GridControl extends Composite implements Listener
                 grid.redraw(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height, false);
             }
         }
-    }
-
-    private GridPos getPosFromPoint(int x, int y)
-    {
-        Point clickPoint = new Point(x, y);
-        GridItem tableItem = grid.getItem(clickPoint);
-        if (tableItem == null) {
-            return null;
-        }
-        int rowSelected = grid.indexOf(tableItem);
-        int columnSelected = -1;
-        {
-            GridColumn[] columns = grid.getColumns();
-            for (int i = 0; i < columns.length; i++) {
-                Rectangle cellBounds = tableItem.getBounds(i);
-                cellBounds.width += 1;
-                cellBounds.height += 1;
-                if (cellBounds.contains(clickPoint)) {
-                    columnSelected = i;
-                    break;
-                }
-            }
-        }
-        return new GridPos(columnSelected, rowSelected);
     }
 
     private List<GridPos> makeRowPositions(int rowSelected)
@@ -1205,6 +1175,7 @@ public class GridControl extends Composite implements Listener
         public void run()
         {
             Event event = new Event();
+            event.doit = true;
             String actionId = getActionDefinitionId();
             if (actionId.equals(ITextEditorActionDefinitionIds.LINE_START)) {
                 event.keyCode = SWT.HOME;
@@ -1217,11 +1188,13 @@ public class GridControl extends Composite implements Listener
                 event.keyCode = SWT.END;
                 event.stateMask |= SWT.ALT;
             }
+            //grid.notifyListeners(SWT.KeyDown, event);
+            //grid.notifyListeners(SWT.KeyUp, event);
             //processKeyDown(event);
         }
     }
 
-    private static class LazyGridRow implements IGridRowData {
+    private class LazyGridRow implements IGridRowData {
 
         private GridItem item;
         private int index;
@@ -1258,6 +1231,16 @@ public class GridControl extends Composite implements Listener
 
         public void setHeaderImage(Image image) {
             item.setHeaderImage(image);
+        }
+
+        public void setModified(int column, boolean modified)
+        {
+            item.setBackground(column, modified ? backgroundModified : backgroundNormal);
+        }
+
+        public void setEmpty(int column, boolean empty)
+        {
+            item.setGrayed(column, empty);
         }
 
         public Object getData() {
