@@ -138,8 +138,8 @@
                     id="oracle"
                     label="Oracle"
                     icon="icons/sample.gif"
-                    class="com.oracle.jdbc.Driver"
-                    sampleURL="jdbc:oracle://{host}[:{port}]/[{database}]"
+                    class="oracle.jdbc.OracleDriver"
+                    sampleURL="jdbc:oracle:thin:@{host}[:{port}]:{database}"
                     webURL="http://oracle.com"
                     description="Oracle thin driver">
                     <library path="bin/"/>

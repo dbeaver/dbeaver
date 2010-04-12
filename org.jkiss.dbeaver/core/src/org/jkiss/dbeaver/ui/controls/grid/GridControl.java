@@ -67,6 +67,7 @@ public class GridControl extends Composite implements Listener
     private Color backgroundSelected;
 
     private transient LazyGridRow lazyRow;
+    private SelectionListener gridSelectionListener;
 
     public GridControl(Composite parent, int style, IWorkbenchPartSite site, IGridDataProvider dataProvider)
     {
@@ -180,10 +181,61 @@ public class GridControl extends Composite implements Listener
         grid.setItemHeaderWidth(width);
     }
 
-    public void moveCursor(int newCol, int newRow, boolean keepSelection)
+    public void shiftCursor(int xOffset, int yOffset)
     {
-        GridItem item = grid.getItem(newRow);
-        grid.setFocusItem(item);
+        if (xOffset == 0 && yOffset == 0) {
+            return;
+        }
+        Point curPos = getCursorPosition();
+        if (curPos == null) {
+            return;
+        }
+        Point newPos = new Point(curPos.x,  curPos.y);
+        Event fakeEvent = new Event();
+        fakeEvent.widget = grid;
+        SelectionEvent selectionEvent = new SelectionEvent(fakeEvent);
+        // Move row
+        if (yOffset != 0) {
+            int newRow = curPos.y + yOffset;
+            if (newRow < 0) {
+                newRow = 0;
+            }
+            if (newRow >= getItemCount()) {
+                newRow = getItemCount() - 1;
+            }
+            newPos.y = newRow;
+            GridItem item = grid.getItem(newRow);
+            if (item != null) {
+                selectionEvent.item = item;
+                grid.setFocusItem(item);
+                grid.showItem(item);
+            }
+        }
+        // Move column
+        if (xOffset != 0) {
+            int newCol = curPos.x + xOffset;
+            if (newCol < 0) {
+                newCol = 0;
+            }
+            if (newCol >= getColumnsCount()) {
+                newCol = getColumnsCount() - 1;
+            }
+            newPos.x = newCol;
+            GridColumn column = grid.getColumn(newCol);
+            if (column != null) {
+                grid.setFocusColumn(column);
+                grid.showColumn(column);
+            }
+        }
+        grid.deselectAll();
+        grid.selectCell(newPos);
+        //grid.s
+        grid.redraw();
+
+        // Change selection event
+        selectionEvent.x = newPos.x;
+        selectionEvent.y = newPos.y;
+        gridSelectionListener.widgetSelected(selectionEvent);
 /*
         if (currentPosition == null) {
             currentPosition = cursorPosition;
@@ -251,7 +303,7 @@ public class GridControl extends Composite implements Listener
             grid.addListener(SWT.SetData, this);
         }
 
-        grid.addSelectionListener(new SelectionListener() {
+        gridSelectionListener = new SelectionListener() {
             public void widgetSelected(SelectionEvent e) {
                 GridItem item = (GridItem) e.item;
                 Point focusCell = grid.getFocusCell();
@@ -267,7 +319,8 @@ public class GridControl extends Composite implements Listener
 
             public void widgetDefaultSelected(SelectionEvent e) {
             }
-        });
+        };
+        grid.addSelectionListener(gridSelectionListener);
 
         tableEditor = new GridEditor(grid);
         tableEditor.horizontalAlignment = SWT.LEFT;
@@ -462,7 +515,7 @@ public class GridControl extends Composite implements Listener
             default:
                 return;
         }
-        moveCursor(newCol, newRow, (event.stateMask & SWT.SHIFT) != 0);
+        shiftCursor(newCol, newRow, (event.stateMask & SWT.SHIFT) != 0);
         event.doit = false;
     }
 */
@@ -983,7 +1036,7 @@ public class GridControl extends Composite implements Listener
         this.redrawItems(toRedraw);
     }
 
-    void openCellViewer(boolean inline)
+    public void openCellViewer(boolean inline)
     {
         if (dataProvider == null) {
             return;

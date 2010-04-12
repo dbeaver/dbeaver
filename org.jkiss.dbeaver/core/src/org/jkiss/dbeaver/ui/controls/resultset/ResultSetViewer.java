@@ -77,9 +77,12 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     private ResultSetDataPump dataPump;
     private IThemeManager themeManager;
 
+    // columns
     private ResultSetColumn[] metaColumns;
+    // Data
     private List<Object[]> curRows = new ArrayList<Object[]>();
-    private GridPos curRowNum = null;
+    // Current row number (for record mode)
+    private int curRowNum = -1;
 
     private Label statusLabel;
     private Color colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
@@ -95,7 +98,9 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     private ToolItem itemLast;
     private ToolItem itemRefresh;
 
+    // Edited cells
     private List<CellInfo> editedValues = new ArrayList<CellInfo>();
+    // Flag saying that edited values update is in progress
     private boolean updateInProgress = false;
 
     public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
@@ -149,18 +154,19 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             boolean isFirst = (row <= 0);
             boolean isLast = rowsNum == 0 || (row >= rowsNum - 1);
 
-            itemFirst.setEnabled(!isFirst);
-            itemPrevious.setEnabled(!isFirst);
-            itemNext.setEnabled(!isLast);
-            itemLast.setEnabled(!isLast);
+            boolean isVisible = col >= 0;
+            itemFirst.setEnabled(isVisible && !isFirst);
+            itemPrevious.setEnabled(isVisible && !isFirst);
+            itemNext.setEnabled(isVisible && !isLast);
+            itemLast.setEnabled(isVisible && !isLast);
             itemRefresh.setEnabled(resultSetProvider != null && resultSetProvider.isConnected());
         }
     }
 
     private void updateRecord()
     {
-        boolean isFirst = curRowNum.row == 0;
-        boolean isLast = curRows.isEmpty() || (curRowNum.row >= curRows.size() - 1);
+        boolean isFirst = curRowNum <= 0;
+        boolean isLast = curRows.isEmpty() || (curRowNum >= curRows.size() - 1);
 
         itemFirst.setEnabled(!isFirst);
         itemPrevious.setEnabled(!isFirst);
@@ -220,35 +226,32 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                 public void widgetSelected(SelectionEvent e)
                 {
                     if (mode == ResultSetMode.RECORD) {
-                        curRowNum = new GridPos(curRowNum.col, 0);
+                        curRowNum = 0;
                         updateRecord();
                     } else {
-                        Point position = grid.getCursorPosition();
-                        grid.moveCursor(position.x, 0, false);
+                        grid.shiftCursor(0, -grid.getItemCount());
                     }
                 }
             });
             itemPrevious = UIUtils.createToolItem(toolBar, "Previous", DBIcon.RS_PREV, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
-                    if (mode == ResultSetMode.RECORD && curRowNum.row > 0) {
-                        curRowNum = new GridPos(curRowNum.col, curRowNum.row - 1);
+                    if (mode == ResultSetMode.RECORD && curRowNum > 0) {
+                        curRowNum--;
                         updateRecord();
                     } else {
-                        Point position = grid.getCursorPosition();
-                        grid.moveCursor(position.x, position.y - 1, false);
+                        grid.shiftCursor(0, -1);
                     }
                 }
             });
             itemNext = UIUtils.createToolItem(toolBar, "Next", DBIcon.RS_NEXT, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
-                    if (mode == ResultSetMode.RECORD && curRowNum.row < curRows.size() - 1) {
-                        curRowNum = new GridPos(curRowNum.col, curRowNum.row + 1);
+                    if (mode == ResultSetMode.RECORD && curRowNum < curRows.size() - 1) {
+                        curRowNum++;
                         updateRecord();
                     } else {
-                        Point position = grid.getCursorPosition();
-                        grid.moveCursor(position.x, position.y + 1, false);
+                        grid.shiftCursor(0, 1);
                     }
                 }
             });
@@ -256,11 +259,10 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                 public void widgetSelected(SelectionEvent e)
                 {
                     if (mode == ResultSetMode.RECORD && !curRows.isEmpty()) {
-                        curRowNum = new GridPos(curRowNum.col, curRows.size() - 1);
+                        curRowNum = curRows.size() - 1;
                         updateRecord();
                     } else {
-                        Point position = grid.getCursorPosition();
-                        grid.moveCursor(position.x, grid.getItemCount() - 1, false);
+                        grid.shiftCursor(0, grid.getItemCount());
                     }
                 }
             });
@@ -297,17 +299,21 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             }
             grid.setRowHeaderWidth(defaultWidth + DEFAULT_ROW_HEADER_WIDTH);
             itemToggleView.setImage(DBIcon.RS_MODE_RECORD.getImage());
-            curRowNum = grid.getCurrentPos();
-            if (curRowNum == null) {
-                curRowNum = new GridPos(0, 0);
+            GridPos curPos = grid.getCurrentPos();
+            if (curPos != null) {
+                curRowNum = curPos.row;
+            } else {
+                curRowNum = 0;
             }
         }
 
         this.initResultSet();
 
+/*
         if (mode == ResultSetMode.GRID) {
-            grid.moveCursor(curRowNum.col, curRowNum.row, false);
+            grid.shiftCursor(curRowNum.col, curRowNum.row);
         }
+*/
         grid.layout(true, true);
     }
 
@@ -493,10 +499,10 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         int rowNum = row.getIndex();
         if (mode == ResultSetMode.RECORD) {
             // Fill record
-            if (curRowNum.row >= curRows.size()) {
+            if (curRowNum >= curRows.size()) {
                 return;
             }
-            Object[] values = curRows.get(curRowNum.row);
+            Object[] values = curRows.get(curRowNum);
             assert(row.getIndex() < values.length);
             Object value = values[row.getIndex()];
             row.setData(value);
@@ -612,6 +618,12 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             {
                 setStatus(message, error);
             }
+
+            public void nextInlineEditor(boolean next) {
+                grid.cancelInlineEditor();
+                grid.shiftCursor(1, 0);
+                grid.openCellViewer(true);
+            }
         };
         try {
             return metaColumns[columnIndex].valueHandler.editValue(valueController);
@@ -624,7 +636,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
     private void showCurrentRows()
     {
-        setStatus("Row " + (curRowNum.row + 1));
+        setStatus("Row " + (curRowNum + 1));
     }
 
     private void showRowsCount()

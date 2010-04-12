@@ -110,7 +110,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
                     }
                 });
             }
-
+            dateTimeGroup.setFocus();
             return true;
         } else {
             return false;

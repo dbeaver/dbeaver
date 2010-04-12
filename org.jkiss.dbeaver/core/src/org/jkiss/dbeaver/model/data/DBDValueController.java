@@ -29,4 +29,5 @@ public interface DBDValueController
 
     void showMessage(String message, boolean error);
 
+    void nextInlineEditor(boolean next);
 }
