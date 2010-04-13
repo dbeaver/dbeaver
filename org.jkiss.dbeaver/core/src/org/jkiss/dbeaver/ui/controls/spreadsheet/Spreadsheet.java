@@ -1,8 +1,13 @@
-package org.jkiss.dbeaver.ui.controls.grid;
+package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.nebula.widgets.grid.GridColumn;
@@ -14,10 +19,18 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.handlers.IHandlerActivation;
@@ -25,15 +38,17 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * ResultSetControl
  */
-public class GridControl extends Composite implements Listener
+public class Spreadsheet extends Composite implements Listener
 {
-    static Log log = LogFactory.getLog(GridControl.class);
+    static Log log = LogFactory.getLog(Spreadsheet.class);
 
     public static final int MAX_DEF_COLUMN_WIDTH = 300;
     public static final int MAX_INLINE_EDIT_WITH = 300;
@@ -57,7 +72,6 @@ public class GridControl extends Composite implements Listener
     private Color foregroundLines;
     private Color foregroundSelected;
     private Color backgroundModified;
-    private Color cursorRectangle;
     private Color backgroundNormal;
     private Color backgroundControl;
     private Color backgroundSelected;
@@ -65,7 +79,7 @@ public class GridControl extends Composite implements Listener
     private transient LazyGridRow lazyRow;
     private SelectionListener gridSelectionListener;
 
-    public GridControl(Composite parent, int style, IWorkbenchPartSite site, IGridDataProvider dataProvider)
+    public Spreadsheet(Composite parent, int style, IWorkbenchPartSite site, IGridDataProvider dataProvider)
     {
         super(parent, SWT.NONE);
         GridLayout layout = new GridLayout(1, true);
@@ -82,7 +96,6 @@ public class GridControl extends Composite implements Listener
         foregroundLines = getDisplay().getSystemColor(SWT.COLOR_GRAY);
         foregroundSelected = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
         backgroundModified = new Color(getDisplay(), 0xFF, 0xE4, 0xB5);//getDisplay().getSystemColor(SWT.COLOR_DARK_RED);
-        cursorRectangle = getDisplay().getSystemColor(SWT.COLOR_DARK_RED);
         backgroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
         backgroundSelected = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
         backgroundControl = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
@@ -231,7 +244,7 @@ public class GridControl extends Composite implements Listener
             grid.deselectAll();
         }
         grid.selectCell(newPos);
-        //grid.s
+        //spreadsheet.s
         grid.redraw();
 
         // Change selection event
@@ -287,8 +300,8 @@ public class GridControl extends Composite implements Listener
         grid = new Grid(group, style);
         grid.setCellSelectionEnabled(true);
         grid.setRowHeaderVisible(true);
-        //grid.set
-        //grid.setRowHeaderRenderer(new IRenderer() {
+        //spreadsheet.set
+        //spreadsheet.setRowHeaderRenderer(new IRenderer() {
         //});
 
         grid.setLinesVisible(true);
@@ -880,7 +893,7 @@ public class GridControl extends Composite implements Listener
 
     public void clearGrid()
     {
-        //grid.setSelection(new int[0]);
+        //spreadsheet.setSelection(new int[0]);
 
         cancelInlineEditor();
         grid.removeAll();
@@ -1013,7 +1026,7 @@ public class GridControl extends Composite implements Listener
         boolean editSuccess = dataProvider.showCellEditor(lazyRow, inline, placeholder);
         if (inline) {
             if (editSuccess) {
-                int minHeight = 0, minWidth = 50;
+                int minHeight, minWidth;
                 Point editorSize = placeholder.computeSize(SWT.DEFAULT, SWT.DEFAULT);
                 minHeight = editorSize.y;
                 minWidth = editorSize.x;
@@ -1056,11 +1069,6 @@ public class GridControl extends Composite implements Listener
     public int getColumnsCount()
     {
         return grid.getColumnCount();
-    }
-
-    public void refreshCell(int col, int row)
-    {
-        
     }
 
     private void registerActions(boolean register)

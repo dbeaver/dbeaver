@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.grid.*;
+import org.jkiss.dbeaver.ui.controls.spreadsheet.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.runtime.sql.*;
 
@@ -72,7 +72,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
     private IWorkbenchPartSite site;
     private ResultSetMode mode;
-    private GridControl grid;
+    private Spreadsheet spreadsheet;
     private ResultSetProvider resultSetProvider;
     private ResultSetDataPump dataPump;
     private IThemeManager themeManager;
@@ -108,26 +108,26 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         super();
         this.site = site;
         this.mode = ResultSetMode.GRID;
-        this.grid = new GridControl(
+        this.spreadsheet = new Spreadsheet(
             parent,
             SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
             site,
             this);
 
-        createStatusBar(grid);
+        createStatusBar(spreadsheet);
 
         this.resultSetProvider = resultSetProvider;
         this.dataPump = new ResultSetDataPump(this);
 
         this.themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
         this.themeManager.addPropertyChangeListener(this);
-        this.grid.addDisposeListener(new DisposeListener() {
+        this.spreadsheet.addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e)
             {
                 dispose();
             }
         });
-        this.grid.addCursorChangeListener(new Listener() {
+        this.spreadsheet.addCursorChangeListener(new Listener() {
             public void handleEvent(Event event)
             {
                 onChangeGridCursor(event.x, event.y);
@@ -138,7 +138,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
     private void updateGridCursor()
     {
-        Point point = grid.getCursorPosition();
+        Point point = spreadsheet.getCursorPosition();
         if (point == null) {
             onChangeGridCursor(0, 0);
         } else {
@@ -149,8 +149,8 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     private void onChangeGridCursor(int col, int row)
     {
         if (mode == ResultSetMode.GRID) {
-            int rowsNum = grid.getItemCount();
-            //int colsNum = grid.getColumnsCount();
+            int rowsNum = spreadsheet.getItemCount();
+            //int colsNum = spreadsheet.getColumnsCount();
             boolean isFirst = (row <= 0);
             boolean isLast = rowsNum == 0 || (row >= rowsNum - 1);
 
@@ -229,7 +229,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                         curRowNum = 0;
                         updateRecord();
                     } else {
-                        grid.shiftCursor(0, -grid.getItemCount(), false);
+                        spreadsheet.shiftCursor(0, -spreadsheet.getItemCount(), false);
                     }
                 }
             });
@@ -240,7 +240,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                         curRowNum--;
                         updateRecord();
                     } else {
-                        grid.shiftCursor(0, -1, false);
+                        spreadsheet.shiftCursor(0, -1, false);
                     }
                 }
             });
@@ -251,7 +251,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                         curRowNum++;
                         updateRecord();
                     } else {
-                        grid.shiftCursor(0, 1, false);
+                        spreadsheet.shiftCursor(0, 1, false);
                     }
                 }
             });
@@ -262,7 +262,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                         curRowNum = curRows.size() - 1;
                         updateRecord();
                     } else {
-                        grid.shiftCursor(0, grid.getItemCount(), false);
+                        spreadsheet.shiftCursor(0, spreadsheet.getItemCount(), false);
                     }
                 }
             });
@@ -281,14 +281,14 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     {
         this.mode = resultSetMode;
         if (mode == ResultSetMode.GRID) {
-            grid.setRowHeaderWidth(DEFAULT_ROW_HEADER_WIDTH);
+            spreadsheet.setRowHeaderWidth(DEFAULT_ROW_HEADER_WIDTH);
             itemToggleView.setImage(DBIcon.RS_MODE_GRID.getImage());
         } else {
-            // Calculate width of grid panel - use longest column title
+            // Calculate width of spreadsheet panel - use longest column title
             int defaultWidth = 0;
             if (metaColumns != null) {
-                GC gc = new GC(grid);
-                gc.setFont(grid.getFont());
+                GC gc = new GC(spreadsheet);
+                gc.setFont(spreadsheet.getFont());
                 for (ResultSetColumn column : metaColumns) {
                     Point ext = gc.stringExtent(column.metaData.getColumnName());
                     if (ext.x > defaultWidth) {
@@ -297,9 +297,9 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                 }
                 defaultWidth += DBIcon.EDIT_COLUMN.getImage().getBounds().width + 2;
             }
-            grid.setRowHeaderWidth(defaultWidth + DEFAULT_ROW_HEADER_WIDTH);
+            spreadsheet.setRowHeaderWidth(defaultWidth + DEFAULT_ROW_HEADER_WIDTH);
             itemToggleView.setImage(DBIcon.RS_MODE_RECORD.getImage());
-            Point curPos = grid.getCursorPosition();
+            Point curPos = spreadsheet.getCursorPosition();
             if (curPos != null) {
                 curRowNum = curPos.y;
             } else {
@@ -311,10 +311,10 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
 /*
         if (mode == ResultSetMode.GRID) {
-            grid.shiftCursor(curRowNum.col, curRowNum.row);
+            spreadsheet.shiftCursor(curRowNum.col, curRowNum.row);
         }
 */
-        grid.layout(true, true);
+        spreadsheet.layout(true, true);
     }
 
     public ResultSetProvider getResultSetProvider()
@@ -329,8 +329,8 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
     public void dispose()
     {
-        if (!grid.isDisposed()) {
-            grid.dispose();
+        if (!spreadsheet.isDisposed()) {
+            spreadsheet.dispose();
         }
         itemAccept.dispose();
         itemReject.dispose();
@@ -351,15 +351,15 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         ITheme currentTheme = themeManager.getCurrentTheme();
         Font rsFont = currentTheme.getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
         if (rsFont != null) {
-            this.grid.setFont(rsFont);
+            this.spreadsheet.setFont(rsFont);
         }
         Color selBackColor = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
         if (selBackColor != null) {
-            this.grid.setBackgroundSelected(selBackColor);
+            this.spreadsheet.setBackgroundSelected(selBackColor);
         }
         Color selForeColor = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE);
         if (selForeColor != null) {
-            this.grid.setForegroundSelected(selForeColor);
+            this.spreadsheet.setForegroundSelected(selForeColor);
         }
     }
 
@@ -408,26 +408,26 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     public void appendData(List<Object[]> rows)
     {
         curRows.addAll(rows);
-        grid.setItemCount(curRows.size());
+        spreadsheet.setItemCount(curRows.size());
     }
 
     private void clearResultsView()
     {
         // Clear previous state
-        grid.setRedraw(false);
-        grid.clearGrid();
-        grid.setRedraw(true);
+        spreadsheet.setRedraw(false);
+        spreadsheet.clearGrid();
+        spreadsheet.setRedraw(true);
     }
 
     private void initResultSet()
     {
         this.editedValues.clear();
 
-        grid.setRedraw(false);
-        grid.clearGrid();
+        spreadsheet.setRedraw(false);
+        spreadsheet.clearGrid();
         if (mode == ResultSetMode.RECORD) {
-            grid.addColumn("Value", "Column Value", null);
-            grid.setItemCount(metaColumns == null ? 0 : metaColumns.length);
+            spreadsheet.addColumn("Value", "Column Value", null);
+            spreadsheet.setItemCount(metaColumns == null ? 0 : metaColumns.length);
             this.showCurrentRows();
         } else {
             if (metaColumns != null) {
@@ -436,7 +436,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                     if (column.editable) {
                         columnImage = DBIcon.EDIT_COLUMN.getImage();
                     }
-                    grid.addColumn(
+                    spreadsheet.addColumn(
                         column.metaData.getLabel(),
                         CommonUtils.isEmpty(column.metaData.getTableName()) ?
                             column.metaData.getColumnName() :
@@ -444,12 +444,12 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                         columnImage);
                 }
             }
-            grid.setItemCount(curRows.size());
+            spreadsheet.setItemCount(curRows.size());
             this.showRowsCount();
         }
 
-        grid.reinitState();
-        grid.setRedraw(true);
+        spreadsheet.reinitState();
+        spreadsheet.setRedraw(true);
 
         this.updateGridCursor();
     }
@@ -618,7 +618,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
             public void closeInlineEditor()
             {
-                grid.cancelInlineEditor();
+                spreadsheet.cancelInlineEditor();
             }
 
             public void showMessage(String message, boolean error)
@@ -627,9 +627,9 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             }
 
             public void nextInlineEditor(boolean next) {
-                grid.cancelInlineEditor();
-                grid.shiftCursor(1, 0, false);
-                grid.openCellViewer(true);
+                spreadsheet.cancelInlineEditor();
+                spreadsheet.shiftCursor(1, 0, false);
+                spreadsheet.openCellViewer(true);
             }
         };
         try {
@@ -655,7 +655,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
     public Control getControl()
     {
-        return grid;
+        return spreadsheet;
     }
 
     public Object getInput()
@@ -669,7 +669,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
     public ISelection getSelection()
     {
-        return new StructuredSelection(grid.getSelection().toArray());  
+        return new StructuredSelection(spreadsheet.getSelection().toArray());
     }
 
     public void setSelection(ISelection selection, boolean reveal)
@@ -853,7 +853,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                     site.getShell().getDisplay().asyncExec(new Runnable() {
                         public void run()
                         {
-                            grid.redrawGrid();
+                            spreadsheet.redrawGrid();
                             updateEditControls();
                             updateInProgress = false;
                         }
@@ -869,7 +869,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                 curRows.get(cell.row)[cell.col] = cell.value;
             }
             editedValues.clear();
-            grid.redrawGrid();
+            spreadsheet.redrawGrid();
             updateEditControls();
         }
     }

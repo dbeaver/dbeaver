@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ui.controls.grid;
+package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 
@@ -11,9 +11,9 @@ import java.util.List;
  */
 class GridSelection implements IStructuredSelection
 {
-    private GridControl grid;
+    private Spreadsheet grid;
 
-    public GridSelection(GridControl grid)
+    public GridSelection(Spreadsheet grid)
     {
         this.grid = grid;
     }

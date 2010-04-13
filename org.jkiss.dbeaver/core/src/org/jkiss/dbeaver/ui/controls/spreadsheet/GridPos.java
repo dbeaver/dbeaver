@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ui.controls.grid;
+package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
 /**
  * GridPos

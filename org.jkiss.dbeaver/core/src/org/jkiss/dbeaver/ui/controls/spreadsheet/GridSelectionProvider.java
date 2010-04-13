@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ui.controls.grid;
+package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
@@ -17,10 +17,10 @@ public class GridSelectionProvider implements ISelectionProvider
 {
     static Log log = LogFactory.getLog(GridSelectionProvider.class);
 
-    private GridControl grid;
+    private Spreadsheet grid;
     private List<ISelectionChangedListener> listeners;
 
-    public GridSelectionProvider(GridControl grid)
+    public GridSelectionProvider(Spreadsheet grid)
     {
         this.grid = grid;
     }
