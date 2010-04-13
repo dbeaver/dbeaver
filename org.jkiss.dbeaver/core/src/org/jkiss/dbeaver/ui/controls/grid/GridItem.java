@@ -43,17 +43,7 @@ public class GridItem extends Item {
 	/**
 	 * List of background colors for each column.
 	 */
-	private ArrayList backgrounds = new ArrayList();
-
-	/**
-	 * Lists of check states for each column.
-	 */
-	private ArrayList checks = new ArrayList();
-
-	/**
-	 * Lists of checkable states for each column.
-	 */
-	private ArrayList checkable = new ArrayList();
+	private ArrayList<Color> backgrounds = new ArrayList<Color>();
 
 	/**
 	 * List of children.
@@ -479,7 +469,7 @@ public class GridItem extends Item {
 
 		handleVirtual();
 
-		Color c = (Color) backgrounds.get(index);
+		Color c = backgrounds.get(index);
 		// if (c == null)
 		// {
 		// c = getBackground();
@@ -568,49 +558,6 @@ public class GridItem extends Item {
 		}
 
 		return new Point(width, height);
-	}
-
-	/**
-	 * Returns the checked state at the first column in the receiver.
-	 *
-	 * @return the checked state
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
-	 */
-	public boolean getChecked() {
-		checkWidget();
-		return getChecked(0);
-	}
-
-	/**
-	 * Returns the checked state at the given column index in the receiver.
-	 *
-	 * @param index
-	 *            the column index
-	 * @return the checked state
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
-	 */
-	public boolean getChecked(int index) {
-		checkWidget();
-
-		handleVirtual();
-
-		Boolean b = (Boolean) checks.get(index);
-		if (b == null) {
-			return false;
-		}
-		return b.booleanValue();
 	}
 
 	/**
@@ -1126,46 +1073,6 @@ public class GridItem extends Item {
 	}
 
 	/**
-	 * Sets the checked state at the first column in the receiver.
-	 *
-	 * @param checked
-	 *            the new checked state
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
-	 */
-	public void setChecked(boolean checked) {
-		checkWidget();
-		setChecked(0, checked);
-		parent.redraw();
-	}
-
-	/**
-	 * Sets the checked state at the given column index in the receiver.
-	 *
-	 * @param index
-	 *            the column index
-	 * @param checked
-	 *            the new checked state
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
-	 */
-	public void setChecked(int index, boolean checked) {
-		checkWidget();
-		checks.set(index, new Boolean(checked));
-		parent.redraw();
-	}
-
-	/**
 	 * Sets the column spanning for the column at the given index to span the
 	 * given number of subsequent columns.
 	 *
@@ -1542,7 +1449,6 @@ public class GridItem extends Item {
 			GridCellRenderer renderer = columns[cnt].getCellRenderer();
 
 			renderer.setAlignment(columns[cnt].getAlignment());
-			renderer.setCheck(columns[cnt].isCheck());
 			renderer.setColumn(cnt);
 			renderer.setTree(columns[cnt].isTree());
 			renderer.setWordWrap(columns[cnt].getWordWrap());
@@ -1924,58 +1830,6 @@ public class GridItem extends Item {
 	}
 
 	/**
-	 * Returns the checkable state at the given column index in the receiver. If
-	 * the column at the given index is not checkable then this will return
-	 * false regardless of the individual cell's checkable state.
-	 *
-	 * @param index
-	 *            the column index
-	 * @return the checked state
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
-	 */
-	public boolean getCheckable(int index) {
-		checkWidget();
-
-		if (!parent.getColumn(index).getCheckable())
-			return false;
-
-		Boolean b = (Boolean) checkable.get(index);
-		if (b == null) {
-			return true;
-		}
-		return b.booleanValue();
-	}
-
-	/**
-	 * Sets the checkable state at the given column index in the receiver. A
-	 * checkbox which is uncheckable will not be modifiable by the user but
-	 * still make be modified programmatically. If the column at the given index
-	 * is not checkable then individual cell will not be checkable regardless.
-	 *
-	 * @param index
-	 *            the column index
-	 * @param checked
-	 *            the new checked state
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
-	 */
-	public void setCheckable(int index, boolean checked) {
-		checkWidget();
-		checkable.set(index, new Boolean(checked));
-	}
-
-	/**
 	 * Returns the tooltip for the given cell.
 	 *
 	 * @param index
@@ -2021,8 +1875,6 @@ public class GridItem extends Item {
 
 	private void init() {
 		ensureSize(backgrounds);
-		ensureSize(checks);
-		ensureSize(checkable);
 		ensureSize(fonts);
 		ensureSize(foregrounds);
 		ensureSize(grayeds);
@@ -2041,8 +1893,6 @@ public class GridItem extends Item {
 	 */
 	void columnRemoved(int index) {
 		removeValue(index, backgrounds);
-		removeValue(index, checks);
-		removeValue(index, checkable);
 		removeValue(index, fonts);
 		removeValue(index, foregrounds);
 		removeValue(index, grayeds);
@@ -2055,8 +1905,6 @@ public class GridItem extends Item {
 
 	void columnAdded(int index) {
 		insertValue(index, backgrounds);
-		insertValue(index, checks);
-		insertValue(index, checkable);
 		insertValue(index, fonts);
 		insertValue(index, foregrounds);
 		insertValue(index, grayeds);
@@ -2115,8 +1963,6 @@ public class GridItem extends Item {
 	 */
 	void clear(boolean allChildren) {
 		backgrounds.clear();
-		checks.clear();
-		checkable.clear();
 		columnSpans.clear();
 		rowSpans.clear();
 		fonts.clear();

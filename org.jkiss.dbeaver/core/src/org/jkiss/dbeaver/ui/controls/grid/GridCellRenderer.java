@@ -28,8 +28,6 @@ public abstract class GridCellRenderer extends AbstractInternalWidget
 
     private boolean tree = false;
 
-    private boolean check = false;
-
     private boolean rowHover = false;
 
     private boolean columnHover = false;
@@ -74,22 +72,6 @@ public abstract class GridCellRenderer extends AbstractInternalWidget
     public void setAlignment(int alignment)
     {
         this.alignment = alignment;
-    }
-
-    /**
-     * @return Returns the check.
-     */
-    public boolean isCheck()
-    {
-        return check;
-    }
-
-    /**
-     * @param check The check to set.
-     */
-    public void setCheck(boolean check)
-    {
-        this.check = check;
     }
 
     /**

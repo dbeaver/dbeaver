@@ -306,6 +306,9 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             Point curPos = spreadsheet.getCursorPosition();
             if (curPos != null) {
                 curRowNum = curPos.y;
+                if (curRowNum < 0) {
+                    curRowNum = 0;
+                }
             } else {
                 curRowNum = 0;
             }
@@ -503,7 +506,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         int rowNum = row.getIndex();
         if (mode == ResultSetMode.RECORD) {
             // Fill record
-            if (curRowNum >= curRows.size()) {
+            if (curRowNum >= curRows.size() || curRowNum < 0) {
                 return;
             }
             Object[] values = curRows.get(curRowNum);

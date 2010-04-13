@@ -7470,34 +7470,6 @@ public class Grid extends Canvas
         	e.keyCode = event.keyCode;
             notifyListeners(SWT.Selection, e);
         }
-
-        if (!cellSelectionEnabled)
-        {
-            boolean checkFirstCol = false;
-            boolean first = true;
-
-            for (GridColumn col : columns) {
-
-                if (first) {
-                    if (!col.isCheck()) break;
-
-                    first = false;
-                    checkFirstCol = true;
-                } else {
-                    if (col.isCheck()) {
-                        checkFirstCol = false;
-                        break;
-                    }
-                }
-            }
-
-            if (checkFirstCol)
-            {
-                focusItem.setChecked(!focusItem.getChecked());
-                redraw();
-                focusItem.fireCheckEvent(0);
-            }
-        }
     }
 
     /**
@@ -7893,8 +7865,6 @@ public class Grid extends Canvas
         computeHeaderHeight(sizingGC);
         computeFooterHeight(sizingGC);
 
-        updatePrimaryCheckColumn();
-
         for (GridItem item : items) {
             item.columnAdded(index);
         }
@@ -7948,8 +7918,6 @@ public class Grid extends Canvas
             focusColumn = null;
         }
 
-        updatePrimaryCheckColumn();
-
         scrollValuesObsolete = true;
         redraw();
 
@@ -7968,24 +7936,6 @@ public class Grid extends Canvas
             updateColumnSelection();
         }
 
-    }
-
-    /**
-     * Manages the setting of the checkbox column when the SWT.CHECK style was given to the
-     * table.  This method will ensure that the first column of the table always has a checkbox
-     * when SWT.CHECK is given to the table.
-     */
-    private void updatePrimaryCheckColumn()
-    {
-        if ((getStyle() & SWT.CHECK) == SWT.CHECK)
-        {
-            boolean firstCol = true;
-
-            for (GridColumn col : columns) {
-                col.setTableCheck(firstCol);
-                firstCol = false;
-            }
-        }
     }
 
     void newRootItem(GridItem item, int index)
@@ -9770,11 +9720,6 @@ public class Grid extends Canvas
                         {
                             e.detail |= ACC.STATE_FOCUSED;
                         }
-                    }
-
-                    if (getItem(childID).getChecked())
-                    {
-                        e.detail |= ACC.STATE_CHECKED;
                     }
 
                     // only for tree type items

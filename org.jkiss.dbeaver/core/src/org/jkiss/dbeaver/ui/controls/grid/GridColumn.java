@@ -81,18 +81,6 @@ public class GridColumn extends Item {
 	private boolean tree = false;
 
 	/**
-	 * Does this column contain check boxes? Did the user specify SWT.CHECK in
-	 * the constructor of the column.
-	 */
-	private boolean check = false;
-
-	/**
-	 * Specifies if this column should display a checkbox because SWT.CHECK was
-	 * passed to the parent table (not necessarily the column).
-	 */
-	private boolean tableCheck = false;
-
-	/**
 	 * Is this column resizable?
 	 */
 	private boolean resizeable = true;
@@ -232,10 +220,6 @@ public class GridColumn extends Item {
 
 		table.newColumn(this, index);
 
-		if ((style & SWT.CHECK) == SWT.CHECK) {
-			check = true;
-		}
-
 		initHeaderRenderer();
 		initFooterRenderer();
 		initCellRenderer();
@@ -270,7 +254,6 @@ public class GridColumn extends Item {
 	private void initCellRenderer() {
 		cellRenderer.setDisplay(getDisplay());
 
-		cellRenderer.setCheck(check);
 		cellRenderer.setTree(tree);
 		cellRenderer.setColumn(parent.indexOf(this));
 
@@ -578,24 +561,6 @@ public class GridColumn extends Item {
 	public boolean isTree() {
 		checkWidget();
 		return tree;
-	}
-
-	/**
-	 * Returns true if the column includes a check box.
-	 *
-	 * @return true if the column includes a check box.
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
-	 */
-	public boolean isCheck() {
-		checkWidget();
-
-		return check || tableCheck;
 	}
 
 	/**
@@ -977,23 +942,6 @@ public class GridColumn extends Item {
 		}
 
 		return bounds;
-	}
-
-	/**
-	 * @return the tableCheck
-	 */
-	protected boolean isTableCheck() {
-		return tableCheck;
-	}
-
-	/**
-	 * @param tableCheck
-	 *            the tableCheck to set
-	 */
-	protected void setTableCheck(boolean tableCheck) {
-		this.tableCheck = tableCheck;
-
-		cellRenderer.setCheck(tableCheck || check);
 	}
 
 	/**
