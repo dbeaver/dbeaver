@@ -1,21 +1,7 @@
-/*******************************************************************************
- * Copyright (c) 2006 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *    chris.gross@us.ibm.com    - initial API and implementation
- *    Chuck.Mastrandrea@sas.com - wordwrapping in bug 222280
- *    smcduff@hotmail.com       - wordwrapping in bug 222280
- *    Claes Rosell<claes.rosell@solme.se> - rowspan in bug 272384
- *    Marco Maccaferri<macca@maccasoft.com> - fixed arrow scrolling in bug 294767
- *    higerinbeijing@gmail.com . fixed selectionEvent.item in bug 286617
- *    balarkrishnan@yahoo.com - fix in bug 298684
- *    Enrico Schnepel<enrico.schnepel@randomice.net> - new API in 238729, bugfix in 294952
- *    Benjamin Bortfeldt<bbortfeldt@gmail.com> - new tooltip support in 300797
- *******************************************************************************/
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui.controls.grid;
 
 import java.util.ArrayList;

@@ -1,18 +1,7 @@
-/*******************************************************************************
- * Copyright (c) 2006 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *    chris.gross@us.ibm.com    - initial API and implementation
- *    Chuck.Mastrandrea@sas.com - wordwrapping in bug 222280
- *    smcduff@hotmail.com       - wordwrapping in bug 222280
- *    Marty Jones<martybjones@gmail.com> - custom header/footer font in bug 293743
- *    Cserveny Tamas <cserveny.tamas@gmail.com> - min width in bug 295468
- *    Benjamin Bortfeldt<bbortfeldt@gmail.com> - new tooltip support in 300797
- *******************************************************************************/
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui.controls.grid;
 
 import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultCellRenderer;

@@ -1,4 +1,8 @@
 
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui.editors.sql.assist;
 
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
