@@ -58,7 +58,7 @@ public class ExclusivePositionUpdater implements IPositionUpdater
                 }
                 else if (offset <= eventOffset && end >= eventOffset + eventOldLength)
                 {
-                    // event completely internal to the position - adjust length
+                    // event completely renderers to the position - adjust length
                     position.setLength(length + deltaLength);
                 }
                 else if (offset < eventOffset)
