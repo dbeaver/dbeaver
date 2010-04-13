@@ -185,7 +185,7 @@
          </attribute>
          <attribute name="label" type="string">
             <annotation>
-               <documentation>
+               <documentation> 
                   Optional item label
                </documentation>
                <appinfo>
