@@ -748,15 +748,7 @@ public class SQLEditor extends TextEditor
             if (getDataSourceContainer() == null || !getDataSourceContainer().isConnected()) {
                 throw new DBException("Not connected to database");
             }
-            curSession = getDataSourceContainer().getDataSource().getSession(false);
-            try {
-// Change autocommit state
-                curSession.setAutoCommit(
-                    getDataSourceContainer().getPreferenceStore().getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
-            }
-            catch (DBCException e) {
-                log.error("Can't change session autocommit state", e);
-            }
+            curSession = getDataSourceContainer().getSession(false);
         }
     }
 

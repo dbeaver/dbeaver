@@ -160,6 +160,16 @@ public class DataSourceRegistry implements DBPRegistry
         return null;
     }
 
+    public DataSourceDescriptor getDataSource(DBPDataSource dataSource)
+    {
+        for (DataSourceDescriptor dsd : dataSources) {
+            if (dsd.getDataSource() == dataSource) {
+                return dsd;
+            }
+        }
+        return null;
+    }
+
     public List<DataSourceDescriptor> getDataSources()
     {
         return dataSources;
@@ -200,12 +210,25 @@ public class DataSourceRegistry implements DBPRegistry
         return dataSourceListeners.remove(listener);
     }
 
-    public void fireDataSourceEvent(
+    void fireDataSourceEvent(
         DataSourceEvent.Action action,
         DataSourceDescriptor dataSource,
         Object source)
     {
         notifyDataSourceListeners(action, dataSource, source);
+    }
+
+    public void fireDataSourceEvent(
+        DataSourceEvent.Action action,
+        DBPDataSource dataSource,
+        Object source)
+    {
+        DataSourceDescriptor dataSourceDescriptor = getDataSource(dataSource);
+        if (dataSourceDescriptor == null) {
+            log.error("Bad data source parameter: " + dataSource);
+        } else {
+            notifyDataSourceListeners(action, dataSourceDescriptor, source);
+        }
     }
 
     private synchronized void notifyDataSourceListeners(

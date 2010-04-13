@@ -30,7 +30,7 @@ public class OpenSQLEditorAction extends DataSourceAction
 
     public void run(IAction action)
     {
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(true);
         if (dataSourceContainer != null) {
             IFile tempFile = DBeaverCore.getInstance().makeTempFile(
                 dataSourceContainer.getName(),

@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
@@ -96,7 +97,7 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
             }
             table = (DBSTable)dbmObject;
             try {
-                curSession = table.getDataSource().getSession(false);
+                curSession = table.getDataSource().getContainer().getSession(false);
             } catch (DBException ex) {
                 log.error("Error obtaining database session", ex);
                 return;
@@ -136,6 +137,10 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
 
     public DBCSession getSession() throws DBException {
         return curSession;
+    }
+
+    public DBSDataSourceContainer getDataSourceContainer() {
+        return table.getDataSource().getContainer();
     }
 
     public DBPDataSource getDataSource() {

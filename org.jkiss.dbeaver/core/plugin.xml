@@ -626,11 +626,32 @@
             visible="true">
 
             <menu id="dataSourceMenu" label="Database">
+                <separator name="driverGroup">
+                </separator>
                 <separator name="connectionGroup">
                 </separator>
                 <separator name="sessionGroup">
                 </separator>
             </menu>
+            <action
+                  class="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
+                  icon="/icons/database_connect.png"
+                  id="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
+                  label="New Connection"
+                  menubarPath="dataSourceMenu/driverGroup"
+                  toolbarPath="driverGroup"
+                  tooltip="Create New Connection">
+            </action>
+            <action
+                 class="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
+                 icon="/icons/driver_manager.png"
+                 id="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
+                 label="Driver Manager"
+                 menubarPath="dataSourceMenu/driverGroup"
+                 toolbarPath="driverGroup"
+                 tooltip="Open Driver Manager">
+            </action>
+
             <action
                  class="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
                  icon="/icons/sql/sql_script.png"
@@ -642,22 +663,22 @@
                  accelerator="CTRL+SHIFT+E">
             </action>
             <action
-                  class="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
-                  icon="/icons/database_connect.png"
-                  id="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
-                  label="New Connection"
+                  class="org.jkiss.dbeaver.ui.actions.DisconnectAction"
+                  icon="icons/sql/disconnect.png"
+                  id="org.jkiss.dbeaver.ui.actions.DisconnectAction"
+                  label="Disconnect"
                   menubarPath="dataSourceMenu/connectionGroup"
                   toolbarPath="connectionGroup"
-                  tooltip="Create New Connection">
+                  tooltip="Disconnect from database">
             </action>
             <action
-                 class="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
-                 icon="/icons/driver_manager.png"
-                 id="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
-                 label="Driver Manager"
-                 menubarPath="dataSourceMenu/connectionGroup"
-                 toolbarPath="connectionGroup"
-                 tooltip="Open Driver Manager">
+                  class="org.jkiss.dbeaver.ui.actions.ConnectAction"
+                  icon="icons/sql/connect.png"
+                  id="org.jkiss.dbeaver.ui.actions.ConnectAction"
+                  label="Connect"
+                  menubarPath="dataSourceMenu/connectionGroup"
+                  toolbarPath="connectionGroup"
+                  tooltip="Connect to database">
             </action>
 
             <action

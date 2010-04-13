@@ -4,7 +4,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
@@ -20,13 +19,8 @@ import org.eclipse.ui.editors.text.TextEditorActionContributor;
 import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.StatusLineContributionItem;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
@@ -36,10 +30,6 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.ui.actions.ConnectAction;
-import org.jkiss.dbeaver.ui.actions.DisconnectAction;
-import org.jkiss.dbeaver.ui.actions.CommitAction;
-import org.jkiss.dbeaver.ui.actions.RollbackAction;
 import org.jkiss.dbeaver.ui.actions.sql.*;
 import org.jkiss.dbeaver.ui.controls.DefaultMenuCreator;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
@@ -95,9 +85,6 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
     private ExplainPlanAction explainPlanAction;
     private AnalyseStatementAction analyseStatementAction;
 
-    private ConnectAction connectAction;
-    private DisconnectAction disconnectAction;
-
     private Spinner resultSetSize;
     private Combo connectionCombo;
     private Combo databaseCombo;
@@ -107,15 +94,9 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
     private RetargetTextEditorAction contentAssistTip;
     private RetargetTextEditorAction contentFormatProposal;
 
-    private ImageDescriptor imgTxnConfig;
-    private ImageDescriptor imgTxnConfig2;
-
     public SQLEditorContributor()
     {
         super();
-
-        imgTxnConfig = DBeaverActivator.getImageDescriptor("/icons/sql/txn_config.png");
-        imgTxnConfig2 = DBeaverActivator.getImageDescriptor("/icons/sql/txn_config_2.png");
 
         createActions();
         DataSourceRegistry.getDefault().addDataSourceListener(this);
@@ -188,22 +169,6 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         validateStatementAction = new ValidateStatementAction();
         explainPlanAction = new ExplainPlanAction();
         analyseStatementAction = new AnalyseStatementAction();
-        // Connect
-        connectAction = new ConnectAction()
-        {
-            protected DBSDataSourceContainer getDataSourceContainer()
-            {
-                return getEditor().getDataSourceContainer();
-            }
-        };
-        // Disconnect
-        disconnectAction = new DisconnectAction()
-        {
-            protected DBSDataSourceContainer getDataSourceContainer()
-            {
-                return getEditor().getDataSourceContainer();
-            }
-        };
     }
 
     public void dispose()
@@ -348,9 +313,6 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         menu.add(validateStatementAction);
         menu.add(explainPlanAction);
         menu.add(analyseStatementAction);
-        menu.add(new Separator());
-        menu.add(connectAction);
-        menu.add(disconnectAction);
 
 /*
         IMenuManager editMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
@@ -369,15 +331,6 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
 
         }
 */
-    }
-
-    private void addOrInsert(IContributionManager menu, IContributionItem item) {
-        String id= item.getId();
-        if (menu.find(id) == null) {
-            menu.add(item);
-        } else {
-            menu.insertAfter(id, item);
-        }
     }
 
     public void contributeToToolBar(IToolBarManager manager)
@@ -426,8 +379,6 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
 
         // Connection related actions
         manager.add(new Separator());
-        manager.add(connectAction);
-        manager.add(disconnectAction);
         manager.add(new ControlContribution("DataSources")
         {
             protected Control createControl(Composite parent)
@@ -568,19 +519,11 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
     {
         // Enable actions
         boolean isConnected = editor != null && editor.getDataSourceContainer() != null && editor.getDataSourceContainer().isConnected();
-        boolean isAutoCommit = false;
-        try {
-            isAutoCommit = (isConnected && editor.getSession().isAutoCommit());
-        } catch (DBException e) {
-            // do nothing
-        }
         executeStatementAction.setEnabled(isConnected);
         executeScriptAction.setEnabled(isConnected);
         validateStatementAction.setEnabled(false);
         explainPlanAction.setEnabled(false);
         analyseStatementAction.setEnabled(false);
-        connectAction.setEnabled(!isConnected);
-        disconnectAction.setEnabled(isConnected);
     }
 
     private void changeResultSetSize()
@@ -749,87 +692,6 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                     null).open();
             }
         });
-        return menu;
-    }
-
-    protected Menu createTransactionsMenu(Menu parent, Shell shell)
-    {
-        final Menu menu = parent == null ? new Menu(shell, SWT.POP_UP) : new Menu(parent);
-
-        final SQLEditor editor = getEditor();
-        if (editor == null) {
-            return menu;
-        }
-        if (!editor.getDataSourceContainer().isConnected()) {
-            return menu;
-        }
-        final DBPDataSourceInfo dsInfo;
-        try {
-            dsInfo = editor.getDataSource().getInfo();
-        } catch (DBException ex) {
-            log.error("Can't obtain datasource info", ex);
-            return menu;
-        }
-        final DBCSession session;
-        try {
-            session = editor.getSession();
-        } catch (DBException e) {
-            log.error("Can't obtain database session", e);
-            return menu;
-        }
-        // Auto-commit
-        MenuItem autoCommit = new MenuItem(menu, SWT.CHECK);
-        autoCommit.setText("Auto-commit");
-        try {
-            autoCommit.setSelection(session.isAutoCommit());
-        } catch (DBCException ex) {
-            log.warn("Can't check auto-commit status", ex);
-        }
-        autoCommit.addSelectionListener(new SelectionAdapter()
-        {
-            public void widgetSelected(SelectionEvent e)
-            {
-                try {
-                    session.setAutoCommit(!session.isAutoCommit());
-                    updateActions(editor);
-                } catch (DBCException ex) {
-                    log.error("Can't change auto-commit status", ex);
-                }
-            }
-        });
-
-        new MenuItem(menu, SWT.SEPARATOR);
-
-        // Transactions
-        DBPTransactionIsolation curTxi = null;
-        try {
-            curTxi = session.getTransactionIsolation();
-        } catch (DBCException ex) {
-            log.warn("Can't determine current transaction isolation level", ex);
-        }
-        for (DBPTransactionIsolation txi : dsInfo.getSupportedTransactionIsolations()) {
-            if (!txi.isEnabled()) {
-                continue;
-            }
-            MenuItem txnItem = new MenuItem(menu, SWT.RADIO);
-            txnItem.setText(txi.getName());
-            txnItem.setSelection(txi == curTxi);
-            txnItem.setData(txi);
-            txnItem.addSelectionListener(new SelectionAdapter()
-            {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    try {
-                        DBPTransactionIsolation newTxi = (DBPTransactionIsolation) e.widget.getData();
-                        if (!session.getTransactionIsolation().equals(newTxi)) {
-                            session.setTransactionIsolation(newTxi);
-                        }
-                    } catch (DBCException ex) {
-                        log.warn("Can't change current transaction isolation level", ex);
-                    }
-                }
-            });
-        }
         return menu;
     }
 

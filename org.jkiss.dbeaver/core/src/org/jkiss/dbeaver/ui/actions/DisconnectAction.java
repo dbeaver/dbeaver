@@ -1,30 +1,23 @@
 package org.jkiss.dbeaver.ui.actions;
 
+import org.eclipse.jface.action.IAction;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
-public class DisconnectAction extends ConnectionAction
+public class DisconnectAction extends DataSourceAction
 {
-
-    public DisconnectAction()
-    {
-        // The id is used to refer to the action in a menu or toolbar
-        setId(ICommandIds.CMD_DISCONNECT);
-        // Associate the action with a pre-defined command, to allow key bindings.
-        setActionDefinitionId(ICommandIds.CMD_DISCONNECT);
-        setImageDescriptor(DBeaverActivator.getImageDescriptor("/icons/sql/disconnect.png"));
-        setText("Disconnect");
-        setToolTipText("Disconnect from database");
+    @Override
+    protected void updateAction(IAction action) {
+        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(false);
+        action.setEnabled(dataSourceContainer != null && dataSourceContainer.isConnected());
     }
 
-    public void run()
+    public void run(IAction action)
     {
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        if (dataSourceContainer != null) {
+        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(false);
+        if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
             try {
                 dataSourceContainer.disconnect(this);
             }

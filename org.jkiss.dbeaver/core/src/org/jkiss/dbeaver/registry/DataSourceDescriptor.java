@@ -17,6 +17,8 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
+import org.jkiss.dbeaver.model.dbc.DBCSession;
+import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -26,6 +28,7 @@ import org.jkiss.dbeaver.runtime.ConnectJob;
 import org.jkiss.dbeaver.runtime.DisconnectJob;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionAuthDialog;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 import java.lang.reflect.InvocationTargetException;
@@ -167,6 +170,28 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
     public DBPDataSource getDataSource()
     {
         return dataSource;
+    }
+
+    public DBCSession getSession(boolean forceNew) throws DBException
+    {
+        if (!isConnected()) {
+            connect(this);
+        }
+        DBCSession session = getDataSource().getSession(forceNew);
+
+        // Change autocommit state
+        try {
+            boolean autoCommit = session.isAutoCommit();
+            boolean newAutoCommit = getPreferenceStore().getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
+            if (autoCommit != newAutoCommit) {
+                session.setAutoCommit(newAutoCommit);
+            }
+        }
+        catch (DBCException e) {
+            log.error("Can't set session autocommit state", e);
+        }
+
+        return session;
     }
 
     public DBeaverCore getViewCallback()

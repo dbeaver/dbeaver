@@ -3,29 +3,40 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.ui.*;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
-import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.event.DataSourceEvent;
+import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
-import org.jkiss.dbeaver.DBException;
 
 /**
  * DataSource action
  */
-public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate {
+public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate, IActionDelegate2 {
 	private IWorkbenchWindow window;
     private ISelection selection;
     private IWorkbenchPart activePart;
+    private IAction delegateAction;
+    private IDataSourceListener dataSourceListener;
 
-	/**
+    /**
 	 * The constructor.
 	 */
 	public DataSourceAction() {
+        dataSourceListener = new IDataSourceListener() {
+            public void dataSourceChanged(DataSourceEvent event) {
+                if (delegateAction != null) {
+                    updateAction(delegateAction);
+                }
+            }
+        };
 	}
 
     public IWorkbenchWindow getWindow() {
@@ -63,16 +74,6 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
 	}
 
 	/**
-	 * We can use this method to dispose of any system
-	 * resources we previously allocated.
-	 * @see org.eclipse.ui.IWorkbenchWindowActionDelegate#dispose
-	 */
-	public void dispose() {
-        this.window = null;
-        this.selection = null;
-	}
-
-	/**
 	 * We will cache window object in order to
 	 * be able to provide parent shell for the message dialog.
 	 * @see org.eclipse.ui.IWorkbenchWindowActionDelegate#init
@@ -81,10 +82,35 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
 		this.window = window;
 	}
 
-    protected DBSDataSourceContainer getDataSourceContainer()
+	public void init(IAction action) {
+        this.delegateAction = action;
+        DataSourceRegistry.getDefault().addDataSourceListener(dataSourceListener);
+	}
+
+    public void runWithEvent(IAction action, Event event)
+    {
+        this.run(action);
+    }
+
+    /**
+     * We can use this method to dispose of any system
+     * resources we previously allocated.
+     * @see org.eclipse.ui.IWorkbenchWindowActionDelegate#dispose
+     */
+    public void dispose() {
+        DataSourceRegistry.getDefault().removeDataSourceListener(dataSourceListener);
+        this.window = null;
+        this.selection = null;
+    }
+
+    public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+        activePart = targetPart;
+    }
+
+    protected DBSDataSourceContainer getDataSourceContainer(boolean chooseOnNoSelection)
     {
         if (activePart instanceof IDataSourceUser) {
-            return ((IDataSourceUser)activePart).getDataSource().getContainer();
+            return ((IDataSourceUser)activePart).getDataSourceContainer();
         }
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection structSelection = (IStructuredSelection)selection;
@@ -92,10 +118,10 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
             if (editElement instanceof DBSDataSourceContainer) {
                 return (DBSDataSourceContainer)editElement;
             } else if (editElement instanceof DBSObject) {
-                return ((DBSObject)editElement).getDataSource().getContainer();
+                ((DBSObject)editElement).getDataSource().getContainer();
             }
         }
-        if (window != null) {
+        if (window != null && chooseOnNoSelection) {
             return SelectDataSourceDialog.selectDataSource(window.getShell());
         }
         return null;

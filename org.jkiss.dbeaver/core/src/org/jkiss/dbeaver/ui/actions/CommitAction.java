@@ -15,7 +15,7 @@ public class CommitAction extends SessionAction
     @Override
     protected void updateAction(IAction action) {
         try {
-            DBCSession session = getSession();
+            DBCSession session = isConnected() ? getSession() : null;
             action.setEnabled(session != null && !session.isAutoCommit());
         } catch (DBException e) {
             log.error(e);

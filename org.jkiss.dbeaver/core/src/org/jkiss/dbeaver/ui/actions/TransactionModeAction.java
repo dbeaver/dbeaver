@@ -9,6 +9,8 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IWorkbenchWindowPulldownDelegate;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
@@ -24,10 +26,11 @@ public class TransactionModeAction extends SessionAction implements IWorkbenchWi
     {
         try {
             // Toggle autocommit flag
-            DBCSession session = getSession();
-            session.setAutoCommit(!session.isAutoCommit());
-
-            //getWindow().getActivePage().geta
+            DBCSession session = isConnected() ? getSession() : null;
+            if (session != null) {
+                session.setAutoCommit(!session.isAutoCommit());
+                DataSourceRegistry.getDefault().fireDataSourceEvent(DataSourceEvent.Action.CHANGE, getDataSource(), this);
+            }
         } catch (DBException e) {
             DBeaverUtils.showErrorDialog(getWindow().getShell(), "Auto-Commit", "Error while toggle auto-commit", e);
         }
@@ -54,6 +57,9 @@ public class TransactionModeAction extends SessionAction implements IWorkbenchWi
             log.error("Can't obtain database session", e);
             return menu;
         }
+        if (session == null) {
+            return menu;
+        }
         // Auto-commit
         MenuItem autoCommit = new MenuItem(menu, SWT.CHECK);
         autoCommit.setText("Auto-commit");
@@ -68,6 +74,7 @@ public class TransactionModeAction extends SessionAction implements IWorkbenchWi
             {
                 try {
                     session.setAutoCommit(!session.isAutoCommit());
+                    DataSourceRegistry.getDefault().fireDataSourceEvent(DataSourceEvent.Action.CHANGE, getDataSource(), this);
                 } catch (DBCException ex) {
                     log.error("Can't change auto-commit status", ex);
                 }

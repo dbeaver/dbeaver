@@ -141,15 +141,16 @@ public class NavigatorTreeView extends ViewPart implements IDBMListener, IMetaMo
                         switch (event.getNodeChange()) {
                             case LOADED:
                                 viewer.expandToLevel(event.getNode().getObject(), 1);
+                                viewer.refresh(event.getNode().getObject());
                                 break;
                             case UNLOADED:
                                 viewer.collapseToLevel(event.getNode().getObject(), -1);
+                                viewer.refresh(event.getNode().getObject());
                                 break;
                             case CHANGED:
-                                getViewer().refresh(event.getNode().getObject());
+                                getViewer().update(event.getNode().getObject(), null);
                                 break;
                         }
-                        viewer.refresh(event.getNode().getObject());
                     }
                 }});
                 break;

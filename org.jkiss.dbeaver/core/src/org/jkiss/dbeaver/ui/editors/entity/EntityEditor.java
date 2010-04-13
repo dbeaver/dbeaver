@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
 import org.jkiss.dbeaver.model.meta.DBMTreeNode;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 import java.util.List;
 
@@ -263,6 +264,11 @@ public class EntityEditor extends SplitterEditorPart implements IDBMListener, IM
     public IWorkbenchPart getWorkbenchPart()
     {
         return this;
+    }
+
+    public DBSDataSourceContainer getDataSourceContainer() {
+        DBPDataSource dataSource = getDataSource();
+        return dataSource == null ? null : dataSource.getContainer();
     }
 
     public DBPDataSource getDataSource() {

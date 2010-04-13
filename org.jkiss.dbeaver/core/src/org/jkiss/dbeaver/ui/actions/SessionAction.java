@@ -2,6 +2,7 @@ package org.jkiss.dbeaver.ui.actions;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.ICommandIds;
@@ -19,13 +20,13 @@ public abstract class SessionAction extends DataSourceAction
     @Override
     protected void updateAction(IAction action)
     {
-        DBCSession session = null;
-        try {
-            session = getSession();
-        } catch (DBException e) {
-            log.error(e);
-        }
-        action.setEnabled(session != null);
+        action.setEnabled(isConnected());
+    }
+
+    protected boolean isConnected()
+    {
+        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(false);
+        return dataSourceContainer != null && dataSourceContainer.isConnected();
     }
 
 }
