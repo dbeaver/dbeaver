@@ -626,7 +626,9 @@
             visible="true">
 
             <menu id="dataSourceMenu" label="Database">
-                <separator name="dataSourceGroup">
+                <separator name="connectionGroup">
+                </separator>
+                <separator name="sessionGroup">
                 </separator>
             </menu>
             <action
@@ -634,28 +636,60 @@
                  icon="/icons/sql/sql_script.png"
                  id="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
                  label="Open SQL Editor"
-                 menubarPath="dataSourceMenu/dataSourceGroup"
-                 toolbarPath="dataSourceGroup"
-                 tooltip="Open SQL Editor">
+                 menubarPath="dataSourceMenu/connectionGroup"
+                 toolbarPath="connectionGroup"
+                 tooltip="Open SQL Editor"
+                 accelerator="CTRL+SHIFT+E">
             </action>
             <action
-                 class="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
-                 icon="/icons/database_connect.png"
-                 id="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
-                 label="New Connection"
-                 menubarPath="dataSourceMenu/dataSourceGroup"
-                 toolbarPath="dataSourceGroup"
-                 tooltip="Create New Connection">
+                  class="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
+                  icon="/icons/database_connect.png"
+                  id="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
+                  label="New Connection"
+                  menubarPath="dataSourceMenu/connectionGroup"
+                  toolbarPath="connectionGroup"
+                  tooltip="Create New Connection">
             </action>
             <action
                  class="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
                  icon="/icons/driver_manager.png"
                  id="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
                  label="Driver Manager"
-                 menubarPath="dataSourceMenu/dataSourceGroup"
-                 toolbarPath="dataSourceGroup"
+                 menubarPath="dataSourceMenu/connectionGroup"
+                 toolbarPath="connectionGroup"
                  tooltip="Open Driver Manager">
             </action>
+
+            <action
+                  class="org.jkiss.dbeaver.ui.actions.TransactionModeAction"
+                  disabledIcon="/icons/sql/txn_config_2.png"
+                  icon="/icons/sql/txn_config.png"
+                  id="org.jkiss.dbeaver.ui.actions.TransactionModeAction"
+                  label="Transactions mode"
+                  menubarPath="dataSourceMenu/sessionGroup"
+                  style="pulldown"
+                  toolbarPath="sessionGroup"
+                  tooltip="Transactions mode">
+            </action>
+            <action
+                 class="org.jkiss.dbeaver.ui.actions.RollbackAction"
+                 icon="/icons/sql/rollback.png"
+                 id="org.jkiss.dbeaver.ui.actions.RollbackAction"
+                 label="Rollback changes"
+                 menubarPath="dataSourceMenu/sessionGroup"
+                 toolbarPath="sessionGroup"
+                 tooltip="Rollback changes">
+            </action>
+            <action
+                 class="org.jkiss.dbeaver.ui.actions.CommitAction"
+                 icon="/icons/sql/commit.png"
+                 id="org.jkiss.dbeaver.ui.actions.CommitAction"
+                 label="Commit changes"
+                 menubarPath="dataSourceMenu/sessionGroup"
+                 toolbarPath="sessionGroup"
+                 tooltip="Commit changes">
+            </action>
+
        </actionSet>
     </extension>
 

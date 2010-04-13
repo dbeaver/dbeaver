@@ -269,4 +269,8 @@ public class EntityEditor extends SplitterEditorPart implements IDBMListener, IM
         return entityInput == null ? null : entityInput.getDatabaseObject().getDataSource();
     }
 
+    public DBCSession getSession() throws DBException {
+        return null;
+    }
+
 }

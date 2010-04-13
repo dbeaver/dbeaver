@@ -20,7 +20,9 @@ import org.jkiss.dbeaver.utils.ViewUtils;
 import org.jkiss.dbeaver.model.meta.IDBMListener;
 import org.jkiss.dbeaver.model.meta.DBMEvent;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.DBException;
 
 /**
  * FolderEditor
@@ -110,6 +112,10 @@ public class FolderEditor extends EditorPart implements IDBMListener, IMetaModel
 
     public DBPDataSource getDataSource() {
         return folderInput == null ? null : folderInput.getDatabaseObject().getDataSource();
+    }
+
+    public DBCSession getSession() throws DBException {
+        return null;
     }
 
 }

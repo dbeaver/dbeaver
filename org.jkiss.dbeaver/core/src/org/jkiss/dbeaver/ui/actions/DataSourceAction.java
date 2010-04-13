@@ -8,8 +8,11 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
+import org.jkiss.dbeaver.DBException;
 
 /**
  * DataSource action
@@ -39,6 +42,11 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
 
     public abstract void run(IAction action);
 
+    protected void updateAction(IAction action)
+    {
+
+    }
+
 	/**
 	 * Selection in the workbench has been changed. We
 	 * can change the state of the 'real' action here
@@ -51,6 +59,7 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
         if (window != null && this.window.getActivePage() != null) {
             this.activePart = this.window.getActivePage().getActivePart();
         }
+        this.updateAction(action);
 	}
 
 	/**
@@ -90,6 +99,36 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
             return SelectDataSourceDialog.selectDataSource(window.getShell());
         }
         return null;
+    }
+
+    protected DBPDataSource getDataSource()
+    {
+        if (activePart instanceof IDataSourceUser) {
+            return ((IDataSourceUser)activePart).getDataSource();
+        }
+        if (selection instanceof IStructuredSelection) {
+            IStructuredSelection structSelection = (IStructuredSelection)selection;
+            Object editElement = structSelection.getFirstElement();
+            if (editElement instanceof DBSObject) {
+                return ((DBSObject)editElement).getDataSource();
+            }
+        }
+        return null;
+    }
+
+    protected DBCSession getSession() throws DBException
+    {
+        DBCSession session = null;
+        if (activePart instanceof IDataSourceUser) {
+            session = ((IDataSourceUser)activePart).getSession();
+        }
+        if (session == null) {
+            DBPDataSource dataSource = getDataSource();
+            if (dataSource != null) {
+                session = dataSource.getSession(false);
+            }
+        }
+        return session;
     }
 
 }

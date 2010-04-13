@@ -38,6 +38,8 @@ import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.ConnectAction;
 import org.jkiss.dbeaver.ui.actions.DisconnectAction;
+import org.jkiss.dbeaver.ui.actions.CommitAction;
+import org.jkiss.dbeaver.ui.actions.RollbackAction;
 import org.jkiss.dbeaver.ui.actions.sql.*;
 import org.jkiss.dbeaver.ui.controls.DefaultMenuCreator;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
@@ -92,9 +94,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
     private ValidateStatementAction validateStatementAction;
     private ExplainPlanAction explainPlanAction;
     private AnalyseStatementAction analyseStatementAction;
-    private CommitAction commitAction;
-    private RollbackAction rollbackAction;
-    private Action changeAutoCommitAction;
+
     private ConnectAction connectAction;
     private DisconnectAction disconnectAction;
 
@@ -188,57 +188,6 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         validateStatementAction = new ValidateStatementAction();
         explainPlanAction = new ExplainPlanAction();
         analyseStatementAction = new AnalyseStatementAction();
-        // Commit
-        commitAction = new CommitAction()
-        {
-            protected SQLEditor getEditor()
-            {
-                return SQLEditorContributor.this.getEditor();
-            }
-        };
-        // Rollback
-        rollbackAction = new RollbackAction()
-        {
-            protected SQLEditor getEditor()
-            {
-                return SQLEditorContributor.this.getEditor();
-            }
-        };
-        // Toggle autocommit
-        changeAutoCommitAction = new AbstractSQLAction()
-        {
-            protected void execute(SQLEditor editor)
-            {
-                if (editor != null && editor.getDataSourceContainer().isConnected()) {
-                    try {
-                        // Toggle autocommit flag
-                        DBCSession session = editor.getSession();
-                        session.setAutoCommit(!session.isAutoCommit());
-                        updateActions(editor);
-                    } catch (DBException e) {
-                        log.error("Error while toggle auto-commit", e);
-                    }
-                }
-            }
-
-            protected SQLEditor getEditor()
-            {
-                return SQLEditorContributor.this.getEditor();
-            }
-        };
-        changeAutoCommitAction.setMenuCreator(new DefaultMenuCreator()
-        {
-            public Menu getMenu(Menu parent)
-            {
-                return createTransactionsMenu(parent, parent.getShell());
-            }
-            public Menu getMenu(Control parent)
-            {
-                return createTransactionsMenu(null, parent.getShell());
-            }
-        });
-        changeAutoCommitAction.setText("Transactions options");
-        changeAutoCommitAction.setToolTipText("Transactions options");
         // Connect
         connectAction = new ConnectAction()
         {
@@ -400,10 +349,6 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         menu.add(explainPlanAction);
         menu.add(analyseStatementAction);
         menu.add(new Separator());
-        menu.add(commitAction);
-        menu.add(rollbackAction);
-        menu.add(changeAutoCommitAction);
-        menu.add(new Separator());
         menu.add(connectAction);
         menu.add(disconnectAction);
 
@@ -478,12 +423,6 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                 return editGroup;
             }
         });
-
-        // Transactions
-        manager.add(new Separator());
-        manager.add(commitAction);
-        manager.add(rollbackAction);
-        manager.add(changeAutoCommitAction);
 
         // Connection related actions
         manager.add(new Separator());
@@ -642,12 +581,6 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         analyseStatementAction.setEnabled(false);
         connectAction.setEnabled(!isConnected);
         disconnectAction.setEnabled(isConnected);
-
-        commitAction.setEnabled(isConnected && !isAutoCommit);
-        rollbackAction.setEnabled(isConnected && !isAutoCommit);
-
-        changeAutoCommitAction.setEnabled(isConnected);
-        changeAutoCommitAction.setImageDescriptor(isAutoCommit ? imgTxnConfig : imgTxnConfig2);
     }
 
     private void changeResultSetSize()

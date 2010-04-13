@@ -20,7 +20,7 @@ public interface DBPDataSource extends DBPObject
 
     /**
      * Acquires new database session
-     * @param forceNew if true opens new physical session, otherwise uses datasourdei nternal session
+     * @param forceNew if true opens new physical session, otherwise uses datasourse internal session
      * @return new session
      * @throws DBException on any DB error
      */

@@ -10,8 +10,6 @@ import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
  */
 public interface ResultSetProvider extends IDataSourceUser {
 
-    DBCSession getSession() throws DBException;
-
     boolean isConnected();
 
     void extractResultSetData(int offset);
