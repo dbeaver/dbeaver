@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Control;
  */
 public class DefaultMenuCreator implements IMenuCreator
 {
+
     public void dispose()
     {
     }
