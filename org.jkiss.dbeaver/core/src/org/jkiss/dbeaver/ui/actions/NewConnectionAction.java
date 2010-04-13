@@ -17,31 +17,12 @@ public class NewConnectionAction implements IWorkbenchWindowActionDelegate
 
     private IWorkbenchWindow window;
 
-/*
-    public NewConnectionAction()
-    {
-        // The id is used to refer to the action in a menu or toolbar
-        setId(ICommandIds.CMD_NEW_CONNECTION);
-        // Associate the action with a pre-defined command, to allow key bindings.
-        setActionDefinitionId(ICommandIds.CMD_NEW_CONNECTION);
-        setImageDescriptor(DBeaverActivator.getImageDescriptor("/icons/database_connect.png"));
-    }
-*/
-
     public void run(IAction action)
     {
         if (window != null) {
             NewConnectionDialog dialog = new NewConnectionDialog(window);
             dialog.open();
         }
-/*		if(window != null) {	
-			try {
-				window.getActivePage().showView(ConsoleView.ID, Integer.toString(instanceNum++), IWorkbenchPage.VIEW_ACTIVATE);
-			} catch (PartInitException e) {
-				MessageDialog.openError(window.getShell(), "Error", "Error opening view:" + e.getMessage());
-			}
-		}
-*/
     }
 
     public void selectionChanged(IAction action, ISelection selection)

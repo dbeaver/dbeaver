@@ -16,17 +16,6 @@ public class DriverManagerAction implements IWorkbenchWindowActionDelegate
 {
     private IWorkbenchWindow window;
 
-/*
-    public DriverManagerAction()
-    {
-        // The id is used to refer to the action in a menu or toolbar
-        setId(ICommandIds.CMD_EDIT_DRIVERS);
-        // Associate the action with a pre-defined command, to allow key bindings.
-        setActionDefinitionId(ICommandIds.CMD_EDIT_DRIVERS);
-        setImageDescriptor(DBeaverActivator.getImageDescriptor("/icons/driver_manager.png"));
-    }
-*/
-
     public void run(IAction action)
     {
         if (window != null) {

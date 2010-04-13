@@ -18,16 +18,6 @@ public class OpenSQLEditorAction extends DataSourceAction
 {
     static Log log = LogFactory.getLog(OpenSQLEditorAction.class);
 
-    public OpenSQLEditorAction()
-    {
-        // The id is used to refer to the action in a menu or toolbar
-        //setId(ICommandIds.CMD_OPEN_SQLEDITOR);
-        // Associate the action with a pre-defined command, to allow key bindings.
-        //setActionDefinitionId(ICommandIds.CMD_OPEN_SQLEDITOR);
-        //setImageDescriptor(DBeaverActivator.getImageDescriptor("/icons/sql/sql_script.png"));
-        //setText("Open SQL Editor");
-    }
-
     public void run(IAction action)
     {
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(true);
