@@ -118,7 +118,7 @@ public class DriverLibraryDescriptor
                 return null;
             }
             try {
-                url = libraryFile.toURL();
+                url = libraryFile.toURI().toURL();
             }
             catch (MalformedURLException ex) {
                 log.warn(ex);

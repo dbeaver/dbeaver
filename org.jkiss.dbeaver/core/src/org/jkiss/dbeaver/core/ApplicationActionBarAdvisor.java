@@ -1,15 +1,7 @@
 package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.runtime.IExtension;
-import org.eclipse.jface.action.GroupMarker;
-import org.eclipse.jface.action.ICoolBarManager;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.action.ToolBarContributionItem;
-import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.swt.SWT;
+import org.eclipse.jface.action.*;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.actions.ActionFactory;
@@ -19,7 +11,7 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
-import org.jkiss.dbeaver.ui.actions.*;
+import org.jkiss.dbeaver.ui.actions.ToggleViewAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementAction;
 
@@ -39,9 +31,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     private IWorkbenchAction newWindowAction;
     //private IWorkbenchAction viewPropertiesAction;
     private IWorkbenchAction viewPreferencesAction;
-    private DriverManagerAction driverManagerAction;
-    private NewConnectionAction newConnectionAction;
-    private OpenSQLEditorAction openSQLEditorAction;
+    //private DriverManagerAction driverManagerAction;
+    //private NewConnectionAction newConnectionAction;
+    //private OpenSQLEditorAction openSQLEditorAction;
 
     public ApplicationActionBarAdvisor(IActionBarConfigurer configurer)
     {
@@ -49,7 +41,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     }
 
     @SuppressWarnings("restriction")
-	private void removeActionExctension(String actionSetId)
+	private void removeActionExtension(String actionSetId)
     {
         ActionSetRegistry reg = WorkbenchPlugin.getDefault().getActionSetRegistry();
         IActionSetDescriptor[] actionSets = reg.getActionSets();
@@ -65,13 +57,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     protected void makeActions(final IWorkbenchWindow window)
     {
         // Remove annotations actions
-        removeActionExctension("org.eclipse.ui.edit.text.actionSet.annotationNavigation"); //$NON-NLS-1$
+        removeActionExtension("org.eclipse.ui.edit.text.actionSet.annotationNavigation"); //$NON-NLS-1$
         // Removing annoying gotoLastPosition Message.
-        removeActionExctension("org.eclipse.ui.edit.text.actionSet.navigation"); //$NON-NLS-1$
+        removeActionExtension("org.eclipse.ui.edit.text.actionSet.navigation"); //$NON-NLS-1$
         // Removing convert line delimiters menu.
-        removeActionExctension("org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo"); //$NON-NLS-1$
+        removeActionExtension("org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo"); //$NON-NLS-1$
         // Removing convert line delimiters menu.
-        removeActionExctension("org.eclipse.ui.actionSet.openFiles"); //$NON-NLS-1$
+        removeActionExtension("org.eclipse.ui.actionSet.openFiles"); //$NON-NLS-1$
 
         // Creates the actions and registers them.
         // Registering is needed to ensure that key bindings work.
@@ -94,14 +86,14 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         viewPreferencesAction = ActionFactory.PREFERENCES.create(window);
         register(viewPreferencesAction);
 
-        newConnectionAction = new NewConnectionAction(window);
-        register(newConnectionAction);
+        //newConnectionAction = new NewConnectionAction(window);
+        //register(newConnectionAction);
 
-        driverManagerAction = new DriverManagerAction(window);
-        register(driverManagerAction);
+        //driverManagerAction = new DriverManagerAction(window);
+        //register(driverManagerAction);
 
-        openSQLEditorAction = new OpenSQLEditorAction(window);
-        register(openSQLEditorAction);
+        //openSQLEditorAction = new OpenSQLEditorAction(window);
+        //register(openSQLEditorAction);
 
         register(new ExecuteStatementAction());
         register(new ExecuteScriptAction());
@@ -116,16 +108,16 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
-        menuBar.add(viewMenu);
         // Add a group marker indicating where action set menus will appear.
         menuBar.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+        menuBar.add(viewMenu);
         menuBar.add(helpMenu);
 
         // File
         fileMenu.add(newWindowAction);
-        fileMenu.add(new Separator());
-        fileMenu.add(driverManagerAction);
-        fileMenu.add(newConnectionAction);
+        //fileMenu.add(new Separator());
+        //fileMenu.add(driverManagerAction);
+        //fileMenu.add(newConnectionAction);
         fileMenu.add(new Separator());
         fileMenu.add(viewPreferencesAction);
         fileMenu.add(new Separator());
@@ -151,10 +143,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
     protected void fillCoolBar(ICoolBarManager coolBar)
     {
-        IToolBarManager toolbar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
-        coolBar.add(new ToolBarContributionItem(toolbar, "main"));
-        toolbar.add(driverManagerAction);
-        toolbar.add(newConnectionAction);
-        toolbar.add(openSQLEditorAction);
+        //IToolBarManager toolbar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
+        //coolBar.add(new ToolBarContributionItem(toolbar, "main"));
+        //toolbar.add(driverManagerAction);
+        //toolbar.add(newConnectionAction);
+        //toolbar.add(openSQLEditorAction);
     }
 }

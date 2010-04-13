@@ -6,16 +6,18 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionDialog;
 
 
-public class NewConnectionAction extends Action implements IViewActionDelegate
+public class NewConnectionAction implements IWorkbenchWindowActionDelegate
 {
 
     private IWorkbenchWindow window;
 
+/*
     public NewConnectionAction()
     {
         // The id is used to refer to the action in a menu or toolbar
@@ -24,15 +26,9 @@ public class NewConnectionAction extends Action implements IViewActionDelegate
         setActionDefinitionId(ICommandIds.CMD_NEW_CONNECTION);
         setImageDescriptor(DBeaverActivator.getImageDescriptor("/icons/database_connect.png"));
     }
+*/
 
-    public NewConnectionAction(IWorkbenchWindow window)
-    {
-        this();
-        this.window = window;
-        setText("New Connection");
-    }
-
-    public void run()
+    public void run(IAction action)
     {
         if (window != null) {
             NewConnectionDialog dialog = new NewConnectionDialog(window);
@@ -48,17 +44,16 @@ public class NewConnectionAction extends Action implements IViewActionDelegate
 */
     }
 
-    public void init(IViewPart view)
-    {
-        window = view.getViewSite().getWorkbenchWindow();
-    }
-
-    public void run(IAction action)
-    {
-        this.run();
-    }
-
     public void selectionChanged(IAction action, ISelection selection)
     {
     }
+
+    public void dispose() {
+
+    }
+
+    public void init(IWorkbenchWindow window) {
+        this.window = window;
+    }
+
 }

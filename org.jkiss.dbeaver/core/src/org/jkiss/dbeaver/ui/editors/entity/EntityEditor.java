@@ -18,11 +18,14 @@ import org.jkiss.dbeaver.runtime.load.NullLoadService;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IObjectEditor;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
 import org.jkiss.dbeaver.model.meta.DBMTreeNode;
+import org.jkiss.dbeaver.model.dbc.DBCSession;
+import org.jkiss.dbeaver.model.DBPDataSource;
 
 import java.util.List;
 
@@ -31,7 +34,7 @@ import net.sf.jkiss.utils.CommonUtils;
 /**
  * EntityEditor
  */
-public class EntityEditor extends SplitterEditorPart implements IDBMListener, IMetaModelView
+public class EntityEditor extends SplitterEditorPart implements IDBMListener, IMetaModelView, IDataSourceUser
 {
     static Log log = LogFactory.getLog(EntityEditor.class);
 
@@ -261,4 +264,9 @@ public class EntityEditor extends SplitterEditorPart implements IDBMListener, IM
     {
         return this;
     }
+
+    public DBPDataSource getDataSource() {
+        return entityInput == null ? null : entityInput.getDatabaseObject().getDataSource();
+    }
+
 }

@@ -618,5 +618,45 @@
           
         </provider>
     </extension>
+    <extension
+          point="org.eclipse.ui.actionSets">
+        <actionSet
+            id="org.jkiss.dbeaver.core.dataSourceActionSet"
+            label="DataSource actions"
+            visible="true">
+
+            <menu id="dataSourceMenu" label="Database">
+                <separator name="dataSourceGroup">
+                </separator>
+            </menu>
+            <action
+                 class="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
+                 icon="/icons/sql/sql_script.png"
+                 id="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
+                 label="Open SQL Editor"
+                 menubarPath="dataSourceMenu/dataSourceGroup"
+                 toolbarPath="dataSourceGroup"
+                 tooltip="Open SQL Editor">
+            </action>
+            <action
+                 class="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
+                 icon="/icons/database_connect.png"
+                 id="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
+                 label="New Connection"
+                 menubarPath="dataSourceMenu/dataSourceGroup"
+                 toolbarPath="dataSourceGroup"
+                 tooltip="Create New Connection">
+            </action>
+            <action
+                 class="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
+                 icon="/icons/driver_manager.png"
+                 id="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
+                 label="Driver Manager"
+                 menubarPath="dataSourceMenu/dataSourceGroup"
+                 toolbarPath="dataSourceGroup"
+                 tooltip="Open Driver Manager">
+            </action>
+       </actionSet>
+    </extension>
 
 </plugin>

@@ -15,15 +15,17 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
+import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.utils.ViewUtils;
 import org.jkiss.dbeaver.model.meta.IDBMListener;
 import org.jkiss.dbeaver.model.meta.DBMEvent;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.core.DBeaverCore;
 
 /**
  * FolderEditor
  */
-public class FolderEditor extends EditorPart implements IDBMListener, IMetaModelView
+public class FolderEditor extends EditorPart implements IDBMListener, IMetaModelView, IDataSourceUser
 {
     static Log log = LogFactory.getLog(FolderEditor.class);
 
@@ -105,4 +107,9 @@ public class FolderEditor extends EditorPart implements IDBMListener, IMetaModel
     {
         return this;
     }
+
+    public DBPDataSource getDataSource() {
+        return folderInput == null ? null : folderInput.getDatabaseObject().getDataSource();
+    }
+
 }

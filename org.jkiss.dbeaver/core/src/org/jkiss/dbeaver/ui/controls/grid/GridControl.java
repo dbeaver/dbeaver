@@ -999,6 +999,7 @@ public class GridControl extends Composite implements Listener
             layout.horizontalSpacing = 0;
             layout.verticalSpacing = 0;
             placeholder.setLayout(layout);
+
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalIndent = 0;
             gd.verticalIndent = 0;
