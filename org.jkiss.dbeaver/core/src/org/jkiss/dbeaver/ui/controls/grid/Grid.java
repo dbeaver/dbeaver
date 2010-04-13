@@ -9,20 +9,25 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultBottomLeftRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultDropPointRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultEmptyCellRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultEmptyColumnFooterRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultEmptyColumnHeaderRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultEmptyRowHeaderRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultFocusRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultInsertMarkRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultRowHeaderRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultTopLeftRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.internal.GridToolTip;
-import org.jkiss.dbeaver.ui.controls.grid.internal.IGridScrollBar;
-import org.jkiss.dbeaver.ui.controls.grid.internal.NullScrollBar;
-import org.jkiss.dbeaver.ui.controls.grid.internal.ScrollBarAdapter;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultBottomLeftRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultDropPointRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultEmptyCellRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultEmptyColumnFooterRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultEmptyColumnHeaderRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultEmptyRowHeaderRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultFocusRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultInsertMarkRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultRowHeaderRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultTopLeftRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.GridToolTip;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.IGridRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.GridCellRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.IGridWidget;
+import org.jkiss.dbeaver.ui.controls.grid.scroll.IGridScrollBar;
+import org.jkiss.dbeaver.ui.controls.grid.scroll.NullScrollBar;
+import org.jkiss.dbeaver.ui.controls.grid.scroll.ScrollBarAdapter;
+import org.jkiss.dbeaver.ui.controls.grid.dnd.GridDragSourceEffect;
+import org.jkiss.dbeaver.ui.controls.grid.dnd.GridDropTargetEffect;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.accessibility.ACC;
@@ -1563,7 +1568,7 @@ public class Grid extends Canvas
      * Returns the externally managed horizontal scrollbar.
      *
      * @return the external horizontal scrollbar.
-     * @see #setHorizontalScrollBarProxy(org.jkiss.dbeaver.ui.controls.grid.internal.IGridScrollBar)
+     * @see #setHorizontalScrollBarProxy(org.jkiss.dbeaver.ui.controls.grid.scroll.IGridScrollBar)
      * @throws org.eclipse.swt.SWTException
      * <ul>
      * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
@@ -1581,7 +1586,7 @@ public class Grid extends Canvas
      * Returns the externally managed vertical scrollbar.
      *
      * @return the external vertical scrollbar.
-     * @see #setlVerticalScrollBarProxy(org.jkiss.dbeaver.ui.controls.grid.internal.IGridScrollBar)
+     * @see #setlVerticalScrollBarProxy(org.jkiss.dbeaver.ui.controls.grid.scroll.IGridScrollBar)
      * @throws org.eclipse.swt.SWTException
      * <ul>
      * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
@@ -9998,7 +10003,7 @@ public class Grid extends Canvas
      *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
      * </ul>
      */
-    void setInsertMark (GridItem item, GridColumn column, boolean before) {
+    public void setInsertMark (GridItem item, GridColumn column, boolean before) {
     	checkWidget ();
     	if (item != null) {
     		if (item.isDisposed())
@@ -10015,12 +10020,12 @@ public class Grid extends Canvas
     }
 
     /**
-     * A helper method for {@link GridDropTargetEffect#dragOver(DropTargetEvent)}.
+     * A helper method for {@link org.jkiss.dbeaver.ui.controls.grid.dnd.GridDropTargetEffect#dragOver(DropTargetEvent)}.
      *
      * @param point
      * @return true if point is near the top or bottom border of the visible grid area
      */
-    boolean isInDragScrollArea(Point point) {
+    public boolean isInDragScrollArea(Point point) {
     	int rhw = rowHeaderVisible ? rowHeaderWidth : 0;
     	int chh = columnHeadersVisible ? headerHeight : 0;
     	Rectangle top = new Rectangle(rhw, chh, getClientArea().width - rhw, DRAG_SCROLL_AREA_HEIGHT);

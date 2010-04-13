@@ -4,9 +4,12 @@
 
 package org.jkiss.dbeaver.ui.controls.grid;
 
-import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultCellRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultColumnFooterRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultColumnHeaderRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultCellRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultColumnFooterRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultColumnHeaderRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.GridCellRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.GridFooterRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.GridHeaderRenderer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.events.ControlListener;

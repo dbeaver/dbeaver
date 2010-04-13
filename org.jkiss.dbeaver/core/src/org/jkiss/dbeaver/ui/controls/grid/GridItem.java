@@ -19,6 +19,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.TypedListener;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.GridCellRenderer;
 
 public class GridItem extends Item {
 	private ArrayList<Color> backgrounds = new ArrayList<Color>();
