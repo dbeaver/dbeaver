@@ -9,10 +9,6 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.commands.ActionHandler;
-import org.eclipse.nebula.widgets.grid.Grid;
-import org.eclipse.nebula.widgets.grid.GridColumn;
-import org.eclipse.nebula.widgets.grid.GridEditor;
-import org.eclipse.nebula.widgets.grid.GridItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -37,6 +33,10 @@ import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
+import org.jkiss.dbeaver.ui.controls.grid.Grid;
+import org.jkiss.dbeaver.ui.controls.grid.GridEditor;
+import org.jkiss.dbeaver.ui.controls.grid.GridColumn;
+import org.jkiss.dbeaver.ui.controls.grid.GridItem;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,8 +46,7 @@ import java.util.List;
 /**
  * ResultSetControl
  */
-public class Spreadsheet extends Composite implements Listener
-{
+public class Spreadsheet extends Composite implements Listener {
     static Log log = LogFactory.getLog(Spreadsheet.class);
 
     public static final int MAX_DEF_COLUMN_WIDTH = 300;
@@ -95,14 +94,15 @@ public class Spreadsheet extends Composite implements Listener
         foregroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
         foregroundLines = getDisplay().getSystemColor(SWT.COLOR_GRAY);
         foregroundSelected = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
-        backgroundModified = new Color(getDisplay(), 0xFF, 0xE4, 0xB5);//getDisplay().getSystemColor(SWT.COLOR_DARK_RED);
+        backgroundModified = new Color(getDisplay(), 0xFF, 0xE4,
+                                       0xB5);//getDisplay().getSystemColor(SWT.COLOR_DARK_RED);
         backgroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
         backgroundSelected = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
         backgroundControl = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 
         clipboard = new Clipboard(getDisplay());
 
-        actionsInfo = new ActionInfo[] {
+        actionsInfo = new ActionInfo[]{
             new ActionInfo(new GridAction(IWorkbenchActionDefinitionIds.COPY) {
                 public void run()
                 {
@@ -124,7 +124,8 @@ public class Spreadsheet extends Composite implements Listener
         this.createControl(style);
     }
 
-    public Grid getGrid() {
+    public Grid getGrid()
+    {
         return grid;
     }
 
@@ -203,7 +204,7 @@ public class Spreadsheet extends Composite implements Listener
         if (curPos == null) {
             return;
         }
-        Point newPos = new Point(curPos.x,  curPos.y);
+        Point newPos = new Point(curPos.x, curPos.y);
         Event fakeEvent = new Event();
         fakeEvent.widget = grid;
         SelectionEvent selectionEvent = new SelectionEvent(fakeEvent);
@@ -306,7 +307,7 @@ public class Spreadsheet extends Composite implements Listener
 
         grid.setLinesVisible(true);
         grid.setHeaderVisible(true);
-        
+
         gd = new GridData(GridData.FILL_BOTH);
         grid.setLayoutData(gd);
 
@@ -322,7 +323,8 @@ public class Spreadsheet extends Composite implements Listener
         }
 
         gridSelectionListener = new SelectionListener() {
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent e)
+            {
                 GridItem item = (GridItem) e.item;
                 Point focusCell = grid.getFocusCell();
                 if (focusCell != null) {
@@ -335,7 +337,8 @@ public class Spreadsheet extends Composite implements Listener
                 }
             }
 
-            public void widgetDefaultSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
             }
         };
         grid.addSelectionListener(gridSelectionListener);
@@ -360,7 +363,7 @@ public class Spreadsheet extends Composite implements Listener
     {
         switch (event.type) {
             case SWT.SetData: {
-                lazyRow.item = (GridItem)event.item;
+                lazyRow.item = (GridItem) event.item;
                 lazyRow.index = event.index;
                 if (dataProvider != null) {
                     dataProvider.fillRowData(lazyRow);
@@ -527,282 +530,283 @@ public class Spreadsheet extends Composite implements Listener
         event.doit = false;
     }
 */
-/*
 
-    private void processKeyUp(Event event)
-    {
-        if ((event.stateMask & SWT.SHIFT) == 0) {
-            endSelectItem();
-            currentPosition = null;
-            inKeyboardSelection = false;
-        }
-    }
+    /*
 
-    private boolean startMouseSelection(Event event, boolean move)
-    {
-        GridPos pos = getPosFromPoint(event.x, event.y);
-        if (pos == null) {
-            return true;
-        }
-        boolean contextMenu = (event.button == 3);
-        if (!contextMenu) {
-            inMouseSelection = true;
-
-            if (!move && selection.size() == 1) {
-                // Check for click on the same cell - it'll open inline cell editor
-                GridPos selPos = selection.iterator().next();
-                if (selPos.col == pos.col && selPos.row == pos.row) {
-                    return false;
-                }
+        private void processKeyUp(Event event)
+        {
+            if ((event.stateMask & SWT.SHIFT) == 0) {
+                endSelectItem();
+                currentPosition = null;
+                inKeyboardSelection = false;
             }
         }
-        if (currentPosition == null || currentPosition.col != pos.col || currentPosition.row != pos.row) {
-            changeSelection(event, pos.col, pos.row, contextMenu, move);
-            currentPosition = pos;
-        }
-        return true;
-    }
 
-    private void endMouseSelection()
-    {
-        inMouseSelection = false;
-        currentPosition = null;
-        endSelectItem();
-    }
+        private boolean startMouseSelection(Event event, boolean move)
+        {
+            GridPos pos = getPosFromPoint(event.x, event.y);
+            if (pos == null) {
+                return true;
+            }
+            boolean contextMenu = (event.button == 3);
+            if (!contextMenu) {
+                inMouseSelection = true;
 
-    private void moveMouseSelection(Event event)
-    {
-        if (inMouseSelection) {
-            startMouseSelection(event, true);
-        }
-    }
-
-    private void changeSelection(Event event, int columnSelected, int rowSelected, boolean contextMenu, boolean move)
-    {
-        changeSelection(
-            columnSelected,
-            rowSelected,
-            contextMenu,
-            move,
-            (event.stateMask & SWT.SHIFT) != 0,
-            (event.stateMask & SWT.CONTROL) != 0);
-    }
-
-    private void changeSelection(int columnSelected, int rowSelected, boolean contextMenu, boolean move, boolean keepSelection, boolean control)
-    {
-        boolean changeCursor = !move;
-        GridPos thisPos = new GridPos(columnSelected, rowSelected);
-        final Set<GridPos> oldSelection = new HashSet<GridPos>(selection);
-        oldSelection.addAll(tempSelection);
-        if (cursorPosition != null) {
-            oldSelection.add(cursorPosition);
-        }
-        Object newItems;
-        if ((keepSelection || move) && !contextMenu) {
-            // Select all cells from last cursor position
-            if (cursorPosition == null) {
-                // No previous selection or the same selection
-                newItems = thisPos;
-            } else if (!cursorPosition.equals(thisPos)) {
-                List<GridPos> newRegion = new ArrayList<GridPos>();
-                for (int i = Math.min(cursorPosition.col, thisPos.col); i <= Math.max(cursorPosition.col, thisPos.col); i++) {
-                    for (int k = Math.min(cursorPosition.row, thisPos.row); k <= Math.max(cursorPosition.row, thisPos.row); k++) {
-                        newRegion.add(new GridPos(i, k));
+                if (!move && selection.size() == 1) {
+                    // Check for click on the same cell - it'll open inline cell editor
+                    GridPos selPos = selection.iterator().next();
+                    if (selPos.col == pos.col && selPos.row == pos.row) {
+                        return false;
                     }
                 }
-                newItems = newRegion;
-                // Do not change cursor position
-                changeCursor = false;
+            }
+            if (currentPosition == null || currentPosition.col != pos.col || currentPosition.row != pos.row) {
+                changeSelection(event, pos.col, pos.row, contextMenu, move);
+                currentPosition = pos;
+            }
+            return true;
+        }
+
+        private void endMouseSelection()
+        {
+            inMouseSelection = false;
+            currentPosition = null;
+            endSelectItem();
+        }
+
+        private void moveMouseSelection(Event event)
+        {
+            if (inMouseSelection) {
+                startMouseSelection(event, true);
+            }
+        }
+
+        private void changeSelection(Event event, int columnSelected, int rowSelected, boolean contextMenu, boolean move)
+        {
+            changeSelection(
+                columnSelected,
+                rowSelected,
+                contextMenu,
+                move,
+                (event.stateMask & SWT.SHIFT) != 0,
+                (event.stateMask & SWT.CONTROL) != 0);
+        }
+
+        private void changeSelection(int columnSelected, int rowSelected, boolean contextMenu, boolean move, boolean keepSelection, boolean control)
+        {
+            boolean changeCursor = !move;
+            GridPos thisPos = new GridPos(columnSelected, rowSelected);
+            final Set<GridPos> oldSelection = new HashSet<GridPos>(selection);
+            oldSelection.addAll(tempSelection);
+            if (cursorPosition != null) {
+                oldSelection.add(cursorPosition);
+            }
+            Object newItems;
+            if ((keepSelection || move) && !contextMenu) {
+                // Select all cells from last cursor position
+                if (cursorPosition == null) {
+                    // No previous selection or the same selection
+                    newItems = thisPos;
+                } else if (!cursorPosition.equals(thisPos)) {
+                    List<GridPos> newRegion = new ArrayList<GridPos>();
+                    for (int i = Math.min(cursorPosition.col, thisPos.col); i <= Math.max(cursorPosition.col, thisPos.col); i++) {
+                        for (int k = Math.min(cursorPosition.row, thisPos.row); k <= Math.max(cursorPosition.row, thisPos.row); k++) {
+                            newRegion.add(new GridPos(i, k));
+                        }
+                    }
+                    newItems = newRegion;
+                    // Do not change cursor position
+                    changeCursor = false;
+                } else {
+                    newItems = thisPos;
+                }
+            } else if (control && !contextMenu) {
+                // Select one additional cell (or row)
+                newItems = thisPos;
+            } else if (contextMenu) {
+                // Select new cell or select nothing (if current cell is already selected)
+                if (!selection.contains(thisPos)) {
+                    selection.clear();
+                }
+                newItems = thisPos;
             } else {
+                // Select new cell
+                selection.clear();
                 newItems = thisPos;
             }
-        } else if (control && !contextMenu) {
-            // Select one additional cell (or row)
-            newItems = thisPos;
-        } else if (contextMenu) {
-            // Select new cell or select nothing (if current cell is already selected)
-            if (!selection.contains(thisPos)) {
-                selection.clear();
+            if (changeCursor) {
+                changeCursorPosition(thisPos);
             }
-            newItems = thisPos;
-        } else {
-            // Select new cell
-            selection.clear();
-            newItems = thisPos;
-        }
-        if (changeCursor) {
-            changeCursorPosition(thisPos);
-        }
 
-        // Make new temp selection
-        tempSelection.clear();
-        if (newItems instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<GridPos> itemList = (List<GridPos>)newItems;
-            tempSelection.addAll(itemList);
-        } else {
-            tempSelection.add((GridPos)newItems);
-        }
-
-        // Redraw selection
-        oldSelection.addAll(tempSelection);
-        redrawItems(oldSelection);
-    }
-
-    private void changeCursorPosition(GridPos pos)
-    {
-        cursorPosition = pos;
-        Event event = new Event();
-        event.item = this;
-        event.data = cursorPosition;
-        event.x = cursorPosition.col;
-        event.y = cursorPosition.row;
-        super.notifyListeners(Event_ChangeCursor, event);
-    }
-
-    private void endSelectItem()
-    {
-        // Save temp selection in main selection
-        if (!tempSelection.isEmpty()) {
-            selection.addAll(tempSelection);
+            // Make new temp selection
             tempSelection.clear();
-        }
-    }
-
-    private void eraseItem(Event event)
-    {
-        event.detail &= ~SWT.BACKGROUND;
-        event.detail &= ~SWT.HOT;
-        event.detail &= ~SWT.FOCUSED;
-        event.detail &= ~SWT.SELECTED;
-        GC gc = event.gc;
-        TableItem item = (TableItem) event.item;
-        int rowIndex = table.indexOf(item);
-        //boolean isSelected = isCellSelected(event.index, rowIndex);
-        //boolean isCursorCell = (cursorPosition != null && cursorPosition.col == event.index && cursorPosition.row == rowIndex);
-        Rectangle itemBounds = item.getBounds(event.index);
-        if (itemBounds.x + itemBounds.width < 0 || itemBounds.x > table.getSize().x) {
-            return;
-        }
-
-        Color oldBackground = gc.getBackground();
-        if (dataProvider.isCellModified(event.index, rowIndex)) {
-            gc.setBackground(backgroundModified);
-            gc.fillRectangle(itemBounds.x, itemBounds.y, itemBounds.width, itemBounds.height);
-        }
-        gc.setBackground(oldBackground);
-    }
-
-    private void paintItem(Event event)
-    {
-        TableItem item = (TableItem) event.item;
-        int rowIndex = table.indexOf(item);
-
-        boolean isCursorCell = (cursorPosition != null && cursorPosition.col == event.index && cursorPosition.row == rowIndex);
-
-        Rectangle itemBounds = item.getBounds(event.index);
-
-        event.gc.setForeground(foregroundLines);
-        event.gc.drawLine(itemBounds.x, itemBounds.y + itemBounds.height - 1, itemBounds.x + itemBounds.width, itemBounds.y + itemBounds.height - 1);
-        event.gc.drawLine(itemBounds.x + itemBounds.width - 1, itemBounds.y, itemBounds.x + itemBounds.width - 1, itemBounds.y + itemBounds.height);
-
-        // Draw text
-        String text = item.getText(event.index);
-        event.gc.setForeground(foregroundNormal);
-
-        event.x += 3;
-        event.gc.drawText(
-            text,
-            event.x,
-            event.y + Math.max(0, (event.height - event.gc.getFontMetrics().getHeight()) / 2),
-            true);
-        if (isCursorCell) {
-            event.gc.setForeground(cursorRectangle);
-            event.gc.drawRectangle(itemBounds.x, itemBounds.y, itemBounds.width - 2, itemBounds.height - 2);
-        }
-        event.doit = false;
-    }
-
-    private void paintSelection(Event event)
-    {
-        int headerHeight = table.getHeaderVisible() ? table.getHeaderHeight() : 0;
-        int eventY = event.y;
-        int eventHeight = event.height;
-        int eventX = event.x;
-        int eventWidth = event.width;
-        if (headerHeight > 0) {
-            if (eventY > 0) {
-                eventY -= headerHeight;
+            if (newItems instanceof List) {
+                @SuppressWarnings("unchecked")
+                List<GridPos> itemList = (List<GridPos>)newItems;
+                tempSelection.addAll(itemList);
             } else {
-                eventHeight -= headerHeight;
+                tempSelection.add((GridPos)newItems);
             }
+
+            // Redraw selection
+            oldSelection.addAll(tempSelection);
+            redrawItems(oldSelection);
         }
 
-        int itemHeight = table.getItemHeight();
-        int topIndex = table.getTopIndex() + eventY / itemHeight;
-        int itemCount = table.getItemCount();
-        if (itemCount == 0) {
-            return;
-        }
-        int bottomIndex = topIndex + eventHeight / itemHeight;
-        if (bottomIndex >= itemCount) {
-            bottomIndex = itemCount - 1;
-        }
-        if (topIndex < 0) {
-            topIndex = 0;
-        }
-        int leftIndex = 0;
-        int rightIndex = 0;
-
-        TableColumn[] columns = table.getColumns();
-        int leftOffset = table.getHorizontalBar().getSelection();
-
+        private void changeCursorPosition(GridPos pos)
         {
-            int tmpOffset = 0;
-            for (int i = 0; i < columns.length; i++) {
-                TableColumn column = columns[i];
-                tmpOffset += column.getWidth();
-                if (tmpOffset > leftOffset + eventX) {
-                    leftIndex = i;
-                    break;
-                }
-            }
+            cursorPosition = pos;
+            Event event = new Event();
+            event.item = this;
+            event.data = cursorPosition;
+            event.x = cursorPosition.col;
+            event.y = cursorPosition.row;
+            super.notifyListeners(Event_ChangeCursor, event);
         }
+
+        private void endSelectItem()
         {
-            int tmpOffset = 0;
-            boolean found = false;
-            for (int i = leftIndex + 1; i < columns.length; i++) {
-                tmpOffset += columns[i].getWidth();
-                if (tmpOffset > eventWidth) {
-                    rightIndex = i;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found || rightIndex >= columns.length) {
-                rightIndex = columns.length - 1;
+            // Save temp selection in main selection
+            if (!tempSelection.isEmpty()) {
+                selection.addAll(tempSelection);
+                tempSelection.clear();
             }
         }
 
-        // Draw selection
-        event.gc.setBackground(backgroundSelected);
-        event.gc.setForeground(foregroundSelected);
-        for (int y = topIndex; y <= bottomIndex; y++) {
-            TableItem item = table.getItem(y);
-            for (int x = leftIndex; x <= rightIndex; x++) {
-                if (isCellSelected(x, y)) {
-                    event.gc.setBackground(backgroundSelected);
-                    event.gc.setForeground(foregroundSelected);
-                    Rectangle bounds = item.getBounds(x);
-                    event.gc.setClipping(bounds.x, bounds.y, bounds.width, bounds.height);
-                    event.gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
-                    //event.gc.drawFocus(bounds.x, bounds.y, bounds.width, bounds.height);
-                    event.gc.drawText(item.getText(x), bounds.x + 5, bounds.y + 1);
+        private void eraseItem(Event event)
+        {
+            event.detail &= ~SWT.BACKGROUND;
+            event.detail &= ~SWT.HOT;
+            event.detail &= ~SWT.FOCUSED;
+            event.detail &= ~SWT.SELECTED;
+            GC gc = event.gc;
+            TableItem item = (TableItem) event.item;
+            int rowIndex = table.indexOf(item);
+            //boolean isSelected = isCellSelected(event.index, rowIndex);
+            //boolean isCursorCell = (cursorPosition != null && cursorPosition.col == event.index && cursorPosition.row == rowIndex);
+            Rectangle itemBounds = item.getBounds(event.index);
+            if (itemBounds.x + itemBounds.width < 0 || itemBounds.x > table.getSize().x) {
+                return;
+            }
+
+            Color oldBackground = gc.getBackground();
+            if (dataProvider.isCellModified(event.index, rowIndex)) {
+                gc.setBackground(backgroundModified);
+                gc.fillRectangle(itemBounds.x, itemBounds.y, itemBounds.width, itemBounds.height);
+            }
+            gc.setBackground(oldBackground);
+        }
+
+        private void paintItem(Event event)
+        {
+            TableItem item = (TableItem) event.item;
+            int rowIndex = table.indexOf(item);
+
+            boolean isCursorCell = (cursorPosition != null && cursorPosition.col == event.index && cursorPosition.row == rowIndex);
+
+            Rectangle itemBounds = item.getBounds(event.index);
+
+            event.gc.setForeground(foregroundLines);
+            event.gc.drawLine(itemBounds.x, itemBounds.y + itemBounds.height - 1, itemBounds.x + itemBounds.width, itemBounds.y + itemBounds.height - 1);
+            event.gc.drawLine(itemBounds.x + itemBounds.width - 1, itemBounds.y, itemBounds.x + itemBounds.width - 1, itemBounds.y + itemBounds.height);
+
+            // Draw text
+            String text = item.getText(event.index);
+            event.gc.setForeground(foregroundNormal);
+
+            event.x += 3;
+            event.gc.drawText(
+                text,
+                event.x,
+                event.y + Math.max(0, (event.height - event.gc.getFontMetrics().getHeight()) / 2),
+                true);
+            if (isCursorCell) {
+                event.gc.setForeground(cursorRectangle);
+                event.gc.drawRectangle(itemBounds.x, itemBounds.y, itemBounds.width - 2, itemBounds.height - 2);
+            }
+            event.doit = false;
+        }
+
+        private void paintSelection(Event event)
+        {
+            int headerHeight = table.getHeaderVisible() ? table.getHeaderHeight() : 0;
+            int eventY = event.y;
+            int eventHeight = event.height;
+            int eventX = event.x;
+            int eventWidth = event.width;
+            if (headerHeight > 0) {
+                if (eventY > 0) {
+                    eventY -= headerHeight;
+                } else {
+                    eventHeight -= headerHeight;
+                }
+            }
+
+            int itemHeight = table.getItemHeight();
+            int topIndex = table.getTopIndex() + eventY / itemHeight;
+            int itemCount = table.getItemCount();
+            if (itemCount == 0) {
+                return;
+            }
+            int bottomIndex = topIndex + eventHeight / itemHeight;
+            if (bottomIndex >= itemCount) {
+                bottomIndex = itemCount - 1;
+            }
+            if (topIndex < 0) {
+                topIndex = 0;
+            }
+            int leftIndex = 0;
+            int rightIndex = 0;
+
+            TableColumn[] columns = table.getColumns();
+            int leftOffset = table.getHorizontalBar().getSelection();
+
+            {
+                int tmpOffset = 0;
+                for (int i = 0; i < columns.length; i++) {
+                    TableColumn column = columns[i];
+                    tmpOffset += column.getWidth();
+                    if (tmpOffset > leftOffset + eventX) {
+                        leftIndex = i;
+                        break;
+                    }
+                }
+            }
+            {
+                int tmpOffset = 0;
+                boolean found = false;
+                for (int i = leftIndex + 1; i < columns.length; i++) {
+                    tmpOffset += columns[i].getWidth();
+                    if (tmpOffset > eventWidth) {
+                        rightIndex = i;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found || rightIndex >= columns.length) {
+                    rightIndex = columns.length - 1;
+                }
+            }
+
+            // Draw selection
+            event.gc.setBackground(backgroundSelected);
+            event.gc.setForeground(foregroundSelected);
+            for (int y = topIndex; y <= bottomIndex; y++) {
+                TableItem item = table.getItem(y);
+                for (int x = leftIndex; x <= rightIndex; x++) {
+                    if (isCellSelected(x, y)) {
+                        event.gc.setBackground(backgroundSelected);
+                        event.gc.setForeground(foregroundSelected);
+                        Rectangle bounds = item.getBounds(x);
+                        event.gc.setClipping(bounds.x, bounds.y, bounds.width, bounds.height);
+                        event.gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
+                        //event.gc.drawFocus(bounds.x, bounds.y, bounds.width, bounds.height);
+                        event.gc.drawText(item.getText(x), bounds.x + 5, bounds.y + 1);
+                    }
                 }
             }
         }
-    }
-*/
+    */
     private void redrawItems(Collection<GridPos> posList)
     {
         int topIndex = grid.getTopIndex();
@@ -955,8 +959,7 @@ public class Spreadsheet extends Composite implements Listener
     {
         MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(grid);
-        menuMgr.addMenuListener(new IMenuListener()
-        {
+        menuMgr.addMenuListener(new IMenuListener() {
             public void menuAboutToShow(IMenuManager manager)
             {
                 IAction copyAction = new Action("Copy selection") {
@@ -1073,14 +1076,14 @@ public class Spreadsheet extends Composite implements Listener
 
     private void registerActions(boolean register)
     {
-        IHandlerService service = (IHandlerService)site.getService(IHandlerService.class);
+        IHandlerService service = (IHandlerService) site.getService(IHandlerService.class);
         for (ActionInfo actionInfo : actionsInfo) {
             if (register) {
-                assert(actionInfo.handlerActivation == null);
+                assert (actionInfo.handlerActivation == null);
                 ActionHandler handler = new ActionHandler(actionInfo.action);
                 actionInfo.handlerActivation = service.activateHandler(
-            		actionInfo.action.getActionDefinitionId(), 
-            		handler);
+                    actionInfo.action.getActionDefinitionId(),
+                    handler);
             } else {
                 assert (actionInfo.handlerActivation != null);
                 service.deactivateHandler(actionInfo.handlerActivation);
@@ -1117,11 +1120,11 @@ public class Spreadsheet extends Composite implements Listener
         {
             setActionDefinitionId(actionId);
         }
+
         public abstract void run();
     }
 
-    private class CursorMoveAction extends GridAction
-    {
+    private class CursorMoveAction extends GridAction {
         private CursorMoveAction(String actionId)
         {
             super(actionId);
@@ -1176,11 +1179,13 @@ public class Spreadsheet extends Composite implements Listener
             item.setText(column, text);
         }
 
-        public void setHeaderText(String text) {
+        public void setHeaderText(String text)
+        {
             item.setHeaderText(text);
         }
 
-        public void setHeaderImage(Image image) {
+        public void setHeaderImage(Image image)
+        {
             item.setHeaderImage(image);
         }
 
@@ -1194,7 +1199,8 @@ public class Spreadsheet extends Composite implements Listener
             item.setGrayed(column, empty);
         }
 
-        public Object getData() {
+        public Object getData()
+        {
             return item.getData();
         }
 
