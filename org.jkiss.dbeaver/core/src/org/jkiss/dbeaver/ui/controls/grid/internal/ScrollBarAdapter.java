@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.ScrollBar;
  * @author chris.gross@us.ibm.com
  * @since 2.0.0
  */
-public class ScrollBarProxyAdapter implements IScrollBarProxy
+public class ScrollBarAdapter implements IGridScrollBar
 {
     /**
      * Delegates to this scrollbar.
@@ -26,7 +26,7 @@ public class ScrollBarProxyAdapter implements IScrollBarProxy
      * 
      * @param scrollBar delegate
      */
-    public ScrollBarProxyAdapter(ScrollBar scrollBar)
+    public ScrollBarAdapter(ScrollBar scrollBar)
     {
         super();
         this.scrollBar = scrollBar;

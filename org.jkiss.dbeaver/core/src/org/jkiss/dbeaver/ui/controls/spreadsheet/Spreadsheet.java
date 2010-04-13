@@ -306,7 +306,7 @@ public class Spreadsheet extends Composite implements Listener {
         grid.setCellSelectionEnabled(true);
         grid.setRowHeaderVisible(true);
         //spreadsheet.set
-        //spreadsheet.setRowHeaderRenderer(new IRenderer() {
+        //spreadsheet.setRowHeaderRenderer(new IGridRenderer() {
         //});
 
         grid.setLinesVisible(true);

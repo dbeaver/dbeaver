@@ -16,7 +16,7 @@ import org.eclipse.swt.graphics.Rectangle;
  *
  * @author chris.gross@us.ibm.com
  */
-public abstract class GridFooterRenderer extends AbstractInternalWidget
+public abstract class GridFooterRenderer extends AbstractGridWidget
 {
     /**
      * Returns the bounds of the text in the cell.  This is used when displaying in-place tooltips.

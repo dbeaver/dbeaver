@@ -8,7 +8,7 @@ import org.jkiss.dbeaver.ui.controls.grid.Grid;
 import org.jkiss.dbeaver.ui.controls.grid.GridCellRenderer;
 import org.jkiss.dbeaver.ui.controls.grid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.grid.GridItem;
-import org.jkiss.dbeaver.ui.controls.grid.IInternalWidget;
+import org.jkiss.dbeaver.ui.controls.grid.IGridWidget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -424,7 +424,7 @@ public class DefaultCellRenderer extends GridCellRenderer
 
         if (isTree() && item.hasChildren())
         {
-            if (event == IInternalWidget.MouseMove)
+            if (event == IGridWidget.MouseMove)
             {
                 if (overToggle(item, point))
                 {
@@ -433,7 +433,7 @@ public class DefaultCellRenderer extends GridCellRenderer
                 }
             }
 
-            if (event == IInternalWidget.LeftMouseButtonDown)
+            if (event == IGridWidget.LeftMouseButtonDown)
             {
                 if (overToggle(item, point))
                 {

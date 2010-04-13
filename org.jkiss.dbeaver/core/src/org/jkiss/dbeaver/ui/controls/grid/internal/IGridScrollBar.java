@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Event;
  * @author chris.gross@us.ibm.com
  * @version 1.0.0
  */
-public interface IScrollBarProxy
+public interface IGridScrollBar
 {
 
     /**

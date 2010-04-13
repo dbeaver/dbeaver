@@ -17,7 +17,7 @@ import org.eclipse.swt.graphics.Point;
  * 
  * @author chris.gross@us.ibm.com
  */
-public interface IInternalWidget extends IRenderer
+public interface IGridWidget extends IGridRenderer
 {
     // CSOFF: Magic Number
 

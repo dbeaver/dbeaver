@@ -15,7 +15,7 @@ package org.jkiss.dbeaver.ui.controls.grid;
  * @see AbstractRenderer
  * @author chris.gross@us.ibm.com
  */
-public abstract class AbstractInternalWidget extends AbstractRenderer implements IInternalWidget
+public abstract class AbstractGridWidget extends AbstractRenderer implements IGridWidget
 {
 
     String hoverDetail = "";

@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Display;
  * 
  * @author chris.gross@us.ibm.com
  */
-public abstract class AbstractRenderer implements IRenderer
+public abstract class AbstractRenderer implements IGridRenderer
 {
     /** Hover state. */
     private boolean hover;

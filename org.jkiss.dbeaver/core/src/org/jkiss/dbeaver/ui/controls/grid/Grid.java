@@ -20,9 +20,9 @@ import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultInsertMarkRenderer;
 import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultRowHeaderRenderer;
 import org.jkiss.dbeaver.ui.controls.grid.internal.DefaultTopLeftRenderer;
 import org.jkiss.dbeaver.ui.controls.grid.internal.GridToolTip;
-import org.jkiss.dbeaver.ui.controls.grid.internal.IScrollBarProxy;
-import org.jkiss.dbeaver.ui.controls.grid.internal.NullScrollBarProxy;
-import org.jkiss.dbeaver.ui.controls.grid.internal.ScrollBarProxyAdapter;
+import org.jkiss.dbeaver.ui.controls.grid.internal.IGridScrollBar;
+import org.jkiss.dbeaver.ui.controls.grid.internal.NullScrollBar;
+import org.jkiss.dbeaver.ui.controls.grid.internal.ScrollBarAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.accessibility.ACC;
@@ -82,16 +82,6 @@ import org.eclipse.swt.widgets.TypedListener;
  */
 public class Grid extends Canvas
 {
-    //TODO: figure out better way to allow renderers to trigger events
-    //TODO: scroll as necessary when performing drag select (current strategy ok)
-    //TODO: need to refactor the way the range select remembers older selection
-    //TODO: remember why i decided i needed to refactor the way the range select remembers older selection
-    //TODO: need to alter how column drag selection works to allow selection of spanned cells
-    //TODO: JAVADOC!
-    //TODO: column freezing
-
-    //TODO: Performance - need to cache top index
-
 	/**
 	 * Object holding the visible range
 	 */
@@ -263,29 +253,29 @@ public class Grid extends Canvas
      * Renderer to paint the top left area when both column and row headers are
      * shown.
      */
-    private IRenderer topLeftRenderer = new DefaultTopLeftRenderer();
+    private IGridRenderer topLeftRenderer = new DefaultTopLeftRenderer();
 
     /**
      * Renderer to paint the bottom left area when row headers and column footers are shown
      */
-    private IRenderer bottomLeftRenderer = new DefaultBottomLeftRenderer();
+    private IGridRenderer bottomLeftRenderer = new DefaultBottomLeftRenderer();
 
     /**
      * Renderer used to paint row headers.
      */
-    private IRenderer rowHeaderRenderer = new DefaultRowHeaderRenderer();
+    private IGridRenderer rowHeaderRenderer = new DefaultRowHeaderRenderer();
 
     /**
      * Renderer used to paint empty column headers, used when the columns don't
      * fill the horz space.
      */
-    private IRenderer emptyColumnHeaderRenderer = new DefaultEmptyColumnHeaderRenderer();
+    private IGridRenderer emptyColumnHeaderRenderer = new DefaultEmptyColumnHeaderRenderer();
 
     /**
      * Renderer used to paint empty column footers, used when the columns don't
      * fill the horz space.
      */
-    private IRenderer emptyColumnFooterRenderer = new DefaultEmptyColumnFooterRenderer();
+    private IGridRenderer emptyColumnFooterRenderer = new DefaultEmptyColumnFooterRenderer();
 
     /**
      * Renderer used to paint empty cells to fill horz and vert space.
@@ -296,18 +286,18 @@ public class Grid extends Canvas
      * Renderer used to paint empty row headers when the rows don't fill the
      * vertical space.
      */
-    private IRenderer emptyRowHeaderRenderer = new DefaultEmptyRowHeaderRenderer();
+    private IGridRenderer emptyRowHeaderRenderer = new DefaultEmptyRowHeaderRenderer();
 
     /**
      * Renderers the UI affordance identifying where the dragged column will be
      * dropped.
      */
-    private IRenderer dropPointRenderer = new DefaultDropPointRenderer();
+    private IGridRenderer dropPointRenderer = new DefaultDropPointRenderer();
 
     /**
      * Renderer used to paint on top of an already painted row to denote focus.
      */
-    private IRenderer focusRenderer = new DefaultFocusRenderer();
+    private IGridRenderer focusRenderer = new DefaultFocusRenderer();
 
     /**
      * Are row headers visible?
@@ -515,12 +505,12 @@ public class Grid extends Canvas
      * <li>{@link Grid#setTopIndex(int)} is the only method allowed to call vScroll.setSelection(int)</li>
      * </ul>
      */
-    private IScrollBarProxy vScroll;
+    private IGridScrollBar vScroll;
 
     /**
      * Horizontal scrollbar proxy.
      */
-    private IScrollBarProxy hScroll;
+    private IGridScrollBar hScroll;
 
     /**
      * The number of GridItems whose visible = true. Maintained for
@@ -662,7 +652,7 @@ public class Grid extends Canvas
 	private GridItem insertMarkItem = null;
 	private GridColumn insertMarkColumn = null;
 	private boolean insertMarkBefore = false;
-    private IRenderer insertMarkRenderer = new DefaultInsertMarkRenderer();
+    private IGridRenderer insertMarkRenderer = new DefaultInsertMarkRenderer();
     private boolean sizeOnEveryItemImageChange;
     private boolean autoHeight = false;
     private boolean autoWidth = true;
@@ -756,21 +746,21 @@ public class Grid extends Canvas
         if (getVerticalBar() != null)
         {
             getVerticalBar().setVisible(false);
-            vScroll = new ScrollBarProxyAdapter(getVerticalBar());
+            vScroll = new ScrollBarAdapter(getVerticalBar());
         }
         else
         {
-            vScroll = new NullScrollBarProxy();
+            vScroll = new NullScrollBar();
         }
 
         if (getHorizontalBar() != null)
         {
             getHorizontalBar().setVisible(false);
-            hScroll = new ScrollBarProxyAdapter(getHorizontalBar());
+            hScroll = new ScrollBarAdapter(getHorizontalBar());
         }
         else
         {
-            hScroll = new NullScrollBarProxy();
+            hScroll = new NullScrollBar();
         }
 
         scrollValuesObsolete = true;
@@ -1530,7 +1520,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    public IRenderer getEmptyColumnHeaderRenderer()
+    public IGridRenderer getEmptyColumnHeaderRenderer()
     {
         checkWidget();
         return emptyColumnHeaderRenderer;
@@ -1547,7 +1537,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    public IRenderer getEmptyColumnFooterRenderer() {
+    public IGridRenderer getEmptyColumnFooterRenderer() {
     	checkWidget();
     	return emptyColumnFooterRenderer;
     }
@@ -1563,7 +1553,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    public IRenderer getEmptyRowHeaderRenderer()
+    public IGridRenderer getEmptyRowHeaderRenderer()
     {
         checkWidget();
         return emptyRowHeaderRenderer;
@@ -1573,7 +1563,7 @@ public class Grid extends Canvas
      * Returns the externally managed horizontal scrollbar.
      *
      * @return the external horizontal scrollbar.
-     * @see #setHorizontalScrollBarProxy(IScrollBarProxy)
+     * @see #setHorizontalScrollBarProxy(org.jkiss.dbeaver.ui.controls.grid.internal.IGridScrollBar)
      * @throws org.eclipse.swt.SWTException
      * <ul>
      * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
@@ -1581,7 +1571,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    protected IScrollBarProxy getHorizontalScrollBarProxy()
+    protected IGridScrollBar getHorizontalScrollBarProxy()
     {
         checkWidget();
         return hScroll;
@@ -1591,7 +1581,7 @@ public class Grid extends Canvas
      * Returns the externally managed vertical scrollbar.
      *
      * @return the external vertical scrollbar.
-     * @see #setlVerticalScrollBarProxy(IScrollBarProxy)
+     * @see #setlVerticalScrollBarProxy(org.jkiss.dbeaver.ui.controls.grid.internal.IGridScrollBar)
      * @throws org.eclipse.swt.SWTException
      * <ul>
      * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
@@ -1599,7 +1589,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    protected IScrollBarProxy getVerticalScrollBarProxy()
+    protected IGridScrollBar getVerticalScrollBarProxy()
     {
         checkWidget();
         return vScroll;
@@ -1616,7 +1606,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    public IRenderer getFocusRenderer()
+    public IGridRenderer getFocusRenderer()
     {
         checkWidget();
         return focusRenderer;
@@ -2260,7 +2250,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    public IRenderer getRowHeaderRenderer()
+    public IGridRenderer getRowHeaderRenderer()
     {
         checkWidget();
         return rowHeaderRenderer;
@@ -2817,7 +2807,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    public IRenderer getTopLeftRenderer()
+    public IGridRenderer getTopLeftRenderer()
     {
         checkWidget();
         return topLeftRenderer;
@@ -2834,7 +2824,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    public IRenderer getBottomLeftRenderer()
+    public IGridRenderer getBottomLeftRenderer()
     {
         checkWidget();
         return bottomLeftRenderer;
@@ -3411,7 +3401,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    public void setEmptyColumnHeaderRenderer(IRenderer emptyColumnHeaderRenderer)
+    public void setEmptyColumnHeaderRenderer(IGridRenderer emptyColumnHeaderRenderer)
     {
         checkWidget();
         emptyColumnHeaderRenderer.setDisplay(getDisplay());
@@ -3429,7 +3419,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    public void setEmptyColumnFooterRenderer(IRenderer emptyColumnFooterRenderer)
+    public void setEmptyColumnFooterRenderer(IGridRenderer emptyColumnFooterRenderer)
     {
         checkWidget();
         emptyColumnFooterRenderer.setDisplay(getDisplay());
@@ -3447,7 +3437,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    public void setEmptyRowHeaderRenderer(IRenderer emptyRowHeaderRenderer)
+    public void setEmptyRowHeaderRenderer(IGridRenderer emptyRowHeaderRenderer)
     {
         checkWidget();
         emptyRowHeaderRenderer.setDisplay(getDisplay());
@@ -3470,7 +3460,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    protected void setHorizontalScrollBarProxy(IScrollBarProxy scroll)
+    protected void setHorizontalScrollBarProxy(IGridScrollBar scroll)
     {
         checkWidget();
         if (getHorizontalBar() != null)
@@ -3507,7 +3497,7 @@ public class Grid extends Canvas
 	 *             thread that created the receiver</li>
 	 *             </ul>
 	 */
-    protected void setlVerticalScrollBarProxy(IScrollBarProxy scroll)
+    protected void setlVerticalScrollBarProxy(IGridScrollBar scroll)
     {
         checkWidget();
         if (getVerticalBar() != null)
@@ -3537,7 +3527,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    public void setFocusRenderer(IRenderer focusRenderer)
+    public void setFocusRenderer(IGridRenderer focusRenderer)
     {
         checkWidget();
         this.focusRenderer = focusRenderer;
@@ -3644,7 +3634,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    public void setRowHeaderRenderer(IRenderer rowHeaderRenderer)
+    public void setRowHeaderRenderer(IGridRenderer rowHeaderRenderer)
     {
         checkWidget();
         rowHeaderRenderer.setDisplay(getDisplay());
@@ -3964,7 +3954,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    public void setTopLeftRenderer(IRenderer topLeftRenderer)
+    public void setTopLeftRenderer(IGridRenderer topLeftRenderer)
     {
         checkWidget();
         topLeftRenderer.setDisplay(getDisplay());
@@ -3982,7 +3972,7 @@ public class Grid extends Canvas
      * created the receiver</li>
      * </ul>
      */
-    public void setBottomLeftRenderer(IRenderer bottomLeftRenderer)
+    public void setBottomLeftRenderer(IGridRenderer bottomLeftRenderer)
     {
         checkWidget();
         bottomLeftRenderer.setDisplay(getDisplay());
@@ -4746,7 +4736,7 @@ public class Grid extends Canvas
         overThis.getHeaderRenderer().setBounds(headerX - getHScrollSelectionInPixels(), 0, width,
                                                groupHeaderHeight);
         return overThis.getHeaderRenderer()
-            .notify(IInternalWidget.LeftMouseButtonDown, new Point(x, y), overThis);
+            .notify(IGridWidget.LeftMouseButtonDown, new Point(x, y), overThis);
     }
 
     /**
@@ -7612,7 +7602,7 @@ public class Grid extends Canvas
         }
 
         col.getCellRenderer().setBounds(item.getBounds(indexOf(col)));
-        return col.getCellRenderer().notify(IInternalWidget.LeftMouseButtonDown, new Point(x, y), item);
+        return col.getCellRenderer().notify(IGridWidget.LeftMouseButtonDown, new Point(x, y), item);
 
     }
 
@@ -7645,7 +7635,7 @@ public class Grid extends Canvas
             	if( y < getClientArea().height - footerHeight  ) {
                     col.getCellRenderer().setBounds(item.getBounds(columns.indexOf(col)));
 
-                    if (col.getCellRenderer().notify(IInternalWidget.MouseMove, new Point(x, y), item))
+                    if (col.getCellRenderer().notify(IGridWidget.MouseMove, new Point(x, y), item))
                     {
                         detail = col.getCellRenderer().getHoverDetail();
                     }
@@ -7669,7 +7659,7 @@ public class Grid extends Canvas
                         hoverColGroup = col.getColumnGroup();
                         hoverColGroup.getHeaderRenderer().setBounds(hoverColGroup.getBounds());
                         if (hoverColGroup.getHeaderRenderer()
-                            .notify(IInternalWidget.MouseMove, new Point(x, y), hoverColGroup))
+                            .notify(IGridWidget.MouseMove, new Point(x, y), hoverColGroup))
                         {
                             detail = hoverColGroup.getHeaderRenderer().getHoverDetail();
                         }
@@ -7688,7 +7678,7 @@ public class Grid extends Canvas
                         hoverColHeader = col;
 
                         col.getHeaderRenderer().setBounds(col.getBounds());
-                        if (col.getHeaderRenderer().notify(IInternalWidget.MouseMove, new Point(x, y),
+                        if (col.getHeaderRenderer().notify(IGridWidget.MouseMove, new Point(x, y),
                                                            col))
                         {
                             detail = col.getHeaderRenderer().getHoverDetail();

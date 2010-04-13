@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.ui.controls.grid.internal;
 
 import org.jkiss.dbeaver.ui.controls.grid.GridColumnGroup;
 import org.jkiss.dbeaver.ui.controls.grid.GridHeaderRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.IInternalWidget;
+import org.jkiss.dbeaver.ui.controls.grid.IGridWidget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -174,7 +174,7 @@ public class DefaultColumnGroupHeaderRenderer extends GridHeaderRenderer
 
         if ((group.getStyle() & SWT.TOGGLE) != 0)
         {
-            if (event == IInternalWidget.LeftMouseButtonDown)
+            if (event == IGridWidget.LeftMouseButtonDown)
             {
                 if (getToggleBounds().contains(point))
                 {

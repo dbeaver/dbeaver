@@ -16,7 +16,7 @@ import org.eclipse.swt.graphics.Rectangle;
  *
  * @author chris.gross@us.ibm.com
  */
-public abstract class GridHeaderRenderer extends AbstractInternalWidget
+public abstract class GridHeaderRenderer extends AbstractGridWidget
 {
     private boolean wordWrap = false;
     

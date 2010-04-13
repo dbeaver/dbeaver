@@ -17,7 +17,7 @@ import org.eclipse.swt.graphics.Rectangle;
  *
  * @author chris.gross@us.ibm.com
  */
-public abstract class GridCellRenderer extends AbstractInternalWidget
+public abstract class GridCellRenderer extends AbstractGridWidget
 {
 
     private int row = 0;
