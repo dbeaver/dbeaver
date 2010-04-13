@@ -8,6 +8,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IWorkbenchWindowPulldownDelegate;
+import org.eclipse.ui.IWorkbenchWindowPulldownDelegate2;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
@@ -19,7 +20,7 @@ import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 
-public class TransactionModeAction extends SessionAction implements IWorkbenchWindowPulldownDelegate
+public class TransactionModeAction extends SessionAction implements IWorkbenchWindowPulldownDelegate, IWorkbenchWindowPulldownDelegate2
 {
 
     public void run(IAction action)
@@ -38,27 +39,37 @@ public class TransactionModeAction extends SessionAction implements IWorkbenchWi
 
     public Menu getMenu(Control parent) {
         final Menu menu = new Menu(parent);
+        createMenu(menu);
+        return menu;
+    }
 
+    public Menu getMenu(Menu parent) {
+        final Menu menu = new Menu(parent);
+        createMenu(menu);
+        return menu;
+    }
+
+    private void createMenu(Menu menu) {
         DBPDataSource dataSource = getDataSource();
         if (dataSource == null) {
-            return menu;
+            return;
         }
         final DBPDataSourceInfo dsInfo;
         try {
             dsInfo = dataSource.getInfo();
         } catch (DBException ex) {
             log.error("Can't obtain datasource info", ex);
-            return menu;
+            return;
         }
         final DBCSession session;
         try {
             session = getSession();
         } catch (DBException e) {
             log.error("Can't obtain database session", e);
-            return menu;
+            return;
         }
         if (session == null) {
-            return menu;
+            return;
         }
         // Auto-commit
         MenuItem autoCommit = new MenuItem(menu, SWT.CHECK);
@@ -113,6 +124,6 @@ public class TransactionModeAction extends SessionAction implements IWorkbenchWi
                 }
             });
         }
-        return menu;
     }
+
 }

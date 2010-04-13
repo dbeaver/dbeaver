@@ -31,9 +31,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     private IWorkbenchAction newWindowAction;
     //private IWorkbenchAction viewPropertiesAction;
     private IWorkbenchAction viewPreferencesAction;
-    //private DriverManagerAction driverManagerAction;
-    //private NewConnectionAction newConnectionAction;
-    //private OpenSQLEditorAction openSQLEditorAction;
 
     public ApplicationActionBarAdvisor(IActionBarConfigurer configurer)
     {
@@ -86,15 +83,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         viewPreferencesAction = ActionFactory.PREFERENCES.create(window);
         register(viewPreferencesAction);
 
-        //newConnectionAction = new NewConnectionAction(window);
-        //register(newConnectionAction);
-
-        //driverManagerAction = new DriverManagerAction(window);
-        //register(driverManagerAction);
-
-        //openSQLEditorAction = new OpenSQLEditorAction(window);
-        //register(openSQLEditorAction);
-
         register(new ExecuteStatementAction());
         register(new ExecuteScriptAction());
     }
@@ -115,9 +103,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         // File
         fileMenu.add(newWindowAction);
-        //fileMenu.add(new Separator());
-        //fileMenu.add(driverManagerAction);
-        //fileMenu.add(newConnectionAction);
         fileMenu.add(new Separator());
         fileMenu.add(viewPreferencesAction);
         fileMenu.add(new Separator());

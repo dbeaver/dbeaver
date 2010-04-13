@@ -142,6 +142,11 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="ALT+X">
         </key>
+        <key
+              commandId="org.jkiss.dbeaver.core.openSQLEditor"
+              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+              sequence="CTRL+ALT+E">
+        </key>
     </extension>
 
     <extension
@@ -196,13 +201,13 @@
             objectClass="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
             <action
                 class="org.jkiss.dbeaver.ui.actions.DeleteConnectionAction"
-                id="org.jkiss.dbeaver.core.deleteConnectionAction"
+                id="org.jkiss.dbeaver.ui.actions.DeleteConnectionAction"
                 label="Delete Connection">
             </action>
             <action
                 class="org.jkiss.dbeaver.ui.actions.DisconnectAction"
                 icon="icons/sql/disconnect.png"
-                id="org.jkiss.dbeaver.core.disconnectAction"
+                id="org.jkiss.dbeaver.ui.actions.DisconnectAction"
                 label="Disconnect">
                 <enablement>
                     <objectState
@@ -214,7 +219,7 @@
             <action
                 class="org.jkiss.dbeaver.ui.actions.ConnectAction"
                 icon="icons/sql/connect.png"
-                id="org.jkiss.dbeaver.core.connectAction"
+                id="org.jkiss.dbeaver.ui.actions.ConnectAction"
                 label="Connect">
                 <enablement>
                     <objectState
@@ -225,13 +230,13 @@
             </action>
             <action
                 class="org.jkiss.dbeaver.ui.actions.EditConnectionAction"
-                id="org.jkiss.dbeaver.core.editConnectionAction"
+                id="org.jkiss.dbeaver.ui.actions.EditConnectionAction"
                 label="Edit Connection"
                 icon="icons/tree/edit_item.png">
             </action>
             <action
                 class="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
-                id="org.jkiss.dbeaver.core.openSQLEditor"
+                id="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
                 label="SQL Editor"
                 icon="icons/sql/sql_script.png">
             </action>
@@ -653,14 +658,14 @@
             </action>
 
             <action
-                 class="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
-                 icon="/icons/sql/sql_script.png"
-                 id="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
-                 label="Open SQL Editor"
-                 menubarPath="dataSourceMenu/connectionGroup"
-                 toolbarPath="connectionGroup"
-                 tooltip="Open SQL Editor"
-                 accelerator="CTRL+SHIFT+E">
+                  class="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
+                  definitionId="org.jkiss.dbeaver.core.openSQLEditor"
+                  icon="/icons/sql/sql_script.png"
+                  id="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
+                  label="Open SQL Editor"
+                  menubarPath="dataSourceMenu/connectionGroup"
+                  toolbarPath="connectionGroup"
+                  tooltip="Open SQL Editor">
             </action>
             <action
                   class="org.jkiss.dbeaver.ui.actions.DisconnectAction"
