@@ -4,12 +4,11 @@
 
 package org.jkiss.dbeaver.model.meta;
 
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
-import org.eclipse.ui.IActionDelegate;
 
 /**
  * DBMTreeItem
@@ -68,9 +67,9 @@ public class DBMTreeItem extends DBMTreeNode
         }
     }
 
-    public IActionDelegate getDefaultAction()
+    public Class<OpenObjectEditorAction> getDefaultAction()
     {
-        return new OpenObjectEditorAction();
+        return OpenObjectEditorAction.class;
     }
 
 }

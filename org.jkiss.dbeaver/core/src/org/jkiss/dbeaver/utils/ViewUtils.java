@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshableView;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Iterator;
 
@@ -31,7 +33,7 @@ import java.util.Iterator;
  */
 public class ViewUtils
 {
-
+    static Log log = LogFactory.getLog(ViewUtils.class);
     //public static final String MENU_ID = "org.jkiss.dbeaver.core.navigationMenu";
     public static final String MB_ADDITIONS_END = "additions_end";
 
@@ -83,8 +85,8 @@ public class ViewUtils
                 Menu m = (Menu)e.widget;
                 DBMNode dbmNode = ViewUtils.getSelectedNode(metaModelView);
                 if (dbmNode != null) {
-                    IActionDelegate defaultAction = dbmNode.getDefaultAction();
-                    if (defaultAction != null) {
+                    Class<? extends IActionDelegate> defaultActionClass = dbmNode.getDefaultAction();
+                    if (defaultActionClass != null) {
                         // Dirty hack
                         // Get contribution item from menu item and check it's ID
                         // In DBeaver all action's IDs are equals to action class names
@@ -93,7 +95,7 @@ public class ViewUtils
                             Object itemData = item.getData();
                             if (itemData instanceof IContributionItem) {
                                 String contribId = ((IContributionItem)itemData).getId();
-                                if (contribId != null && contribId.equals(defaultAction.getClass().getName())) {
+                                if (contribId != null && contribId.equals(defaultActionClass.getName())) {
                                     m.setDefaultItem(item);
                                 }
                             }
@@ -199,17 +201,24 @@ public class ViewUtils
         }
     }
 
-    public static void runAction(final IActionDelegate action, IWorkbenchPart part, ISelection selection)
+    public static void runAction(Class<? extends IActionDelegate> actionClass, IWorkbenchPart part, ISelection selection)
     {
-        if (action != null) {
-            Action actionImpl = new Action() {
-                @Override
-                public void run() {
-                    action.run(this);
-                }
-            };
-            initAction(actionImpl, action, part, selection);
-            actionImpl.run();
+        if (actionClass != null) {
+            try {
+                final IActionDelegate actionDelegate = actionClass.newInstance();
+                Action actionImpl = new Action() {
+                    @Override
+                    public void run() {
+                        actionDelegate.run(this);
+                    }
+                };
+                initAction(actionImpl, actionDelegate, part, selection);
+                actionImpl.run();
+            } catch (InstantiationException e) {
+                log.error("Could not instantiate action delegate", e);
+            } catch (IllegalAccessException e) {
+                log.error(e);
+            }
         }
     }
 

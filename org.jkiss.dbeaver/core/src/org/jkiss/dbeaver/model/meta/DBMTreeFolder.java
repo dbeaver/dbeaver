@@ -4,14 +4,13 @@
 
 package org.jkiss.dbeaver.model.meta;
 
-import org.jkiss.dbeaver.model.struct.DBSFolder;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSFolder;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
-import org.eclipse.ui.IActionDelegate;
 
 /**
  * DBMTreeFolder
@@ -85,9 +84,9 @@ public class DBMTreeFolder extends DBMTreeNode implements DBSFolder
         return this.getParentNode().refreshNode(monitor);
     }
 
-    public IActionDelegate getDefaultAction()
+    public Class<OpenObjectEditorAction> getDefaultAction()
     {
-        return new OpenObjectEditorAction();
+        return OpenObjectEditorAction.class;
     }
 
     public String getItemsType()
