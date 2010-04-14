@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.jkiss.dbeaver.ui.controls.grid.GridPos;
 
 import java.util.ArrayList;
 import java.util.Iterator;

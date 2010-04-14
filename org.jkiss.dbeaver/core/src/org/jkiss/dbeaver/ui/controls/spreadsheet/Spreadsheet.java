@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.controls.grid.Grid;
 import org.jkiss.dbeaver.ui.controls.grid.GridEditor;
 import org.jkiss.dbeaver.ui.controls.grid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.grid.GridItem;
+import org.jkiss.dbeaver.ui.controls.grid.GridPos;
 
 import java.util.ArrayList;
 import java.util.Collection;

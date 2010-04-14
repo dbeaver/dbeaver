@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.controls.spreadsheet;
+package org.jkiss.dbeaver.ui.controls.grid;
 
 /**
  * GridPos
@@ -35,6 +35,6 @@ public class GridPos
 
     public int hashCode()
     {
-        return row * 1000 + col;
+        return col ^ row;
     }
 }
