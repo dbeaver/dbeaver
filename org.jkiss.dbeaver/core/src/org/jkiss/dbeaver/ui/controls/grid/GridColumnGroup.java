@@ -88,15 +88,6 @@ public class GridColumnGroup extends Item
      * interface.
      *
      * @param listener the listener which should be notified
-     *
-     * @exception IllegalArgumentException <ul>
-     *    <li>ERROR_NULL_ARGUMENT - if the listener is null</li>
-     * </ul>
-     * @exception SWTException <ul>
-     *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     * </ul>
-     *
      * @see TreeListener
      * @see #removeTreeListener
      */
@@ -113,15 +104,6 @@ public class GridColumnGroup extends Item
      * be notified when items in the receiver are expanded or collapsed.
      *
      * @param listener the listener which should no longer be notified
-     *
-     * @exception IllegalArgumentException <ul>
-     *    <li>ERROR_NULL_ARGUMENT - if the listener is null</li>
-     * </ul>
-     * @exception SWTException <ul>
-     *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     * </ul>
-     *
      * @see TreeListener
      * @see #addTreeListener
      */

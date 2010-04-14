@@ -96,17 +96,6 @@ public class GridItem extends Item {
 	 *            parent grid
 	 * @param style
 	 *            item style
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>ERROR_NULL_ARGUMENT - if the parent is null</li>
-	 *             </ul>
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the parent</li>
-	 *             <li>ERROR_INVALID_SUBCLASS - if this class is not an allowed
-	 *             subclass</li>
-	 *             </ul>
 	 */
 	public GridItem(Grid parent, int style) {
 		this(parent, style, -1);
@@ -122,17 +111,6 @@ public class GridItem extends Item {
 	 *            item style
 	 * @param index
 	 *            index where to insert item
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>ERROR_NULL_ARGUMENT - if the parent is null</li>
-	 *             </ul>
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the parent</li>
-	 *             <li>ERROR_INVALID_SUBCLASS - if this class is not an allowed
-	 *             subclass</li>
-	 *             </ul>
 	 */
 	public GridItem(Grid parent, int style, int index) {
 		super(parent, style, index);
@@ -151,17 +129,6 @@ public class GridItem extends Item {
 	 *            parent item
 	 * @param style
 	 *            item style
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>ERROR_NULL_ARGUMENT - if the parent is null</li>
-	 *             </ul>
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the parent</li>
-	 *             <li>ERROR_INVALID_SUBCLASS - if this class is not an allowed
-	 *             subclass</li>
-	 *             </ul>
 	 */
 	public GridItem(GridItem parent, int style) {
 		this(parent, style, -1);
@@ -177,17 +144,6 @@ public class GridItem extends Item {
 	 *            item style
 	 * @param index
 	 *            index to place item
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>ERROR_NULL_ARGUMENT - if the parent is null</li>
-	 *             </ul>
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the parent</li>
-	 *             <li>ERROR_INVALID_SUBCLASS - if this class is not an allowed
-	 *             subclass</li>
-	 *             </ul>
 	 */
 	public GridItem(GridItem parent, int style, int index) {
 		super(parent, style, index);
@@ -244,17 +200,6 @@ public class GridItem extends Item {
 	 *
 	 * @param listener
 	 *            the listener which should be notified
-	 *
-	 * @exception IllegalArgumentException
-	 *                <ul>
-	 *                <li>ERROR_NULL_ARGUMENT - if the listener is null</li>
-	 *                </ul>
-	 * @exception SWTException
-	 *                <ul>
-	 *                <li>ERROR_WIDGET_DISPOSED - if the receiver has been
-	 *                disposed</li> <li>ERROR_THREAD_INVALID_ACCESS - if not
-	 *                called from the thread that created the receiver</li>
-	 *                </ul>
 	 */
 	public void addControlListener(ControlListener listener) {
 		checkWidget();
@@ -270,18 +215,6 @@ public class GridItem extends Item {
 	 *
 	 * @param listener
 	 *            the listener which should no longer be notified
-	 *
-	 * @exception IllegalArgumentException
-	 *                <ul>
-	 *                <li>ERROR_NULL_ARGUMENT - if the listener is null</li>
-	 *                </ul>
-	 * @exception SWTException
-	 *                <ul>
-	 *                <li>ERROR_WIDGET_DISPOSED - if the receiver has been
-	 *                disposed</li>
-	 *                <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *                thread that created the receiver</li>
-	 *                </ul>
 	 */
 	public void removeControlListener(ControlListener listener) {
 		checkWidget();
@@ -297,13 +230,6 @@ public class GridItem extends Item {
 	 *
 	 * @param eventId
 	 *            SWT event constant
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void fireEvent(int eventId) {
 		checkWidget();
@@ -327,13 +253,6 @@ public class GridItem extends Item {
 	 *
 	 * @param column
 	 *            the column where the checkbox resides
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void fireCheckEvent(int column) {
 		checkWidget();
@@ -353,13 +272,6 @@ public class GridItem extends Item {
 	 * Returns the receiver's background color.
 	 *
 	 * @return the background color
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public Color getBackground() {
 		checkWidget();
@@ -376,13 +288,6 @@ public class GridItem extends Item {
 	 * @param index
 	 *            the column index
 	 * @return the background color
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public Color getBackground(int index) {
 		checkWidget();
@@ -399,13 +304,6 @@ public class GridItem extends Item {
 	 * @param columnIndex
 	 *            the index that specifies the column
 	 * @return the receiver's bounding column rectangle
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public Rectangle getBounds(int columnIndex) {
 		checkWidget();
@@ -481,13 +379,6 @@ public class GridItem extends Item {
 	 * @param index
 	 *            the column index
 	 * @return the number of columns spanned (0 equals no columns spanned)
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public int getColumnSpan(int index) {
 		checkWidget();
@@ -504,13 +395,6 @@ public class GridItem extends Item {
 	 * @param index
 	 *            the row index
 	 * @return the number of row spanned (0 equals no row spanned)
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public int getRowSpan(int index) {
 		checkWidget();
@@ -527,13 +411,6 @@ public class GridItem extends Item {
 	 * for this item.
 	 *
 	 * @return the receiver's font
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public Font getFont() {
 		if (defaultFont == null) {
@@ -549,13 +426,6 @@ public class GridItem extends Item {
 	 * @param index
 	 *            the column index
 	 * @return the receiver's font
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public Font getFont(int index) {
 		checkWidget();
@@ -569,13 +439,6 @@ public class GridItem extends Item {
 	 * Returns the foreground color that the receiver will use to draw.
 	 *
 	 * @return the receiver's foreground color
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public Color getForeground() {
 		if (defaultForeground == null) {
@@ -590,13 +453,6 @@ public class GridItem extends Item {
 	 * @param index
 	 *            the column index
 	 * @return the foreground color
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public Color getForeground(int index) {
 		checkWidget();
@@ -612,13 +468,6 @@ public class GridItem extends Item {
 	 * <code>CHECK</code> style, return false.
 	 *
 	 * @return the grayed state of the checkbox
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public boolean getGrayed() {
 		return getGrayed(0);
@@ -632,13 +481,6 @@ public class GridItem extends Item {
 	 * @param index
 	 *            the column index
 	 * @return the grayed state of the checkbox
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public boolean getGrayed(int index) {
 		checkWidget();
@@ -674,13 +516,6 @@ public class GridItem extends Item {
 	 * @param index
 	 *            the column index
 	 * @return the image stored at the given column index in the receiver
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public Image getImage(int index) {
 		checkWidget();
@@ -697,18 +532,6 @@ public class GridItem extends Item {
 	 * @param index
 	 *            the index of the item to return
 	 * @return the item at the given index
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>ERROR_INVALID_RANGE - if the index is not between 0 and
-	 *             the number of elements in the list minus 1 (inclusive)</li>
-	 *             </ul>
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public GridItem getItem(int index) {
 		checkWidget();
@@ -720,14 +543,6 @@ public class GridItem extends Item {
 	 * item children of the receiver.
 	 *
 	 * @return the number of items
-	 *
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public int getItemCount() {
 		checkWidget();
@@ -742,20 +557,6 @@ public class GridItem extends Item {
 	 * @param item
 	 *            the search item
 	 * @return the index of the item
-	 *
-	 * @exception IllegalArgumentException
-	 *                <ul>
-	 *                <li>ERROR_NULL_ARGUMENT - if the item is null</li>
-	 *                <li>ERROR_INVALID_ARGUMENT - if the item has been disposed
-	 *                </li>
-	 *                </ul>
-	 * @exception SWTException
-	 *                <ul>
-	 *                <li>ERROR_WIDGET_DISPOSED - if the receiver has been
-	 *                disposed</li>
-	 *                <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *                thread that created the receiver</li>
-	 *                </ul>
 	 */
 	public int indexOf(GridItem item) {
 		checkWidget();
@@ -777,13 +578,6 @@ public class GridItem extends Item {
 	 * </p>
 	 *
 	 * @return the receiver's items
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public GridItem[] getItems() {
         if (children == null) {
@@ -796,13 +590,6 @@ public class GridItem extends Item {
 	 * Returns the level of this item in the tree.
 	 *
 	 * @return the level of the item in the tree
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public int getLevel() {
 		checkWidget();
@@ -813,13 +600,6 @@ public class GridItem extends Item {
 	 * Returns the receiver's parent, which must be a <code>Grid</code>.
 	 *
 	 * @return the receiver's parent
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public Grid getParent() {
 		checkWidget();
@@ -831,13 +611,6 @@ public class GridItem extends Item {
 	 * or null when the receiver is a root.
 	 *
 	 * @return the receiver's parent item
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public GridItem getParentItem() {
 		checkWidget();
@@ -859,13 +632,6 @@ public class GridItem extends Item {
 	 * @param index
 	 *            the column index
 	 * @return the text stored at the given column index in the receiver
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public String getText(int index) {
 		checkWidget();
@@ -879,13 +645,6 @@ public class GridItem extends Item {
 	 * Returns true if this item has children.
 	 *
 	 * @return true if this item has children
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public boolean hasChildren() {
 		checkWidget();
@@ -898,12 +657,6 @@ public class GridItem extends Item {
 	 * <p>
 	 *
 	 * @return the expanded state
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li> <li>ERROR_THREAD_INVALID_ACCESS - if not called from
-	 *             the thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public boolean isExpanded() {
 		checkWidget();
@@ -917,18 +670,6 @@ public class GridItem extends Item {
 	 *
 	 * @param background
 	 *            the new color (or null)
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>ERROR_INVALID_ARGUMENT - if the argument has been
-	 *             disposed</li>
-	 *             </ul>
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setBackground(Color background) {
 		checkWidget();
@@ -950,18 +691,6 @@ public class GridItem extends Item {
 	 *            the column index
 	 * @param background
 	 *            the new color (or null)
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>ERROR_INVALID_ARGUMENT - if the argument has been
-	 *             disposed</li>
-	 *             </ul>
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setBackground(int index, Color background) {
 		checkWidget();
@@ -983,13 +712,6 @@ public class GridItem extends Item {
 	 *            column index that should span
 	 * @param span
 	 *            number of subsequent columns to span
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setColumnSpan(int index, int span) {
 		checkWidget();
@@ -1009,13 +731,6 @@ public class GridItem extends Item {
 	 *            row index that should span
 	 * @param span
 	 *            number of subsequent rows to span
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setRowSpan(int index, int span) {
 		checkWidget();
@@ -1033,12 +748,6 @@ public class GridItem extends Item {
 	 *
 	 * @param expanded
 	 *            the new expanded state
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li> <li>ERROR_THREAD_INVALID_ACCESS - if not called from
-	 *             the thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setExpanded(boolean expanded) {
 		checkWidget();
@@ -1142,18 +851,6 @@ public class GridItem extends Item {
 	 *
 	 * @param f
 	 *            the new font (or null)
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>ERROR_INVALID_ARGUMENT - if the argument has been
-	 *             disposed</li>
-	 *             </ul>
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setFont(Font f) {
 		checkWidget();
@@ -1173,18 +870,6 @@ public class GridItem extends Item {
 	 *            the column index
 	 * @param font
 	 *            the new font (or null)
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>ERROR_INVALID_ARGUMENT - if the argument has been
-	 *             disposed</li>
-	 *             </ul>
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setFont(int index, Font font) {
 		checkWidget();
@@ -1205,18 +890,6 @@ public class GridItem extends Item {
 	 *
 	 * @param foreground
 	 *            the new color (or null)
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>ERROR_INVALID_ARGUMENT - if the argument has been
-	 *             disposed</li>
-	 *             </ul>
-	 * @throws SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setForeground(Color foreground) {
 		checkWidget();
@@ -1236,18 +909,6 @@ public class GridItem extends Item {
 	 *            the column index
 	 * @param foreground
 	 *            the new color (or null)
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>ERROR_INVALID_ARGUMENT - if the argument has been
-	 *             disposed</li>
-	 *             </ul>
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setForeground(int index, Color foreground) {
 		checkWidget();
@@ -1268,13 +929,6 @@ public class GridItem extends Item {
 	 *
 	 * @param grayed
 	 *            the new grayed state of the checkbox;
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setGrayed(boolean grayed) {
 		checkWidget();
@@ -1291,13 +945,6 @@ public class GridItem extends Item {
 	 *            the column index
 	 * @param grayed
 	 *            the new grayed state of the checkbox;
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setGrayed(int index, boolean grayed) {
 		checkWidget();
@@ -1313,13 +960,6 @@ public class GridItem extends Item {
 	 *
 	 * @param newHeight
 	 *            new height in pixels
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setHeight(int newHeight) {
 		checkWidget();
@@ -1345,14 +985,6 @@ public class GridItem extends Item {
 
 	/**
 	 * Sets this <code>GridItem</code> to its preferred height.
-	 *
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void pack() {
 		checkWidget();
@@ -1396,17 +1028,6 @@ public class GridItem extends Item {
 	 *            the column index
 	 * @param image
 	 *            the new image
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>ERROR_INVALID_ARGUMENT - if the image has been disposed</li>
-	 *             </ul>
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setImage(int index, Image image) {
 		checkWidget();
@@ -1430,17 +1051,6 @@ public class GridItem extends Item {
 	 *            the column index
 	 * @param text
 	 *            the new text
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>ERROR_NULL_ARGUMENT - if the text is null</li>
-	 *             </ul>
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setText(int index, String text) {
 		checkWidget();
@@ -1560,13 +1170,6 @@ public class GridItem extends Item {
 	 *
 	 * @return the text stored for the row header or code <code>null</code> if
 	 *         the default has to be displayed
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public String getHeaderText() {
 		checkWidget();
@@ -1581,13 +1184,6 @@ public class GridItem extends Item {
 	 *
 	 * @return the image stored for the header or <code>null</code> if none has
 	 *         to be displayed
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public Image getHeaderImage() {
 		checkWidget();
@@ -1598,13 +1194,6 @@ public class GridItem extends Item {
 	 * Returns the receiver's row header background color
 	 *
 	 * @return the color or <code>null</code> if none
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public Color getHeaderBackground() {
 		checkWidget();
@@ -1615,13 +1204,6 @@ public class GridItem extends Item {
 	 * Returns the receiver's row header foreground color
 	 *
 	 * @return the color or <code>null</code> if none
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public Color getHeaderForeground() {
 		checkWidget();
@@ -1634,17 +1216,6 @@ public class GridItem extends Item {
 	 *
 	 * @param text
 	 *            the new text
-	 * @throws IllegalArgumentException
-	 *             <ul>
-	 *             <li>ERROR_NULL_ARGUMENT - if the text is null</li>
-	 *             </ul>
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setHeaderText(String text) {
 		checkWidget();
@@ -1673,13 +1244,6 @@ public class GridItem extends Item {
 	 *
 	 * @param image
 	 *            the new image
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setHeaderImage(Image image) {
 		checkWidget();
@@ -1708,13 +1272,6 @@ public class GridItem extends Item {
 	 *
 	 * @param headerBackground
 	 *            the color or <code>null</code>
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setHeaderBackground(Color headerBackground) {
 		checkWidget();
@@ -1727,13 +1284,6 @@ public class GridItem extends Item {
 	 *
 	 * @param headerForeground
 	 *            the color or <code>null</code>
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setHeaderForeground(Color headerForeground) {
 		checkWidget();
@@ -1747,13 +1297,6 @@ public class GridItem extends Item {
 	 * @param index
 	 *            the column index
 	 * @return the tooltip
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public String getToolTipText(int index) {
 		checkWidget();
@@ -1770,13 +1313,6 @@ public class GridItem extends Item {
 	 *            the column index
 	 * @param tooltip
 	 *            the tooltip text
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
 	 */
 	public void setToolTipText(int index, String tooltip) {
 		checkWidget();
@@ -1815,22 +1351,6 @@ public class GridItem extends Item {
 		insertValue(index, rowSpans);
 		insertValue(index, tooltips);
 		hasSetData = false;
-	}
-
-	private <T> void insertValue(int index, List<T> list) {
-        if (list == null) {
-            // do nothing
-        } else if (index == -1) {
-			list.add(null);
-		} else {
-			list.add(index, null);
-		}
-	}
-
-	private <T> void removeValue(int index, List<T> list) {
-		if (list != null && list.size() > index) {
-			list.remove(index);
-		}
 	}
 
 	private void handleVirtual() {
@@ -1909,6 +1429,22 @@ public class GridItem extends Item {
     private <T> T getCellValue(ArrayList<T> list, int index, T defValue)
     {
         return list == null || list.size() <= index ? defValue : list.get(index);
+    }
+
+    private <T> void insertValue(int index, List<T> list) {
+        if (list == null) {
+            // do nothing
+        } else if (index == -1) {
+            list.add(null);
+        } else {
+            list.add(index, null);
+        }
+    }
+
+    private <T> void removeValue(int index, List<T> list) {
+        if (list != null && list.size() > index) {
+            list.remove(index);
+        }
     }
 
 }

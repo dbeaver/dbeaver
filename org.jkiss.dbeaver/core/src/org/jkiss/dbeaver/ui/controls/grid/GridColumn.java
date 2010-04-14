@@ -1175,19 +1175,6 @@ public class GridColumn extends Item {
 	 *
 	 * @param image
 	 *            the image to display on the receiver (may be null)
-	 *
-	 * @exception IllegalArgumentException
-	 *                <ul>
-	 *                <li>ERROR_INVALID_ARGUMENT - if the image has been
-	 *                disposed</li>
-	 *                </ul>
-	 * @exception SWTException
-	 *                <ul>
-	 *                <li>ERROR_WIDGET_DISPOSED - if the receiver has been
-	 *                disposed</li>
-	 *                <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *                thread that created the receiver</li>
-	 *                </ul>
 	 */
 	public void setFooterImage(Image image) {
 		checkWidget();
@@ -1201,18 +1188,6 @@ public class GridColumn extends Item {
 	 *
 	 * @param string
 	 *            the new text
-	 *
-	 * @exception IllegalArgumentException
-	 *                <ul>
-	 *                <li>ERROR_NULL_ARGUMENT - if the text is null</li>
-	 *                </ul>
-	 * @exception SWTException
-	 *                <ul>
-	 *                <li>ERROR_WIDGET_DISPOSED - if the receiver has been
-	 *                disposed</li>
-	 *                <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *                thread that created the receiver</li>
-	 *                </ul>
 	 */
 	public void setFooterText(String string) {
 		checkWidget();
@@ -1226,14 +1201,6 @@ public class GridColumn extends Item {
 	 * not.
 	 *
 	 * @return the receiver's image
-	 *
-	 * @exception SWTException
-	 *                <ul>
-	 *                <li>ERROR_WIDGET_DISPOSED - if the receiver has been
-	 *                disposed</li>
-	 *                <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *                thread that created the receiver</li>
-	 *                </ul>
 	 */
 	public Image getFooterImage() {
 		checkWidget();
@@ -1245,14 +1212,6 @@ public class GridColumn extends Item {
 	 * has never been set.
 	 *
 	 * @return the receiver's text
-	 *
-	 * @exception SWTException
-	 *                <ul>
-	 *                <li>ERROR_WIDGET_DISPOSED - if the receiver has been
-	 *                disposed</li>
-	 *                <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *                thread that created the receiver</li>
-	 *                </ul>
 	 */
 	public String getFooterText() {
 		checkWidget();
