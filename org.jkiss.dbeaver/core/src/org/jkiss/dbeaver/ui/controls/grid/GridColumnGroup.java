@@ -15,7 +15,8 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.TypedListener;
 
-import java.util.Vector;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * <p>
@@ -157,7 +158,7 @@ public class GridColumnGroup extends Item
         return parent.indexOf(lastCol) + 1;
     }
 
-    void newColumn(GridColumn column, int index)
+    void newColumn(GridColumn column)
     {
         GridColumn[] newAllColumns = new GridColumn[columns.length + 1];
         System.arraycopy(columns, 0, newAllColumns, 0, columns.length);
@@ -173,12 +174,10 @@ public class GridColumnGroup extends Item
 
         GridColumn[] newAllColumns = new GridColumn[columns.length - 1];
         int x = 0;
-        for (int i = 0; i < columns.length; i++)
-        {
-            if (columns[i] != col)
-            {
-                newAllColumns[x] = columns[i];
-                x ++;
+        for (GridColumn column : columns) {
+            if (column != col) {
+                newAllColumns[x] = column;
+                x++;
             }
         }
         columns = newAllColumns;
@@ -219,8 +218,8 @@ public class GridColumnGroup extends Item
         GridColumn[] oldColumns = columns;
         columns = new GridColumn[0];
 
-        for (int i = 0; i < oldColumns.length; i++) {
-        	oldColumns[i].dispose();
+        for (GridColumn oldColumn : oldColumns) {
+            oldColumn.dispose();
         }
 
         parent.removeColumnGroup(this);
@@ -259,10 +258,12 @@ public class GridColumnGroup extends Item
      */
     public void setHeaderRenderer(GridHeaderRenderer headerRenderer)
     {
-        if (headerRenderer == null)
+        if (headerRenderer == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
-        this.headerRenderer = headerRenderer;
-        headerRenderer.setDisplay(getDisplay());
+        } else {
+            this.headerRenderer = headerRenderer;
+            headerRenderer.setDisplay(getDisplay());
+        }
     }
 
     /**
@@ -301,20 +302,16 @@ public class GridColumnGroup extends Item
 
         if (!expanded && getParent().getCellSelectionEnabled())
         {
-            Vector collapsedCols = new Vector();
-            for (int j = 0; j < columns.length; j++)
-            {
-                if (!columns[j].isSummary())
-                {
-                    collapsedCols.add(new Integer(getParent().indexOf(columns[j])));
+            List<Integer> collapsedCols = new ArrayList<Integer>();
+            for (GridColumn column : columns) {
+                if (!column.isSummary()) {
+                    collapsedCols.add(getParent().indexOf(column));
                 }
             }
             Point[] selection = getParent().getCellSelection();
-            for (int i = 0; i < selection.length; i++)
-            {
-                if (collapsedCols.contains(new Integer(selection[i].x)))
-                {
-                    getParent().deselectCell(selection[i]);
+            for (Point aSelection : selection) {
+                if (collapsedCols.contains(new Integer(aSelection.x))) {
+                    getParent().deselectCell(aSelection);
                 }
             }
 
@@ -342,11 +339,9 @@ public class GridColumnGroup extends Item
     GridColumn getFirstVisibleColumn()
     {
         GridColumn[] cols = parent.getColumnsInOrder();
-        for (int i = 0; i < cols.length; i++)
-        {
-            if (cols[i].getColumnGroup() == this && cols[i].isVisible())
-            {
-                return cols[i];
+        for (GridColumn col : cols) {
+            if (col.getColumnGroup() == this && col.isVisible()) {
+                return col;
             }
         }
         return null;
@@ -361,11 +356,9 @@ public class GridColumnGroup extends Item
     {
         GridColumn[] cols = parent.getColumnsInOrder();
         GridColumn lastVisible = null;
-        for (int i = 0; i < cols.length; i++)
-        {
-            if (cols[i].getColumnGroup() == this && cols[i].isVisible())
-            {
-                lastVisible = cols[i];
+        for (GridColumn col : cols) {
+            if (col.getColumnGroup() == this && col.isVisible()) {
+                lastVisible = col;
             }
         }
         return lastVisible;
@@ -380,24 +373,17 @@ public class GridColumnGroup extends Item
         boolean foundFirstColumnInGroup = false;
 
         GridColumn[] cols = parent.getColumnsInOrder();
-        for (int i = 0; i < cols.length; i++)
-        {
-            if (cols[i].getColumnGroup() == this)
-            {
-            	if  (cols[i].isVisible())
-            	{
-	                if (!foundFirstColumnInGroup)
-	                {
-	                    bounds.x = parent.getOrigin(cols[i], null).x;
-	                    foundFirstColumnInGroup = true;
-	                }
-	                bounds.width += cols[i].getWidth();
-            	}
-            }
-            else
-            {
-                if (foundFirstColumnInGroup)
-                {
+        for (GridColumn col : cols) {
+            if (col.getColumnGroup() == this) {
+                if (col.isVisible()) {
+                    if (!foundFirstColumnInGroup) {
+                        bounds.x = parent.getOrigin(col, null).x;
+                        foundFirstColumnInGroup = true;
+                    }
+                    bounds.width += col.getWidth();
+                }
+            } else {
+                if (foundFirstColumnInGroup) {
                     break;
                 }
             }

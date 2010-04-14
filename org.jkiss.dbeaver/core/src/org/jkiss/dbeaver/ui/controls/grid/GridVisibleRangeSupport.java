@@ -4,16 +4,16 @@
 
 package org.jkiss.dbeaver.ui.controls.grid;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EventObject;
-import java.util.Iterator;
-
-import org.jkiss.dbeaver.ui.controls.grid.Grid.GridVisibleRange;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.jkiss.dbeaver.ui.controls.grid.Grid.GridVisibleRange;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EventObject;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This support class adds the possibility to get informed when the visual range
@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Listener;
  * </p>
  */
 public class GridVisibleRangeSupport {
-	private Collection rangeChangeListener;
+	private List<VisibleRangeChangedListener> rangeChangeListener;
 	private Grid grid;
 	private GridVisibleRange oldRange = new GridVisibleRange();
 
@@ -104,7 +104,7 @@ public class GridVisibleRangeSupport {
 	 */
 	public void addRangeChangeListener(VisibleRangeChangedListener listener) {
 		if (rangeChangeListener == null) {
-			rangeChangeListener = new ArrayList();
+			rangeChangeListener = new ArrayList<VisibleRangeChangedListener>();
 		}
 		rangeChangeListener.add(listener);
 	}
@@ -128,29 +128,29 @@ public class GridVisibleRangeSupport {
 		if (rangeChangeListener != null) {
 			GridVisibleRange range = grid.getVisibleRange();
 
-			ArrayList lOrigItems = new ArrayList();
+			List<GridItem> lOrigItems = new ArrayList<GridItem>();
 			lOrigItems.addAll(Arrays.asList(oldRange.getItems()));
 
-			ArrayList lNewItems = new ArrayList();
+			List<GridItem> lNewItems = new ArrayList<GridItem>();
 			lNewItems.addAll(Arrays.asList(range.getItems()));
 
-			Iterator it = lNewItems.iterator();
+			Iterator<GridItem> it = lNewItems.iterator();
 			while (it.hasNext()) {
 				if (lOrigItems.remove(it.next())) {
 					it.remove();
 				}
 			}
 
-			ArrayList lOrigColumns = new ArrayList();
+			List<GridColumn> lOrigColumns = new ArrayList<GridColumn>();
 			lOrigColumns.addAll(Arrays.asList(oldRange.getColumns()));
 
-			ArrayList lNewColumns = new ArrayList();
+			List<GridColumn> lNewColumns = new ArrayList<GridColumn>();
 			lNewColumns.addAll(Arrays.asList(range.getColumns()));
 
-			it = lNewColumns.iterator();
-			while (it.hasNext()) {
-				if (lOrigColumns.remove(it.next())) {
-					it.remove();
+			Iterator<GridColumn> it2 = lNewColumns.iterator();
+			while (it2.hasNext()) {
+				if (lOrigColumns.remove(it2.next())) {
+					it2.remove();
 				}
 			}
 
@@ -168,10 +168,9 @@ public class GridVisibleRangeSupport {
 
 				evt.removedColumns = new GridColumn[lOrigColumns.size()];
 				lNewColumns.toArray(evt.removedColumns);
-				it = rangeChangeListener.iterator();
-				while (it.hasNext()) {
-					((VisibleRangeChangedListener) it.next()).rangeChanged(evt);
-				}
+                for (VisibleRangeChangedListener aRangeChangeListener : rangeChangeListener) {
+                    aRangeChangeListener.rangeChanged(evt);
+                }
 			}
 
 			oldRange = range;

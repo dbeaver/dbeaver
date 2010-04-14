@@ -85,28 +85,29 @@ import org.eclipse.swt.widgets.TypedListener;
  *
  * @author chris.gross@us.ibm.com
  */
-public class Grid extends Canvas
-{
-	/**
-	 * Object holding the visible range
-	 */
-	public static class GridVisibleRange {
-    	private GridItem[] items = new GridItem[0];
-    	private GridColumn[] columns = new GridColumn[0];
+public class Grid extends Canvas {
+    /**
+     * Object holding the visible range
+     */
+    public static class GridVisibleRange {
+        private GridItem[] items = new GridItem[0];
+        private GridColumn[] columns = new GridColumn[0];
 
-    	/**
-    	 * @return the current items shown
-    	 */
-		public GridItem[] getItems() {
-			return items;
-		}
+        /**
+         * @return the current items shown
+         */
+        public GridItem[] getItems()
+        {
+            return items;
+        }
 
-		/**
-		 * @return the current columns shown
-		 */
-		public GridColumn[] getColumns() {
-			return columns;
-		}
+        /**
+         * @return the current columns shown
+         */
+        public GridColumn[] getColumns()
+        {
+            return columns;
+        }
     }
 
     /**
@@ -398,9 +399,9 @@ public class Grid extends Canvas
 
     private boolean hoveringOnRowResizer = false;
     private GridItem rowBeingResized;
-	private boolean resizingRow = false;
-	private int resizingStartY;
-	private int resizingRowStartHeight;
+    private boolean resizingRow = false;
+    private int resizingStartY;
+    private int resizingRowStartHeight;
 
     /**
      * Reference to the column whose header is currently in a pushed state.
@@ -493,7 +494,7 @@ public class Grid extends Canvas
     /**
      * Are tree lines visible?
      */
-	private boolean treeLinesVisible = true;
+    private boolean treeLinesVisible = true;
 
     /**
      * Grid line color.
@@ -502,7 +503,7 @@ public class Grid extends Canvas
 
     /**
      * Vertical scrollbar proxy.
-     * <p>
+     * <p/>
      * Note:
      * <ul>
      * <li>{@link Grid#getTopIndex()} is the only method allowed to call vScroll.getSelection()
@@ -586,7 +587,7 @@ public class Grid extends Canvas
      * Index of last visible item.  The value must never be read directly.  It is cached and
      * updated when appropriate.  #getBottomIndex() should be called for every client (even internal
      * callers).  A value of -1 indicates that the value is old and will be recomputed.
-     * <p>
+     * <p/>
      * Note that the item with this index is often only partly visible; maybe only
      * a single line of pixels is visible. In extreme cases, bottomIndex may be the
      * same as topIndex.
@@ -631,40 +632,41 @@ public class Grid extends Canvas
      * we don't setCapture(false) in situations where we didn't do setCapture(true).  The OS (SWT?)
      * will automatically capture the mouse for us during a drag operation.
      */
-	private boolean inplaceTooltipCapture;
+    private boolean inplaceTooltipCapture;
 
-	/**
-	 * This is the tooltip text currently used.  This could be the tooltip text for the currently
-	 * hovered cell, or the general grid tooltip.  See handleCellHover.
-	 */
-	private String displayedToolTipText;
+    /**
+     * This is the tooltip text currently used.  This could be the tooltip text for the currently
+     * hovered cell, or the general grid tooltip.  See handleCellHover.
+     */
+    private String displayedToolTipText;
 
-	/**
-	 * The height of the area at the top and bottom of the
-	 * visible grid area in which scrolling is initiated
-	 * while dragging over this Grid.
-	 */
-	private static final int DRAG_SCROLL_AREA_HEIGHT = 12;
+    /**
+     * The height of the area at the top and bottom of the
+     * visible grid area in which scrolling is initiated
+     * while dragging over this Grid.
+     */
+    private static final int DRAG_SCROLL_AREA_HEIGHT = 12;
 
-	/**
-	 * Threshold for the selection border used for drag n drop
-	 * in mode (!{@link #dragOnFullSelection}}.
-	 */
-	private static final int SELECTION_DRAG_BORDER_THRESHOLD = 2;
+    /**
+     * Threshold for the selection border used for drag n drop
+     * in mode (!{@link #dragOnFullSelection}}.
+     */
+    private static final int SELECTION_DRAG_BORDER_THRESHOLD = 2;
 
     private boolean hoveringOnSelectionDragArea = false;
 
-	private GridItem insertMarkItem = null;
-	private GridColumn insertMarkColumn = null;
-	private boolean insertMarkBefore = false;
+    private GridItem insertMarkItem = null;
+    private GridColumn insertMarkColumn = null;
+    private boolean insertMarkBefore = false;
     private IGridRenderer insertMarkRenderer = new DefaultInsertMarkRenderer();
     private boolean sizeOnEveryItemImageChange;
     private boolean autoHeight = false;
     private boolean autoWidth = true;
     private boolean wordWrapRowHeader = false;
+
     /**
      * A range of rows in a <code>Grid</code>.
-     * <p>
+     * <p/>
      * A row in this sense exists only for visible items
      * (i.e. items with {@link GridItem#isVisible()} == true).
      * Therefore, the items at 'startIndex' and 'endIndex'
@@ -673,13 +675,21 @@ public class Grid extends Canvas
      * @see Grid#getRowRange(int, int, boolean, boolean)
      */
     private static class RowRange {
-        /** index of first item in range */
+        /**
+         * index of first item in range
+         */
         public int startIndex;
-        /** index of last item in range */
+        /**
+         * index of last item in range
+         */
         public int endIndex;
-        /** number of rows (i.e. <em>visible</em> items) in this range */
+        /**
+         * number of rows (i.e. <em>visible</em> items) in this range
+         */
         public int rows;
-        /** height in pixels of this range (including horizontal separator between rows) */
+        /**
+         * height in pixels of this range (including horizontal separator between rows)
+         */
         public int height;
     }
 
@@ -693,7 +703,7 @@ public class Grid extends Canvas
     private static int checkStyle(int style)
     {
         int mask = SWT.BORDER | SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT | SWT.H_SCROLL | SWT.V_SCROLL
-                   | SWT.SINGLE | SWT.MULTI | SWT.NO_FOCUS | SWT.CHECK | SWT.VIRTUAL;
+            | SWT.SINGLE | SWT.MULTI | SWT.NO_FOCUS | SWT.CHECK | SWT.VIRTUAL;
         int newStyle = style & mask;
         newStyle |= SWT.DOUBLE_BUFFERED;
         return newStyle;
@@ -702,20 +712,18 @@ public class Grid extends Canvas
     /**
      * Constructs a new instance of this class given its parent and a style
      * value describing its behavior and appearance.
-     * <p>
+     * <p/>
      *
      * @param parent a composite control which will be the parent of the new
-     * instance (cannot be null)
-     * @param style the style of control to construct
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the parent is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the parent</li>
-     * </ul>
+     *               instance (cannot be null)
+     * @param style  the style of control to construct
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the parent is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the parent</li>
+     *                                      </ul>
      * @see SWT#SINGLE
      * @see SWT#MULTI
      */
@@ -743,28 +751,21 @@ public class Grid extends Canvas
         setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
         setLineColor(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
-        if ((style & SWT.MULTI) != 0)
-        {
+        if ((style & SWT.MULTI) != 0) {
             selectionType = SWT.MULTI;
         }
 
-        if (getVerticalBar() != null)
-        {
+        if (getVerticalBar() != null) {
             getVerticalBar().setVisible(false);
             vScroll = new ScrollBarAdapter(getVerticalBar());
-        }
-        else
-        {
+        } else {
             vScroll = new NullScrollBar();
         }
 
-        if (getHorizontalBar() != null)
-        {
+        if (getHorizontalBar() != null) {
             getHorizontalBar().setVisible(false);
             hScroll = new ScrollBarAdapter(getHorizontalBar());
-        }
-        else
-        {
+        } else {
             hScroll = new NullScrollBar();
         }
 
@@ -780,13 +781,12 @@ public class Grid extends Canvas
         RGB sel = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION).getRGB();
         RGB white = getDisplay().getSystemColor(SWT.COLOR_WHITE).getRGB();
 
-        RGB cellSel = blend(sel,white,50);
+        RGB cellSel = blend(sel, white, 50);
 
-        cellHeaderSelectionBackground = new Color(getDisplay(),cellSel);
+        cellHeaderSelectionBackground = new Color(getDisplay(), cellSel);
 
         setDragDetect(false);
     }
-
 
 
     /**
@@ -815,12 +815,11 @@ public class Grid extends Canvas
      * the row or header is selected.
      *
      * @return cell header selection background color
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public Color getCellHeaderSelectionBackground()
     {
@@ -833,12 +832,11 @@ public class Grid extends Canvas
      * the row or header is selected.
      *
      * @param cellSelectionBackground color to set.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setCellHeaderSelectionBackground(Color cellSelectionBackground)
     {
@@ -850,28 +848,25 @@ public class Grid extends Canvas
      * Adds the listener to the collection of listeners who will be notified
      * when the receiver's selection changes, by sending it one of the messages
      * defined in the {@code SelectionListener} interface.
-     * <p>
+     * <p/>
      * Cell selection events may have <code>Event.detail = SWT.DRAG</code> when the
      * user is drag selecting multiple cells.  A follow up selection event will be generated
      * when the drag is complete.
      *
      * @param listener the listener which should be notified
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the listener is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the listener is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void addSelectionListener(SelectionListener listener)
     {
         checkWidget();
-        if (listener == null)
-        {
+        if (listener == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
         }
         addListener(SWT.Selection, new TypedListener(listener));
@@ -884,16 +879,14 @@ public class Grid extends Canvas
      * defined in the {@code TreeListener} interface.
      *
      * @param listener the listener which should be notified
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the listener is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the listener is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      * @see TreeListener
      * @see #removeTreeListener
      * @see org.eclipse.swt.events.TreeEvent
@@ -901,8 +894,7 @@ public class Grid extends Canvas
     public void addTreeListener(TreeListener listener)
     {
         checkWidget();
-        if (listener == null)
-        {
+        if (listener == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
         }
 
@@ -918,8 +910,7 @@ public class Grid extends Canvas
         checkWidget();
 
         Point prefSize = null;
-        if (wHint == SWT.DEFAULT || hHint == SWT.DEFAULT)
-        {
+        if (wHint == SWT.DEFAULT || hHint == SWT.DEFAULT) {
             prefSize = getTableSize();
             prefSize.x += 2 * getBorderWidth();
             prefSize.y += 2 * getBorderWidth();
@@ -928,29 +919,21 @@ public class Grid extends Canvas
         int x = 0;
         int y = 0;
 
-        if (wHint == SWT.DEFAULT)
-        {
+        if (wHint == SWT.DEFAULT) {
             x += prefSize.x;
-            if (getVerticalBar() != null)
-            {
+            if (getVerticalBar() != null) {
                 x += getVerticalBar().getSize().x;
             }
-        }
-        else
-        {
+        } else {
             x = wHint;
         }
 
-        if (hHint == SWT.DEFAULT)
-        {
+        if (hHint == SWT.DEFAULT) {
             y += prefSize.y;
-            if (getHorizontalBar() != null)
-            {
+            if (getHorizontalBar() != null) {
                 y += getHorizontalBar().getSize().y;
             }
-        }
-        else
-        {
+        } else {
             y = hHint;
         }
 
@@ -961,37 +944,31 @@ public class Grid extends Canvas
      * Deselects the item at the given zero-relative index in the receiver. If
      * the item at the index was already deselected, it remains deselected.
      * Indices that are out of range are ignored.
-     * <p>
+     * <p/>
      * If cell selection is enabled, all cells in the specified item are deselected.
      *
      * @param index the index of the item to deselect
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void deselect(int index)
     {
         checkWidget();
 
-        if (index < 0 || index > items.size() - 1)
-        {
+        if (index < 0 || index > items.size() - 1) {
             return;
         }
 
         GridItem item = items.get(index);
 
-        if (!cellSelectionEnabled)
-        {
-            if (selectedItems.contains(item))
-            {
+        if (!cellSelectionEnabled) {
+            if (selectedItems.contains(item)) {
                 selectedItems.remove(item);
             }
-        }
-        else
-        {
+        } else {
             deselectCells(getCells(item));
         }
         redraw();
@@ -1003,44 +980,36 @@ public class Grid extends Canvas
      * it is deselected. If the item at the index was not selected, it remains
      * deselected. The range of the indices is inclusive. Indices that are out
      * of range are ignored.
-     * <p>
+     * <p/>
      * If cell selection is enabled, all cells in the given range are deselected.
      *
      * @param start the start index of the items to deselect
-     * @param end the end index of the items to deselect
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @param end   the end index of the items to deselect
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void deselect(int start, int end)
     {
         checkWidget();
 
-        for (int i = start; i <= end; i++)
-        {
-            if (i < 0)
-            {
+        for (int i = start; i <= end; i++) {
+            if (i < 0) {
                 continue;
             }
-            if (i > items.size() - 1)
-            {
+            if (i > items.size() - 1) {
                 break;
             }
 
             GridItem item = items.get(i);
 
-            if (!cellSelectionEnabled)
-            {
-                if (selectedItems.contains(item))
-                {
+            if (!cellSelectionEnabled) {
+                if (selectedItems.contains(item)) {
                     selectedItems.remove(item);
                 }
-            }
-            else
-            {
+            } else {
                 deselectCells(getCells(item));
             }
         }
@@ -1053,27 +1022,25 @@ public class Grid extends Canvas
      * it is deselected. If the item at the index was not selected, it remains
      * deselected. Indices that are out of range and duplicate indices are
      * ignored.
-     * <p>
+     * <p/>
      * If cell selection is enabled, all cells in the given items are deselected.
      *
      * @param indices the array of indices for the items to deselect
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the set of indices is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the set of indices is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void deselect(int[] indices)
     {
         checkWidget();
-        if (indices == null)
-        {
+        if (indices == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return;
         }
 
         for (int j : indices) {
@@ -1107,13 +1074,10 @@ public class Grid extends Canvas
     {
         checkWidget();
 
-        if (!cellSelectionEnabled)
-        {
+        if (!cellSelectionEnabled) {
             selectedItems.clear();
             redraw();
-        }
-        else
-        {
+        } else {
             deselectAllCells();
         }
     }
@@ -1128,24 +1092,21 @@ public class Grid extends Canvas
      *
      * @param index the index of the column to return
      * @return the column at the given index
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number
-     * of elements in the list minus 1 (inclusive)</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number
+     *                                      of elements in the list minus 1 (inclusive)</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridColumn getColumn(int index)
     {
         checkWidget();
 
-        if (index < 0 || index > getColumnCount() - 1)
-        {
+        if (index < 0 || index > getColumnCount() - 1) {
             SWT.error(SWT.ERROR_INVALID_RANGE);
         }
 
@@ -1158,56 +1119,50 @@ public class Grid extends Canvas
      *
      * @param point the point used to locate the column
      * @return the column at the given point
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the point is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the point is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridColumn getColumn(Point point)
     {
-    	return getColumn(null, point);
+        return getColumn(null, point);
     }
 
     /**
      * Returns the column at the given point and a known item in the receiver or null if no such
      * column exists. The point is in the coordinate system of the receiver.
      *
-     * @param item a known GridItem
+     * @param item  a known GridItem
      * @param point the point used to locate the column
      * @return the column at the given point
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the point is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the point is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     private GridColumn getColumn(GridItem item, Point point)
     {
         checkWidget();
-        if (point == null)
-        {
+        if (point == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return null;
         }
 
         GridColumn overThis = null;
 
         int x2 = 0;
 
-        if (rowHeaderVisible)
-        {
-            if (point.x <= rowHeaderWidth)
-            {
+        if (rowHeaderVisible) {
+            if (point.x <= rowHeaderWidth) {
                 return null;
             }
 
@@ -1229,35 +1184,29 @@ public class Grid extends Canvas
             x2 += column.getWidth();
         }
 
-        if (overThis == null)
-        {
+        if (overThis == null) {
             return null;
         }
 
-        if (hasSpanning)
-        {
+        if (hasSpanning) {
             // special logic for column spanning
-        	if(item == null) {
-        		item = getItem(point);
-        	}
+            if (item == null) {
+                item = getItem(point);
+            }
 
-            if (item != null)
-            {
+            if (item != null) {
                 int displayColIndex = displayOrderedColumns.indexOf(overThis);
 
                 // track back all previous columns and check their spanning
-                for (int i = 0; i < displayColIndex; i++)
-                {
-                    if (!displayOrderedColumns.get(i).isVisible())
-                    {
+                for (int i = 0; i < displayColIndex; i++) {
+                    if (!displayOrderedColumns.get(i).isVisible()) {
                         continue;
                     }
 
                     int colIndex = indexOf(displayOrderedColumns.get(i));
                     int span = item.getColumnSpan(colIndex);
 
-                    if (i + span >= displayColIndex)
-                    {
+                    if (i + span >= displayColIndex) {
                         overThis = displayOrderedColumns.get(i);
                         break;
                     }
@@ -1276,12 +1225,11 @@ public class Grid extends Canvas
      * but never creating a column.
      *
      * @return the number of columns
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int getColumnCount()
     {
@@ -1304,12 +1252,11 @@ public class Grid extends Canvas
      * </p>
      *
      * @return the current visual order of the receiver's items
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int[] getColumnOrder()
     {
@@ -1328,12 +1275,11 @@ public class Grid extends Canvas
      * Returns the number of column groups contained in the receiver.
      *
      * @return the number of column groups
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int getColumnGroupCount()
     {
@@ -1350,18 +1296,17 @@ public class Grid extends Canvas
      * </p>
      *
      * @return the column groups in the receiver
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridColumnGroup[] getColumnGroups()
     {
         checkWidget();
         GridColumnGroup[] newArray = new GridColumnGroup[columnGroups.length];
-        System.arraycopy (columnGroups, 0, newArray, 0, columnGroups.length);
+        System.arraycopy(columnGroups, 0, newArray, 0, columnGroups.length);
         return newArray;
     }
 
@@ -1371,17 +1316,15 @@ public class Grid extends Canvas
      *
      * @param index the index of the column group to return
      * @return the column group at the given index
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number
-     * of elements in the list minus 1 (inclusive)</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number
+     *                                      of elements in the list minus 1 (inclusive)</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridColumnGroup getColumnGroup(int index)
     {
@@ -1399,32 +1342,30 @@ public class Grid extends Canvas
      * ordering of when the items were added.
      *
      * @param order the new order to display the items
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS -if not called from the thread that
-     * created the receiver</li>
-     * </ul>
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the item order is null</li>
-     * <li>ERROR_INVALID_ARGUMENT - if the order is not the same length as the
-     * number of items, or if an item is listed twice, or if the order splits a
-     * column group</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS -if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the item order is null</li>
+     *                                      <li>ERROR_INVALID_ARGUMENT - if the order is not the same length as the
+     *                                      number of items, or if an item is listed twice, or if the order splits a
+     *                                      column group</li>
+     *                                      </ul>
      */
     public void setColumnOrder(int[] order)
     {
         checkWidget();
 
-        if (order == null)
-        {
+        if (order == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return;
         }
 
-        if (order.length != displayOrderedColumns.size())
-        {
+        if (order.length != displayOrderedColumns.size()) {
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+            return;
         }
 
         boolean[] seen = new boolean[displayOrderedColumns.size()];
@@ -1439,8 +1380,7 @@ public class Grid extends Canvas
             seen[anOrder] = true;
         }
 
-        if (columnGroups.length != 0)
-        {
+        if (columnGroups.length != 0) {
             GridColumnGroup currentGroup = null;
             int colsInGroup = 0;
 
@@ -1484,12 +1424,11 @@ public class Grid extends Canvas
      * </p>
      *
      * @return the items in the receiver
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridColumn[] getColumns()
     {
@@ -1501,12 +1440,11 @@ public class Grid extends Canvas
      * Returns the empty cell renderer.
      *
      * @return Returns the emptyCellRenderer.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridCellRenderer getEmptyCellRenderer()
     {
@@ -1518,12 +1456,11 @@ public class Grid extends Canvas
      * Returns the empty column header renderer.
      *
      * @return Returns the emptyColumnHeaderRenderer.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public IGridRenderer getEmptyColumnHeaderRenderer()
     {
@@ -1535,28 +1472,27 @@ public class Grid extends Canvas
      * Returns the empty column footer renderer.
      *
      * @return Returns the emptyColumnFooterRenderer.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
-    public IGridRenderer getEmptyColumnFooterRenderer() {
-    	checkWidget();
-    	return emptyColumnFooterRenderer;
+    public IGridRenderer getEmptyColumnFooterRenderer()
+    {
+        checkWidget();
+        return emptyColumnFooterRenderer;
     }
 
     /**
      * Returns the empty row header renderer.
      *
      * @return Returns the emptyRowHeaderRenderer.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public IGridRenderer getEmptyRowHeaderRenderer()
     {
@@ -1568,13 +1504,12 @@ public class Grid extends Canvas
      * Returns the externally managed horizontal scrollbar.
      *
      * @return the external horizontal scrollbar.
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      * @see #setHorizontalScrollBarProxy(org.jkiss.dbeaver.ui.controls.grid.scroll.IGridScrollBar)
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
      */
     protected IGridScrollBar getHorizontalScrollBarProxy()
     {
@@ -1586,13 +1521,12 @@ public class Grid extends Canvas
      * Returns the externally managed vertical scrollbar.
      *
      * @return the external vertical scrollbar.
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      * @see #setlVerticalScrollBarProxy(org.jkiss.dbeaver.ui.controls.grid.scroll.IGridScrollBar)
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
      */
     protected IGridScrollBar getVerticalScrollBarProxy()
     {
@@ -1604,12 +1538,11 @@ public class Grid extends Canvas
      * Gets the focus renderer.
      *
      * @return Returns the focusRenderer.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public IGridRenderer getFocusRenderer()
     {
@@ -1622,12 +1555,11 @@ public class Grid extends Canvas
      * groups, the returned value includes the height of group headers.
      *
      * @return height of the column header row
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int getHeaderHeight()
     {
@@ -1639,28 +1571,27 @@ public class Grid extends Canvas
      * Returns the height of the column footers.
      *
      * @return height of the column footer row
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
-    public int getFooterHeight() {
-    	checkWidget();
-    	return footerHeight;
+    public int getFooterHeight()
+    {
+        checkWidget();
+        return footerHeight;
     }
 
     /**
      * Returns the height of the column group headers.
      *
      * @return height of column group headers
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int getGroupHeaderHeight()
     {
@@ -1673,12 +1604,11 @@ public class Grid extends Canvas
      * {@code false} otherwise.
      *
      * @return the receiver's header's visibility state
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public boolean getHeaderVisible()
     {
@@ -1688,17 +1618,18 @@ public class Grid extends Canvas
 
     /**
      * Returns {@code true} if the receiver's footer is visible, and {@code false} otherwise
+     *
      * @return the receiver's footer's visibility state
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
-    public boolean getFooterVisible() {
-    	checkWidget();
-    	return columnFootersVisible;
+    public boolean getFooterVisible()
+    {
+        checkWidget();
+        return columnFootersVisible;
     }
 
     /**
@@ -1707,24 +1638,21 @@ public class Grid extends Canvas
      *
      * @param index the index of the item to return
      * @return the item at the given index
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number of elements in the
-     * list minus 1 (inclusive) </li>     *
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number of elements in the
+     *                                      list minus 1 (inclusive) </li>     *
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridItem getItem(int index)
     {
         checkWidget();
 
-        if (index < 0 || index >= items.size())
-        {
+        if (index < 0 || index >= items.size()) {
             SWT.error(SWT.ERROR_INVALID_RANGE);
         }
 
@@ -1737,34 +1665,32 @@ public class Grid extends Canvas
      *
      * @param point the point used to locate the item
      * @return the item at the given point
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the point is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the point is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridItem getItem(Point point)
     {
         checkWidget();
 
-        if (point == null)
+        if (point == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return null;
+        }
 
         if (point.x < 0 || point.x > getClientArea().width) return null;
 
         Point p = new Point(point.x, point.y);
 
-        int y2=0;
+        int y2 = 0;
 
-        if (columnHeadersVisible)
-        {
-            if (p.y <= headerHeight)
-            {
+        if (columnHeadersVisible) {
+            if (p.y <= headerHeight) {
                 return null;
             }
             y2 += headerHeight;
@@ -1772,47 +1698,39 @@ public class Grid extends Canvas
 
         GridItem itemToReturn = null;
 
-        int row=getTopIndex();
-        while(row<items.size() && y2<=getClientArea().height)
-        {
+        int row = getTopIndex();
+        while (row < items.size() && y2 <= getClientArea().height) {
             GridItem currItem = items.get(row);
-            if (currItem.isVisible())
-            {
+            if (currItem.isVisible()) {
                 int currItemHeight = currItem.getHeight();
 
-                if (p.y >= y2 && p.y < y2+currItemHeight+1)
-                {
-                	itemToReturn = currItem;
-                	break;
+                if (p.y >= y2 && p.y < y2 + currItemHeight + 1) {
+                    itemToReturn = currItem;
+                    break;
                 }
 
-                y2 += currItemHeight +1;
+                y2 += currItemHeight + 1;
             }
             row++;
         }
 
-        if (hasSpanning)
-        {
-            if (itemToReturn != null)
-            {
-            	int itemIndex = this.getIndexOfItem(itemToReturn);
+        if (hasSpanning) {
+            if (itemToReturn != null) {
+                int itemIndex = this.getIndexOfItem(itemToReturn);
 
                 GridColumn gridColumn = getColumn(itemToReturn, point);
                 int displayColIndex = displayOrderedColumns.indexOf(gridColumn);
 
 
                 // track back all previous columns and check their spanning
-                for (int i = 0; i < itemIndex; i++)
-                {
-                	GridItem gridItem = this.getItem(i);
-                    if (!gridItem.isVisible())
-                    {
+                for (int i = 0; i < itemIndex; i++) {
+                    GridItem gridItem = this.getItem(i);
+                    if (!gridItem.isVisible()) {
                         continue;
                     }
                     int span = gridItem.getRowSpan(displayColIndex);
 
-                    if (i + span >= itemIndex)
-                    {
+                    if (i + span >= itemIndex) {
                         itemToReturn = gridItem;
                         break;
                     }
@@ -1827,12 +1745,11 @@ public class Grid extends Canvas
      * Returns the number of items contained in the receiver.
      *
      * @return the number of items
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int getItemCount()
     {
@@ -1844,19 +1761,18 @@ public class Grid extends Canvas
      * Returns the default height of the items
      * in this <code>Grid</code>. See {@link #setItemHeight(int)}
      * for details.
-     *
+     * <p/>
      * <p>IMPORTANT: The Grid's items need not all have the
      * height returned by this method, because an
      * item's height may have been changed by calling
      * {@link GridItem#setHeight(int)}.
      *
      * @return default height of items
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      * @see #setItemHeight(int)
      */
     public int getItemHeight()
@@ -1870,23 +1786,20 @@ public class Grid extends Canvas
      * this method is called, all existing items are resized
      * to the specified height and items created afterwards will be
      * initially sized to this height.
-     * <p>
+     * <p/>
      * As long as no default height was set by the client through this method,
      * the preferred height of the first item in this <code>Grid</code> is
      * used as a default for all items (and is returned by {@link #getItemHeight()}).
      *
-     * @param height  default height in pixels
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_INVALID_ARGUMENT - if the height is < 1</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
-     *
+     * @param height default height in pixels
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_INVALID_ARGUMENT - if the height is < 1</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      * @see GridItem#getHeight()
      * @see GridItem#setHeight(int)
      */
@@ -1897,9 +1810,10 @@ public class Grid extends Canvas
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
         itemHeight = height;
         userModifiedItemHeight = true;
-        for(int cnt=0;cnt<items.size();cnt++)
-            items.get(cnt).setHeight(height);
-        hasDifferingHeights=false;
+        for (GridItem item : items) {
+            item.setHeight(height);
+        }
+        hasDifferingHeights = false;
         setScrollValuesObsolete();
         redraw();
     }
@@ -1908,40 +1822,41 @@ public class Grid extends Canvas
      * Returns true if the rows are resizable.
      *
      * @return the row resizeable state
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      * @see #setRowsResizeable(boolean)
      */
-    public boolean getRowsResizeable() {
-    	checkWidget();
-    	return rowsResizeable;
+    public boolean getRowsResizeable()
+    {
+        checkWidget();
+        return rowsResizeable;
     }
+
     /**
      * Sets the rows resizeable state of this <code>Grid</code>.
      * The default is 'false'.
-     * <p>
+     * <p/>
      * If a row in a <code>Grid</code> is resizeable,
      * then the user can interactively change its height
      * by dragging the border of the row header.
-     * <p>
+     * <p/>
      * Note that for rows to be resizable the row headers must be visible.
      *
      * @param rowsResizeable true if this <code>Grid</code>'s rows should be resizable
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      * @see #setRowHeaderVisible(boolean)
      */
-    public void setRowsResizeable(boolean rowsResizeable) {
-    	checkWidget();
-    	this.rowsResizeable=rowsResizeable;
+    public void setRowsResizeable(boolean rowsResizeable)
+    {
+        checkWidget();
+        this.rowsResizeable = rowsResizeable;
     }
 
     /**
@@ -1967,27 +1882,25 @@ public class Grid extends Canvas
     }
 
     /**
-     *
      * @param item
      * @return t
      */
     public int getIndexOfItem(GridItem item)
     {
-    	checkWidget();
+        checkWidget();
 
-    	return items.indexOf(item);
+        return items.indexOf(item);
     }
 
     /**
      * Returns the line color.
      *
      * @return Returns the lineColor.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public Color getLineColor()
     {
@@ -1999,12 +1912,11 @@ public class Grid extends Canvas
      * Returns true if the lines are visible.
      *
      * @return Returns the linesVisible.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public boolean getLinesVisible()
     {
@@ -2012,51 +1924,47 @@ public class Grid extends Canvas
         return linesVisible;
     }
 
-	/**
-	 * Returns true if the tree lines are visible.
-	 *
-	 * @return Returns the treeLinesVisible.
-	 * @throws org.eclipse.swt.SWTException
-	 * <ul>
-	 * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-	 * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-	 * created the receiver</li>
-	 * </ul>
-	 */
-	public boolean getTreeLinesVisible() {
-		checkWidget();
-		return treeLinesVisible;
-	}
+    /**
+     * Returns true if the tree lines are visible.
+     *
+     * @return Returns the treeLinesVisible.
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
+     */
+    public boolean getTreeLinesVisible()
+    {
+        checkWidget();
+        return treeLinesVisible;
+    }
 
     /**
      * Returns the next visible item in the table.
      *
      * @param item item
      * @return next visible item or null
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridItem getNextVisibleItem(GridItem item)
     {
         checkWidget();
 
         int index = items.indexOf(item);
-        if (items.size() == index + 1)
-        {
+        if (items.size() == index + 1) {
             return null;
         }
 
         GridItem nextItem = items.get(index + 1);
 
-        while (!nextItem.isVisible())
-        {
+        while (!nextItem.isVisible()) {
             index++;
-            if (items.size() == index + 1)
-            {
+            if (items.size() == index + 1) {
                 return null;
             }
 
@@ -2072,38 +1980,31 @@ public class Grid extends Canvas
      *
      * @param item item or null
      * @return previous visible item or if item==null last visible item
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridItem getPreviousVisibleItem(GridItem item)
     {
         checkWidget();
 
         int index;
-        if (item == null)
-        {
+        if (item == null) {
             index = items.size();
-        }
-        else
-        {
+        } else {
             index = items.indexOf(item);
-            if (index == 0)
-            {
+            if (index == 0) {
                 return null;
             }
         }
 
         GridItem prevItem = items.get(index - 1);
 
-        while (!prevItem.isVisible())
-        {
+        while (!prevItem.isVisible()) {
             index--;
-            if (index == 0)
-            {
+            if (index == 0) {
                 return null;
             }
 
@@ -2118,12 +2019,11 @@ public class Grid extends Canvas
      *
      * @param column column
      * @return previous visible column or null
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridColumn getPreviousVisibleColumn(GridColumn column)
     {
@@ -2134,16 +2034,15 @@ public class Grid extends Canvas
         if (index == 0)
             return null;
 
-        index --;
+        index--;
 
         GridColumn previous = displayOrderedColumns.get(index);
 
-        while (!previous.isVisible())
-        {
+        while (!previous.isVisible()) {
             if (index == 0)
                 return null;
 
-            index --;
+            index--;
             previous = displayOrderedColumns.get(index);
         }
 
@@ -2155,12 +2054,11 @@ public class Grid extends Canvas
      *
      * @param column column
      * @return next visible column or null
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridColumn getNextVisibleColumn(GridColumn column)
     {
@@ -2171,16 +2069,15 @@ public class Grid extends Canvas
         if (index == displayOrderedColumns.size() - 1)
             return null;
 
-        index ++;
+        index++;
 
         GridColumn next = displayOrderedColumns.get(index);
 
-        while (!next.isVisible())
-        {
+        while (!next.isVisible()) {
             if (index == displayOrderedColumns.size() - 1)
                 return null;
 
-            index ++;
+            index++;
             next = displayOrderedColumns.get(index);
         }
 
@@ -2191,12 +2088,11 @@ public class Grid extends Canvas
      * Returns the number of root items contained in the receiver.
      *
      * @return the number of items
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int getRootItemCount()
     {
@@ -2213,12 +2109,11 @@ public class Grid extends Canvas
      * </p>
      *
      * @return the root items in the receiver
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridItem[] getRootItems()
     {
@@ -2228,7 +2123,6 @@ public class Grid extends Canvas
     }
 
     /**
-     * TODO: asl;fj
      * @param index
      * @return asdf
      */
@@ -2236,8 +2130,7 @@ public class Grid extends Canvas
     {
         checkWidget();
 
-        if (index < 0 || index >= rootItems.size())
-        {
+        if (index < 0 || index >= rootItems.size()) {
             SWT.error(SWT.ERROR_INVALID_RANGE);
         }
 
@@ -2248,12 +2141,11 @@ public class Grid extends Canvas
      * Gets the row header renderer.
      *
      * @return Returns the rowHeaderRenderer.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public IGridRenderer getRowHeaderRenderer()
     {
@@ -2265,31 +2157,27 @@ public class Grid extends Canvas
      * Returns a array of {@code GridItem}s that are currently selected in the
      * receiver. The order of the items is unspecified. An empty array indicates
      * that no items are selected.
-     * <p>
+     * <p/>
      * Note: This is not the actual structure used by the receiver to maintain
      * its selection, so modifying the array will not affect the receiver.
-     * <p>
+     * <p/>
      * If cell selection is enabled, any items which contain at least one selected
      * cell are returned.
      *
      * @return an array representing the selection
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridItem[] getSelection()
     {
         checkWidget();
 
-        if (!cellSelectionEnabled)
-        {
+        if (!cellSelectionEnabled) {
             return selectedItems.toArray(new GridItem[selectedItems.size()]);
-        }
-        else
-        {
+        } else {
             List<GridItem> items = new ArrayList<GridItem>();
             int itemCount = getItemCount();
 
@@ -2309,23 +2197,19 @@ public class Grid extends Canvas
      * is enabled, the number of items with at least one selected cell are returned.
      *
      * @return the number of selected items
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int getSelectionCount()
     {
         checkWidget();
 
-        if (!cellSelectionEnabled)
-        {
+        if (!cellSelectionEnabled) {
             return selectedItems.size();
-        }
-        else
-        {
+        } else {
             List<GridItem> items = new ArrayList<GridItem>();
             for (Point cell : selectedCells) {
                 GridItem item = getItem(cell.y);
@@ -2340,12 +2224,11 @@ public class Grid extends Canvas
      * Returns the number of selected cells contained in the receiver.
      *
      * @return the number of selected cells
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int getCellSelectionCount()
     {
@@ -2359,28 +2242,23 @@ public class Grid extends Canvas
      * returns the index of first item that contains at least one selected cell.
      *
      * @return the index of the selected item
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int getSelectionIndex()
     {
         checkWidget();
 
-        if (!cellSelectionEnabled)
-        {
-            if (selectedItems.size() == 0)
-            {
+        if (!cellSelectionEnabled) {
+            if (selectedItems.size() == 0) {
                 return -1;
             }
 
             return items.indexOf(selectedItems.get(0));
-        }
-        else
-        {
+        } else {
             if (selectedCells.size() == 0)
                 return -1;
 
@@ -2392,27 +2270,25 @@ public class Grid extends Canvas
      * Returns the zero-relative indices of the items which are currently
      * selected in the receiver. The order of the indices is unspecified. The
      * array is empty if no items are selected.
-     * <p>
+     * <p/>
      * Note: This is not the actual structure used by the receiver to maintain
      * its selection, so modifying the array will not affect the receiver.
-     * <p>
+     * <p/>
      * If cell selection is enabled, returns the indices of any items which
      * contain at least one selected cell.
      *
      * @return the array of indices of the selected items
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int[] getSelectionIndices()
     {
         checkWidget();
 
-        if (!cellSelectionEnabled)
-        {
+        if (!cellSelectionEnabled) {
             int[] indices = new int[selectedItems.size()];
             int i = 0;
             for (GridItem item : selectedItems) {
@@ -2420,9 +2296,7 @@ public class Grid extends Canvas
                 i++;
             }
             return indices;
-        }
-        else
-        {
+        } else {
             List<GridItem> selectedRows = new ArrayList<GridItem>();
             for (Point cell : selectedCells) {
                 GridItem item = getItem(cell.y);
@@ -2445,12 +2319,11 @@ public class Grid extends Canvas
      * items are added or removed.
      *
      * @return the index of the top item
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int getTopIndex()
     {
@@ -2459,34 +2332,27 @@ public class Grid extends Canvas
         if (topIndex != -1)
             return topIndex;
 
-        if (!vScroll.getVisible())
-        {
-        	topIndex = 0;
-        }
-        else
-        {
-        	// figure out first visible row and last visible row
-        	int firstVisibleIndex = vScroll.getSelection();
+        if (!vScroll.getVisible()) {
+            topIndex = 0;
+        } else {
+            // figure out first visible row and last visible row
+            int firstVisibleIndex = vScroll.getSelection();
 
-        	if (isTree)
-        	{
-        		Iterator itemsIter = items.iterator();
-            	int row = firstVisibleIndex + 1;
+            if (isTree) {
+                Iterator itemsIter = items.iterator();
+                int row = firstVisibleIndex + 1;
 
-        		while (row > 0 && itemsIter.hasNext())
-        		{
-        			GridItem item = (GridItem)itemsIter.next();
+                while (row > 0 && itemsIter.hasNext()) {
+                    GridItem item = (GridItem) itemsIter.next();
 
-        			if (item.isVisible())
-        			{
-        				row--;
-        				if (row == 0)
-        				{
-        					firstVisibleIndex = items.indexOf(item);
-        				}
-        			}
-        		}
-        	}
+                    if (item.isVisible()) {
+                        row--;
+                        if (row == 0) {
+                            firstVisibleIndex = items.indexOf(item);
+                        }
+                    }
+                }
+            }
 
             topIndex = firstVisibleIndex;
 
@@ -2501,43 +2367,39 @@ public class Grid extends Canvas
 
         return topIndex;
     }
+
     /**
      * Returns the zero-relative index of the item which is currently at the bottom
      * of the receiver. This index can change when items are scrolled, expanded
      * or collapsed or new items are added or removed.
-     * <p>
+     * <p/>
      * Note that the item with this index is often only partly visible; maybe only
      * a single line of pixels is visible. Use {@link #isShown(GridItem)} to find
      * out.
-     * <p>
+     * <p/>
      * In extreme cases, getBottomIndex() may return the same value as
      * {@link #getTopIndex()}.
      *
      * @return the index of the bottom item
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
-    int getBottomIndex() {
+    int getBottomIndex()
+    {
         checkWidget();
 
         if (bottomIndex != -1)
             return bottomIndex;
 
-        if (items.size() == 0)
-        {
+        if (items.size() == 0) {
             bottomIndex = 0;
-        }
-        else if (getVisibleGridHeight()<1)
-        {
-        	bottomIndex = getTopIndex();
-        }
-        else
-        {
-            RowRange range = getRowRange(getTopIndex(),getVisibleGridHeight(),false,false);
+        } else if (getVisibleGridHeight() < 1) {
+            bottomIndex = getTopIndex();
+        } else {
+            RowRange range = getRowRange(getTopIndex(), getVisibleGridHeight(), false, false);
 
             bottomIndex = range.endIndex;
             bottomIndexShownCompletely = range.height <= getVisibleGridHeight();
@@ -2545,120 +2407,112 @@ public class Grid extends Canvas
 
         return bottomIndex;
     }
+
     /**
      * Returns a {@link RowRange} ranging from
      * the grid item at startIndex to that at endIndex.
-     * <p>
+     * <p/>
      * This is primarily used to measure the height
      * in pixel of such a range and to count the number
      * of visible grid items within the range.
      *
      * @param startIndex index of the first item in the range or -1 to the first visible item in this grid
-     * @param endIndex index of the last item in the range or -1 to use the last visible item in this grid
+     * @param endIndex   index of the last item in the range or -1 to use the last visible item in this grid
      * @return
      */
-    private RowRange getRowRange(int startIndex, int endIndex) {
+    private RowRange getRowRange(int startIndex, int endIndex)
+    {
 
         // parameter preparation
-        if (startIndex == -1)
-        {
+        if (startIndex == -1) {
             // search frist visible item
             do startIndex++; while (startIndex < items.size() && !items.get(startIndex).isVisible());
             if (startIndex == items.size()) return null;
         }
-        if (endIndex == -1)
-        {
+        if (endIndex == -1) {
             // search last visible item
-    		endIndex = items.size();
+            endIndex = items.size();
             do endIndex--; while (endIndex >= 0 && !items.get(endIndex).isVisible());
             if (endIndex == -1) return null;
         }
 
         // fail fast
-        if (startIndex<0 || endIndex<0 || startIndex>=items.size() || endIndex>=items.size()
-                || endIndex < startIndex
-                || !items.get(startIndex).isVisible()
-                || !items.get(endIndex).isVisible())
+        if (startIndex < 0 || endIndex < 0 || startIndex >= items.size() || endIndex >= items.size()
+            || endIndex < startIndex
+            || !items.get(startIndex).isVisible()
+            || !items.get(endIndex).isVisible())
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
         RowRange range = new RowRange();
         range.startIndex = startIndex;
         range.endIndex = endIndex;
 
-        if(isTree || hasDifferingHeights)
-        {
-            for (int idx=startIndex ; idx<=endIndex ; idx++ )
-            {
+        if (isTree || hasDifferingHeights) {
+            for (int idx = startIndex; idx <= endIndex; idx++) {
                 GridItem currItem = items.get(idx);
 
-                if(currItem.isVisible())
-                {
-                    if (range.rows>0)
-                        range.height++;		// height of horizontal row separator
+                if (currItem.isVisible()) {
+                    if (range.rows > 0)
+                        range.height++;        // height of horizontal row separator
                     range.height += currItem.getHeight();
                     range.rows++;
                 }
             }
-        }
-        else
-        {
+        } else {
             range.rows = range.endIndex - range.startIndex + 1;
-            range.height = ( getItemHeight() + 1 ) * range.rows - 1;
+            range.height = (getItemHeight() + 1) * range.rows - 1;
         }
 
         return range;
     }
+
     /**
      * This method can be used to build a range of grid rows
      * that is allowed to span a certain height in pixels.
-     * <p>
+     * <p/>
      * It returns a {@link RowRange} that contains information
      * about the range, especially the index of the last
      * element in the range (or if inverse == true, then the
      * index of the first element).
-     * <p>
+     * <p/>
      * Note:  Even if 'forceEndCompletelyInside' is set to
      * true, the last item will not lie completely within
      * the availableHeight, if (height of item at startIndex < availableHeight).
      *
-     * @param startIndex  index of the first (if inverse==false) or
-     *                    last (if inverse==true) item in the range
-     * @param availableHeight height in pixels
+     * @param startIndex               index of the first (if inverse==false) or
+     *                                 last (if inverse==true) item in the range
+     * @param availableHeight          height in pixels
      * @param forceEndCompletelyInside if true, the last item in the range will lie completely
-     *        within the availableHeight, otherwise it may lie partly outside this range
-     * @param inverse  if true, then the first item in the range will be searched, not the last
+     *                                 within the availableHeight, otherwise it may lie partly outside this range
+     * @param inverse                  if true, then the first item in the range will be searched, not the last
      * @return range of grid rows
      * @see RowRange
      */
     private RowRange getRowRange(int startIndex, int availableHeight,
-                                 boolean forceEndCompletelyInside, boolean inverse) {
+                                 boolean forceEndCompletelyInside, boolean inverse)
+    {
         // parameter preparation
-        if (startIndex == -1)
-        {
-        	if(!inverse)
-        	{
+        if (startIndex == -1) {
+            if (!inverse) {
                 // search frist visible item
                 do startIndex++; while (startIndex < items.size() && !items.get(startIndex).isVisible());
                 if (startIndex == items.size()) return null;
-        	}
-        	else
-        	{
+            } else {
                 // search last visible item
-        		startIndex = items.size();
+                startIndex = items.size();
                 do startIndex--; while (startIndex >= 0 && !items.get(startIndex).isVisible());
                 if (startIndex == -1) return null;
-        	}
+            }
         }
 
         // fail fast
         if (startIndex < 0 || startIndex >= items.size()
-                || !items.get(startIndex).isVisible())
+            || !items.get(startIndex).isVisible())
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
 
         RowRange range = new RowRange();
 
-        if (availableHeight <= 0)
-        {
-        	// special case: empty range
+        if (availableHeight <= 0) {
+            // special case: empty range
             range.startIndex = startIndex;
             range.endIndex = startIndex;
             range.rows = 0;
@@ -2666,9 +2520,8 @@ public class Grid extends Canvas
             return range;
         }
 
-        if (isTree || hasDifferingHeights)
-        {
-            int otherIndex = startIndex;		// tentative end index
+        if (isTree || hasDifferingHeights) {
+            int otherIndex = startIndex;        // tentative end index
             int consumedItems = 0;
             int consumedHeight = 0;
 
@@ -2678,16 +2531,14 @@ public class Grid extends Canvas
 
             // note: we use "+2" in next line, because we only try to add another row if there
             // is room for the separator line + at least one pixel row for the additional item
-            while (consumedHeight+2 <= availableHeight)
-            {
+            while (consumedHeight + 2 <= availableHeight) {
                 // STEP 1:
                 // try to find a visible item we can add
 
                 int nextIndex = otherIndex;
                 GridItem nextItem;
 
-                do
-                {
+                do {
                     if (!inverse)
                         nextIndex++;
                     else
@@ -2701,16 +2552,14 @@ public class Grid extends Canvas
                 while (nextItem != null && !nextItem.isVisible());
 
 
-                if (nextItem == null)
-                {
+                if (nextItem == null) {
                     // no visible item found
                     break;
                 }
 
-                if (forceEndCompletelyInside)
-                {
+                if (forceEndCompletelyInside) {
                     // must lie completely within the allowed height
-                    if(!(consumedHeight + 1 + nextItem.getHeight() <= availableHeight))
+                    if (!(consumedHeight + 1 + nextItem.getHeight() <= availableHeight))
                         break;
                 }
 
@@ -2720,7 +2569,7 @@ public class Grid extends Canvas
                 // Consume height for this item
 
                 consumedItems++;
-                consumedHeight += 1;	// height of separator line
+                consumedHeight += 1;    // height of separator line
                 consumedHeight += nextItem.getHeight();
 
                 // STEP 3:
@@ -2729,47 +2578,46 @@ public class Grid extends Canvas
             }
 
             range.startIndex = !inverse ? startIndex : otherIndex;
-            range.endIndex   = !inverse ? otherIndex : startIndex;
-            range.rows       = consumedItems;
-            range.height     = consumedHeight;
-        }
-        else
-        {
-            int availableRows = ( availableHeight + 1 ) / ( getItemHeight() + 1 );
+            range.endIndex = !inverse ? otherIndex : startIndex;
+            range.rows = consumedItems;
+            range.height = consumedHeight;
+        } else {
+            int availableRows = (availableHeight + 1) / (getItemHeight() + 1);
 
-            if ((( getItemHeight() + 1 ) * range.rows - 1) + 1 < availableHeight)
-            {
-            	// not all available space used yet
-            	// - so add another row if it need not be completely within availableHeight
+            if (((getItemHeight() + 1) * range.rows - 1) + 1 < availableHeight) {
+                // not all available space used yet
+                // - so add another row if it need not be completely within availableHeight
                 if (!forceEndCompletelyInside)
                     availableRows++;
             }
 
             int otherIndex = startIndex + ((availableRows - 1) * (!inverse ? 1 : -1));
-            if (otherIndex<0) otherIndex = 0;
-            if (otherIndex>=items.size()) otherIndex = items.size() - 1 ;
+            if (otherIndex < 0) otherIndex = 0;
+            if (otherIndex >= items.size()) otherIndex = items.size() - 1;
 
             range.startIndex = !inverse ? startIndex : otherIndex;
-            range.endIndex   = !inverse ? otherIndex : startIndex;
-            range.rows       = range.endIndex - range.startIndex + 1;
-            range.height     = ( getItemHeight() + 1 ) * range.rows - 1;
+            range.endIndex = !inverse ? otherIndex : startIndex;
+            range.rows = range.endIndex - range.startIndex + 1;
+            range.height = (getItemHeight() + 1) * range.rows - 1;
         }
 
         return range;
     }
+
     /**
      * Returns the height of the plain grid in pixels.
-     * <p>
+     * <p/>
      * This includes all rows for visible items (i.e. items that return true
      * on {@link GridItem#isVisible()} ; not only those currently visible on
      * screen) and the 1 pixel separator between rows.
-     * <p>
+     * <p/>
      * This does <em>not</em> include the height of the column headers.
      *
      * @return height of plain grid
      */
-    int getGridHeight() {
-        RowRange range = getRowRange(-1,-1);
+    int getGridHeight()
+    {
+        RowRange range = getRowRange(-1, -1);
         return range != null ? range.height : 0;
         /*
          *  MOPR  currently this method is only used in #getTableSize() ;
@@ -2789,28 +2637,30 @@ public class Grid extends Canvas
      *
      * @return height of visible grid in pixels
      */
-    int getVisibleGridHeight() {
+    int getVisibleGridHeight()
+    {
         return getClientArea().height - (columnHeadersVisible ? headerHeight : 0) - (columnFootersVisible ? footerHeight : 0);
     }
 
     /**
      * Returns the height of the screen area that is available for showing the grid columns
+     *
      * @return
      */
-    int getVisibleGridWidth() {
-    	return getClientArea().width - ( rowHeaderVisible ? rowHeaderWidth : 0 );
+    int getVisibleGridWidth()
+    {
+        return getClientArea().width - (rowHeaderVisible ? rowHeaderWidth : 0);
     }
 
     /**
      * Gets the top left renderer.
      *
      * @return Returns the topLeftRenderer.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public IGridRenderer getTopLeftRenderer()
     {
@@ -2822,12 +2672,11 @@ public class Grid extends Canvas
      * Gets the bottom left renderer.
      *
      * @return Returns the bottomLeftRenderer.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public IGridRenderer getBottomLeftRenderer()
     {
@@ -2842,23 +2691,23 @@ public class Grid extends Canvas
      *
      * @param column the search column
      * @return the index of the column
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the column is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the column is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int indexOf(GridColumn column)
     {
         checkWidget();
 
-        if (column == null)
+        if (column == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return -1;
+        }
 
         if (column.getParent() != this) return -1;
 
@@ -2872,23 +2721,23 @@ public class Grid extends Canvas
      *
      * @param item the search item
      * @return the index of the item
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the item is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the item is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int indexOf(GridItem item)
     {
         checkWidget();
 
-        if (item == null)
+        if (item == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return -1;
+        }
 
         if (item.getParent() != this) return -1;
 
@@ -2898,15 +2747,14 @@ public class Grid extends Canvas
     /**
      * Returns {@code true} if the receiver's row header is visible, and
      * {@code false} otherwise.
-     * <p>
+     * <p/>
      *
      * @return the receiver's row header's visibility state
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public boolean isRowHeaderVisible()
     {
@@ -2922,12 +2770,11 @@ public class Grid extends Canvas
      *
      * @param index the index of the item
      * @return the visibility state of the item at the index
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public boolean isSelected(int index)
     {
@@ -2935,12 +2782,9 @@ public class Grid extends Canvas
 
         if (index < 0 || index >= items.size()) return false;
 
-        if (!cellSelectionEnabled)
-        {
+        if (!cellSelectionEnabled) {
             return isSelected(items.get(index));
-        }
-        else
-        {
+        } else {
             for (Point cell : selectedCells) {
                 if (cell.y == index) return true;
             }
@@ -2954,26 +2798,21 @@ public class Grid extends Canvas
      *
      * @param item item
      * @return true if the item is selected.
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the item is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the item is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public boolean isSelected(GridItem item)
     {
         checkWidget();
-        if (!cellSelectionEnabled)
-        {
+        if (!cellSelectionEnabled) {
             return selectedItems.contains(item);
-        }
-        else
-        {
+        } else {
             int index = indexOf(item);
             if (index == -1) return false;
             for (Point cell : selectedCells) {
@@ -2988,16 +2827,14 @@ public class Grid extends Canvas
      *
      * @param cell cell
      * @return true if the cell is selected.
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the cell is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the cell is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public boolean isCellSelected(Point cell)
     {
@@ -3010,28 +2847,24 @@ public class Grid extends Canvas
     }
 
 
-
     /**
      * Removes the item from the receiver at the given zero-relative index.
      *
      * @param index the index for the item
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number
-     * of elements in the list minus 1 (inclusive)</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number
+     *                                      of elements in the list minus 1 (inclusive)</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void remove(int index)
     {
         checkWidget();
-        if (index < 0 || index > items.size() - 1)
-        {
+        if (index < 0 || index > items.size() - 1) {
             SWT.error(SWT.ERROR_INVALID_RANGE);
         }
         GridItem item = items.get(index);
@@ -3044,27 +2877,23 @@ public class Grid extends Canvas
      * zero-relative start and end indices (inclusive).
      *
      * @param start the start of the range
-     * @param end the end of the range
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_INVALID_RANGE - if either the start or end are not between 0
-     * and the number of elements in the list minus 1 (inclusive)</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @param end   the end of the range
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_INVALID_RANGE - if either the start or end are not between 0
+     *                                      and the number of elements in the list minus 1 (inclusive)</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void remove(int start, int end)
     {
         checkWidget();
 
-        for (int i = end; i >= start; i--)
-        {
-            if (i < 0 || i > items.size() - 1)
-            {
+        for (int i = end; i >= start; i--) {
+            if (i < 0 || i > items.size() - 1) {
                 SWT.error(SWT.ERROR_INVALID_RANGE);
             }
             GridItem item = items.get(i);
@@ -3078,38 +2907,32 @@ public class Grid extends Canvas
      * indices.
      *
      * @param indices the array of indices of the items
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number
-     * of elements in the list minus 1 (inclusive)</li>
-     * <li>ERROR_NULL_ARGUMENT - if the indices array is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number
+     *                                      of elements in the list minus 1 (inclusive)</li>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the indices array is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void remove(int[] indices)
     {
         checkWidget();
 
-        if (indices == null)
-        {
+        if (indices == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return;
         }
 
         GridItem[] removeThese = new GridItem[indices.length];
-        for (int i = 0; i < indices.length; i++)
-        {
+        for (int i = 0; i < indices.length; i++) {
             int j = indices[i];
-            if (j < items.size() && j >= 0)
-            {
+            if (j < items.size() && j >= 0) {
                 removeThese[i] = items.get(j);
-            }
-            else
-            {
+            } else {
                 SWT.error(SWT.ERROR_INVALID_RANGE);
             }
 
@@ -3123,19 +2946,17 @@ public class Grid extends Canvas
     /**
      * Removes all of the items from the receiver.
      *
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void removeAll()
     {
         checkWidget();
 
-        while (items.size() > 0)
-        {
+        while (items.size() > 0) {
             items.get(0).dispose();
         }
         deselectAll();
@@ -3147,14 +2968,13 @@ public class Grid extends Canvas
      * notified when the receiver's selection changes.
      *
      * @param listener the listener which should no longer be notified
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      * @see SelectionListener
      * @see #addSelectionListener(SelectionListener)
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
      */
     public void removeSelectionListener(SelectionListener listener)
     {
@@ -3168,14 +2988,13 @@ public class Grid extends Canvas
      * notified when the receiver's items changes.
      *
      * @param listener the listener which should no longer be notified
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      * @see TreeListener
      * @see #addTreeListener(TreeListener)
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
      */
     public void removeTreeListener(TreeListener listener)
     {
@@ -3188,16 +3007,15 @@ public class Grid extends Canvas
      * Selects the item at the given zero-relative index in the receiver. If the
      * item at the index was already selected, it remains selected. Indices that
      * are out of range are ignored.
-     * <p>
+     * <p/>
      * If cell selection is enabled, selects all cells at the given index.
      *
      * @param index the index of the item to select
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void select(int index)
     {
@@ -3209,16 +3027,13 @@ public class Grid extends Canvas
 
         GridItem item = items.get(index);
 
-        if (!cellSelectionEnabled)
-        {
+        if (!cellSelectionEnabled) {
             if (selectionType == SWT.MULTI && selectedItems.contains(item)) return;
 
             if (selectionType == SWT.SINGLE) selectedItems.clear();
 
             selectedItems.add(item);
-        }
-        else
-        {
+        } else {
             selectCells(getCells(item));
         }
 
@@ -3229,23 +3044,22 @@ public class Grid extends Canvas
      * Selects the items in the range specified by the given zero-relative
      * indices in the receiver. The range of indices is inclusive. The current
      * selection is not cleared before the new items are selected.
-     * <p>
+     * <p/>
      * If an item in the given range is not selected, it is selected. If an item
      * in the given range was already selected, it remains selected. Indices
      * that are out of range are ignored and no items will be selected if start
      * is greater than end. If the receiver is single-select and there is more
      * than one item in the given range, then all indices are ignored.
-     * <p>
+     * <p/>
      * If cell selection is enabled, all cells within the given range are selected.
      *
      * @param start the start of the range
-     * @param end the end of the range
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @param end   the end of the range
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      * @see Grid#setSelection(int,int)
      */
     public void select(int start, int end)
@@ -3256,31 +3070,24 @@ public class Grid extends Canvas
 
         if (selectionType == SWT.SINGLE && start != end) return;
 
-        if (!cellSelectionEnabled)
-        {
+        if (!cellSelectionEnabled) {
             if (selectionType == SWT.SINGLE) selectedItems.clear();
         }
 
-        for (int i = start; i <= end; i++)
-        {
-            if (i < 0)
-            {
+        for (int i = start; i <= end; i++) {
+            if (i < 0) {
                 continue;
             }
-            if (i > items.size() - 1)
-            {
+            if (i > items.size() - 1) {
                 break;
             }
 
             GridItem item = items.get(i);
 
-            if (!cellSelectionEnabled)
-            {
+            if (!cellSelectionEnabled) {
                 if (!selectedItems.contains(item))
                     selectedItems.add(item);
-            }
-            else
-            {
+            } else {
                 selectCells(getCells(item));
             }
         }
@@ -3291,36 +3098,34 @@ public class Grid extends Canvas
     /**
      * Selects the items at the given zero-relative indices in the receiver. The
      * current selection is not cleared before the new items are selected.
-     * <p>
+     * <p/>
      * If the item at a given index is not selected, it is selected. If the item
      * at a given index was already selected, it remains selected. Indices that
      * are out of range and duplicate indices are ignored. If the receiver is
      * single-select and multiple indices are specified, then all indices are
      * ignored.
-     * <p>
+     * <p/>
      * If cell selection is enabled, all cells within the given indices are
      * selected.
      *
      * @param indices the array of indices for the items to select
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the array of indices is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the array of indices is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      * @see Grid#setSelection(int[])
      */
     public void select(int[] indices)
     {
         checkWidget();
 
-        if (indices == null)
-        {
+        if (indices == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return;
         }
 
         if (!selectionEnabled) return;
@@ -3347,16 +3152,15 @@ public class Grid extends Canvas
 
     /**
      * Selects all of the items in the receiver.
-     * <p>
+     * <p/>
      * If the receiver is single-select, do nothing.  If cell selection is enabled,
      * all cells are selected.
      *
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void selectAll()
     {
@@ -3366,8 +3170,7 @@ public class Grid extends Canvas
 
         if (selectionType == SWT.SINGLE) return;
 
-        if (cellSelectionEnabled)
-        {
+        if (cellSelectionEnabled) {
             selectAllCells();
             return;
         }
@@ -3381,12 +3184,11 @@ public class Grid extends Canvas
      * Sets the empty cell renderer.
      *
      * @param emptyCellRenderer The emptyCellRenderer to set.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setEmptyCellRenderer(GridCellRenderer emptyCellRenderer)
     {
@@ -3399,12 +3201,11 @@ public class Grid extends Canvas
      * Sets the empty column header renderer.
      *
      * @param emptyColumnHeaderRenderer The emptyColumnHeaderRenderer to set.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setEmptyColumnHeaderRenderer(IGridRenderer emptyColumnHeaderRenderer)
     {
@@ -3417,12 +3218,11 @@ public class Grid extends Canvas
      * Sets the empty column footer renderer.
      *
      * @param emptyColumnFooterRenderer The emptyColumnFooterRenderer to set.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setEmptyColumnFooterRenderer(IGridRenderer emptyColumnFooterRenderer)
     {
@@ -3435,12 +3235,11 @@ public class Grid extends Canvas
      * Sets the empty row header renderer.
      *
      * @param emptyRowHeaderRenderer The emptyRowHeaderRenderer to set.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setEmptyRowHeaderRenderer(IGridRenderer emptyRowHeaderRenderer)
     {
@@ -3453,84 +3252,82 @@ public class Grid extends Canvas
      * Sets the external horizontal scrollbar. Allows the scrolling to be
      * managed externally from the table. This functionality is only intended
      * when SWT.H_SCROLL is not given.
-     * <p>
+     * <p/>
      * Using this feature, a ScrollBar could be instantiated outside the table,
      * wrapped in IScrollBar and thus be 'connected' to the table.
      *
      * @param scroll The horizontal scrollbar to set.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     protected void setHorizontalScrollBarProxy(IGridScrollBar scroll)
     {
         checkWidget();
-        if (getHorizontalBar() != null)
-        {
+        if (getHorizontalBar() != null) {
             return;
         }
         hScroll = scroll;
 
         hScroll.addSelectionListener(new SelectionListener() {
-			public void widgetSelected(SelectionEvent e) {
-				onScrollSelection();
-			}
+            public void widgetSelected(SelectionEvent e)
+            {
+                onScrollSelection();
+            }
 
-			public void widgetDefaultSelected(SelectionEvent e) {
-			}
-		});
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
+            }
+        });
     }
 
     /**
-	 * Sets the external vertical scrollbar. Allows the scrolling to be managed
-	 * externally from the table. This functionality is only intended when
-	 * SWT.V_SCROLL is not given.
-	 * <p>
-	 * Using this feature, a ScrollBar could be instantiated outside the table,
-	 * wrapped in IScrollBar and thus be 'connected' to the table.
-	 *
-	 * @param scroll
-	 *            The vertical scrollbar to set.
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been
-	 *             disposed</li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
-	 */
+     * Sets the external vertical scrollbar. Allows the scrolling to be managed
+     * externally from the table. This functionality is only intended when
+     * SWT.V_SCROLL is not given.
+     * <p/>
+     * Using this feature, a ScrollBar could be instantiated outside the table,
+     * wrapped in IScrollBar and thus be 'connected' to the table.
+     *
+     * @param scroll The vertical scrollbar to set.
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been
+     *                                      disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
+     *                                      thread that created the receiver</li>
+     *                                      </ul>
+     */
     protected void setlVerticalScrollBarProxy(IGridScrollBar scroll)
     {
         checkWidget();
-        if (getVerticalBar() != null)
-        {
+        if (getVerticalBar() != null) {
             return;
         }
         vScroll = scroll;
 
         vScroll.addSelectionListener(new SelectionListener() {
-			public void widgetSelected(SelectionEvent e) {
-				onScrollSelection();
-			}
+            public void widgetSelected(SelectionEvent e)
+            {
+                onScrollSelection();
+            }
 
-			public void widgetDefaultSelected(SelectionEvent e) {
-			}
-		});
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
+            }
+        });
     }
 
     /**
      * Sets the focus renderer.
      *
      * @param focusRenderer The focusRenderer to set.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setFocusRenderer(IGridRenderer focusRenderer)
     {
@@ -3543,12 +3340,11 @@ public class Grid extends Canvas
      * and marks it invisible otherwise.
      *
      * @param show the new visibility state
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setHeaderVisible(boolean show)
     {
@@ -3562,12 +3358,11 @@ public class Grid extends Canvas
      * and marks it invisible otherwise.
      *
      * @param show the new visibility state
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setFooterVisible(boolean show)
     {
@@ -3580,12 +3375,11 @@ public class Grid extends Canvas
      * Sets the line color.
      *
      * @param lineColor The lineColor to set.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setLineColor(Color lineColor)
     {
@@ -3597,12 +3391,11 @@ public class Grid extends Canvas
      * Sets the line visibility.
      *
      * @param linesVisible Te linesVisible to set.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setLinesVisible(boolean linesVisible)
     {
@@ -3611,33 +3404,32 @@ public class Grid extends Canvas
         redraw();
     }
 
-	/**
-	 * Sets the tree line visibility.
-	 *
-	 * @param treeLinesVisible
-	 * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
-	 */
-	public void setTreeLinesVisible(boolean treeLinesVisible) {
-		checkWidget();
-		this.treeLinesVisible = treeLinesVisible;
+    /**
+     * Sets the tree line visibility.
+     *
+     * @param treeLinesVisible
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
+     */
+    public void setTreeLinesVisible(boolean treeLinesVisible)
+    {
+        checkWidget();
+        this.treeLinesVisible = treeLinesVisible;
         redraw();
-	}
+    }
 
     /**
      * Sets the row header renderer.
      *
      * @param rowHeaderRenderer The rowHeaderRenderer to set.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setRowHeaderRenderer(IGridRenderer rowHeaderRenderer)
     {
@@ -3653,12 +3445,11 @@ public class Grid extends Canvas
      * pixel.
      *
      * @param show the new visibility state
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setRowHeaderVisible(boolean show)
     {
@@ -3666,9 +3457,8 @@ public class Grid extends Canvas
         this.rowHeaderVisible = show;
         setColumnScrolling(true);
 
-        if (show && isAutoWidth())
-        {
-	        rowHeaderWidth = 1;
+        if (show && isAutoWidth()) {
+            rowHeaderWidth = 1;
 
             for (GridItem iterItem : items) {
                 rowHeaderWidth = Math.max(
@@ -3683,17 +3473,16 @@ public class Grid extends Canvas
     /**
      * Selects the item at the given zero-relative index in the receiver. The
      * current selection is first cleared, then the new item is selected.
-     * <p>
+     * <p/>
      * If cell selection is enabled, all cells within the item at the given index
      * are selected.
      *
      * @param index the index of the item to select
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setSelection(int index)
     {
@@ -3701,16 +3490,12 @@ public class Grid extends Canvas
 
         if (!selectionEnabled) return;
 
-        if (index >= 0 && index < items.size())
-        {
-            if (!cellSelectionEnabled)
-            {
+        if (index >= 0 && index < items.size()) {
+            if (!cellSelectionEnabled) {
                 selectedItems.clear();
                 selectedItems.add(items.get(index));
                 redraw();
-            }
-            else
-            {
+            } else {
                 selectedCells.clear();
                 selectCells(getCells(items.get(index)));
             }
@@ -3721,21 +3506,20 @@ public class Grid extends Canvas
      * Selects the items in the range specified by the given zero-relative
      * indices in the receiver. The range of indices is inclusive. The current
      * selection is cleared before the new items are selected.
-     * <p>
+     * <p/>
      * Indices that are out of range are ignored and no items will be selected
      * if start is greater than end. If the receiver is single-select and there
      * is more than one item in the given range, then all indices are ignored.
-     * <p>
+     * <p/>
      * If cell selection is enabled, all cells within the given range are selected.
      *
      * @param start the start index of the items to select
-     * @param end the end index of the items to select
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @param end   the end index of the items to select
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      * @see Grid#deselectAll()
      * @see Grid#select(int,int)
      */
@@ -3747,34 +3531,25 @@ public class Grid extends Canvas
 
         if (selectionType == SWT.SINGLE && start != end) return;
 
-        if (!cellSelectionEnabled)
-        {
+        if (!cellSelectionEnabled) {
             selectedItems.clear();
-        }
-        else
-        {
+        } else {
             selectedCells.clear();
         }
 
-        for (int i = start; i <= end; i++)
-        {
-            if (i < 0)
-            {
+        for (int i = start; i <= end; i++) {
+            if (i < 0) {
                 continue;
             }
-            if (i > items.size() - 1)
-            {
+            if (i > items.size() - 1) {
                 break;
             }
 
             GridItem item = items.get(i);
 
-            if (!cellSelectionEnabled)
-            {
+            if (!cellSelectionEnabled) {
                 selectedItems.add(item);
-            }
-            else
-            {
+            } else {
                 selectCells(getCells(item));
             }
         }
@@ -3784,24 +3559,22 @@ public class Grid extends Canvas
     /**
      * Selects the items at the given zero-relative indices in the receiver. The
      * current selection is cleared before the new items are selected.
-     * <p>
+     * <p/>
      * Indices that are out of range and duplicate indices are ignored. If the
      * receiver is single-select and multiple indices are specified, then all
      * indices are ignored.
-     * <p>
+     * <p/>
      * If cell selection is enabled, all cells within the given indices are selected.
      *
      * @param indices the indices of the items to select
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the array of indices is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the array of indices is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      * @see Grid#deselectAll()
      * @see Grid#select(int[])
      */
@@ -3813,12 +3586,9 @@ public class Grid extends Canvas
 
         if (selectionType == SWT.SINGLE && indices.length > 1) return;
 
-        if (!cellSelectionEnabled)
-        {
+        if (!cellSelectionEnabled) {
             selectedItems.clear();
-        }
-        else
-        {
+        } else {
             selectedCells.clear();
         }
 
@@ -3844,24 +3614,22 @@ public class Grid extends Canvas
     /**
      * Sets the receiver's selection to be the given array of items. The current
      * selection is cleared before the new items are selected.
-     * <p>
+     * <p/>
      * Items that are not in the receiver are ignored. If the receiver is
      * single-select and multiple items are specified, then all items are
      * ignored.  If cell selection is enabled, all cells within the given items
      * are selected.
      *
      * @param _items the array of items
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the array of items is null</li>
-     * <li>ERROR_INVALID_ARGUMENT - if one of the items has been disposed</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the array of items is null</li>
+     *                                      <li>ERROR_INVALID_ARGUMENT - if one of the items has been disposed</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      * @see Grid#deselectAll()
      * @see Grid#select(int[])
      * @see Grid#setSelection(int[])
@@ -3872,16 +3640,16 @@ public class Grid extends Canvas
 
         if (!selectionEnabled) return;
 
-        if (_items == null) SWT.error(SWT.ERROR_NULL_ARGUMENT);
+        if (_items == null) {
+            SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return;
+        }
 
         if (selectionType == SWT.SINGLE && _items.length > 1) return;
 
-        if (!cellSelectionEnabled)
-        {
+        if (!cellSelectionEnabled) {
             selectedItems.clear();
-        }
-        else
-        {
+        } else {
             selectedCells.clear();
         }
 
@@ -3906,38 +3674,32 @@ public class Grid extends Canvas
      * are added and removed.
      *
      * @param index the index of the top item
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setTopIndex(int index)
     {
         checkWidget();
-        if (index < 0 || index >= items.size())
-        {
+        if (index < 0 || index >= items.size()) {
             return;
         }
 
         GridItem item = items.get(index);
-        if (!item.isVisible())
-        {
+        if (!item.isVisible()) {
             return;
         }
 
-        if (!vScroll.getVisible())
-        {
+        if (!vScroll.getVisible()) {
             return;
         }
 
         int vScrollAmount = 0;
 
-        for (int i = 0; i < index; i++)
-        {
-            if (items.get(i).isVisible())
-            {
+        for (int i = 0; i < index; i++) {
+            if (items.get(i).isVisible()) {
                 vScrollAmount++;
             }
         }
@@ -3952,12 +3714,11 @@ public class Grid extends Canvas
      * Sets the top left renderer.
      *
      * @param topLeftRenderer The topLeftRenderer to set.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setTopLeftRenderer(IGridRenderer topLeftRenderer)
     {
@@ -3970,12 +3731,11 @@ public class Grid extends Canvas
      * Sets the bottom left renderer.
      *
      * @param bottomLeftRenderer The topLeftRenderer to set.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setBottomLeftRenderer(IGridRenderer bottomLeftRenderer)
     {
@@ -3990,94 +3750,70 @@ public class Grid extends Canvas
      * column is visible.
      *
      * @param col the column to be shown
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void showColumn(GridColumn col)
     {
         checkWidget();
 
-        if (!col.isVisible())
-        {
-        	GridColumnGroup group = col.getColumnGroup();
-        	group.setExpanded(!group.getExpanded());
-            if (group.getExpanded())
-            {
-                group.notifyListeners(SWT.Expand,new Event());
-            }
-            else
-            {
-                group.notifyListeners(SWT.Collapse,new Event());
+        if (!col.isVisible()) {
+            GridColumnGroup group = col.getColumnGroup();
+            group.setExpanded(!group.getExpanded());
+            if (group.getExpanded()) {
+                group.notifyListeners(SWT.Expand, new Event());
+            } else {
+                group.notifyListeners(SWT.Collapse, new Event());
             }
         }
 
-        if (!hScroll.getVisible())
-        {
+        if (!hScroll.getVisible()) {
             return;
         }
 
         int x = getColumnHeaderXPosition(col);
 
         int firstVisibleX = 0;
-        if (rowHeaderVisible)
-        {
+        if (rowHeaderVisible) {
             firstVisibleX = rowHeaderWidth;
         }
 
         // if its visible just return
         if (x >= firstVisibleX
-            && (x + col.getWidth()) <= (firstVisibleX + (getClientArea().width - firstVisibleX)))
-        {
+            && (x + col.getWidth()) <= (firstVisibleX + (getClientArea().width - firstVisibleX))) {
             return;
         }
 
-        if (!getColumnScrolling())
-        {
-            if (x < firstVisibleX)
-            {
+        if (!getColumnScrolling()) {
+            if (x < firstVisibleX) {
                 hScroll.setSelection(getHScrollSelectionInPixels() - (firstVisibleX - x));
-            }
-            else
-            {
-                if (col.getWidth() > getClientArea().width - firstVisibleX)
-                {
+            } else {
+                if (col.getWidth() > getClientArea().width - firstVisibleX) {
                     hScroll.setSelection(getHScrollSelectionInPixels() + (x - firstVisibleX));
-                }
-                else
-                {
+                } else {
                     x -= getClientArea().width - firstVisibleX - col.getWidth();
                     hScroll.setSelection(getHScrollSelectionInPixels() + (x - firstVisibleX));
                 }
             }
-        }
-        else
-        {
-            if (x < firstVisibleX || col.getWidth() > getClientArea().width - firstVisibleX)
-            {
+        } else {
+            if (x < firstVisibleX || col.getWidth() > getClientArea().width - firstVisibleX) {
                 int sel = displayOrderedColumns.indexOf(col);
                 hScroll.setSelection(sel);
-            }
-            else
-            {
+            } else {
                 int availableWidth = getClientArea().width - firstVisibleX - col.getWidth();
 
                 GridColumn prevCol = getPreviousVisibleColumn(col);
                 GridColumn currentScrollTo = col;
 
-                while (true)
-                {
-                    if (prevCol == null || prevCol.getWidth() > availableWidth)
-                    {
+                while (true) {
+                    if (prevCol == null || prevCol.getWidth() > availableWidth) {
                         int sel = displayOrderedColumns.indexOf(currentScrollTo);
                         hScroll.setSelection(sel);
                         break;
-                    }
-                    else
-                    {
+                    } else {
                         availableWidth -= prevCol.getWidth();
                         currentScrollTo = prevCol;
                         prevCol = getPreviousVisibleColumn(prevCol);
@@ -4092,26 +3828,25 @@ public class Grid extends Canvas
     /**
      * Returns true if 'item' is currently being <em>completely</em>
      * shown in this <code>Grid</code>'s visible on-screen area.
-     *
+     * <p/>
      * <p>Here, "completely" only refers to the item's height, not its
      * width. This means this method returns true also if some cells
      * are horizontally scrolled away.
      *
      * @param item
      * @return true if 'item' is shown
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * <li>ERROR_INVALID_ARGUMENT - if 'item' is not contained in the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      <li>ERROR_INVALID_ARGUMENT - if 'item' is not contained in the receiver</li>
+     *                                      </ul>
      */
     boolean isShown(GridItem item)
     {
         checkWidget();
 
-        if(!item.isVisible())
+        if (!item.isVisible())
             return false;
 
         int itemIndex = items.indexOf(item);
@@ -4123,22 +3858,22 @@ public class Grid extends Canvas
         int lastVisibleIndex = getBottomIndex();
 
         return (itemIndex >= firstVisibleIndex && itemIndex < lastVisibleIndex)
-    	       ||
-    	       (itemIndex == lastVisibleIndex && bottomIndexShownCompletely);
+            ||
+            (itemIndex == lastVisibleIndex && bottomIndexShownCompletely);
     }
+
     /**
      * Shows the item. If the item is already showing in the receiver, this
      * method simply returns. Otherwise, the items are scrolled until the item
      * is visible.
      *
      * @param item the item to be shown
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * <li>ERROR_INVALID_ARGUMENT - if 'item' is not contained in the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      <li>ERROR_INVALID_ARGUMENT - if 'item' is not contained in the receiver</li>
+     *                                      </ul>
      */
     public void showItem(GridItem item)
     {
@@ -4147,24 +3882,19 @@ public class Grid extends Canvas
         updateScrollbars();
 
         // if no items are visible on screen then abort
-        if (getVisibleGridHeight()<1)
-        {
+        if (getVisibleGridHeight() < 1) {
             return;
         }
 
         // if its visible just return
-        if (isShown(item))
-        {
+        if (isShown(item)) {
             return;
         }
 
-        if (!item.isVisible())
-        {
+        if (!item.isVisible()) {
             GridItem parent = item.getParentItem();
-            do
-            {
-                if (!parent.isExpanded())
-                {
+            do {
+                if (!parent.isExpanded()) {
                     parent.setExpanded(true);
                     parent.fireEvent(SWT.Expand);
                 }
@@ -4175,10 +3905,9 @@ public class Grid extends Canvas
 
         int newTopIndex = items.indexOf(item);
 
-        if (newTopIndex >= getBottomIndex())
-        {
-            RowRange range = getRowRange(newTopIndex,getVisibleGridHeight(),true,true);	// note: inverse==true
-            newTopIndex = range.startIndex;		// note: use startIndex because of inverse==true
+        if (newTopIndex >= getBottomIndex()) {
+            RowRange range = getRowRange(newTopIndex, getVisibleGridHeight(), true, true);    // note: inverse==true
+            newTopIndex = range.startIndex;        // note: use startIndex because of inverse==true
         }
 
         setTopIndex(newTopIndex);
@@ -4189,12 +3918,11 @@ public class Grid extends Canvas
      * this method simply returns. Otherwise, the items are scrolled until the
      * selection is visible.
      *
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void showSelection()
     {
@@ -4205,18 +3933,14 @@ public class Grid extends Canvas
 
         GridItem item;
 
-        if (!cellSelectionEnabled)
-        {
-            if (selectedItems.size() == 0)
-            {
+        if (!cellSelectionEnabled) {
+            if (selectedItems.size() == 0) {
                 return;
             }
 
             item = selectedItems.get(0);
             showItem(item);
-        }
-        else
-        {
+        } else {
             if (selectedCells.size() == 0) return;
 
             Point cell = selectedCells.get(0);
@@ -4232,20 +3956,17 @@ public class Grid extends Canvas
      * Enables selection highlighting if the argument is <code>true</code>.
      *
      * @param selectionEnabled the selection enabled state
-     *
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setSelectionEnabled(boolean selectionEnabled)
     {
         checkWidget();
 
-        if (!selectionEnabled)
-        {
+        if (!selectionEnabled) {
             selectedItems.clear();
             redraw();
         }
@@ -4257,13 +3978,11 @@ public class Grid extends Canvas
      * Returns <code>true</code> if selection is enabled, false otherwise.
      *
      * @return the selection enabled state
-     *
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public boolean getSelectionEnabled()
     {
@@ -4289,8 +4008,7 @@ public class Grid extends Canvas
         }
 
         int groupHeight = 0;
-        for (GridColumnGroup group : columnGroups)
-        {
+        for (GridColumnGroup group : columnGroups) {
             groupHeight = Math.max(group.getHeaderRenderer().computeSize(gc, SWT.DEFAULT,
                                                                          SWT.DEFAULT, group).y,
                                    groupHeight);
@@ -4319,15 +4037,14 @@ public class Grid extends Canvas
      * then used as the height of all rows with items having a height of -1).
      *
      * @param item item to use for sizing
-     * @param gc GC used to perform font metrics,etc.
+     * @param gc   GC used to perform font metrics,etc.
      * @return the row height
      */
     private int computeItemHeight(GridItem item, GC gc)
     {
         int height = 1;
 
-        if (columns.size() == 0 || items.size() == 0)
-        {
+        if (columns.size() == 0 || items.size() == 0) {
             return height;
         }
 
@@ -4337,9 +4054,9 @@ public class Grid extends Canvas
                                                                            item).y);
         }
 
-        if( rowHeaderVisible && rowHeaderRenderer != null ) {
-        	height = Math.max(height, rowHeaderRenderer.computeSize(gc, SWT.DEFAULT,
-                    SWT.DEFAULT, item).y);
+        if (rowHeaderVisible && rowHeaderRenderer != null) {
+            height = Math.max(height, rowHeaderRenderer.computeSize(gc, SWT.DEFAULT,
+                                                                    SWT.DEFAULT, item).y);
         }
 
         return height <= 0 ? 16 : height;
@@ -4354,8 +4071,7 @@ public class Grid extends Canvas
      */
     private int getColumnHeaderXPosition(GridColumn column)
     {
-        if (!column.isVisible())
-        {
+        if (!column.isVisible()) {
             return -1;
         }
 
@@ -4363,8 +4079,7 @@ public class Grid extends Canvas
 
         x -= getHScrollSelectionInPixels();
 
-        if (rowHeaderVisible)
-        {
+        if (rowHeaderVisible) {
             x += rowHeaderWidth;
         }
         for (GridColumn column2 : displayOrderedColumns) {
@@ -4391,11 +4106,9 @@ public class Grid extends Canvas
     private int getHScrollSelectionInPixels()
     {
         int selection = hScroll.getSelection();
-        if (columnScrolling)
-        {
+        if (columnScrolling) {
             int pixels = 0;
-            for (int i = 0; i < selection; i++)
-            {
+            for (int i = 0; i < selection; i++) {
                 pixels += displayOrderedColumns.get(i).getWidth();
             }
             selection = pixels;
@@ -4413,19 +4126,17 @@ public class Grid extends Canvas
         int x = 0;
         int y = 0;
 
-        if (columnHeadersVisible)
-        {
+        if (columnHeadersVisible) {
             y += headerHeight;
         }
 
-        if(columnFootersVisible) {
-        	y += footerHeight;
+        if (columnFootersVisible) {
+            y += footerHeight;
         }
 
         y += getGridHeight();
 
-        if (rowHeaderVisible)
-        {
+        if (rowHeaderVisible) {
             x += rowHeaderWidth;
         }
 
@@ -4453,8 +4164,7 @@ public class Grid extends Canvas
 
         int x2 = 1;
 
-        if (rowHeaderVisible)
-        {
+        if (rowHeaderVisible) {
             x2 += rowHeaderWidth + 1;
         }
 
@@ -4465,8 +4175,7 @@ public class Grid extends Canvas
         GridColumn firstVisibleCol = null;
         GridColumn lastVisibleCol = null;
 
-        if (x < x2)
-        {
+        if (x < x2) {
             for (GridColumn column : displayOrderedColumns) {
                 if (!column.isVisible()) {
                     continue;
@@ -4475,9 +4184,7 @@ public class Grid extends Canvas
                 break;
             }
             local_dragDropAfterColumn = null;
-        }
-        else
-        {
+        } else {
             for (GridColumn column : displayOrderedColumns) {
                 if (!column.isVisible()) {
                     continue;
@@ -4509,8 +4216,7 @@ public class Grid extends Canvas
                 previousVisibleCol = column;
             }
 
-            if (local_dragDropBeforeColumn == null)
-            {
+            if (local_dragDropBeforeColumn == null) {
                 local_dragDropAfterColumn = lastVisibleCol;
             }
         }
@@ -4518,41 +4224,32 @@ public class Grid extends Canvas
         currentHeaderDragX = x;
 
         if (local_dragDropBeforeColumn != dragDropBeforeColumn
-            || (dragDropBeforeColumn == null && dragDropAfterColumn == null))
-        {
+            || (dragDropBeforeColumn == null && dragDropAfterColumn == null)) {
             dragDropPointValid = true;
 
             // Determine if valid drop point
-            if (columnGroups.length != 0)
-            {
+            if (columnGroups.length != 0) {
 
-                if (columnBeingPushed.getColumnGroup() == null)
-                {
+                if (columnBeingPushed.getColumnGroup() == null) {
                     if (local_dragDropBeforeColumn != null
                         && local_dragDropAfterColumn != null
                         && local_dragDropBeforeColumn.getColumnGroup() != null
                         && local_dragDropBeforeColumn.getColumnGroup() == local_dragDropAfterColumn
-                            .getColumnGroup())
-                    {
+                        .getColumnGroup()) {
                         // Dont move a column w/o a group in between two columns
                         // in the same group
                         dragDropPointValid = false;
                     }
-                }
-                else
-                {
+                } else {
                     if (!(local_dragDropBeforeColumn != null && local_dragDropBeforeColumn
                         .getColumnGroup() == columnBeingPushed.getColumnGroup())
                         && !(local_dragDropAfterColumn != null && local_dragDropAfterColumn
-                            .getColumnGroup() == columnBeingPushed.getColumnGroup()))
-                    {
+                        .getColumnGroup() == columnBeingPushed.getColumnGroup())) {
                         // Dont move a column with a group
                         dragDropPointValid = false;
                     }
                 }
-            }
-            else
-            {
+            } else {
                 dragDropPointValid = true;
             }
         }
@@ -4561,7 +4258,7 @@ public class Grid extends Canvas
         dragDropAfterColumn = local_dragDropAfterColumn;
 
         Rectangle clientArea = getClientArea();
-        redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
+        redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
 
         return true;
     }
@@ -4574,66 +4271,48 @@ public class Grid extends Canvas
         draggingColumn = false;
 
         if ((dragDropBeforeColumn != columnBeingPushed && dragDropAfterColumn != columnBeingPushed)
-            && (columnGroups.length == 0 || dragDropPointValid))
-        {
+            && (columnGroups.length == 0 || dragDropPointValid)) {
 
             int notifyFrom = displayOrderedColumns.indexOf(columnBeingPushed);
             int notifyTo = notifyFrom;
 
             displayOrderedColumns.remove(columnBeingPushed);
 
-            if (dragDropBeforeColumn == null)
-            {
+            if (dragDropBeforeColumn == null) {
 
                 notifyTo = displayOrderedColumns.size();
                 displayOrderedColumns.add(columnBeingPushed);
-            }
-            else if (dragDropAfterColumn == null)
-            {
+            } else if (dragDropAfterColumn == null) {
                 displayOrderedColumns.add(0, columnBeingPushed);
                 notifyFrom = 0;
-            }
-            else
-            {
+            } else {
                 int insertAtIndex;
 
-                if (columnGroups.length != 0)
-                {
+                if (columnGroups.length != 0) {
                     // ensure that we aren't putting this column into a group,
                     // this is possible if
                     // there are invisible columns between the after and before
                     // cols
 
-                    if (dragDropBeforeColumn.getColumnGroup() == columnBeingPushed.getColumnGroup())
-                    {
+                    if (dragDropBeforeColumn.getColumnGroup() == columnBeingPushed.getColumnGroup()) {
                         insertAtIndex = displayOrderedColumns.indexOf(dragDropBeforeColumn);
-                    }
-                    else if (dragDropAfterColumn.getColumnGroup() == columnBeingPushed
-                        .getColumnGroup())
-                    {
+                    } else if (dragDropAfterColumn.getColumnGroup() == columnBeingPushed
+                        .getColumnGroup()) {
                         insertAtIndex = displayOrderedColumns.indexOf(dragDropAfterColumn) + 1;
-                    }
-                    else
-                    {
-                        if (dragDropBeforeColumn.getColumnGroup() == null)
-                        {
+                    } else {
+                        if (dragDropBeforeColumn.getColumnGroup() == null) {
                             insertAtIndex = displayOrderedColumns.indexOf(dragDropBeforeColumn);
-                        }
-                        else
-                        {
+                        } else {
                             GridColumnGroup beforeGroup = dragDropBeforeColumn.getColumnGroup();
                             insertAtIndex = displayOrderedColumns.indexOf(dragDropBeforeColumn);
                             while (insertAtIndex > 0
-                                   && displayOrderedColumns.get(insertAtIndex -1).getColumnGroup() == beforeGroup)
-                            {
+                                && displayOrderedColumns.get(insertAtIndex - 1).getColumnGroup() == beforeGroup) {
                                 insertAtIndex--;
                             }
 
                         }
                     }
-                }
-                else
-                {
+                } else {
                     insertAtIndex = displayOrderedColumns.indexOf(dragDropBeforeColumn);
                 }
                 displayOrderedColumns.add(insertAtIndex, columnBeingPushed);
@@ -4641,8 +4320,7 @@ public class Grid extends Canvas
                 notifyTo = Math.max(notifyTo, insertAtIndex);
             }
 
-            for (int i = notifyFrom; i <= notifyTo; i++)
-            {
+            for (int i = notifyFrom; i <= notifyTo; i++) {
                 displayOrderedColumns.get(i).fireMoved();
             }
         }
@@ -4663,16 +4341,13 @@ public class Grid extends Canvas
     {
         GridColumn overThis = overColumnHeader(x, y);
 
-        if ((overThis == columnBeingPushed) != pushingAndHovering)
-        {
+        if ((overThis == columnBeingPushed) != pushingAndHovering) {
             pushingAndHovering = (overThis == columnBeingPushed);
             redraw();
         }
-        if (columnBeingPushed.getMoveable())
-        {
+        if (columnBeingPushed.getMoveable()) {
 
-            if (pushingAndHovering && Math.abs(startHeaderPushX - x) > 3)
-            {
+            if (pushingAndHovering && Math.abs(startHeaderPushX - x) > 3) {
 
                 // stop pushing
                 pushingColumn = false;
@@ -4707,21 +4382,18 @@ public class Grid extends Canvas
     private boolean handleColumnGroupHeaderClick(int x, int y)
     {
 
-        if (!columnHeadersVisible)
-        {
+        if (!columnHeadersVisible) {
             return false;
         }
 
         GridColumnGroup overThis = overColumnGroupHeader(x, y);
 
-        if (overThis == null)
-        {
+        if (overThis == null) {
             return false;
         }
 
         int headerX = 0;
-        if (rowHeaderVisible)
-        {
+        if (rowHeaderVisible) {
             headerX += rowHeaderWidth;
         }
 
@@ -4754,20 +4426,17 @@ public class Grid extends Canvas
      */
     private boolean handleColumnHeaderPush(int x, int y)
     {
-        if (!columnHeadersVisible)
-        {
+        if (!columnHeadersVisible) {
             return false;
         }
 
         GridColumn overThis = overColumnHeader(x, y);
 
-        if (overThis == null)
-        {
+        if (overThis == null) {
             return false;
         }
 
-        if (cellSelectionEnabled && !overThis.getMoveable())
-        {
+        if (cellSelectionEnabled && !overThis.getMoveable()) {
             return false;
         }
 
@@ -4789,11 +4458,11 @@ public class Grid extends Canvas
 
     private boolean handleColumnFooterPush(int x, int y)
     {
-    	if(!columnFootersVisible) {
-    		return false;
-    	}
+        if (!columnFootersVisible) {
+            return false;
+        }
 
-    	GridColumn overThis = overColumnFooter(x, y);
+        GridColumn overThis = overColumnFooter(x, y);
 
         return overThis != null;
 
@@ -4808,39 +4477,37 @@ public class Grid extends Canvas
     private void handleColumnResizerDragging(int x)
     {
         int newWidth = resizingColumnStartWidth + (x - resizingStartX);
-        if (newWidth < MIN_COLUMN_HEADER_WIDTH)
-        {
+        if (newWidth < MIN_COLUMN_HEADER_WIDTH) {
             newWidth = MIN_COLUMN_HEADER_WIDTH;
         }
 
-        if (columnScrolling)
-        {
-        	int maxWidth = getClientArea().width;
-        	if (rowHeaderVisible)
-        		maxWidth -= rowHeaderWidth;
-        	if (newWidth > maxWidth)
-        		newWidth = maxWidth;
+        if (columnScrolling) {
+            int maxWidth = getClientArea().width;
+            if (rowHeaderVisible)
+                maxWidth -= rowHeaderWidth;
+            if (newWidth > maxWidth)
+                newWidth = maxWidth;
         }
 
-        if (newWidth == columnBeingResized.getWidth())
-        {
-        	return;
+        if (newWidth == columnBeingResized.getWidth()) {
+            return;
         }
 
-        columnBeingResized.setWidth(newWidth,false);
+        columnBeingResized.setWidth(newWidth, false);
         scrollValuesObsolete = true;
 
         Rectangle clientArea = getClientArea();
-        redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
+        redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
 
         columnBeingResized.fireResized();
 
-        for (int index = displayOrderedColumns.indexOf(columnBeingResized) + 1; index < displayOrderedColumns.size(); index ++)
-        {
+        for (int index = displayOrderedColumns.indexOf(
+            columnBeingResized) + 1; index < displayOrderedColumns.size(); index++) {
             GridColumn col = displayOrderedColumns.get(index);
             if (col.isVisible()) col.fireMoved();
         }
     }
+
     /**
      * Sets the new height of the item of the row being resized and fires the appropriate
      * listeners.
@@ -4850,18 +4517,15 @@ public class Grid extends Canvas
     private void handleRowResizerDragging(int y)
     {
         int newHeight = resizingRowStartHeight + (y - resizingStartY);
-        if (newHeight < MIN_ROW_HEADER_HEIGHT)
-        {
+        if (newHeight < MIN_ROW_HEADER_HEIGHT) {
             newHeight = MIN_ROW_HEADER_HEIGHT;
         }
 
-        if (newHeight > getClientArea().height)
-        {
+        if (newHeight > getClientArea().height) {
             newHeight = getClientArea().height;
         }
 
-        if (newHeight == rowBeingResized.getHeight())
-        {
+        if (newHeight == rowBeingResized.getHeight()) {
             return;
         }
 
@@ -4873,17 +4537,15 @@ public class Grid extends Canvas
         rowBeingResized.notifyListeners(SWT.Resize, e);
 
         if (!e.doit)
-        	return;
+            return;
 
         newHeight = e.detail;
 
-        if (newHeight < MIN_ROW_HEADER_HEIGHT)
-        {
+        if (newHeight < MIN_ROW_HEADER_HEIGHT) {
             newHeight = MIN_ROW_HEADER_HEIGHT;
         }
 
-        if (newHeight > getClientArea().height)
-        {
+        if (newHeight > getClientArea().height) {
             newHeight = getClientArea().height;
         }
 
@@ -4891,7 +4553,7 @@ public class Grid extends Canvas
         scrollValuesObsolete = true;
 
         Rectangle clientArea = getClientArea();
-        redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
+        redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
     }
 
     /**
@@ -4905,12 +4567,10 @@ public class Grid extends Canvas
     private boolean handleHoverOnColumnResizer(int x, int y)
     {
         boolean over = false;
-        if (y <= headerHeight)
-        {
+        if (y <= headerHeight) {
             int x2 = 0;
 
-            if (rowHeaderVisible)
-            {
+            if (rowHeaderVisible) {
                 x2 += rowHeaderWidth;
             }
 
@@ -4939,14 +4599,10 @@ public class Grid extends Canvas
             }
         }
 
-        if (over != hoveringOnColumnResizer)
-        {
-            if (over)
-            {
+        if (over != hoveringOnColumnResizer) {
+            if (over) {
                 setCursor(getDisplay().getSystemCursor(SWT.CURSOR_SIZEWE));
-            }
-            else
-            {
+            } else {
                 columnBeingResized = null;
                 setCursor(null);
             }
@@ -4965,56 +4621,44 @@ public class Grid extends Canvas
      */
     private boolean handleHoverOnRowResizer(int x, int y)
     {
-    	rowBeingResized = null;
+        rowBeingResized = null;
         boolean over = false;
-        if (x <= rowHeaderWidth)
-        {
+        if (x <= rowHeaderWidth) {
             int y2 = 0;
 
-            if (columnHeadersVisible)
-            {
+            if (columnHeadersVisible) {
                 y2 += headerHeight;
             }
 
-            int row=getTopIndex();
-            while(row<items.size() && y2<=getClientArea().height)
-            {
+            int row = getTopIndex();
+            while (row < items.size() && y2 <= getClientArea().height) {
                 GridItem currItem = items.get(row);
-                if (currItem.isVisible())
-                {
-                	y2 += currItem.getHeight() +1;
+                if (currItem.isVisible()) {
+                    y2 += currItem.getHeight() + 1;
 
-                	if (y2 >= (y - ROW_RESIZER_THRESHOLD) && y2 <= (y + ROW_RESIZER_THRESHOLD))
-                	{
+                    if (y2 >= (y - ROW_RESIZER_THRESHOLD) && y2 <= (y + ROW_RESIZER_THRESHOLD)) {
 //                		if (currItem.isResizeable())
-                		{
-                			over = true;
-                			rowBeingResized = currItem;
-                		}
-                		// do not brake here, because in case of overlapping
-                		// row resizers we need to find the last one
-                	}
-                	else
-                	{
-                		if(rowBeingResized != null)
-                		{
-                			// we have passed all (overlapping) row resizers, so break
-                			break;
-                		}
-                	}
+                        {
+                            over = true;
+                            rowBeingResized = currItem;
+                        }
+                        // do not brake here, because in case of overlapping
+                        // row resizers we need to find the last one
+                    } else {
+                        if (rowBeingResized != null) {
+                            // we have passed all (overlapping) row resizers, so break
+                            break;
+                        }
+                    }
                 }
                 row++;
             }
         }
 
-        if (over != hoveringOnRowResizer)
-        {
-            if (over)
-            {
+        if (over != hoveringOnRowResizer) {
+            if (over) {
                 setCursor(getDisplay().getSystemCursor(SWT.CURSOR_SIZENS));
-            }
-            else
-            {
+            } else {
                 rowBeingResized = null;
                 setCursor(null);
             }
@@ -5029,36 +4673,33 @@ public class Grid extends Canvas
      *
      * @param point the point used to locate the item
      * @return the cell at the given point
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the point is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the point is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public Point getCell(Point point)
     {
         checkWidget();
 
-        if (point == null)
+        if (point == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return null;
+        }
 
         if (point.x < 0 || point.x > getClientArea().width) return null;
 
         GridItem item = getItem(point);
         GridColumn column = getColumn(point);
 
-        if (item!=null && column!=null)
-        {
-        	return new Point(columns.indexOf(column),items.indexOf(item));
-        }
-        else
-        {
-        	return null;
+        if (item != null && column != null) {
+            return new Point(columns.indexOf(column), items.indexOf(item));
+        } else {
+            return null;
         }
     }
 
@@ -5069,7 +4710,7 @@ public class Grid extends Canvas
      */
     private void onPaint(PaintEvent e)
     {
-        int insertMarkPosX1 = -1;		// we will populate these values while drawing the cells
+        int insertMarkPosX1 = -1;        // we will populate these values while drawing the cells
         int insertMarkPosX2 = -1;
         int insertMarkPosY = -1;
         boolean insertMarkPosFound = false;
@@ -5077,10 +4718,9 @@ public class Grid extends Canvas
         GridCellSpanManager cellSpanManager = new GridCellSpanManager();
 
         e.gc.setBackground(getBackground());
-        this.drawBackground(e.gc,0,0,getSize().x,getSize().y);
+        this.drawBackground(e.gc, 0, 0, getSize().x, getSize().y);
 
-        if (scrollValuesObsolete)
-        {
+        if (scrollValuesObsolete) {
             updateScrollbars();
             scrollValuesObsolete = false;
         }
@@ -5088,31 +4728,28 @@ public class Grid extends Canvas
         int x;
         int y = 0;
 
-        if (columnHeadersVisible)
-        {
+        if (columnHeadersVisible) {
             paintHeader(e.gc);
             y += headerHeight;
         }
 
-        int availableHeight = getClientArea().height-y;
+        int availableHeight = getClientArea().height - y;
         int visibleRows = availableHeight / getItemHeight() + 1;
-        if (items.size()>0 && availableHeight>0)
-        {
-            RowRange range = getRowRange(getTopIndex(),availableHeight,false,false);
+        if (items.size() > 0 && availableHeight > 0) {
+            RowRange range = getRowRange(getTopIndex(), availableHeight, false, false);
             if (range.height >= availableHeight)
                 visibleRows = range.rows;
             else
-                visibleRows = range.rows + (availableHeight-range.height) / getItemHeight() + 1;
+                visibleRows = range.rows + (availableHeight - range.height) / getItemHeight() + 1;
         }
 
         int firstVisibleIndex = getTopIndex();
         int firstItemToDraw = firstVisibleIndex;
 
-        if(hasSpanning) {
-        	// We need to find the first Item to draw. An earlier item can row-span the first visible item.
-        	for(int rowIndex = 0; rowIndex < firstVisibleIndex; rowIndex++)
-        	{
-        		GridItem itemForRow = items.get(rowIndex);
+        if (hasSpanning) {
+            // We need to find the first Item to draw. An earlier item can row-span the first visible item.
+            for (int rowIndex = 0; rowIndex < firstVisibleIndex; rowIndex++) {
+                GridItem itemForRow = items.get(rowIndex);
                 int colIndex = 0;
 
                 int maxRowSpanForItem = 0;
@@ -5126,25 +4763,23 @@ public class Grid extends Canvas
                     maxRowSpanForItem = rowSpan > maxRowSpanForItem ? rowSpan : maxRowSpanForItem;
                 }
 
-                if(rowIndex + maxRowSpanForItem >= firstVisibleIndex) {
-                	firstItemToDraw = rowIndex;
-                	break;
+                if (rowIndex + maxRowSpanForItem >= firstVisibleIndex) {
+                    firstItemToDraw = rowIndex;
+                    break;
                 } else {
-                	rowIndex += maxRowSpanForItem;
+                    rowIndex += maxRowSpanForItem;
                 }
-        	}
+            }
 
-        	for(int rowIndex = firstItemToDraw; rowIndex < firstVisibleIndex; rowIndex++)
-        	{
-        		GridItem itemForRow = items.get(rowIndex);
-        		y = y - itemForRow.getHeight() - 1;
-        	}
+            for (int rowIndex = firstItemToDraw; rowIndex < firstVisibleIndex; rowIndex++) {
+                GridItem itemForRow = items.get(rowIndex);
+                y = y - itemForRow.getHeight() - 1;
+            }
         }
 
         int row = firstItemToDraw;
 
-        for (int i = 0; i < visibleRows + (firstVisibleIndex - firstItemToDraw); i++)
-        {
+        for (int i = 0; i < visibleRows + (firstVisibleIndex - firstItemToDraw); i++) {
 
             x = 0;
 
@@ -5152,28 +4787,23 @@ public class Grid extends Canvas
 
             // get the item to draw
             GridItem item = null;
-            if (row < items.size())
-            {
+            if (row < items.size()) {
                 item = items.get(row);
 
-                while (!item.isVisible() && row < items.size() - 1)
-                {
+                while (!item.isVisible() && row < items.size() - 1) {
                     row++;
                     item = items.get(row);
                 }
             }
-            if (item != null && !item.isVisible())
-            {
+            if (item != null && !item.isVisible()) {
                 item = null;
             }
 
-            if (item != null)
-            {
+            if (item != null) {
                 boolean cellInRowSelected = false;
 
 
-                if (rowHeaderVisible)
-                {
+                if (rowHeaderVisible) {
 
                     // row header is actually painted later
                     x += rowHeaderWidth;
@@ -5281,10 +4911,9 @@ public class Grid extends Canvas
 
                 }
 
-                if (x < getClientArea().width)
-                {
+                if (x < getClientArea().width) {
                     // insertMarkPos needs correction
-                    if(insertMarkPosFound && insertMarkColumn == null)
+                    if (insertMarkPosFound && insertMarkColumn == null)
                         insertMarkPosX2 = x;
 
                     emptyCellRenderer.setSelected(selectedItems.contains(item));
@@ -5297,52 +4926,40 @@ public class Grid extends Canvas
 
                 x = 0;
 
-                if (rowHeaderVisible)
-                {
+                if (rowHeaderVisible) {
 
-                    if (!cellSelectionEnabled)
-                    {
+                    if (!cellSelectionEnabled) {
                         rowHeaderRenderer.setSelected(selectedItems.contains(item));
-                    }
-                    else
-                    {
+                    } else {
                         rowHeaderRenderer.setSelected(cellInRowSelected);
                     }
-                    if(y >= headerHeight)
-                    {
-	                    rowHeaderRenderer.setBounds(0, y, rowHeaderWidth, item.getHeight() + 1);
-	                    rowHeaderRenderer.paint(e.gc, item);
+                    if (y >= headerHeight) {
+                        rowHeaderRenderer.setBounds(0, y, rowHeaderWidth, item.getHeight() + 1);
+                        rowHeaderRenderer.paint(e.gc, item);
                     }
                     x += rowHeaderWidth;
                 }
 
                 // focus
-                if (isFocusControl() && !cellSelectionEnabled)
-                {
-                    if (item == focusItem)
-                    {
-                        if (focusRenderer != null)
-                        {
+                if (isFocusControl() && !cellSelectionEnabled) {
+                    if (item == focusItem) {
+                        if (focusRenderer != null) {
                             int focusX = 0;
-                            if (rowHeaderVisible)
-                            {
+                            if (rowHeaderVisible) {
                                 focusX = rowHeaderWidth;
                             }
                             focusRenderer
                                 .setBounds(focusX, focusY - 1, getClientArea().width - focusX - 1,
-                                		item.getHeight() + 1);
+                                           item.getHeight() + 1);
                             focusRenderer.paint(e.gc, item);
                         }
                     }
                 }
 
                 y += item.getHeight() + 1;
-            }
-            else
-            {
+            } else {
 
-                if (rowHeaderVisible)
-                {
+                if (rowHeaderVisible) {
                     //row header is actually painted later
                     x += rowHeaderWidth;
                 }
@@ -5362,8 +4979,7 @@ public class Grid extends Canvas
                     }
                 }
 
-                if (x < getClientArea().width)
-                {
+                if (x < getClientArea().width) {
                     emptyCellRenderer.setBounds(x, y, getClientArea().width - x + 1, getItemHeight());
                     emptyCellRenderer.setColumn(getColumnCount());
                     emptyCellRenderer.paint(e.gc, this);
@@ -5372,8 +4988,7 @@ public class Grid extends Canvas
 
                 x = 0;
 
-                if (rowHeaderVisible)
-                {
+                if (rowHeaderVisible) {
                     emptyRowHeaderRenderer.setBounds(x, y, rowHeaderWidth, getItemHeight() + 1);
                     emptyRowHeaderRenderer.paint(e.gc, this);
 
@@ -5387,26 +5002,20 @@ public class Grid extends Canvas
         }
 
         // draw drop point
-        if (draggingColumn)
-        {
+        if (draggingColumn) {
             if ((dragDropAfterColumn != null || dragDropBeforeColumn != null)
                 && (dragDropAfterColumn != columnBeingPushed && dragDropBeforeColumn != columnBeingPushed)
-                && dragDropPointValid)
-            {
-                if (dragDropBeforeColumn != null)
-                {
+                && dragDropPointValid) {
+                if (dragDropBeforeColumn != null) {
                     x = getColumnHeaderXPosition(dragDropBeforeColumn);
-                }
-                else
-                {
+                } else {
                     x = getColumnHeaderXPosition(dragDropAfterColumn)
                         + dragDropAfterColumn.getWidth();
                 }
 
                 Point size = dropPointRenderer.computeSize(e.gc, SWT.DEFAULT, SWT.DEFAULT, null);
                 x -= size.x / 2;
-                if (x < 0)
-                {
+                if (x < 0) {
                     x = 0;
                 }
                 dropPointRenderer.setBounds(x - 1, headerHeight + DROP_POINT_LOWER_OFFSET, size.x,
@@ -5416,18 +5025,18 @@ public class Grid extends Canvas
         }
 
         // draw insertion mark
-        if (insertMarkPosFound)
-        {
+        if (insertMarkPosFound) {
             e.gc.setClipping(
-                    rowHeaderVisible ? rowHeaderWidth : 0,
-                    columnHeadersVisible ? headerHeight : 0,
-                    getClientArea().width,
-                    getClientArea().height);
-            insertMarkRenderer.paint(e.gc, new Rectangle(insertMarkPosX1, insertMarkPosY, insertMarkPosX2 - insertMarkPosX1, 0));
+                rowHeaderVisible ? rowHeaderWidth : 0,
+                columnHeadersVisible ? headerHeight : 0,
+                getClientArea().width,
+                getClientArea().height);
+            insertMarkRenderer.paint(e.gc,
+                                     new Rectangle(insertMarkPosX1, insertMarkPosY, insertMarkPosX2 - insertMarkPosX1,
+                                                   0));
         }
 
-        if (columnFootersVisible)
-        {
+        if (columnFootersVisible) {
             paintFooter(e.gc);
         }
     }
@@ -5444,13 +5053,10 @@ public class Grid extends Canvas
     {
         GridColumn col = null;
 
-        if (y <= headerHeight && y > 0)
-        {
+        if (y <= headerHeight && y > 0) {
             col = getColumn(new Point(x, y));
-            if (col != null && col.getColumnGroup() != null)
-            {
-                if (y <= groupHeaderHeight)
-                {
+            if (col != null && col.getColumnGroup() != null) {
+                if (y <= groupHeaderHeight) {
                     return null;
                 }
             }
@@ -5471,8 +5077,7 @@ public class Grid extends Canvas
     {
         GridColumn col = null;
 
-        if (y >= getClientArea().height - footerHeight )
-        {
+        if (y >= getClientArea().height - footerHeight) {
             col = getColumn(new Point(x, y));
         }
 
@@ -5491,11 +5096,9 @@ public class Grid extends Canvas
     {
         GridColumnGroup group = null;
 
-        if (y <= groupHeaderHeight && y > 0)
-        {
+        if (y <= groupHeaderHeight && y > 0) {
             GridColumn col = getColumn(new Point(x, y));
-            if (col != null)
-            {
+            if (col != null) {
                 group = col.getColumnGroup();
             }
         }
@@ -5515,8 +5118,7 @@ public class Grid extends Canvas
 
         x -= getHScrollSelectionInPixels();
 
-        if (rowHeaderVisible)
-        {
+        if (rowHeaderVisible) {
             // paint left corner
             // topLeftRenderer.setBounds(0, y, rowHeaderWidth, headerHeight);
             // topLeftRenderer.paint(gc, null);
@@ -5615,24 +5217,21 @@ public class Grid extends Canvas
             x += column.getWidth();
         }
 
-        if (x < getClientArea().width)
-        {
+        if (x < getClientArea().width) {
             emptyColumnHeaderRenderer.setBounds(x, 0, getClientArea().width - x, headerHeight);
             emptyColumnHeaderRenderer.paint(gc, null);
         }
 
         x = 0;
 
-        if (rowHeaderVisible)
-        {
+        if (rowHeaderVisible) {
             // paint left corner
             topLeftRenderer.setBounds(0, 0, rowHeaderWidth, headerHeight);
             topLeftRenderer.paint(gc, this);
             x += rowHeaderWidth;
         }
 
-        if (draggingColumn)
-        {
+        if (draggingColumn) {
 
             gc.setAlpha(COLUMN_DRAG_ALPHA);
 
@@ -5640,22 +5239,19 @@ public class Grid extends Canvas
 
             int height;
 
-            if (columnBeingPushed.getColumnGroup() != null)
-            {
+            if (columnBeingPushed.getColumnGroup() != null) {
                 height = headerHeight - groupHeaderHeight;
                 y = groupHeaderHeight;
-            }
-            else
-            {
+            } else {
                 height = headerHeight;
                 y = 0;
             }
 
             columnBeingPushed.getHeaderRenderer()
                 .setBounds(
-                           getColumnHeaderXPosition(columnBeingPushed)
-                               + (currentHeaderDragX - startHeaderDragX), y,
-                           columnBeingPushed.getWidth(), height);
+                    getColumnHeaderXPosition(columnBeingPushed)
+                        + (currentHeaderDragX - startHeaderDragX), y,
+                    columnBeingPushed.getWidth(), height);
             columnBeingPushed.getHeaderRenderer().paint(gc, columnBeingPushed);
             columnBeingPushed.getHeaderRenderer().setSelected(false);
 
@@ -5665,14 +5261,14 @@ public class Grid extends Canvas
 
     }
 
-    private void paintFooter(GC gc) {
-    	int x = 0;
+    private void paintFooter(GC gc)
+    {
+        int x = 0;
         int y;
 
         x -= getHScrollSelectionInPixels();
 
-        if (rowHeaderVisible)
-        {
+        if (rowHeaderVisible) {
             // paint left corner
             // topLeftRenderer.setBounds(0, y, rowHeaderWidth, headerHeight);
             // topLeftRenderer.paint(gc, null);
@@ -5700,19 +5296,18 @@ public class Grid extends Canvas
             x += column.getWidth();
         }
 
-      if (x < getClientArea().width)
-      {
-    	  emptyColumnFooterRenderer.setBounds(x, getClientArea().height - footerHeight, getClientArea().width - x, footerHeight);
-    	  emptyColumnFooterRenderer.paint(gc, null);
-      }
+        if (x < getClientArea().width) {
+            emptyColumnFooterRenderer.setBounds(x, getClientArea().height - footerHeight, getClientArea().width - x,
+                                                footerHeight);
+            emptyColumnFooterRenderer.paint(gc, null);
+        }
 
-      if (rowHeaderVisible)
-      {
-        // paint left corner
-    	bottomLeftRenderer.setBounds(0, getClientArea().height-footerHeight, rowHeaderWidth, footerHeight);
-    	bottomLeftRenderer.paint(gc, this);
-        x += rowHeaderWidth;
-      }
+        if (rowHeaderVisible) {
+            // paint left corner
+            bottomLeftRenderer.setBounds(0, getClientArea().height - footerHeight, rowHeaderWidth, footerHeight);
+            bottomLeftRenderer.paint(gc, this);
+            x += rowHeaderWidth;
+        }
     }
 
     /**
@@ -5736,24 +5331,17 @@ public class Grid extends Canvas
         // that if a scrollbar is turned on/off, the other scrollbar's
         // visibility may be affected (more
         // area may have been added/removed.
-        for (int doublePass = 1; doublePass <= 2; doublePass++)
-        {
+        for (int doublePass = 1; doublePass <= 2; doublePass++) {
 
-            if (preferredSize.y > clientArea.height)
-            {
+            if (preferredSize.y > clientArea.height) {
                 vScroll.setVisible(true);
-            }
-            else
-            {
+            } else {
                 vScroll.setVisible(false);
                 vScroll.setValues(0, 0, 1, 1, 1, 1);
             }
-            if (preferredSize.x > clientArea.width)
-            {
+            if (preferredSize.x > clientArea.width) {
                 hScroll.setVisible(true);
-            }
-            else
-            {
+            } else {
                 hScroll.setVisible(false);
                 hScroll.setValues(0, 0, 1, 1, 1, 1);
             }
@@ -5764,26 +5352,22 @@ public class Grid extends Canvas
         }
 
         // if the scrollbar is visible set its values
-        if (vScroll.getVisible())
-        {
+        if (vScroll.getVisible()) {
             int max = currentVisibleItems;
             int thumb = 1;
 
-            if(!hasDifferingHeights)
-            {
-            	// in this case, the number of visible rows on screen is constant,
-            	// so use this as thumb
-                thumb = ( getVisibleGridHeight() + 1 ) / ( getItemHeight() + 1 );
-            }
-            else
-            {
+            if (!hasDifferingHeights) {
+                // in this case, the number of visible rows on screen is constant,
+                // so use this as thumb
+                thumb = (getVisibleGridHeight() + 1) / (getItemHeight() + 1);
+            } else {
                 // in this case, the number of visible rows on screen is variable,
-            	// so we have to use 1 as thumb and decrease max by the number of
-            	// rows on the last page
-            	if(getVisibleGridHeight()>=1) {
-            		RowRange range = getRowRange(-1,getVisibleGridHeight(),true,true);
-            		max -= range.rows - 1;
-            	}
+                // so we have to use 1 as thumb and decrease max by the number of
+                // rows on the last page
+                if (getVisibleGridHeight() >= 1) {
+                    RowRange range = getRowRange(-1, getVisibleGridHeight(), true, true);
+                    max -= range.rows - 1;
+                }
             }
 
             // if possible, remember selection, if selection is too large, just
@@ -5794,11 +5378,9 @@ public class Grid extends Canvas
         }
 
         // if the scrollbar is visible set its values
-        if (hScroll.getVisible())
-        {
+        if (hScroll.getVisible()) {
 
-            if (!columnScrolling)
-            {
+            if (!columnScrolling) {
                 // horizontal scrolling works pixel by pixel
 
                 int hiddenArea = preferredSize.x - clientArea.width + 1;
@@ -5809,10 +5391,8 @@ public class Grid extends Canvas
                 int selection = Math.min(hScroll.getSelection(), hiddenArea - 1);
 
                 hScroll.setValues(selection, 0, hiddenArea + clientArea.width - 1, clientArea.width,
-                                 HORZ_SCROLL_INCREMENT, clientArea.width);
-            }
-            else
-            {
+                                  HORZ_SCROLL_INCREMENT, clientArea.width);
+            } else {
                 // horizontal scrolling is column by column
 
                 int hiddenArea = preferredSize.x - clientArea.width + 1;
@@ -5820,14 +5400,12 @@ public class Grid extends Canvas
                 int max = 0;
                 int i = 0;
 
-                while (hiddenArea > 0 && i < getColumnCount())
-                {
+                while (hiddenArea > 0 && i < getColumnCount()) {
                     GridColumn col = displayOrderedColumns.get(i);
 
                     i++;
 
-                    if (col.isVisible())
-                    {
+                    if (col.isVisible()) {
                         hiddenArea -= col.getWidth();
                         max++;
                     }
@@ -5859,50 +5437,42 @@ public class Grid extends Canvas
      * Adds/removes items from the selected items list based on the
      * selection/deselection of the given item.
      *
-     * @param item item being selected/unselected
+     * @param item      item being selected/unselected
      * @param stateMask key state during selection
-     *
      * @return selection event that needs to be fired or null
      */
     private Event updateSelection(GridItem item, int stateMask)
     {
-        if (!selectionEnabled)
-        {
+        if (!selectionEnabled) {
             return null;
         }
 
         Event selectionEvent = null;
 
-        if (selectionType == SWT.SINGLE)
-        {
+        if (selectionType == SWT.SINGLE) {
             if (selectedItems.contains(item)) return null;
 
             selectedItems.clear();
             selectedItems.add(item);
 
             Rectangle clientArea = getClientArea();
-            redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
+            redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
 
             selectionEvent = new Event();
             selectionEvent.item = item;
-        }
-        else if (selectionType == SWT.MULTI)
-        {
+        } else if (selectionType == SWT.MULTI) {
             boolean shift = false;
             boolean ctrl = false;
 
-            if ((stateMask & SWT.MOD2) == SWT.MOD2)
-            {
+            if ((stateMask & SWT.MOD2) == SWT.MOD2) {
                 shift = true;
             }
 
-            if ((stateMask & SWT.MOD1) == SWT.MOD1)
-            {
+            if ((stateMask & SWT.MOD1) == SWT.MOD1) {
                 ctrl = true;
             }
 
-            if (!shift && !ctrl)
-            {
+            if (!shift && !ctrl) {
                 if (selectedItems.size() == 1 && selectedItems.contains(item)) return null;
 
                 selectedItems.clear();
@@ -5910,18 +5480,15 @@ public class Grid extends Canvas
                 selectedItems.add(item);
 
                 Rectangle clientArea = getClientArea();
-                redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
+                redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
 
                 shiftSelectionAnchorItem = null;
 
                 selectionEvent = new Event();
                 selectionEvent.item = item;
-            }
-            else if (shift)
-            {
+            } else if (shift) {
 
-                if (shiftSelectionAnchorItem == null)
-                {
+                if (shiftSelectionAnchorItem == null) {
                     shiftSelectionAnchorItem = focusItem;
                 }
 
@@ -5932,10 +5499,8 @@ public class Grid extends Canvas
 
                 boolean maintainAnchorSelection = false;
 
-                if (!ctrl)
-                {
-                    if (selectedItems.contains(shiftSelectionAnchorItem))
-                    {
+                if (!ctrl) {
+                    if (selectedItems.contains(shiftSelectionAnchorItem)) {
                         maintainAnchorSelection = true;
                     }
                     selectedItems.clear();
@@ -5947,55 +5512,39 @@ public class Grid extends Canvas
                 int min;
                 int max;
 
-                if (anchorIndex < itemIndex)
-                {
-                    if (maintainAnchorSelection)
-                    {
+                if (anchorIndex < itemIndex) {
+                    if (maintainAnchorSelection) {
                         min = anchorIndex;
-                    }
-                    else
-                    {
+                    } else {
                         min = anchorIndex + 1;
                     }
                     max = itemIndex;
-                }
-                else
-                {
-                    if (maintainAnchorSelection)
-                    {
+                } else {
+                    if (maintainAnchorSelection) {
                         max = anchorIndex;
-                    }
-                    else
-                    {
+                    } else {
                         max = anchorIndex - 1;
                     }
                     min = itemIndex;
                 }
 
-                for (int i = min; i <= max; i++)
-                {
-                    if (!selectedItems.contains(items.get(i)) && items.get(i).isVisible())
-                    {
+                for (int i = min; i <= max; i++) {
+                    if (!selectedItems.contains(items.get(i)) && items.get(i).isVisible()) {
                         selectedItems.add(items.get(i));
                     }
                 }
                 Rectangle clientArea = getClientArea();
-                redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
+                redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
 
                 selectionEvent = new Event();
-            }
-            else if (ctrl)
-            {
-                if (selectedItems.contains(item))
-                {
+            } else if (ctrl) {
+                if (selectedItems.contains(item)) {
                     selectedItems.remove(item);
-                }
-                else
-                {
+                } else {
                     selectedItems.add(item);
                 }
                 Rectangle clientArea = getClientArea();
-                redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
+                redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
 
                 shiftSelectionAnchorItem = null;
 
@@ -6005,7 +5554,7 @@ public class Grid extends Canvas
         }
 
         Rectangle clientArea = getClientArea();
-        redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
+        redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
 
         return selectionEvent;
     }
@@ -6013,14 +5562,14 @@ public class Grid extends Canvas
     /**
      * Updates cell selection.
      *
-     * @param newCell newly clicked, navigated to cell.
-     * @param stateMask statemask during preceeding mouse or key event.
-     * @param dragging true if the user is dragging.
+     * @param newCell                    newly clicked, navigated to cell.
+     * @param stateMask                  statemask during preceeding mouse or key event.
+     * @param dragging                   true if the user is dragging.
      * @param reverseDuplicateSelections true if the user is reversing selection rather than adding to.
-     *
      * @return selection event that will need to be fired or null.
      */
-    private Event updateCellSelection(Point newCell, int stateMask, boolean dragging, boolean reverseDuplicateSelections)
+    private Event updateCellSelection(Point newCell, int stateMask, boolean dragging,
+                                      boolean reverseDuplicateSelections)
     {
         List<Point> v = new ArrayList<Point>();
         v.add(newCell);
@@ -6030,35 +5579,30 @@ public class Grid extends Canvas
     /**
      * Updates cell selection.
      *
-     * @param newCell newly clicked, navigated to cells.
-     * @param stateMask statemask during preceeding mouse or key event.
-     * @param dragging true if the user is dragging.
+     * @param newCell                    newly clicked, navigated to cells.
+     * @param stateMask                  statemask during preceeding mouse or key event.
+     * @param dragging                   true if the user is dragging.
      * @param reverseDuplicateSelections true if the user is reversing selection rather than adding to.
-     *
      * @return selection event that will need to be fired or null.
      */
-    private Event updateCellSelection(List<Point> newCells, int stateMask, boolean dragging, boolean reverseDuplicateSelections)
+    private Event updateCellSelection(List<Point> newCells, int stateMask, boolean dragging,
+                                      boolean reverseDuplicateSelections)
     {
         boolean shift = false;
         boolean ctrl = false;
 
-        if ((stateMask & SWT.MOD2) == SWT.MOD2)
-        {
+        if ((stateMask & SWT.MOD2) == SWT.MOD2) {
             shift = true;
-        }
-        else
-        {
+        } else {
             shiftSelectionAnchorColumn = null;
             shiftSelectionAnchorItem = null;
         }
 
-        if ((stateMask & SWT.MOD1) == SWT.MOD1)
-        {
+        if ((stateMask & SWT.MOD1) == SWT.MOD1) {
             ctrl = true;
         }
 
-        if (!shift && !ctrl)
-        {
+        if (!shift && !ctrl) {
             if (newCells.equals(selectedCells)) return null;
 
             selectedCells.clear();
@@ -6066,32 +5610,24 @@ public class Grid extends Canvas
                 addToCellSelection(newCell);
             }
 
-        }
-        else if (shift)
-        {
+        } else if (shift) {
 
             Point newCell = newCells.get(0); //shift selection should only occur with one
             //cell, ignoring others
 
-            if ((focusColumn == null) || (focusItem == null))
-            {
+            if ((focusColumn == null) || (focusItem == null)) {
                 return null;
             }
 
             shiftSelectionAnchorColumn = getColumn(newCell.x);
             shiftSelectionAnchorItem = getItem(newCell.y);
 
-            if (ctrl)
-            {
+            if (ctrl) {
                 selectedCells.clear();
                 selectedCells.addAll(selectedCellsBeforeRangeSelect);
-            }
-            else
-            {
+            } else {
                 selectedCells.clear();
             }
-
-
 
 
             GridColumn currentColumn = focusColumn;
@@ -6100,15 +5636,14 @@ public class Grid extends Canvas
             GridColumn endColumn = getColumn(newCell.x);
             GridItem endItem = getItem(newCell.y);
 
-            Point newRange = getSelectionRange(currentItem,currentColumn,endItem,endColumn);
+            Point newRange = getSelectionRange(currentItem, currentColumn, endItem, endColumn);
 
             currentColumn = getColumn(newRange.x);
             endColumn = getColumn(newRange.y);
 
             GridColumn startCol = currentColumn;
 
-            if (indexOf(currentItem) > indexOf(endItem))
-            {
+            if (indexOf(currentItem) > indexOf(endItem)) {
                 GridItem temp = currentItem;
                 currentItem = endItem;
                 endItem = temp;
@@ -6116,10 +5651,8 @@ public class Grid extends Canvas
 
             boolean firstLoop = true;
 
-            do
-            {
-                if (!firstLoop)
-                {
+            do {
+                if (!firstLoop) {
                     currentItem = getNextVisibleItem(currentItem);
                 }
 
@@ -6129,54 +5662,43 @@ public class Grid extends Canvas
 
                 currentColumn = startCol;
 
-                do
-                {
-                    if (!firstLoop2)
-                    {
+                do {
+                    if (!firstLoop2) {
                         int index = displayOrderedColumns.indexOf(currentColumn) + 1;
 
-                        if (index < displayOrderedColumns.size())
-                        {
-                            currentColumn = getVisibleColumn_DegradeRight(currentItem, displayOrderedColumns.get(index));
-                        }
-                        else
-                        {
+                        if (index < displayOrderedColumns.size()) {
+                            currentColumn = getVisibleColumn_DegradeRight(currentItem,
+                                                                          displayOrderedColumns.get(index));
+                        } else {
                             currentColumn = null;
                         }
 
-                        if (currentColumn!= null)
+                        if (currentColumn != null)
                             if (displayOrderedColumns.indexOf(currentColumn) > displayOrderedColumns.indexOf(endColumn))
                                 currentColumn = null;
                     }
 
                     firstLoop2 = false;
 
-                    if (currentColumn != null)
-                    {
-                        Point cell = new Point(indexOf(currentColumn),indexOf(currentItem));
+                    if (currentColumn != null) {
+                        Point cell = new Point(indexOf(currentColumn), indexOf(currentItem));
                         addToCellSelection(cell);
                     }
                 } while (currentColumn != endColumn && currentColumn != null);
             } while (currentItem != endItem);
-        }
-        else if (ctrl)
-        {
+        } else if (ctrl) {
             boolean reverse = reverseDuplicateSelections;
             if (!selectedCells.containsAll(newCells))
                 reverse = false;
 
-            if (dragging)
-            {
+            if (dragging) {
                 selectedCells.clear();
                 selectedCells.addAll(selectedCellsBeforeRangeSelect);
             }
 
-            if (reverse)
-            {
+            if (reverse) {
                 selectedCells.removeAll(newCells);
-            }
-            else
-            {
+            } else {
                 for (Point newCell : newCells) {
                     addToCellSelection(newCell);
                 }
@@ -6186,14 +5708,13 @@ public class Grid extends Canvas
         updateColumnSelection();
 
         Event e = new Event();
-        if (dragging)
-        {
+        if (dragging) {
             e.detail = SWT.DRAG;
             followupCellSelectionEventOwed = true;
         }
 
         Rectangle clientArea = getClientArea();
-        redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
+        redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
 
         return e;
     }
@@ -6206,21 +5727,20 @@ public class Grid extends Canvas
         if (newCell.y < 0 || newCell.y >= items.size())
             return;
 
-        if (getColumn(newCell.x).getCellSelectionEnabled())
-        {
-        	Iterator it = selectedCells.iterator();
-        	boolean found = false;
-        	while( it.hasNext() ) {
-        		Point p = (Point) it.next();
-        		if( newCell.equals(p) ) {
-        			found = true;
-        			break;
-        		}
-        	}
+        if (getColumn(newCell.x).getCellSelectionEnabled()) {
+            Iterator it = selectedCells.iterator();
+            boolean found = false;
+            while (it.hasNext()) {
+                Point p = (Point) it.next();
+                if (newCell.equals(p)) {
+                    found = true;
+                    break;
+                }
+            }
 
-        	if( ! found ) {
-        		selectedCells.add(newCell);
-        	}
+            if (!found) {
+                selectedCells.add(newCell);
+            }
         }
     }
 
@@ -6241,35 +5761,30 @@ public class Grid extends Canvas
      */
     private void initListeners()
     {
-        disposeListener = new Listener()
-        {
+        disposeListener = new Listener() {
             public void handleEvent(Event e)
             {
                 onDispose(e);
             }
         };
-        addListener(SWT.Dispose,disposeListener);
+        addListener(SWT.Dispose, disposeListener);
 
-        addPaintListener(new PaintListener()
-        {
+        addPaintListener(new PaintListener() {
             public void paintControl(PaintEvent e)
             {
                 onPaint(e);
             }
         });
 
-        addListener(SWT.Resize, new Listener()
-        {
+        addListener(SWT.Resize, new Listener() {
             public void handleEvent(Event e)
             {
                 onResize();
             }
         });
 
-        if (getVerticalBar() != null)
-        {
-            getVerticalBar().addListener(SWT.Selection, new Listener()
-            {
+        if (getVerticalBar() != null) {
+            getVerticalBar().addListener(SWT.Selection, new Listener() {
                 public void handleEvent(Event e)
                 {
                     onScrollSelection();
@@ -6277,10 +5792,8 @@ public class Grid extends Canvas
             });
         }
 
-        if (getHorizontalBar() != null)
-        {
-            getHorizontalBar().addListener(SWT.Selection, new Listener()
-            {
+        if (getHorizontalBar() != null) {
+            getHorizontalBar().addListener(SWT.Selection, new Listener() {
                 public void handleEvent(Event e)
                 {
                     onScrollSelection();
@@ -6288,24 +5801,21 @@ public class Grid extends Canvas
             });
         }
 
-        addListener(SWT.KeyDown, new Listener()
-        {
+        addListener(SWT.KeyDown, new Listener() {
             public void handleEvent(Event e)
             {
                 onKeyDown(e);
             }
         });
 
-        addTraverseListener(new TraverseListener()
-        {
+        addTraverseListener(new TraverseListener() {
             public void keyTraversed(TraverseEvent e)
             {
                 e.doit = true;
             }
         });
 
-        addMouseListener(new MouseListener()
-        {
+        addMouseListener(new MouseListener() {
             public void mouseDoubleClick(MouseEvent e)
             {
                 onMouseDoubleClick(e);
@@ -6322,16 +5832,14 @@ public class Grid extends Canvas
             }
         });
 
-        addMouseMoveListener(new MouseMoveListener()
-        {
+        addMouseMoveListener(new MouseMoveListener() {
             public void mouseMove(MouseEvent e)
             {
                 onMouseMove(e);
             }
         });
 
-        addMouseTrackListener(new MouseTrackListener()
-        {
+        addMouseTrackListener(new MouseTrackListener() {
             public void mouseEnter(MouseEvent e)
             {
             }
@@ -6346,11 +5854,10 @@ public class Grid extends Canvas
             }
         });
 
-        addFocusListener(new FocusListener()
-        {
+        addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent e)
             {
-            	onFocusIn();
+                onFocusIn();
                 redraw();
             }
 
@@ -6362,8 +5869,7 @@ public class Grid extends Canvas
 
         // Special code to reflect mouse wheel events if using an external
         // scroller
-        addListener(SWT.MouseWheel, new Listener()
-        {
+        addListener(SWT.MouseWheel, new Listener() {
             public void handleEvent(Event e)
             {
                 onMouseWheel(e);
@@ -6373,10 +5879,9 @@ public class Grid extends Canvas
 
     private void onFocusIn()
     {
-    	if (!items.isEmpty() && focusItem == null)
-    	{
-    		focusItem = items.get(0);
-    	}
+        if (!items.isEmpty() && focusItem == null) {
+            focusItem = items.get(0);
+        }
     }
 
     private void onDispose(Event event)
@@ -6413,17 +5918,14 @@ public class Grid extends Canvas
      */
     private void onMouseWheel(Event e)
     {
-        if (vScroll.getVisible())
-        {
+        if (vScroll.getVisible()) {
             vScroll.handleMouseWheel(e);
             if (getVerticalBar() == null)
-            	e.doit = false;
-        }
-        else if (hScroll.getVisible())
-        {
+                e.doit = false;
+        } else if (hScroll.getVisible()) {
             hScroll.handleMouseWheel(e);
             if (getHorizontalBar() == null)
-            	e.doit = false;
+                e.doit = false;
         }
     }
 
@@ -6442,8 +5944,7 @@ public class Grid extends Canvas
         // when an editor is open
         // and therefore the table has a child. The solution is to
         // forceFocus()
-        if ((getStyle() & SWT.NO_FOCUS) != SWT.NO_FOCUS)
-        {
+        if ((getStyle() & SWT.NO_FOCUS) != SWT.NO_FOCUS) {
             forceFocus();
         }
 
@@ -6456,107 +5957,86 @@ public class Grid extends Canvas
         cellRowSelectedOnLastMouseDown = false;
         cellColumnSelectedOnLastMouseDown = false;
 
-        if (hoveringOnColumnResizer)
-        {
-            if (e.button == 1)
-            {
+        if (hoveringOnColumnResizer) {
+            if (e.button == 1) {
                 resizingColumn = true;
                 resizingStartX = e.x;
                 resizingColumnStartWidth = columnBeingResized.getWidth();
             }
             return;
         }
-        if (rowsResizeable && hoveringOnRowResizer)
-        {
-        	if (e.button == 1)
-        	{
-        		resizingRow = true;
-        		resizingStartY = e.y;
-        		resizingRowStartHeight = rowBeingResized.getHeight();
-        	}
-        	return;
-        }
-
-
-        if (e.button == 1 && handleColumnHeaderPush(e.x, e.y))
-        {
+        if (rowsResizeable && hoveringOnRowResizer) {
+            if (e.button == 1) {
+                resizingRow = true;
+                resizingStartY = e.y;
+                resizingRowStartHeight = rowBeingResized.getHeight();
+            }
             return;
         }
 
-        if (e.button == 1 && handleColumnGroupHeaderClick(e.x, e.y))
-        {
+
+        if (e.button == 1 && handleColumnHeaderPush(e.x, e.y)) {
             return;
         }
 
-        if(e.button == 1 && handleColumnFooterPush(e.x,e.y)) {
-        	return;
+        if (e.button == 1 && handleColumnGroupHeaderClick(e.x, e.y)) {
+            return;
+        }
+
+        if (e.button == 1 && handleColumnFooterPush(e.x, e.y)) {
+            return;
         }
 
         GridItem item = getItem(new Point(e.x, e.y));
 
-        if (e.button == 1 && item != null && handleCellClick(item,e.x, e.y))
-        {
+        if (e.button == 1 && item != null && handleCellClick(item, e.x, e.y)) {
             return;
         }
 
-        if (isListening(SWT.DragDetect))
-        {
-	        if ((cellSelectionEnabled && hoveringOnSelectionDragArea) ||
-	        	(!cellSelectionEnabled && item != null && selectedItems.contains(item)))
-	        {
-	        	if(dragDetect(e))
-	        	{
-	        		return;
-	        	}
-	        }
+        if (isListening(SWT.DragDetect)) {
+            if ((cellSelectionEnabled && hoveringOnSelectionDragArea) ||
+                (!cellSelectionEnabled && item != null && selectedItems.contains(item))) {
+                if (dragDetect(e)) {
+                    return;
+                }
+            }
         }
 
-        if (item != null)
-        {
-            if (cellSelectionEnabled)
-            {
+        if (item != null) {
+            if (cellSelectionEnabled) {
                 GridColumn col = getColumn(new Point(e.x, e.y));
                 boolean isSelectedCell = false;
                 if (col != null)
-                    isSelectedCell = selectedCells.contains(new Point(indexOf(col),indexOf(item)));
+                    isSelectedCell = selectedCells.contains(new Point(indexOf(col), indexOf(item)));
 
-                if (e.button == 1 || (e.button == 3 && col != null && !isSelectedCell))
-                {
-                    if (col != null)
-                    {
-                        selectionEvent = updateCellSelection(new Point(indexOf(col),indexOf(item)), e.stateMask, false, true);
+                if (e.button == 1 || (e.button == 3 && col != null && !isSelectedCell)) {
+                    if (col != null) {
+                        selectionEvent = updateCellSelection(new Point(indexOf(col), indexOf(item)), e.stateMask, false,
+                                                             true);
                         cellSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
 
-                        if (e.stateMask != SWT.MOD2)
-                        {
+                        if (e.stateMask != SWT.MOD2) {
                             focusColumn = col;
                             focusItem = item;
                         }
                         //showColumn(col);
                         showItem(item);
                         redraw();
-                    }
-                    else if (rowHeaderVisible)
-                    {
-                        if (e.x <= rowHeaderWidth)
-                        {
+                    } else if (rowHeaderVisible) {
+                        if (e.x <= rowHeaderWidth) {
 
                             boolean shift = ((e.stateMask & SWT.MOD2) != 0);
                             boolean ctrl = false;
-                            if (!shift)
-                            {
+                            if (!shift) {
                                 ctrl = ((e.stateMask & SWT.MOD1) != 0);
                             }
 
                             List<Point> cells = new ArrayList<Point>();
 
-                            if (shift)
-                            {
-                                getCells(item,focusItem,cells);
-                            }
-                            else
-                            {
-                                getCells(item,cells);
+                            if (shift) {
+                                getCells(item, focusItem, cells);
+                            } else {
+                                getCells(item, cells);
                             }
 
                             int newStateMask = SWT.NONE;
@@ -6565,10 +6045,9 @@ public class Grid extends Canvas
                             selectionEvent = updateCellSelection(cells, newStateMask, shift, ctrl);
                             cellRowSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
 
-                            if (!shift)
-                            {
+                            if (!shift) {
                                 //set focus back to the first visible column
-                                focusColumn = getColumn(new Point(rowHeaderWidth + 1,e.y));
+                                focusColumn = getColumn(new Point(rowHeaderWidth + 1, e.y));
 
                                 focusItem = item;
                             }
@@ -6578,28 +6057,21 @@ public class Grid extends Canvas
                     }
                     intendedFocusColumn = focusColumn;
                 }
-            }
-            else
-            {
-            	if (e.button == 2 || e.button > 3)
-            	{
-            		return;
-            	}
+            } else {
+                if (e.button == 2 || e.button > 3) {
+                    return;
+                }
 
-                if (e.button == 3 && selectionType == SWT.MULTI)
-                {
-                    if ((e.stateMask & SWT.MOD2) == SWT.MOD2)
-                    {
+                if (e.button == 3 && selectionType == SWT.MULTI) {
+                    if ((e.stateMask & SWT.MOD2) == SWT.MOD2) {
                         return;
                     }
 
-                    if ((e.stateMask & SWT.MOD1) == SWT.MOD1)
-                    {
-                    	return;
+                    if ((e.stateMask & SWT.MOD1) == SWT.MOD1) {
+                        return;
                     }
 
-                    if (selectedItems.contains(item))
-                    {
+                    if (selectedItems.contains(item)) {
                         return;
                     }
                 }
@@ -6610,24 +6082,20 @@ public class Grid extends Canvas
                 showItem(item);
                 redraw();
             }
-        }
-        else if (cellSelectionEnabled && e.button == 1 && rowHeaderVisible && e.x <= rowHeaderWidth && e.y < headerHeight)
-        {
-        	// Nothing to select
-        	if(items.size() == 0) {
-        		return;
-        	}
+        } else if (cellSelectionEnabled && e.button == 1 && rowHeaderVisible && e.x <= rowHeaderWidth && e.y < headerHeight) {
+            // Nothing to select
+            if (items.size() == 0) {
+                return;
+            }
 
             //click on the top left corner means select everything
             selectionEvent = selectAllCellsInternal();
 
-            focusColumn = getColumn(new Point(rowHeaderWidth + 1,1));
+            focusColumn = getColumn(new Point(rowHeaderWidth + 1, 1));
             focusItem = getItem(getTopIndex());
-        }
-        else if (cellSelectionEnabled && e.button == 1 && columnHeadersVisible && e.y <= headerHeight)
-        {
+        } else if (cellSelectionEnabled && e.button == 1 && columnHeadersVisible && e.y <= headerHeight) {
             //column cell selection
-            GridColumn col = getColumn(new Point(e.x,e.y));
+            GridColumn col = getColumn(new Point(e.x, e.y));
 
             if (col == null) return;
 
@@ -6648,13 +6116,11 @@ public class Grid extends Canvas
 
             GridItem newFocusItem = getItem(0);
 
-            while (newFocusItem != null && getSpanningColumn(newFocusItem, col) != null)
-            {
+            while (newFocusItem != null && getSpanningColumn(newFocusItem, col) != null) {
                 newFocusItem = getNextVisibleItem(newFocusItem);
             }
 
-            if (newFocusItem != null)
-            {
+            if (newFocusItem != null) {
                 focusColumn = col;
                 focusItem = newFocusItem;
             }
@@ -6663,8 +6129,7 @@ public class Grid extends Canvas
             redraw();
         }
 
-        if (selectionEvent != null)
-        {
+        if (selectionEvent != null) {
             selectionEvent.stateMask = e.stateMask;
             selectionEvent.button = e.button;
             selectionEvent.item = item;
@@ -6672,11 +6137,9 @@ public class Grid extends Canvas
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);
 
-            if (!cellSelectionEnabled)
-            {
-                if (isListening(SWT.DragDetect))
-                {
-                	dragDetect(e);
+            if (!cellSelectionEnabled) {
+                if (isListening(SWT.DragDetect)) {
+                    dragDetect(e);
                 }
             }
         }
@@ -6691,36 +6154,31 @@ public class Grid extends Canvas
      */
     private void onMouseDoubleClick(MouseEvent e)
     {
-        if (e.button == 1)
-        {
+        if (e.button == 1) {
 
-            if (hoveringOnColumnResizer)
-            {
+            if (hoveringOnColumnResizer) {
                 columnBeingResized.pack();
                 columnBeingResized.fireResized();
-                for (int index = displayOrderedColumns.indexOf(columnBeingResized) + 1; index < displayOrderedColumns.size(); index ++)
-                {
+                for (int index = displayOrderedColumns.indexOf(
+                    columnBeingResized) + 1; index < displayOrderedColumns.size(); index++) {
                     GridColumn col = displayOrderedColumns.get(index);
                     if (col.isVisible()) col.fireMoved();
                 }
                 resizingColumn = false;
                 handleHoverOnColumnResizer(e.x, e.y);
                 return;
-            }
-            else if (rowsResizeable && hoveringOnRowResizer) {
-                List sel = Arrays.asList(getSelection());
-                if(sel.contains(rowBeingResized))
-                {
-                	// the user double-clicked a row resizer of a selected row
-                	// so update all selected rows
-                    for(int cnt=0;cnt<sel.size();cnt++)
-                        ((GridItem)sel.get(cnt)).pack();
+            } else if (rowsResizeable && hoveringOnRowResizer) {
+                List<GridItem> sel = Arrays.asList(getSelection());
+                if (sel.contains(rowBeingResized)) {
+                    // the user double-clicked a row resizer of a selected row
+                    // so update all selected rows
+                    for (GridItem aSel : sel) {
+                        aSel.pack();
+                    }
                     redraw();
-                }
-                else
-                {
-                	// otherwise only update the row the user double-clicked
-                	rowBeingResized.pack();
+                } else {
+                    // otherwise only update the row the user double-clicked
+                    rowBeingResized.pack();
                 }
 
                 resizingRow = false;
@@ -6729,28 +6187,21 @@ public class Grid extends Canvas
             }
 
             GridItem item = getItem(new Point(e.x, e.y));
-            if (item != null)
-            {
-            	if (isListening(SWT.DefaultSelection))
-            	{
-                Event newEvent = new Event();
-                newEvent.item = item;
+            if (item != null) {
+                if (isListening(SWT.DefaultSelection)) {
+                    Event newEvent = new Event();
+                    newEvent.item = item;
 
-                notifyListeners(SWT.DefaultSelection, newEvent);
-            	}
-            	else if (item.getItemCount() > 0)
-            	{
-          			item.setExpanded(!item.isExpanded());
+                    notifyListeners(SWT.DefaultSelection, newEvent);
+                } else if (item.getItemCount() > 0) {
+                    item.setExpanded(!item.isExpanded());
 
-                    if (item.isExpanded())
-                    {
+                    if (item.isExpanded()) {
                         item.fireEvent(SWT.Expand);
-                    }
-                    else
-                    {
+                    } else {
                         item.fireEvent(SWT.Collapse);
                     }
-            	}
+                }
             }
         }
     }
@@ -6762,58 +6213,51 @@ public class Grid extends Canvas
      */
     private void onMouseUp(MouseEvent e)
     {
-    	cellSelectedOnLastMouseDown = false;
+        cellSelectedOnLastMouseDown = false;
 
-        if (resizingColumn)
-        {
+        if (resizingColumn) {
             resizingColumn = false;
             handleHoverOnColumnResizer(e.x, e.y); // resets cursor if
             // necessary
             return;
         }
-        if (resizingRow)
-        {
-        	resizingRow = false;
-        	handleHoverOnRowResizer(e.x, e.y); // resets cursor if
+        if (resizingRow) {
+            resizingRow = false;
+            handleHoverOnRowResizer(e.x, e.y); // resets cursor if
             // necessary
             return;
         }
 
-        if (pushingColumn)
-        {
+        if (pushingColumn) {
             pushingColumn = false;
             columnBeingPushed.getHeaderRenderer().setMouseDown(false);
             columnBeingPushed.getHeaderRenderer().setHover(false);
             redraw();
-            if (pushingAndHovering)
-            {
+            if (pushingAndHovering) {
                 columnBeingPushed.fireListeners();
             }
             setCapture(false);
             return;
         }
 
-        if (draggingColumn)
-        {
+        if (draggingColumn) {
             handleColumnDrop();
             return;
         }
 
-        if (cellDragSelectionOccuring || cellRowDragSelectionOccuring || cellColumnDragSelectionOccuring)
-        {
+        if (cellDragSelectionOccuring || cellRowDragSelectionOccuring || cellColumnDragSelectionOccuring) {
             cellDragSelectionOccuring = false;
             cellRowDragSelectionOccuring = false;
             cellColumnDragSelectionOccuring = false;
             setCursor(null);
 
-            if (followupCellSelectionEventOwed)
-            {
-            	Event se = new Event();
-            	se.button = e.button;
-            	se.item = getItem(new Point(e.x, e.y));
-            	se.stateMask = e.stateMask;
-            	se.x = e.x;
-            	se.y = e.y;
+            if (followupCellSelectionEventOwed) {
+                Event se = new Event();
+                se.button = e.button;
+                se.item = getItem(new Point(e.x, e.y));
+                se.stateMask = e.stateMask;
+                se.x = e.x;
+                se.y = e.y;
 
                 notifyListeners(SWT.Selection, se);
                 followupCellSelectionEventOwed = false;
@@ -6828,81 +6272,66 @@ public class Grid extends Canvas
      */
     private void onMouseMove(MouseEvent e)
     {
-    	//check to see if the mouse is outside the grid
-    	//this should only happen when the mouse is captured for inplace
-    	//tooltips - see bug 203364
-    	if (inplaceTooltipCapture && (e.x < 0 || e.y < 0 || e.x >= getBounds().width || e.y >= getBounds().height))
-    	{
-    		setCapture(false);
-    		inplaceTooltipCapture = false;
-    		return;  //a mouseexit event should occur immediately
-    	}
+        //check to see if the mouse is outside the grid
+        //this should only happen when the mouse is captured for inplace
+        //tooltips - see bug 203364
+        if (inplaceTooltipCapture && (e.x < 0 || e.y < 0 || e.x >= getBounds().width || e.y >= getBounds().height)) {
+            setCapture(false);
+            inplaceTooltipCapture = false;
+            return;  //a mouseexit event should occur immediately
+        }
 
 
         //if populated will be fired at end of method.
         Event selectionEvent = null;
 
 
-        if ((e.stateMask & SWT.BUTTON1) == 0)
-        {
+        if ((e.stateMask & SWT.BUTTON1) == 0) {
             handleHovering(e.x, e.y);
-        }
-        else
-        {
-            if (draggingColumn)
-            {
+        } else {
+            if (draggingColumn) {
                 handleColumnDragging(e.x);
                 return;
             }
 
-            if (resizingColumn)
-            {
+            if (resizingColumn) {
                 handleColumnResizerDragging(e.x);
                 return;
             }
-            if (resizingRow)
-            {
+            if (resizingRow) {
                 handleRowResizerDragging(e.y);
                 return;
             }
-            if (pushingColumn)
-            {
+            if (pushingColumn) {
                 handleColumnHeaderHoverWhilePushing(e.x, e.y);
                 return;
             }
-            if (cellSelectionEnabled)
-            {
-                if (!cellDragSelectionOccuring && cellSelectedOnLastMouseDown)
-                {
+            if (cellSelectionEnabled) {
+                if (!cellDragSelectionOccuring && cellSelectedOnLastMouseDown) {
                     cellDragSelectionOccuring = true;
                     //XXX: make this user definable
                     setCursor(getDisplay().getSystemCursor(SWT.CURSOR_CROSS));
                     cellDragCTRL = ((e.stateMask & SWT.MOD1) != 0);
-                    if (cellDragCTRL)
-                    {
+                    if (cellDragCTRL) {
                         selectedCellsBeforeRangeSelect.clear();
                         selectedCellsBeforeRangeSelect.addAll(selectedCells);
                     }
                 }
-                if (!cellRowDragSelectionOccuring && cellRowSelectedOnLastMouseDown)
-                {
+                if (!cellRowDragSelectionOccuring && cellRowSelectedOnLastMouseDown) {
                     cellRowDragSelectionOccuring = true;
                     setCursor(getDisplay().getSystemCursor(SWT.CURSOR_CROSS));
                     cellDragCTRL = ((e.stateMask & SWT.MOD1) != 0);
-                    if (cellDragCTRL)
-                    {
+                    if (cellDragCTRL) {
                         selectedCellsBeforeRangeSelect.clear();
                         selectedCellsBeforeRangeSelect.addAll(selectedCells);
                     }
                 }
 
-                if (!cellColumnDragSelectionOccuring && cellColumnSelectedOnLastMouseDown)
-                {
+                if (!cellColumnDragSelectionOccuring && cellColumnSelectedOnLastMouseDown) {
                     cellColumnDragSelectionOccuring = true;
                     setCursor(getDisplay().getSystemCursor(SWT.CURSOR_CROSS));
                     cellDragCTRL = ((e.stateMask & SWT.MOD1) != 0);
-                    if (cellDragCTRL)
-                    {
+                    if (cellDragCTRL) {
                         selectedCellsBeforeRangeSelect.clear();
                         selectedCellsBeforeRangeSelect.addAll(selectedCells);
                     }
@@ -6910,37 +6339,28 @@ public class Grid extends Canvas
 
                 int ctrlFlag = (cellDragCTRL ? SWT.MOD1 : SWT.NONE);
 
-                if (cellDragSelectionOccuring && handleCellHover(e.x, e.y))
-                {
+                if (cellDragSelectionOccuring && handleCellHover(e.x, e.y)) {
                     GridColumn intentColumn = hoveringColumn;
                     GridItem intentItem = hoveringItem;
 
-                    if (hoveringItem == null)
-                    {
-                        if (e.y > headerHeight)
-                        {
+                    if (hoveringItem == null) {
+                        if (e.y > headerHeight) {
                             //then we must be hovering way to the bottom
                             intentItem = getPreviousVisibleItem(null);
-                        }
-                        else
-                        {
+                        } else {
                             intentItem = items.get(0);
                         }
                     }
 
 
-                    if (hoveringColumn == null)
-                    {
-                        if (e.x > rowHeaderWidth)
-                        {
+                    if (hoveringColumn == null) {
+                        if (e.x > rowHeaderWidth) {
                             //then we must be hovering way to the right
-                            intentColumn = getVisibleColumn_DegradeLeft(intentItem, displayOrderedColumns.get(displayOrderedColumns.size() - 1));
-                        }
-                        else
-                        {
+                            intentColumn = getVisibleColumn_DegradeLeft(intentItem, displayOrderedColumns.get(
+                                displayOrderedColumns.size() - 1));
+                        } else {
                             GridColumn firstCol = displayOrderedColumns.get(0);
-                            if (!firstCol.isVisible())
-                            {
+                            if (!firstCol.isVisible()) {
                                 firstCol = getNextVisibleColumn(firstCol);
                             }
                             intentColumn = firstCol;
@@ -6949,27 +6369,20 @@ public class Grid extends Canvas
 
                     showColumn(intentColumn);
                     showItem(intentItem);
-                    selectionEvent = updateCellSelection(new Point(indexOf(intentColumn),indexOf(intentItem)),ctrlFlag | SWT.MOD2, true, false);
+                    selectionEvent = updateCellSelection(new Point(indexOf(intentColumn), indexOf(intentItem)),
+                                                         ctrlFlag | SWT.MOD2, true, false);
                 }
-                if (cellRowDragSelectionOccuring && handleCellHover(e.x, e.y))
-                {
+                if (cellRowDragSelectionOccuring && handleCellHover(e.x, e.y)) {
                     GridItem intentItem = hoveringItem;
 
-                    if (hoveringItem == null)
-                    {
-                        if (e.y > headerHeight)
-                        {
+                    if (hoveringItem == null) {
+                        if (e.y > headerHeight) {
                             //then we must be hovering way to the bottom
                             intentItem = getPreviousVisibleItem(null);
-                        }
-                        else
-                        {
-                            if (getTopIndex() > 0)
-                            {
+                        } else {
+                            if (getTopIndex() > 0) {
                                 intentItem = getPreviousVisibleItem(items.get(getTopIndex()));
-                            }
-                            else
-                            {
+                            } else {
                                 intentItem = items.get(0);
                             }
                         }
@@ -6977,23 +6390,18 @@ public class Grid extends Canvas
 
                     List<Point> cells = new ArrayList<Point>();
 
-                    getCells(intentItem,focusItem,cells);
+                    getCells(intentItem, focusItem, cells);
 
                     showItem(intentItem);
-                    selectionEvent = updateCellSelection(cells,ctrlFlag, true, false);
+                    selectionEvent = updateCellSelection(cells, ctrlFlag, true, false);
                 }
-                if (cellColumnDragSelectionOccuring && handleCellHover(e.x, e.y))
-                {
+                if (cellColumnDragSelectionOccuring && handleCellHover(e.x, e.y)) {
                     GridColumn intentCol = hoveringColumn;
 
-                    if (intentCol == null)
-                    {
-                        if (e.y < rowHeaderWidth)
-                        {
+                    if (intentCol == null) {
+                        if (e.y < rowHeaderWidth) {
                             //TODO: get the first col to the left
-                        }
-                        else
-                        {
+                        } else {
                             //TODO: get the first col to the right
                         }
                     }
@@ -7004,23 +6412,19 @@ public class Grid extends Canvas
 
                     List<Point> newSelected = new ArrayList<Point>();
 
-                    boolean decreasing = (displayOrderedColumns.indexOf(iterCol) > displayOrderedColumns.indexOf(focusColumn));
+                    boolean decreasing = (displayOrderedColumns.indexOf(iterCol) > displayOrderedColumns.indexOf(
+                        focusColumn));
 
-                    do
-                    {
+                    do {
                         getCells(iterCol, newSelected);
 
-                        if (iterCol == focusColumn)
-                        {
+                        if (iterCol == focusColumn) {
                             break;
                         }
 
-                        if (decreasing)
-                        {
+                        if (decreasing) {
                             iterCol = getPreviousVisibleColumn(iterCol);
-                        }
-                        else
-                        {
+                        } else {
                             iterCol = getNextVisibleColumn(iterCol);
                         }
 
@@ -7032,8 +6436,7 @@ public class Grid extends Canvas
             }
         }
 
-        if (selectionEvent != null)
-        {
+        if (selectionEvent != null) {
             selectionEvent.stateMask = e.stateMask;
             selectionEvent.button = e.button;
             selectionEvent.item = getItem(new Point(e.x, e.y));
@@ -7057,16 +6460,13 @@ public class Grid extends Canvas
 
         // Is this Grid a DragSource ??
         if (cellSelectionEnabled && getData("DragSource") != null) {
-            if (handleHoverOnSelectionDragArea(x, y))
-            {
+            if (handleHoverOnSelectionDragArea(x, y)) {
                 return;
             }
         }
 
-        if (columnHeadersVisible)
-        {
-            if (handleHoverOnColumnResizer(x, y))
-            {
+        if (columnHeadersVisible) {
+            if (handleHoverOnColumnResizer(x, y)) {
 //                if (hoveringItem != null || !hoveringDetail.equals("") || hoveringColumn != null
 //                    || hoveringColumnHeader != null || hoverColumnGroupHeader != null)
 //                {
@@ -7082,15 +6482,13 @@ public class Grid extends Canvas
                 return;
             }
         }
-        if (rowsResizeable && rowHeaderVisible)
-        {
-        	if (handleHoverOnRowResizer(x, y))
-        	{
-        		return;
-        	}
+        if (rowsResizeable && rowHeaderVisible) {
+            if (handleHoverOnRowResizer(x, y)) {
+                return;
+            }
         }
 
-       // handleCellHover(x, y);
+        // handleCellHover(x, y);
     }
 
     /**
@@ -7112,12 +6510,12 @@ public class Grid extends Canvas
      */
     private void onMouseExit(MouseEvent e)
     {
-            hoveringItem = null;
-            hoveringDetail = "";
-            hoveringColumn = null;
-            hoveringOverText = false;
-            hideToolTip();
-            redraw();
+        hoveringItem = null;
+        hoveringDetail = "";
+        hoveringColumn = null;
+        hoveringOverText = false;
+        hideToolTip();
+        redraw();
     }
 
     /**
@@ -7127,17 +6525,15 @@ public class Grid extends Canvas
      */
     private void onKeyDown(Event e)
     {
-        if (focusColumn == null)
-        {
-        	if (columns.size() == 0)
-        		return;
+        if (focusColumn == null) {
+            if (columns.size() == 0)
+                return;
 
             focusColumn = getColumn(0);
             intendedFocusColumn = focusColumn;
         }
 
-        if (e.character == '\r' && focusItem != null)
-        {
+        if (e.character == '\r' && focusItem != null) {
             Event newEvent = new Event();
             newEvent.item = focusItem;
 
@@ -7146,44 +6542,34 @@ public class Grid extends Canvas
         }
 
         int attemptExpandCollapse = 0;
-        if ((e.character == '-' || (!cellSelectionEnabled && e.keyCode == SWT.ARROW_LEFT)) && focusItem != null && focusItem.isExpanded())
-        {
+        if ((e.character == '-' || (!cellSelectionEnabled && e.keyCode == SWT.ARROW_LEFT)) && focusItem != null && focusItem.isExpanded()) {
             attemptExpandCollapse = SWT.Collapse;
-        }
-        else if ((e.character == '+' || (!cellSelectionEnabled && e.keyCode == SWT.ARROW_RIGHT)) && focusItem != null && !focusItem.isExpanded())
-        {
+        } else if ((e.character == '+' || (!cellSelectionEnabled && e.keyCode == SWT.ARROW_RIGHT)) && focusItem != null && !focusItem.isExpanded()) {
             attemptExpandCollapse = SWT.Expand;
         }
 
-        if (attemptExpandCollapse != 0 && focusItem != null && focusItem.hasChildren())
-        {
+        if (attemptExpandCollapse != 0 && focusItem != null && focusItem.hasChildren()) {
             int performExpandCollapse = 0;
 
-            if (cellSelectionEnabled && focusColumn != null && focusColumn.isTree())
-            {
+            if (cellSelectionEnabled && focusColumn != null && focusColumn.isTree()) {
                 performExpandCollapse = attemptExpandCollapse;
-            }
-            else if (!cellSelectionEnabled)
-            {
+            } else if (!cellSelectionEnabled) {
                 performExpandCollapse = attemptExpandCollapse;
             }
 
-            if (performExpandCollapse == SWT.Expand)
-            {
+            if (performExpandCollapse == SWT.Expand) {
                 focusItem.setExpanded(true);
                 focusItem.fireEvent(SWT.Expand);
                 return;
             }
-            if (performExpandCollapse == SWT.Collapse)
-            {
+            if (performExpandCollapse == SWT.Collapse) {
                 focusItem.setExpanded(false);
                 focusItem.fireEvent(SWT.Collapse);
                 return;
             }
         }
 
-        if (e.character == ' ')
-        {
+        if (e.character == ' ') {
             handleSpaceBarDown(e);
         }
 
@@ -7197,213 +6583,165 @@ public class Grid extends Canvas
         GridItem impliedFocusItem = focusItem;
         GridColumn impliedFocusColumn = focusColumn;
 
-        if (cellSelectionEnabled && e.stateMask == SWT.MOD2)
-        {
-            if (shiftSelectionAnchorColumn != null)
-            {
+        if (cellSelectionEnabled && e.stateMask == SWT.MOD2) {
+            if (shiftSelectionAnchorColumn != null) {
                 impliedFocusItem = shiftSelectionAnchorItem;
                 impliedFocusColumn = shiftSelectionAnchorColumn;
             }
         }
 
-        switch (e.keyCode)
-        {
-            case SWT.ARROW_RIGHT :
-                if (cellSelectionEnabled)
-                {
-                    if (impliedFocusItem != null && impliedFocusColumn != null)
-                    {
+        switch (e.keyCode) {
+            case SWT.ARROW_RIGHT:
+                if (cellSelectionEnabled) {
+                    if (impliedFocusItem != null && impliedFocusColumn != null) {
                         newSelection = impliedFocusItem;
 
                         int index = displayOrderedColumns.indexOf(impliedFocusColumn);
 
                         int jumpAhead = impliedFocusItem.getColumnSpan(indexOf(impliedFocusColumn));
 
-                        jumpAhead ++;
+                        jumpAhead++;
 
-                        while (jumpAhead > 0)
-                        {
-                            index ++;
-                            if (index < displayOrderedColumns.size())
-                            {
+                        while (jumpAhead > 0) {
+                            index++;
+                            if (index < displayOrderedColumns.size()) {
                                 if (displayOrderedColumns.get(index).isVisible())
-                                    jumpAhead --;
-                            }
-                            else
-                            {
+                                    jumpAhead--;
+                            } else {
                                 break;
                             }
                         }
 
-                        if (index < displayOrderedColumns.size())
-                        {
+                        if (index < displayOrderedColumns.size()) {
                             newColumnFocus = displayOrderedColumns.get(index);
-                        }
-                        else
-                        {
+                        } else {
                             newColumnFocus = impliedFocusColumn;
                         }
                     }
                     intendedFocusColumn = newColumnFocus;
-                }
-                else
-                {
-                    if (impliedFocusItem != null && impliedFocusItem.hasChildren())
-                    {
+                } else {
+                    if (impliedFocusItem != null && impliedFocusItem.hasChildren()) {
                         newSelection = impliedFocusItem.getItem(0);
                     }
                 }
                 break;
-            case SWT.ARROW_LEFT :
-                if (cellSelectionEnabled)
-                {
-                    if (impliedFocusItem != null && impliedFocusColumn != null)
-                    {
+            case SWT.ARROW_LEFT:
+                if (cellSelectionEnabled) {
+                    if (impliedFocusItem != null && impliedFocusColumn != null) {
                         newSelection = impliedFocusItem;
 
                         int index = displayOrderedColumns.indexOf(impliedFocusColumn);
 
-                        if (index != 0)
-                        {
-                            newColumnFocus = displayOrderedColumns.get(index -1);
+                        if (index != 0) {
+                            newColumnFocus = displayOrderedColumns.get(index - 1);
 
                             newColumnFocus = getVisibleColumn_DegradeLeft(impliedFocusItem, newColumnFocus);
-                        }
-                        else
-                        {
+                        } else {
                             newColumnFocus = impliedFocusColumn;
                         }
                     }
                     intendedFocusColumn = newColumnFocus;
-                }
-                else
-                {
-                    if (impliedFocusItem != null && impliedFocusItem.getParentItem() != null)
-                    {
+                } else {
+                    if (impliedFocusItem != null && impliedFocusItem.getParentItem() != null) {
                         newSelection = impliedFocusItem.getParentItem();
                     }
                 }
                 break;
-            case SWT.ARROW_UP :
-                if (impliedFocusItem != null)
-                {
+            case SWT.ARROW_UP:
+                if (impliedFocusItem != null) {
                     newSelection = getPreviousVisibleItem(impliedFocusItem);
                 }
 
-                if (impliedFocusColumn != null)
-                {
-                    if (newSelection != null)
-                    {
+                if (impliedFocusColumn != null) {
+                    if (newSelection != null) {
                         newColumnFocus = getVisibleColumn_DegradeLeft(newSelection, intendedFocusColumn);
-                    }
-                    else
-                    {
+                    } else {
                         newColumnFocus = impliedFocusColumn;
                     }
                 }
 
                 break;
-            case SWT.ARROW_DOWN :
-                if (impliedFocusItem != null)
-                {
+            case SWT.ARROW_DOWN:
+                if (impliedFocusItem != null) {
                     newSelection = getNextVisibleItem(impliedFocusItem);
-                }
-                else
-                {
-                    if (items.size() > 0)
-                    {
+                } else {
+                    if (items.size() > 0) {
                         newSelection = items.get(0);
                     }
                 }
 
-                if (impliedFocusColumn != null)
-                {
-                    if (newSelection != null)
-                    {
+                if (impliedFocusColumn != null) {
+                    if (newSelection != null) {
                         newColumnFocus = getVisibleColumn_DegradeLeft(newSelection, intendedFocusColumn);
-                    }
-                    else
-                    {
+                    } else {
                         newColumnFocus = impliedFocusColumn;
                     }
                 }
                 break;
-            case SWT.HOME :
+            case SWT.HOME:
 
-                if (!cellSelectionEnabled)
-                {
-                    if (items.size() > 0)
-                    {
+                if (!cellSelectionEnabled) {
+                    if (items.size() > 0) {
                         newSelection = items.get(0);
                     }
-                }
-                else
-                {
+                } else {
                     newSelection = impliedFocusItem;
                     newColumnFocus = getVisibleColumn_DegradeRight(newSelection, displayOrderedColumns.get(0));
                 }
 
                 break;
-            case SWT.END :
-                if (!cellSelectionEnabled)
-                {
-                    if (items.size() > 0)
-                    {
+            case SWT.END:
+                if (!cellSelectionEnabled) {
+                    if (items.size() > 0) {
                         newSelection = getPreviousVisibleItem(null);
                     }
-                }
-                else
-                {
+                } else {
                     newSelection = impliedFocusItem;
-                    newColumnFocus = getVisibleColumn_DegradeLeft(newSelection, displayOrderedColumns.get(displayOrderedColumns.size() - 1));
+                    newColumnFocus = getVisibleColumn_DegradeLeft(newSelection, displayOrderedColumns.get(
+                        displayOrderedColumns.size() - 1));
                 }
 
                 break;
-            case SWT.PAGE_UP :
+            case SWT.PAGE_UP:
                 int topIndex = getTopIndex();
 
                 newSelection = items.get(topIndex);
 
-                if (focusItem == newSelection)
-                {
-                    RowRange range = getRowRange(getTopIndex(),getVisibleGridHeight(),false,true);
+                if (focusItem == newSelection) {
+                    RowRange range = getRowRange(getTopIndex(), getVisibleGridHeight(), false, true);
                     newSelection = items.get(range.startIndex);
                 }
 
                 newColumnFocus = focusColumn;
                 break;
-            case SWT.PAGE_DOWN :
+            case SWT.PAGE_DOWN:
                 int bottomIndex = getBottomIndex();
 
                 newSelection = items.get(bottomIndex);
 
-                if(!isShown(newSelection))
-                {
-                	// the item at bottom index is not shown completely
-                	GridItem tmpItem = getPreviousVisibleItem(newSelection);
-                	if(tmpItem!=null)
-                		newSelection = tmpItem;
+                if (!isShown(newSelection)) {
+                    // the item at bottom index is not shown completely
+                    GridItem tmpItem = getPreviousVisibleItem(newSelection);
+                    if (tmpItem != null)
+                        newSelection = tmpItem;
                 }
 
-                if (focusItem == newSelection)
-                {
-                    RowRange range = getRowRange(getBottomIndex(),getVisibleGridHeight(),true,false);
+                if (focusItem == newSelection) {
+                    RowRange range = getRowRange(getBottomIndex(), getVisibleGridHeight(), true, false);
                     newSelection = items.get(range.endIndex);
                 }
 
                 newColumnFocus = focusColumn;
                 break;
-            default :
+            default:
                 break;
         }
 
-        if (newSelection == null)
-        {
+        if (newSelection == null) {
             return;
         }
 
-        if (cellSelectionEnabled)
-        {
+        if (cellSelectionEnabled) {
             if (e.stateMask != SWT.MOD2)
                 focusColumn = newColumnFocus;
             showColumn(newColumnFocus);
@@ -7412,31 +6750,26 @@ public class Grid extends Canvas
                 focusItem = newSelection;
             showItem(newSelection);
 
-            if (e.stateMask != SWT.MOD1)
-            {
-                Event selEvent = updateCellSelection(new Point(indexOf(newColumnFocus),indexOf(newSelection)),e.stateMask, false, false);
-                if (selEvent != null)
-                {
-                	selEvent.stateMask = e.stateMask;
-                	selEvent.character = e.character;
-                	selEvent.keyCode = e.keyCode;
-                	notifyListeners(SWT.Selection, selEvent);
+            if (e.stateMask != SWT.MOD1) {
+                Event selEvent = updateCellSelection(new Point(indexOf(newColumnFocus), indexOf(newSelection)),
+                                                     e.stateMask, false, false);
+                if (selEvent != null) {
+                    selEvent.stateMask = e.stateMask;
+                    selEvent.character = e.character;
+                    selEvent.keyCode = e.keyCode;
+                    notifyListeners(SWT.Selection, selEvent);
                 }
             }
 
             redraw();
-        }
-        else
-        {
+        } else {
             Event selectionEvent = null;
-            if (selectionType == SWT.SINGLE || e.stateMask != SWT.MOD1)
-            {
+            if (selectionType == SWT.SINGLE || e.stateMask != SWT.MOD1) {
                 selectionEvent = updateSelection(newSelection, e.stateMask);
-                if (selectionEvent != null)
-                {
-                	selectionEvent.stateMask = e.stateMask;
-                	selectionEvent.character = e.character;
-                	selectionEvent.keyCode = e.keyCode;
+                if (selectionEvent != null) {
+                    selectionEvent.stateMask = e.stateMask;
+                    selectionEvent.character = e.character;
+                    selectionEvent.keyCode = e.keyCode;
                 }
             }
 
@@ -7451,18 +6784,17 @@ public class Grid extends Canvas
 
     private void handleSpaceBarDown(Event event)
     {
-    	if (focusItem == null)
-    		return;
+        if (focusItem == null)
+            return;
 
-        if (selectionEnabled && !cellSelectionEnabled && !selectedItems.contains(focusItem))
-        {
+        if (selectionEnabled && !cellSelectionEnabled && !selectedItems.contains(focusItem)) {
             selectedItems.add(focusItem);
             redraw();
             Event e = new Event();
             e.item = focusItem;
             e.stateMask = event.stateMask;
-        	e.character = event.character;
-        	e.keyCode = event.keyCode;
+            e.character = event.character;
+            e.keyCode = event.keyCode;
             notifyListeners(SWT.Selection, e);
         }
     }
@@ -7473,9 +6805,9 @@ public class Grid extends Canvas
     private void onResize()
     {
 
-    	//CGross 1/2/08 - I don't really want to be doing this....
-    	//I shouldn't be changing something you user configured...
-    	//leaving out for now
+        //CGross 1/2/08 - I don't really want to be doing this....
+        //I shouldn't be changing something you user configured...
+        //leaving out for now
 //        if (columnScrolling)
 //        {
 //        	int maxWidth = getClientArea().width;
@@ -7510,15 +6842,14 @@ public class Grid extends Canvas
      * Returns the intersection of the given column and given item.
      *
      * @param column column
-     * @param item item
+     * @param item   item
      * @return x,y of top left corner of the cell
      */
     Point getOrigin(GridColumn column, GridItem item)
     {
         int x = 0;
 
-        if (rowHeaderVisible)
-        {
+        if (rowHeaderVisible) {
             x += rowHeaderWidth;
         }
 
@@ -7535,47 +6866,35 @@ public class Grid extends Canvas
         }
 
         int y = 0;
-        if (item != null)
-        {
-            if (columnHeadersVisible)
-            {
+        if (item != null) {
+            if (columnHeadersVisible) {
                 y += headerHeight;
             }
 
-            int currIndex=getTopIndex();
-            int itemIndex=items.indexOf(item);
+            int currIndex = getTopIndex();
+            int itemIndex = items.indexOf(item);
 
-            if (itemIndex == -1)
-            {
-            	SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+            if (itemIndex == -1) {
+                SWT.error(SWT.ERROR_INVALID_ARGUMENT);
             }
 
-            while(currIndex!=itemIndex)
-            {
-            	if(currIndex<itemIndex)
-            	{
-            		GridItem currItem = items.get(currIndex);
-            		if(currItem.isVisible())
-            		{
-            			y += currItem.getHeight() + 1;
-            		}
-            		currIndex++;
-            	}
-            	else if(currIndex>itemIndex)
-            	{
-            		currIndex--;
-            		GridItem currItem = items.get(currIndex);
-            		if(currItem.isVisible())
-            		{
-            			y -= currItem.getHeight() + 1;
-            		}
-            	}
+            while (currIndex != itemIndex) {
+                if (currIndex < itemIndex) {
+                    GridItem currItem = items.get(currIndex);
+                    if (currItem.isVisible()) {
+                        y += currItem.getHeight() + 1;
+                    }
+                    currIndex++;
+                } else if (currIndex > itemIndex) {
+                    currIndex--;
+                    GridItem currItem = items.get(currIndex);
+                    if (currItem.isVisible()) {
+                        y -= currItem.getHeight() + 1;
+                    }
+                }
             }
-        }
-        else
-        {
-            if (column.getColumnGroup() != null)
-            {
+        } else {
+            if (column.getColumnGroup() != null) {
                 y += groupHeaderHeight;
             }
         }
@@ -7590,8 +6909,8 @@ public class Grid extends Canvas
      * triggering an action further down the chain (like a selection).
      *
      * @param item item clicked
-     * @param x mouse x
-     * @param y mouse y
+     * @param x    mouse x
+     * @param y    mouse y
      * @return true if this event has been consumed.
      */
     private boolean handleCellClick(GridItem item, int x, int y)
@@ -7601,8 +6920,7 @@ public class Grid extends Canvas
         // return false;
 
         GridColumn col = getColumn(new Point(x, y));
-        if (col == null)
-        {
+        if (col == null) {
             return false;
         }
 
@@ -7633,67 +6951,56 @@ public class Grid extends Canvas
         GridColumnGroup hoverColGroup = null;
         GridColumn hoverColHeader = null;
 
-        if (col != null)
-        {
-            if (item != null)
-            {
-            	if( y < getClientArea().height - footerHeight  ) {
+        if (col != null) {
+            if (item != null) {
+                if (y < getClientArea().height - footerHeight) {
                     col.getCellRenderer().setBounds(item.getBounds(columns.indexOf(col)));
 
-                    if (col.getCellRenderer().notify(IGridWidget.MouseMove, new Point(x, y), item))
-                    {
+                    if (col.getCellRenderer().notify(IGridWidget.MouseMove, new Point(x, y), item)) {
                         detail = col.getCellRenderer().getHoverDetail();
                     }
 
-                    Rectangle textBounds = col.getCellRenderer().getTextBounds(item,false);
+                    Rectangle textBounds = col.getCellRenderer().getTextBounds(item, false);
 
-                    if (textBounds != null)
-                    {
-                        Point p = new Point(x - col.getCellRenderer().getBounds().x, y - col.getCellRenderer().getBounds().y);
+                    if (textBounds != null) {
+                        Point p = new Point(x - col.getCellRenderer().getBounds().x,
+                                            y - col.getCellRenderer().getBounds().y);
                         overText = textBounds.contains(p);
                     }
-            	}
-            }
-            else
-            {
-                if (y < headerHeight)
-                {
+                }
+            } else {
+                if (y < headerHeight) {
                     if (columnGroups.length != 0 && y < groupHeaderHeight
-                        && col.getColumnGroup() != null)
-                    {
+                        && col.getColumnGroup() != null) {
                         hoverColGroup = col.getColumnGroup();
                         hoverColGroup.getHeaderRenderer().setBounds(hoverColGroup.getBounds());
                         if (hoverColGroup.getHeaderRenderer()
-                            .notify(IGridWidget.MouseMove, new Point(x, y), hoverColGroup))
-                        {
+                            .notify(IGridWidget.MouseMove, new Point(x, y), hoverColGroup)) {
                             detail = hoverColGroup.getHeaderRenderer().getHoverDetail();
                         }
 
-                        Rectangle textBounds = hoverColGroup.getHeaderRenderer().getTextBounds(hoverColGroup,false);
+                        Rectangle textBounds = hoverColGroup.getHeaderRenderer().getTextBounds(hoverColGroup, false);
 
-                        if (textBounds != null)
-                        {
-                            Point p = new Point(x - hoverColGroup.getHeaderRenderer().getBounds().x, y - hoverColGroup.getHeaderRenderer().getBounds().y);
+                        if (textBounds != null) {
+                            Point p = new Point(x - hoverColGroup.getHeaderRenderer().getBounds().x,
+                                                y - hoverColGroup.getHeaderRenderer().getBounds().y);
                             overText = textBounds.contains(p);
                         }
-                    }
-                    else
-                    {
+                    } else {
                         // on col header
                         hoverColHeader = col;
 
                         col.getHeaderRenderer().setBounds(col.getBounds());
                         if (col.getHeaderRenderer().notify(IGridWidget.MouseMove, new Point(x, y),
-                                                           col))
-                        {
+                                                           col)) {
                             detail = col.getHeaderRenderer().getHoverDetail();
                         }
 
-                        Rectangle textBounds = col.getHeaderRenderer().getTextBounds(col,false);
+                        Rectangle textBounds = col.getHeaderRenderer().getTextBounds(col, false);
 
-                        if (textBounds != null)
-                        {
-                            Point p = new Point(x - col.getHeaderRenderer().getBounds().x, y - col.getHeaderRenderer().getBounds().y);
+                        if (textBounds != null) {
+                            Point p = new Point(x - col.getHeaderRenderer().getBounds().x,
+                                                y - col.getHeaderRenderer().getBounds().y);
                             overText = textBounds.contains(p);
                         }
                     }
@@ -7704,8 +7011,7 @@ public class Grid extends Canvas
         boolean hoverChange = false;
 
         if (hoveringItem != item || !hoveringDetail.equals(detail) || hoveringColumn != col
-            || hoverColGroup != hoverColumnGroupHeader || hoverColHeader != hoveringColumnHeader)
-        {
+            || hoverColGroup != hoverColumnGroupHeader || hoverColHeader != hoveringColumnHeader) {
             hoveringItem = item;
             hoveringDetail = detail;
             hoveringColumn = col;
@@ -7713,97 +7019,86 @@ public class Grid extends Canvas
             hoverColumnGroupHeader = hoverColGroup;
 
             Rectangle clientArea = getClientArea();
-            redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
+            redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
 
             hoverChange = true;
         }
 
         //do inplace toolTip stuff
-        if (hoverChange || hoveringOverText != overText)
-        {
+        if (hoverChange || hoveringOverText != overText) {
             hoveringOverText = overText;
 
-            if (overText){
+            if (overText) {
 
                 Rectangle cellBounds = null;
                 Rectangle textBounds = null;
                 Rectangle preferredTextBounds = null;
 
-                if (hoveringItem != null && hoveringItem.getToolTipText(indexOf(col)) == null && //no inplace tooltips when regular tooltip
-                		!col.getWordWrap()) //dont show inplace tooltips for cells with wordwrap
+                if (hoveringItem != null && hoveringItem.getToolTipText(
+                    indexOf(col)) == null && //no inplace tooltips when regular tooltip
+                    !col.getWordWrap()) //dont show inplace tooltips for cells with wordwrap
                 {
-	                cellBounds = col.getCellRenderer().getBounds();
-	                if (cellBounds.x + cellBounds.width > getSize().x)
-	                {
-	                    cellBounds.width = getSize().x - cellBounds.x;
-	                }
-	                textBounds = col.getCellRenderer().getTextBounds(item,false);
-	                preferredTextBounds = col.getCellRenderer().getTextBounds(item,true);
-                }
-                else if (hoveringColumnHeader != null && hoveringColumnHeader.getHeaderTooltip() == null) //no inplace tooltips when regular tooltip
+                    cellBounds = col.getCellRenderer().getBounds();
+                    if (cellBounds.x + cellBounds.width > getSize().x) {
+                        cellBounds.width = getSize().x - cellBounds.x;
+                    }
+                    textBounds = col.getCellRenderer().getTextBounds(item, false);
+                    preferredTextBounds = col.getCellRenderer().getTextBounds(item, true);
+                } else if (hoveringColumnHeader != null && hoveringColumnHeader.getHeaderTooltip() == null) //no inplace tooltips when regular tooltip
                 {
                     cellBounds = hoveringColumnHeader.getHeaderRenderer().getBounds();
-                    if (cellBounds.x + cellBounds.width > getSize().x)
-                    {
+                    if (cellBounds.x + cellBounds.width > getSize().x) {
                         cellBounds.width = getSize().x - cellBounds.x;
                     }
-                    textBounds = hoveringColumnHeader.getHeaderRenderer().getTextBounds(col,false);
-                    preferredTextBounds = hoveringColumnHeader.getHeaderRenderer().getTextBounds(col,true);
-                }
-                else if (hoverColumnGroupHeader != null)
-                {
+                    textBounds = hoveringColumnHeader.getHeaderRenderer().getTextBounds(col, false);
+                    preferredTextBounds = hoveringColumnHeader.getHeaderRenderer().getTextBounds(col, true);
+                } else if (hoverColumnGroupHeader != null) {
                     cellBounds = hoverColumnGroupHeader.getHeaderRenderer().getBounds();
-                    if (cellBounds.x + cellBounds.width > getSize().x)
-                    {
+                    if (cellBounds.x + cellBounds.width > getSize().x) {
                         cellBounds.width = getSize().x - cellBounds.x;
                     }
-                    textBounds = hoverColumnGroupHeader.getHeaderRenderer().getTextBounds(hoverColumnGroupHeader,false);
-                    preferredTextBounds = hoverColumnGroupHeader.getHeaderRenderer().getTextBounds(hoverColumnGroupHeader,true);
+                    textBounds = hoverColumnGroupHeader.getHeaderRenderer().getTextBounds(hoverColumnGroupHeader,
+                                                                                          false);
+                    preferredTextBounds = hoverColumnGroupHeader.getHeaderRenderer().getTextBounds(
+                        hoverColumnGroupHeader, true);
                 }
 
                 //if we are truncated
-                if (textBounds != null && textBounds.width < preferredTextBounds.width)
-                {
-                    showToolTip(item,col, hoverColumnGroupHeader, new Point(cellBounds.x + textBounds.x,cellBounds.y +
-                                                    textBounds.y));
+                if (textBounds != null && textBounds.width < preferredTextBounds.width) {
+                    showToolTip(item, col, hoverColumnGroupHeader, new Point(cellBounds.x + textBounds.x, cellBounds.y +
+                        textBounds.y));
                     //the following 2 lines are done here rather than in showToolTip to allow
                     //that method to be overridden yet still capture the mouse.
                     setCapture(true);
                     inplaceTooltipCapture = true;
                 }
-            }
-            else
-            {
+            } else {
                 hideToolTip();
             }
         }
 
         //do normal cell specific tooltip stuff
-        if (hoverChange)
-        {
-        	String newTip = null;
-			if ((hoveringItem != null) && (hoveringColumn != null)) {
-				// get cell specific tooltip
-				newTip = hoveringItem.getToolTipText(indexOf(hoveringColumn));
-			} else if ((hoveringColumn != null) && (hoveringColumnHeader != null)) {
-				// get column header specific tooltip
-				newTip = hoveringColumn.getHeaderTooltip();
-			}
+        if (hoverChange) {
+            String newTip = null;
+            if ((hoveringItem != null) && (hoveringColumn != null)) {
+                // get cell specific tooltip
+                newTip = hoveringItem.getToolTipText(indexOf(hoveringColumn));
+            } else if ((hoveringColumn != null) && (hoveringColumnHeader != null)) {
+                // get column header specific tooltip
+                newTip = hoveringColumn.getHeaderTooltip();
+            }
 
-			if (newTip == null) { // no cell or column header specific tooltip then use base Grid tooltip
-				newTip = getToolTipText();
-			}
+            if (newTip == null) { // no cell or column header specific tooltip then use base Grid tooltip
+                newTip = getToolTipText();
+            }
 
-        	//Avoid unnecessarily resetting tooltip - this will cause the tooltip to jump around
-        	if (newTip != null && !newTip.equals(displayedToolTipText))
-        	{
-        		updateToolTipText(newTip);
-        	}
-        	else if(newTip == null && displayedToolTipText != null)
-        	{
-        		updateToolTipText(null);
-        	}
-        	displayedToolTipText = newTip;
+            //Avoid unnecessarily resetting tooltip - this will cause the tooltip to jump around
+            if (newTip != null && !newTip.equals(displayedToolTipText)) {
+                updateToolTipText(newTip);
+            } else if (newTip == null && displayedToolTipText != null) {
+                updateToolTipText(null);
+            }
+            displayedToolTipText = newTip;
         }
 
         return hoverChange;
@@ -7820,7 +7115,7 @@ public class Grid extends Canvas
      */
     protected void updateToolTipText(String text)
     {
-    	super.setToolTipText(text);
+        super.setToolTipText(text);
     }
 
     /**
@@ -7836,25 +7131,22 @@ public class Grid extends Canvas
      * Inserts a new column into the table.
      *
      * @param column new column
-     * @param index index to insert new column
+     * @param index  index to insert new column
      * @return current number of columns
      */
     int newColumn(GridColumn column, int index)
     {
 
-        if (index == -1)
-        {
+        if (index == -1) {
             columns.add(column);
             displayOrderedColumns.add(column);
-        }
-        else
-        {
+        } else {
             columns.add(index, column);
             displayOrderedColumns.add(index, column);
 
             for (int i = 0; i < columns.size(); i++) {
-				columns.get(i).setColumnIndex(i);
-			}
+                columns.get(i).setColumnIndex(i);
+            }
         }
 
         computeHeaderHeight(sizingGC);
@@ -7881,8 +7173,7 @@ public class Grid extends Canvas
 
         int index = indexOf(column);
 
-        if (cellSelectionEnabled)
-        {
+        if (cellSelectionEnabled) {
             List<Point> removeSelectedCells = new ArrayList<Point>();
 
             for (Point cell : selectedCells) {
@@ -7891,8 +7182,7 @@ public class Grid extends Canvas
                 }
             }
 
-            if (removeSelectedCells.size() > 0)
-            {
+            if (removeSelectedCells.size() > 0) {
                 selectedCells.removeAll(removeSelectedCells);
                 selectionModified = true;
             }
@@ -7926,8 +7216,7 @@ public class Grid extends Canvas
             i++;
         }
 
-        if (selectionModified && !disposing)
-        {
+        if (selectionModified && !disposing) {
             updateColumnSelection();
         }
 
@@ -7935,13 +7224,10 @@ public class Grid extends Canvas
 
     void newRootItem(GridItem item, int index)
     {
-        if (index == -1 || index >= rootItems.size())
-        {
+        if (index == -1 || index >= rootItems.size()) {
             rootItems.add(item);
-        }
-        else
-        {
-            rootItems.add(index,item);
+        } else {
+            rootItems.add(index, item);
         }
     }
 
@@ -7954,7 +7240,7 @@ public class Grid extends Canvas
      * Creates the new item at the given index. Only called from GridItem
      * constructor.
      *
-     * @param item new item
+     * @param item  new item
      * @param index index to insert the item at
      * @return the index where the item was insert
      */
@@ -7962,67 +7248,51 @@ public class Grid extends Canvas
     {
         int row;
 
-        if (!isTree)
-        {
-            if (item.getParentItem() != null)
-            {
+        if (!isTree) {
+            if (item.getParentItem() != null) {
                 isTree = true;
             }
         }
 
         //Have to convert indexes, this method needs a flat index, the method is called with indexes
         //that are relative to the level
-        if (root && index != -1)
-        {
-            if (index >= rootItems.size())
-            {
+        if (root && index != -1) {
+            if (index >= rootItems.size()) {
                 index = -1;
-            }
-            else
-            {
+            } else {
                 index = items.indexOf(rootItems.get(index));
             }
-        }
-        else if (!root)
-        {
-            if (index >= item.getParentItem().getItems().length || index == -1)
-            {
-              GridItem rightMostDescendent = item.getParentItem();
+        } else if (!root) {
+            if (index >= item.getParentItem().getItems().length || index == -1) {
+                GridItem rightMostDescendent = item.getParentItem();
 
-                while (rightMostDescendent.getItems().length > 0)
-                {
+                while (rightMostDescendent.getItems().length > 0) {
                     rightMostDescendent = rightMostDescendent.getItems()[rightMostDescendent
                         .getItems().length - 1];
                 }
 
                 index = indexOf(rightMostDescendent) + 1;
-            }
-            else
-            {
+            } else {
                 index = indexOf(item.getParentItem().getItems()[index]);
             }
         }
 
-        if (index == -1)
-        {
+        if (index == -1) {
             items.add(item);
             row = items.size() - 1;
-        }
-        else
-        {
+        } else {
             items.add(index, item);
             row = index;
         }
 
         if (items.size() == 1 && !userModifiedItemHeight)
-            itemHeight = computeItemHeight(item,sizingGC);
+            itemHeight = computeItemHeight(item, sizingGC);
 
         item.initializeHeight(itemHeight);
 
-        if (isRowHeaderVisible() && isAutoWidth())
-        {
-	        rowHeaderWidth = Math.max(rowHeaderWidth,rowHeaderRenderer
-	            .computeSize(sizingGC, SWT.DEFAULT, SWT.DEFAULT, item).x);
+        if (isRowHeaderVisible() && isAutoWidth()) {
+            rowHeaderWidth = Math.max(rowHeaderWidth, rowHeaderRenderer
+                .computeSize(sizingGC, SWT.DEFAULT, SWT.DEFAULT, item).x);
         }
 
         scrollValuesObsolete = true;
@@ -8060,21 +7330,18 @@ public class Grid extends Canvas
                 selectionModified = true;
         }
 
-        if (focusItem == item)
-        {
+        if (focusItem == item) {
             focusItem = null;
         }
 
         scrollValuesObsolete = true;
         topIndex = -1;
         bottomIndex = -1;
-        if (item.isVisible())
-        {
+        if (item.isVisible()) {
             currentVisibleItems--;
         }
 
-        if (selectionModified && !disposing)
-        {
+        if (selectionModified && !disposing) {
             updateColumnSelection();
         }
 
@@ -8096,8 +7363,7 @@ public class Grid extends Canvas
 
         // if we just added the first col group, then we need to up the row
         // height
-        if (columnGroups.length == 1)
-        {
+        if (columnGroups.length == 1) {
             computeHeaderHeight(sizingGC);
         }
 
@@ -8115,18 +7381,15 @@ public class Grid extends Canvas
     {
         GridColumnGroup[] newColumnGroups = new GridColumnGroup[columnGroups.length - 1];
         int newIndex = 0;
-        for (int i = 0; i < columnGroups.length; i++)
-        {
-            if (columnGroups[i] != group)
-            {
-                newColumnGroups[newIndex] = columnGroups[i];
+        for (GridColumnGroup columnGroup : columnGroups) {
+            if (columnGroup != group) {
+                newColumnGroups[newIndex] = columnGroup;
                 newIndex++;
             }
         }
         columnGroups = newColumnGroups;
 
-        if (columnGroups.length == 0)
-        {
+        if (columnGroups.length == 0) {
             computeHeaderHeight(sizingGC);
         }
 
@@ -8148,12 +7411,11 @@ public class Grid extends Canvas
      * Returns the current item in focus.
      *
      * @return item in focus or {@code null}.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public GridItem getFocusItem()
     {
@@ -8165,12 +7427,11 @@ public class Grid extends Canvas
      * Returns the current cell in focus.  If cell selection is disabled, this method returns null.
      *
      * @return cell in focus or {@code null}. x represents the column and y the row the cell is in
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public Point getFocusCell()
     {
@@ -8186,30 +7447,27 @@ public class Grid extends Canvas
         if (focusItem != null)
             y = indexOf(focusItem);
 
-        return new Point(x,y);
+        return new Point(x, y);
     }
 
     /**
      * Sets the focused item to the given item.
      *
      * @param item item to focus.
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_INVALID_ARGUMENT - if item is disposed</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_INVALID_ARGUMENT - if item is disposed</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setFocusItem(GridItem item)
     {
         checkWidget();
         //TODO: check and make sure this item is valid for focus
-        if (item == null || item.isDisposed() || item.getParent() != this)
-        {
+        if (item == null || item.isDisposed() || item.getParent() != this) {
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
         }
         focusItem = item;
@@ -8220,24 +7478,22 @@ public class Grid extends Canvas
      * selection is enabled.
      *
      * @param column column to focus.
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_INVALID_ARGUMENT - if item is disposed</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_INVALID_ARGUMENT - if item is disposed</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setFocusColumn(GridColumn column)
     {
         checkWidget();
         //TODO: check and make sure this item is valid for focus
-        if (column == null || column.isDisposed() || column.getParent() != this || !column.isVisible())
-        {
+        if (column == null || column.isDisposed() || column.getParent() != this || !column.isVisible()) {
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+            return;
         }
 
         focusColumn = column;
@@ -8261,12 +7517,11 @@ public class Grid extends Canvas
      * rather than pixel-by-pixel.
      *
      * @return true if the table is scrolled horizontally by column
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public boolean getColumnScrolling()
     {
@@ -8279,19 +7534,17 @@ public class Grid extends Canvas
      * or pixel-by-pixel (false).
      *
      * @param columnScrolling true to horizontally scroll by column, false to
-     * scroll by pixel
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     *                        scroll by pixel
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setColumnScrolling(boolean columnScrolling)
     {
-    	checkWidget();
-        if (rowHeaderVisible && !columnScrolling)
-        {
+        checkWidget();
+        if (rowHeaderVisible && !columnScrolling) {
             return;
         }
 
@@ -8317,9 +7570,8 @@ public class Grid extends Canvas
         GridColumn prevCol = col;
 
         int i = 0;
-        while (!prevCol.isVisible())
-        {
-            i ++;
+        while (!prevCol.isVisible()) {
+            i++;
             if (index - i < 0)
                 return null;
 
@@ -8328,17 +7580,14 @@ public class Grid extends Canvas
 
         index = displayOrderedColumns.indexOf(prevCol);
 
-        for (int j = 0; j < index; j++)
-        {
+        for (int j = 0; j < index; j++) {
             GridColumn tempCol = displayOrderedColumns.get(j);
 
-            if (!tempCol.isVisible())
-            {
+            if (!tempCol.isVisible()) {
                 continue;
             }
 
-            if (item.getColumnSpan(indexOf(tempCol)) >= index - j)
-            {
+            if (item.getColumnSpan(indexOf(tempCol)) >= index - j) {
                 prevCol = tempCol;
                 break;
             }
@@ -8363,9 +7612,8 @@ public class Grid extends Canvas
 
         int i = 0;
         GridColumn nextCol = col;
-        while (!nextCol.isVisible())
-        {
-            i ++;
+        while (!nextCol.isVisible()) {
+            i++;
             if (index + i == displayOrderedColumns.size())
                 return null;
 
@@ -8376,20 +7624,15 @@ public class Grid extends Canvas
         index = displayOrderedColumns.indexOf(nextCol);
         int startIndex = index;
 
-        while (index > 0)
-        {
+        while (index > 0) {
 
-            index --;
+            index--;
             GridColumn prevCol = displayOrderedColumns.get(index);
 
-            if (item.getColumnSpan(indexOf(prevCol)) >= startIndex - index)
-            {
-                if (startIndex == displayOrderedColumns.size() - 1)
-                {
+            if (item.getColumnSpan(indexOf(prevCol)) >= startIndex - index) {
+                if (startIndex == displayOrderedColumns.size() - 1) {
                     return null;
-                }
-                else
-                {
+                } else {
                     return getVisibleColumn_DegradeRight(item, displayOrderedColumns.get(startIndex + 1));
                 }
             }
@@ -8403,12 +7646,11 @@ public class Grid extends Canvas
      * Returns true if the cells are selectable in the reciever.
      *
      * @return cell selection enablement status.
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public boolean getCellSelectionEnabled()
     {
@@ -8420,24 +7662,19 @@ public class Grid extends Canvas
      * Sets whether cells are selectable in the receiver.
      *
      * @param cellSelection the cellSelection to set
-     *
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setCellSelectionEnabled(boolean cellSelection)
     {
         checkWidget();
-        if (!cellSelection)
-        {
+        if (!cellSelection) {
             selectedCells.clear();
             redraw();
-        }
-        else
-        {
+        } else {
             selectedItems.clear();
             redraw();
         }
@@ -8448,8 +7685,9 @@ public class Grid extends Canvas
     /**
      * @return <code>true</code> if cell selection is enabled
      */
-    public boolean isCellSelectionEnabled() {
-    	return cellSelectionEnabled;
+    public boolean isCellSelectionEnabled()
+    {
+        return cellSelectionEnabled;
     }
 
     /**
@@ -8457,16 +7695,14 @@ public class Grid extends Canvas
      * deselected it remains deselected.  Invalid cells are ignored.
      *
      * @param cell cell to deselect.
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the cell is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the cell is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void deselectCell(Point cell)
     {
@@ -8484,24 +7720,23 @@ public class Grid extends Canvas
      * Deselects the given cells.  Invalid cells are ignored.
      *
      * @param cells the cells to deselect.
-     *
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the set of cells or any cell is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the set of cells or any cell is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void deselectCells(Point[] cells)
     {
         checkWidget();
 
-        if (cells == null)
+        if (cells == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return;
+        }
 
         for (Point cell : cells) {
             if (cell == null)
@@ -8520,12 +7755,11 @@ public class Grid extends Canvas
     /**
      * Deselects all selected cells in the receiver.
      *
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void deselectAllCells()
     {
@@ -8539,16 +7773,14 @@ public class Grid extends Canvas
      * Selects the given cell.  Invalid cells are ignored.
      *
      * @param cell point whose x values is a column index and y value is an item index
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the item is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the item is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void selectCell(Point cell)
     {
@@ -8568,16 +7800,14 @@ public class Grid extends Canvas
      * Selects the given cells.  Invalid cells are ignored.
      *
      * @param cells an arry of points whose x value is a column index and y value is an item index
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the set of cells or an individual cell is null</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the set of cells or an individual cell is null</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void selectCells(Point[] cells)
     {
@@ -8585,8 +7815,10 @@ public class Grid extends Canvas
 
         if (!cellSelectionEnabled) return;
 
-        if (cells == null)
+        if (cells == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return;
+        }
 
         for (Point cell : cells) {
             if (cell == null)
@@ -8604,12 +7836,11 @@ public class Grid extends Canvas
     /**
      * Selects all cells in the receiver.
      *
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void selectAllCells()
     {
@@ -8621,13 +7852,11 @@ public class Grid extends Canvas
      * Selects all cells in the receiver.
      *
      * @return An Event object
-     *
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     private Event selectAllCellsInternal()
     {
@@ -8636,15 +7865,14 @@ public class Grid extends Canvas
         if (columns.size() == 0)
             return null;
 
-        if(items.size() == 0)
-        	return null;
+        if (items.size() == 0)
+            return null;
 
         int index = 0;
         GridColumn column = displayOrderedColumns.get(index);
 
-        while (!column.isVisible())
-        {
-            index ++;
+        while (!column.isVisible()) {
+            index++;
 
             if (index >= columns.size())
                 return null;
@@ -8659,9 +7887,10 @@ public class Grid extends Canvas
         focusItem = items.get(0);
 
         GridItem lastItem = getPreviousVisibleItem(null);
-        GridColumn lastCol = getVisibleColumn_DegradeLeft(lastItem, displayOrderedColumns.get(displayOrderedColumns.size() -1));
+        GridColumn lastCol = getVisibleColumn_DegradeLeft(lastItem,
+                                                          displayOrderedColumns.get(displayOrderedColumns.size() - 1));
 
-        Event event = updateCellSelection(new Point(indexOf(lastCol),indexOf(lastItem)),SWT.MOD2, true, false);
+        Event event = updateCellSelection(new Point(indexOf(lastCol), indexOf(lastItem)), SWT.MOD2, true, false);
 
         focusColumn = oldFocusColumn;
         focusItem = oldFocusItem;
@@ -8676,34 +7905,32 @@ public class Grid extends Canvas
      * Selects all cells in the given column in the receiver.
      *
      * @param col
-     *
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
-    public void selectColumn(int col) {
+    public void selectColumn(int col)
+    {
         checkWidget();
-    	List<Point> cells = new ArrayList<Point>();
-		getCells(getColumn(col), cells);
-		selectCells(cells.toArray(new Point[cells.size()]));
+        List<Point> cells = new ArrayList<Point>();
+        getCells(getColumn(col), cells);
+        selectCells(cells.toArray(new Point[cells.size()]));
     }
 
     /**
      * Selects all cells in the given column group in the receiver.
      *
      * @param colGroup the column group
-     *
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
-    public void selectColumnGroup(int colGroup) {
+    public void selectColumnGroup(int colGroup)
+    {
         selectColumnGroup(getColumnGroup(colGroup));
     }
 
@@ -8711,19 +7938,18 @@ public class Grid extends Canvas
      * Selects all cells in the given column group in the receiver.
      *
      * @param colGroup the column group
-     *
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
-    public void selectColumnGroup(GridColumnGroup colGroup) {
+    public void selectColumnGroup(GridColumnGroup colGroup)
+    {
         checkWidget();
-    	List<Point> cells = new ArrayList<Point>();
-		getCells(colGroup, cells);
-		selectCells(cells.toArray(new Point[cells.size()]));
+        List<Point> cells = new ArrayList<Point>();
+        getCells(colGroup, cells);
+        selectCells(cells.toArray(new Point[cells.size()]));
     }
 
     /**
@@ -8731,17 +7957,15 @@ public class Grid extends Canvas
      * selecting the given cell.
      *
      * @param cell point whose x values is a column index and y value is an item index
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the item is null</li>
-     * <li>ERROR_INVALID_ARGUMENT - if the cell is invalid</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the item is null</li>
+     *                                      <li>ERROR_INVALID_ARGUMENT - if the cell is invalid</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setCellSelection(Point cell)
     {
@@ -8766,17 +7990,15 @@ public class Grid extends Canvas
      * selecting the given cells.
      *
      * @param cells point array whose x values is a column index and y value is an item index
-     * @throws IllegalArgumentException
-     * <ul>
-     * <li>ERROR_NULL_ARGUMENT - if the cell array or an individual cell is null</li>
-     * <li>ERROR_INVALID_ARGUMENT - if the a cell is invalid</li>
-     * </ul>
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws IllegalArgumentException     <ul>
+     *                                      <li>ERROR_NULL_ARGUMENT - if the cell array or an individual cell is null</li>
+     *                                      <li>ERROR_INVALID_ARGUMENT - if the a cell is invalid</li>
+     *                                      </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public void setCellSelection(Point[] cells)
     {
@@ -8784,8 +8006,10 @@ public class Grid extends Canvas
 
         if (!cellSelectionEnabled) return;
 
-        if (cells == null)
+        if (cells == null) {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return;
+        }
 
         for (Point cell : cells) {
             if (cell == null)
@@ -8814,20 +8038,17 @@ public class Grid extends Canvas
      * </p>
      *
      * @return an array representing the cell selection
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public Point[] getCellSelection()
     {
         checkWidget();
         return selectedCells.toArray(new Point[selectedCells.size()]);
     }
-
-
 
 
     GridColumn getFocusColumn()
@@ -8837,22 +8058,17 @@ public class Grid extends Canvas
 
     void updateColumnFocus()
     {
-        if (!focusColumn.isVisible())
-        {
+        if (!focusColumn.isVisible()) {
             int index = displayOrderedColumns.indexOf(focusColumn);
-            if (index > 0)
-            {
+            if (index > 0) {
                 GridColumn prev = displayOrderedColumns.get(index - 1);
-                prev = getVisibleColumn_DegradeLeft(focusItem,prev);
-                if (prev == null)
-                {
-                    prev = getVisibleColumn_DegradeRight(focusItem,focusColumn);
+                prev = getVisibleColumn_DegradeLeft(focusItem, prev);
+                if (prev == null) {
+                    prev = getVisibleColumn_DegradeRight(focusItem, focusColumn);
                 }
                 focusColumn = prev;
-            }
-            else
-            {
-                focusColumn = getVisibleColumn_DegradeRight(focusItem,focusColumn);
+            } else {
+                focusColumn = getVisibleColumn_DegradeRight(focusItem, focusColumn);
             }
         }
     }
@@ -8875,8 +8091,7 @@ public class Grid extends Canvas
         if (getItemCount() > 0)
             item = getItem(0);
 
-        while (item != null)
-        {
+        while (item != null) {
             //is cell spanned
             int position = -1;
             boolean spanned = false;
@@ -8893,9 +8108,8 @@ public class Grid extends Canvas
                 }
             }
 
-            if (!spanned && item.getColumnSpan(colIndex) == 0)
-            {
-                cells.add(new Point(colIndex,indexOf(item)));
+            if (!spanned && item.getColumnSpan(colIndex) == 0) {
+                cells.add(new Point(colIndex, indexOf(item)));
             }
 
             item = getNextVisibleItem(item);
@@ -8960,28 +8174,26 @@ public class Grid extends Canvas
 
         GridItem iterItem = toItem;
 
-        do
-        {
-            getCells(iterItem,cells);
+        do {
+            getCells(iterItem, cells);
 
             if (iterItem == fromItem) break;
 
-            if (descending)
-            {
+            if (descending) {
                 iterItem = getPreviousVisibleItem(iterItem);
-            }
-            else
-            {
+            } else {
                 iterItem = getNextVisibleItem(iterItem);
             }
         } while (true);
     }
 
-    private int blend(int v1, int v2, int ratio) {
-        return (ratio*v1 + (100-ratio)*v2)/100;
+    private int blend(int v1, int v2, int ratio)
+    {
+        return (ratio * v1 + (100 - ratio) * v2) / 100;
     }
 
-    private RGB blend(RGB c1, RGB c2, int ratio) {
+    private RGB blend(RGB c1, RGB c2, int ratio)
+    {
         int r = blend(c1.red, c2.red, ratio);
         int g = blend(c1.green, c2.green, ratio);
         int b = blend(c1.blue, c2.blue, ratio);
@@ -9000,15 +8212,13 @@ public class Grid extends Canvas
      */
     private Point getSelectionRange(GridItem fromItem, GridColumn fromColumn, GridItem toItem, GridColumn toColumn)
     {
-        if (displayOrderedColumns.indexOf(fromColumn) > displayOrderedColumns.indexOf(toColumn))
-        {
+        if (displayOrderedColumns.indexOf(fromColumn) > displayOrderedColumns.indexOf(toColumn)) {
             GridColumn temp = fromColumn;
             fromColumn = toColumn;
             toColumn = temp;
         }
 
-        if (indexOf(fromItem) > indexOf(toItem))
-        {
+        if (indexOf(fromItem) > indexOf(toItem)) {
             GridItem temp = fromItem;
             fromItem = toItem;
             toItem = temp;
@@ -9020,22 +8230,17 @@ public class Grid extends Canvas
         int fromIndex = indexOf(fromColumn);
         int toIndex = indexOf(toColumn);
 
-        do
-        {
-            if (!firstTime)
-            {
+        do {
+            if (!firstTime) {
                 iterItem = getNextVisibleItem(iterItem);
-            }
-            else
-            {
+            } else {
                 firstTime = false;
             }
 
             Point cols = getRowSelectionRange(iterItem, fromColumn, toColumn);
 
             //check and see if column spanning means that the range increased
-            if (cols.x != fromIndex || cols.y != toIndex)
-            {
+            if (cols.x != fromIndex || cols.y != toIndex) {
                 GridColumn newFrom = getColumn(cols.x);
                 GridColumn newTo = getColumn(cols.y);
 
@@ -9044,7 +8249,7 @@ public class Grid extends Canvas
             }
         } while (iterItem != toItem);
 
-        return new Point(indexOf(fromColumn),indexOf(toColumn));
+        return new Point(indexOf(fromColumn), indexOf(toColumn));
     }
 
     /**
@@ -9099,7 +8304,7 @@ public class Grid extends Canvas
 
         }
 
-        return new Point(newFrom,newTo);
+        return new Point(newFrom, newTo);
     }
 
     /**
@@ -9145,46 +8350,37 @@ public class Grid extends Canvas
         if (cell.x < 0 || cell.x >= columns.size())
             return false;
 
-        if (cell.y < 0 || cell.y >= items.size())
-            return false;
+        return !(cell.y < 0 || cell.y >= items.size());
 
-        return true;
     }
 
     /**
      * Shows the inplace tooltip for the given item and column.  The location is the x and y origin
      * of the text in the cell.
-     * <p>
+     * <p/>
      * This method may be overriden to provide their own custom tooltips.
      *
-     * @param item the item currently hovered over or null.
-     * @param column the column currently hovered over or null.
-     * @param group the group currently hovered over or null.
+     * @param item     the item currently hovered over or null.
+     * @param column   the column currently hovered over or null.
+     * @param group    the group currently hovered over or null.
      * @param location the x,y origin of the text in the hovered object.
      */
     protected void showToolTip(GridItem item, GridColumn column, GridColumnGroup group, Point location)
     {
-        if (inplaceToolTip == null)
-        {
+        if (inplaceToolTip == null) {
             inplaceToolTip = new GridToolTip(this);
         }
 
-        if (group != null)
-        {
+        if (group != null) {
             inplaceToolTip.setFont(getFont());
             inplaceToolTip.setText(group.getText());
-        }
-        else if (item != null)
-        {
+        } else if (item != null) {
             inplaceToolTip.setFont(item.getFont(item.getParent().indexOf(column)));
             inplaceToolTip.setText(item.getText(item.getParent().indexOf(column)));
-        }
-        else if (column != null)
-        {
+        } else if (column != null) {
             inplaceToolTip.setFont(getFont());
             inplaceToolTip.setText(column.getText());
         }
-
 
 
         Point p = getDisplay().map(this, null, location);
@@ -9196,55 +8392,52 @@ public class Grid extends Canvas
 
     /**
      * Hides the inplace tooltip.
-     * <p>
+     * <p/>
      * This method must be overriden when showToolTip is overriden.  Subclasses must
      * call super when overriding this method.
      */
     protected void hideToolTip()
     {
-        if (inplaceToolTip != null)
-        {
+        if (inplaceToolTip != null) {
             inplaceToolTip.setVisible(false);
         }
-        if (inplaceTooltipCapture)
-    	{
-        	setCapture(false);
-        	inplaceTooltipCapture = false;
-    	}
+        if (inplaceTooltipCapture) {
+            setCapture(false);
+            inplaceTooltipCapture = false;
+        }
     }
 
-    void recalculateRowHeaderHeight(GridItem item,int oldHeight, int newHeight) {
-    	checkWidget();
+    void recalculateRowHeaderHeight(GridItem item, int oldHeight, int newHeight)
+    {
+        checkWidget();
 
-    	if( newHeight > itemHeight ) {
-    		itemHeight = newHeight;
+        if (newHeight > itemHeight) {
+            itemHeight = newHeight;
 
-    		userModifiedItemHeight = false;
-        	hasDifferingHeights=false;
+            userModifiedItemHeight = false;
+            hasDifferingHeights = false;
 
-        	itemHeight = computeItemHeight(items.get(0), sizingGC);
+            itemHeight = computeItemHeight(items.get(0), sizingGC);
 
-        	for(int cnt=0;cnt<items.size();cnt++)
-                items.get(cnt).setHeight(itemHeight);
+            for (GridItem item1 : items) {
+                item1.setHeight(itemHeight);
+            }
 
-        	setScrollValuesObsolete();
+            setScrollValuesObsolete();
             redraw();
-    	}
+        }
 
     }
 
 
-    void recalculateRowHeaderWidth(GridItem item,int oldWidth, int newWidth)
+    void recalculateRowHeaderWidth(GridItem item, int oldWidth, int newWidth)
     {
         if (!isAutoWidth())
-          return;
+            return;
 
-        if (newWidth > rowHeaderWidth)
-        {
+        if (newWidth > rowHeaderWidth) {
             rowHeaderWidth = newWidth;
-        }
-        else if (newWidth < rowHeaderWidth && oldWidth == rowHeaderWidth)
-        {
+        } else if (newWidth < rowHeaderWidth && oldWidth == rowHeaderWidth) {
             //if the changed width is smaller, and the previous width of that rows header was equal
             //to the current row header width then its possible that we may need to make the new
             //row header width smaller, but to do that we need to ask all the rows all over again
@@ -9271,12 +8464,11 @@ public class Grid extends Canvas
      * Returns the row header width or 0 if row headers are not visible.
      *
      * @return the width of the row headers
-     * @throws org.eclipse.swt.SWTException
-     * <ul>
-     * <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     * <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
-     * created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that
+     *                                      created the receiver</li>
+     *                                      </ul>
      */
     public int getItemHeaderWidth()
     {
@@ -9285,30 +8477,30 @@ public class Grid extends Canvas
             return 0;
         return rowHeaderWidth;
     }
+
     /**
      * Sets the row header width to the specified value. This automatically disables the auto width feature of the grid.
+     *
      * @param width the width of the row header
      * @see #getItemHeaderWidth()
      * @see #setAutoWidth(boolean)
      */
     public void setItemHeaderWidth(int width)
     {
-      checkWidget();
-      rowHeaderWidth = width;
-      setAutoWidth(false);
-      redraw();
+        checkWidget();
+        rowHeaderWidth = width;
+        setAutoWidth(false);
+        redraw();
     }
 
     /**
      * Sets the number of items contained in the receiver.
      *
      * @param count the number of items
-     *
-     * @exception org.eclipse.swt.SWTException
-     * <ul>
-     *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     * </ul>
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
+     *                                      </ul>
      */
     public void setItemCount(int count)
     {
@@ -9318,14 +8510,12 @@ public class Grid extends Canvas
             count = 0;
 
 
-        if (count < items.size())
-        {
-          //TODO delete and clear items if necessary
+        if (count < items.size()) {
+            //TODO delete and clear items if necessary
         }
 
-        while (count > items.size())
-        {
-            new GridItem(this,SWT.NONE);
+        while (count > items.size()) {
+            new GridItem(this, SWT.NONE);
         }
         setRedraw(true);
     }
@@ -9336,18 +8526,14 @@ public class Grid extends Canvas
     private void initAccessible()
     {
         final Accessible accessible = getAccessible();
-        accessible.addAccessibleListener(new AccessibleAdapter()
-        {
+        accessible.addAccessibleListener(new AccessibleAdapter() {
             public void getDescription(AccessibleEvent e)
             {
                 int childID = e.childID;
-                if (childID >= 0 && childID < items.size())
-                {
+                if (childID >= 0 && childID < items.size()) {
                     String descrption = "";
-                    for (int i = 0; i < columns.size(); i++)
-                    {
-                        if (i != 0)
-                        {
+                    for (int i = 0; i < columns.size(); i++) {
+                        if (i != 0) {
                             descrption += columns.get(i).getText() + " : ";
                             descrption += items.get(childID).getText(i) + " ";
                         }
@@ -9359,34 +8545,26 @@ public class Grid extends Canvas
             public void getName(AccessibleEvent e)
             {
                 int childID = e.childID;
-                if (childID >= 0 && childID < items.size())
-                {
+                if (childID >= 0 && childID < items.size()) {
                     // Name of the items
                     e.result = items.get(childID).getText();
-                }
-                else if (childID >= items.size() && childID < items.size() + columns.size())
-                {
+                } else if (childID >= items.size() && childID < items.size() + columns.size()) {
                     // Name of the column headers
                     e.result = columns.get(childID - items.size()).getText();
-                }
-                else if (childID >= items.size() + columns.size()
-                         && childID < items.size() + columns.size() + columnGroups.length)
-                {
+                } else if (childID >= items.size() + columns.size()
+                    && childID < items.size() + columns.size() + columnGroups.length) {
                     // Name of the column group headers
                     e.result = columnGroups[childID - items.size() - columns.size()].getText();
-                }
-                else if (childID >= items.size() + columns.size() + columnGroups.length
-                         && childID < items.size() + columns.size() + columnGroups.length
-                                      + columnGroups.length)
-                {
+                } else if (childID >= items.size() + columns.size() + columnGroups.length
+                    && childID < items.size() + columns.size() + columnGroups.length
+                    + columnGroups.length) {
                     // Name of the toggle button for column group headers
                     e.result = ACC_TOGGLE_BUTTON_NAME;
                 }
             }
         });
 
-        accessible.addAccessibleControlListener(new AccessibleControlAdapter()
-        {
+        accessible.addAccessibleControlListener(new AccessibleControlAdapter() {
             public void getChildAtPoint(AccessibleControlEvent e)
             {
                 Point location = toControl(e.x, e.y);
@@ -9394,53 +8572,37 @@ public class Grid extends Canvas
 
                 // Grid Items
                 GridItem item = getItem(location);
-                if (item != null)
-                {
-                    for (int i = 0; i < getItems().length; i++)
-                    {
-                        if (item.equals(getItem(i)))
-                        {
+                if (item != null) {
+                    for (int i = 0; i < getItems().length; i++) {
+                        if (item.equals(getItem(i))) {
                             e.childID = i;
                             return;
                         }
                     }
-                }
-                else
-                {
+                } else {
                     // Column Headers
                     GridColumn column = overColumnHeader(location.x, location.y);
-                    if (column != null)
-                    {
-                        for (int i = 0; i < getColumns().length; i++)
-                        {
-                            if (column.equals(getColumn(i)))
-                            {
+                    if (column != null) {
+                        for (int i = 0; i < getColumns().length; i++) {
+                            if (column.equals(getColumn(i))) {
                                 e.childID = getItems().length + i;
                                 return;
                             }
                         }
-                    }
-                    else
-                    {
+                    } else {
                         // Column Group headers
                         GridColumnGroup columnGroup = overColumnGroupHeader(location.x, location.y);
-                        if (columnGroup != null)
-                        {
-                            for (int i = 0; i < getColumnGroups().length; i++)
-                            {
-                                if (columnGroup.equals(getColumnGroup(i)))
-                                {
+                        if (columnGroup != null) {
+                            for (int i = 0; i < getColumnGroups().length; i++) {
+                                if (columnGroup.equals(getColumnGroup(i))) {
                                     Rectangle toggle = columnGroup
                                         .getHeaderRenderer().getToggleBounds();
-                                    if (toggle.contains(location.x, location.y))
-                                    {
+                                    if (toggle.contains(location.x, location.y)) {
                                         // Toggle button for column group
                                         // header
                                         e.childID = getItems().length + getColumns().length
-                                                    + getColumnGroups().length + i;
-                                    }
-                                    else
-                                    {
+                                            + getColumnGroups().length + i;
+                                    } else {
                                         // Column Group header
                                         e.childID = getItems().length + getColumns().length + i;
                                     }
@@ -9454,12 +8616,10 @@ public class Grid extends Canvas
 
             public void getChildCount(AccessibleControlEvent e)
             {
-                if (e.childID == ACC.CHILDID_SELF)
-                {
+                if (e.childID == ACC.CHILDID_SELF) {
                     int length = items.size();
 
-                    if (isTree)
-                    {
+                    if (isTree) {
                         // Child count for parent. Here if the item parent
                         // is not an other item,
                         // it is consider as children of Grid
@@ -9475,11 +8635,9 @@ public class Grid extends Canvas
 
             public void getChildren(AccessibleControlEvent e)
             {
-                if (e.childID == ACC.CHILDID_SELF)
-                {
+                if (e.childID == ACC.CHILDID_SELF) {
                     int length = items.size();
-                    if (isTree)
-                    {
+                    if (isTree) {
                         for (GridItem item : items) {
                             if (item.getParentItem() != null) {
                                 length--;
@@ -9489,22 +8647,17 @@ public class Grid extends Canvas
                         Object[] children = new Object[length];
                         int j = 0;
 
-                        for (int i = 0; i < items.size(); i++)
-                        {
-                            if (items.get(i).getParentItem() == null)
-                            {
-                                children[j] = new Integer(i);
+                        for (int i = 0; i < items.size(); i++) {
+                            if (items.get(i).getParentItem() == null) {
+                                children[j] = i;
                                 j++;
                             }
                         }
                         e.children = children;
-                    }
-                    else
-                    {
+                    } else {
                         Object[] children = new Object[length];
-                        for (int i = 0; i < items.size(); i++)
-                        {
-                            children[i] = new Integer(i);
+                        for (int i = 0; i < items.size(); i++) {
+                            children[i] = i;
                         }
                         e.children = children;
                     }
@@ -9514,36 +8667,25 @@ public class Grid extends Canvas
             public void getDefaultAction(AccessibleControlEvent e)
             {
                 int childID = e.childID;
-                if (childID >= 0 && childID < items.size())
-                {
-                    if (getItem(childID).hasChildren())
-                    {
+                if (childID >= 0 && childID < items.size()) {
+                    if (getItem(childID).hasChildren()) {
                         // Action of tree items
-                        if (getItem(childID).isExpanded())
-                        {
+                        if (getItem(childID).isExpanded()) {
                             e.result = ACC_ITEM_ACTION_COLLAPSE;
-                        }
-                        else
-                        {
+                        } else {
                             e.result = ACC_ITEM_ACTION_EXPAND;
                         }
-                    }
-                    else
-                    {
+                    } else {
                         // action of default items
                         e.result = ACC_ITEM_DEFAULT_ACTION;
                     }
-                }
-                else if (childID >= items.size()
-                         && childID < items.size() + columns.size() + columnGroups.length)
-                {
+                } else if (childID >= items.size()
+                    && childID < items.size() + columns.size() + columnGroups.length) {
                     // action of column and column group header
                     e.result = ACC_COLUMN_DEFAULT_ACTION;
-                }
-                else if (childID >= items.size() + columns.size() + columnGroups.length
-                         && childID < items.size() + columns.size() + columnGroups.length
-                                      + columnGroups.length)
-                {
+                } else if (childID >= items.size() + columns.size() + columnGroups.length
+                    && childID < items.size() + columns.size() + columnGroups.length
+                    + columnGroups.length) {
                     // action of toggle button of column group header
                     e.result = SWT.getMessage("SWT_Press");
                 }
@@ -9557,71 +8699,55 @@ public class Grid extends Canvas
                 location.y = 0;
                 int childID = e.childID;
 
-                if (childID >= 0 && childID < items.size())
-                {
+                if (childID >= 0 && childID < items.size()) {
                     // location of items
                     GridItem item = getItem(childID);
-                    if (item != null)
-                    {
+                    if (item != null) {
                         Point p = getOrigin(columns.get(0), item);
                         location.y = p.y;
                         location.height = item.getHeight();
                     }
-                }
-                else if (childID >= items.size() && childID < items.size() + columns.size())
-                {
+                } else if (childID >= items.size() && childID < items.size() + columns.size()) {
                     // location of columns headers
                     GridColumn column = getColumn(childID - items.size());
-                    if (column != null)
-                    {
+                    if (column != null) {
                         location.x = getColumnHeaderXPosition(column);
-                        if (column.getColumnGroup() == null)
-                        {
+                        if (column.getColumnGroup() == null) {
                             location.y = 0;
-                        }
-                        else
-                        {
+                        } else {
                             location.y = groupHeaderHeight;
                         }
                         location.height = headerHeight;
                         location.width = column.getWidth();
                     }
-                }
-                else if (childID >= items.size() + columns.size()
-                         && childID < items.size() + columns.size() + columnGroups.length)
-                {
+                } else if (childID >= items.size() + columns.size()
+                    && childID < items.size() + columns.size() + columnGroups.length) {
                     // location of column group header
                     GridColumnGroup columnGroup = getColumnGroup(childID - items.size()
-                                                                 - columns.size());
-                    if (columnGroup != null)
-                    {
+                        - columns.size());
+                    if (columnGroup != null) {
                         location.y = 0;
                         location.height = groupHeaderHeight;
                         location.x = getColumnHeaderXPosition(columnGroup.getFirstVisibleColumn());
                         int width = 0;
-                        for (int i = 0; i < columnGroup.getColumns().length; i++)
-                        {
-                            if (columnGroup.getColumns()[i].isVisible())
-                            {
+                        for (int i = 0; i < columnGroup.getColumns().length; i++) {
+                            if (columnGroup.getColumns()[i].isVisible()) {
                                 width += columnGroup.getColumns()[i].getWidth();
                             }
                         }
                         location.width = width;
                     }
-                }
-                else if (childID >= items.size() + columns.size() + columnGroups.length
-                         && childID < items.size() + columns.size() + columnGroups.length
-                                      + columnGroups.length)
-                {
+                } else if (childID >= items.size() + columns.size() + columnGroups.length
+                    && childID < items.size() + columns.size() + columnGroups.length
+                    + columnGroups.length) {
                     // location of toggle button of column group header
                     GridColumnGroup columnGroup = getColumnGroup(childID - items.size()
-                                                                 - columns.size()
-                                                                 - columnGroups.length);
+                        - columns.size()
+                        - columnGroups.length);
                     location = columnGroup.getHeaderRenderer().getToggleBounds();
                 }
 
-                if (location != null)
-                {
+                if (location != null) {
                     Point pt = toDisplay(location.x, location.y);
                     e.x = pt.x;
                     e.y = pt.y;
@@ -9633,40 +8759,27 @@ public class Grid extends Canvas
             public void getRole(AccessibleControlEvent e)
             {
                 int childID = e.childID;
-                if (childID >= 0 && childID < items.size())
-                {
+                if (childID >= 0 && childID < items.size()) {
                     // role of items
-                    if (isTree)
-                    {
+                    if (isTree) {
                         e.detail = ACC.ROLE_TREEITEM;
-                    }
-                    else
-                    {
+                    } else {
                         e.detail = ACC.ROLE_LISTITEM;
                     }
-                }
-                else if (childID >= items.size()
-                         && childID < items.size() + columns.size() + columnGroups.length)
-                {
+                } else if (childID >= items.size()
+                    && childID < items.size() + columns.size() + columnGroups.length) {
                     // role of columns headers and column group headers
                     e.detail = ACC.ROLE_TABLECOLUMNHEADER;
-                }
-                else if (childID >= items.size() + columns.size() + columnGroups.length
-                         && childID < items.size() + columns.size() + columnGroups.length
-                                      + columnGroups.length)
-                {
+                } else if (childID >= items.size() + columns.size() + columnGroups.length
+                    && childID < items.size() + columns.size() + columnGroups.length
+                    + columnGroups.length) {
                     // role of toggle button of column group headers
                     e.detail = ACC.ROLE_PUSHBUTTON;
-                }
-                else if (childID == ACC.CHILDID_SELF)
-                {
+                } else if (childID == ACC.CHILDID_SELF) {
                     // role of parent
-                    if (isTree)
-                    {
+                    if (isTree) {
                         e.detail = ACC.ROLE_TREE;
-                    }
-                    else
-                    {
+                    } else {
                         e.detail = ACC.ROLE_TABLE;
                     }
                 }
@@ -9675,22 +8788,18 @@ public class Grid extends Canvas
             public void getSelection(AccessibleControlEvent e)
             {
                 e.childID = ACC.CHILDID_NONE;
-                if (selectedItems.size() == 1)
-                {
+                if (selectedItems.size() == 1) {
                     // Single selection
                     e.childID = indexOf(selectedItems.get(0));
-                }
-                else if (selectedItems.size() > 1)
-                {
+                } else if (selectedItems.size() > 1) {
                     // multiple selection
                     e.childID = ACC.CHILDID_MULTIPLE;
                     int length = selectedItems.size();
                     Object[] children = new Object[length];
 
-                    for (int i = 0; i < length; i++)
-                    {
+                    for (int i = 0; i < length; i++) {
                         GridItem item = selectedItems.get(i);
-                        children[i] = new Integer(indexOf(item));
+                        children[i] = indexOf(item);
                     }
                     e.children = children;
                 }
@@ -9699,61 +8808,45 @@ public class Grid extends Canvas
             public void getState(AccessibleControlEvent e)
             {
                 int childID = e.childID;
-                if (childID >= 0 && childID < items.size())
-                {
+                if (childID >= 0 && childID < items.size()) {
                     // state of items
                     e.detail = ACC.STATE_SELECTABLE;
-                    if (getDisplay().getActiveShell() == getParent().getShell())
-                    {
+                    if (getDisplay().getActiveShell() == getParent().getShell()) {
                         e.detail |= ACC.STATE_FOCUSABLE;
                     }
 
-                    if (selectedItems.contains(getItem(childID)))
-                    {
+                    if (selectedItems.contains(getItem(childID))) {
                         e.detail |= ACC.STATE_SELECTED;
-                        if (getDisplay().getActiveShell() == getParent().getShell())
-                        {
+                        if (getDisplay().getActiveShell() == getParent().getShell()) {
                             e.detail |= ACC.STATE_FOCUSED;
                         }
                     }
 
                     // only for tree type items
-                    if (getItem(childID).hasChildren())
-                    {
-                        if (getItem(childID).isExpanded())
-                        {
+                    if (getItem(childID).hasChildren()) {
+                        if (getItem(childID).isExpanded()) {
                             e.detail |= ACC.STATE_EXPANDED;
-                        }
-                        else
-                        {
+                        } else {
                             e.detail |= ACC.STATE_COLLAPSED;
                         }
                     }
 
-                    if (!getItem(childID).isVisible())
-                    {
+                    if (!getItem(childID).isVisible()) {
                         e.detail |= ACC.STATE_INVISIBLE;
                     }
-                }
-                else if (childID >= items.size()
-                         && childID < items.size() + columns.size() + columnGroups.length)
-                {
+                } else if (childID >= items.size()
+                    && childID < items.size() + columns.size() + columnGroups.length) {
                     // state of column headers and column group headers
                     e.detail = ACC.STATE_READONLY;
-                }
-                else if (childID >= items.size() + columns.size() + columnGroups.length
-                         && childID < items.size() + columns.size() + columnGroups.length
-                                      + columnGroups.length)
-                {
+                } else if (childID >= items.size() + columns.size() + columnGroups.length
+                    && childID < items.size() + columns.size() + columnGroups.length
+                    + columnGroups.length) {
                     // state of toggle button of column group headers
                     if (getColumnGroup(
-                                       childID - items.size() - columns.size()
-                                           - columnGroups.length).getExpanded())
-                    {
+                        childID - items.size() - columns.size()
+                            - columnGroups.length).getExpanded()) {
                         e.detail = ACC.STATE_EXPANDED;
-                    }
-                    else
-                    {
+                    } else {
                         e.detail = ACC.STATE_COLLAPSED;
                     }
                 }
@@ -9762,42 +8855,35 @@ public class Grid extends Canvas
             public void getValue(AccessibleControlEvent e)
             {
                 int childID = e.childID;
-                if (childID >= 0 && childID < items.size())
-                {
+                if (childID >= 0 && childID < items.size()) {
                     // value for tree items
-                    if (isTree)
-                    {
+                    if (isTree) {
                         e.result = "" + getItem(childID).getLevel();
                     }
                 }
             }
         });
 
-        addListener(SWT.Selection, new Listener()
-        {
+        addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event)
             {
-                if (selectedItems.size() > 0)
-                {
+                if (selectedItems.size() > 0) {
                     accessible.setFocus(items.indexOf(selectedItems.get(selectedItems.size() - 1)));
                 }
             }
         });
 
-        addTreeListener(new TreeListener()
-        {
+        addTreeListener(new TreeListener() {
             public void treeCollapsed(TreeEvent e)
             {
-                if (getFocusItem() != null)
-                {
+                if (getFocusItem() != null) {
                     accessible.setFocus(items.indexOf(getFocusItem()));
                 }
             }
 
             public void treeExpanded(TreeEvent e)
             {
-                if (getFocusItem() != null)
-                {
+                if (getFocusItem() != null) {
                     accessible.setFocus(items.indexOf(getFocusItem()));
                 }
             }
@@ -9825,65 +8911,66 @@ public class Grid extends Canvas
      * not been set.
      *
      * @return the receiver's tool tip text
-     *
-     * @exception SWTException <ul>
-     *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     * </ul>
+     * @throws SWTException <ul>
+     *                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
+     *                      </ul>
      */
-	public String getToolTipText() {
-		checkWidget();
-		return toolTipText;
-	}
+    public String getToolTipText()
+    {
+        checkWidget();
+        return toolTipText;
+    }
 
 
-	/**
-	 * Sets the receiver's tool tip text to the argument, which
-	 * may be null indicating that no tool tip text should be shown.
-	 *
-	 * @param string the new tool tip text (or null)
-	 *
-	 * @exception SWTException <ul>
-	 *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-	 *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-	 * </ul>
-	 */
-	public void setToolTipText(String string) {
-		checkWidget();
-		toolTipText = string;
-	}
+    /**
+     * Sets the receiver's tool tip text to the argument, which
+     * may be null indicating that no tool tip text should be shown.
+     *
+     * @param string the new tool tip text (or null)
+     * @throws SWTException <ul>
+     *                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
+     *                      </ul>
+     */
+    public void setToolTipText(String string)
+    {
+        checkWidget();
+        toolTipText = string;
+    }
 
-	/**
-	 * Updates the row height when the first image is set on an item.
-	 * @param column the column the image is change
-	 * @param item item which images has just been set on.
-	 */
-	void imageSetOnItem(int column, GridItem item)
-	{
-		if( sizeOnEveryItemImageChange ) {
-			if( item == null || item.getImage(column) == null )
-				return;
+    /**
+     * Updates the row height when the first image is set on an item.
+     *
+     * @param column the column the image is change
+     * @param item   item which images has just been set on.
+     */
+    void imageSetOnItem(int column, GridItem item)
+    {
+        if (sizeOnEveryItemImageChange) {
+            if (item == null || item.getImage(column) == null)
+                return;
 
-			int height = item.getImage(column).getBounds().height;
-			//FIXME Needs better algorithm
-			if( height + 20 > getItemHeight() ) {
-				height = computeItemHeight(item,sizingGC);
-				setItemHeight(height);
-			}
-		} else {
-			if (firstImageSet || userModifiedItemHeight) return;
+            int height = item.getImage(column).getBounds().height;
+            //FIXME Needs better algorithm
+            if (height + 20 > getItemHeight()) {
+                height = computeItemHeight(item, sizingGC);
+                setItemHeight(height);
+            }
+        } else {
+            if (firstImageSet || userModifiedItemHeight) return;
 
-			int height = computeItemHeight(item,sizingGC);
-			setItemHeight(height);
+            int height = computeItemHeight(item, sizingGC);
+            setItemHeight(height);
 
-			firstImageSet = true;
-		}
-	}
+            firstImageSet = true;
+        }
+    }
 
     /**
      * Determines if the mouse is hovering on the selection drag area and changes the
      * pointer and sets field appropriately.
-     * <p>
+     * <p/>
      * Note:  The 'selection drag area' is that part of the selection,
      * on which a drag event can be initiated.  This is either the border
      * of the selection (i.e. a cell border between a slected and a non-selected
@@ -9900,9 +8987,8 @@ public class Grid extends Canvas
         boolean over = false;
 //    	Point inSelection = null;
 
-        if ( (!rowHeaderVisible || x > rowHeaderWidth-SELECTION_DRAG_BORDER_THRESHOLD)
-        		&& (!columnHeadersVisible || y > headerHeight-SELECTION_DRAG_BORDER_THRESHOLD) )
-        {
+        if ((!rowHeaderVisible || x > rowHeaderWidth - SELECTION_DRAG_BORDER_THRESHOLD)
+            && (!columnHeadersVisible || y > headerHeight - SELECTION_DRAG_BORDER_THRESHOLD)) {
             // not on a header
 
 //            if(!dragOnFullSelection)
@@ -9944,27 +9030,23 @@ public class Grid extends Canvas
 //            }
 //            else
 //            {
-                // drag area is the entire selection
+            // drag area is the entire selection
 
-                if(cellSelectionEnabled)
-                {
-                	Point p = new Point(x,y);
-                    Point cell = getCell(p);
-                    over = cell !=null && isCellSelected(cell);
+            if (cellSelectionEnabled) {
+                Point p = new Point(x, y);
+                Point cell = getCell(p);
+                over = cell != null && isCellSelected(cell);
 //                    inSelection = over ? p : null;
-                }
-                else
-                {
-                	Point p = new Point(x,y);
-                    GridItem item = getItem(p);
-                    over = item != null && isSelected(item);
+            } else {
+                Point p = new Point(x, y);
+                GridItem item = getItem(p);
+                over = item != null && isSelected(item);
 //                    inSelection = over ? p : null;
-                }
             }
+        }
 //        }
 
-        if (over != hoveringOnSelectionDragArea)
-        {
+        if (over != hoveringOnSelectionDragArea) {
 //            if (over)
 //            {
 //                // use drag cursor only in border mode
@@ -9990,33 +9072,33 @@ public class Grid extends Canvas
      * {@link DND#FEEDBACK_INSERT_AFTER} should be set in
      * {@link DropTargetEvent#feedback} from within a {@link DropTargetListener}.
      *
-     * @param item  the insert item.  Null will clear the insertion mark.
-     * @param column  the column of the cell.  Null will make the insertion mark span all columns.
-     * @param before  true places the insert mark above 'item'. false places
-     *                the insert mark below 'item'.
-     *
-     * @exception IllegalArgumentException <ul>
-     *    <li>ERROR_INVALID_ARGUMENT - if the item or column has been disposed</li>
-     * </ul>
-     * @exception SWTException <ul>
-     *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     * </ul>
+     * @param item   the insert item.  Null will clear the insertion mark.
+     * @param column the column of the cell.  Null will make the insertion mark span all columns.
+     * @param before true places the insert mark above 'item'. false places
+     *               the insert mark below 'item'.
+     * @throws IllegalArgumentException <ul>
+     *                                  <li>ERROR_INVALID_ARGUMENT - if the item or column has been disposed</li>
+     *                                  </ul>
+     * @throws SWTException             <ul>
+     *                                  <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
+     *                                  </ul>
      */
-    public void setInsertMark (GridItem item, GridColumn column, boolean before) {
-    	checkWidget ();
-    	if (item != null) {
-    		if (item.isDisposed())
-    			SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-    	}
-    	if (column != null) {
-    		if (column.isDisposed())
-    			SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-    	}
-    	insertMarkItem = item;
-    	insertMarkColumn = column;
-    	insertMarkBefore = before;
-    	redraw();
+    public void setInsertMark(GridItem item, GridColumn column, boolean before)
+    {
+        checkWidget();
+        if (item != null) {
+            if (item.isDisposed())
+                SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+        }
+        if (column != null) {
+            if (column.isDisposed())
+                SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+        }
+        insertMarkItem = item;
+        insertMarkColumn = column;
+        insertMarkBefore = before;
+        redraw();
     }
 
     /**
@@ -10025,12 +9107,14 @@ public class Grid extends Canvas
      * @param point
      * @return true if point is near the top or bottom border of the visible grid area
      */
-    public boolean isInDragScrollArea(Point point) {
-    	int rhw = rowHeaderVisible ? rowHeaderWidth : 0;
-    	int chh = columnHeadersVisible ? headerHeight : 0;
-    	Rectangle top = new Rectangle(rhw, chh, getClientArea().width - rhw, DRAG_SCROLL_AREA_HEIGHT);
-    	Rectangle bottom = new Rectangle(rhw, getClientArea().height - DRAG_SCROLL_AREA_HEIGHT, getClientArea().width - rhw, DRAG_SCROLL_AREA_HEIGHT);
-    	return top.contains(point) || bottom.contains(point);
+    public boolean isInDragScrollArea(Point point)
+    {
+        int rhw = rowHeaderVisible ? rowHeaderWidth : 0;
+        int chh = columnHeadersVisible ? headerHeight : 0;
+        Rectangle top = new Rectangle(rhw, chh, getClientArea().width - rhw, DRAG_SCROLL_AREA_HEIGHT);
+        Rectangle bottom = new Rectangle(rhw, getClientArea().height - DRAG_SCROLL_AREA_HEIGHT,
+                                         getClientArea().width - rhw, DRAG_SCROLL_AREA_HEIGHT);
+        return top.contains(point) || bottom.contains(point);
     }
 
     /**
@@ -10039,30 +9123,29 @@ public class Grid extends Canvas
      * value.  If the table was created with the <code>SWT.VIRTUAL</code> style,
      * these attributes are requested again as needed.
      *
-     * @param index the index of the item to clear
+     * @param index       the index of the item to clear
      * @param allChildren <code>true</code> if all child items of the indexed item should be
-     * cleared recursively, and <code>false</code> otherwise
-     *
-     * @exception IllegalArgumentException <ul>
-     *    <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number of elements in the list minus 1 (inclusive)</li>
-     * </ul>
-     * @exception SWTException <ul>
-     *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     * </ul>
-     *
+     *                    cleared recursively, and <code>false</code> otherwise
+     * @throws IllegalArgumentException <ul>
+     *                                  <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number of elements in the list minus 1 (inclusive)</li>
+     *                                  </ul>
+     * @throws SWTException             <ul>
+     *                                  <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
+     *                                  </ul>
      * @see SWT#VIRTUAL
      * @see SWT#SetData
      */
-    public void clear(int index, boolean allChildren) {
-    	checkWidget();
+    public void clear(int index, boolean allChildren)
+    {
+        checkWidget();
         if (index < 0 || index >= items.size()) {
             SWT.error(SWT.ERROR_INVALID_RANGE);
         }
 
-    	GridItem item = getItem(index);
-		item.clear(allChildren);
-    	redraw();
+        GridItem item = getItem(index);
+        item.clear(allChildren);
+        redraw();
     }
 
     /**
@@ -10072,35 +9155,34 @@ public class Grid extends Canvas
      * If the table was created with the <code>SWT.VIRTUAL</code> style,
      * these attributes are requested again as needed.
      *
-     * @param start the start index of the item to clear
-     * @param end the end index of the item to clear
+     * @param start       the start index of the item to clear
+     * @param end         the end index of the item to clear
      * @param allChildren <code>true</code> if all child items of the range of items should be
-     * cleared recursively, and <code>false</code> otherwise
-     *
-     * @exception IllegalArgumentException <ul>
-     *    <li>ERROR_INVALID_RANGE - if either the start or end are not between 0 and the number of elements in the list minus 1 (inclusive)</li>
-     * </ul>
-     * @exception SWTException <ul>
-     *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     * </ul>
-     *
+     *                    cleared recursively, and <code>false</code> otherwise
+     * @throws IllegalArgumentException <ul>
+     *                                  <li>ERROR_INVALID_RANGE - if either the start or end are not between 0 and the number of elements in the list minus 1 (inclusive)</li>
+     *                                  </ul>
+     * @throws SWTException             <ul>
+     *                                  <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
+     *                                  </ul>
      * @see SWT#VIRTUAL
      * @see SWT#SetData
      */
-    public void clear(int start, int end, boolean allChildren) {
-    	checkWidget();
-    	if (start > end) return;
+    public void clear(int start, int end, boolean allChildren)
+    {
+        checkWidget();
+        if (start > end) return;
 
-    	int count = items.size();
-    	if (!(0 <= start && start <= end && end < count)) {
-    		SWT.error(SWT.ERROR_INVALID_RANGE);
-    	}
-		for (int i=start; i<=end; i++) {
-			GridItem item = items.get(i);
-			item.clear(allChildren);
-		}
-		redraw();
+        int count = items.size();
+        if (!(0 <= start && start <= end && end < count)) {
+            SWT.error(SWT.ERROR_INVALID_RANGE);
+        }
+        for (int i = start; i <= end; i++) {
+            GridItem item = items.get(i);
+            item.clear(allChildren);
+        }
+        redraw();
     }
 
     /**
@@ -10109,40 +9191,40 @@ public class Grid extends Canvas
      * values.  If the table was created with the <code>SWT.VIRTUAL</code> style,
      * these attributes are requested again as needed.
      *
-     * @param indices the array of indices of the items
+     * @param indices     the array of indices of the items
      * @param allChildren <code>true</code> if all child items of the indexed items should be
-     * cleared recursively, and <code>false</code> otherwise
-     *
-     * @exception IllegalArgumentException <ul>
-     *    <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number of elements in the list minus 1 (inclusive)</li>
-     *    <li>ERROR_NULL_ARGUMENT - if the indices array is null</li>
-     * </ul>
-     * @exception SWTException <ul>
-     *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     * </ul>
-     *
+     *                    cleared recursively, and <code>false</code> otherwise
+     * @throws IllegalArgumentException <ul>
+     *                                  <li>ERROR_INVALID_RANGE - if the index is not between 0 and the number of elements in the list minus 1 (inclusive)</li>
+     *                                  <li>ERROR_NULL_ARGUMENT - if the indices array is null</li>
+     *                                  </ul>
+     * @throws SWTException             <ul>
+     *                                  <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
+     *                                  </ul>
      * @see SWT#VIRTUAL
      * @see SWT#SetData
      */
-    public void clear(int [] indices, boolean allChildren) {
-    	checkWidget();
-    	if (indices == null) {
-    		SWT.error(SWT.ERROR_NULL_ARGUMENT);
-    	}
-    	if (indices.length == 0) return;
+    public void clear(int[] indices, boolean allChildren)
+    {
+        checkWidget();
+        if (indices == null) {
+            SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return;
+        }
+        if (indices.length == 0) return;
 
-    	int count = items.size();
-    	for (int i=0; i<indices.length; i++) {
-    		if (!(0 <= indices[i] && indices[i] < count)) {
-    			SWT.error(SWT.ERROR_INVALID_RANGE);
-    		}
-    	}
-    	for (int i=0; i<indices.length; i++) {
-			GridItem item = items.get(indices[i]);
-			item.clear(allChildren);
-    	}
-		redraw();
+        int count = items.size();
+        for (int indice : indices) {
+            if (!(0 <= indice && indice < count)) {
+                SWT.error(SWT.ERROR_INVALID_RANGE);
+            }
+        }
+        for (int indice : indices) {
+            GridItem item = items.get(indice);
+            item.clear(allChildren);
+        }
+        redraw();
     }
 
     /**
@@ -10152,32 +9234,32 @@ public class Grid extends Canvas
      * attributes are requested again as needed.
      *
      * @param allChildren <code>true</code> if all child items of each item should be
-     * cleared recursively, and <code>false</code> otherwise
-     *
-     * @exception SWTException <ul>
-     *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     * </ul>
-     *
+     *                    cleared recursively, and <code>false</code> otherwise
+     * @throws SWTException <ul>
+     *                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+     *                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
+     *                      </ul>
      * @see SWT#VIRTUAL
      * @see SWT#SetData
      */
-    public void clearAll(boolean allChildren) {
-    	checkWidget();
-    	if (items.size() > 0)
-    		clear(0, items.size()-1, allChildren);
+    public void clearAll(boolean allChildren)
+    {
+        checkWidget();
+        if (items.size() > 0)
+            clear(0, items.size() - 1, allChildren);
     }
 
     /**
      * Recalculate the height of the header
      */
-    public void recalculateHeader() {
-    	int previous = getHeaderHeight();
+    public void recalculateHeader()
+    {
+        int previous = getHeaderHeight();
         computeHeaderHeight(sizingGC);
 
-        if( previous != getHeaderHeight() ) {
-        	scrollValuesObsolete = true;
-        	redraw();
+        if (previous != getHeaderHeight()) {
+            scrollValuesObsolete = true;
+            redraw();
         }
     }
 
@@ -10186,79 +9268,82 @@ public class Grid extends Canvas
      * <p>
      * <b>This support is provisional and may change</b>
      * </p>
+     *
      * @return all currently visible rows and columns
      */
-    public GridVisibleRange getVisibleRange() {
-    	//FIXME I think we should remember the topIndex in the onPaint-method
-    	int topIndex = getTopIndex();
-    	int bottomIndex = getBottomIndex();
-    	int startColumnIndex = getStartColumnIndex();
-    	int endColumnIndex = getEndColumnIndex();
+    public GridVisibleRange getVisibleRange()
+    {
+        //FIXME I think we should remember the topIndex in the onPaint-method
+        int topIndex = getTopIndex();
+        int bottomIndex = getBottomIndex();
+        int startColumnIndex = getStartColumnIndex();
+        int endColumnIndex = getEndColumnIndex();
 
-    	GridVisibleRange range = new GridVisibleRange();
-    	range.items = new GridItem[0];
-    	range.columns = new GridColumn[0];
+        GridVisibleRange range = new GridVisibleRange();
+        range.items = new GridItem[0];
+        range.columns = new GridColumn[0];
 
-    	if( topIndex <= bottomIndex ) {
-    		if( items.size() > 0 ) {
-        		range.items = new GridItem[bottomIndex - topIndex + 1];
-        		for( int i = topIndex; i <= bottomIndex; i++ ) {
-        			range.items[i - topIndex] = items.get(i);
-        		}
-    		}
-    	}
+        if (topIndex <= bottomIndex) {
+            if (items.size() > 0) {
+                range.items = new GridItem[bottomIndex - topIndex + 1];
+                for (int i = topIndex; i <= bottomIndex; i++) {
+                    range.items[i - topIndex] = items.get(i);
+                }
+            }
+        }
 
-    	if( startColumnIndex <= endColumnIndex ) {
-    		if( displayOrderedColumns.size() > 0 ) {
-    			List<GridColumn> cols = new ArrayList<GridColumn>();
-    			for( int i = startColumnIndex; i <= endColumnIndex; i++ ) {
-    				GridColumn col = displayOrderedColumns.get(i);
-    				if( col.isVisible() ) {
-    					cols.add(col);
-    				}
-    			}
+        if (startColumnIndex <= endColumnIndex) {
+            if (displayOrderedColumns.size() > 0) {
+                List<GridColumn> cols = new ArrayList<GridColumn>();
+                for (int i = startColumnIndex; i <= endColumnIndex; i++) {
+                    GridColumn col = displayOrderedColumns.get(i);
+                    if (col.isVisible()) {
+                        cols.add(col);
+                    }
+                }
 
-    			range.columns = new GridColumn[cols.size()];
-    			cols.toArray(range.columns);
-    		}
-    	}
+                range.columns = new GridColumn[cols.size()];
+                cols.toArray(range.columns);
+            }
+        }
 
-    	return range;
+        return range;
     }
 
-    int getStartColumnIndex() {
-    	checkWidget();
+    int getStartColumnIndex()
+    {
+        checkWidget();
 
-    	if( startColumnIndex != -1 ) {
-    		return startColumnIndex;
-    	}
+        if (startColumnIndex != -1) {
+            return startColumnIndex;
+        }
 
-    	if( !hScroll.getVisible() ) {
-    		startColumnIndex = 0;
-    	}
+        if (!hScroll.getVisible()) {
+            startColumnIndex = 0;
+        }
 
-    	startColumnIndex = hScroll.getSelection();
+        startColumnIndex = hScroll.getSelection();
 
-    	return startColumnIndex;
+        return startColumnIndex;
     }
 
-    int getEndColumnIndex() {
-    	checkWidget();
+    int getEndColumnIndex()
+    {
+        checkWidget();
 
-    	if( endColumnIndex != -1 ) {
-    		return endColumnIndex;
-    	}
+        if (endColumnIndex != -1) {
+            return endColumnIndex;
+        }
 
-    	if( displayOrderedColumns.size() == 0 ) {
-    		endColumnIndex = 0;
-    	} else if( getVisibleGridWidth() < 1 ) {
-    		endColumnIndex = getStartColumnIndex();
-    	} else {
-    		int x = 0;
+        if (displayOrderedColumns.size() == 0) {
+            endColumnIndex = 0;
+        } else if (getVisibleGridWidth() < 1) {
+            endColumnIndex = getStartColumnIndex();
+        } else {
+            int x = 0;
             x -= getHScrollSelectionInPixels();
 
-            if (rowHeaderVisible)
-            {
+            if (rowHeaderVisible) {
                 //row header is actually painted later
                 x += rowHeaderWidth;
             }
@@ -10267,60 +9352,60 @@ public class Grid extends Canvas
             GridColumn[] columns = new GridColumn[displayOrderedColumns.size()];
             displayOrderedColumns.toArray(columns);
 
-            for (int i = startIndex; i < columns.length; i++)
-            {
-            	endColumnIndex = i;
+            for (int i = startIndex; i < columns.length; i++) {
+                endColumnIndex = i;
                 GridColumn column = columns[i];
 
-                if (column.isVisible())
-                {
+                if (column.isVisible()) {
                     x += column.getWidth();
                 }
 
                 if (x > getClientArea().width) {
 
-                	break;
+                    break;
                 }
             }
 
-    	}
+        }
 
-    	endColumnIndex = Math.max(0, endColumnIndex);
+        endColumnIndex = Math.max(0, endColumnIndex);
 
-    	return endColumnIndex;
+        return endColumnIndex;
     }
 
-    void setSizeOnEveryItemImageChange(boolean sizeOnEveryItemImageChange) {
-    	this.sizeOnEveryItemImageChange = sizeOnEveryItemImageChange;
+    void setSizeOnEveryItemImageChange(boolean sizeOnEveryItemImageChange)
+    {
+        this.sizeOnEveryItemImageChange = sizeOnEveryItemImageChange;
     }
 
-	/**
-	 * Returns the width of the row headers.
-	 *
-	 * @return width of the column header row
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
-	 */
-	public int getRowHeaderWidth() {
-		checkWidget();
-		return rowHeaderWidth;
-	}
+    /**
+     * Returns the width of the row headers.
+     *
+     * @return width of the column header row
+     * @throws org.eclipse.swt.SWTException <ul>
+     *                                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
+     *                                      </li>
+     *                                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
+     *                                      thread that created the receiver</li>
+     *                                      </ul>
+     */
+    public int getRowHeaderWidth()
+    {
+        checkWidget();
+        return rowHeaderWidth;
+    }
 
     /**
      * Sets the value of the auto-height feature. When enabled, this feature resizes the height of rows to
      * reflect the content of cells with word-wrapping enabled. Cell word-wrapping is enabled via the GridColumn.setWordWrap(boolean) method.
      * If column headers have word-wrapping enabled, this feature will also resize the height of the column headers as necessary.
+     *
      * @param enabled Set to true to enable this feature, false (default) otherwise.
      */
     public void setAutoHeight(boolean enabled)
     {
-      if (autoHeight == enabled)
-        return;
+        if (autoHeight == enabled)
+            return;
 
         checkWidget();
         autoHeight = enabled;
@@ -10330,24 +9415,26 @@ public class Grid extends Canvas
 
     /**
      * Returns the value of the auto-height feature, which resizes row heights and column header heights based on word-wrapped content.
+     *
      * @return Returns whether or not the auto-height feature is enabled.
      * @see #setAutoHeight(boolean)
      */
     public boolean isAutoHeight()
     {
-      return autoHeight;
+        return autoHeight;
     }
 
     /**
      * Sets the value of the auto-width feature. When enabled, this feature resizes the width of the row headers to
      * reflect the content of row headers.
+     *
      * @param enabled Set to true to enable this feature, false (default) otherwise.
      * @see #isAutoWidth()
      */
     public void setAutoWidth(boolean enabled)
     {
-      if (autoWidth == enabled)
-        return;
+        if (autoWidth == enabled)
+            return;
 
         checkWidget();
         autoWidth = enabled;
@@ -10356,23 +9443,25 @@ public class Grid extends Canvas
 
     /**
      * Returns the value of the auto-height feature, which resizes row header width based on content.
+     *
      * @return Returns whether or not the auto-width feature is enabled.
      * @see #setAutoWidth(boolean)
      */
     public boolean isAutoWidth()
     {
-      return autoWidth;
+        return autoWidth;
     }
 
     /**
      * Sets the value of the word-wrap feature for row headers. When enabled, this feature will word-wrap the contents of row headers.
+     *
      * @param enabled Set to true to enable this feature, false (default) otherwise.
      * @see #isWordWrapHeader()
      */
     public void setWordWrapHeader(boolean enabled)
     {
-      if (wordWrapRowHeader == enabled)
-        return;
+        if (wordWrapRowHeader == enabled)
+            return;
 
         checkWidget();
         wordWrapRowHeader = enabled;
@@ -10381,6 +9470,7 @@ public class Grid extends Canvas
 
     /**
      * Returns the value of the row header word-wrap feature, which word-wraps the content of row headers.
+     *
      * @return Returns whether or not the row header word-wrap feature is enabled.
      * @see #setWordWrapHeader(boolean)
      */

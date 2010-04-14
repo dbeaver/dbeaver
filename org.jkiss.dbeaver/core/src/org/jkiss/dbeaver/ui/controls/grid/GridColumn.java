@@ -215,7 +215,7 @@ public class GridColumn extends Item {
 
 		group = parent;
 
-		group.newColumn(this, -1);
+		group.newColumn(this);
 	}
 
 	private void init(Grid table, int style, int index) {
@@ -505,15 +505,14 @@ public class GridColumn extends Item {
 
 			GridColumn[] colsOrdered = parent.getColumnsInOrder();
 			boolean fire = false;
-			for (int i = 0; i < colsOrdered.length; i++) {
-				GridColumn column = colsOrdered[i];
-				if (column == this) {
-					fire = true;
-				} else {
-					if (column.isVisible())
-						column.fireMoved();
-				}
-			}
+            for (GridColumn column : colsOrdered) {
+                if (column == this) {
+                    fire = true;
+                } else {
+                    if (column.isVisible())
+                        column.fireMoved();
+                }
+            }
 
 			parent.redraw();
 		}
@@ -537,13 +536,13 @@ public class GridColumn extends Item {
 		int newWidth = getHeaderRenderer().computeSize(gc, SWT.DEFAULT,
 				SWT.DEFAULT, this).x;
 		GridItem[] items = parent.getItems();
-		for (int i = 0; i < items.length; i++) {
-			GridItem item = items[i];
-			if (item.isVisible()) {
-				newWidth = Math.max(newWidth, getCellRenderer().computeSize(gc,
-						SWT.DEFAULT, SWT.DEFAULT, item).x);
-			}
-		}
+        for (GridItem item : items) {
+            if (item.isVisible()) {
+                newWidth = Math.max(newWidth, getCellRenderer().computeSize(
+                    gc,
+                    SWT.DEFAULT, SWT.DEFAULT, item).x);
+            }
+        }
 		gc.dispose();
 		setWidth(newWidth);
 		parent.redraw();
