@@ -244,31 +244,6 @@ public class GridItem extends Item {
 	}
 
 	/**
-	 * Fires the appropriate events in response to a user checking/unchecking an
-	 * item. Checking an item fires both a selection event (with event.detail of
-	 * SWT.CHECK) if the checkbox is in the first column and the seperate check
-	 * listener (all columns). This method manages that behavior. This method
-	 * should only be called from within a cell renderer. Any other use is not
-	 * intended.
-	 *
-	 * @param column
-	 *            the column where the checkbox resides
-	 */
-	public void fireCheckEvent(int column) {
-		checkWidget();
-
-		Event selectionEvent = new Event();
-		selectionEvent.display = getDisplay();
-		selectionEvent.widget = this;
-		selectionEvent.item = this;
-		selectionEvent.type = SWT.Selection;
-		selectionEvent.detail = SWT.CHECK;
-		selectionEvent.index = column;
-
-		getParent().notifyListeners(SWT.Selection, selectionEvent);
-	}
-
-	/**
 	 * Returns the receiver's background color.
 	 *
 	 * @return the background color
