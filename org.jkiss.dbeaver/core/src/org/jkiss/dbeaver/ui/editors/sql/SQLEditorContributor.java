@@ -89,7 +89,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
     private ExplainPlanAction explainPlanAction;
     private AnalyseStatementAction analyseStatementAction;
 
-    private Spinner resultSetSize;
+    private Text resultSetSize;
     private Combo connectionCombo;
     private Combo databaseCombo;
     //private MenuContributionItem txnMenu;
@@ -353,26 +353,43 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         {
             protected Control createControl(Composite parent)
             {
+                SQLEditor editor = getEditor();
+
                 Composite editGroup = new Composite(parent, SWT.NONE);
                 GridLayout gl = new GridLayout(1, true);
                 gl.marginWidth = 5;
                 gl.marginHeight = 0;
                 editGroup.setLayout(gl);
 
-                resultSetSize = new Spinner(editGroup, SWT.BORDER);
+                resultSetSize = new Text(editGroup, SWT.BORDER);
+                resultSetSize.setTextLimit(10);
                 GridData gd = new GridData();
                 gd.widthHint = 30;
 
                 resultSetSize.setToolTipText("Maximum result-set size");
-                resultSetSize.setSelection(0);
+                if (editor != null) {
+                    DBSDataSourceContainer curDataSource = editor.getDataSourceContainer();
+                    resultSetSize.setText("" + curDataSource.getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS));
+                }
                 //resultSetSize.setDigits(7);
-                resultSetSize.setMinimum(1);
-                resultSetSize.setMaximum(1024 * 1024);
-                resultSetSize.setIncrement(100);
                 resultSetSize.setLayoutData(gd);
-                resultSetSize.addModifyListener(new ModifyListener()
-                {
-                    public void modifyText(ModifyEvent e)
+                resultSetSize.addVerifyListener(new VerifyListener() {
+                    public void verifyText(VerifyEvent e)
+                    {
+                        for (int i = 0; i < e.text.length(); i++) {
+                            char ch = e.text.charAt(i);
+                            if (!Character.isDigit(ch)) {
+                                e.doit = false;
+                                return;
+                            }
+                        }
+                    }
+                });
+                resultSetSize.addFocusListener(new FocusListener() {
+                    public void focusGained(FocusEvent e)
+                    {
+                    }
+                    public void focusLost(FocusEvent e)
                     {
                         changeResultSetSize();
                     }
@@ -506,7 +523,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
             } else {
                 DBSDataSourceContainer curDataSource = editor.getDataSourceContainer();
                 resultSetSize.setEnabled(true);
-                resultSetSize.setSelection(curDataSource.getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS));
+                resultSetSize.setText("" + curDataSource.getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS));
             }
         }
 
@@ -536,7 +553,10 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         if (editor != null) {
             DBSDataSourceContainer dsContainer = editor.getDataSourceContainer();
             if (dsContainer != null) {
-                int rsSize = resultSetSize.getSelection();
+                String rsSize = resultSetSize.getText();
+                if (rsSize.length() == 0) {
+                    rsSize = "1";
+                }
                 dsContainer.getPreferenceStore().setValue(PrefConstants.RESULT_SET_MAX_ROWS, rsSize);
             }
         }
@@ -702,7 +722,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
     public void propertyChange(PropertyChangeEvent event)
     {
         if (event.getProperty().equals(PrefConstants.RESULT_SET_MAX_ROWS)) {
-            resultSetSize.setSelection(((Number)event.getNewValue()).intValue());
+            resultSetSize.setText(event.getNewValue().toString());
         }
     }
 
