@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.controls.grid.dnd;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collection;
 
 import org.eclipse.swt.dnd.DragSourceAdapter;
 import org.eclipse.swt.dnd.DragSourceEffect;
@@ -92,11 +93,11 @@ public class GridDragSourceEffect extends DragSourceEffect {
 			selection = grid.getCellSelection();
 		} else {
 			List<Point> l = new ArrayList<Point>();
-			GridItem[] selItems = grid.getSelection();
-			for (int i = 0; i < selItems.length; i++){
+			Collection<GridItem> selItems = grid.getSelection();
+			for (GridItem item : selItems){
 				for (int j = 0; j < grid.getColumnCount() ; j++){
 					if(grid.getColumn(j).isVisible()){
-						l.add(new Point(j,grid.indexOf(selItems[i])));
+						l.add(new Point(j,grid.indexOf(item)));
 					}
 				}
 			}

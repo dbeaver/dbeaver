@@ -5,9 +5,14 @@
 package org.jkiss.dbeaver.ui.controls.grid;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Collections;
+import java.util.Collection;
 
 import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultBottomLeftRenderer;
 import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultDropPointRenderer;
@@ -29,7 +34,6 @@ import org.jkiss.dbeaver.ui.controls.grid.scroll.ScrollBarAdapter;
 import org.jkiss.dbeaver.ui.controls.grid.dnd.GridDragSourceEffect;
 import org.jkiss.dbeaver.ui.controls.grid.dnd.GridDropTargetEffect;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTException;
 import org.eclipse.swt.accessibility.ACC;
 import org.eclipse.swt.accessibility.Accessible;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
@@ -188,8 +192,8 @@ public class Grid extends Canvas {
 
     private boolean cellSelectionEnabled = false;
 
-    private List<Point> selectedCells = new ArrayList<Point>();
-    private List<Point> selectedCellsBeforeRangeSelect = new ArrayList<Point>();
+    private Set<Point> selectedCells = new TreeSet<Point>(new CellComparator());
+    private Set<Point> selectedCellsBeforeRangeSelect = new TreeSet<Point>(new CellComparator());
 
     private boolean cellDragSelectionOccuring = false;
     private boolean cellRowDragSelectionOccuring = false;
@@ -1851,24 +1855,23 @@ public class Grid extends Canvas {
      *
      * @return an array representing the selection
      */
-    public GridItem[] getSelection()
+    public Collection<GridItem> getSelection()
     {
         checkWidget();
 
         if (!cellSelectionEnabled) {
-            return selectedItems.toArray(new GridItem[selectedItems.size()]);
+            return Collections.unmodifiableList(selectedItems);
         } else {
-            List<GridItem> items = new ArrayList<GridItem>();
+            Set<GridItem> items = new HashSet<GridItem>();
             int itemCount = getItemCount();
 
             for (Point cell : selectedCells) {
                 if (cell.y >= 0 && cell.y < itemCount) {
                     GridItem item = getItem(cell.y);
-                    if (!items.contains(item))
-                        items.add(item);
+                    items.add(item);
                 }
             }
-            return items.toArray(new GridItem[items.size()]);
+            return items;
         }
     }
 
@@ -1885,11 +1888,10 @@ public class Grid extends Canvas {
         if (!cellSelectionEnabled) {
             return selectedItems.size();
         } else {
-            List<GridItem> items = new ArrayList<GridItem>();
+            Set<GridItem> items = new HashSet<GridItem>();
             for (Point cell : selectedCells) {
                 GridItem item = getItem(cell.y);
-                if (!items.contains(item))
-                    items.add(item);
+                items.add(item);
             }
             return items.size();
         }
@@ -1924,10 +1926,10 @@ public class Grid extends Canvas {
 
             return items.indexOf(selectedItems.get(0));
         } else {
-            if (selectedCells.size() == 0)
+            if (selectedCells.isEmpty())
                 return -1;
 
-            return selectedCells.get(0).y;
+            return selectedCells.iterator().next().y;
         }
     }
 
@@ -1957,17 +1959,14 @@ public class Grid extends Canvas {
             }
             return indices;
         } else {
-            List<GridItem> selectedRows = new ArrayList<GridItem>();
+            Set<Integer> selectedRows = new HashSet<Integer>();
             for (Point cell : selectedCells) {
-                GridItem item = getItem(cell.y);
-                if (!selectedRows.contains(item))
-                    selectedRows.add(item);
+                selectedRows.add(cell.y);
             }
             int[] indices = new int[selectedRows.size()];
             int i = 0;
-            for (GridItem item : selectedRows) {
-                indices[i] = items.indexOf(item);
-                i++;
+            for (Integer item : selectedRows) {
+                indices[i++] = item;
             }
             return indices;
         }
@@ -2443,7 +2442,6 @@ public class Grid extends Canvas {
 
         return selectedCells.contains(cell);
     }
-
 
     /**
      * Removes the item from the receiver at the given zero-relative index.
@@ -3336,9 +3334,9 @@ public class Grid extends Canvas {
             item = selectedItems.get(0);
             showItem(item);
         } else {
-            if (selectedCells.size() == 0) return;
+            if (selectedCells.isEmpty()) return;
 
-            Point cell = selectedCells.get(0);
+            Point cell = selectedCells.iterator().next();
             item = getItem(cell.y);
             showItem(item);
             GridColumn col = getColumn(cell.x);
@@ -5105,19 +5103,7 @@ public class Grid extends Canvas {
             return;
 
         if (getColumn(newCell.x).getCellSelectionEnabled()) {
-            Iterator it = selectedCells.iterator();
-            boolean found = false;
-            while (it.hasNext()) {
-                Point p = (Point) it.next();
-                if (newCell.equals(p)) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                selectedCells.add(newCell);
-            }
+            selectedCells.add(newCell);
         }
     }
 
@@ -5126,10 +5112,12 @@ public class Grid extends Canvas {
         //Update the list of which columns have all their cells selected
         selectedColumns.clear();
 
+        Set<Integer> columnIndices = new HashSet<Integer>();
         for (Point cell : selectedCells) {
-            GridColumn col = getColumn(cell.x);
-
-            selectedColumns.add(col);
+            columnIndices.add(cell.x);
+        }
+        for (Integer columnIndex : columnIndices) {
+            selectedColumns.add(getColumn(columnIndex));
         }
     }
 
@@ -5545,7 +5533,7 @@ public class Grid extends Canvas {
                 handleHoverOnColumnResizer(e.x, e.y);
                 return;
             } else if (rowsResizeable && hoveringOnRowResizer) {
-                List<GridItem> sel = Arrays.asList(getSelection());
+                Collection<GridItem> sel = getSelection();
                 if (sel.contains(rowBeingResized)) {
                     // the user double-clicked a row resizer of a selected row
                     // so update all selected rows
@@ -8611,6 +8599,15 @@ public class Grid extends Canvas {
     {
       return wordWrapRowHeader;
     }
+
+    private static class CellComparator implements Comparator<Point> {
+        public int compare(Point pos1, Point pos2)
+        {
+            int res = pos1.y - pos2.y;
+            return res != 0 ? res : pos1.x - pos2.x;
+        }
+    }
+
 }
 
 
