@@ -197,6 +197,17 @@
     <extension
         point="org.eclipse.ui.popupMenus">
         <objectContribution
+              adaptable="false"
+              id="org.jkiss.dbeaver.core.dbsObjectContribution"
+              objectClass="org.jkiss.dbeaver.model.struct.DBSObject">
+           <action
+                 class="org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction"
+                 icon="/icons/tree/edit_item.png"
+                 id="org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction"
+                 label="Edit Object">
+           </action>
+        </objectContribution>
+        <objectContribution
             adaptable="false"
             id="org.jkiss.dbeaver.core.dataSourceContribution"
             objectClass="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">

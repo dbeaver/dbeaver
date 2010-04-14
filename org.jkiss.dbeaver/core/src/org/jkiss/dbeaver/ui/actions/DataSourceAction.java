@@ -44,7 +44,11 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
 	}
 
     public IWorkbenchWindow getWindow() {
-        return window;
+        return window != null ?
+            window :
+            activePart != null ?
+                activePart.getSite().getWorkbenchWindow() :
+                null;
     }
 
     public ISelection getSelection() {

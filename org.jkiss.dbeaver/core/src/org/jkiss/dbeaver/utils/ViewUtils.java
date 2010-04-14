@@ -5,27 +5,16 @@
 package org.jkiss.dbeaver.utils;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.jface.action.GroupMarker;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.swt.dnd.DND;
-import org.eclipse.swt.dnd.DragSource;
-import org.eclipse.swt.dnd.DragSourceEvent;
-import org.eclipse.swt.dnd.DragSourceListener;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyDialogAction;
@@ -33,7 +22,6 @@ import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshableView;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.actions.NewConnectionAction;
 
 import java.util.Iterator;
 
@@ -94,6 +82,7 @@ public class ViewUtils
                 Menu m = (Menu)e.widget;
                 DBMNode dbmNode = ViewUtils.getSelectedNode(metaModelView);
                 if (dbmNode != null) {
+/*
                     IAction defaultAction = dbmNode.getDefaultAction();
                     if (defaultAction != null) {
                         for (MenuItem item : m.getItems()) {
@@ -103,6 +92,7 @@ public class ViewUtils
                             }
                         }
                     }
+*/
                 }
             }
         });
@@ -133,11 +123,13 @@ public class ViewUtils
                     if (selectedObject instanceof DBSObject) {
                         DBMNode selectedNode = metaModelView.getMetaModel().getNodeByObject((DBSObject)selectedObject);
                         if (selectedNode != null) {
+/*
                             IAction defaultAction = selectedNode.getDefaultAction();
                             if (defaultAction != null) {
                                 initAction(defaultAction, metaModelView.getWorkbenchPart(), selection);
                                 manager.add(defaultAction);
                             }
+*/
                         }
                     }
                 }
@@ -207,21 +199,26 @@ public class ViewUtils
         });
     }
 
-    public static void initAction(IAction action, IWorkbenchPart part, ISelection selection)
+    public static void initAction(Action actionImpl, IActionDelegate action, IWorkbenchPart part, ISelection selection)
     {
-        if (action instanceof IActionDelegate) {
-            ((IObjectActionDelegate)action).selectionChanged(action, selection);
-        }
+        action.selectionChanged(actionImpl, selection);
+
         if (action instanceof IObjectActionDelegate && part != null) {
-            ((IObjectActionDelegate)action).setActivePart(action, part);
+            ((IObjectActionDelegate)action).setActivePart(actionImpl, part);
         }
     }
 
-    public static void runAction(IAction action, IWorkbenchPart part, ISelection selection)
+    public static void runAction(final IActionDelegate action, IWorkbenchPart part, ISelection selection)
     {
         if (action != null) {
-            initAction(action, part, selection);
-            action.run();
+            Action actionImpl = new Action() {
+                @Override
+                public void run() {
+                    action.run(this);
+                }
+            };
+            initAction(actionImpl, action, part, selection);
+            actionImpl.run();
         }
     }
 

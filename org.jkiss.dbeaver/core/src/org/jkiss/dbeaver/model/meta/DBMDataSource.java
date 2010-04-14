@@ -6,12 +6,13 @@ package org.jkiss.dbeaver.model.meta;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.IAction;
+import org.eclipse.ui.IActionDelegate;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
-import org.jkiss.dbeaver.ui.actions.OpenEntityEditorAction;
+import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
+import org.jkiss.dbeaver.ui.actions.EditConnectionAction;
 
 /**
  * DBMDataSource
@@ -76,12 +77,10 @@ public class DBMDataSource extends DBMTreeNode
         return this;
     }
 
-    public IAction getDefaultAction()
+    public IActionDelegate getDefaultAction()
     {
         if (dataSource.isConnected()) {
-            OpenEntityEditorAction action = new OpenEntityEditorAction();
-            action.setText("Edit");
-            return action;
+            return new EditConnectionAction();
         } else {
             return null;
         }

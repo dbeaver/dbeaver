@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.meta;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.IActionDelegate;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -79,7 +80,7 @@ public class DBMRoot extends DBMNode implements DBSObject
         return null;
     }
 
-    public IAction getDefaultAction()
+    public IActionDelegate getDefaultAction()
     {
         return null;
     }

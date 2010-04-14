@@ -10,8 +10,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.actions.OpenFolderEditorAction;
-import org.eclipse.jface.action.IAction;
+import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
+import org.eclipse.ui.IActionDelegate;
 
 /**
  * DBMTreeFolder
@@ -85,11 +85,9 @@ public class DBMTreeFolder extends DBMTreeNode implements DBSFolder
         return this.getParentNode().refreshNode(monitor);
     }
 
-    public IAction getDefaultAction()
+    public IActionDelegate getDefaultAction()
     {
-        OpenFolderEditorAction action = new OpenFolderEditorAction();
-        action.setText("View " + getName());
-        return action;
+        return new OpenObjectEditorAction();
     }
 
     public String getItemsType()

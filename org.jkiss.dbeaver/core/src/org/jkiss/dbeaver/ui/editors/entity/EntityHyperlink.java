@@ -9,9 +9,8 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
-import org.jkiss.dbeaver.model.meta.DBMRoot;
 import org.jkiss.dbeaver.model.meta.DBMDataSource;
-import org.jkiss.dbeaver.ui.actions.OpenEntityEditorAction;
+import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
 
 /**
  * EntityHyperlink
@@ -57,6 +56,6 @@ public class EntityHyperlink implements IHyperlink
 
     public void open()
     {
-        OpenEntityEditorAction.openEntityEditor(node, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+        OpenObjectEditorAction.openEntityEditor(node, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
     }
 }

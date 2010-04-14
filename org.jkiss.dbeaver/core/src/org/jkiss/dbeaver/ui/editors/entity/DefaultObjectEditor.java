@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
 import org.jkiss.dbeaver.model.meta.DBMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.actions.OpenEntityEditorAction;
+import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
 import org.jkiss.dbeaver.ui.views.properties.PropertiesPage;
 
 import java.util.ArrayList;
@@ -84,7 +84,7 @@ class DefaultObjectEditor extends EditorPart
                     {
                         public void widgetSelected(SelectionEvent e)
                         {
-                            OpenEntityEditorAction.openEntityEditor(treeNode, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                            OpenObjectEditorAction.openEntityEditor(treeNode, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                         }
                     });
                     objectLink.setToolTipText("Open '" + treeNode.getNodeName() + "' viewer");
