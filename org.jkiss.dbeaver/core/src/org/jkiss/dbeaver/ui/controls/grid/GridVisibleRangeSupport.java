@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.ui.controls.grid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
-import org.jkiss.dbeaver.ui.controls.grid.Grid.GridVisibleRange;
+import org.jkiss.dbeaver.ui.controls.grid.GridVisibleRange;
 
 import java.util.ArrayList;
 import java.util.Arrays;

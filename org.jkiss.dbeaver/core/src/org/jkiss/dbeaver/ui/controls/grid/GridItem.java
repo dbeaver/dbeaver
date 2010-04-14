@@ -1657,7 +1657,7 @@ public class GridItem extends Item {
 
 			gc.dispose();
 
-			parent.recalculateRowHeaderWidth(this, oldWidth, newWidth);
+			parent.recalculateRowHeaderWidth(oldWidth, newWidth);
 		}
 		parent.redraw();
 	}
@@ -1682,22 +1682,18 @@ public class GridItem extends Item {
 		if (image != headerImage) {
 			GC gc = new GC(parent);
 
-			int oldWidth = parent.getRowHeaderRenderer().computeSize(gc,
-					SWT.DEFAULT, SWT.DEFAULT, this).x;
-			int oldHeight = parent.getRowHeaderRenderer().computeSize(gc,
-					SWT.DEFAULT, SWT.DEFAULT, this).y;
+			int oldWidth = parent.getRowHeaderRenderer().computeSize(gc, SWT.DEFAULT, SWT.DEFAULT, this).x;
+			//int oldHeight = parent.getRowHeaderRenderer().computeSize(gc, SWT.DEFAULT, SWT.DEFAULT, this).y;
 
 			this.headerImage = image;
 
-			int newWidth = parent.getRowHeaderRenderer().computeSize(gc,
-					SWT.DEFAULT, SWT.DEFAULT, this).x;
-			int newHeight = parent.getRowHeaderRenderer().computeSize(gc,
-					SWT.DEFAULT, SWT.DEFAULT, this).y;
+			int newWidth = parent.getRowHeaderRenderer().computeSize(gc, SWT.DEFAULT, SWT.DEFAULT, this).x;
+			int newHeight = parent.getRowHeaderRenderer().computeSize(gc, SWT.DEFAULT, SWT.DEFAULT, this).y;
 
 			gc.dispose();
 
-			parent.recalculateRowHeaderWidth(this, oldWidth, newWidth);
-			parent.recalculateRowHeaderHeight(this, oldHeight, newHeight);
+			parent.recalculateRowHeaderWidth(oldWidth, newWidth);
+			parent.recalculateRowHeaderHeight(newHeight);
 		}
 		parent.redraw();
 	}
