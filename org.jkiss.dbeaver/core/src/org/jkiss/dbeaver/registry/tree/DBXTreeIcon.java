@@ -4,11 +4,11 @@
 
 package org.jkiss.dbeaver.registry.tree;
 
-import org.apache.commons.jexl.Expression;
-import org.apache.commons.jexl.ExpressionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.jexl2.Expression;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 /**
  * DBXTreeIcon
@@ -26,7 +26,7 @@ public class DBXTreeIcon
         this.exprString = exprString;
         this.icon = icon;
         try {
-            this.expr = ExpressionFactory.createExpression(exprString);
+            this.expr = DBeaverCore.getInstance().getJexlEngine().createExpression(exprString);
         } catch (Exception ex) {
             log.warn("Can't parse icon expression: " + exprString, ex);
         }

@@ -5,9 +5,9 @@
 package org.jkiss.dbeaver.model.meta;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.apache.commons.jexl.JexlContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.jexl2.JexlContext;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -19,11 +19,7 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DBMTreeNode
@@ -63,19 +59,21 @@ public abstract class DBMTreeNode extends DBMNode {
         if (meta != null) {
             List<DBXTreeIcon> extIcons = meta.getIcons();
             if (!CommonUtils.isEmpty(extIcons)) {
+                final Map<String, Object> vars = new HashMap<String, Object>();
                 JexlContext exprContext = new JexlContext() {
-                    Map map;
-                    public void setVars(Map map)
-                    {
-                        this.map = map;
+                    public Object get(String s) {
+                        return vars.get(s);
                     }
 
-                    public Map getVars()
-                    {
-                        return map;
+                    public void set(String s, Object o) {
+                        vars.put(s, o);
+                    }
+
+                    public boolean has(String s) {
+                        return vars.containsKey(s);
                     }
                 };
-                exprContext.setVars(Collections.singletonMap("object", getObject()));
+                vars.put("object", getObject());
                 // Try to get some icon depending on it's condition
                 for (DBXTreeIcon icon : extIcons) {
                     if (icon.getExpr() == null) {

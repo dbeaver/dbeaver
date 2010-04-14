@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.jexl2.JexlEngine;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -58,6 +59,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private DataSourceRegistry dataSourceRegistry;
     private EntityEditorsRegistry editorsRegistry;
     private DBMModel metaModel;
+    private JexlEngine jexlEngine;
 
     public static DBeaverCore getInstance()
     {
@@ -79,6 +81,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private void initialize()
     {
         //progressProvider = new DBeaverProgressProvider();
+        jexlEngine = new JexlEngine();
 
         // Register properties adapter
         propertiesAdapter = new DBeaverAdapterFactory();
@@ -180,6 +183,10 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public IPath getRootPath()
     {
         return rootPath;
+    }
+
+    public JexlEngine getJexlEngine() {
+        return jexlEngine;
     }
 
     public DBMModel getMetaModel()
