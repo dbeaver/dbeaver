@@ -21,7 +21,8 @@ public class DBMEvent extends RegistryEvent
     public enum NodeChange {
         LOADED,
         UNLOADED,
-        CHANGED
+        CHANGED,
+        REFRESH
     }
 
     private Action action;

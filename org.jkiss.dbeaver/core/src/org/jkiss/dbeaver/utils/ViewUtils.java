@@ -15,6 +15,7 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyDialogAction;
@@ -82,17 +83,22 @@ public class ViewUtils
                 Menu m = (Menu)e.widget;
                 DBMNode dbmNode = ViewUtils.getSelectedNode(metaModelView);
                 if (dbmNode != null) {
-/*
-                    IAction defaultAction = dbmNode.getDefaultAction();
+                    IActionDelegate defaultAction = dbmNode.getDefaultAction();
                     if (defaultAction != null) {
+                        // Dirty hack
+                        // Get contribution item from menu item and check it's ID
+                        // In DBeaver all action's IDs are equals to action class names
+                        // So we can compare it with our default action's class
                         for (MenuItem item : m.getItems()) {
-                            if (item.getText().equals(defaultAction.getText())) {
-                                m.setDefaultItem(item);
-                                break;
+                            Object itemData = item.getData();
+                            if (itemData instanceof IContributionItem) {
+                                String contribId = ((IContributionItem)itemData).getId();
+                                if (contribId != null && contribId.equals(defaultAction.getClass().getName())) {
+                                    m.setDefaultItem(item);
+                                }
                             }
                         }
                     }
-*/
                 }
             }
         });
@@ -118,21 +124,6 @@ public class ViewUtils
                         PlatformUI.getWorkbench().getActiveWorkbenchWindow()));
                 }
 */
-                if (selection.size() == 1) {
-                    Object selectedObject = selection.getFirstElement();
-                    if (selectedObject instanceof DBSObject) {
-                        DBMNode selectedNode = metaModelView.getMetaModel().getNodeByObject((DBSObject)selectedObject);
-                        if (selectedNode != null) {
-/*
-                            IAction defaultAction = selectedNode.getDefaultAction();
-                            if (defaultAction != null) {
-                                initAction(defaultAction, metaModelView.getWorkbenchPart(), selection);
-                                manager.add(defaultAction);
-                            }
-*/
-                        }
-                    }
-                }
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
                 manager.add(new Separator());
                 manager.add(new GroupMarker(MB_ADDITIONS_END));

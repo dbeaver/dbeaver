@@ -116,7 +116,7 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
                 new AbstractUIJob("Refresh tree node") {
                     public IStatus runInUIThread(DBRProgressMonitor monitor)
                     {
-                        model.fireNodeRefresh(targetPart, refNode, DBMEvent.NodeChange.CHANGED);
+                        model.fireNodeRefresh(targetPart, refNode, DBMEvent.NodeChange.REFRESH);
                         return Status.OK_STATUS;
                     }
                 }.schedule();

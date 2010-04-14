@@ -154,6 +154,9 @@ public class NavigatorTreeView extends ViewPart implements IDBMListener, IMetaMo
                             case CHANGED:
                                 getViewer().update(event.getNode().getObject(), null);
                                 break;
+                            case REFRESH:
+                                viewer.refresh(event.getNode().getObject());
+                                break;
                         }
                     }
                 }});
