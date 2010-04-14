@@ -79,11 +79,7 @@ public class DBMDataSource extends DBMTreeNode
 
     public IActionDelegate getDefaultAction()
     {
-        if (dataSource.isConnected()) {
-            return new EditConnectionAction();
-        } else {
-            return null;
-        }
+        return new EditConnectionAction();
     }
 
     public boolean isLazyNode()

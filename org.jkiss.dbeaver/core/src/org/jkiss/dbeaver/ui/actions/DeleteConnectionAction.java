@@ -20,18 +20,11 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 
-public class DeleteConnectionAction extends Action implements IObjectActionDelegate
+public class DeleteConnectionAction implements IObjectActionDelegate
 {
 
     private IWorkbenchWindow window;
     private ISelection selection;
-
-    public DeleteConnectionAction()
-    {
-        setId(ICommandIds.CMD_DELETE_CONNECTION);
-        setActionDefinitionId(ICommandIds.CMD_DELETE_CONNECTION);
-        setImageDescriptor(DBeaverActivator.getImageDescriptor("/icons/sample2.gif"));
-    }
 
     public void run()
     {

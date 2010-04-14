@@ -211,12 +211,15 @@ public class DBMModel implements IDataSourceListener
             {
                 DBMNode dbmNode = getNodeByObject(event.getDataSource());
                 if (dbmNode != null) {
+                    DBMEvent.NodeChange nodeChange = DBMEvent.NodeChange.CHANGED;
+                    switch (event.getAction()) {
+                    case CONNECT: nodeChange = DBMEvent.NodeChange.LOADED; break;
+                    case CONNECT_FAIL: nodeChange = DBMEvent.NodeChange.UNLOADED; break;
+                    }
                     fireNodeRefresh(
                         event.getSource(),
                         dbmNode, 
-                        event.getAction() == DataSourceEvent.Action.CONNECT ?
-                            DBMEvent.NodeChange.LOADED :
-                            DBMEvent.NodeChange.CHANGED);
+                        nodeChange);
                 }
                 break;
             }
