@@ -4,35 +4,6 @@
 
 package org.jkiss.dbeaver.ui.controls.grid;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Collections;
-import java.util.Collection;
-
-import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultBottomLeftRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultDropPointRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultEmptyCellRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultEmptyColumnFooterRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultEmptyColumnHeaderRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultEmptyRowHeaderRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultFocusRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultInsertMarkRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultRowHeaderRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultTopLeftRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.GridToolTip;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.IGridRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.GridCellRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.IGridWidget;
-import org.jkiss.dbeaver.ui.controls.grid.scroll.IGridScrollBar;
-import org.jkiss.dbeaver.ui.controls.grid.scroll.NullScrollBar;
-import org.jkiss.dbeaver.ui.controls.grid.scroll.ScrollBarAdapter;
-import org.jkiss.dbeaver.ui.controls.grid.dnd.GridDragSourceEffect;
-import org.jkiss.dbeaver.ui.controls.grid.dnd.GridDropTargetEffect;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.ACC;
 import org.eclipse.swt.accessibility.Accessible;
@@ -68,6 +39,35 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TypedListener;
+import org.jkiss.dbeaver.ui.controls.grid.dnd.GridDragSourceEffect;
+import org.jkiss.dbeaver.ui.controls.grid.dnd.GridDropTargetEffect;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultBottomLeftRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultDropPointRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultEmptyCellRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultEmptyColumnFooterRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultEmptyColumnHeaderRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultEmptyRowHeaderRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultFocusRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultInsertMarkRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultRowHeaderRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.DefaultTopLeftRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.GridCellRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.GridToolTip;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.IGridRenderer;
+import org.jkiss.dbeaver.ui.controls.grid.renderers.IGridWidget;
+import org.jkiss.dbeaver.ui.controls.grid.scroll.IGridScrollBar;
+import org.jkiss.dbeaver.ui.controls.grid.scroll.NullScrollBar;
+import org.jkiss.dbeaver.ui.controls.grid.scroll.ScrollBarAdapter;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * </p>
@@ -194,6 +194,8 @@ public class Grid extends Canvas {
 
     private Set<Point> selectedCells = new TreeSet<Point>(new CellComparator());
     private Set<Point> selectedCellsBeforeRangeSelect = new TreeSet<Point>(new CellComparator());
+
+    //private Map<Integer, Set<Integer>> selectedCellMap;
 
     private boolean cellDragSelectionOccuring = false;
     private boolean cellRowDragSelectionOccuring = false;
@@ -6679,7 +6681,7 @@ public class Grid extends Canvas {
      */
     void removeItem(GridItem item)
     {
-        Point[] cells = getCells(item);
+        Collection<Point> cells = getCells(item);
         boolean selectionModified = false;
 
         items.remove(item);
@@ -7032,7 +7034,7 @@ public class Grid extends Canvas {
      *
      * @param cells the cells to deselect.
      */
-    public void deselectCells(Point[] cells)
+    public void deselectCells(Collection<Point> cells)
     {
         checkWidget();
 
@@ -7090,7 +7092,7 @@ public class Grid extends Canvas {
      *
      * @param cells an arry of points whose x value is a column index and y value is an item index
      */
-    public void selectCells(Point[] cells)
+    public void selectCells(Collection<Point> cells)
     {
         checkWidget();
 
@@ -7181,7 +7183,7 @@ public class Grid extends Canvas {
         checkWidget();
         List<Point> cells = new ArrayList<Point>();
         getCells(getColumn(col), cells);
-        selectCells(cells.toArray(new Point[cells.size()]));
+        selectCells(cells);
     }
 
     /**
@@ -7204,7 +7206,7 @@ public class Grid extends Canvas {
         checkWidget();
         List<Point> cells = new ArrayList<Point>();
         getCells(colGroup, cells);
-        selectCells(cells.toArray(new Point[cells.size()]));
+        selectCells(cells);
     }
 
     /**
@@ -7237,7 +7239,7 @@ public class Grid extends Canvas {
      *
      * @param cells point array whose x values is a column index and y value is an item index
      */
-    public void setCellSelection(Point[] cells)
+    public void setCellSelection(Collection<Point> cells)
     {
         checkWidget();
 
@@ -7276,10 +7278,10 @@ public class Grid extends Canvas {
      *
      * @return an array representing the cell selection
      */
-    public Point[] getCellSelection()
+    public Collection<Point> getCellSelection()
     {
         checkWidget();
-        return selectedCells.toArray(new Point[selectedCells.size()]);
+        return Collections.unmodifiableCollection(selectedCells);
     }
 
 
@@ -7376,7 +7378,7 @@ public class Grid extends Canvas {
         }
     }
 
-    private Point[] getCells(GridItem item)
+    private Collection<Point> getCells(GridItem item)
     {
         List<Point> cells = new ArrayList<Point>();
 
@@ -7396,7 +7398,7 @@ public class Grid extends Canvas {
 
             cells.add(new Point(indexOf(nextCol), itemIndex));
         }
-        return cells.toArray(new Point[cells.size()]);
+        return cells;
     }
 
 

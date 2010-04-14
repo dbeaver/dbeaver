@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.controls.grid.dnd;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
+import java.util.Iterator;
 
 import org.eclipse.swt.dnd.DragSourceAdapter;
 import org.eclipse.swt.dnd.DragSourceEffect;
@@ -88,9 +89,9 @@ public class GridDragSourceEffect extends DragSourceEffect {
 		Rectangle empty = new Rectangle(0,0,0,0);
 		
 		// Collect the currently selected items. 
-		Point[] selection;
+		Collection<Point> selection;
 		if(grid.getCellSelectionEnabled()){
-			selection = grid.getCellSelection();
+			selection = new ArrayList<Point>(grid.getCellSelection());
 		} else {
 			List<Point> l = new ArrayList<Point>();
 			Collection<GridItem> selItems = grid.getSelection();
@@ -101,18 +102,19 @@ public class GridDragSourceEffect extends DragSourceEffect {
 					}
 				}
 			}
-			selection = l.toArray(new Point[l.size()]);
+			selection = l;
 		}
-		if (selection.length == 0) return null;
+		if (selection.isEmpty()) return null;
 		
 		Rectangle bounds=null;
-		for (int i = 0; i < selection.length; i++) {
-			GridItem item = grid.getItem(selection[i].y);
-			Rectangle currBounds = item.getBounds(selection[i].x);
+		for (Iterator<Point> cellIter = selection.iterator(); cellIter.hasNext(); ) {
+            Point cell = cellIter.next();
+			GridItem item = grid.getItem(cell.y);
+			Rectangle currBounds = item.getBounds(cell.x);
 			
 			if(empty.equals(currBounds)){
-				selection[i]=null;
-			}else {
+				cellIter.remove();
+			} else {
 				if(bounds==null){
 					bounds = currBounds;
 				}else {
@@ -125,15 +127,14 @@ public class GridDragSourceEffect extends DragSourceEffect {
 		
 		dragSourceImage = new Image(display,bounds.width,bounds.height);
 		GC gc = new GC(dragSourceImage);
-		for (int i = 0; i < selection.length; i++) {
-			if(selection[i]==null) continue;
-			GridItem item = grid.getItem(selection[i].y);
-			GridColumn column = grid.getColumn(selection[i].x);
-			Rectangle currBounds = item.getBounds(selection[i].x);
+		for (Point cell : selection) {
+			GridItem item = grid.getItem(cell.y);
+			GridColumn column = grid.getColumn(cell.x);
+			Rectangle currBounds = item.getBounds(cell.x);
 			GridCellRenderer r = column.getCellRenderer();
 			r.setBounds(currBounds.x-bounds.x, currBounds.y-bounds.y, currBounds.width, currBounds.height);
             gc.setClipping(currBounds.x-bounds.x-1, currBounds.y-bounds.y-1, currBounds.width+2, currBounds.height+2);
-			r.setColumn(selection[i].x);
+			r.setColumn(cell.x);
             r.setSelected(false);
             r.setFocus(false);
             r.setRowFocus(false);

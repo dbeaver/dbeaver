@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.TypedListener;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * <p>
@@ -308,9 +309,9 @@ public class GridColumnGroup extends Item
                     collapsedCols.add(getParent().indexOf(column));
                 }
             }
-            Point[] selection = getParent().getCellSelection();
+            Collection<Point> selection = getParent().getCellSelection();
             for (Point aSelection : selection) {
-                if (collapsedCols.contains(new Integer(aSelection.x))) {
+                if (collapsedCols.contains(aSelection.x)) {
                     getParent().deselectCell(aSelection);
                 }
             }
