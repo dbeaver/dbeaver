@@ -225,7 +225,7 @@ public class Spreadsheet extends Composite implements Listener {
             newPos.y = newRow;
             GridItem item = grid.getItem(newRow);
             if (item != null) {
-                selectionEvent.item = item;
+                selectionEvent.data = item;
                 grid.setFocusItem(item);
                 grid.showItem(item);
             }
@@ -330,11 +330,11 @@ public class Spreadsheet extends Composite implements Listener {
         gridSelectionListener = new SelectionListener() {
             public void widgetSelected(SelectionEvent e)
             {
-                GridItem item = (GridItem) e.item;
+                GridItem item = (GridItem) e.data;
                 Point focusCell = grid.getFocusCell();
                 if (focusCell != null) {
                     Event event = new Event();
-                    event.item = item;
+                    event.data = item;
                     event.data = e.data;
                     event.x = focusCell.x;
                     event.y = focusCell.y;
@@ -368,7 +368,7 @@ public class Spreadsheet extends Composite implements Listener {
     {
         switch (event.type) {
             case SWT.SetData: {
-                lazyRow.item = (GridItem) event.item;
+                lazyRow.item = (GridItem) event.data;
                 lazyRow.index = event.index;
                 if (dataProvider != null) {
                     dataProvider.fillRowData(lazyRow);

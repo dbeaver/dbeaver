@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ui.controls.grid.renderers;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.AbstractGridWidget;
 import org.jkiss.dbeaver.ui.controls.grid.GridItem;
 
 /**
@@ -27,8 +26,6 @@ public abstract class GridCellRenderer extends AbstractGridWidget
     private int column = 0;
 
     private int alignment = SWT.LEFT;
-
-    private boolean tree = false;
 
     private boolean rowHover = false;
 
@@ -74,22 +71,6 @@ public abstract class GridCellRenderer extends AbstractGridWidget
     public void setAlignment(int alignment)
     {
         this.alignment = alignment;
-    }
-
-    /**
-     * @return Returns the tree.
-     */
-    public boolean isTree()
-    {
-        return tree;
-    }
-
-    /**
-     * @param tree The tree to set.
-     */
-    public void setTree(boolean tree)
-    {
-        this.tree = tree;
     }
 
     /**

@@ -4,11 +4,6 @@
 
 package org.jkiss.dbeaver.ui.controls.grid.renderers;
 
-import org.jkiss.dbeaver.ui.controls.grid.Grid;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.GridCellRenderer;
-import org.jkiss.dbeaver.ui.controls.grid.GridColumn;
-import org.jkiss.dbeaver.ui.controls.grid.GridItem;
-import org.jkiss.dbeaver.ui.controls.grid.renderers.IGridWidget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -18,6 +13,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.TextLayout;
+import org.jkiss.dbeaver.ui.controls.grid.GridColumn;
+import org.jkiss.dbeaver.ui.controls.grid.GridItem;
 
 /**
  * The renderer for a cell in Grid.
@@ -43,10 +40,6 @@ public class DefaultCellRenderer extends GridCellRenderer
     private int insideMargin = 3;
 
     int treeIndent = 20;
-
-    private ToggleRenderer toggleRenderer;
-
-	private BranchRenderer branchRenderer;
 
     private TextLayout textLayout;
 
@@ -101,38 +94,6 @@ public class DefaultCellRenderer extends GridCellRenderer
 
 
         int x = leftMargin;
-
-        if (isTree())
-        {
-        	boolean renderBranches = item.getParent().getTreeLinesVisible();
-        	if(renderBranches) {
-        		branchRenderer.setBranches(getBranches(item));
-        		branchRenderer.setIndent(treeIndent);
-        		branchRenderer.setBounds(
-        				getBounds().x + x, getBounds().y,
-        				getToggleIndent(item), getBounds().height + 1); // Take into account border
-        	}
-
-            x += getToggleIndent(item);
-
-            toggleRenderer.setExpanded(item.isExpanded());
-
-            toggleRenderer.setHover(getHoverDetail().equals("toggle"));
-
-            toggleRenderer.setLocation(getBounds().x + x, (getBounds().height - toggleRenderer
-                .getBounds().height)
-                                                          / 2 + getBounds().y);
-            if (item.hasChildren())
-                toggleRenderer.paint(gc, null);
-
-            if (renderBranches) {
-                branchRenderer.setToggleBounds(toggleRenderer.getBounds());
-                branchRenderer.paint(gc, null);
-            }
-
-            x += toggleRenderer.getBounds().width + insideMargin;
-
-        }
 
         Image image = item.getImage(getColumn());
         if (image != null)
@@ -266,78 +227,6 @@ public class DefaultCellRenderer extends GridCellRenderer
         }
     }
 
-    /**
-     * Calculates the sequence of branch lines which should be rendered for the provided item
-     * @param item
-     * @return an array of integers composed using the constants in {@link BranchRenderer}
-     */
-    private int[] getBranches(GridItem item) {
-		int[] branches = new int[item.getLevel() + 1];
-		GridItem[] roots = item.getParent().getRootItems();
-
-		// Is this a node or a leaf?
-		if (item.getParentItem() == null) {
-			// Add descender if not last item
-			if (!item.isExpanded() && roots[roots.length-1].equals(item)) {
-				if (item.hasChildren())
-					branches[item.getLevel()] = BranchRenderer.LAST_ROOT;
-				else
-					branches[item.getLevel()] = BranchRenderer.SMALL_L;
-			}
-			else {
-				if (item.hasChildren())
-					branches[item.getLevel()] = BranchRenderer.ROOT;
-				else
-					branches[item.getLevel()] = BranchRenderer.SMALL_T;
-			}
-
-		}
-		else if (item.hasChildren())
-			if (item.isExpanded())
-				branches[item.getLevel()] = BranchRenderer.NODE;
-			else
-				branches[item.getLevel()] = BranchRenderer.NONE;
-		else
-			branches[item.getLevel()] = BranchRenderer.LEAF;
-
-		// Branch for current item
-		GridItem parent = item.getParentItem();
-		if (parent == null)
-			return branches;
-
-		// Are there siblings below this item?
-		if (parent.indexOf(item) < parent.getItemCount() - 1)
-			branches[item.getLevel() - 1] = BranchRenderer.T;
-
-		// Is the next node a root?
-		else if (parent.getParentItem() == null && !parent.equals(roots[roots.length - 1]))
-			branches[item.getLevel() - 1] = BranchRenderer.T;
-
-		// This must be the last element at this level
-		else
-			branches[item.getLevel() - 1] = BranchRenderer.L;
-
-		Grid grid = item.getParent();
-		item = parent;
-		parent = item.getParentItem();
-
-		// Branches for parent items
-		while(item.getLevel() > 0) {
-			if (parent.indexOf(item) == parent.getItemCount() - 1) {
-				if (parent.getParentItem() == null && !grid.getRootItem(grid.getRootItemCount() - 1).equals(parent))
-					branches[item.getLevel() - 1] = BranchRenderer.I;
-				else
-					branches[item.getLevel() - 1] = BranchRenderer.NONE;
-			}
-			else
-				branches[item.getLevel() - 1] = BranchRenderer.I;
-			item = parent;
-			parent = item.getParentItem();
-		}
-		// item should be null at this point
-		return branches;
-	}
-
 	/**
      * {@inheritDoc}
      */
@@ -350,14 +239,6 @@ public class DefaultCellRenderer extends GridCellRenderer
         int x = 0;
 
         x += leftMargin;
-
-        if (isTree())
-        {
-            x += getToggleIndent(item);
-
-            x += toggleRenderer.getBounds().width + insideMargin;
-
-        }
 
         int y = 0;
 
@@ -419,88 +300,7 @@ public class DefaultCellRenderer extends GridCellRenderer
      */
     public boolean notify(int event, Point point, Object value)
     {
-
-        GridItem item = (GridItem)value;
-
-        if (isTree() && item.hasChildren())
-        {
-            if (event == IGridWidget.MouseMove)
-            {
-                if (overToggle(item, point))
-                {
-                    setHoverDetail("toggle");
-                    return true;
-                }
-            }
-
-            if (event == IGridWidget.LeftMouseButtonDown)
-            {
-                if (overToggle(item, point))
-                {
-                    item.setExpanded(!item.isExpanded());
-                    item.getParent().redraw();
-
-                    if (item.isExpanded())
-                    {
-                        item.fireEvent(SWT.Expand);
-                    }
-                    else
-                    {
-                        item.fireEvent(SWT.Collapse);
-                    }
-
-                    return true;
-                }
-            }
-        }
-
         return false;
-    }
-
-    private int getToggleIndent(GridItem item)
-    {
-        return item.getLevel() * treeIndent;
-    }
-
-    private boolean overToggle(GridItem item, Point point)
-    {
-
-        point = new Point(point.x, point.y);
-
-        point.x -= getBounds().x - 1;
-        point.y -= getBounds().y - 1;
-
-        int x = leftMargin;
-        x += getToggleIndent(item);
-
-        if (point.x >= x && point.x < (x + toggleRenderer.getSize().x))
-        {
-            // return true;
-            int yStart = ((getBounds().height - toggleRenderer.getBounds().height) / 2);
-            if (point.y >= yStart && point.y < yStart + toggleRenderer.getSize().y)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setTree(boolean tree)
-    {
-        super.setTree(tree);
-
-        if (tree)
-        {
-            toggleRenderer = new ToggleRenderer();
-            toggleRenderer.setDisplay(getDisplay());
-
-            branchRenderer = new BranchRenderer();
-            branchRenderer.setDisplay(getDisplay());
-        }
     }
 
     /**
@@ -509,14 +309,6 @@ public class DefaultCellRenderer extends GridCellRenderer
     public Rectangle getTextBounds(GridItem item, boolean preferred)
     {
         int x = leftMargin;
-
-        if (isTree())
-        {
-            x += getToggleIndent(item);
-
-            x += toggleRenderer.getBounds().width + insideMargin;
-
-        }
 
         Image image = item.getImage(getColumn());
         if (image != null)

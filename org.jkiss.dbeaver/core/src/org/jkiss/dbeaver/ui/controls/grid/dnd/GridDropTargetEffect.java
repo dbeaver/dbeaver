@@ -114,7 +114,8 @@ public class GridDropTargetEffect extends DropTargetEffect {
 	public Widget getItem(int x, int y) {
 		Point coordinates = new Point(x, y);
 		coordinates = grid.toControl(coordinates);
-		return grid.getItem(coordinates);
+		//return grid.getItem(coordinates);
+        return null;
 	}
 
 	/**
@@ -244,20 +245,6 @@ public class GridDropTargetEffect extends DropTargetEffect {
 		} else {
 			if (hoverItem != null && expandItem == hoverItem && expandBeginTime != 0) {
 				if (System.currentTimeMillis() >= expandBeginTime) {
-					if(hoverColumn.isTree() && !hoverItem.isExpanded())
-					{
-						hoverItem.setExpanded(true);
-						
-						//Manually fire the expand event, otherwise if it hasn't been previously
-						//expanded, you'll see the dummy child node instead of actual contents.
-						//Also, if we don't check hasChildren and just fire the event, then the 
-						//content provider ends up being called and it asks for children of 
-						//something that says it doesn't have children.  
-						if (hoverItem.hasChildren())
-						{
-						    hoverItem.fireEvent(SWT.Expand);
-						}
-					}
 					expandBeginTime = 0;
 					expandItem = null;
 				}

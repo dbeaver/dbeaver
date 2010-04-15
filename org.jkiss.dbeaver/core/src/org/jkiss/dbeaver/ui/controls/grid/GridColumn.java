@@ -257,7 +257,6 @@ public class GridColumn extends Item {
 	private void initCellRenderer() {
 		cellRenderer.setDisplay(getDisplay());
 
-		cellRenderer.setTree(tree);
 		cellRenderer.setColumn(parent.indexOf(this));
 
 		if ((getStyle() & SWT.RIGHT) == SWT.RIGHT) {
@@ -537,11 +536,9 @@ public class GridColumn extends Item {
 				SWT.DEFAULT, this).x;
 		GridItem[] items = parent.getItems();
         for (GridItem item : items) {
-            if (item.isVisible()) {
-                newWidth = Math.max(newWidth, getCellRenderer().computeSize(
-                    gc,
-                    SWT.DEFAULT, SWT.DEFAULT, item).x);
-            }
+            newWidth = Math.max(newWidth, getCellRenderer().computeSize(
+                gc,
+                SWT.DEFAULT, SWT.DEFAULT, item).x);
         }
 		gc.dispose();
 		setWidth(newWidth);
@@ -718,7 +715,6 @@ public class GridColumn extends Item {
 		checkWidget();
 
 		this.tree = tree;
-		cellRenderer.setTree(tree);
 		parent.redraw();
 	}
 

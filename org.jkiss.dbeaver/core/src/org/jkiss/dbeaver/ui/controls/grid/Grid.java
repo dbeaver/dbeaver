@@ -26,8 +26,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
-import org.eclipse.swt.events.TreeEvent;
-import org.eclipse.swt.events.TreeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
@@ -64,7 +62,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -97,16 +94,6 @@ public class Grid extends Canvas {
      * Accessibility default action for items.
      */
     private static final String ACC_ITEM_DEFAULT_ACTION = "Double Click";
-
-    /**
-     * Accessibility expand action for tree items.
-     */
-    private static final String ACC_ITEM_ACTION_EXPAND = "Expand";
-
-    /**
-     * Accessibility collapse action for tree items.
-     */
-    private static final String ACC_ITEM_ACTION_COLLAPSE = "Collapse";
 
     /**
      * Accessibility name for the column group header toggle button.
@@ -537,12 +524,6 @@ public class Grid extends Canvas {
     private boolean disposing = false;
 
     /**
-     * True if there is at least one tree node.  This is used by accessibility and various
-     * places for optimization.
-     */
-    private boolean isTree = false;
-
-    /**
      * True if there is at least one <code>GridItem</code> with an individual height.
      * This value is only set to true in {@link GridItem#setHeight(int,boolean)}
      * and it is never reset to false.
@@ -826,27 +807,6 @@ public class Grid extends Canvas {
         }
         addListener(SWT.Selection, new TypedListener(listener));
         addListener(SWT.DefaultSelection, new TypedListener(listener));
-    }
-
-    /**
-     * Adds the listener to the collection of listeners who will be notified
-     * when the receiver's items changes, by sending it one of the messages
-     * defined in the {@code TreeListener} interface.
-     *
-     * @param listener the listener which should be notified
-     * @see TreeListener
-     * @see #removeTreeListener
-     * @see org.eclipse.swt.events.TreeEvent
-     */
-    public void addTreeListener(TreeListener listener)
-    {
-        checkWidget();
-        if (listener == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-        }
-
-        addListener(SWT.Expand, new TypedListener(listener));
-        addListener(SWT.Collapse, new TypedListener(listener));
     }
 
     /**
@@ -1476,16 +1436,16 @@ public class Grid extends Canvas {
         int row = getTopIndex();
         while (row < items.size() && y2 <= getClientArea().height) {
             GridItem currItem = items.get(row);
-            if (currItem.isVisible()) {
-                int currItemHeight = currItem.getHeight();
 
-                if (p.y >= y2 && p.y < y2 + currItemHeight + 1) {
-                    itemToReturn = currItem;
-                    break;
-                }
+            int currItemHeight = currItem.getHeight();
 
-                y2 += currItemHeight + 1;
+            if (p.y >= y2 && p.y < y2 + currItemHeight + 1) {
+                itemToReturn = currItem;
+                break;
             }
+
+            y2 += currItemHeight + 1;
+
             row++;
         }
 
@@ -1500,9 +1460,6 @@ public class Grid extends Canvas {
                 // track back all previous columns and check their spanning
                 for (int i = 0; i < itemIndex; i++) {
                     GridItem gridItem = this.getItem(i);
-                    if (!gridItem.isVisible()) {
-                        continue;
-                    }
                     int span = gridItem.getRowSpan(displayColIndex);
 
                     if (i + span >= itemIndex) {
@@ -1681,18 +1638,7 @@ public class Grid extends Canvas {
             return null;
         }
 
-        GridItem nextItem = items.get(index + 1);
-
-        while (!nextItem.isVisible()) {
-            index++;
-            if (items.size() == index + 1) {
-                return null;
-            }
-
-            nextItem = items.get(index + 1);
-        }
-
-        return nextItem;
+        return items.get(index + 1);
     }
 
     /**
@@ -1716,18 +1662,7 @@ public class Grid extends Canvas {
             }
         }
 
-        GridItem prevItem = items.get(index - 1);
-
-        while (!prevItem.isVisible()) {
-            index--;
-            if (index == 0) {
-                return null;
-            }
-
-            prevItem = items.get(index - 1);
-        }
-
-        return prevItem;
+        return items.get(index - 1);
     }
 
     /**
@@ -1992,25 +1927,7 @@ public class Grid extends Canvas {
             topIndex = 0;
         } else {
             // figure out first visible row and last visible row
-            int firstVisibleIndex = vScroll.getSelection();
-
-            if (isTree) {
-                Iterator itemsIter = items.iterator();
-                int row = firstVisibleIndex + 1;
-
-                while (row > 0 && itemsIter.hasNext()) {
-                    GridItem item = (GridItem) itemsIter.next();
-
-                    if (item.isVisible()) {
-                        row--;
-                        if (row == 0) {
-                            firstVisibleIndex = items.indexOf(item);
-                        }
-                    }
-                }
-            }
-
-            topIndex = firstVisibleIndex;
+            topIndex = vScroll.getSelection();
 
             /*
              *  MOPR  here lies more potential for increasing performance
@@ -2077,36 +1994,31 @@ public class Grid extends Canvas {
         // parameter preparation
         if (startIndex == -1) {
             // search frist visible item
-            do startIndex++; while (startIndex < items.size() && !items.get(startIndex).isVisible());
+            startIndex = 0;
             if (startIndex == items.size()) return null;
         }
         if (endIndex == -1) {
             // search last visible item
-            endIndex = items.size();
-            do endIndex--; while (endIndex >= 0 && !items.get(endIndex).isVisible());
-            if (endIndex == -1) return null;
+            endIndex = items.size() - 1;
+            if (endIndex <= 0) return null;
         }
 
         // fail fast
         if (startIndex < 0 || endIndex < 0 || startIndex >= items.size() || endIndex >= items.size()
-            || endIndex < startIndex
-            || !items.get(startIndex).isVisible()
-            || !items.get(endIndex).isVisible())
+            || endIndex < startIndex)
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
         RowRange range = new RowRange();
         range.startIndex = startIndex;
         range.endIndex = endIndex;
 
-        if (isTree || hasDifferingHeights) {
+        if (hasDifferingHeights) {
             for (int idx = startIndex; idx <= endIndex; idx++) {
                 GridItem currItem = items.get(idx);
 
-                if (currItem.isVisible()) {
-                    if (range.rows > 0)
-                        range.height++;        // height of horizontal row separator
-                    range.height += currItem.getHeight();
-                    range.rows++;
-                }
+                if (range.rows > 0)
+                    range.height++;        // height of horizontal row separator
+                range.height += currItem.getHeight();
+                range.rows++;
             }
         } else {
             range.rows = range.endIndex - range.startIndex + 1;
@@ -2145,19 +2057,17 @@ public class Grid extends Canvas {
         if (startIndex == -1) {
             if (!inverse) {
                 // search frist visible item
-                do startIndex++; while (startIndex < items.size() && !items.get(startIndex).isVisible());
+                startIndex = 0;
                 if (startIndex == items.size()) return null;
             } else {
                 // search last visible item
-                startIndex = items.size();
-                do startIndex--; while (startIndex >= 0 && !items.get(startIndex).isVisible());
+                startIndex = items.size() - 1;
                 if (startIndex == -1) return null;
             }
         }
 
         // fail fast
-        if (startIndex < 0 || startIndex >= items.size()
-            || !items.get(startIndex).isVisible())
+        if (startIndex < 0 || startIndex >= items.size())
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
 
         RowRange range = new RowRange();
@@ -2171,7 +2081,7 @@ public class Grid extends Canvas {
             return range;
         }
 
-        if (isTree || hasDifferingHeights) {
+        if (hasDifferingHeights) {
             int otherIndex = startIndex;        // tentative end index
             int consumedItems = 0;
             int consumedHeight = 0;
@@ -2189,19 +2099,15 @@ public class Grid extends Canvas {
                 int nextIndex = otherIndex;
                 GridItem nextItem;
 
-                do {
-                    if (!inverse)
-                        nextIndex++;
-                    else
-                        nextIndex--;
+                if (!inverse)
+                    nextIndex++;
+                else
+                    nextIndex--;
 
-                    if (nextIndex >= 0 && nextIndex < items.size())
-                        nextItem = items.get(nextIndex);
-                    else
-                        nextItem = null;
-                }
-                while (nextItem != null && !nextItem.isVisible());
-
+                if (nextIndex >= 0 && nextIndex < items.size())
+                    nextItem = items.get(nextIndex);
+                else
+                    nextItem = null;
 
                 if (nextItem == null) {
                     // no visible item found
@@ -2540,21 +2446,6 @@ public class Grid extends Canvas {
         checkWidget();
         removeListener(SWT.Selection, listener);
         removeListener(SWT.DefaultSelection, listener);
-    }
-
-    /**
-     * Removes the listener from the collection of listeners who will be
-     * notified when the receiver's items changes.
-     *
-     * @param listener the listener which should no longer be notified
-     * @see TreeListener
-     * @see #addTreeListener(TreeListener)
-     */
-    public void removeTreeListener(TreeListener listener)
-    {
-        checkWidget();
-        removeListener(SWT.Expand, listener);
-        removeListener(SWT.Collapse, listener);
     }
 
     /**
@@ -3087,7 +2978,6 @@ public class Grid extends Canvas {
 
         for (GridItem item : _items) {
             if (item == null) continue;
-            if (item.isDisposed()) SWT.error(SWT.ERROR_INVALID_ARGUMENT);
             if (item.getParent() != this) continue;
 
             if (!cellSelectionEnabled) {
@@ -3114,24 +3004,11 @@ public class Grid extends Canvas {
             return;
         }
 
-        GridItem item = items.get(index);
-        if (!item.isVisible()) {
-            return;
-        }
-
         if (!vScroll.getVisible()) {
             return;
         }
 
-        int vScrollAmount = 0;
-
-        for (int i = 0; i < index; i++) {
-            if (items.get(i).isVisible()) {
-                vScrollAmount++;
-            }
-        }
-
-        vScroll.setSelection(vScrollAmount);
+        vScroll.setSelection(index);
         topIndex = -1;
         bottomIndex = -1;
         redraw();
@@ -3252,9 +3129,6 @@ public class Grid extends Canvas {
     {
         checkWidget();
 
-        if (!item.isVisible())
-            return false;
-
         int itemIndex = items.indexOf(item);
 
         if (itemIndex == -1)
@@ -3289,18 +3163,6 @@ public class Grid extends Canvas {
         // if its visible just return
         if (isShown(item)) {
             return;
-        }
-
-        if (!item.isVisible()) {
-            GridItem parent = item.getParentItem();
-            do {
-                if (!parent.isExpanded()) {
-                    parent.setExpanded(true);
-                    parent.fireEvent(SWT.Expand);
-                }
-                parent = parent.getParentItem();
-            }
-            while (parent != null);
         }
 
         int newTopIndex = items.indexOf(item);
@@ -3914,18 +3776,6 @@ public class Grid extends Canvas {
             return;
         }
 
-        Event e = new Event();
-        e.item = rowBeingResized;
-        e.widget = this;
-        e.detail = newHeight;
-
-        rowBeingResized.notifyListeners(SWT.Resize, e);
-
-        if (!e.doit)
-            return;
-
-        newHeight = e.detail;
-
         if (newHeight < MIN_ROW_HEADER_HEIGHT) {
             newHeight = MIN_ROW_HEADER_HEIGHT;
         }
@@ -4018,7 +3868,7 @@ public class Grid extends Canvas {
             int row = getTopIndex();
             while (row < items.size() && y2 <= getClientArea().height) {
                 GridItem currItem = items.get(row);
-                if (currItem.isVisible()) {
+                {
                     y2 += currItem.getHeight() + 1;
 
                     if (y2 >= (y - ROW_RESIZER_THRESHOLD) && y2 <= (y + ROW_RESIZER_THRESHOLD)) {
@@ -4166,14 +4016,6 @@ public class Grid extends Canvas {
             GridItem item = null;
             if (row < items.size()) {
                 item = items.get(row);
-
-                while (!item.isVisible() && row < items.size() - 1) {
-                    row++;
-                    item = items.get(row);
-                }
-            }
-            if (item != null && !item.isVisible()) {
-                item = null;
             }
 
             if (item != null) {
@@ -4836,7 +4678,7 @@ public class Grid extends Canvas {
             redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
 
             selectionEvent = new Event();
-            selectionEvent.item = item;
+            selectionEvent.data = item;
         } else if (selectionType == SWT.MULTI) {
             boolean shift = false;
             boolean ctrl = false;
@@ -4862,7 +4704,7 @@ public class Grid extends Canvas {
                 shiftSelectionAnchorItem = null;
 
                 selectionEvent = new Event();
-                selectionEvent.item = item;
+                selectionEvent.data = item;
             } else if (shift) {
 
                 if (shiftSelectionAnchorItem == null) {
@@ -4906,9 +4748,7 @@ public class Grid extends Canvas {
                 }
 
                 for (int i = min; i <= max; i++) {
-                    if (!selectedItems.contains(items.get(i)) && items.get(i).isVisible()) {
-                        selectedItems.add(items.get(i));
-                    }
+                    selectedItems.add(items.get(i));
                 }
                 Rectangle clientArea = getClientArea();
                 redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
@@ -4926,7 +4766,7 @@ public class Grid extends Canvas {
                 shiftSelectionAnchorItem = null;
 
                 selectionEvent = new Event();
-                selectionEvent.item = item;
+                selectionEvent.data = item;
             }
         }
 
@@ -5499,7 +5339,7 @@ public class Grid extends Canvas {
         if (selectionEvent != null) {
             selectionEvent.stateMask = e.stateMask;
             selectionEvent.button = e.button;
-            selectionEvent.item = item;
+            selectionEvent.data = item;
             selectionEvent.x = e.x;
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);
@@ -5557,17 +5397,9 @@ public class Grid extends Canvas {
             if (item != null) {
                 if (isListening(SWT.DefaultSelection)) {
                     Event newEvent = new Event();
-                    newEvent.item = item;
+                    newEvent.data = item;
 
                     notifyListeners(SWT.DefaultSelection, newEvent);
-                } else if (item.getItemCount() > 0) {
-                    item.setExpanded(!item.isExpanded());
-
-                    if (item.isExpanded()) {
-                        item.fireEvent(SWT.Expand);
-                    } else {
-                        item.fireEvent(SWT.Collapse);
-                    }
                 }
             }
         }
@@ -5621,7 +5453,7 @@ public class Grid extends Canvas {
             if (followupCellSelectionEventOwed) {
                 Event se = new Event();
                 se.button = e.button;
-                se.item = getItem(new Point(e.x, e.y));
+                se.data = getItem(new Point(e.x, e.y));
                 se.stateMask = e.stateMask;
                 se.x = e.x;
                 se.y = e.y;
@@ -5806,7 +5638,7 @@ public class Grid extends Canvas {
         if (selectionEvent != null) {
             selectionEvent.stateMask = e.stateMask;
             selectionEvent.button = e.button;
-            selectionEvent.item = getItem(new Point(e.x, e.y));
+            selectionEvent.data = getItem(new Point(e.x, e.y));
             selectionEvent.x = e.x;
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);
@@ -5902,38 +5734,10 @@ public class Grid extends Canvas {
 
         if (e.character == '\r' && focusItem != null) {
             Event newEvent = new Event();
-            newEvent.item = focusItem;
+            newEvent.data = focusItem;
 
             notifyListeners(SWT.DefaultSelection, newEvent);
             return;
-        }
-
-        int attemptExpandCollapse = 0;
-        if ((e.character == '-' || (!cellSelectionEnabled && e.keyCode == SWT.ARROW_LEFT)) && focusItem != null && focusItem.isExpanded()) {
-            attemptExpandCollapse = SWT.Collapse;
-        } else if ((e.character == '+' || (!cellSelectionEnabled && e.keyCode == SWT.ARROW_RIGHT)) && focusItem != null && !focusItem.isExpanded()) {
-            attemptExpandCollapse = SWT.Expand;
-        }
-
-        if (attemptExpandCollapse != 0 && focusItem != null && focusItem.hasChildren()) {
-            int performExpandCollapse = 0;
-
-            if (cellSelectionEnabled && focusColumn != null && focusColumn.isTree()) {
-                performExpandCollapse = attemptExpandCollapse;
-            } else if (!cellSelectionEnabled) {
-                performExpandCollapse = attemptExpandCollapse;
-            }
-
-            if (performExpandCollapse == SWT.Expand) {
-                focusItem.setExpanded(true);
-                focusItem.fireEvent(SWT.Expand);
-                return;
-            }
-            if (performExpandCollapse == SWT.Collapse) {
-                focusItem.setExpanded(false);
-                focusItem.fireEvent(SWT.Collapse);
-                return;
-            }
         }
 
         if (e.character == ' ') {
@@ -5986,10 +5790,6 @@ public class Grid extends Canvas {
                         }
                     }
                     intendedFocusColumn = newColumnFocus;
-                } else {
-                    if (impliedFocusItem != null && impliedFocusItem.hasChildren()) {
-                        newSelection = impliedFocusItem.getItem(0);
-                    }
                 }
                 break;
             case SWT.ARROW_LEFT:
@@ -6008,10 +5808,6 @@ public class Grid extends Canvas {
                         }
                     }
                     intendedFocusColumn = newColumnFocus;
-                } else {
-                    if (impliedFocusItem != null && impliedFocusItem.getParentItem() != null) {
-                        newSelection = impliedFocusItem.getParentItem();
-                    }
                 }
                 break;
             case SWT.ARROW_UP:
@@ -6158,7 +5954,7 @@ public class Grid extends Canvas {
             selectedItems.add(focusItem);
             redraw();
             Event e = new Event();
-            e.item = focusItem;
+            e.data = focusItem;
             e.stateMask = event.stateMask;
             e.character = event.character;
             e.keyCode = event.keyCode;
@@ -6248,16 +6044,12 @@ public class Grid extends Canvas {
             while (currIndex != itemIndex) {
                 if (currIndex < itemIndex) {
                     GridItem currItem = items.get(currIndex);
-                    if (currItem.isVisible()) {
-                        y += currItem.getHeight() + 1;
-                    }
+                    y += currItem.getHeight() + 1;
                     currIndex++;
                 } else if (currIndex > itemIndex) {
                     currIndex--;
                     GridItem currItem = items.get(currIndex);
-                    if (currItem.isVisible()) {
-                        y -= currItem.getHeight() + 1;
-                    }
+                    y -= currItem.getHeight() + 1;
                 }
             }
         } else {
@@ -6611,36 +6403,17 @@ public class Grid extends Canvas {
      * @param index index to insert the item at
      * @return the index where the item was insert
      */
-    int newItem(GridItem item, int index, boolean root)
+    int newItem(GridItem item, int index)
     {
         int row;
 
-        if (!isTree) {
-            if (item.getParentItem() != null) {
-                isTree = true;
-            }
-        }
-
         //Have to convert indexes, this method needs a flat index, the method is called with indexes
         //that are relative to the level
-        if (root && index != -1) {
+        if (index != -1) {
             if (index >= rootItems.size()) {
                 index = -1;
             } else {
                 index = items.indexOf(rootItems.get(index));
-            }
-        } else if (!root) {
-            if (index >= item.getParentItem().getItems().length || index == -1) {
-                GridItem rightMostDescendent = item.getParentItem();
-
-                while (rightMostDescendent.getItems().length > 0) {
-                    rightMostDescendent = rightMostDescendent.getItems()[rightMostDescendent
-                        .getItems().length - 1];
-                }
-
-                index = indexOf(rightMostDescendent) + 1;
-            } else {
-                index = indexOf(item.getParentItem().getItems()[index]);
             }
         }
 
@@ -6704,9 +6477,7 @@ public class Grid extends Canvas {
         scrollValuesObsolete = true;
         topIndex = -1;
         bottomIndex = -1;
-        if (item.isVisible()) {
-            currentVisibleItems--;
-        }
+        currentVisibleItems--;
 
         if (selectionModified && !disposing) {
             updateColumnSelection();
@@ -6816,7 +6587,7 @@ public class Grid extends Canvas {
     {
         checkWidget();
         //TODO: check and make sure this item is valid for focus
-        if (item == null || item.isDisposed() || item.getParent() != this) {
+        if (item == null || item.getParent() != this) {
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
         }
         focusItem = item;
@@ -7740,7 +7511,7 @@ public class Grid extends Canvas {
         }
 
         while (count > items.size()) {
-            new GridItem(this, SWT.NONE);
+            new GridItem(this);
         }
         setRedraw(true);
     }
@@ -7842,19 +7613,7 @@ public class Grid extends Canvas {
             public void getChildCount(AccessibleControlEvent e)
             {
                 if (e.childID == ACC.CHILDID_SELF) {
-                    int length = items.size();
-
-                    if (isTree) {
-                        // Child count for parent. Here if the item parent
-                        // is not an other item,
-                        // it is consider as children of Grid
-                        for (GridItem item : items) {
-                            if (item.getParentItem() != null) {
-                                length--;
-                            }
-                        }
-                    }
-                    e.detail = length;
+                    e.detail = items.size();
                 }
             }
 
@@ -7862,24 +7621,7 @@ public class Grid extends Canvas {
             {
                 if (e.childID == ACC.CHILDID_SELF) {
                     int length = items.size();
-                    if (isTree) {
-                        for (GridItem item : items) {
-                            if (item.getParentItem() != null) {
-                                length--;
-                            }
-                        }
-
-                        Object[] children = new Object[length];
-                        int j = 0;
-
-                        for (int i = 0; i < items.size(); i++) {
-                            if (items.get(i).getParentItem() == null) {
-                                children[j] = i;
-                                j++;
-                            }
-                        }
-                        e.children = children;
-                    } else {
+                    {
                         Object[] children = new Object[length];
                         for (int i = 0; i < items.size(); i++) {
                             children[i] = i;
@@ -7893,17 +7635,8 @@ public class Grid extends Canvas {
             {
                 int childID = e.childID;
                 if (childID >= 0 && childID < items.size()) {
-                    if (getItem(childID).hasChildren()) {
-                        // Action of tree items
-                        if (getItem(childID).isExpanded()) {
-                            e.result = ACC_ITEM_ACTION_COLLAPSE;
-                        } else {
-                            e.result = ACC_ITEM_ACTION_EXPAND;
-                        }
-                    } else {
-                        // action of default items
-                        e.result = ACC_ITEM_DEFAULT_ACTION;
-                    }
+                    // action of default items
+                    e.result = ACC_ITEM_DEFAULT_ACTION;
                 } else if (childID >= items.size()
                     && childID < items.size() + columns.size() + columnGroups.length) {
                     // action of column and column group header
@@ -7986,11 +7719,7 @@ public class Grid extends Canvas {
                 int childID = e.childID;
                 if (childID >= 0 && childID < items.size()) {
                     // role of items
-                    if (isTree) {
-                        e.detail = ACC.ROLE_TREEITEM;
-                    } else {
-                        e.detail = ACC.ROLE_LISTITEM;
-                    }
+                    e.detail = ACC.ROLE_LISTITEM;
                 } else if (childID >= items.size()
                     && childID < items.size() + columns.size() + columnGroups.length) {
                     // role of columns headers and column group headers
@@ -8002,11 +7731,7 @@ public class Grid extends Canvas {
                     e.detail = ACC.ROLE_PUSHBUTTON;
                 } else if (childID == ACC.CHILDID_SELF) {
                     // role of parent
-                    if (isTree) {
-                        e.detail = ACC.ROLE_TREE;
-                    } else {
-                        e.detail = ACC.ROLE_TABLE;
-                    }
+                    e.detail = ACC.ROLE_TABLE;
                 }
             }
 
@@ -8047,18 +7772,6 @@ public class Grid extends Canvas {
                         }
                     }
 
-                    // only for tree type items
-                    if (getItem(childID).hasChildren()) {
-                        if (getItem(childID).isExpanded()) {
-                            e.detail |= ACC.STATE_EXPANDED;
-                        } else {
-                            e.detail |= ACC.STATE_COLLAPSED;
-                        }
-                    }
-
-                    if (!getItem(childID).isVisible()) {
-                        e.detail |= ACC.STATE_INVISIBLE;
-                    }
                 } else if (childID >= items.size()
                     && childID < items.size() + columns.size() + columnGroups.length) {
                     // state of column headers and column group headers
@@ -8067,9 +7780,7 @@ public class Grid extends Canvas {
                     && childID < items.size() + columns.size() + columnGroups.length
                     + columnGroups.length) {
                     // state of toggle button of column group headers
-                    if (getColumnGroup(
-                        childID - items.size() - columns.size()
-                            - columnGroups.length).getExpanded()) {
+                    if (getColumnGroup(childID - items.size() - columns.size() - columnGroups.length).getExpanded()) {
                         e.detail = ACC.STATE_EXPANDED;
                     } else {
                         e.detail = ACC.STATE_COLLAPSED;
@@ -8082,9 +7793,6 @@ public class Grid extends Canvas {
                 int childID = e.childID;
                 if (childID >= 0 && childID < items.size()) {
                     // value for tree items
-                    if (isTree) {
-                        e.result = "" + getItem(childID).getLevel();
-                    }
                 }
             }
         });
@@ -8094,22 +7802,6 @@ public class Grid extends Canvas {
             {
                 if (selectedItems.size() > 0) {
                     accessible.setFocus(items.indexOf(selectedItems.get(selectedItems.size() - 1)));
-                }
-            }
-        });
-
-        addTreeListener(new TreeListener() {
-            public void treeCollapsed(TreeEvent e)
-            {
-                if (getFocusItem() != null) {
-                    accessible.setFocus(items.indexOf(getFocusItem()));
-                }
-            }
-
-            public void treeExpanded(TreeEvent e)
-            {
-                if (getFocusItem() != null) {
-                    accessible.setFocus(items.indexOf(getFocusItem()));
                 }
             }
         });
@@ -8243,10 +7935,6 @@ public class Grid extends Canvas {
     public void setInsertMark(GridItem item, GridColumn column, boolean before)
     {
         checkWidget();
-        if (item != null) {
-            if (item.isDisposed())
-                SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-        }
         if (column != null) {
             if (column.isDisposed())
                 SWT.error(SWT.ERROR_INVALID_ARGUMENT);
@@ -8285,7 +7973,7 @@ public class Grid extends Canvas {
      * @see SWT#VIRTUAL
      * @see SWT#SetData
      */
-    public void clear(int index, boolean allChildren)
+    public void clear(int index)
     {
         checkWidget();
         if (index < 0 || index >= items.size()) {
@@ -8293,7 +7981,7 @@ public class Grid extends Canvas {
         }
 
         GridItem item = getItem(index);
-        item.clear(allChildren);
+        item.clear();
         redraw();
     }
 
@@ -8311,7 +7999,7 @@ public class Grid extends Canvas {
      * @see SWT#VIRTUAL
      * @see SWT#SetData
      */
-    public void clear(int start, int end, boolean allChildren)
+    public void clear(int start, int end)
     {
         checkWidget();
         if (start > end) return;
@@ -8322,7 +8010,7 @@ public class Grid extends Canvas {
         }
         for (int i = start; i <= end; i++) {
             GridItem item = items.get(i);
-            item.clear(allChildren);
+            item.clear();
         }
         redraw();
     }
@@ -8339,7 +8027,7 @@ public class Grid extends Canvas {
      * @see SWT#VIRTUAL
      * @see SWT#SetData
      */
-    public void clear(int[] indices, boolean allChildren)
+    public void clear(int[] indices)
     {
         checkWidget();
         if (indices == null) {
@@ -8356,7 +8044,7 @@ public class Grid extends Canvas {
         }
         for (int indice : indices) {
             GridItem item = items.get(indice);
-            item.clear(allChildren);
+            item.clear();
         }
         redraw();
     }
@@ -8372,11 +8060,11 @@ public class Grid extends Canvas {
      * @see SWT#VIRTUAL
      * @see SWT#SetData
      */
-    public void clearAll(boolean allChildren)
+    public void clearAll()
     {
         checkWidget();
         if (items.size() > 0)
-            clear(0, items.size() - 1, allChildren);
+            clear(0, items.size() - 1);
     }
 
     /**

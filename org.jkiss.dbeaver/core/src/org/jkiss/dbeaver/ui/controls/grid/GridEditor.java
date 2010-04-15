@@ -10,8 +10,6 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.events.TreeEvent;
-import org.eclipse.swt.events.TreeListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
@@ -48,8 +46,6 @@ public class GridEditor extends ControlEditor
     private Listener columnGroupListener;
 
     private SelectionListener scrollListener;
-    
-    private TreeListener treeListener;
 
     /**
      * Creates a TableEditor for the specified Table.
@@ -61,28 +57,6 @@ public class GridEditor extends ControlEditor
         super(table);
         this.table = table;
         
-        treeListener = new TreeListener () {
-            final Runnable runnable = new Runnable() {
-                public void run() {
-                    if (getEditor() == null || getEditor().isDisposed()) return;
-                    if (table.isDisposed()) return;
-                    layout();
-                    getEditor().setVisible(true);
-                }
-            };
-            public void treeCollapsed(TreeEvent e) {
-                if (getEditor() == null || getEditor().isDisposed ()) return;
-                getEditor().setVisible(false);
-                e.display.asyncExec(runnable);
-            }
-            public void treeExpanded(TreeEvent e) {
-                if (getEditor() == null || getEditor().isDisposed ()) return;
-                getEditor().setVisible(false);
-                e.display.asyncExec(runnable);
-            }
-        };
-        table.addTreeListener(treeListener);
-
         columnListener = new ControlListener()
         {
             public void controlMoved(ControlEvent e)
@@ -160,7 +134,7 @@ public class GridEditor extends ControlEditor
      */
     protected Rectangle computeBounds()
     {
-        if (item == null || column == -1 || item.isDisposed())
+        if (item == null || column == -1)
             return new Rectangle(0, 0, 0, 0);
         Rectangle cell = item.getBounds(column);
         Rectangle area = table.getClientArea();
@@ -362,7 +336,7 @@ public class GridEditor extends ControlEditor
 
         if (table.isDisposed())
             return;
-        if (item == null || item.isDisposed())
+        if (item == null)
             return;
         int columnCount = table.getColumnCount();
         if (columnCount == 0 && column != 0)
