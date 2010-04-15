@@ -10,6 +10,12 @@ import org.eclipse.swt.graphics.Image;
 
 public interface IGridContentProvider {
 
+    /**
+     * Row count
+     * @return row count
+     */
+    public int getRowCount();
+
     ////////////////////////////////////
     // Header
     ////////////////////////////////////
