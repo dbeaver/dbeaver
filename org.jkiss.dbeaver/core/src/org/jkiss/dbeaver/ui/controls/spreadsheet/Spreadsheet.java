@@ -37,11 +37,12 @@ import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
-import org.jkiss.dbeaver.ui.controls.grid.Grid;
-import org.jkiss.dbeaver.ui.controls.grid.GridEditor;
-import org.jkiss.dbeaver.ui.controls.grid.GridColumn;
-import org.jkiss.dbeaver.ui.controls.grid.GridItem;
-import org.jkiss.dbeaver.ui.controls.grid.GridPos;
+//import org.jkiss.dbeaver.ui.controls.grid.Grid;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridEditor;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,7 +60,7 @@ public class Spreadsheet extends Composite implements Listener {
 
     private static final int Event_ChangeCursor = 1000;
 
-    private Grid grid;
+    private LightGrid grid;
     private GridEditor tableEditor;
     private List<GridColumn> curColumns = new ArrayList<GridColumn>();
 
@@ -129,7 +130,7 @@ public class Spreadsheet extends Composite implements Listener {
         this.createControl(style);
     }
 
-    public Grid getGrid()
+    public LightGrid getGrid()
     {
         return grid;
     }
@@ -303,7 +304,7 @@ public class Spreadsheet extends Composite implements Listener {
         layout.horizontalSpacing = 0;
         group.setLayout(layout);
 
-        grid = new Grid(group, style);
+        grid = new LightGrid(group, style);
         grid.setCellSelectionEnabled(true);
         grid.setRowHeaderVisible(true);
         //spreadsheet.set

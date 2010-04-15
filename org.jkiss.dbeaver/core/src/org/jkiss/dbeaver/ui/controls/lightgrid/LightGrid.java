@@ -5,12 +5,6 @@
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.accessibility.ACC;
-import org.eclipse.swt.accessibility.Accessible;
-import org.eclipse.swt.accessibility.AccessibleAdapter;
-import org.eclipse.swt.accessibility.AccessibleControlAdapter;
-import org.eclipse.swt.accessibility.AccessibleControlEvent;
-import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.DropTargetListener;
@@ -37,25 +31,25 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TypedListener;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.dnd.GridDragSourceEffect;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.dnd.GridDropTargetEffect;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultBottomLeftRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultDropPointRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultEmptyCellRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultEmptyColumnFooterRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultEmptyColumnHeaderRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultEmptyRowHeaderRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultFocusRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultInsertMarkRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultRowHeaderRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultTopLeftRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridCellRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridToolTip;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.IGridRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.IGridWidget;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.scroll.NullScrollBar;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.scroll.ScrollBarAdapter;
+import org.jkiss.dbeaver.ui.controls.lightgrid.dnd.GridDragSourceEffect;
+import org.jkiss.dbeaver.ui.controls.lightgrid.dnd.GridDropTargetEffect;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultBottomLeftRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultDropPointRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultEmptyCellRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultEmptyColumnFooterRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultEmptyColumnHeaderRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultEmptyRowHeaderRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultFocusRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultInsertMarkRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultRowHeaderRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultTopLeftRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridCellRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridToolTip;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.IGridRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.IGridWidget;
+import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
+import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.NullScrollBar;
+import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.ScrollBarAdapter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -84,21 +78,6 @@ import java.util.TreeSet;
  * @author chris.gross@us.ibm.com
  */
 public class LightGrid extends Canvas {
-
-    /**
-     * Accessibility default action for column headers and column group headers.
-     */
-    private static final String ACC_COLUMN_DEFAULT_ACTION = "Click";
-
-    /**
-     * Accessibility default action for items.
-     */
-    private static final String ACC_ITEM_DEFAULT_ACTION = "Double Click";
-
-    /**
-     * Accessibility name for the column group header toggle button.
-     */
-    private static final String ACC_TOGGLE_BUTTON_NAME = "Toggle Button";
 
     /**
      * Alpha blending value used when drawing the dragged column header.
@@ -219,8 +198,6 @@ public class LightGrid extends Canvas {
      * List of the table columns in the order they are displayed.
      */
     private List<GridColumn> displayOrderedColumns = new ArrayList<GridColumn>();
-
-    private GridColumnGroup[] columnGroups = new GridColumnGroup[0];
 
     /**
      * Renderer to paint the top left area when both column and row headers are
@@ -433,8 +410,6 @@ public class LightGrid extends Canvas {
 
     private GridColumn hoveringColumnHeader;
 
-    private GridColumnGroup hoverColumnGroupHeader;
-
     /**
      * String-based detail of what is being hovered over in a cell. This allows
      * a renderer to differentiate between hovering over different parts of the
@@ -498,8 +473,6 @@ public class LightGrid extends Canvas {
     private GridItem shiftSelectionAnchorItem;
 
     private boolean columnScrolling = false;
-
-    private int groupHeaderHeight;
 
     private Color cellHeaderSelectionBackground;
 
@@ -720,8 +693,6 @@ public class LightGrid extends Canvas {
         scrollValuesObsolete = true;
 
         initListeners();
-        initAccessible();
-
 
         itemHeight = sizingGC.getFontMetrics().getHeight() + 2;
 
@@ -981,18 +952,6 @@ public class LightGrid extends Canvas {
     }
 
     /**
-     * Returns the column at the given point in the receiver or null if no such
-     * column exists. The point is in the coordinate system of the receiver.
-     *
-     * @param point the point used to locate the column
-     * @return the column at the given point
-     */
-    public GridColumn getColumn(Point point)
-    {
-        return getColumn(null, point);
-    }
-
-    /**
      * Returns the column at the given point and a known item in the receiver or null if no such
      * column exists. The point is in the coordinate system of the receiver.
      *
@@ -1000,7 +959,7 @@ public class LightGrid extends Canvas {
      * @param point the point used to locate the column
      * @return the column at the given point
      */
-    private GridColumn getColumn(GridItem item, Point point)
+    public GridColumn getColumn(Point point)
     {
         checkWidget();
         if (point == null) {
@@ -1023,10 +982,6 @@ public class LightGrid extends Canvas {
         x2 -= getHScrollSelectionInPixels();
 
         for (GridColumn column : displayOrderedColumns) {
-            if (!column.isVisible()) {
-                continue;
-            }
-
             if (point.x >= x2 && point.x < x2 + column.getWidth()) {
                 overThis = column;
                 break;
@@ -1087,52 +1042,6 @@ public class LightGrid extends Canvas {
     }
 
     /**
-     * Returns the number of column groups contained in the receiver.
-     *
-     * @return the number of column groups
-     */
-    public int getColumnGroupCount()
-    {
-        checkWidget();
-        return columnGroups.length;
-    }
-
-    /**
-     * Returns an array of {@code GridColumnGroup}s which are the column groups in the
-     * receiver.
-     * <p>
-     * Note: This is not the actual structure used by the receiver to maintain
-     * its list of items, so modifying the array will not affect the receiver.
-     * </p>
-     *
-     * @return the column groups in the receiver
-     */
-    public GridColumnGroup[] getColumnGroups()
-    {
-        checkWidget();
-        GridColumnGroup[] newArray = new GridColumnGroup[columnGroups.length];
-        System.arraycopy(columnGroups, 0, newArray, 0, columnGroups.length);
-        return newArray;
-    }
-
-    /**
-     * Returns the column group at the given, zero-relative index in the receiver.
-     * Throws an exception if the index is out of range.
-     *
-     * @param index the index of the column group to return
-     * @return the column group at the given index
-     */
-    public GridColumnGroup getColumnGroup(int index)
-    {
-        checkWidget();
-
-        if (index < 0 || index >= columnGroups.length)
-            SWT.error(SWT.ERROR_INVALID_RANGE);
-
-        return columnGroups[index];
-    }
-
-    /**
      * Sets the order that the items in the receiver should be displayed in to
      * the given argument which is described in terms of the zero-relative
      * ordering of when the items were added.
@@ -1163,29 +1072,6 @@ public class LightGrid extends Canvas {
                 SWT.error(SWT.ERROR_INVALID_ARGUMENT);
             }
             seen[anOrder] = true;
-        }
-
-        if (columnGroups.length != 0) {
-            GridColumnGroup currentGroup = null;
-            int colsInGroup = 0;
-
-            for (int anOrder : order) {
-                GridColumn col = getColumn(anOrder);
-
-                if (currentGroup != null) {
-                    if (col.getColumnGroup() != currentGroup && colsInGroup > 0) {
-                        SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-                    } else {
-                        colsInGroup--;
-                        if (colsInGroup <= 0) {
-                            currentGroup = null;
-                        }
-                    }
-                } else if (col.getColumnGroup() != null) {
-                    currentGroup = col.getColumnGroup();
-                    colsInGroup = currentGroup.getColumns().length - 1;
-                }
-            }
         }
 
         GridColumn[] cols = getColumns();
@@ -1316,17 +1202,6 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
         return footerHeight;
-    }
-
-    /**
-     * Returns the height of the column group headers.
-     *
-     * @return height of column group headers
-     */
-    public int getGroupHeaderHeight()
-    {
-        checkWidget();
-        return groupHeaderHeight;
     }
 
     /**
@@ -1629,17 +1504,7 @@ public class LightGrid extends Canvas {
 
         index--;
 
-        GridColumn previous = displayOrderedColumns.get(index);
-
-        while (!previous.isVisible()) {
-            if (index == 0)
-                return null;
-
-            index--;
-            previous = displayOrderedColumns.get(index);
-        }
-
-        return previous;
+        return displayOrderedColumns.get(index);
     }
 
     /**
@@ -1659,17 +1524,7 @@ public class LightGrid extends Canvas {
 
         index++;
 
-        GridColumn next = displayOrderedColumns.get(index);
-
-        while (!next.isVisible()) {
-            if (index == displayOrderedColumns.size() - 1)
-                return null;
-
-            index++;
-            next = displayOrderedColumns.get(index);
-        }
-
-        return next;
+        return displayOrderedColumns.get(index);
     }
 
     /**
@@ -2996,16 +2851,6 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
 
-        if (!col.isVisible()) {
-            GridColumnGroup group = col.getColumnGroup();
-            group.setExpanded(!group.getExpanded());
-            if (group.getExpanded()) {
-                group.notifyListeners(SWT.Expand, new Event());
-            } else {
-                group.notifyListeners(SWT.Collapse, new Event());
-            }
-        }
-
         if (!hScroll.getVisible()) {
             return;
         }
@@ -3201,15 +3046,7 @@ public class LightGrid extends Canvas {
                                                             column).y, colHeaderHeight);
         }
 
-        int groupHeight = 0;
-        for (GridColumnGroup group : columnGroups) {
-            groupHeight = Math.max(group.getHeaderRenderer().computeSize(gc, SWT.DEFAULT,
-                                                                         SWT.DEFAULT, group).y,
-                                   groupHeight);
-        }
-
-        headerHeight = colHeaderHeight + groupHeight;
-        groupHeaderHeight = groupHeight;
+        headerHeight = colHeaderHeight;
     }
 
     private void computeFooterHeight(GC gc)
@@ -3265,10 +3102,6 @@ public class LightGrid extends Canvas {
      */
     private int getColumnHeaderXPosition(GridColumn column)
     {
-        if (!column.isVisible()) {
-            return -1;
-        }
-
         int x = 0;
 
         x -= getHScrollSelectionInPixels();
@@ -3277,10 +3110,6 @@ public class LightGrid extends Canvas {
             x += rowHeaderWidth;
         }
         for (GridColumn column2 : displayOrderedColumns) {
-            if (!column2.isVisible()) {
-                continue;
-            }
-
             if (column2 == column) {
                 break;
             }
@@ -3335,9 +3164,7 @@ public class LightGrid extends Canvas {
         }
 
         for (GridColumn column : columns) {
-            if (column.isVisible()) {
-                x += column.getWidth();
-            }
+            x += column.getWidth();
         }
 
         return new Point(x, y);
@@ -3371,19 +3198,12 @@ public class LightGrid extends Canvas {
 
         if (x < x2) {
             for (GridColumn column : displayOrderedColumns) {
-                if (!column.isVisible()) {
-                    continue;
-                }
                 local_dragDropBeforeColumn = column;
                 break;
             }
             local_dragDropAfterColumn = null;
         } else {
             for (GridColumn column : displayOrderedColumns) {
-                if (!column.isVisible()) {
-                    continue;
-                }
-
                 if (firstVisibleCol == null) {
                     firstVisibleCol = column;
                 }
@@ -3420,32 +3240,6 @@ public class LightGrid extends Canvas {
         if (local_dragDropBeforeColumn != dragDropBeforeColumn
             || (dragDropBeforeColumn == null && dragDropAfterColumn == null)) {
             dragDropPointValid = true;
-
-            // Determine if valid drop point
-            if (columnGroups.length != 0) {
-
-                if (columnBeingPushed.getColumnGroup() == null) {
-                    if (local_dragDropBeforeColumn != null
-                        && local_dragDropAfterColumn != null
-                        && local_dragDropBeforeColumn.getColumnGroup() != null
-                        && local_dragDropBeforeColumn.getColumnGroup() == local_dragDropAfterColumn
-                        .getColumnGroup()) {
-                        // Dont move a column w/o a group in between two columns
-                        // in the same group
-                        dragDropPointValid = false;
-                    }
-                } else {
-                    if (!(local_dragDropBeforeColumn != null && local_dragDropBeforeColumn
-                        .getColumnGroup() == columnBeingPushed.getColumnGroup())
-                        && !(local_dragDropAfterColumn != null && local_dragDropAfterColumn
-                        .getColumnGroup() == columnBeingPushed.getColumnGroup())) {
-                        // Dont move a column with a group
-                        dragDropPointValid = false;
-                    }
-                }
-            } else {
-                dragDropPointValid = true;
-            }
         }
 
         dragDropBeforeColumn = local_dragDropBeforeColumn;
@@ -3465,7 +3259,7 @@ public class LightGrid extends Canvas {
         draggingColumn = false;
 
         if ((dragDropBeforeColumn != columnBeingPushed && dragDropAfterColumn != columnBeingPushed)
-            && (columnGroups.length == 0 || dragDropPointValid)) {
+            && dragDropPointValid) {
 
             int notifyFrom = displayOrderedColumns.indexOf(columnBeingPushed);
             int notifyTo = notifyFrom;
@@ -3482,33 +3276,7 @@ public class LightGrid extends Canvas {
             } else {
                 int insertAtIndex;
 
-                if (columnGroups.length != 0) {
-                    // ensure that we aren't putting this column into a group,
-                    // this is possible if
-                    // there are invisible columns between the after and before
-                    // cols
-
-                    if (dragDropBeforeColumn.getColumnGroup() == columnBeingPushed.getColumnGroup()) {
-                        insertAtIndex = displayOrderedColumns.indexOf(dragDropBeforeColumn);
-                    } else if (dragDropAfterColumn.getColumnGroup() == columnBeingPushed
-                        .getColumnGroup()) {
-                        insertAtIndex = displayOrderedColumns.indexOf(dragDropAfterColumn) + 1;
-                    } else {
-                        if (dragDropBeforeColumn.getColumnGroup() == null) {
-                            insertAtIndex = displayOrderedColumns.indexOf(dragDropBeforeColumn);
-                        } else {
-                            GridColumnGroup beforeGroup = dragDropBeforeColumn.getColumnGroup();
-                            insertAtIndex = displayOrderedColumns.indexOf(dragDropBeforeColumn);
-                            while (insertAtIndex > 0
-                                && displayOrderedColumns.get(insertAtIndex - 1).getColumnGroup() == beforeGroup) {
-                                insertAtIndex--;
-                            }
-
-                        }
-                    }
-                } else {
-                    insertAtIndex = displayOrderedColumns.indexOf(dragDropBeforeColumn);
-                }
+                insertAtIndex = displayOrderedColumns.indexOf(dragDropBeforeColumn);
                 displayOrderedColumns.add(insertAtIndex, columnBeingPushed);
                 notifyFrom = Math.min(notifyFrom, insertAtIndex);
                 notifyTo = Math.max(notifyTo, insertAtIndex);
@@ -3563,51 +3331,6 @@ public class LightGrid extends Canvas {
         }
 
         return true;
-    }
-
-    /**
-     * Determines if a column group header has been clicked and forwards the
-     * event to the header renderer.
-     *
-     * @param x mouse x
-     * @param y mouse y
-     * @return true if this event has been consumed.
-     */
-    private boolean handleColumnGroupHeaderClick(int x, int y)
-    {
-
-        if (!columnHeadersVisible) {
-            return false;
-        }
-
-        GridColumnGroup overThis = overColumnGroupHeader(x, y);
-
-        if (overThis == null) {
-            return false;
-        }
-
-        int headerX = 0;
-        if (rowHeaderVisible) {
-            headerX += rowHeaderWidth;
-        }
-
-        int width = 0;
-        boolean firstCol = false;
-
-        for (GridColumn col : displayOrderedColumns) {
-            if (col.getColumnGroup() == overThis && col.isVisible()) {
-                firstCol = true;
-                width += col.getWidth();
-            }
-            if (!firstCol && col.isVisible()) {
-                headerX += col.getWidth();
-            }
-        }
-
-        overThis.getHeaderRenderer().setBounds(headerX - getHScrollSelectionInPixels(), 0, width,
-                                               groupHeaderHeight);
-        return overThis.getHeaderRenderer()
-            .notify(IGridWidget.LeftMouseButtonDown, new Point(x, y), overThis);
     }
 
     /**
@@ -3698,7 +3421,7 @@ public class LightGrid extends Canvas {
         for (int index = displayOrderedColumns.indexOf(
             columnBeingResized) + 1; index < displayOrderedColumns.size(); index++) {
             GridColumn col = displayOrderedColumns.get(index);
-            if (col.isVisible()) col.fireMoved();
+            col.fireMoved();
         }
     }
 
@@ -3759,20 +3482,10 @@ public class LightGrid extends Canvas {
             x2 -= getHScrollSelectionInPixels();
 
             for (GridColumn column : displayOrderedColumns) {
-                if (!column.isVisible()) {
-                    continue;
-                }
                 x2 += column.getWidth();
 
                 if (x2 >= (x - COLUMN_RESIZER_THRESHOLD) && x2 <= (x + COLUMN_RESIZER_THRESHOLD)) {
                     if (column.getResizeable()) {
-                        if (column.getColumnGroup() != null && y <= groupHeaderHeight) {
-                            // if this is not the last column
-                            if (column != column.getColumnGroup().getLastVisibleColumn()) {
-                                break;
-                            }
-                        }
-
                         over = true;
                         columnBeingResized = column;
                     }
@@ -3950,12 +3663,6 @@ public class LightGrid extends Canvas {
                 for (GridColumn column : displayOrderedColumns) {
 
                     int indexOfColumn = indexOf(column);
-
-                    if (!column.isVisible()) {
-                        colIndex++;
-                        continue;
-                    }
-
                     int width = item.getCellSize(indexOfColumn).x;
 
                     if (x + width >= 0 && x < getClientArea().width) {
@@ -4086,13 +3793,11 @@ public class LightGrid extends Canvas {
                 emptyCellRenderer.setRow(i + 1);
 
                 for (GridColumn column : displayOrderedColumns) {
-                    if (column.isVisible()) {
-                        emptyCellRenderer.setBounds(x, y, column.getWidth(), getItemHeight());
-                        emptyCellRenderer.setColumn(indexOf(column));
-                        emptyCellRenderer.paint(e.gc, this);
+                    emptyCellRenderer.setBounds(x, y, column.getWidth(), getItemHeight());
+                    emptyCellRenderer.setColumn(indexOf(column));
+                    emptyCellRenderer.paint(e.gc, this);
 
-                        x += column.getWidth();
-                    }
+                    x += column.getWidth();
                 }
 
                 if (x < getClientArea().width) {
@@ -4171,11 +3876,6 @@ public class LightGrid extends Canvas {
 
         if (y <= headerHeight && y > 0) {
             col = getColumn(new Point(x, y));
-            if (col != null && col.getColumnGroup() != null) {
-                if (y <= groupHeaderHeight) {
-                    return null;
-                }
-            }
         }
 
         return col;
@@ -4201,28 +3901,6 @@ public class LightGrid extends Canvas {
     }
 
     /**
-     * Returns a column group reference if the x,y coordinates are over a column
-     * group header (header only).
-     *
-     * @param x mouse x
-     * @param y mouse y
-     * @return column group reference which mouse is over, or null.
-     */
-    private GridColumnGroup overColumnGroupHeader(int x, int y)
-    {
-        GridColumnGroup group = null;
-
-        if (y <= groupHeaderHeight && y > 0) {
-            GridColumn col = getColumn(new Point(x, y));
-            if (col != null) {
-                group = col.getColumnGroup();
-            }
-        }
-
-        return group;
-    }
-
-    /**
      * Paints the header.
      *
      * @param gc gc from paint event
@@ -4241,75 +3919,12 @@ public class LightGrid extends Canvas {
             x += rowHeaderWidth;
         }
 
-        GridColumnGroup previousPaintedGroup = null;
-
         for (GridColumn column : displayOrderedColumns) {
             if (x > getClientArea().width)
                 break;
 
-            int height;
-
-            if (!column.isVisible()) {
-                continue;
-            }
-
-            if (column.getColumnGroup() != null) {
-
-                if (column.getColumnGroup() != previousPaintedGroup) {
-                    int width = column.getWidth();
-
-                    GridColumn nextCol = null;
-                    if (displayOrderedColumns.indexOf(column) + 1 < displayOrderedColumns.size()) {
-                        nextCol = displayOrderedColumns
-                            .get(displayOrderedColumns.indexOf(column) + 1);
-                    }
-
-                    while (nextCol != null && nextCol.getColumnGroup() == column.getColumnGroup()) {
-
-                        if ((nextCol.getColumnGroup().getExpanded() && !nextCol.isDetail())
-                            || (!nextCol.getColumnGroup().getExpanded() && !nextCol.isSummary())) {
-                        } else {
-                            width += nextCol.getWidth();
-                        }
-
-                        if (displayOrderedColumns.indexOf(nextCol) + 1 < displayOrderedColumns
-                            .size()) {
-                            nextCol = displayOrderedColumns.get(displayOrderedColumns.indexOf(nextCol) + 1);
-                        } else {
-                            nextCol = null;
-                        }
-                    }
-
-                    boolean selected = true;
-
-                    for (int i = 0; i < column.getColumnGroup().getColumns().length; i++) {
-                        GridColumn col = column.getColumnGroup().getColumns()[i];
-                        if (col.isVisible() && (column.getMoveable() || !selectedColumns.contains(col))) {
-                            selected = false;
-                            break;
-                        }
-                    }
-
-
-                    column.getColumnGroup().getHeaderRenderer().setSelected(selected);
-                    column.getColumnGroup().getHeaderRenderer()
-                        .setHover(hoverColumnGroupHeader == column.getColumnGroup());
-                    column.getColumnGroup().getHeaderRenderer().setHoverDetail(hoveringDetail);
-
-                    column.getColumnGroup().getHeaderRenderer().setBounds(x, 0, width,
-                                                                          groupHeaderHeight);
-
-                    column.getColumnGroup().getHeaderRenderer().paint(gc, column.getColumnGroup());
-
-                    previousPaintedGroup = column.getColumnGroup();
-                }
-
-                height = headerHeight - groupHeaderHeight;
-                y = groupHeaderHeight;
-            } else {
-                height = headerHeight;
-                y = 0;
-            }
+            int height = headerHeight;
+            y = 0;
 
             if (pushingColumn) {
                 column.getHeaderRenderer().setHover(
@@ -4353,15 +3968,8 @@ public class LightGrid extends Canvas {
 
             columnBeingPushed.getHeaderRenderer().setSelected(false);
 
-            int height;
-
-            if (columnBeingPushed.getColumnGroup() != null) {
-                height = headerHeight - groupHeaderHeight;
-                y = groupHeaderHeight;
-            } else {
-                height = headerHeight;
-                y = 0;
-            }
+            int height = headerHeight;
+            y = 0;
 
             columnBeingPushed.getHeaderRenderer()
                 .setBounds(
@@ -4396,10 +4004,6 @@ public class LightGrid extends Canvas {
                 break;
 
             int height;
-
-            if (!column.isVisible()) {
-                continue;
-            }
 
             height = footerHeight;
             y = getClientArea().height - height;
@@ -4521,21 +4125,14 @@ public class LightGrid extends Canvas {
 
                     i++;
 
-                    if (col.isVisible()) {
-                        hiddenArea -= col.getWidth();
-                        max++;
-                    }
+                    hiddenArea -= col.getWidth();
+                    max++;
                 }
 
                 max++;
 
                 // max should never be greater than the number of visible cols
-                int visCols = 0;
-                for (GridColumn element : columns) {
-                    if (element.isVisible()) {
-                        visCols++;
-                    }
-                }
+                int visCols = columns.size();
                 max = Math.min(visCols, max);
 
                 // if possible, remember selection, if selection is too large,
@@ -5004,10 +4601,6 @@ public class LightGrid extends Canvas {
             item.dispose();
         }
 
-        for (GridColumnGroup columnGroup : columnGroups) {
-            columnGroup.dispose();
-        }
-
         for (GridColumn col : columns) {
             col.dispose();
         }
@@ -5080,10 +4673,6 @@ public class LightGrid extends Canvas {
 
 
         if (e.button == 1 && handleColumnHeaderPush(e.x, e.y)) {
-            return;
-        }
-
-        if (e.button == 1 && handleColumnGroupHeaderClick(e.x, e.y)) {
             return;
         }
 
@@ -5193,7 +4782,7 @@ public class LightGrid extends Canvas {
             }
 
             //click on the top left corner means select everything
-            selectionEvent = selectAllCellsInternal();
+            selectionEvent = selectAllCellsInternal(e.stateMask);
 
             focusColumn = getColumn(new Point(rowHeaderWidth + 1, 1));
             focusItem = getItem(getTopIndex());
@@ -5207,13 +4796,7 @@ public class LightGrid extends Canvas {
                 return;
 
             List<Point> cells = new ArrayList<Point>();
-
-            GridColumnGroup group = col.getColumnGroup();
-            if (group != null && e.y < groupHeaderHeight) {
-                getCells(group, cells);
-            } else {
-                getCells(col, cells);
-            }
+            getCells(col, cells);
 
             selectionEvent = updateCellSelection(cells, e.stateMask, false, true);
             cellColumnSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
@@ -5262,7 +4845,7 @@ public class LightGrid extends Canvas {
                 for (int index = displayOrderedColumns.indexOf(
                     columnBeingResized) + 1; index < displayOrderedColumns.size(); index++) {
                     GridColumn col = displayOrderedColumns.get(index);
-                    if (col.isVisible()) col.fireMoved();
+                    col.fireMoved();
                 }
                 resizingColumn = false;
                 handleHoverOnColumnResizer(e.x, e.y);
@@ -5451,11 +5034,7 @@ public class LightGrid extends Canvas {
                             intentColumn = getVisibleColumn_DegradeLeft(intentItem, displayOrderedColumns.get(
                                 displayOrderedColumns.size() - 1));
                         } else {
-                            GridColumn firstCol = displayOrderedColumns.get(0);
-                            if (!firstCol.isVisible()) {
-                                firstCol = getNextVisibleColumn(firstCol);
-                            }
-                            intentColumn = firstCol;
+                            intentColumn = displayOrderedColumns.get(0);
                         }
                     }
 
@@ -5903,10 +5482,7 @@ public class LightGrid extends Canvas {
             if (colIter == column) {
                 break;
             }
-
-            if (colIter.isVisible()) {
-                x += colIter.getWidth();
-            }
+            x += colIter.getWidth();
         }
 
         int y = 0;
@@ -5932,10 +5508,6 @@ public class LightGrid extends Canvas {
                     GridItem currItem = items.get(currIndex);
                     y -= currItem.getHeight() + 1;
                 }
-            }
-        } else {
-            if (column.getColumnGroup() != null) {
-                y += groupHeaderHeight;
             }
         }
 
@@ -5988,7 +5560,6 @@ public class LightGrid extends Canvas {
         final GridColumn col = getColumn(new Point(x, y));
         final GridItem item = getItem(new Point(x, y));
 
-        GridColumnGroup hoverColGroup = null;
         GridColumn hoverColHeader = null;
 
         if (col != null) {
@@ -6010,39 +5581,21 @@ public class LightGrid extends Canvas {
                 }
             } else {
                 if (y < headerHeight) {
-                    if (columnGroups.length != 0 && y < groupHeaderHeight
-                        && col.getColumnGroup() != null) {
-                        hoverColGroup = col.getColumnGroup();
-                        hoverColGroup.getHeaderRenderer().setBounds(hoverColGroup.getBounds());
-                        if (hoverColGroup.getHeaderRenderer()
-                            .notify(IGridWidget.MouseMove, new Point(x, y), hoverColGroup)) {
-                            detail = hoverColGroup.getHeaderRenderer().getHoverDetail();
-                        }
+                    // on col header
+                    hoverColHeader = col;
 
-                        Rectangle textBounds = hoverColGroup.getHeaderRenderer().getTextBounds(hoverColGroup, false);
+                    col.getHeaderRenderer().setBounds(col.getBounds());
+                    if (col.getHeaderRenderer().notify(IGridWidget.MouseMove, new Point(x, y),
+                                                       col)) {
+                        detail = col.getHeaderRenderer().getHoverDetail();
+                    }
 
-                        if (textBounds != null) {
-                            Point p = new Point(x - hoverColGroup.getHeaderRenderer().getBounds().x,
-                                                y - hoverColGroup.getHeaderRenderer().getBounds().y);
-                            overText = textBounds.contains(p);
-                        }
-                    } else {
-                        // on col header
-                        hoverColHeader = col;
+                    Rectangle textBounds = col.getHeaderRenderer().getTextBounds(col, false);
 
-                        col.getHeaderRenderer().setBounds(col.getBounds());
-                        if (col.getHeaderRenderer().notify(IGridWidget.MouseMove, new Point(x, y),
-                                                           col)) {
-                            detail = col.getHeaderRenderer().getHoverDetail();
-                        }
-
-                        Rectangle textBounds = col.getHeaderRenderer().getTextBounds(col, false);
-
-                        if (textBounds != null) {
-                            Point p = new Point(x - col.getHeaderRenderer().getBounds().x,
-                                                y - col.getHeaderRenderer().getBounds().y);
-                            overText = textBounds.contains(p);
-                        }
+                    if (textBounds != null) {
+                        Point p = new Point(x - col.getHeaderRenderer().getBounds().x,
+                                            y - col.getHeaderRenderer().getBounds().y);
+                        overText = textBounds.contains(p);
                     }
                 }
             }
@@ -6051,12 +5604,11 @@ public class LightGrid extends Canvas {
         boolean hoverChange = false;
 
         if (hoveringItem != item || !hoveringDetail.equals(detail) || hoveringColumn != col
-            || hoverColGroup != hoverColumnGroupHeader || hoverColHeader != hoveringColumnHeader) {
+            || hoverColHeader != hoveringColumnHeader) {
             hoveringItem = item;
             hoveringDetail = detail;
             hoveringColumn = col;
             hoveringColumnHeader = hoverColHeader;
-            hoverColumnGroupHeader = hoverColGroup;
 
             Rectangle clientArea = getClientArea();
             redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
@@ -6092,20 +5644,11 @@ public class LightGrid extends Canvas {
                     }
                     textBounds = hoveringColumnHeader.getHeaderRenderer().getTextBounds(col, false);
                     preferredTextBounds = hoveringColumnHeader.getHeaderRenderer().getTextBounds(col, true);
-                } else if (hoverColumnGroupHeader != null) {
-                    cellBounds = hoverColumnGroupHeader.getHeaderRenderer().getBounds();
-                    if (cellBounds.x + cellBounds.width > getSize().x) {
-                        cellBounds.width = getSize().x - cellBounds.x;
-                    }
-                    textBounds = hoverColumnGroupHeader.getHeaderRenderer().getTextBounds(hoverColumnGroupHeader,
-                                                                                          false);
-                    preferredTextBounds = hoverColumnGroupHeader.getHeaderRenderer().getTextBounds(
-                        hoverColumnGroupHeader, true);
                 }
 
                 //if we are truncated
                 if (textBounds != null && textBounds.width < preferredTextBounds.width) {
-                    showToolTip(item, col, hoverColumnGroupHeader, new Point(cellBounds.x + textBounds.x, cellBounds.y +
+                    showToolTip(item, col, new Point(cellBounds.x + textBounds.x, cellBounds.y +
                         textBounds.y));
                     //the following 2 lines are done here rather than in showToolTip to allow
                     //that method to be overridden yet still capture the mouse.
@@ -6368,55 +5911,6 @@ public class LightGrid extends Canvas {
     }
 
     /**
-     * Creates the given column group at the given index. This method is only
-     * called from the {@code GridColumnGroup}'s constructor.
-     *
-     * @param group group to add.
-     */
-    void newColumnGroup(GridColumnGroup group)
-    {
-        GridColumnGroup[] newColumnGroups = new GridColumnGroup[columnGroups.length + 1];
-        System.arraycopy(columnGroups, 0, newColumnGroups, 0, columnGroups.length);
-        newColumnGroups[newColumnGroups.length - 1] = group;
-        columnGroups = newColumnGroups;
-
-        // if we just added the first col group, then we need to up the row
-        // height
-        if (columnGroups.length == 1) {
-            computeHeaderHeight(sizingGC);
-        }
-
-        scrollValuesObsolete = true;
-        redraw();
-    }
-
-    /**
-     * Removes the given column group from the table. This method is only called
-     * from the {@code GridColumnGroup}'s dispose method.
-     *
-     * @param group group to remove.
-     */
-    void removeColumnGroup(GridColumnGroup group)
-    {
-        GridColumnGroup[] newColumnGroups = new GridColumnGroup[columnGroups.length - 1];
-        int newIndex = 0;
-        for (GridColumnGroup columnGroup : columnGroups) {
-            if (columnGroup != group) {
-                newColumnGroups[newIndex] = columnGroup;
-                newIndex++;
-            }
-        }
-        columnGroups = newColumnGroups;
-
-        if (columnGroups.length == 0) {
-            computeHeaderHeight(sizingGC);
-        }
-
-        scrollValuesObsolete = true;
-        redraw();
-    }
-
-    /**
      * Updates the cached number of visible items by the given amount.
      *
      * @param amount amount to update cached total
@@ -6484,7 +5978,7 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
         //TODO: check and make sure this item is valid for focus
-        if (column == null || column.isDisposed() || column.getParent() != this || !column.isVisible()) {
+        if (column == null || column.isDisposed() || column.getParent() != this) {
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
             return;
         }
@@ -6552,24 +6046,8 @@ public class LightGrid extends Canvas {
 
         GridColumn prevCol = col;
 
-        int i = 0;
-        while (!prevCol.isVisible()) {
-            i++;
-            if (index - i < 0)
-                return null;
-
-            prevCol = displayOrderedColumns.get(index - i);
-        }
-
-        index = displayOrderedColumns.indexOf(prevCol);
-
         for (int j = 0; j < index; j++) {
             GridColumn tempCol = displayOrderedColumns.get(j);
-
-            if (!tempCol.isVisible()) {
-                continue;
-            }
-
             if (0 >= index - j) {
                 prevCol = tempCol;
                 break;
@@ -6592,19 +6070,6 @@ public class LightGrid extends Canvas {
     private GridColumn getVisibleColumn_DegradeRight(GridItem item, GridColumn col)
     {
         int index = displayOrderedColumns.indexOf(col);
-
-        int i = 0;
-        GridColumn nextCol = col;
-        while (!nextCol.isVisible()) {
-            i++;
-            if (index + i == displayOrderedColumns.size())
-                return null;
-
-            nextCol = displayOrderedColumns.get(index + i);
-        }
-
-
-        index = displayOrderedColumns.indexOf(nextCol);
         int startIndex = index;
 
         while (index > 0) {
@@ -6620,7 +6085,7 @@ public class LightGrid extends Canvas {
 
         }
 
-        return nextCol;
+        return col;
     }
 
     /**
@@ -6772,7 +6237,7 @@ public class LightGrid extends Canvas {
     public void selectAllCells()
     {
         checkWidget();
-        selectAllCellsInternal();
+        selectAllCellsInternal(0);
     }
 
     /**
@@ -6780,7 +6245,7 @@ public class LightGrid extends Canvas {
      *
      * @return An Event object
      */
-    private Event selectAllCellsInternal()
+    private Event selectAllCellsInternal(int stateMask)
     {
         if (!cellSelectionEnabled) return null;
 
@@ -6790,29 +6255,15 @@ public class LightGrid extends Canvas {
         if (items.size() == 0)
             return null;
 
-        int index = 0;
-        GridColumn column = displayOrderedColumns.get(index);
-
-        while (!column.isVisible()) {
-            index++;
-
-            if (index >= columns.size())
-                return null;
-
-            column = displayOrderedColumns.get(index);
-        }
-
         GridColumn oldFocusColumn = focusColumn;
         GridItem oldFocusItem = focusItem;
 
-        focusColumn = column;
+        focusColumn = displayOrderedColumns.get(0);
         focusItem = items.get(0);
 
-        GridItem lastItem = getPreviousVisibleItem(null);
-        GridColumn lastCol = getVisibleColumn_DegradeLeft(lastItem,
-                                                          displayOrderedColumns.get(displayOrderedColumns.size() - 1));
-
-        Event event = updateCellSelection(new Point(indexOf(lastCol), indexOf(lastItem)), SWT.MOD2, true, false);
+        List<Point> cells = new ArrayList<Point>();
+        getAllCells(cells);
+        Event selectionEvent = updateCellSelection(cells, stateMask, false, true);
 
         focusColumn = oldFocusColumn;
         focusItem = oldFocusItem;
@@ -6820,7 +6271,8 @@ public class LightGrid extends Canvas {
         updateColumnSelection();
 
         redraw();
-        return event;
+
+        return selectionEvent;
     }
 
     /**
@@ -6833,29 +6285,6 @@ public class LightGrid extends Canvas {
         checkWidget();
         List<Point> cells = new ArrayList<Point>();
         getCells(getColumn(col), cells);
-        selectCells(cells);
-    }
-
-    /**
-     * Selects all cells in the given column group in the receiver.
-     *
-     * @param colGroup the column group
-     */
-    public void selectColumnGroup(int colGroup)
-    {
-        selectColumnGroup(getColumnGroup(colGroup));
-    }
-
-    /**
-     * Selects all cells in the given column group in the receiver.
-     *
-     * @param colGroup the column group
-     */
-    public void selectColumnGroup(GridColumnGroup colGroup)
-    {
-        checkWidget();
-        List<Point> cells = new ArrayList<Point>();
-        getCells(colGroup, cells);
         selectCells(cells);
     }
 
@@ -6940,53 +6369,12 @@ public class LightGrid extends Canvas {
         return focusColumn;
     }
 
-    void updateColumnFocus()
-    {
-        if (!focusColumn.isVisible()) {
-            int index = displayOrderedColumns.indexOf(focusColumn);
-            if (index > 0) {
-                GridColumn prev = displayOrderedColumns.get(index - 1);
-                prev = getVisibleColumn_DegradeLeft(focusItem, prev);
-                if (prev == null) {
-                    prev = getVisibleColumn_DegradeRight(focusItem, focusColumn);
-                }
-                focusColumn = prev;
-            } else {
-                focusColumn = getVisibleColumn_DegradeRight(focusItem, focusColumn);
-            }
-        }
-    }
-
     private void getCells(GridColumn col, List<Point> cells)
     {
         int colIndex = indexOf(col);
 
-        int columnAtPosition = 0;
-        for (GridColumn nextCol : displayOrderedColumns) {
-            if (!nextCol.isVisible()) continue;
-
-            if (nextCol == col) break;
-
-            columnAtPosition++;
-        }
-
-
-        GridItem item = null;
-        if (getItemCount() > 0)
-            item = getItem(0);
-
-        while (item != null) {
-            cells.add(new Point(colIndex, indexOf(item)));
-
-            item = getNextVisibleItem(item);
-        }
-    }
-
-    private void getCells(GridColumnGroup colGroup, List<Point> cells)
-    {
-        GridColumn[] cols = colGroup.getColumns();
-        for (GridColumn col : cols) {
-            getCells(col, cells);
+        for (int i = 0; i < items.size(); i++) {
+            cells.add(new Point(colIndex, i));
         }
     }
 
@@ -6994,22 +6382,24 @@ public class LightGrid extends Canvas {
     {
         int itemIndex = indexOf(item);
 
-        for (GridColumn nextCol : displayOrderedColumns) {
-            if (!nextCol.isVisible()) continue;
-            cells.add(new Point(indexOf(nextCol), itemIndex));
+        for (int i = 0; i < columns.size(); i++) {
+            cells.add(new Point(i, itemIndex));
         }
     }
 
-    private Collection<Point> getCells(GridItem item)
+    private void getAllCells(List<Point> cells)
+    {
+        for (int i = 0; i < items.size(); i++) {
+            for (int k = 0; k < columns.size(); k++) {
+                cells.add(new Point(k, i));
+            }
+        }
+    }
+
+    private List<Point> getCells(GridItem item)
     {
         List<Point> cells = new ArrayList<Point>();
-
-        int itemIndex = indexOf(item);
-
-        for (GridColumn nextCol : displayOrderedColumns) {
-            if (!nextCol.isVisible()) continue;
-            cells.add(new Point(indexOf(nextCol), itemIndex));
-        }
+        getCells(item, cells);
         return cells;
     }
 
@@ -7083,7 +6473,7 @@ public class LightGrid extends Canvas {
                 firstTime = false;
             }
 
-            Point cols = getRowSelectionRange(iterItem, fromColumn, toColumn);
+            Point cols = getRowSelectionRange(fromColumn, toColumn);
 
             //check and see if column spanning means that the range increased
             if (cols.x != fromIndex || cols.y != toIndex) {
@@ -7107,7 +6497,7 @@ public class LightGrid extends Canvas {
      * @param toColumn
      * @return
      */
-    private Point getRowSelectionRange(GridItem item, GridColumn fromColumn, GridColumn toColumn)
+    private Point getRowSelectionRange(GridColumn fromColumn, GridColumn toColumn)
     {
         int newFrom = indexOf(fromColumn);
         int newTo = indexOf(toColumn);
@@ -7141,16 +6531,13 @@ public class LightGrid extends Canvas {
      * @param group    the group currently hovered over or null.
      * @param location the x,y origin of the text in the hovered object.
      */
-    protected void showToolTip(GridItem item, GridColumn column, GridColumnGroup group, Point location)
+    protected void showToolTip(GridItem item, GridColumn column, Point location)
     {
         if (inplaceToolTip == null) {
             inplaceToolTip = new GridToolTip(this);
         }
 
-        if (group != null) {
-            inplaceToolTip.setFont(getFont());
-            inplaceToolTip.setText(group.getText());
-        } else if (item != null) {
+        if (item != null) {
             inplaceToolTip.setFont(item.getFont(item.getParent().indexOf(column)));
             inplaceToolTip.setText(item.getText(item.getParent().indexOf(column)));
         } else if (column != null) {
@@ -7285,297 +6672,6 @@ public class LightGrid extends Canvas {
             new GridItem(this);
         }
         setRedraw(true);
-    }
-
-    /**
-     * Initialize accessibility.
-     */
-    private void initAccessible()
-    {
-        final Accessible accessible = getAccessible();
-        accessible.addAccessibleListener(new AccessibleAdapter() {
-            public void getDescription(AccessibleEvent e)
-            {
-                int childID = e.childID;
-                if (childID >= 0 && childID < items.size()) {
-                    String descrption = "";
-                    for (int i = 0; i < columns.size(); i++) {
-                        if (i != 0) {
-                            descrption += columns.get(i).getText() + " : ";
-                            descrption += items.get(childID).getText(i) + " ";
-                        }
-                    }
-                    e.result = descrption;
-                }
-            }
-
-            public void getName(AccessibleEvent e)
-            {
-                int childID = e.childID;
-                if (childID >= 0 && childID < items.size()) {
-                    // Name of the items
-                    e.result = items.get(childID).getText();
-                } else if (childID >= items.size() && childID < items.size() + columns.size()) {
-                    // Name of the column headers
-                    e.result = columns.get(childID - items.size()).getText();
-                } else if (childID >= items.size() + columns.size()
-                    && childID < items.size() + columns.size() + columnGroups.length) {
-                    // Name of the column group headers
-                    e.result = columnGroups[childID - items.size() - columns.size()].getText();
-                } else if (childID >= items.size() + columns.size() + columnGroups.length
-                    && childID < items.size() + columns.size() + columnGroups.length
-                    + columnGroups.length) {
-                    // Name of the toggle button for column group headers
-                    e.result = ACC_TOGGLE_BUTTON_NAME;
-                }
-            }
-        });
-
-        accessible.addAccessibleControlListener(new AccessibleControlAdapter() {
-            public void getChildAtPoint(AccessibleControlEvent e)
-            {
-                Point location = toControl(e.x, e.y);
-                e.childID = ACC.CHILDID_SELF;
-
-                // Grid Items
-                GridItem item = getItem(location);
-                if (item != null) {
-                    for (int i = 0; i < getItems().length; i++) {
-                        if (item.equals(getItem(i))) {
-                            e.childID = i;
-                            return;
-                        }
-                    }
-                } else {
-                    // Column Headers
-                    GridColumn column = overColumnHeader(location.x, location.y);
-                    if (column != null) {
-                        for (int i = 0; i < getColumns().length; i++) {
-                            if (column.equals(getColumn(i))) {
-                                e.childID = getItems().length + i;
-                                return;
-                            }
-                        }
-                    } else {
-                        // Column Group headers
-                        GridColumnGroup columnGroup = overColumnGroupHeader(location.x, location.y);
-                        if (columnGroup != null) {
-                            for (int i = 0; i < getColumnGroups().length; i++) {
-                                if (columnGroup.equals(getColumnGroup(i))) {
-                                    Rectangle toggle = columnGroup
-                                        .getHeaderRenderer().getToggleBounds();
-                                    if (toggle.contains(location.x, location.y)) {
-                                        // Toggle button for column group
-                                        // header
-                                        e.childID = getItems().length + getColumns().length
-                                            + getColumnGroups().length + i;
-                                    } else {
-                                        // Column Group header
-                                        e.childID = getItems().length + getColumns().length + i;
-                                    }
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            public void getChildCount(AccessibleControlEvent e)
-            {
-                if (e.childID == ACC.CHILDID_SELF) {
-                    e.detail = items.size();
-                }
-            }
-
-            public void getChildren(AccessibleControlEvent e)
-            {
-                if (e.childID == ACC.CHILDID_SELF) {
-                    int length = items.size();
-                    {
-                        Object[] children = new Object[length];
-                        for (int i = 0; i < items.size(); i++) {
-                            children[i] = i;
-                        }
-                        e.children = children;
-                    }
-                }
-            }
-
-            public void getDefaultAction(AccessibleControlEvent e)
-            {
-                int childID = e.childID;
-                if (childID >= 0 && childID < items.size()) {
-                    // action of default items
-                    e.result = ACC_ITEM_DEFAULT_ACTION;
-                } else if (childID >= items.size()
-                    && childID < items.size() + columns.size() + columnGroups.length) {
-                    // action of column and column group header
-                    e.result = ACC_COLUMN_DEFAULT_ACTION;
-                } else if (childID >= items.size() + columns.size() + columnGroups.length
-                    && childID < items.size() + columns.size() + columnGroups.length
-                    + columnGroups.length) {
-                    // action of toggle button of column group header
-                    e.result = SWT.getMessage("SWT_Press");
-                }
-            }
-
-            public void getLocation(AccessibleControlEvent e)
-            {
-                // location of parent
-                Rectangle location = getBounds();
-                location.x = 0;
-                location.y = 0;
-                int childID = e.childID;
-
-                if (childID >= 0 && childID < items.size()) {
-                    // location of items
-                    GridItem item = getItem(childID);
-                    if (item != null) {
-                        Point p = getOrigin(columns.get(0), item);
-                        location.y = p.y;
-                        location.height = item.getHeight();
-                    }
-                } else if (childID >= items.size() && childID < items.size() + columns.size()) {
-                    // location of columns headers
-                    GridColumn column = getColumn(childID - items.size());
-                    if (column != null) {
-                        location.x = getColumnHeaderXPosition(column);
-                        if (column.getColumnGroup() == null) {
-                            location.y = 0;
-                        } else {
-                            location.y = groupHeaderHeight;
-                        }
-                        location.height = headerHeight;
-                        location.width = column.getWidth();
-                    }
-                } else if (childID >= items.size() + columns.size()
-                    && childID < items.size() + columns.size() + columnGroups.length) {
-                    // location of column group header
-                    GridColumnGroup columnGroup = getColumnGroup(childID - items.size()
-                        - columns.size());
-                    if (columnGroup != null) {
-                        location.y = 0;
-                        location.height = groupHeaderHeight;
-                        location.x = getColumnHeaderXPosition(columnGroup.getFirstVisibleColumn());
-                        int width = 0;
-                        for (int i = 0; i < columnGroup.getColumns().length; i++) {
-                            if (columnGroup.getColumns()[i].isVisible()) {
-                                width += columnGroup.getColumns()[i].getWidth();
-                            }
-                        }
-                        location.width = width;
-                    }
-                } else if (childID >= items.size() + columns.size() + columnGroups.length
-                    && childID < items.size() + columns.size() + columnGroups.length
-                    + columnGroups.length) {
-                    // location of toggle button of column group header
-                    GridColumnGroup columnGroup = getColumnGroup(childID - items.size()
-                        - columns.size()
-                        - columnGroups.length);
-                    location = columnGroup.getHeaderRenderer().getToggleBounds();
-                }
-
-                if (location != null) {
-                    Point pt = toDisplay(location.x, location.y);
-                    e.x = pt.x;
-                    e.y = pt.y;
-                    e.width = location.width;
-                    e.height = location.height;
-                }
-            }
-
-            public void getRole(AccessibleControlEvent e)
-            {
-                int childID = e.childID;
-                if (childID >= 0 && childID < items.size()) {
-                    // role of items
-                    e.detail = ACC.ROLE_LISTITEM;
-                } else if (childID >= items.size()
-                    && childID < items.size() + columns.size() + columnGroups.length) {
-                    // role of columns headers and column group headers
-                    e.detail = ACC.ROLE_TABLECOLUMNHEADER;
-                } else if (childID >= items.size() + columns.size() + columnGroups.length
-                    && childID < items.size() + columns.size() + columnGroups.length
-                    + columnGroups.length) {
-                    // role of toggle button of column group headers
-                    e.detail = ACC.ROLE_PUSHBUTTON;
-                } else if (childID == ACC.CHILDID_SELF) {
-                    // role of parent
-                    e.detail = ACC.ROLE_TABLE;
-                }
-            }
-
-            public void getSelection(AccessibleControlEvent e)
-            {
-                e.childID = ACC.CHILDID_NONE;
-                if (selectedItems.size() == 1) {
-                    // Single selection
-                    e.childID = indexOf(selectedItems.get(0));
-                } else if (selectedItems.size() > 1) {
-                    // multiple selection
-                    e.childID = ACC.CHILDID_MULTIPLE;
-                    int length = selectedItems.size();
-                    Object[] children = new Object[length];
-
-                    for (int i = 0; i < length; i++) {
-                        GridItem item = selectedItems.get(i);
-                        children[i] = indexOf(item);
-                    }
-                    e.children = children;
-                }
-            }
-
-            public void getState(AccessibleControlEvent e)
-            {
-                int childID = e.childID;
-                if (childID >= 0 && childID < items.size()) {
-                    // state of items
-                    e.detail = ACC.STATE_SELECTABLE;
-                    if (getDisplay().getActiveShell() == getParent().getShell()) {
-                        e.detail |= ACC.STATE_FOCUSABLE;
-                    }
-
-                    if (selectedItems.contains(getItem(childID))) {
-                        e.detail |= ACC.STATE_SELECTED;
-                        if (getDisplay().getActiveShell() == getParent().getShell()) {
-                            e.detail |= ACC.STATE_FOCUSED;
-                        }
-                    }
-
-                } else if (childID >= items.size()
-                    && childID < items.size() + columns.size() + columnGroups.length) {
-                    // state of column headers and column group headers
-                    e.detail = ACC.STATE_READONLY;
-                } else if (childID >= items.size() + columns.size() + columnGroups.length
-                    && childID < items.size() + columns.size() + columnGroups.length
-                    + columnGroups.length) {
-                    // state of toggle button of column group headers
-                    if (getColumnGroup(childID - items.size() - columns.size() - columnGroups.length).getExpanded()) {
-                        e.detail = ACC.STATE_EXPANDED;
-                    } else {
-                        e.detail = ACC.STATE_COLLAPSED;
-                    }
-                }
-            }
-
-            public void getValue(AccessibleControlEvent e)
-            {
-                int childID = e.childID;
-                if (childID >= 0 && childID < items.size()) {
-                    // value for tree items
-                }
-            }
-        });
-
-        addListener(SWT.Selection, new Listener() {
-            public void handleEvent(Event event)
-            {
-                if (selectedItems.size() > 0) {
-                    accessible.setFocus(items.indexOf(selectedItems.get(selectedItems.size() - 1)));
-                }
-            }
-        });
     }
 
     /**
@@ -7878,9 +6974,7 @@ public class LightGrid extends Canvas {
                 List<GridColumn> cols = new ArrayList<GridColumn>();
                 for (int i = startColumnIndex; i <= endColumnIndex; i++) {
                     GridColumn col = displayOrderedColumns.get(i);
-                    if (col.isVisible()) {
-                        cols.add(col);
-                    }
+                    cols.add(col);
                 }
 
                 range.setColumns(cols.toArray(new GridColumn[cols.size()]));
@@ -7935,10 +7029,7 @@ public class LightGrid extends Canvas {
             for (int i = startIndex; i < columns.length; i++) {
                 endColumnIndex = i;
                 GridColumn column = columns[i];
-
-                if (column.isVisible()) {
-                    x += column.getWidth();
-                }
+                x += column.getWidth();
 
                 if (x > getClientArea().width) {
 

@@ -29,10 +29,6 @@ class GridHeaderEditor extends ControlEditor {
 
 	Listener resizeListener;
 
-	private final Listener columnVisibleListener;
-
-	private final Listener columnGroupListener;
-
 	private final SelectionListener scrollListener;
 
 	private final Listener mouseOverListener;
@@ -65,14 +61,6 @@ class GridHeaderEditor extends ControlEditor {
 			}
 		};
 
-		columnVisibleListener = new Listener() {
-			public void handleEvent(Event event) {
-				getEditor().setVisible(column.isVisible());
-				// if (getEditor().isVisible())
-				layout();
-			}
-		};
-
 		resizeListener = new Listener() {
 			public void handleEvent(Event event) {
 				layout();
@@ -85,16 +73,6 @@ class GridHeaderEditor extends ControlEditor {
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {
-			}
-		};
-
-		columnGroupListener = new Listener() {
-			public void handleEvent(Event event) {
-				if (getEditor() == null || getEditor().isDisposed())
-					return;
-				getEditor().setVisible(column.isVisible());
-				// if (getEditor().isVisible())
-				layout();
 			}
 		};
 
@@ -149,12 +127,6 @@ class GridHeaderEditor extends ControlEditor {
 	public void dispose() {
 		if (!table.isDisposed() && !column.isDisposed()) {
 			column.removeControlListener(columnListener);
-			if (column.getColumnGroup() != null) {
-				column.getColumnGroup().removeListener(SWT.Expand,
-						columnGroupListener);
-				column.getColumnGroup().removeListener(SWT.Collapse,
-						columnGroupListener);
-			}
 		}
 
 		if (!table.isDisposed()) {
@@ -186,15 +158,6 @@ class GridHeaderEditor extends ControlEditor {
 	void initColumn() {
 
 		column.addControlListener(columnListener);
-		column.addListener(SWT.Show, columnVisibleListener);
-		column.addListener(SWT.Hide, columnVisibleListener);
-
-		if (column.getColumnGroup() != null) {
-			column.getColumnGroup()
-					.addListener(SWT.Expand, columnGroupListener);
-			column.getColumnGroup().addListener(SWT.Collapse,
-					columnGroupListener);
-		}
 		layout();
 	}
 
@@ -206,8 +169,7 @@ class GridHeaderEditor extends ControlEditor {
 			return;
 
 		boolean hadFocus = false;
-		if (getEditor() == null || getEditor().isDisposed()
-				|| !column.isVisible()) {
+		if (getEditor() == null || getEditor().isDisposed()) {
 			return;
 		}
 

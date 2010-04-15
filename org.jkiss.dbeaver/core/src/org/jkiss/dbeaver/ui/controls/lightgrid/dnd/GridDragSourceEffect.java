@@ -97,9 +97,7 @@ public class GridDragSourceEffect extends DragSourceEffect {
 			Collection<GridItem> selItems = grid.getSelection();
 			for (GridItem item : selItems){
 				for (int j = 0; j < grid.getColumnCount() ; j++){
-					if(grid.getColumn(j).isVisible()){
-						l.add(new Point(j,grid.indexOf(item)));
-					}
+                    l.add(new Point(j,grid.indexOf(item)));
 				}
 			}
 			selection = l;

@@ -432,9 +432,6 @@ public class GridItem /*extends Item */{
 		GridColumn[] columns = parent.getColumns();
 		GC gc = new GC(parent);
 		for (int cnt = 0; cnt < columns.length; cnt++) {
-			if (!columns[cnt].isVisible())
-				continue; // invisible columns do not affect item/row height
-
 			GridCellRenderer renderer = columns[cnt].getCellRenderer();
 
 			renderer.setAlignment(columns[cnt].getAlignment());
