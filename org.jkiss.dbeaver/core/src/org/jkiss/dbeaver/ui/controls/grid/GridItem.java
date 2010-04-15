@@ -23,7 +23,6 @@ public class GridItem /*extends Item */{
 	private ArrayList<Integer> rowSpans;
     private ArrayList<Font> fonts;
     private ArrayList<Color> foregrounds;
-    private ArrayList<Boolean> grayeds;
     private ArrayList<Image> images;
     private ArrayList<String> texts;
     private ArrayList<String> tooltips;
@@ -287,33 +286,6 @@ public class GridItem /*extends Item */{
 	}
 
 	/**
-	 * Returns <code>true</code> if the first column in the receiver is grayed,
-	 * and false otherwise. When the GridColumn does not have the
-	 * <code>CHECK</code> style, return false.
-	 *
-	 * @return the grayed state of the checkbox
-	 */
-	public boolean getGrayed() {
-		return getGrayed(0);
-	}
-
-	/**
-	 * Returns <code>true</code> if the column at the given index in the
-	 * receiver is grayed, and false otherwise. When the GridColumn does not
-	 * have the <code>CHECK</code> style, return false.
-	 *
-	 * @param index
-	 *            the column index
-	 * @return the grayed state of the checkbox
-	 */
-	public boolean getGrayed(int index) {
-		handleVirtual();
-
-		Boolean b = getCellValue(grayeds, index);
-        return b != null && b;
-    }
-
-	/**
 	 * Returns the height of this <code>GridItem</code>.
 	 *
 	 * @return height of this <code>GridItem</code>
@@ -518,37 +490,6 @@ public class GridItem /*extends Item */{
             foregrounds = makeList();
         }
 		foregrounds.set(index, foreground);
-		parent.redraw();
-	}
-
-	/**
-	 * Sets the grayed state of the checkbox for the first column. This state
-	 * change only applies if the GridColumn was created with the SWT.CHECK
-	 * style.
-	 *
-	 * @param grayed
-	 *            the new grayed state of the checkbox;
-	 */
-	public void setGrayed(boolean grayed) {
-		setGrayed(0, grayed);
-		parent.redraw();
-	}
-
-	/**
-	 * Sets the grayed state of the checkbox for the given column index. This
-	 * state change only applies if the GridColumn was created with the
-	 * SWT.CHECK style.
-	 *
-	 * @param index
-	 *            the column index
-	 * @param grayed
-	 *            the new grayed state of the checkbox;
-	 */
-	public void setGrayed(int index, boolean grayed) {
-        if (grayeds == null) {
-            grayeds = makeList();
-        }
-		grayeds.set(index, grayed);
 		parent.redraw();
 	}
 
@@ -833,7 +774,6 @@ public class GridItem /*extends Item */{
 		removeValue(index, backgrounds);
 		removeValue(index, fonts);
 		removeValue(index, foregrounds);
-		removeValue(index, grayeds);
 		removeValue(index, images);
 		removeValue(index, texts);
 		removeValue(index, columnSpans);
@@ -845,7 +785,6 @@ public class GridItem /*extends Item */{
 		insertValue(index, backgrounds);
 		insertValue(index, fonts);
 		insertValue(index, foregrounds);
-		insertValue(index, grayeds);
 		insertValue(index, images);
 		insertValue(index, texts);
 		insertValue(index, columnSpans);
@@ -887,7 +826,6 @@ public class GridItem /*extends Item */{
 		rowSpans = null;
 		fonts = null;
 		foregrounds = null;
-		grayeds = null;
 		images = null;
 		texts = null;
 		tooltips = null;

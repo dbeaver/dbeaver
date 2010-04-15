@@ -1199,11 +1199,6 @@ public class Spreadsheet extends Composite implements Listener {
             item.setBackground(column, modified ? backgroundModified : backgroundNormal);
         }
 
-        public void setEmpty(int column, boolean empty)
-        {
-            item.setGrayed(column, empty);
-        }
-
         public Object getData()
         {
             return item.getData();
