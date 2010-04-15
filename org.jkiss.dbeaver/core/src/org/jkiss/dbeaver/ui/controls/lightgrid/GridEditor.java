@@ -160,14 +160,6 @@ public class GridEditor extends ControlEditor
             editorRect.y += (cell.height - editorRect.height) / 2;
         }
         
-        GridColumn c = table.getColumn(column);
-        
-        if( c != null && c.isTree() ) {
-        	int x = c.getCellRenderer().getTextBounds(item, false).x;
-        	editorRect.x += x;
-        	editorRect.width -= x;
-        }
-        
         return editorRect;
     }
 

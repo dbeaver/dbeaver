@@ -17,7 +17,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Event;
 import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridCellRenderer;
 
-public class GridItem /*extends Item */{
+public class GridItem {
 	private ArrayList<Color> backgrounds;
     private ArrayList<Font> fonts;
     private ArrayList<Color> foregrounds;

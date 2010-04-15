@@ -3713,11 +3713,6 @@ public class LightGrid extends Canvas {
                                 insertMarkPosY += item.getHeight() + 1;
                             // x1-pos
                             insertMarkPosX1 = x;
-                            if (column.isTree()) {
-                                insertMarkPosX1 += Math.min(
-                                    width,
-                                    column.getCellRenderer().getTextBounds(item, false).x);
-                            }
 
                             // x2-pos
                             if (insertMarkColumn == null) {

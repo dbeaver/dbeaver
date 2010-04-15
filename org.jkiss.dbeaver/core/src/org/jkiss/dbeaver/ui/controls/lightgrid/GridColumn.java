@@ -79,11 +79,6 @@ public class GridColumn extends Item {
 	private int sortStyle = SWT.NONE;
 
 	/**
-	 * Determines if this column shows toggles.
-	 */
-	private boolean tree = false;
-
-	/**
 	 * Is this column resizable?
 	 */
 	private boolean resizeable = true;
@@ -407,23 +402,6 @@ public class GridColumn extends Item {
 	}
 
 	/**
-	 * Returns true if this column includes a tree toggle.
-	 *
-	 * @return true if the column includes the tree toggle.
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
-	 */
-	public boolean isTree() {
-		checkWidget();
-		return tree;
-	}
-
-	/**
 	 * Sets the cell renderer.
 	 *
 	 * @param cellRenderer
@@ -557,26 +535,6 @@ public class GridColumn extends Item {
 		e.widget = parent;
 
 		this.notifyListeners(SWT.Resize, e);
-	}
-
-	/**
-	 * Adds or removes the columns tree toggle.
-	 *
-	 * @param tree
-	 *            true to add toggle.
-	 * @throws org.eclipse.swt.SWTException
-	 *             <ul>
-	 *             <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed
-	 *             </li>
-	 *             <li>ERROR_THREAD_INVALID_ACCESS - if not called from the
-	 *             thread that created the receiver</li>
-	 *             </ul>
-	 */
-	public void setTree(boolean tree) {
-		checkWidget();
-
-		this.tree = tree;
-		parent.redraw();
 	}
 
 	/**
