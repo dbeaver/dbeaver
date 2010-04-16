@@ -100,7 +100,7 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer
         // set the font to be used to display the text.
         gc.setFont(column.getHeaderFont());
 
-        boolean flat = (column.getParent().getCellSelectionEnabled() && !column.getMoveable());
+        boolean flat = !column.getMoveable();
 
         boolean drawSelected = ((isMouseDown() && isHover()));
 

@@ -305,7 +305,6 @@ public class Spreadsheet extends Composite implements Listener {
         group.setLayout(layout);
 
         grid = new LightGrid(group, style);
-        grid.setCellSelectionEnabled(true);
         grid.setRowHeaderVisible(true);
         //grid.setFooterVisible(true);
         //spreadsheet.set

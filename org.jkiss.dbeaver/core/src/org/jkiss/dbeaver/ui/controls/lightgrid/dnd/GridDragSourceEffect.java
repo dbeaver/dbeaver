@@ -90,18 +90,7 @@ public class GridDragSourceEffect extends DragSourceEffect {
 		
 		// Collect the currently selected items. 
 		Collection<Point> selection;
-		if(grid.getCellSelectionEnabled()){
-			selection = new ArrayList<Point>(grid.getCellSelection());
-		} else {
-			List<Point> l = new ArrayList<Point>();
-			Collection<GridItem> selItems = grid.getSelection();
-			for (GridItem item : selItems){
-				for (int j = 0; j < grid.getColumnCount() ; j++){
-                    l.add(new Point(j,grid.indexOf(item)));
-				}
-			}
-			selection = l;
-		}
+        selection = new ArrayList<Point>(grid.getCellSelection());
 		if (selection.isEmpty()) return null;
 		
 		Rectangle bounds=null;

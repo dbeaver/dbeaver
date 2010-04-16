@@ -304,26 +304,17 @@ public class GridDropTargetEffect extends DropTargetEffect {
 	}
 	
 	private void select(Point cell) {
-		if(grid.getCellSelectionEnabled() && !ignoreCellSelection)
-			grid.selectCell(cell);
-		else
-			grid.select(cell.y);
+        grid.select(cell.y);
 		
 	}
 	private void deselect(Point cell) {
-		if(grid.getCellSelectionEnabled() && !ignoreCellSelection)
-			grid.deselectCell(cell);
-		else
-			grid.deselect(cell.y);
+        grid.deselect(cell.y);
 		
 	}
 	private void setInsertMark(Point cell, boolean before) {
 		if(cell!=null)
 		{
-			if(grid.getCellSelectionEnabled() && !ignoreCellSelection)
-				grid.setInsertMark(grid.getItem(cell.y), grid.getColumn(cell.x), before);
-			else
-				grid.setInsertMark(grid.getItem(cell.y), null, before);
+            grid.setInsertMark(grid.getItem(cell.y), grid.getColumn(cell.x), before);
 		}
 		else
 		{
