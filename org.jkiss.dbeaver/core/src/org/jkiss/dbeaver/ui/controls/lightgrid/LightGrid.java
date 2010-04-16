@@ -102,19 +102,9 @@ public class LightGrid extends Canvas {
     private static final int COLUMN_RESIZER_THRESHOLD = 4;
 
     /**
-     * @see #COLUMN_RESIZER_THRESHOLD
-     */
-    private static final int ROW_RESIZER_THRESHOLD = 3;
-
-
-    /**
      * The minimum width of a column header.
      */
     private static final int MIN_COLUMN_HEADER_WIDTH = 20;
-    /**
-     * The minimum height of a row header.
-     */
-    private static final int MIN_ROW_HEADER_HEIGHT = 10;
 
     /**
      * The number used when sizing the row header (i.e. size it for '1000')
@@ -156,8 +146,6 @@ public class LightGrid extends Canvas {
     private Set<Point> selectedCells = new TreeSet<Point>(new CellComparator());
     private Set<Point> selectedCellsBeforeRangeSelect = new TreeSet<Point>(new CellComparator());
 
-    //private Map<Integer, Set<Integer>> selectedCellMap;
-
     private boolean cellDragSelectionOccuring = false;
     private boolean cellRowDragSelectionOccuring = false;
     private boolean cellColumnDragSelectionOccuring = false;
@@ -173,16 +161,6 @@ public class LightGrid extends Canvas {
     private GridColumn focusColumn;
 
     private List<GridColumn> selectedColumns = new ArrayList<GridColumn>();
-
-    /**
-     * This is the column that the user last navigated to, but may not be the focusColumn because
-     * that column may be spanned in the current row.  This is only used in situations where the user
-     * has used the keyboard to navigate up or down in the table and the focusColumn has switched to
-     * a new column because the intended column (was maintained in this var) was spanned.  The table
-     * will attempt to set focus back to the intended column during subsequent up/down navigations.
-     */
-    private GridColumn intendedFocusColumn;
-
 
     /**
      * List of table columns in creation/index order.
@@ -4443,7 +4421,6 @@ public class LightGrid extends Canvas {
                             redraw();
                         }
                     }
-                    intendedFocusColumn = focusColumn;
                 }
             } else {
                 if (e.button == 2 || e.button > 3) {
@@ -4864,7 +4841,6 @@ public class LightGrid extends Canvas {
                 return;
 
             focusColumn = getColumn(0);
-            intendedFocusColumn = focusColumn;
         }
 
         if (e.character == '\r' && focusItem != null) {
@@ -4912,7 +4888,6 @@ public class LightGrid extends Canvas {
                             newColumnFocus = impliedFocusColumn;
                         }
                     }
-                    intendedFocusColumn = newColumnFocus;
                 }
                 break;
             case SWT.ARROW_LEFT:
@@ -4930,7 +4905,6 @@ public class LightGrid extends Canvas {
                             newColumnFocus = impliedFocusColumn;
                         }
                     }
-                    intendedFocusColumn = newColumnFocus;
                 }
                 break;
             case SWT.ARROW_UP:
@@ -4940,7 +4914,7 @@ public class LightGrid extends Canvas {
 
                 if (impliedFocusColumn != null) {
                     if (newSelection != null) {
-                        newColumnFocus = getVisibleColumn_DegradeLeft(newSelection, intendedFocusColumn);
+                        newColumnFocus = getVisibleColumn_DegradeLeft(newSelection, impliedFocusColumn);
                     } else {
                         newColumnFocus = impliedFocusColumn;
                     }
@@ -4958,7 +4932,7 @@ public class LightGrid extends Canvas {
 
                 if (impliedFocusColumn != null) {
                     if (newSelection != null) {
-                        newColumnFocus = getVisibleColumn_DegradeLeft(newSelection, intendedFocusColumn);
+                        newColumnFocus = getVisibleColumn_DegradeLeft(newSelection, impliedFocusColumn);
                     } else {
                         newColumnFocus = impliedFocusColumn;
                     }
@@ -5619,7 +5593,6 @@ public class LightGrid extends Canvas {
         }
 
         focusColumn = column;
-        intendedFocusColumn = column;
     }
 
 
