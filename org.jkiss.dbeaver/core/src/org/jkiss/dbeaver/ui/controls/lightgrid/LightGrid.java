@@ -142,11 +142,6 @@ public class LightGrid extends Canvas {
     private List<GridItem> items = new ArrayList<GridItem>();
 
     /**
-     * All root items.
-     */
-    private List<GridItem> rootItems = new ArrayList<GridItem>();
-
-    /**
      * List of selected items.
      */
     private List<GridItem> selectedItems = new ArrayList<GridItem>();
@@ -321,11 +316,6 @@ public class LightGrid extends Canvas {
     private GridColumn columnBeingResized;
 
     /**
-     * Are this <code>Grid</code>'s rows resizeable?
-     */
-    private boolean rowsResizeable = false;
-
-    /**
      * Is the user currently resizing a column?
      */
     private boolean resizingColumn = false;
@@ -340,12 +330,6 @@ public class LightGrid extends Canvas {
      * with the resizingStartX determines the current width during resize.
      */
     private int resizingColumnStartWidth = 0;
-
-    private boolean hoveringOnRowResizer = false;
-    private GridItem rowBeingResized;
-    private boolean resizingRow = false;
-    private int resizingStartY;
-    private int resizingRowStartHeight;
 
     /**
      * Reference to the column whose header is currently in a pushed state.
@@ -497,13 +481,6 @@ public class LightGrid extends Canvas {
     private boolean disposing = false;
 
     /**
-     * True if there is at least one <code>GridItem</code> with an individual height.
-     * This value is only set to true in {@link GridItem#setHeight(int,boolean)}
-     * and it is never reset to false.
-     */
-    boolean hasDifferingHeights = false;
-
-    /**
      * Index of first visible item.  The value must never be read directly.  It is cached and
      * updated when appropriate.  #getTopIndex should be called for every client (even internal
      * callers).  A value of -1 indicates that the value is old and will be recomputed.
@@ -577,7 +554,7 @@ public class LightGrid extends Canvas {
 
     /**
      * Threshold for the selection border used for drag n drop
-     * in mode (!{@link #dragOnFullSelection}}.
+     * in mode.
      */
     private static final int SELECTION_DRAG_BORDER_THRESHOLD = 2;
 
@@ -588,7 +565,6 @@ public class LightGrid extends Canvas {
     private boolean insertMarkBefore = false;
     private IGridRenderer insertMarkRenderer = new DefaultInsertMarkRenderer();
     private boolean sizeOnEveryItemImageChange;
-    private boolean autoHeight = false;
     private boolean autoWidth = true;
     private boolean wordWrapRowHeader = false;
 
@@ -596,7 +572,6 @@ public class LightGrid extends Canvas {
      * A range of rows in a <code>Grid</code>.
      * <p/>
      * A row in this sense exists only for visible items
-     * (i.e. items with {@link GridItem#isVisible()} == true).
      * Therefore, the items at 'startIndex' and 'endIndex'
      * are always visible.
      *
@@ -955,7 +930,6 @@ public class LightGrid extends Canvas {
      * Returns the column at the given point and a known item in the receiver or null if no such
      * column exists. The point is in the coordinate system of the receiver.
      *
-     * @param item  a known GridItem
      * @param point the point used to locate the column
      * @return the column at the given point
      */
@@ -1277,13 +1251,11 @@ public class LightGrid extends Canvas {
         GridItem itemToReturn = null;
 
         int row = getTopIndex();
+        int currItemHeight = getItemHeight();
+
         while (row < items.size() && y2 <= getClientArea().height) {
-            GridItem currItem = items.get(row);
-
-            int currItemHeight = currItem.getHeight();
-
             if (p.y >= y2 && p.y < y2 + currItemHeight + 1) {
-                itemToReturn = currItem;
+                itemToReturn = items.get(row);
                 break;
             }
 
@@ -1346,43 +1318,8 @@ public class LightGrid extends Canvas {
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
         itemHeight = height;
         userModifiedItemHeight = true;
-        for (GridItem item : items) {
-            item.setHeight(height);
-        }
-        hasDifferingHeights = false;
         setScrollValuesObsolete();
         redraw();
-    }
-
-    /**
-     * Returns true if the rows are resizable.
-     *
-     * @return the row resizeable state
-     * @see #setRowsResizeable(boolean)
-     */
-    public boolean getRowsResizeable()
-    {
-        checkWidget();
-        return rowsResizeable;
-    }
-
-    /**
-     * Sets the rows resizeable state of this <code>Grid</code>.
-     * The default is 'false'.
-     * <p/>
-     * If a row in a <code>Grid</code> is resizeable,
-     * then the user can interactively change its height
-     * by dragging the border of the row header.
-     * <p/>
-     * Note that for rows to be resizable the row headers must be visible.
-     *
-     * @param rowsResizeable true if this <code>Grid</code>'s rows should be resizable
-     * @see #setRowHeaderVisible(boolean)
-     */
-    public void setRowsResizeable(boolean rowsResizeable)
-    {
-        checkWidget();
-        this.rowsResizeable = rowsResizeable;
     }
 
     /**
@@ -1525,49 +1462,6 @@ public class LightGrid extends Canvas {
         index++;
 
         return displayOrderedColumns.get(index);
-    }
-
-    /**
-     * Returns the number of root items contained in the receiver.
-     *
-     * @return the number of items
-     */
-    public int getRootItemCount()
-    {
-        checkWidget();
-        return rootItems.size();
-    }
-
-    /**
-     * Returns a (possibly empty) array of {@code GridItem}s which are
-     * the root items in the receiver.
-     * <p>
-     * Note: This is not the actual structure used by the receiver to maintain
-     * its list of items, so modifying the array will not affect the receiver.
-     * </p>
-     *
-     * @return the root items in the receiver
-     */
-    public GridItem[] getRootItems()
-    {
-        checkWidget();
-
-        return rootItems.toArray(new GridItem[rootItems.size()]);
-    }
-
-    /**
-     * @param index
-     * @return asdf
-     */
-    public GridItem getRootItem(int index)
-    {
-        checkWidget();
-
-        if (index < 0 || index >= rootItems.size()) {
-            SWT.error(SWT.ERROR_INVALID_RANGE);
-        }
-
-        return rootItems.get(index);
     }
 
     /**
@@ -1813,19 +1707,8 @@ public class LightGrid extends Canvas {
         range.startIndex = startIndex;
         range.endIndex = endIndex;
 
-        if (hasDifferingHeights) {
-            for (int idx = startIndex; idx <= endIndex; idx++) {
-                GridItem currItem = items.get(idx);
-
-                if (range.rows > 0)
-                    range.height++;        // height of horizontal row separator
-                range.height += currItem.getHeight();
-                range.rows++;
-            }
-        } else {
-            range.rows = range.endIndex - range.startIndex + 1;
-            range.height = (getItemHeight() + 1) * range.rows - 1;
-        }
+        range.rows = range.endIndex - range.startIndex + 1;
+        range.height = (getItemHeight() + 1) * range.rows - 1;
 
         return range;
     }
@@ -1883,93 +1766,29 @@ public class LightGrid extends Canvas {
             return range;
         }
 
-        if (hasDifferingHeights) {
-            int otherIndex = startIndex;        // tentative end index
-            int consumedItems = 0;
-            int consumedHeight = 0;
+        int availableRows = (availableHeight + 1) / (getItemHeight() + 1);
 
-            // consume height for startEnd  (note: no separator pixel added here)
-            consumedItems++;
-            consumedHeight += items.get(otherIndex).getHeight();
-
-            // note: we use "+2" in next line, because we only try to add another row if there
-            // is room for the separator line + at least one pixel row for the additional item
-            while (consumedHeight + 2 <= availableHeight) {
-                // STEP 1:
-                // try to find a visible item we can add
-
-                int nextIndex = otherIndex;
-                GridItem nextItem;
-
-                if (!inverse)
-                    nextIndex++;
-                else
-                    nextIndex--;
-
-                if (nextIndex >= 0 && nextIndex < items.size())
-                    nextItem = items.get(nextIndex);
-                else
-                    nextItem = null;
-
-                if (nextItem == null) {
-                    // no visible item found
-                    break;
-                }
-
-                if (forceEndCompletelyInside) {
-                    // must lie completely within the allowed height
-                    if (!(consumedHeight + 1 + nextItem.getHeight() <= availableHeight))
-                        break;
-                }
-
-                // we found one !!
-
-                // STEP 2:
-                // Consume height for this item
-
-                consumedItems++;
-                consumedHeight += 1;    // height of separator line
-                consumedHeight += nextItem.getHeight();
-
-                // STEP 3:
-                // make this item it the current guess for the other end
-                otherIndex = nextIndex;
-            }
-
-            range.startIndex = !inverse ? startIndex : otherIndex;
-            range.endIndex = !inverse ? otherIndex : startIndex;
-            range.rows = consumedItems;
-            range.height = consumedHeight;
-        } else {
-            int availableRows = (availableHeight + 1) / (getItemHeight() + 1);
-
-            if (((getItemHeight() + 1) * range.rows - 1) + 1 < availableHeight) {
-                // not all available space used yet
-                // - so add another row if it need not be completely within availableHeight
-                if (!forceEndCompletelyInside)
-                    availableRows++;
-            }
-
-            int otherIndex = startIndex + ((availableRows - 1) * (!inverse ? 1 : -1));
-            if (otherIndex < 0) otherIndex = 0;
-            if (otherIndex >= items.size()) otherIndex = items.size() - 1;
-
-            range.startIndex = !inverse ? startIndex : otherIndex;
-            range.endIndex = !inverse ? otherIndex : startIndex;
-            range.rows = range.endIndex - range.startIndex + 1;
-            range.height = (getItemHeight() + 1) * range.rows - 1;
+        if (((getItemHeight() + 1) * range.rows - 1) + 1 < availableHeight) {
+            // not all available space used yet
+            // - so add another row if it need not be completely within availableHeight
+            if (!forceEndCompletelyInside)
+                availableRows++;
         }
+
+        int otherIndex = startIndex + ((availableRows - 1) * (!inverse ? 1 : -1));
+        if (otherIndex < 0) otherIndex = 0;
+        if (otherIndex >= items.size()) otherIndex = items.size() - 1;
+
+        range.startIndex = !inverse ? startIndex : otherIndex;
+        range.endIndex = !inverse ? otherIndex : startIndex;
+        range.rows = range.endIndex - range.startIndex + 1;
+        range.height = (getItemHeight() + 1) * range.rows - 1;
 
         return range;
     }
 
     /**
      * Returns the height of the plain grid in pixels.
-     * <p/>
-     * This includes all rows for visible items (i.e. items that return true
-     * on {@link GridItem#isVisible()} ; not only those currently visible on
-     * screen) and the 1 pixel separator between rows.
-     * <p/>
      * This does <em>not</em> include the height of the column headers.
      *
      * @return height of plain grid
@@ -3426,42 +3245,6 @@ public class LightGrid extends Canvas {
     }
 
     /**
-     * Sets the new height of the item of the row being resized and fires the appropriate
-     * listeners.
-     *
-     * @param x mouse x
-     */
-    private void handleRowResizerDragging(int y)
-    {
-        int newHeight = resizingRowStartHeight + (y - resizingStartY);
-        if (newHeight < MIN_ROW_HEADER_HEIGHT) {
-            newHeight = MIN_ROW_HEADER_HEIGHT;
-        }
-
-        if (newHeight > getClientArea().height) {
-            newHeight = getClientArea().height;
-        }
-
-        if (newHeight == rowBeingResized.getHeight()) {
-            return;
-        }
-
-        if (newHeight < MIN_ROW_HEADER_HEIGHT) {
-            newHeight = MIN_ROW_HEADER_HEIGHT;
-        }
-
-        if (newHeight > getClientArea().height) {
-            newHeight = getClientArea().height;
-        }
-
-        rowBeingResized.setHeight(newHeight);
-        scrollValuesObsolete = true;
-
-        Rectangle clientArea = getClientArea();
-        redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
-    }
-
-    /**
      * Determines if the mouse is hovering on a column resizer and changes the
      * pointer and sets field appropriately.
      *
@@ -3502,62 +3285,6 @@ public class LightGrid extends Canvas {
                 setCursor(null);
             }
             hoveringOnColumnResizer = over;
-        }
-        return over;
-    }
-
-    /**
-     * Determines if the mouse is hovering on a row resizer and changes the
-     * pointer and sets field appropriately.
-     *
-     * @param x mouse x
-     * @param y mouse y
-     * @return true if this event has been consumed.
-     */
-    private boolean handleHoverOnRowResizer(int x, int y)
-    {
-        rowBeingResized = null;
-        boolean over = false;
-        if (x <= rowHeaderWidth) {
-            int y2 = 0;
-
-            if (columnHeadersVisible) {
-                y2 += headerHeight;
-            }
-
-            int row = getTopIndex();
-            while (row < items.size() && y2 <= getClientArea().height) {
-                GridItem currItem = items.get(row);
-                {
-                    y2 += currItem.getHeight() + 1;
-
-                    if (y2 >= (y - ROW_RESIZER_THRESHOLD) && y2 <= (y + ROW_RESIZER_THRESHOLD)) {
-//                		if (currItem.isResizeable())
-                        {
-                            over = true;
-                            rowBeingResized = currItem;
-                        }
-                        // do not brake here, because in case of overlapping
-                        // row resizers we need to find the last one
-                    } else {
-                        if (rowBeingResized != null) {
-                            // we have passed all (overlapping) row resizers, so break
-                            break;
-                        }
-                    }
-                }
-                row++;
-            }
-        }
-
-        if (over != hoveringOnRowResizer) {
-            if (over) {
-                setCursor(getDisplay().getSystemCursor(SWT.CURSOR_SIZENS));
-            } else {
-                rowBeingResized = null;
-                setCursor(null);
-            }
-            hoveringOnRowResizer = over;
         }
         return over;
     }
@@ -3657,24 +3384,21 @@ public class LightGrid extends Canvas {
 
                 int focusY = y;
 
-                int colIndex = 0;
-
                 // draw regular cells for each column
                 for (GridColumn column : displayOrderedColumns) {
 
                     int indexOfColumn = indexOf(column);
-                    int width = item.getCellSize(indexOfColumn).x;
+                    int width = column.getWidth();
 
                     if (x + width >= 0 && x < getClientArea().width) {
-                        Point sizeOfColumn = item.getCellSize(indexOf(column));
 
-                        column.getCellRenderer().setBounds(x, y, width, sizeOfColumn.y);
+                        column.getCellRenderer().setBounds(x, y, width, getItemHeight());
                         int cellInHeaderDelta = headerHeight - y;
                         if (cellInHeaderDelta > 0) {
                             e.gc.setClipping(new Rectangle(x - 1, y + cellInHeaderDelta, width + 1,
-                                                           sizeOfColumn.y + 2 - cellInHeaderDelta));
+                                                           getItemHeight() + 2 - cellInHeaderDelta));
                         } else {
-                            e.gc.setClipping(new Rectangle(x - 1, y - 1, width + 1, sizeOfColumn.y + 2));
+                            e.gc.setClipping(new Rectangle(x - 1, y - 1, width + 1, getItemHeight() + 2));
                         }
 
                         column.getCellRenderer().setRow(i + 1);
@@ -3710,7 +3434,7 @@ public class LightGrid extends Canvas {
                             // y-pos
                             insertMarkPosY = y - 1;
                             if (!insertMarkBefore)
-                                insertMarkPosY += item.getHeight() + 1;
+                                insertMarkPosY += getItemHeight() + 1;
                             // x1-pos
                             insertMarkPosX1 = x;
 
@@ -3726,7 +3450,6 @@ public class LightGrid extends Canvas {
                     }
 
                     x += column.getWidth();
-                    colIndex++;
                 }
 
                 if (x < getClientArea().width) {
@@ -3737,7 +3460,7 @@ public class LightGrid extends Canvas {
                     emptyCellRenderer.setSelected(selectedItems.contains(item));
                     emptyCellRenderer.setFocus(this.isFocusControl());
                     emptyCellRenderer.setRow(i + 1);
-                    emptyCellRenderer.setBounds(x, y, getClientArea().width - x + 1, item.getHeight());
+                    emptyCellRenderer.setBounds(x, y, getClientArea().width - x + 1, getItemHeight());
                     emptyCellRenderer.setColumn(getColumnCount());
                     emptyCellRenderer.paint(e.gc, item);
                 }
@@ -3752,7 +3475,7 @@ public class LightGrid extends Canvas {
                         rowHeaderRenderer.setSelected(cellInRowSelected);
                     }
                     if (y >= headerHeight) {
-                        rowHeaderRenderer.setBounds(0, y, rowHeaderWidth, item.getHeight() + 1);
+                        rowHeaderRenderer.setBounds(0, y, rowHeaderWidth, getItemHeight() + 1);
                         rowHeaderRenderer.paint(e.gc, item);
                     }
                     x += rowHeaderWidth;
@@ -3768,13 +3491,13 @@ public class LightGrid extends Canvas {
                             }
                             focusRenderer
                                 .setBounds(focusX, focusY - 1, getClientArea().width - focusX - 1,
-                                           item.getHeight() + 1);
+                                           getItemHeight() + 1);
                             focusRenderer.paint(e.gc, item);
                         }
                     }
                 }
 
-                y += item.getHeight() + 1;
+                y += getItemHeight() + 1;
             } else {
 
                 if (rowHeaderVisible) {
@@ -4069,21 +3792,7 @@ public class LightGrid extends Canvas {
         // if the scrollbar is visible set its values
         if (vScroll.getVisible()) {
             int max = currentVisibleItems;
-            int thumb = 1;
-
-            if (!hasDifferingHeights) {
-                // in this case, the number of visible rows on screen is constant,
-                // so use this as thumb
-                thumb = (getVisibleGridHeight() + 1) / (getItemHeight() + 1);
-            } else {
-                // in this case, the number of visible rows on screen is variable,
-                // so we have to use 1 as thumb and decrease max by the number of
-                // rows on the last page
-                if (getVisibleGridHeight() >= 1) {
-                    RowRange range = getRowRange(-1, getVisibleGridHeight(), true, true);
-                    max -= range.rows - 1;
-                }
-            }
+            int thumb = (getVisibleGridHeight() + 1) / (getItemHeight() + 1);
 
             // if possible, remember selection, if selection is too large, just
             // make it the max you can
@@ -4285,7 +3994,7 @@ public class LightGrid extends Canvas {
     /**
      * Updates cell selection.
      *
-     * @param newCell                    newly clicked, navigated to cells.
+     * @param newCells                    newly clicked, navigated to cells.
      * @param stateMask                  statemask during preceeding mouse or key event.
      * @param dragging                   true if the user is dragging.
      * @param reverseDuplicateSelections true if the user is reversing selection rather than adding to.
@@ -4657,15 +4366,6 @@ public class LightGrid extends Canvas {
             }
             return;
         }
-        if (rowsResizeable && hoveringOnRowResizer) {
-            if (e.button == 1) {
-                resizingRow = true;
-                resizingStartY = e.y;
-                resizingRowStartHeight = rowBeingResized.getHeight();
-            }
-            return;
-        }
-
 
         if (e.button == 1 && handleColumnHeaderPush(e.x, e.y)) {
             return;
@@ -4845,23 +4545,6 @@ public class LightGrid extends Canvas {
                 resizingColumn = false;
                 handleHoverOnColumnResizer(e.x, e.y);
                 return;
-            } else if (rowsResizeable && hoveringOnRowResizer) {
-                Collection<GridItem> sel = getSelection();
-                if (sel.contains(rowBeingResized)) {
-                    // the user double-clicked a row resizer of a selected row
-                    // so update all selected rows
-                    for (GridItem aSel : sel) {
-                        aSel.pack();
-                    }
-                    redraw();
-                } else {
-                    // otherwise only update the row the user double-clicked
-                    rowBeingResized.pack();
-                }
-
-                resizingRow = false;
-                handleHoverOnRowResizer(e.x, e.y);
-                return;
             }
 
             GridItem item = getItem(new Point(e.x, e.y));
@@ -4888,12 +4571,6 @@ public class LightGrid extends Canvas {
         if (resizingColumn) {
             resizingColumn = false;
             handleHoverOnColumnResizer(e.x, e.y); // resets cursor if
-            // necessary
-            return;
-        }
-        if (resizingRow) {
-            resizingRow = false;
-            handleHoverOnRowResizer(e.x, e.y); // resets cursor if
             // necessary
             return;
         }
@@ -4966,10 +4643,6 @@ public class LightGrid extends Canvas {
 
             if (resizingColumn) {
                 handleColumnResizerDragging(e.x);
-                return;
-            }
-            if (resizingRow) {
-                handleRowResizerDragging(e.y);
                 return;
             }
             if (pushingColumn) {
@@ -5145,11 +4818,6 @@ public class LightGrid extends Canvas {
 //                    Rectangle clientArea = getClientArea();
 //                    redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
 //                }
-                return;
-            }
-        }
-        if (rowsResizeable && rowHeaderVisible) {
-            if (handleHoverOnRowResizer(x, y)) {
                 return;
             }
         }
@@ -5495,13 +5163,11 @@ public class LightGrid extends Canvas {
 
             while (currIndex != itemIndex) {
                 if (currIndex < itemIndex) {
-                    GridItem currItem = items.get(currIndex);
-                    y += currItem.getHeight() + 1;
+                    y += getItemHeight() + 1;
                     currIndex++;
                 } else if (currIndex > itemIndex) {
                     currIndex--;
-                    GridItem currItem = items.get(currIndex);
-                    y -= currItem.getHeight() + 1;
+                    y -= getItemHeight() + 1;
                 }
             }
         }
@@ -5800,20 +5466,6 @@ public class LightGrid extends Canvas {
 
     }
 
-    void newRootItem(GridItem item, int index)
-    {
-        if (index == -1 || index >= rootItems.size()) {
-            rootItems.add(item);
-        } else {
-            rootItems.add(index, item);
-        }
-    }
-
-    void removeRootItem(GridItem item)
-    {
-        rootItems.remove(item);
-    }
-
     /**
      * Creates the new item at the given index. Only called from GridItem
      * constructor.
@@ -5826,16 +5478,6 @@ public class LightGrid extends Canvas {
     {
         int row;
 
-        //Have to convert indexes, this method needs a flat index, the method is called with indexes
-        //that are relative to the level
-        if (index != -1) {
-            if (index >= rootItems.size()) {
-                index = -1;
-            } else {
-                index = items.indexOf(rootItems.get(index));
-            }
-        }
-
         if (index == -1) {
             items.add(item);
             row = items.size() - 1;
@@ -5846,8 +5488,6 @@ public class LightGrid extends Canvas {
 
         if (items.size() == 1 && !userModifiedItemHeight)
             itemHeight = computeItemHeight(item, sizingGC);
-
-        item.initializeHeight(itemHeight);
 
         if (isRowHeaderVisible() && isAutoWidth()) {
             rowHeaderWidth = Math.max(rowHeaderWidth, rowHeaderRenderer
@@ -6487,7 +6127,6 @@ public class LightGrid extends Canvas {
      * Returns a point whose x and y value are the to and from column indexes of the new selection
      * range inclusive of all spanned columns.
      *
-     * @param item
      * @param fromColumn
      * @param toColumn
      * @return
@@ -6523,7 +6162,6 @@ public class LightGrid extends Canvas {
      *
      * @param item     the item currently hovered over or null.
      * @param column   the column currently hovered over or null.
-     * @param group    the group currently hovered over or null.
      * @param location the x,y origin of the text in the hovered object.
      */
     protected void showToolTip(GridItem item, GridColumn column, Point location)
@@ -6573,13 +6211,8 @@ public class LightGrid extends Canvas {
             itemHeight = newHeight;
 
             userModifiedItemHeight = false;
-            hasDifferingHeights = false;
 
             itemHeight = computeItemHeight(items.get(0), sizingGC);
-
-            for (GridItem item1 : items) {
-                item1.setHeight(itemHeight);
-            }
 
             setScrollValuesObsolete();
             redraw();
@@ -6738,12 +6371,10 @@ public class LightGrid extends Canvas {
      * on which a drag event can be initiated.  This is either the border
      * of the selection (i.e. a cell border between a slected and a non-selected
      * cell) or the complete selection (i.e. anywhere on a selected cell).
-     * What area serves as drag area is determined by {@link #setDragOnFullSelection(boolean)}.
      *
      * @param x
      * @param y
      * @return
-     * @see #setDragOnFullSelection(boolean)
      */
     private boolean handleHoverOnSelectionDragArea(int x, int y)
     {
@@ -6822,8 +6453,6 @@ public class LightGrid extends Canvas {
      * these attributes are requested again as needed.
      *
      * @param index       the index of the item to clear
-     * @param allChildren <code>true</code> if all child items of the indexed item should be
-     *                    cleared recursively, and <code>false</code> otherwise
      * @see SWT#VIRTUAL
      * @see SWT#SetData
      */
@@ -6848,8 +6477,6 @@ public class LightGrid extends Canvas {
      *
      * @param start       the start index of the item to clear
      * @param end         the end index of the item to clear
-     * @param allChildren <code>true</code> if all child items of the range of items should be
-     *                    cleared recursively, and <code>false</code> otherwise
      * @see SWT#VIRTUAL
      * @see SWT#SetData
      */
@@ -6876,8 +6503,6 @@ public class LightGrid extends Canvas {
      * these attributes are requested again as needed.
      *
      * @param indices     the array of indices of the items
-     * @param allChildren <code>true</code> if all child items of the indexed items should be
-     *                    cleared recursively, and <code>false</code> otherwise
      * @see SWT#VIRTUAL
      * @see SWT#SetData
      */
@@ -6909,8 +6534,6 @@ public class LightGrid extends Canvas {
      * table was created with the <code>SWT.VIRTUAL</code> style, these
      * attributes are requested again as needed.
      *
-     * @param allChildren <code>true</code> if all child items of each item should be
-     *                    cleared recursively, and <code>false</code> otherwise
      * @see SWT#VIRTUAL
      * @see SWT#SetData
      */
@@ -7053,35 +6676,6 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
         return rowHeaderWidth;
-    }
-
-    /**
-     * Sets the value of the auto-height feature. When enabled, this feature resizes the height of rows to
-     * reflect the content of cells with word-wrapping enabled. Cell word-wrapping is enabled via the GridColumn.setWordWrap(boolean) method.
-     * If column headers have word-wrapping enabled, this feature will also resize the height of the column headers as necessary.
-     *
-     * @param enabled Set to true to enable this feature, false (default) otherwise.
-     */
-    public void setAutoHeight(boolean enabled)
-    {
-        if (autoHeight == enabled)
-            return;
-
-        checkWidget();
-        autoHeight = enabled;
-        setRowsResizeable(false); // turn of resizing of row height since it conflicts with this property
-        redraw();
-    }
-
-    /**
-     * Returns the value of the auto-height feature, which resizes row heights and column header heights based on word-wrapped content.
-     *
-     * @return Returns whether or not the auto-height feature is enabled.
-     * @see #setAutoHeight(boolean)
-     */
-    public boolean isAutoHeight()
-    {
-        return autoHeight;
     }
 
     /**

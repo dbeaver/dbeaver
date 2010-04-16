@@ -4,18 +4,12 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.widgets.Event;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Event;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridCellRenderer;
 
 public class GridItem {
 	private ArrayList<Color> backgrounds;
@@ -28,8 +22,6 @@ public class GridItem {
 	private Color defaultBackground;
 	private Font defaultFont;
 	private Color defaultForeground;
-
-	private int height = 1;
 
 	/**
 	 * Parent grid instance.
@@ -92,7 +84,6 @@ public class GridItem {
 		this.parent = parent;
 
 		parent.newItem(this, index);
-		parent.newRootItem(this, index);
 	}
 
 	/**
@@ -101,7 +92,6 @@ public class GridItem {
 	public void dispose() {
 		if (!parent.isDisposing()) {
 			parent.removeItem(this);
-            parent.removeRootItem(this);
 		}
 	}
 
@@ -171,7 +161,7 @@ public class GridItem {
 	 * @return width and height
 	 */
 	protected Point getCellSize(int columnIndex) {
-		return new Point(parent.getColumn(columnIndex).getWidth(), getHeight());
+		return new Point(parent.getColumn(columnIndex).getWidth(), parent.getItemHeight());
 	}
 
 	/**
@@ -224,15 +214,6 @@ public class GridItem {
 		handleVirtual();
 
 		return getCellValue(foregrounds, index, getForeground());
-	}
-
-	/**
-	 * Returns the height of this <code>GridItem</code>.
-	 *
-	 * @return height of this <code>GridItem</code>
-	 */
-	public int getHeight() {
-		return height;
 	}
 
 	/**
@@ -396,56 +377,6 @@ public class GridItem {
         }
 		foregrounds.set(index, foreground);
 		parent.redraw();
-	}
-
-	/**
-	 * Sets the height of this <code>GridItem</code>.
-	 *
-	 * @param newHeight
-	 *            new height in pixels
-	 */
-	public void setHeight(int newHeight) {
-		if (newHeight < 1)
-			SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-		height = newHeight;
-		parent.hasDifferingHeights = true;
-        int myIndex = parent.indexOf(this);
-        if (parent.getTopIndex() <= myIndex
-                && myIndex <= parent.getBottomIndex()) // note: cannot use
-                                                        // Grid#isShown()
-                                                        // here, because
-                                                        // that returns
-                                                        // false for
-                                                        // partially shown
-                                                        // items
-            parent.bottomIndex = -1;
-
-		parent.setScrollValuesObsolete();
-		parent.redraw();
-	}
-
-	/**
-	 * Sets this <code>GridItem</code> to its preferred height.
-	 */
-	public void pack() {
-		int maxPrefHeight = 2;
-		GridColumn[] columns = parent.getColumns();
-		GC gc = new GC(parent);
-		for (int cnt = 0; cnt < columns.length; cnt++) {
-			GridCellRenderer renderer = columns[cnt].getCellRenderer();
-
-			renderer.setAlignment(columns[cnt].getAlignment());
-			renderer.setColumn(cnt);
-			renderer.setWordWrap(columns[cnt].getWordWrap());
-
-			Point size = renderer.computeSize(gc, columns[cnt].getWidth(),
-					SWT.DEFAULT, this);
-			if (size != null)
-				maxPrefHeight = Math.max(maxPrefHeight, size.y);
-		}
-		gc.dispose();
-
-		setHeight(maxPrefHeight);
 	}
 
 	/**
@@ -699,16 +630,6 @@ public class GridItem {
             event.index = getParent().indexOf(this);
 			getParent().notifyListeners(SWT.SetData, event);
 		}
-	}
-
-	/**
-	 * Sets the initial item height for this item.
-	 *
-	 * @param height
-	 *            initial height.
-	 */
-	void initializeHeight(int height) {
-		this.height = height;
 	}
 
 	/**

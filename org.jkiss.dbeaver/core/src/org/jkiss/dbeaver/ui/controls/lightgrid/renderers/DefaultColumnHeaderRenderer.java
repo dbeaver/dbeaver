@@ -193,11 +193,6 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer
         	textLayout.setText(text);
         	y -= textLayout.getBounds().height;
 
-        	if (column.getParent().isAutoHeight())
-        	{
-        		column.getParent().recalculateHeader();
-        	}
-
         	textLayout.draw(gc, getBounds().x + x + pushedDrawingOffset, y + pushedDrawingOffset);
         }
 

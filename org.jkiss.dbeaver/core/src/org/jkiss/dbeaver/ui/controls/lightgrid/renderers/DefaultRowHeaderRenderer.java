@@ -168,27 +168,6 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
           textLayout.setWidth(width < 1 ? 1 : width);
           textLayout.setText(text);
           
-          if (item.getParent().isAutoHeight())
-          {
-            // Look through all columns to get the max height needed for this item
-          int columnCount = item.getParent().getColumnCount();
-          int maxHeight = textLayout.getBounds().height + topMargin + bottomMargin;
-          for (int i=0; i<columnCount; i++)
-          {
-            GridColumn column = item.getParent().getColumn(i);
-            if (column.getWordWrap())
-            {
-              int height = column.getCellRenderer().computeSize(gc, column.getWidth(), SWT.DEFAULT, item).y;
-              maxHeight = Math.max(maxHeight, height);
-            }
-          }
-            
-          if (maxHeight != item.getHeight())
-          {
-            item.setHeight(maxHeight);
-          }
-          }
-          
           textLayout.draw(gc, getBounds().x + x + selectionOffset, y + selectionOffset);
         }
 

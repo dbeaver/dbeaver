@@ -121,7 +121,7 @@ public class FolderEditor extends EditorPart implements IDBMListener, IMetaModel
     }
 
     public DBPDataSource getDataSource() {
-        return folderInput == null ? null : folderInput.getDatabaseObject().getDataSource();
+        return folderInput == null || folderInput.getDatabaseObject() == null ? null : folderInput.getDatabaseObject().getDataSource();
     }
 
     public DBCSession getSession() throws DBException {
