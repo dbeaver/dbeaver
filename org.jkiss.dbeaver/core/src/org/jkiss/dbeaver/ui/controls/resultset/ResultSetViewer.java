@@ -572,6 +572,18 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                 return metaColumns[columnIndex].metaData;
             }
 
+            public Object getColumnValue(DBCColumnMetaData column)
+            {
+                for (int i = 0; i < metaColumns.length; i++) {
+                    ResultSetColumn metaColumn = metaColumns[i];
+                    if (metaColumn.metaData == column) {
+                        return curRow[i];
+                    }
+                }
+                log.warn("Unknown column value requested: " + column);
+                return null;
+            }
+
             public Object getValue()
             {
                 return curRow[columnIndex];
@@ -594,7 +606,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
             public DBDValueLocator getValueLocator()
             {
-                return null;
+                return metaColumns[columnIndex].valueLocator;
             }
 
             public boolean isInlineEdit()

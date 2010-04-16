@@ -79,6 +79,10 @@ public class DBeaverLogger implements Log, Serializable
 
     public void info(Object message)
     {
+        if (message instanceof Throwable) {
+            info(message.toString(), (Throwable)message);
+            return;
+        }
         DBeaverCore.getInstance().getPluginLog().log(new Status(
             Status.INFO,
             DBeaverCore.getInstance().getPluginID(),
@@ -96,6 +100,10 @@ public class DBeaverLogger implements Log, Serializable
 
     public void warn(Object message)
     {
+        if (message instanceof Throwable) {
+            warn(message.toString(), (Throwable)message);
+            return;
+        }
         DBeaverCore.getInstance().getPluginLog().log(new Status(
             Status.WARNING,
             DBeaverCore.getInstance().getPluginID(),
@@ -113,6 +121,10 @@ public class DBeaverLogger implements Log, Serializable
 
     public void error(Object message)
     {
+        if (message instanceof Throwable) {
+            error(message.toString(), (Throwable)message);
+            return;
+        }
         DBeaverCore.getInstance().getPluginLog().log(new Status(
             Status.ERROR,
             DBeaverCore.getInstance().getPluginID(),

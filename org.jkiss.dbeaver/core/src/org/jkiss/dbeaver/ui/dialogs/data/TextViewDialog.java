@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -14,6 +16,8 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
  */
 public class TextViewDialog extends ValueViewDialog {
 
+    private Text textEdit;
+
     public TextViewDialog(DBDValueController valueController) {
         super(valueController);
     }
@@ -21,27 +25,38 @@ public class TextViewDialog extends ValueViewDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
+        Object value = getValueController().getValue();
+
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
         Label label = new Label(dialogGroup, SWT.NONE);
         label.setText("Value: ");
 
-        int style = SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL;
-        if (getValueController().isReadOnly()) {
+        int style = SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP;
+        if (value == null || getValueController().isReadOnly()) {
             style |= SWT.READ_ONLY;
         }
-        Text text = new Text(dialogGroup, style);
+        textEdit = new Text(dialogGroup, style);
 
-        Object value = getValueController().getValue();
-        text.setText(value == null ? "" : value.toString());
-        text.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-        
-        GridData ld = new GridData(GridData.FILL_BOTH);
-        ld.heightHint = 200;
-        ld.widthHint = 300;
-        text.setLayoutData(ld);
+        textEdit.setText(value == null ? "" : value.toString());
+        int maxSize = getValueController().getColumnMetaData().getDisplaySize();
+        if (maxSize > 0) {
+            textEdit.setTextLimit(maxSize);
+        }
+        textEdit.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 200;
+        gd.widthHint = 300;
+        gd.grabExcessVerticalSpace = true;
+        textEdit.setLayoutData(gd);
 
         return dialogGroup;
+    }
+
+    @Override
+    protected void applyChanges()
+    {
+        getValueController().updateValue(textEdit.getText());
     }
 
 }

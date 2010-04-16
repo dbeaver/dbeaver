@@ -15,6 +15,8 @@ public interface DBDValueController
 {
     DBCColumnMetaData getColumnMetaData();
 
+    Object getColumnValue(DBCColumnMetaData column);
+
     Object getValue();
 
     void updateValue(Object value);
