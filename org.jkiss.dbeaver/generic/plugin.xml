@@ -143,6 +143,8 @@
                     webURL="http://oracle.com"
                     description="Oracle thin driver">
                     <library path="bin/"/>
+                    <query label="GET_ACTIVE_DB">select sys_context( 'userenv', 'current_schema' ) from dual</query>
+                    <query label="SET_ACTIVE_DB">alter session set current_schema=?</query>
                 </driver>
                 <driver
                     id="db2"
