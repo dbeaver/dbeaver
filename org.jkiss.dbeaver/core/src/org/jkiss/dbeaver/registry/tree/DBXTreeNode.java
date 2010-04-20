@@ -20,6 +20,7 @@ public abstract class DBXTreeNode
     private DBXTreeNode recursiveLink;
     private Image defaultIcon;
     private List<DBXTreeIcon> icons;
+    private boolean isDefaultNode;
 
     public DBXTreeNode(DBXTreeNode parent)
     {
@@ -80,5 +81,13 @@ public abstract class DBXTreeNode
             this.icons = new ArrayList<DBXTreeIcon>();
         }
         this.icons.add(icon);
+    }
+
+    public boolean isDefaultNode() {
+        return isDefaultNode;
+    }
+
+    public void setDefaultNode(boolean defaultNode) {
+        isDefaultNode = defaultNode;
     }
 }
