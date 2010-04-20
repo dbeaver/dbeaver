@@ -489,7 +489,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         }
     }
 
-    public void dataSourceChanged(DataSourceEvent event)
+    public void handleDataSourceEvent(DataSourceEvent event)
     {
         SQLEditor editor = getEditor();
         if (editor != null) {

@@ -21,18 +21,20 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSListener;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectAction;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.runtime.ConnectJob;
 import org.jkiss.dbeaver.runtime.DisconnectJob;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionAuthDialog;
-import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 import java.lang.reflect.InvocationTargetException;
@@ -59,17 +61,27 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
     private Date loginDate;
     private DataSourcePreferenceStore preferenceStore;
 
+    private final List<DBSListener> listeners = new ArrayList<DBSListener>();
     private DBPDataSource dataSource;
 
     private List<DBPDataSourceUser> users = new ArrayList<DBPDataSourceUser>();
 
-    public DataSourceDescriptor(DriverDescriptor driver,
+    public DataSourceDescriptor(
+        DriverDescriptor driver,
         DBPConnectionInfo connectionInfo)
     {
         this.driver = driver;
         this.connectionInfo = connectionInfo;
         this.createDate = new Date();
         this.preferenceStore = new DataSourcePreferenceStore(this);
+    }
+
+    public void dispose()
+    {
+        if (!listeners.isEmpty()) {
+            log.warn("Data source container '" + this.getName() + "' listeners still registered [" + listeners.size() + "]");
+            listeners.clear();
+        }
     }
 
     public DriverDescriptor getDriver()
@@ -325,6 +337,33 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
     public void release(DBPDataSourceUser user)
     {
         users.remove(user);
+    }
+
+    public void addListener(DBSListener listener)
+    {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removeListener(DBSListener listener)
+    {
+        synchronized (listeners) {
+            if (!listeners.remove(listener)) {
+                log.warn("Listener [" + listener + "] is not registered in data source container '" + this.getName() + "'");
+            }
+        }
+    }
+
+    public void fireEvent(DBSObjectAction action, DBSObject object)
+    {
+        List<DBSListener> listenersCopy;
+        synchronized (listeners) {
+            listenersCopy = new ArrayList<DBSListener>(listeners);
+        }
+        for (DBSListener listener : listenersCopy) {
+            listener.handleObjectEvent(action, object);
+        }
     }
 
     public AbstractPreferenceStore getPreferenceStore()

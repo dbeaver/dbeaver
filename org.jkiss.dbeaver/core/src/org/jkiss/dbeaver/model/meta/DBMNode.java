@@ -84,8 +84,6 @@ public abstract class DBMNode
         return image;
     }
 
-    public abstract boolean isDefaultNode();
-
     public abstract boolean hasChildren();
     
     public abstract List<? extends DBMNode> getChildren(ILoadService loadService)  throws DBException;

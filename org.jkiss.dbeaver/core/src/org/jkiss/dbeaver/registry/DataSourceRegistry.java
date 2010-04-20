@@ -13,7 +13,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -45,10 +44,10 @@ public class DataSourceRegistry implements DBPRegistry
 
     private DBeaverCore core;
     private File workspaceRoot;
-    private List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<DataSourceProviderDescriptor>();
-    private List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();
-    private List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
-    private List<IDataSourceListener> dataSourceListeners = new ArrayList<IDataSourceListener>();
+    private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<DataSourceProviderDescriptor>();
+    private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();
+    private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
+    private final List<IDataSourceListener> dataSourceListeners = new ArrayList<IDataSourceListener>();
 
     public DataSourceRegistry(DBeaverCore core, IExtensionRegistry registry)
     {
@@ -79,14 +78,19 @@ public class DataSourceRegistry implements DBPRegistry
         loadDataSources();
     }
 
-    public synchronized void dispose()
+    public void dispose()
     {
-        if (!this.dataSourceListeners.isEmpty()) {
-            log.warn("Some data source listeners are still registered");
+        synchronized (dataSourceListeners) {
+            if (!this.dataSourceListeners.isEmpty()) {
+                log.warn("Some data source listeners are still registered");
+            }
+            this.dataSourceListeners.clear();
         }
-        this.dataSourceListeners.clear();
 
         closeConnections();
+        for (DataSourceDescriptor dataSourceDescriptor : this.dataSources) {
+            dataSourceDescriptor.dispose();
+        }
         this.dataSources.clear();
         this.dataSourceProviders.clear();
     }
@@ -204,14 +208,18 @@ public class DataSourceRegistry implements DBPRegistry
         this.saveDataSources();
     }
 
-    public synchronized void addDataSourceListener(IDataSourceListener listener)
+    public void addDataSourceListener(IDataSourceListener listener)
     {
-        dataSourceListeners.add(listener);
+        synchronized (dataSourceListeners) {
+            dataSourceListeners.add(listener);
+        }
     }
 
-    public synchronized boolean removeDataSourceListener(IDataSourceListener listener)
+    public boolean removeDataSourceListener(IDataSourceListener listener)
     {
-        return dataSourceListeners.remove(listener);
+        synchronized (dataSourceListeners) {
+            return dataSourceListeners.remove(listener);
+        }
     }
 
     void fireDataSourceEvent(
@@ -235,7 +243,7 @@ public class DataSourceRegistry implements DBPRegistry
         }
     }
 
-    private synchronized void notifyDataSourceListeners(
+    private void notifyDataSourceListeners(
         DataSourceEvent.Action action,
         DataSourceDescriptor dataSource,
         Object source)
@@ -244,17 +252,20 @@ public class DataSourceRegistry implements DBPRegistry
             return;
         }
         final DataSourceEvent event = new DataSourceEvent(source, action, dataSource);
-        final List<IDataSourceListener> listeners = new ArrayList<IDataSourceListener>(dataSourceListeners);
+        final List<IDataSourceListener> listeners;
+        synchronized (dataSourceListeners) {
+            listeners = new ArrayList<IDataSourceListener>(dataSourceListeners);
+        }
         //Display display = this.core.getWorkbench().getDisplay();
         for (IDataSourceListener listener : listeners) {
-            listener.dataSourceChanged(event);
+            listener.handleDataSourceEvent(event);
         }
 /*
             display.asyncExec(
                 new Runnable() {
                     public void run() {
                         for (IDataSourceListener listener : listeners) {
-                            listener.dataSourceChanged(event);
+                            listener.handleDataSourceEvent(event);
                         }
                     }
                 }

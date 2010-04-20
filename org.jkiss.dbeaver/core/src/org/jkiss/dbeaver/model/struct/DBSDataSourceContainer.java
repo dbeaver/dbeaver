@@ -62,6 +62,12 @@ public interface DBSDataSourceContainer extends DBSObject
 
     void release(DBPDataSourceUser user);
 
+    void addListener(DBSListener listener);
+
+    void removeListener(DBSListener listener);
+
+    void fireEvent(DBSObjectAction action, DBSObject object);
+
     /**
      * Preference store associated with this datasource
      * @return preference store

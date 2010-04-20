@@ -82,6 +82,9 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                 catch (DBException ex) {
                     throw new InvocationTargetException(ex);
                 }
+                finally {
+                    container.dispose();
+                }
             }
         };
 

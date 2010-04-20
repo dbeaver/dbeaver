@@ -9,6 +9,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSListener;
+import org.jkiss.dbeaver.model.struct.DBSObjectAction;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
@@ -24,8 +26,7 @@ import java.util.Map;
 /**
  * DBMModel
  */
-public class DBMModel implements IDataSourceListener
-{
+public class DBMModel implements IDataSourceListener, DBSListener {
     static Log log = LogFactory.getLog(DBMModel.class);
 
     private DataSourceRegistry registry;
@@ -182,7 +183,7 @@ public class DBMModel implements IDataSourceListener
         }
     }
 
-    public void dataSourceChanged(DataSourceEvent event)
+    public void handleDataSourceEvent(DataSourceEvent event)
     {
         switch (event.getAction()) {
             case ADD:
@@ -203,10 +204,12 @@ public class DBMModel implements IDataSourceListener
                     }
                     fireNodeRefresh(event.getSource(), dbmNode, DBMEvent.NodeChange.UNLOADED);
                 }
+                event.getDataSource().removeListener(this);
                 break;
             }
-            case CHANGE:
             case CONNECT:
+                event.getDataSource().addListener(this);
+            case CHANGE:
             case CONNECT_FAIL:
             {
                 DBMNode dbmNode = getNodeByObject(event.getDataSource());
@@ -226,4 +229,29 @@ public class DBMModel implements IDataSourceListener
         }
     }
 
+    public void handleObjectEvent(DBSObjectAction action, DBSObject object)
+    {
+        switch (action) {
+            case CREATED:
+                // TODO: Add new node to tree
+                break;
+            case DROPED:
+                // TODO: Remove node from tree
+                break;
+            case ALTERED:
+            case CHANGED:
+            case REFRESHED:
+            {
+                DBMNode dbmNode = getNodeByObject(object);
+                if (dbmNode != null) {
+                    DBMEvent.NodeChange nodeChange = DBMEvent.NodeChange.CHANGED;
+                    if (action == DBSObjectAction.REFRESHED) {
+                        nodeChange = DBMEvent.NodeChange.REFRESH;
+                    }
+                    fireNodeRefresh(this, dbmNode, nodeChange);
+                }
+                break;
+            }
+        }
+    }
 }

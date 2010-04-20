@@ -62,11 +62,6 @@ public class DBMRoot extends DBMNode implements DBSObject
         return null;
     }
 
-    @Override
-    public boolean isDefaultNode() {
-        return false;
-    }
-
     public boolean hasChildren()
     {
         return !dataSources.isEmpty();

@@ -259,7 +259,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     {
         DBXTreeNode child = null;
         String nodeType = config.getName();
-        boolean isDefaultNode = "true".equals(config.getAttribute("default"));
         if (nodeType.equals("folder")) {
             DBXTreeFolder folder = new DBXTreeFolder(
                 parent,
@@ -281,7 +280,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         }
         if (child != null) {
             loadTreeChildren(config, child);
-            child.setDefaultNode(isDefaultNode);
         }
     }
 

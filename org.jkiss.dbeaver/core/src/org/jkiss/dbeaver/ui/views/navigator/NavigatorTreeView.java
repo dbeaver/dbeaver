@@ -71,8 +71,8 @@ public class NavigatorTreeView extends ViewPart implements IDBMListener, IMetaMo
     public void createPartControl(Composite parent)
     {
         this.viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-        this.viewer.setContentProvider(new NavigatorTreeContentProvider(this));
         this.viewer.setLabelProvider(new NavigatorTreeLabelProvider(this));
+        this.viewer.setContentProvider(new NavigatorTreeContentProvider(this));
         this.viewer.setInput(getMetaModel().getRoot());
         this.viewer.addSelectionChangedListener(
             new ISelectionChangedListener()

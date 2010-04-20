@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.struct.DBSObjectAction;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -46,6 +47,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     private List<String> tableTypes;
     private List<GenericCatalog> catalogs;
     private List<GenericSchema> schemas;
+    private DBSObject activeChild;
 
     private DBPDataSourceInfo info;
     private String queryGetActiveDB;
@@ -276,9 +278,12 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     public void refreshDataSource(DBRProgressMonitor monitor)
         throws DBException
     {
+        this.activeChild = null;
         this.tableTypes = null;
         this.catalogs = null;
         this.schemas = null;
+
+        this.info = null;
 
         this.initialize(monitor);
     }
@@ -415,31 +420,45 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         }
     }
 
+    public boolean isChild(DBSObject object)
+        throws DBException
+    {
+        if (object instanceof GenericCatalog) {
+            return getCatalogs().contains(GenericCatalog.class.cast(object));
+        } else if (object instanceof GenericSchema) {
+            return getSchemas().contains(GenericSchema.class.cast(object));
+        }
+        return false;
+    }
+
     public DBSObject getActiveChild()
         throws DBException
     {
-        if (CommonUtils.isEmpty(queryGetActiveDB) || catalogs == null) {
-            return null;
-        }
-        String activeDbName;
-        try {
-            PreparedStatement dbStat = getConnection().prepareStatement(queryGetActiveDB);
-            try {
-                ResultSet resultSet = dbStat.executeQuery();
-                try {
-                    resultSet.next();
-                    activeDbName = resultSet.getString(1);
-                } finally {
-                    resultSet.close();
-                }
-            } finally {
-                dbStat.close();
+        if (activeChild == null) {
+            if (CommonUtils.isEmpty(queryGetActiveDB) || catalogs == null) {
+                return null;
             }
-        } catch (SQLException e) {
-            log.error(e);
-            return null;
+            String activeDbName;
+            try {
+                PreparedStatement dbStat = getConnection().prepareStatement(queryGetActiveDB);
+                try {
+                    ResultSet resultSet = dbStat.executeQuery();
+                    try {
+                        resultSet.next();
+                        activeDbName = resultSet.getString(1);
+                    } finally {
+                        resultSet.close();
+                    }
+                } finally {
+                    dbStat.close();
+                }
+            } catch (SQLException e) {
+                log.error(e);
+                return null;
+            }
+            activeChild = getChild(activeDbName);
         }
-        return getCatalog(activeDbName);
+        return activeChild;
     }
 
     public boolean supportsActiveChildChange()
@@ -450,8 +469,14 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     public void setActiveChild(DBSObject child)
         throws DBException
     {
-        if (CommonUtils.isEmpty(querySetActiveDB) || !(child instanceof GenericCatalog)) {
+        if (child == activeChild) {
+            return;
+        }
+        if (CommonUtils.isEmpty(querySetActiveDB) || !(child instanceof GenericStructureContainer)) {
             throw new DBException("Active database can't be changed for this kind of datasource!");
+        }
+        if (!isChild(child)) {
+            throw new DBException("Bad child object specified as active: " + child);
         }
         String changeQuery = querySetActiveDB.replaceFirst("\\?", child.getName());
         try {
@@ -464,5 +489,10 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         } catch (SQLException e) {
             throw new DBException(e);
         }
+        if (this.activeChild != null) {
+            getContainer().fireEvent(DBSObjectAction.CHANGED, this.activeChild);
+        }
+        this.activeChild = child;
+        getContainer().fireEvent(DBSObjectAction.CHANGED, this.activeChild);
     }
 }

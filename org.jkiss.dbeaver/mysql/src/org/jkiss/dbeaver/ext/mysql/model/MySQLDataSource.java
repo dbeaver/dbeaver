@@ -27,6 +27,7 @@ public class MySQLDataSource extends AbstractDataSource implements DBSStructureA
     static Log log = LogFactory.getLog(MySQLDataSource.class);
 
     private List<MySQLCatalog> catalogs;
+    private MySQLCatalog activeCatalog;
 
     public MySQLDataSource(DBSDataSourceContainer container)
         throws DBException
@@ -90,6 +91,7 @@ public class MySQLDataSource extends AbstractDataSource implements DBSStructureA
     public void refreshDataSource(DBRProgressMonitor monitor)
         throws DBException
     {
+        this.activeCatalog = null;
         this.catalogs = null;
 
         this.initialize(monitor);
@@ -155,30 +157,36 @@ public class MySQLDataSource extends AbstractDataSource implements DBSStructureA
     public DBSObject getActiveChild()
         throws DBException
     {
-        String activeDbName;
-        try {
-            PreparedStatement dbStat = getConnection().prepareStatement("select database()");
+        if (this.activeCatalog == null) {
+            String activeDbName;
             try {
-                ResultSet resultSet = dbStat.executeQuery();
+                PreparedStatement dbStat = getConnection().prepareStatement("select database()");
                 try {
-                    resultSet.next();
-                    activeDbName = resultSet.getString(1);
+                    ResultSet resultSet = dbStat.executeQuery();
+                    try {
+                        resultSet.next();
+                        activeDbName = resultSet.getString(1);
+                    } finally {
+                        resultSet.close();
+                    }
                 } finally {
-                    resultSet.close();
+                    dbStat.close();
                 }
-            } finally {
-                dbStat.close();
+            } catch (SQLException e) {
+                log.error(e);
+                return null;
             }
-        } catch (SQLException e) {
-            log.error(e);
-            return null;
+            this.activeCatalog = getCatalog(activeDbName);
         }
-        return getCatalog(activeDbName);
+        return this.activeCatalog;
     }
 
     public void setActiveChild(DBSObject child)
         throws DBException
     {
+        if (child == activeCatalog) {
+            return;
+        }
         if (!(child instanceof MySQLCatalog)) {
             throw new IllegalArgumentException("child");
         }
@@ -192,6 +200,7 @@ public class MySQLDataSource extends AbstractDataSource implements DBSStructureA
         } catch (SQLException e) {
             throw new DBException(e);
         }
+        this.activeCatalog = (MySQLCatalog) child;
     }
 
     public List<DBSTablePath> findTableNames(String tableMask, int maxResults)

@@ -35,7 +35,7 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
 	 */
 	public DataSourceAction() {
         dataSourceListener = new IDataSourceListener() {
-            public void dataSourceChanged(DataSourceEvent event) {
+            public void handleDataSourceEvent(DataSourceEvent event) {
                 if (delegateAction != null) {
                     updateAction(delegateAction);
                 }

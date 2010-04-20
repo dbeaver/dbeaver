@@ -12,8 +12,6 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeIcon;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
@@ -94,28 +92,6 @@ public abstract class DBMTreeNode extends DBMNode {
             return meta.getDefaultIcon();
         }
         return null;
-    }
-
-    @Override
-    public boolean isDefaultNode() {
-        if (getObject() != null) {
-            DBSStructureContainerActive activeContainer = null;
-            if (getObject().getParentObject() instanceof DBSStructureContainerActive) {
-                activeContainer = (DBSStructureContainerActive) getObject().getParentObject();
-            } else if (getObject().getParentObject() instanceof DBSDataSourceContainer && getObject().getDataSource() instanceof DBSStructureContainerActive) {
-                // Root object's parent is data source container (not datasource)
-                // So try to extract this info from real datasource object
-                activeContainer = (DBSStructureContainerActive) getObject().getDataSource();
-            }
-            if (activeContainer != null) {
-                try {
-                    return activeContainer.getActiveChild() == getObject();
-                } catch (DBException e) {
-                    log.error("Can't check active object", e);
-                }
-            }
-        }
-        return this.getMeta().isDefaultNode();
     }
 
     public boolean hasChildren()

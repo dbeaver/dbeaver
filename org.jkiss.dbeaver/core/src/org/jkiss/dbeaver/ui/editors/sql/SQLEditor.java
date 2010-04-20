@@ -811,7 +811,7 @@ public class SQLEditor extends TextEditor
         super.dispose();
     }
 
-    public void dataSourceChanged(final DataSourceEvent event)
+    public void handleDataSourceEvent(final DataSourceEvent event)
     {
         if (event.getDataSource() == getDataSourceContainer()) {
             getSite().getShell().getDisplay().asyncExec(
