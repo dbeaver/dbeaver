@@ -16,6 +16,7 @@ import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSUtils;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.DBException;
 import org.apache.commons.logging.Log;
@@ -101,14 +102,8 @@ class NavigatorTreeLabelProvider extends LabelProvider implements IFontProvider,
     {
         if (element instanceof DBSObject) {
             DBSObject object = (DBSObject) element;
-            DBSStructureContainerActive activeContainer = null;
-            if (object.getParentObject() instanceof DBSStructureContainerActive) {
-                activeContainer = (DBSStructureContainerActive) object.getParentObject();
-            } else if (object.getParentObject() instanceof DBSDataSourceContainer && object.getDataSource() instanceof DBSStructureContainerActive) {
-                // Root object's parent is data source container (not datasource)
-                // So try to extract this info from real datasource object
-                activeContainer = (DBSStructureContainerActive) object.getDataSource();
-            }
+            DBSStructureContainerActive activeContainer = DBSUtils.queryParentInterface(
+                DBSStructureContainerActive.class, object);
             if (activeContainer != null) {
                 try {
                     return activeContainer.getActiveChild() == object;

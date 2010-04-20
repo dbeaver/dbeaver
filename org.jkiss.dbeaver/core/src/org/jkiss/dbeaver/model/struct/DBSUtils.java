@@ -114,6 +114,22 @@ public final class DBSUtils
         return null;
     }
 
+    public static <T> T queryParentInterface(Class<T> i, DBSObject object)
+    {
+        if (object == null || object.getParentObject() == null) {
+            return null;
+        }
+        DBSObject parent = object.getParentObject();
+        if (i.isAssignableFrom(parent.getClass())) {
+            return i.cast(object.getParentObject());
+        } else if (parent instanceof DBSDataSourceContainer && object.getDataSource() != null && i.isAssignableFrom(object.getDataSource().getClass())) {
+            // Root object's parent is data source container (not datasource)
+            // So try to extract this info from real datasource object
+            return i.cast(object.getDataSource());
+        } else {
+            return null;
+        }
+    }
 /*
     public static <T> Collection<T> getSafeCollection(Class<T> theClass, Collection theList)
     {

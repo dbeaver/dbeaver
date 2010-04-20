@@ -22,7 +22,14 @@ import org.eclipse.ui.dialogs.PropertyDialogAction;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshableView;
 import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.meta.DBMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
+import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.ui.actions.SetActiveObjectAction;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -115,6 +122,7 @@ public class ViewUtils
         {
             public void menuAboutToShow(IMenuManager manager)
             {
+                // Fill context menu
                 Viewer viewer = metaModelView.getViewer();
                 if (viewer == null) {
                     return;
@@ -127,8 +135,34 @@ public class ViewUtils
                 }
 */
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
+                // Add "Set active object" menu
+                DBMNode dbmNode = ViewUtils.getSelectedNode(metaModelView);
+                if (dbmNode instanceof DBMTreeNode && dbmNode.getObject() != null) {
+                    DBSStructureContainerActive activeContainer = DBSUtils.queryParentInterface(
+                        DBSStructureContainerActive.class, dbmNode.getObject());
+                    try {
+                        if (activeContainer != null && activeContainer.getActiveChild() != dbmNode.getObject()) {
+                            DBMTreeNode treeNode = (DBMTreeNode)dbmNode;
+                            DBXTreeNode nodeMeta = treeNode.getMeta();
+                            String text = "Set active";
+                            if (nodeMeta instanceof DBXTreeItem) {
+                                DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
+                                text += " " + itemMeta.getPath();
+                            }
+                            IAction action = makeAction(new SetActiveObjectAction(), metaModelView.getWorkbenchPart(), selection, text);
+
+                            manager.add(action);
+                        }
+                    }
+                    catch (DBException e) {
+                        log.error(e);
+                    }
+                }
+
                 manager.add(new Separator());
                 manager.add(new GroupMarker(MB_ADDITIONS_END));
+
                 // Add properties button
                 if (!selection.isEmpty()) {
                     if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {
@@ -136,17 +170,13 @@ public class ViewUtils
                         manager.add(propertyDialogAction);
                     }
                 }
+
                 // Add refresh button
                 if (!selection.isEmpty() && metaModelView instanceof IRefreshableView) {
                     IRefreshableView rv = (IRefreshableView)metaModelView;
                     if (rv.getRefreshAction() != null) {
                         manager.add(rv.getRefreshAction());
                     }
-/*
-                    RefreshTreeAction refreshAction = new RefreshTreeAction(metaModelView.getWorkbenchPart(), null);
-                    refreshAction.setEnabled(true);
-                    manager.add(refreshAction);
-*/
                 }
             }
         });
@@ -192,7 +222,7 @@ public class ViewUtils
         });
     }
 
-    public static void initAction(Action actionImpl, IActionDelegate action, IWorkbenchPart part, ISelection selection)
+    public static void initAction(IAction actionImpl, IActionDelegate action, IWorkbenchPart part, ISelection selection)
     {
         action.selectionChanged(actionImpl, selection);
 
@@ -206,13 +236,7 @@ public class ViewUtils
         if (actionClass != null) {
             try {
                 final IActionDelegate actionDelegate = actionClass.newInstance();
-                Action actionImpl = new Action() {
-                    @Override
-                    public void run() {
-                        actionDelegate.run(this);
-                    }
-                };
-                initAction(actionImpl, actionDelegate, part, selection);
+                IAction actionImpl = makeAction(actionDelegate, part, selection, actionDelegate.getClass().getName());
                 actionImpl.run();
             } catch (InstantiationException e) {
                 log.error("Could not instantiate action delegate", e);
@@ -222,4 +246,16 @@ public class ViewUtils
         }
     }
 
+    public static IAction makeAction(final IActionDelegate actionDelegate, IWorkbenchPart part, ISelection selection, String text)
+    {
+        Action actionImpl = new Action() {
+            @Override
+            public void run() {
+                actionDelegate.run(this);
+            }
+        };
+        actionImpl.setText(text);
+        initAction(actionImpl, actionDelegate, part, selection);
+        return actionImpl;
+    }
 }

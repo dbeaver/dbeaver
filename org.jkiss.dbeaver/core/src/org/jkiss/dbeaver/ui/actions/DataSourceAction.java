@@ -126,7 +126,7 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
             if (editElement instanceof DBSDataSourceContainer) {
                 return (DBSDataSourceContainer)editElement;
             } else if (editElement instanceof DBSObject) {
-                ((DBSObject)editElement).getDataSource().getContainer();
+                return ((DBSObject)editElement).getDataSource().getContainer();
             }
         }
         if (window != null && chooseOnNoSelection) {
