@@ -490,21 +490,8 @@ public class GridItem {
 	 *            the new text
 	 */
 	public void setHeaderText(String text) {
-		// if (text == null) SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		if (!text.equals(headerText)) {
-			GC gc = new GC(parent);
-
-			int oldWidth = parent.getRowHeaderRenderer().computeSize(gc,
-					SWT.DEFAULT, SWT.DEFAULT, this).x;
-
 			this.headerText = text;
-
-			int newWidth = parent.getRowHeaderRenderer().computeSize(gc,
-					SWT.DEFAULT, SWT.DEFAULT, this).x;
-
-			gc.dispose();
-
-			parent.recalculateRowHeaderWidth(oldWidth, newWidth);
 		}
 		parent.redraw();
 	}
@@ -517,21 +504,8 @@ public class GridItem {
 	 *            the new image
 	 */
 	public void setHeaderImage(Image image) {
-		// if (text == null) SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		if (image != headerImage) {
-			GC gc = new GC(parent);
-
-			int oldWidth = parent.getRowHeaderRenderer().computeSize(gc, SWT.DEFAULT, SWT.DEFAULT, this).x;
-			//int oldHeight = parent.getRowHeaderRenderer().computeSize(gc, SWT.DEFAULT, SWT.DEFAULT, this).y;
-
 			this.headerImage = image;
-
-			int newWidth = parent.getRowHeaderRenderer().computeSize(gc, SWT.DEFAULT, SWT.DEFAULT, this).x;
-			int newHeight = parent.getRowHeaderRenderer().computeSize(gc, SWT.DEFAULT, SWT.DEFAULT, this).y;
-
-			gc.dispose();
-
-			parent.recalculateRowHeaderWidth(oldWidth, newWidth);
 		}
 		parent.redraw();
 	}

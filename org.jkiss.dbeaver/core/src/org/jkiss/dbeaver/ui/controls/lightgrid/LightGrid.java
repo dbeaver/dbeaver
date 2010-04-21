@@ -1892,6 +1892,8 @@ public class LightGrid extends Canvas {
         checkWidget();
 
         items.clear();
+        currentVisibleItems = 0;
+
         deselectAll();
         redraw();
     }
@@ -2212,16 +2214,6 @@ public class LightGrid extends Canvas {
         checkWidget();
         this.rowHeaderVisible = show;
         setColumnScrolling(true);
-
-        if (show && isAutoWidth()) {
-            rowHeaderWidth = 1;
-
-            for (GridItem iterItem : items) {
-                rowHeaderWidth = Math.max(
-                    rowHeaderWidth,
-                    rowHeaderRenderer.computeSize(sizingGC, SWT.DEFAULT, SWT.DEFAULT, iterItem).x);
-            }
-        }
 
         redraw();
     }
@@ -5485,27 +5477,6 @@ public class LightGrid extends Canvas {
             setCapture(false);
             inplaceTooltipCapture = false;
         }
-    }
-
-    void recalculateRowHeaderWidth(int oldWidth, int newWidth)
-    {
-        if (!isAutoWidth())
-            return;
-
-        if (newWidth > rowHeaderWidth) {
-            rowHeaderWidth = newWidth;
-        } else if (newWidth < rowHeaderWidth && oldWidth == rowHeaderWidth) {
-            //if the changed width is smaller, and the previous width of that rows header was equal
-            //to the current row header width then its possible that we may need to make the new
-            //row header width smaller, but to do that we need to ask all the rows all over again
-            for (GridItem iterItem : items) {
-                newWidth = Math.max(newWidth,
-                                    rowHeaderRenderer.computeSize(sizingGC, SWT.DEFAULT, SWT.DEFAULT, iterItem).x);
-            }
-
-            rowHeaderWidth = newWidth;
-        }
-        redraw();
     }
 
     /**
