@@ -33,7 +33,7 @@ public class TextViewDialog extends ValueViewDialog {
         label.setText("Value: ");
 
         int style = SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP;
-        if (value == null || getValueController().isReadOnly()) {
+        if (getValueController().isReadOnly()) {
             style |= SWT.READ_ONLY;
         }
         textEdit = new Text(dialogGroup, style);

@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -111,6 +113,13 @@ public abstract class ValueViewDialog extends Dialog {
         return dialogGroup;
     }
 
+    protected void createButtonsForButtonBar(Composite parent) {
+        // create OK and Cancel buttons by default
+        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+        createButton(parent, IDialogConstants.IGNORE_ID, "Set NULL", false);
+        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+    }
+
     @Override
     protected void okPressed()
     {
@@ -122,6 +131,16 @@ public abstract class ValueViewDialog extends Dialog {
         catch (Exception e) {
             DBeaverUtils.showErrorDialog(getShell(), "Error updating column", "Could not update column value", e);
             super.cancelPressed();
+        }
+    }
+
+    @Override
+    protected void buttonPressed(int buttonId) {
+        if (buttonId == IDialogConstants.IGNORE_ID) {
+            getValueController().updateValue(null);
+            super.okPressed();
+        } else {
+            super.buttonPressed(buttonId);
         }
     }
 
