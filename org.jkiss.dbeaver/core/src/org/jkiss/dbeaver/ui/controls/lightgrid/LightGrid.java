@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TypedListener;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.jkiss.dbeaver.ui.controls.lightgrid.dnd.GridDragSourceEffect;
 import org.jkiss.dbeaver.ui.controls.lightgrid.dnd.GridDropTargetEffect;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultBottomLeftRenderer;
@@ -105,6 +106,11 @@ public class LightGrid extends Canvas {
      * The minimum width of a column header.
      */
     private static final int MIN_COLUMN_HEADER_WIDTH = 20;
+
+    private IGridContentProvider contentProvider;
+    private ILabelProvider contentLabelProvider;
+    private ILabelProvider columnLabelProvider;
+    private ILabelProvider rowLabelProvider;
 
     /**
      * Tracks whether the scroll values are correct. If not they will be
@@ -636,6 +642,37 @@ public class LightGrid extends Canvas {
         setDragDetect(false);
     }
 
+    public IGridContentProvider getContentProvider() {
+        return contentProvider;
+    }
+
+    public void setContentProvider(IGridContentProvider contentProvider) {
+        this.contentProvider = contentProvider;
+    }
+
+    public ILabelProvider getContentLabelProvider() {
+        return contentLabelProvider;
+    }
+
+    public void setContentLabelProvider(ILabelProvider contentLabelProvider) {
+        this.contentLabelProvider = contentLabelProvider;
+    }
+
+    public ILabelProvider getColumnLabelProvider() {
+        return columnLabelProvider;
+    }
+
+    public void setColumnLabelProvider(ILabelProvider columnLabelProvider) {
+        this.columnLabelProvider = columnLabelProvider;
+    }
+
+    public ILabelProvider getRowLabelProvider() {
+        return rowLabelProvider;
+    }
+
+    public void setRowLabelProvider(ILabelProvider rowLabelProvider) {
+        this.rowLabelProvider = rowLabelProvider;
+    }
 
     /**
      * {@inheritDoc}
