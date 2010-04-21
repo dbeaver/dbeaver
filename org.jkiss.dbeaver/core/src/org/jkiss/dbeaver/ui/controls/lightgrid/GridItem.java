@@ -396,8 +396,6 @@ public class GridItem {
         }
 		images.set(index, image);
 
-		parent.imageSetOnItem(index, this);
-
 		parent.redraw();
 	}
 
@@ -534,7 +532,6 @@ public class GridItem {
 			gc.dispose();
 
 			parent.recalculateRowHeaderWidth(oldWidth, newWidth);
-			parent.recalculateRowHeaderHeight(newHeight);
 		}
 		parent.redraw();
 	}

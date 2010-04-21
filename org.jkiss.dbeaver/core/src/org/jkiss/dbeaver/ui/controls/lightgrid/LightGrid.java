@@ -623,7 +623,7 @@ public class LightGrid extends Canvas {
 
         initListeners();
 
-        itemHeight = sizingGC.getFontMetrics().getHeight() + 2;
+        itemHeight = sizingGC.getFontMetrics().getHeight() + 3;
 
 
         RGB sel = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION).getRGB();
@@ -2541,37 +2541,6 @@ public class LightGrid extends Canvas {
         }
 
         footerHeight = colFooterHeight;
-    }
-
-    /**
-     * Returns the computed default item height. Currently this method just gets the
-     * preferred size of all the cells in the given row and returns that (it is
-     * then used as the height of all rows with items having a height of -1).
-     *
-     * @param item item to use for sizing
-     * @param gc   GC used to perform font metrics,etc.
-     * @return the row height
-     */
-    private int computeItemHeight(GridItem item, GC gc)
-    {
-        int height = 1;
-
-        if (columns.size() == 0 || items.size() == 0) {
-            return height;
-        }
-
-        for (GridColumn column : columns) {
-            height = Math.max(height, column.getCellRenderer().computeSize(gc, SWT.DEFAULT,
-                                                                           SWT.DEFAULT,
-                                                                           item).y);
-        }
-
-        if (rowHeaderVisible && rowHeaderRenderer != null) {
-            height = Math.max(height, rowHeaderRenderer.computeSize(gc, SWT.DEFAULT,
-                                                                    SWT.DEFAULT, item).y);
-        }
-
-        return height <= 0 ? 16 : height;
     }
 
     /**
@@ -4905,9 +4874,6 @@ public class LightGrid extends Canvas {
             row = index;
         }
 
-        if (items.size() == 1 && !userModifiedItemHeight)
-            itemHeight = computeItemHeight(item, sizingGC);
-
         if (isRowHeaderVisible() && isAutoWidth()) {
             rowHeaderWidth = Math.max(rowHeaderWidth, rowHeaderRenderer
                 .computeSize(sizingGC, SWT.DEFAULT, SWT.DEFAULT, item).x);
@@ -5521,24 +5487,6 @@ public class LightGrid extends Canvas {
         }
     }
 
-    void recalculateRowHeaderHeight(int newHeight)
-    {
-        checkWidget();
-
-        if (newHeight > itemHeight) {
-            itemHeight = newHeight;
-
-            userModifiedItemHeight = false;
-
-            itemHeight = computeItemHeight(items.get(0), sizingGC);
-
-            setScrollValuesObsolete();
-            redraw();
-        }
-
-    }
-
-
     void recalculateRowHeaderWidth(int oldWidth, int newWidth)
     {
         if (!isAutoWidth())
@@ -5651,34 +5599,6 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
         toolTipText = string;
-    }
-
-    /**
-     * Updates the row height when the first image is set on an item.
-     *
-     * @param column the column the image is change
-     * @param item   item which images has just been set on.
-     */
-    void imageSetOnItem(int column, GridItem item)
-    {
-        if (sizeOnEveryItemImageChange) {
-            if (item == null || item.getImage(column) == null)
-                return;
-
-            int height = item.getImage(column).getBounds().height;
-            //FIXME Needs better algorithm
-            if (height + 20 > getItemHeight()) {
-                height = computeItemHeight(item, sizingGC);
-                setItemHeight(height);
-            }
-        } else {
-            if (firstImageSet || userModifiedItemHeight) return;
-
-            int height = computeItemHeight(item, sizingGC);
-            setItemHeight(height);
-
-            firstImageSet = true;
-        }
     }
 
     /**
