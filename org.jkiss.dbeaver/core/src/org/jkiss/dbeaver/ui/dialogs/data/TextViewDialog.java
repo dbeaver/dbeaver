@@ -49,7 +49,7 @@ public class TextViewDialog extends ValueViewDialog {
         gd.widthHint = 300;
         gd.grabExcessVerticalSpace = true;
         textEdit.setLayoutData(gd);
-
+        textEdit.setFocus();
         return dialogGroup;
     }
 

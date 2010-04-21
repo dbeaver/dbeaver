@@ -115,9 +115,9 @@ public abstract class ValueViewDialog extends Dialog {
 
     protected void createButtonsForButtonBar(Composite parent) {
         // create OK and Cancel buttons by default
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-        createButton(parent, IDialogConstants.IGNORE_ID, "Set NULL", false);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+        createButton(parent, IDialogConstants.OK_ID, "&Save", true);
+        createButton(parent, IDialogConstants.IGNORE_ID, "Set &NULL", false);
+        createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", false);
     }
 
     @Override
