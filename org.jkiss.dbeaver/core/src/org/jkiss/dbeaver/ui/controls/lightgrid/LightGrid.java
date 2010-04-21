@@ -1278,13 +1278,6 @@ public class LightGrid extends Canvas {
 
     /**
      * Returns the default height of the items
-     * in this <code>Grid</code>. See {@link #setItemHeight(int)}
-     * for details.
-     * <p/>
-     * <p>IMPORTANT: The Grid's items need not all have the
-     * height returned by this method, because an
-     * item's height may have been changed by calling
-     * {@link GridItem#setHeight(int)}.
      *
      * @return default height of items
      * @see #setItemHeight(int)
@@ -1305,7 +1298,6 @@ public class LightGrid extends Canvas {
      * used as a default for all items (and is returned by {@link #getItemHeight()}).
      *
      * @param height default height in pixels
-     * @see GridItem#setHeight(int)
      */
     public void setItemHeight(int height)
     {
@@ -1449,53 +1441,6 @@ public class LightGrid extends Canvas {
     }
 
     /**
-     * Returns a array of {@code GridItem}s that are currently selected in the
-     * receiver. The order of the items is unspecified. An empty array indicates
-     * that no items are selected.
-     * <p/>
-     * Note: This is not the actual structure used by the receiver to maintain
-     * its selection, so modifying the array will not affect the receiver.
-     * <p/>
-     * If cell selection is enabled, any items which contain at least one selected
-     * cell are returned.
-     *
-     * @return an array representing the selection
-     */
-    public Collection<GridItem> getSelection()
-    {
-        checkWidget();
-
-        Set<GridItem> items = new HashSet<GridItem>();
-        int itemCount = getItemCount();
-
-        for (Point cell : selectedCells) {
-            if (cell.y >= 0 && cell.y < itemCount) {
-                GridItem item = getItem(cell.y);
-                items.add(item);
-            }
-        }
-        return items;
-    }
-
-    /**
-     * Returns the number of selected items contained in the receiver.  If cell selection
-     * is enabled, the number of items with at least one selected cell are returned.
-     *
-     * @return the number of selected items
-     */
-    public int getSelectionCount()
-    {
-        checkWidget();
-
-        Set<GridItem> items = new HashSet<GridItem>();
-        for (Point cell : selectedCells) {
-            GridItem item = getItem(cell.y);
-            items.add(item);
-        }
-        return items.size();
-    }
-
-    /**
      * Returns the number of selected cells contained in the receiver.
      *
      * @return the number of selected cells
@@ -1590,7 +1535,7 @@ public class LightGrid extends Canvas {
      * or collapsed or new items are added or removed.
      * <p/>
      * Note that the item with this index is often only partly visible; maybe only
-     * a single line of pixels is visible. Use {@link #isShown(GridItem)} to find
+     * a single line of pixels is visible. Use {@link #isShown(int)} to find
      * out.
      * <p/>
      * In extreme cases, getBottomIndex() may return the same value as
@@ -1831,15 +1776,6 @@ public class LightGrid extends Canvas {
      */
     public int indexOf(GridItem item)
     {
-        checkWidget();
-
-        if (item == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-            return -1;
-        }
-
-        if (item.getParent() != this) return -1;
-
         return items.indexOf(item);
     }
 
@@ -1867,28 +1803,8 @@ public class LightGrid extends Canvas {
      */
     public boolean isSelected(int index)
     {
-        checkWidget();
-
         if (index < 0 || index >= items.size()) return false;
 
-        for (Point cell : selectedCells) {
-            if (cell.y == index) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Returns true if the given item is selected.  If cell selection is enabled,
-     * returns true if the given item contains at least one selected cell.
-     *
-     * @param item item
-     * @return true if the item is selected.
-     */
-    public boolean isSelected(GridItem item)
-    {
-        checkWidget();
-        int index = indexOf(item);
-        if (index == -1) return false;
         for (Point cell : selectedCells) {
             if (cell.y == index) return true;
         }
@@ -2604,8 +2520,6 @@ public class LightGrid extends Canvas {
 
         if (scrollValuesObsolete)
             updateScrollbars();
-
-        GridItem item;
 
         if (selectedCells.isEmpty()) return;
 
@@ -4666,7 +4580,7 @@ public class LightGrid extends Canvas {
      * @param item   item
      * @return x,y of top left corner of the cell
      */
-    Point getOrigin(GridColumn column, GridItem item)
+    Point getOrigin(GridColumn column, int item)
     {
         int x = 0;
 
@@ -4684,13 +4598,13 @@ public class LightGrid extends Canvas {
         }
 
         int y = 0;
-        if (item != null) {
+        if (item >= 0) {
             if (columnHeadersVisible) {
                 y += headerHeight;
             }
 
             int currIndex = getTopIndex();
-            int itemIndex = items.indexOf(item);
+            int itemIndex = item;
 
             if (itemIndex == -1) {
                 SWT.error(SWT.ERROR_INVALID_ARGUMENT);

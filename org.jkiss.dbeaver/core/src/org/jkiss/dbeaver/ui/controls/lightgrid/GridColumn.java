@@ -652,7 +652,7 @@ public class GridColumn extends Item {
 	Rectangle getBounds() {
 		Rectangle bounds = new Rectangle(0, 0, 0, 0);
 
-		Point loc = parent.getOrigin(this, null);
+		Point loc = parent.getOrigin(this, -1);
 		bounds.x = loc.x;
 		bounds.y = loc.y;
 		bounds.width = getWidth();

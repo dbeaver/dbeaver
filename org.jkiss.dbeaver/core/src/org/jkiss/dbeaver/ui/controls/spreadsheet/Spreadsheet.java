@@ -810,31 +810,6 @@ public class Spreadsheet extends Composite implements Listener {
             }
         }
     */
-    private void redrawItems(Collection<GridPos> posList)
-    {
-        int topIndex = grid.getTopIndex();
-        int bottomIndex = grid.getTopIndex() + getVisibleRowsCount();
-
-        for (GridPos pos : posList) {
-            if (pos.row < topIndex || pos.row > bottomIndex) {
-                continue;
-            }
-            GridItem tableItem = grid.getItem(pos.row);
-            if (tableItem != null) {
-                Rectangle cellBounds = tableItem.getBounds(pos.col);
-                grid.redraw(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height, false);
-            }
-        }
-    }
-
-    private List<GridPos> makeRowPositions(int rowSelected)
-    {
-        List<GridPos> rowPoses = new ArrayList<GridPos>();
-        for (int i = 0; i < curColumns.size(); i++) {
-            rowPoses.add(new GridPos(i, rowSelected));
-        }
-        return rowPoses;
-    }
 
     public GridColumn getColumn(int index)
     {
@@ -979,7 +954,7 @@ public class Spreadsheet extends Composite implements Listener {
                         grid.selectAll();
                     }
                 };
-                copyAction.setEnabled(grid.getSelectionCount() > 0);
+                copyAction.setEnabled(grid.getCellSelectionCount() > 0);
                 manager.add(copyAction);
                 manager.add(selectAllAction);
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));

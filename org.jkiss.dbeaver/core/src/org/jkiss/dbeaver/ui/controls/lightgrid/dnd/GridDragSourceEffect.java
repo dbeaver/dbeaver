@@ -4,11 +4,6 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.dnd;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Collection;
-import java.util.Iterator;
-
 import org.eclipse.swt.dnd.DragSourceAdapter;
 import org.eclipse.swt.dnd.DragSourceEffect;
 import org.eclipse.swt.dnd.DragSourceEvent;
@@ -17,10 +12,14 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridCellRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridCellRenderer;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 
 /**
