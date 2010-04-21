@@ -4,8 +4,6 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
-import  org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridHeaderRenderer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -14,6 +12,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.TextLayout;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 
 /**
  * The column header renderer.
@@ -147,7 +146,7 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer
 
         gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
 
-        int y = bottomMargin;
+        int y;
 
         if( column.getHeaderControl() == null ) {
         	y = getBounds().y + getBounds().height - bottomMargin

@@ -31,18 +31,12 @@ public abstract class AbstractRenderer implements IGridRenderer
     /** Selection state. */
     private boolean selected;
 
-    /** Expansion state. */
-    private boolean expanded;
-
     /** The bounds the renderer paints on. */
     private Rectangle bounds = new Rectangle(0, 0, 0, 0);
 
     /** Display used to create GC to perform painting. */
     private Display display;
     
-    /** Dragging state. */
-    private boolean dragging;
-
     /**
      * Returns the bounds.
      * 
@@ -183,26 +177,6 @@ public abstract class AbstractRenderer implements IGridRenderer
     public void setSelected(boolean selected)
     {
         this.selected = selected;
-    }
-
-    /**
-     * Returns the expansion state.
-     * 
-     * @return Returns the expanded.
-     */
-    public boolean isExpanded()
-    {
-        return expanded;
-    }
-
-    /**
-     * Sets the expansion state of this renderer.
-     * 
-     * @param expanded The expanded to set.
-     */
-    public void setExpanded(boolean expanded)
-    {
-        this.expanded = expanded;
     }
 
     /**

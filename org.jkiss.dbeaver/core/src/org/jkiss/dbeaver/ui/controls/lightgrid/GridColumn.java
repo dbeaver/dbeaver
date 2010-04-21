@@ -65,7 +65,7 @@ public class GridColumn extends Item {
 	/**
 	 * Cell renderer.
 	 */
-	private GridCellRenderer cellRenderer = new DefaultCellRenderer();
+	private GridCellRenderer cellRenderer;
 
 	/**
 	 * Width of column.
@@ -161,10 +161,10 @@ public class GridColumn extends Item {
 		init(parent, style, index);
 	}
 
-	private void init(LightGrid table, int style, int index) {
-		this.parent = table;
-
-		table.newColumn(this, index);
+	private void init(LightGrid grid, int style, int index) {
+		this.parent = grid;
+        cellRenderer = new DefaultCellRenderer(grid);
+		grid.newColumn(this, index);
 
 		initHeaderRenderer();
 		initFooterRenderer();

@@ -7,6 +7,7 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
 import  org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * <p>
@@ -20,8 +21,7 @@ import  org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
  */
 public abstract class GridCellRenderer extends AbstractGridWidget
 {
-
-    private int row = 0;
+    protected final LightGrid grid;
 
     private int column = 0;
 
@@ -34,27 +34,16 @@ public abstract class GridCellRenderer extends AbstractGridWidget
     private boolean rowFocus = false;
 
     private boolean cellFocus = false;
-    
+
     private boolean cellSelected = false;
-    
+
     private boolean wordWrap = false;
-    
+
     private boolean dragging = false;
 
-    /**
-     * @return Returns the row.
-     */
-    public int getRow()
+    protected GridCellRenderer(LightGrid grid)
     {
-        return row;
-    }
-
-    /**
-     * @param row The row to set.
-     */
-    public void setRow(int row)
-    {
-        this.row = row;
+        this.grid = grid;
     }
 
     /**
@@ -168,7 +157,7 @@ public abstract class GridCellRenderer extends AbstractGridWidget
     {
         this.cellSelected = cellSelected;
     }
-    
+
     /**
      * Returns the bounds of the text in the cell.  This is used when displaying in-place tooltips.
      * If <code>null</code> is returned here, in-place tooltips will not be displayed.  If the 
@@ -180,7 +169,7 @@ public abstract class GridCellRenderer extends AbstractGridWidget
      * @param preferred true if the preferred width of the text should be returned.
      * @return bounds of the text.
      */
-    public Rectangle getTextBounds(GridItem item, boolean preferred)
+    public Rectangle getTextBounds(int row, boolean preferred)
     {
         return null;
     }
@@ -200,9 +189,9 @@ public abstract class GridCellRenderer extends AbstractGridWidget
     {
         this.wordWrap = wordWrap;
     }
-    
+
     /**
-     * Gets the dragging state. 
+     * Gets the dragging state.
      *
      * @return Returns the dragging state.
      */

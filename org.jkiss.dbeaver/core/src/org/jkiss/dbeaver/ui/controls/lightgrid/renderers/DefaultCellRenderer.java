@@ -13,8 +13,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.TextLayout;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * The renderer for a cell in Grid.
@@ -42,6 +42,11 @@ public class DefaultCellRenderer extends GridCellRenderer
     int treeIndent = 20;
 
     private TextLayout textLayout;
+
+    public DefaultCellRenderer(LightGrid grid)
+    {
+        super(grid);
+    }
 
     /**
      * {@inheritDoc}
@@ -279,11 +284,11 @@ public class DefaultCellRenderer extends GridCellRenderer
     /**
      * {@inheritDoc}
      */
-    public Rectangle getTextBounds(GridItem item, boolean preferred)
+    public Rectangle getTextBounds(int row, boolean preferred)
     {
         int x = leftMargin;
 
-        Image image = item.getImage(getColumn());
+        Image image = grid.getCellImage(row, getColumn());
         if (image != null)
         {
             x += image.getBounds().width + insideMargin;
@@ -291,9 +296,9 @@ public class DefaultCellRenderer extends GridCellRenderer
 
         Rectangle bounds = new Rectangle(x,topMargin + textTopMargin,0,0);
 
-        GC gc = new GC(item.getParent());
-        gc.setFont(item.getFont(getColumn()));
-        Point size = gc.stringExtent(item.getText(getColumn()));
+        GC gc = new GC(grid);
+        gc.setFont(grid.getCellFont(row, getColumn()));
+        Point size = gc.stringExtent(grid.getCellText(row, getColumn()));
 
         bounds.height = size.y;
 

@@ -4,19 +4,7 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.IGridWidget;
-
 /**
- * <p>
- * NOTE:  THIS WIDGET AND ITS API ARE STILL UNDER DEVELOPMENT.  THIS IS A PRE-RELEASE ALPHA 
- * VERSION.  USERS SHOULD EXPECT API CHANGES IN FUTURE VERSIONS.
- * </p> 
- * Base implementation of IRenderer and IInternalWidget. Provides management of
- * a few values. 
- * 
- * @see  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer
- * @author chris.gross@us.ibm.com
  */
 public abstract class AbstractGridWidget extends AbstractRenderer implements IGridWidget
 {

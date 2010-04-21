@@ -229,7 +229,7 @@ public class Spreadsheet extends Composite implements Listener {
                 newRow = getItemCount() - 1;
             }
             newPos.y = newRow;
-            selectionEvent.data = grid.getItem(newRow);
+            selectionEvent.data = newRow;
             grid.setFocusItem(newRow);
             grid.showItem(newRow);
         }
@@ -333,11 +333,11 @@ public class Spreadsheet extends Composite implements Listener {
         gridSelectionListener = new SelectionListener() {
             public void widgetSelected(SelectionEvent e)
             {
-                GridItem item = (GridItem) e.data;
+                Integer row = (Integer) e.data;
                 Point focusCell = grid.getFocusCell();
                 if (focusCell != null) {
                     Event event = new Event();
-                    event.data = item;
+                    event.data = row;
                     event.data = e.data;
                     event.x = focusCell.x;
                     event.y = focusCell.y;

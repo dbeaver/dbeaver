@@ -101,13 +101,6 @@ public interface IGridRenderer
     void setSelected(boolean selected);
 
     /**
-     * Sets the expanded state.
-     * 
-     * @param expanded Expansion state.
-     */
-    void setExpanded(boolean expanded);
-
-    /**
      * Sets the area of the drawing.
      * 
      * @param width Width.

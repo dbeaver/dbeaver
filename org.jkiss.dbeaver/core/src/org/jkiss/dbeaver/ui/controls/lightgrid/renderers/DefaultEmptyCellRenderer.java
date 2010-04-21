@@ -19,8 +19,12 @@ import org.eclipse.swt.graphics.Point;
  */
 public class DefaultEmptyCellRenderer extends GridCellRenderer
 {
+    public DefaultEmptyCellRenderer(LightGrid grid)
+    {
+        super(grid);
+    }
 
-    /** 
+    /**
      * {@inheritDoc}
      */
     public void paint(GC gc, Object value)
