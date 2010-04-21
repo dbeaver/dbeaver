@@ -230,9 +230,7 @@ public class LightGrid extends Canvas {
     private int selectionType = SWT.SINGLE;
 
     /**
-     * Default height of items.  This value is used
-     * for <code>GridItem</code>s with a height
-     * of -1.
+     * Default height of items.
      */
     private int itemHeight = 1;
 
@@ -344,7 +342,7 @@ public class LightGrid extends Canvas {
      * Reference to the currently item that the mouse is currently hovering
      * over.
      */
-    private GridItem hoveringItem;
+    private int hoveringItem;
 
     /**
      * Reference to the column that the mouse is currently hovering over.
@@ -1227,6 +1225,44 @@ public class LightGrid extends Canvas {
         }
 
         return itemToReturn;
+    }
+
+    public int getRow(Point point)
+    {
+        checkWidget();
+
+        if (point == null) {
+            SWT.error(SWT.ERROR_NULL_ARGUMENT);
+            return -1;
+        }
+
+        if (point.x < 0 || point.x > getClientArea().width) return -1;
+
+        Point p = new Point(point.x, point.y);
+
+        int y2 = 0;
+
+        if (columnHeadersVisible) {
+            if (p.y <= headerHeight) {
+                return -1;
+            }
+            y2 += headerHeight;
+        }
+
+        int row = getTopIndex();
+        int currItemHeight = getItemHeight();
+
+        while (row < items.size() && y2 <= getClientArea().height) {
+            if (p.y >= y2 && p.y < y2 + currItemHeight + 1) {
+                return row;
+            }
+
+            y2 += currItemHeight + 1;
+
+            row++;
+        }
+
+        return -1;
     }
 
     /**
@@ -3163,7 +3199,7 @@ public class LightGrid extends Canvas {
                         column.getCellRenderer().setCellFocus(
                             focusItem == row && focusColumn == column);
 
-                        column.getCellRenderer().setRowHover(hoveringItem == item);
+                        column.getCellRenderer().setRowHover(hoveringItem == row);
                         column.getCellRenderer().setColumnHover(hoveringColumn == column);
 
                         if (selectedCells.contains(new Point(indexOf(column), row))) {
@@ -3173,7 +3209,7 @@ public class LightGrid extends Canvas {
                             column.getCellRenderer().setCellSelected(false);
                         }
 
-                        if (hoveringItem == item && hoveringColumn == column) {
+                        if (hoveringItem == row && hoveringColumn == column) {
                             column.getCellRenderer().setHoverDetail(hoveringDetail);
                         } else {
                             column.getCellRenderer().setHoverDetail("");
@@ -4257,14 +4293,14 @@ public class LightGrid extends Canvas {
 
                 if (cellDragSelectionOccuring && handleCellHover(e.x, e.y)) {
                     GridColumn intentColumn = hoveringColumn;
-                    GridItem intentItem = hoveringItem;
+                    int intentItem = hoveringItem;
 
-                    if (hoveringItem == null) {
+                    if (hoveringItem < 0) {
                         if (e.y > headerHeight) {
                             //then we must be hovering way to the bottom
-                            intentItem = getPreviousVisibleItem(null);
+                            intentItem = items.size() - 1;
                         } else {
-                            intentItem = items.get(0);
+                            intentItem = 0;
                         }
                     }
 
@@ -4279,32 +4315,31 @@ public class LightGrid extends Canvas {
                     }
 
                     showColumn(intentColumn);
-                    showItem(indexOf(intentItem));
-                    selectionEvent = updateCellSelection(new Point(indexOf(intentColumn), indexOf(intentItem)),
+                    showItem(intentItem);
+                    selectionEvent = updateCellSelection(new Point(indexOf(intentColumn), intentItem),
                                                          ctrlFlag | SWT.MOD2, true, false);
                 }
                 if (cellRowDragSelectionOccuring && handleCellHover(e.x, e.y)) {
-                    GridItem intentItem = hoveringItem;
+                    int intentItem = hoveringItem;
 
-                    if (hoveringItem == null) {
+                    if (hoveringItem < 0) {
                         if (e.y > headerHeight) {
                             //then we must be hovering way to the bottom
-                            intentItem = getPreviousVisibleItem(null);
+                            intentItem = items.size() - 1;
                         } else {
                             if (getTopIndex() > 0) {
-                                intentItem = getPreviousVisibleItem(items.get(getTopIndex()));
+                                intentItem = getTopIndex() - 1;
                             } else {
-                                intentItem = items.get(0);
+                                intentItem = 0;
                             }
                         }
                     }
 
                     List<Point> cells = new ArrayList<Point>();
 
-                    int intentRow = indexOf(intentItem);
-                    getCells(intentRow, focusItem, cells);
+                    getCells(intentItem, focusItem, cells);
 
-                    showItem(intentRow);
+                    showItem(intentItem);
                     selectionEvent = updateCellSelection(cells, ctrlFlag, true, false);
                 }
                 if (cellColumnDragSelectionOccuring && handleCellHover(e.x, e.y)) {
@@ -4417,7 +4452,7 @@ public class LightGrid extends Canvas {
      */
     private void onMouseExit(MouseEvent e)
     {
-        hoveringItem = null;
+        hoveringItem = -1;
         hoveringDetail = "";
         hoveringColumn = null;
         hoveringOverText = false;
@@ -4745,6 +4780,7 @@ public class LightGrid extends Canvas {
 
         final GridColumn col = getColumn(new Point(x, y));
         final GridItem item = getItem(new Point(x, y));
+        final int row = item == null ? -1 : indexOf(item);
 
         GridColumn hoverColHeader = null;
 
@@ -4789,9 +4825,9 @@ public class LightGrid extends Canvas {
 
         boolean hoverChange = false;
 
-        if (hoveringItem != item || !hoveringDetail.equals(detail) || hoveringColumn != col
+        if (hoveringItem != row || !hoveringDetail.equals(detail) || hoveringColumn != col
             || hoverColHeader != hoveringColumnHeader) {
-            hoveringItem = item;
+            hoveringItem = row;
             hoveringDetail = detail;
             hoveringColumn = col;
             hoveringColumnHeader = hoverColHeader;
@@ -4812,7 +4848,7 @@ public class LightGrid extends Canvas {
                 Rectangle textBounds = null;
                 Rectangle preferredTextBounds = null;
 
-                if (hoveringItem != null && hoveringItem.getToolTipText(
+                if (hoveringItem > 0 && items.get(hoveringItem).getToolTipText(
                     indexOf(col)) == null && //no inplace tooltips when regular tooltip
                     !col.getWordWrap()) //dont show inplace tooltips for cells with wordwrap
                 {
@@ -4849,9 +4885,9 @@ public class LightGrid extends Canvas {
         //do normal cell specific tooltip stuff
         if (hoverChange) {
             String newTip = null;
-            if ((hoveringItem != null) && (hoveringColumn != null)) {
+            if ((hoveringItem >= 0) && (hoveringColumn != null)) {
                 // get cell specific tooltip
-                newTip = hoveringItem.getToolTipText(indexOf(hoveringColumn));
+                newTip = items.get(hoveringItem).getToolTipText(indexOf(hoveringColumn));
             } else if ((hoveringColumn != null) && (hoveringColumnHeader != null)) {
                 // get column header specific tooltip
                 newTip = hoveringColumn.getHeaderTooltip();
