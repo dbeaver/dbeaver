@@ -435,7 +435,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         throws DBException
     {
         if (activeChild == null) {
-            if (CommonUtils.isEmpty(queryGetActiveDB) || catalogs == null) {
+            if (CommonUtils.isEmpty(queryGetActiveDB)) {
                 return null;
             }
             String activeDbName;
