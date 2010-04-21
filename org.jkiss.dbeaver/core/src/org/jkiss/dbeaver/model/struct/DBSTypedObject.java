@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
-
 /**
  * DBSColumnDefinition
  */
@@ -23,5 +21,17 @@ public interface DBSTypedObject
      * @return value type
      */
     int getValueType();
+
+    /**
+     * Value scale
+     * @return scale
+     */
+    int getScale();
+
+    /**
+     * Value precision
+     * @return precision
+     */
+    int getPrecision();
 
 }

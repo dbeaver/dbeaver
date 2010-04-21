@@ -48,7 +48,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         case java.sql.Types.BIT:
             return resultSet.getByte(columnIndex);
         default:
-            return resultSet.getDouble(columnIndex);
+            if (columnType.getScale() > 0) {
+                return resultSet.getDouble(columnIndex);
+            } else {
+                return resultSet.getLong(columnIndex);
+            }
         }
     }
 
@@ -76,7 +80,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 statement.setByte(paramIndex, number.byteValue());
                 break;
             default:
-                statement.setDouble(paramIndex, number.doubleValue());
+                if (paramType.getScale() > 0) {
+                    statement.setDouble(paramIndex, number.doubleValue());
+                } else {
+                    statement.setLong(paramIndex, number.longValue());
+                }
                 break;
             }
         }

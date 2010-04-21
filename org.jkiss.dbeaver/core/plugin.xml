@@ -597,6 +597,7 @@
             <type standard="REAL"/>
             <type standard="DOUBLE"/>
             <type standard="DECIMAL"/>
+            <type standard="NUMERIC"/>
             <type standard="CHAR"/>
             <type standard="VARCHAR"/>
             <type standard="LONGVARCHAR"/>

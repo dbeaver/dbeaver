@@ -149,7 +149,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
 
     public String getTableName()
     {
-        return tableName;
+        return tableMetaData != null ? tableMetaData.getTableName() : tableName;
     }
 
     public String getCatalogName()
