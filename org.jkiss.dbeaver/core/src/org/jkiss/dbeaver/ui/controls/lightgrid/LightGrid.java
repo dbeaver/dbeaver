@@ -412,7 +412,7 @@ public class LightGrid extends Canvas {
      * Item selected when a multiple selection using shift+click first occurs.
      * This item anchors all further shift+click selections.
      */
-    private GridItem shiftSelectionAnchorItem;
+    private int shiftSelectionAnchorItem;
 
     private boolean columnScrolling = false;
 
@@ -518,7 +518,7 @@ public class LightGrid extends Canvas {
 
     private boolean hoveringOnSelectionDragArea = false;
 
-    private GridItem insertMarkItem = null;
+    private int insertMarkItem = -1;
     private GridColumn insertMarkColumn = null;
     private boolean insertMarkBefore = false;
     private IGridRenderer insertMarkRenderer = new DefaultInsertMarkRenderer();
@@ -1291,7 +1291,6 @@ public class LightGrid extends Canvas {
      */
     public int getItemHeight()
     {
-        checkWidget();
         return itemHeight;
     }
 
@@ -1306,7 +1305,6 @@ public class LightGrid extends Canvas {
      * used as a default for all items (and is returned by {@link #getItemHeight()}).
      *
      * @param height default height in pixels
-     * @see GridItem#getHeight()
      * @see GridItem#setHeight(int)
      */
     public void setItemHeight(int height)
@@ -1334,17 +1332,6 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
         return items.toArray(new GridItem[items.size()]);
-    }
-
-    /**
-     * @param item
-     * @return t
-     */
-    public int getIndexOfItem(GridItem item)
-    {
-        checkWidget();
-
-        return items.indexOf(item);
     }
 
     /**
@@ -1386,16 +1373,13 @@ public class LightGrid extends Canvas {
      * @param item item
      * @return next visible item or null
      */
-    public GridItem getNextVisibleItem(GridItem item)
+    public int getNextVisibleItem(int index)
     {
-        checkWidget();
-
-        int index = items.indexOf(item);
-        if (items.size() == index + 1) {
-            return null;
+        if (index >= items.size()) {
+            return -1;
         }
 
-        return items.get(index + 1);
+        return index + 1;
     }
 
     /**
@@ -1405,21 +1389,12 @@ public class LightGrid extends Canvas {
      * @param item item or null
      * @return previous visible item or if item==null last visible item
      */
-    public GridItem getPreviousVisibleItem(GridItem item)
+    public int getPreviousVisibleItem(int index)
     {
-        checkWidget();
-
-        int index;
-        if (item == null) {
-            index = items.size();
-        } else {
-            index = items.indexOf(item);
-            if (index == 0) {
-                return null;
-            }
+        if (index == 0) {
+            return -1;
         }
-
-        return items.get(index - 1);
+        return index - 1;
     }
 
     /**
@@ -3220,7 +3195,7 @@ public class LightGrid extends Canvas {
                         e.gc.setClipping((Rectangle) null);
 
                         // collect the insertMark position
-                        if (!insertMarkPosFound && insertMarkItem == item && (insertMarkColumn == null || insertMarkColumn == column)) {
+                        if (!insertMarkPosFound && insertMarkItem == row && (insertMarkColumn == null || insertMarkColumn == column)) {
                             // y-pos
                             insertMarkPosY = y - 1;
                             if (!insertMarkBefore)
@@ -3655,7 +3630,7 @@ public class LightGrid extends Canvas {
             shift = true;
         } else {
             shiftSelectionAnchorColumn = null;
-            shiftSelectionAnchorItem = null;
+            shiftSelectionAnchorItem = -1;
         }
 
         if ((stateMask & SWT.MOD1) == SWT.MOD1) {
@@ -3680,7 +3655,7 @@ public class LightGrid extends Canvas {
             }
 
             shiftSelectionAnchorColumn = getColumn(newCell.x);
-            shiftSelectionAnchorItem = getItem(newCell.y);
+            shiftSelectionAnchorItem = newCell.y;
 
             if (ctrl) {
                 selectedCells.clear();
@@ -4482,13 +4457,13 @@ public class LightGrid extends Canvas {
             return;
         }
 
-        GridItem newSelection = null;
+        int newSelection = -1;
         GridColumn newColumnFocus = null;
 
         //These two variables are used because the key navigation when the shift key is down is
         //based, not off the focus item/column, but rather off the implied focus (i.e. where the
         //keyboard has extended focus to).
-        GridItem impliedFocusItem = items.get(focusItem);
+        int impliedFocusItem = focusItem;
         GridColumn impliedFocusColumn = focusColumn;
 
         if (e.stateMask == SWT.MOD2) {
@@ -4501,7 +4476,7 @@ public class LightGrid extends Canvas {
         switch (e.keyCode) {
             case SWT.ARROW_RIGHT:
                 {
-                    if (impliedFocusItem != null && impliedFocusColumn != null) {
+                    if (impliedFocusItem >= 0 && impliedFocusColumn != null) {
                         newSelection = impliedFocusItem;
 
                         int index = displayOrderedColumns.indexOf(impliedFocusColumn);
@@ -4518,7 +4493,7 @@ public class LightGrid extends Canvas {
                 break;
             case SWT.ARROW_LEFT:
                 {
-                    if (impliedFocusItem != null && impliedFocusColumn != null) {
+                    if (impliedFocusItem >= 0 && impliedFocusColumn != null) {
                         newSelection = impliedFocusItem;
 
                         int index = displayOrderedColumns.indexOf(impliedFocusColumn);
@@ -4534,12 +4509,12 @@ public class LightGrid extends Canvas {
                 }
                 break;
             case SWT.ARROW_UP:
-                if (impliedFocusItem != null) {
+                if (impliedFocusItem >= 0) {
                     newSelection = getPreviousVisibleItem(impliedFocusItem);
                 }
 
                 if (impliedFocusColumn != null) {
-                    if (newSelection != null) {
+                    if (newSelection >= 0) {
                         newColumnFocus = getVisibleColumn_DegradeLeft(impliedFocusColumn);
                     } else {
                         newColumnFocus = impliedFocusColumn;
@@ -4548,16 +4523,16 @@ public class LightGrid extends Canvas {
 
                 break;
             case SWT.ARROW_DOWN:
-                if (impliedFocusItem != null) {
+                if (impliedFocusItem >= 0) {
                     newSelection = getNextVisibleItem(impliedFocusItem);
                 } else {
                     if (items.size() > 0) {
-                        newSelection = items.get(0);
+                        newSelection = 0;
                     }
                 }
 
                 if (impliedFocusColumn != null) {
-                    if (newSelection != null) {
+                    if (newSelection >= 0) {
                         newColumnFocus = getVisibleColumn_DegradeLeft(impliedFocusColumn);
                     } else {
                         newColumnFocus = impliedFocusColumn;
@@ -4580,11 +4555,11 @@ public class LightGrid extends Canvas {
             case SWT.PAGE_UP:
                 int topIndex = getTopIndex();
 
-                newSelection = items.get(topIndex);
+                newSelection = topIndex;
 
                 if (focusItem == topIndex) {
                     RowRange range = getRowRange(getTopIndex(), getVisibleGridHeight(), false, true);
-                    newSelection = items.get(range.startIndex);
+                    newSelection = range.startIndex;
                 }
 
                 newColumnFocus = focusColumn;
@@ -4592,18 +4567,18 @@ public class LightGrid extends Canvas {
             case SWT.PAGE_DOWN:
                 int bottomIndex = getBottomIndex();
 
-                newSelection = items.get(bottomIndex);
+                newSelection = bottomIndex;
 
                 if (!isShown(bottomIndex)) {
                     // the item at bottom index is not shown completely
-                    GridItem tmpItem = getPreviousVisibleItem(newSelection);
-                    if (tmpItem != null)
+                    int tmpItem = getPreviousVisibleItem(newSelection);
+                    if (tmpItem >= 0)
                         newSelection = tmpItem;
                 }
 
                 if (focusItem == bottomIndex - 1) {
                     RowRange range = getRowRange(getBottomIndex(), getVisibleGridHeight(), true, false);
-                    newSelection = items.get(range.endIndex);
+                    newSelection = range.endIndex;
                 }
 
                 newColumnFocus = focusColumn;
@@ -4612,7 +4587,7 @@ public class LightGrid extends Canvas {
                 break;
         }
 
-        if (newSelection == null) {
+        if (newSelection < 0) {
             return;
         }
 
@@ -4622,16 +4597,16 @@ public class LightGrid extends Canvas {
             showColumn(newColumnFocus);
 
             if (e.stateMask != SWT.MOD2) {
-                if (newSelection == null) {
+                if (newSelection < 0) {
                     focusItem = -1;
                 } else {
-                    focusItem = indexOf(newSelection);
+                    focusItem = newSelection;
                 }
             }
-            showItem(indexOf(newSelection));
+            showItem(newSelection);
 
             if (e.stateMask != SWT.MOD1) {
-                Event selEvent = updateCellSelection(new Point(indexOf(newColumnFocus), indexOf(newSelection)),
+                Event selEvent = updateCellSelection(new Point(indexOf(newColumnFocus), newSelection),
                                                      e.stateMask, false, false);
                 if (selEvent != null) {
                     selEvent.stateMask = e.stateMask;
@@ -5873,7 +5848,7 @@ public class LightGrid extends Canvas {
      * @param before true places the insert mark above 'item'. false places
      *               the insert mark below 'item'.
      */
-    public void setInsertMark(GridItem item, GridColumn column, boolean before)
+    public void setInsertMark(int item, GridColumn column, boolean before)
     {
         checkWidget();
         if (column != null) {
@@ -5900,104 +5875,6 @@ public class LightGrid extends Canvas {
         Rectangle bottom = new Rectangle(rhw, getClientArea().height - DRAG_SCROLL_AREA_HEIGHT,
                                          getClientArea().width - rhw, DRAG_SCROLL_AREA_HEIGHT);
         return top.contains(point) || bottom.contains(point);
-    }
-
-    /**
-     * Clears the item at the given zero-relative index in the receiver.
-     * The text, icon and other attributes of the item are set to the default
-     * value.  If the table was created with the <code>SWT.VIRTUAL</code> style,
-     * these attributes are requested again as needed.
-     *
-     * @param index       the index of the item to clear
-     * @see SWT#VIRTUAL
-     * @see SWT#SetData
-     */
-    public void clear(int index)
-    {
-        checkWidget();
-        if (index < 0 || index >= items.size()) {
-            SWT.error(SWT.ERROR_INVALID_RANGE);
-        }
-
-        GridItem item = getItem(index);
-        item.clear();
-        redraw();
-    }
-
-    /**
-     * Clears the items in the receiver which are between the given
-     * zero-relative start and end indices (inclusive).  The text, icon
-     * and other attributes of the items are set to their default values.
-     * If the table was created with the <code>SWT.VIRTUAL</code> style,
-     * these attributes are requested again as needed.
-     *
-     * @param start       the start index of the item to clear
-     * @param end         the end index of the item to clear
-     * @see SWT#VIRTUAL
-     * @see SWT#SetData
-     */
-    public void clear(int start, int end)
-    {
-        checkWidget();
-        if (start > end) return;
-
-        int count = items.size();
-        if (!(0 <= start && start <= end && end < count)) {
-            SWT.error(SWT.ERROR_INVALID_RANGE);
-        }
-        for (int i = start; i <= end; i++) {
-            GridItem item = items.get(i);
-            item.clear();
-        }
-        redraw();
-    }
-
-    /**
-     * Clears the items at the given zero-relative indices in the receiver.
-     * The text, icon and other attributes of the items are set to their default
-     * values.  If the table was created with the <code>SWT.VIRTUAL</code> style,
-     * these attributes are requested again as needed.
-     *
-     * @param indices     the array of indices of the items
-     * @see SWT#VIRTUAL
-     * @see SWT#SetData
-     */
-    public void clear(int[] indices)
-    {
-        checkWidget();
-        if (indices == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-            return;
-        }
-        if (indices.length == 0) return;
-
-        int count = items.size();
-        for (int indice : indices) {
-            if (!(0 <= indice && indice < count)) {
-                SWT.error(SWT.ERROR_INVALID_RANGE);
-            }
-        }
-        for (int indice : indices) {
-            GridItem item = items.get(indice);
-            item.clear();
-        }
-        redraw();
-    }
-
-    /**
-     * Clears all the items in the receiver. The text, icon and other
-     * attributes of the items are set to their default values. If the
-     * table was created with the <code>SWT.VIRTUAL</code> style, these
-     * attributes are requested again as needed.
-     *
-     * @see SWT#VIRTUAL
-     * @see SWT#SetData
-     */
-    public void clearAll()
-    {
-        checkWidget();
-        if (items.size() > 0)
-            clear(0, items.size() - 1);
     }
 
     /**

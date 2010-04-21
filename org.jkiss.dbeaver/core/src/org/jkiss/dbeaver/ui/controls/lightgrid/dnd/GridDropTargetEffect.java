@@ -315,11 +315,11 @@ public class GridDropTargetEffect extends DropTargetEffect {
 	private void setInsertMark(Point cell, boolean before) {
 		if(cell!=null)
 		{
-            grid.setInsertMark(grid.getItem(cell.y), grid.getColumn(cell.x), before);
+            grid.setInsertMark(cell.y, grid.getColumn(cell.x), before);
 		}
 		else
 		{
-			grid.setInsertMark(null, null, false);
+			grid.setInsertMark(-1, null, false);
 		}
 	}
 }
