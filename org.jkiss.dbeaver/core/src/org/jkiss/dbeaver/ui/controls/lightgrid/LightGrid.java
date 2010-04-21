@@ -128,7 +128,7 @@ public class LightGrid extends Canvas {
     /**
      * Reference to the item in focus.
      */
-    private GridItem focusItem;
+    private int focusItem = -1;
 
     private Set<Point> selectedCells = new TreeSet<Point>(new CellComparator());
     private Set<Point> selectedCellsBeforeRangeSelect = new TreeSet<Point>(new CellComparator());
@@ -795,9 +795,7 @@ public class LightGrid extends Canvas {
             return;
         }
 
-        GridItem item = items.get(index);
-
-        deselectCells(getCells(item));
+        deselectCells(getCells(index));
 
         redraw();
     }
@@ -825,10 +823,7 @@ public class LightGrid extends Canvas {
             if (i > items.size() - 1) {
                 break;
             }
-
-            GridItem item = items.get(i);
-
-            deselectCells(getCells(item));
+            deselectCells(getCells(i));
         }
         redraw();
     }
@@ -854,9 +849,7 @@ public class LightGrid extends Canvas {
 
         for (int j : indices) {
             if (j >= 0 && j < items.size()) {
-                GridItem item = items.get(j);
-
-                deselectCells(getCells(item));
+                deselectCells(getCells(j));
             }
         }
         redraw();
@@ -1918,8 +1911,7 @@ public class LightGrid extends Canvas {
         if (index < 0 || index > items.size() - 1) {
             SWT.error(SWT.ERROR_INVALID_RANGE);
         }
-        GridItem item = items.get(index);
-        item.dispose();
+        items.remove(index);
         redraw();
     }
 
@@ -1938,8 +1930,7 @@ public class LightGrid extends Canvas {
             if (i < 0 || i > items.size() - 1) {
                 SWT.error(SWT.ERROR_INVALID_RANGE);
             }
-            GridItem item = items.get(i);
-            item.dispose();
+            items.remove(i);
         }
         redraw();
     }
@@ -1959,18 +1950,14 @@ public class LightGrid extends Canvas {
             return;
         }
 
-        GridItem[] removeThese = new GridItem[indices.length];
         for (int i = 0; i < indices.length; i++) {
             int j = indices[i];
             if (j < items.size() && j >= 0) {
-                removeThese[i] = items.get(j);
+                items.remove(j);
             } else {
                 SWT.error(SWT.ERROR_INVALID_RANGE);
             }
 
-        }
-        for (GridItem item : removeThese) {
-            item.dispose();
         }
         redraw();
     }
@@ -1982,9 +1969,7 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
 
-        while (items.size() > 0) {
-            items.get(0).dispose();
-        }
+        items.clear();
         deselectAll();
         redraw();
     }
@@ -2019,9 +2004,7 @@ public class LightGrid extends Canvas {
 
         if (index < 0 || index >= items.size()) return;
 
-        GridItem item = items.get(index);
-
-        selectCells(getCells(item));
+        selectCells(getCells(index));
 
         redraw();
     }
@@ -2057,9 +2040,7 @@ public class LightGrid extends Canvas {
                 break;
             }
 
-            GridItem item = items.get(i);
-
-            selectCells(getCells(item));
+            selectCells(getCells(i));
         }
 
         redraw();
@@ -2094,9 +2075,7 @@ public class LightGrid extends Canvas {
 
         for (int j : indices) {
             if (j >= 0 && j < items.size()) {
-                GridItem item = items.get(j);
-
-                selectCells(getCells(item));
+                selectCells(getCells(j));
             }
         }
         redraw();
@@ -2351,7 +2330,7 @@ public class LightGrid extends Canvas {
 
         if (index >= 0 && index < items.size()) {
             selectedCells.clear();
-            selectCells(getCells(items.get(index)));
+            selectCells(getCells(index));
         }
     }
 
@@ -2387,9 +2366,7 @@ public class LightGrid extends Canvas {
                 break;
             }
 
-            GridItem item = items.get(i);
-
-            selectCells(getCells(item));
+            selectCells(getCells(i));
         }
         redraw();
     }
@@ -2424,47 +2401,8 @@ public class LightGrid extends Canvas {
                 break;
             }
 
-            GridItem item = items.get(j);
-
-            selectCells(getCells(item));
+            selectCells(getCells(j));
         }
-        redraw();
-    }
-
-    /**
-     * Sets the receiver's selection to be the given array of items. The current
-     * selection is cleared before the new items are selected.
-     * <p/>
-     * Items that are not in the receiver are ignored. If the receiver is
-     * single-select and multiple items are specified, then all items are
-     * ignored.  If cell selection is enabled, all cells within the given items
-     * are selected.
-     *
-     * @param _items the array of items
-     * @see LightGrid#deselectAll()
-     * @see LightGrid#select(int[])
-     * @see LightGrid#setSelection(int[])
-     */
-    public void setSelection(GridItem[] _items)
-    {
-        checkWidget();
-
-        if (_items == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-            return;
-        }
-
-        if (selectionType == SWT.SINGLE && _items.length > 1) return;
-
-        selectedCells.clear();
-
-        for (GridItem item : _items) {
-            if (item == null) continue;
-            if (item.getParent() != this) continue;
-
-            selectCells(getCells(item));
-        }
-
         redraw();
     }
 
@@ -2593,11 +2531,11 @@ public class LightGrid extends Canvas {
      * @param item
      * @return true if 'item' is shown
      */
-    boolean isShown(GridItem item)
+    boolean isShown(int item)
     {
         checkWidget();
 
-        int itemIndex = items.indexOf(item);
+        int itemIndex = item;
 
         if (itemIndex == -1)
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
@@ -2617,7 +2555,7 @@ public class LightGrid extends Canvas {
      *
      * @param item the item to be shown
      */
-    public void showItem(GridItem item)
+    public void showItem(int item)
     {
         checkWidget();
 
@@ -2633,7 +2571,7 @@ public class LightGrid extends Canvas {
             return;
         }
 
-        int newTopIndex = items.indexOf(item);
+        int newTopIndex = item;
 
         if (newTopIndex >= getBottomIndex()) {
             RowRange range = getRowRange(newTopIndex, getVisibleGridHeight(), true, true);    // note: inverse==true
@@ -2661,8 +2599,7 @@ public class LightGrid extends Canvas {
         if (selectedCells.isEmpty()) return;
 
         Point cell = selectedCells.iterator().next();
-        item = getItem(cell.y);
-        showItem(item);
+        showItem(cell.y);
         GridColumn col = getColumn(cell.x);
         showColumn(col);
     }
@@ -3222,9 +3159,9 @@ public class LightGrid extends Canvas {
 
                         //column.getCellRenderer().setSelected(selectedItems.contains(item));
                         column.getCellRenderer().setFocus(this.isFocusControl());
-                        column.getCellRenderer().setRowFocus(focusItem == item);
+                        column.getCellRenderer().setRowFocus(focusItem == row);
                         column.getCellRenderer().setCellFocus(
-                            focusItem == item && focusColumn == column);
+                            focusItem == row && focusColumn == column);
 
                         column.getCellRenderer().setRowHover(hoveringItem == item);
                         column.getCellRenderer().setColumnHover(hoveringColumn == column);
@@ -3702,7 +3639,7 @@ public class LightGrid extends Canvas {
             Point newCell = newCells.get(0); //shift selection should only occur with one
             //cell, ignoring others
 
-            if ((focusColumn == null) || (focusItem == null)) {
+            if ((focusColumn == null) || (focusItem < 0)) {
                 return null;
             }
 
@@ -3718,10 +3655,10 @@ public class LightGrid extends Canvas {
 
 
             GridColumn currentColumn = focusColumn;
-            GridItem currentItem = focusItem;
+            int currentItem = focusItem;
 
             GridColumn endColumn = getColumn(newCell.x);
-            GridItem endItem = getItem(newCell.y);
+            int endItem = newCell.y;
 
             Point newRange = getSelectionRange(currentItem, currentColumn, endItem, endColumn);
 
@@ -3730,8 +3667,8 @@ public class LightGrid extends Canvas {
 
             GridColumn startCol = currentColumn;
 
-            if (indexOf(currentItem) > indexOf(endItem)) {
-                GridItem temp = currentItem;
+            if (currentItem > endItem) {
+                int temp = currentItem;
                 currentItem = endItem;
                 endItem = temp;
             }
@@ -3740,7 +3677,7 @@ public class LightGrid extends Canvas {
 
             do {
                 if (!firstLoop) {
-                    currentItem = getNextVisibleItem(currentItem);
+                    currentItem++;
                 }
 
                 firstLoop = false;
@@ -3754,8 +3691,7 @@ public class LightGrid extends Canvas {
                         int index = displayOrderedColumns.indexOf(currentColumn) + 1;
 
                         if (index < displayOrderedColumns.size()) {
-                            currentColumn = getVisibleColumn_DegradeRight(currentItem,
-                                                                          displayOrderedColumns.get(index));
+                            currentColumn = getVisibleColumn_DegradeRight(displayOrderedColumns.get(index));
                         } else {
                             currentColumn = null;
                         }
@@ -3768,7 +3704,7 @@ public class LightGrid extends Canvas {
                     firstLoop2 = false;
 
                     if (currentColumn != null) {
-                        Point cell = new Point(indexOf(currentColumn), indexOf(currentItem));
+                        Point cell = new Point(indexOf(currentColumn), currentItem);
                         addToCellSelection(cell);
                     }
                 } while (currentColumn != endColumn && currentColumn != null);
@@ -3956,8 +3892,8 @@ public class LightGrid extends Canvas {
 
     private void onFocusIn()
     {
-        if (!items.isEmpty() && focusItem == null) {
-            focusItem = items.get(0);
+        if (!items.isEmpty() && focusItem < 0) {
+            focusItem = 0;
         }
     }
 
@@ -3973,9 +3909,7 @@ public class LightGrid extends Canvas {
 
         cellHeaderSelectionBackground.dispose();
 
-        for (GridItem item : items) {
-            item.dispose();
-        }
+        items.clear();
 
         for (GridColumn col : columns) {
             col.dispose();
@@ -4063,6 +3997,7 @@ public class LightGrid extends Canvas {
 
         if (item != null) {
             {
+                int row = indexOf(item);
                 GridColumn col = getColumn(new Point(e.x, e.y));
                 boolean isSelectedCell = false;
                 if (col != null)
@@ -4076,10 +4011,10 @@ public class LightGrid extends Canvas {
 
                         if (e.stateMask != SWT.MOD2) {
                             focusColumn = col;
-                            focusItem = item;
+                            focusItem = row;
                         }
                         //showColumn(col);
-                        showItem(item);
+                        showItem(row);
                         redraw();
                     } else if (rowHeaderVisible) {
                         if (e.x <= rowHeaderWidth) {
@@ -4093,9 +4028,9 @@ public class LightGrid extends Canvas {
                             List<Point> cells = new ArrayList<Point>();
 
                             if (shift) {
-                                getCells(item, focusItem, cells);
+                                getCells(row, focusItem, cells);
                             } else {
-                                getCells(item, cells);
+                                getCells(indexOf(item), cells);
                             }
 
                             int newStateMask = SWT.NONE;
@@ -4108,9 +4043,9 @@ public class LightGrid extends Canvas {
                                 //set focus back to the first visible column
                                 focusColumn = getColumn(new Point(rowHeaderWidth + 1, e.y));
 
-                                focusItem = item;
+                                focusItem = row;
                             }
-                            showItem(item);
+                            showItem(row);
                             redraw();
                         }
                     }
@@ -4126,7 +4061,7 @@ public class LightGrid extends Canvas {
             selectionEvent = selectAllCellsInternal(e.stateMask);
 
             focusColumn = getColumn(new Point(rowHeaderWidth + 1, 1));
-            focusItem = getItem(getTopIndex());
+            focusItem = getTopIndex();
         } else if (e.button == 1 && columnHeadersVisible && e.y <= headerHeight) {
             //column cell selection
             GridColumn col = getColumn(new Point(e.x, e.y));
@@ -4142,11 +4077,9 @@ public class LightGrid extends Canvas {
             selectionEvent = updateCellSelection(cells, e.stateMask, false, true);
             cellColumnSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
 
-            GridItem newFocusItem = getItem(0);
-
-            if (newFocusItem != null) {
+            if (!items.isEmpty()) {
                 focusColumn = col;
-                focusItem = newFocusItem;
+                focusItem = 0;
             }
 
             showColumn(col);
@@ -4339,15 +4272,14 @@ public class LightGrid extends Canvas {
                     if (hoveringColumn == null) {
                         if (e.x > rowHeaderWidth) {
                             //then we must be hovering way to the right
-                            intentColumn = getVisibleColumn_DegradeLeft(intentItem, displayOrderedColumns.get(
-                                displayOrderedColumns.size() - 1));
+                            intentColumn = getVisibleColumn_DegradeLeft(displayOrderedColumns.get(displayOrderedColumns.size() - 1));
                         } else {
                             intentColumn = displayOrderedColumns.get(0);
                         }
                     }
 
                     showColumn(intentColumn);
-                    showItem(intentItem);
+                    showItem(indexOf(intentItem));
                     selectionEvent = updateCellSelection(new Point(indexOf(intentColumn), indexOf(intentItem)),
                                                          ctrlFlag | SWT.MOD2, true, false);
                 }
@@ -4369,9 +4301,10 @@ public class LightGrid extends Canvas {
 
                     List<Point> cells = new ArrayList<Point>();
 
-                    getCells(intentItem, focusItem, cells);
+                    int intentRow = indexOf(intentItem);
+                    getCells(intentRow, focusItem, cells);
 
-                    showItem(intentItem);
+                    showItem(intentRow);
                     selectionEvent = updateCellSelection(cells, ctrlFlag, true, false);
                 }
                 if (cellColumnDragSelectionOccuring && handleCellHover(e.x, e.y)) {
@@ -4506,9 +4439,9 @@ public class LightGrid extends Canvas {
             focusColumn = getColumn(0);
         }
 
-        if (e.character == '\r' && focusItem != null) {
+        if (e.character == '\r' && focusItem >= 0) {
             Event newEvent = new Event();
-            newEvent.data = focusItem;
+            newEvent.data = items.get(focusItem);
 
             notifyListeners(SWT.DefaultSelection, newEvent);
             return;
@@ -4520,7 +4453,7 @@ public class LightGrid extends Canvas {
         //These two variables are used because the key navigation when the shift key is down is
         //based, not off the focus item/column, but rather off the implied focus (i.e. where the
         //keyboard has extended focus to).
-        GridItem impliedFocusItem = focusItem;
+        GridItem impliedFocusItem = items.get(focusItem);
         GridColumn impliedFocusColumn = focusColumn;
 
         if (e.stateMask == SWT.MOD2) {
@@ -4558,7 +4491,7 @@ public class LightGrid extends Canvas {
                         if (index != 0) {
                             newColumnFocus = displayOrderedColumns.get(index - 1);
 
-                            newColumnFocus = getVisibleColumn_DegradeLeft(impliedFocusItem, newColumnFocus);
+                            newColumnFocus = getVisibleColumn_DegradeLeft(newColumnFocus);
                         } else {
                             newColumnFocus = impliedFocusColumn;
                         }
@@ -4572,7 +4505,7 @@ public class LightGrid extends Canvas {
 
                 if (impliedFocusColumn != null) {
                     if (newSelection != null) {
-                        newColumnFocus = getVisibleColumn_DegradeLeft(newSelection, impliedFocusColumn);
+                        newColumnFocus = getVisibleColumn_DegradeLeft(impliedFocusColumn);
                     } else {
                         newColumnFocus = impliedFocusColumn;
                     }
@@ -4590,7 +4523,7 @@ public class LightGrid extends Canvas {
 
                 if (impliedFocusColumn != null) {
                     if (newSelection != null) {
-                        newColumnFocus = getVisibleColumn_DegradeLeft(newSelection, impliedFocusColumn);
+                        newColumnFocus = getVisibleColumn_DegradeLeft(impliedFocusColumn);
                     } else {
                         newColumnFocus = impliedFocusColumn;
                     }
@@ -4599,14 +4532,13 @@ public class LightGrid extends Canvas {
             case SWT.HOME:
 
                 newSelection = impliedFocusItem;
-                newColumnFocus = getVisibleColumn_DegradeRight(newSelection, displayOrderedColumns.get(0));
+                newColumnFocus = getVisibleColumn_DegradeRight(displayOrderedColumns.get(0));
 
                 break;
             case SWT.END:
                 {
                     newSelection = impliedFocusItem;
-                    newColumnFocus = getVisibleColumn_DegradeLeft(newSelection, displayOrderedColumns.get(
-                        displayOrderedColumns.size() - 1));
+                    newColumnFocus = getVisibleColumn_DegradeLeft(displayOrderedColumns.get(displayOrderedColumns.size() - 1));
                 }
 
                 break;
@@ -4615,7 +4547,7 @@ public class LightGrid extends Canvas {
 
                 newSelection = items.get(topIndex);
 
-                if (focusItem == newSelection) {
+                if (focusItem == topIndex) {
                     RowRange range = getRowRange(getTopIndex(), getVisibleGridHeight(), false, true);
                     newSelection = items.get(range.startIndex);
                 }
@@ -4627,14 +4559,14 @@ public class LightGrid extends Canvas {
 
                 newSelection = items.get(bottomIndex);
 
-                if (!isShown(newSelection)) {
+                if (!isShown(bottomIndex)) {
                     // the item at bottom index is not shown completely
                     GridItem tmpItem = getPreviousVisibleItem(newSelection);
                     if (tmpItem != null)
                         newSelection = tmpItem;
                 }
 
-                if (focusItem == newSelection) {
+                if (focusItem == bottomIndex - 1) {
                     RowRange range = getRowRange(getBottomIndex(), getVisibleGridHeight(), true, false);
                     newSelection = items.get(range.endIndex);
                 }
@@ -4654,9 +4586,14 @@ public class LightGrid extends Canvas {
                 focusColumn = newColumnFocus;
             showColumn(newColumnFocus);
 
-            if (e.stateMask != SWT.MOD2)
-                focusItem = newSelection;
-            showItem(newSelection);
+            if (e.stateMask != SWT.MOD2) {
+                if (newSelection == null) {
+                    focusItem = -1;
+                } else {
+                    focusItem = indexOf(newSelection);
+                }
+            }
+            showItem(indexOf(newSelection));
 
             if (e.stateMask != SWT.MOD1) {
                 Event selEvent = updateCellSelection(new Point(indexOf(newColumnFocus), indexOf(newSelection)),
@@ -5094,43 +5031,6 @@ public class LightGrid extends Canvas {
     }
 
     /**
-     * Removes the given item from the table. This method is only called from
-     * the item's dispose method.
-     *
-     * @param item item to remove
-     */
-    void removeItem(GridItem item)
-    {
-        Collection<Point> cells = getCells(item);
-        boolean selectionModified = false;
-
-        items.remove(item);
-
-        if (disposing)
-            return;
-
-        for (Point cell : cells) {
-            if (selectedCells.remove(cell))
-                selectionModified = true;
-        }
-
-        if (focusItem == item) {
-            focusItem = null;
-        }
-
-        scrollValuesObsolete = true;
-        topIndex = -1;
-        bottomIndex = -1;
-        currentVisibleItems--;
-
-        if (selectionModified && !disposing) {
-            updateColumnSelection();
-        }
-
-        redraw();
-    }
-
-    /**
      * Updates the cached number of visible items by the given amount.
      *
      * @param amount amount to update cached total
@@ -5145,7 +5045,7 @@ public class LightGrid extends Canvas {
      *
      * @return item in focus or {@code null}.
      */
-    public GridItem getFocusItem()
+    public int getFocusItem()
     {
         checkWidget();
         return focusItem;
@@ -5161,15 +5061,11 @@ public class LightGrid extends Canvas {
         checkWidget();
 
         int x = -1;
-        int y = -1;
 
         if (focusColumn != null)
             x = indexOf(focusColumn);
 
-        if (focusItem != null)
-            y = indexOf(focusItem);
-
-        return new Point(x, y);
+        return new Point(x, focusItem);
     }
 
     /**
@@ -5177,13 +5073,9 @@ public class LightGrid extends Canvas {
      *
      * @param item item to focus.
      */
-    public void setFocusItem(GridItem item)
+    public void setFocusItem(int item)
     {
         checkWidget();
-        //TODO: check and make sure this item is valid for focus
-        if (item == null || item.getParent() != this) {
-            SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-        }
         focusItem = item;
     }
 
@@ -5257,7 +5149,7 @@ public class LightGrid extends Canvas {
      * @param col
      * @return
      */
-    private GridColumn getVisibleColumn_DegradeLeft(GridItem item, GridColumn col)
+    private GridColumn getVisibleColumn_DegradeLeft(GridColumn col)
     {
         int index = displayOrderedColumns.indexOf(col);
 
@@ -5284,7 +5176,7 @@ public class LightGrid extends Canvas {
      * @param col
      * @return
      */
-    private GridColumn getVisibleColumn_DegradeRight(GridItem item, GridColumn col)
+    private GridColumn getVisibleColumn_DegradeRight(GridColumn col)
     {
         int index = displayOrderedColumns.indexOf(col);
         int startIndex = index;
@@ -5296,7 +5188,7 @@ public class LightGrid extends Canvas {
                 if (startIndex == displayOrderedColumns.size() - 1) {
                     return null;
                 } else {
-                    return getVisibleColumn_DegradeRight(item, displayOrderedColumns.get(startIndex + 1));
+                    return getVisibleColumn_DegradeRight(displayOrderedColumns.get(startIndex + 1));
                 }
             }
 
@@ -5429,10 +5321,10 @@ public class LightGrid extends Canvas {
             return null;
 
         GridColumn oldFocusColumn = focusColumn;
-        GridItem oldFocusItem = focusItem;
+        int oldFocusItem = focusItem;
 
         focusColumn = displayOrderedColumns.get(0);
-        focusItem = items.get(0);
+        focusItem = 0;
 
         List<Point> cells = new ArrayList<Point>();
         getAllCells(cells);
@@ -5547,12 +5439,10 @@ public class LightGrid extends Canvas {
         }
     }
 
-    private void getCells(GridItem item, List<Point> cells)
+    private void getCells(int row, List<Point> cells)
     {
-        int itemIndex = indexOf(item);
-
         for (int i = 0; i < columns.size(); i++) {
-            cells.add(new Point(i, itemIndex));
+            cells.add(new Point(i, row));
         }
     }
 
@@ -5565,29 +5455,29 @@ public class LightGrid extends Canvas {
         }
     }
 
-    private List<Point> getCells(GridItem item)
+    private List<Point> getCells(int row)
     {
         List<Point> cells = new ArrayList<Point>();
-        getCells(item, cells);
+        getCells(row, cells);
         return cells;
     }
 
 
-    private void getCells(GridItem fromItem, GridItem toItem, List<Point> cells)
+    private void getCells(int startRow, int endRow, List<Point> cells)
     {
-        boolean descending = (indexOf(fromItem) < indexOf(toItem));
+        boolean descending = (startRow < endRow);
 
-        GridItem iterItem = toItem;
+        int iterItem = endRow;
 
         do {
-            getCells(iterItem, cells);
+            getCells(endRow, cells);
 
-            if (iterItem == fromItem) break;
+            if (iterItem == startRow) break;
 
             if (descending) {
-                iterItem = getPreviousVisibleItem(iterItem);
+                iterItem--;
             } else {
-                iterItem = getNextVisibleItem(iterItem);
+                iterItem++;
             }
         } while (true);
     }
@@ -5615,7 +5505,7 @@ public class LightGrid extends Canvas {
      * @param toColumn
      * @return
      */
-    private Point getSelectionRange(GridItem fromItem, GridColumn fromColumn, GridItem toItem, GridColumn toColumn)
+    private Point getSelectionRange(int fromItem, GridColumn fromColumn, int toItem, GridColumn toColumn)
     {
         if (displayOrderedColumns.indexOf(fromColumn) > displayOrderedColumns.indexOf(toColumn)) {
             GridColumn temp = fromColumn;
@@ -5623,21 +5513,21 @@ public class LightGrid extends Canvas {
             toColumn = temp;
         }
 
-        if (indexOf(fromItem) > indexOf(toItem)) {
-            GridItem temp = fromItem;
+        if (fromItem > toItem) {
+            int temp = fromItem;
             fromItem = toItem;
             toItem = temp;
         }
 
         boolean firstTime = true;
-        GridItem iterItem = fromItem;
+        int iterItem = fromItem;
 
         int fromIndex = indexOf(fromColumn);
         int toIndex = indexOf(toColumn);
 
         do {
             if (!firstTime) {
-                iterItem = getNextVisibleItem(iterItem);
+                iterItem++;
             } else {
                 firstTime = false;
             }

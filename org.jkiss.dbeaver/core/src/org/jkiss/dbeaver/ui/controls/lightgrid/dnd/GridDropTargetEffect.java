@@ -218,9 +218,10 @@ public class GridDropTargetEffect extends DropTargetEffect {
 			{
 				if (System.currentTimeMillis() >= scrollBeginTime)
 				{
-					GridItem topItem = grid.getItem(grid.getTopIndex());
-					GridItem nextItem = hoverItem == topItem ? grid.getPreviousVisibleItem(hoverItem) : grid.getNextVisibleItem(hoverItem);
-					boolean scroll = nextItem != null && grid.isInDragScrollArea(coordinates);
+                    int hoverRow = grid.indexOf(hoverItem);
+					int topItem = grid.getTopIndex();
+					int nextItem = hoverRow == topItem ? hoverRow - 1 : hoverRow + 1;
+					boolean scroll = nextItem != -1 && grid.isInDragScrollArea(coordinates);
 					if (scroll)
 					{
 						grid.showItem(nextItem);

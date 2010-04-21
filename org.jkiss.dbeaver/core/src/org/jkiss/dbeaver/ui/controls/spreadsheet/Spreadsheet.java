@@ -224,12 +224,9 @@ public class Spreadsheet extends Composite implements Listener {
                 newRow = getItemCount() - 1;
             }
             newPos.y = newRow;
-            GridItem item = grid.getItem(newRow);
-            if (item != null) {
-                selectionEvent.data = item;
-                grid.setFocusItem(item);
-                grid.showItem(item);
-            }
+            selectionEvent.data = grid.getItem(newRow);
+            grid.setFocusItem(newRow);
+            grid.showItem(newRow);
         }
         // Move column
         if (xOffset != 0) {

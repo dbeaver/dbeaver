@@ -87,15 +87,6 @@ public class GridItem {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 */
-	public void dispose() {
-		if (!parent.isDisposing()) {
-			parent.removeItem(this);
-		}
-	}
-
-	/**
 	 * Returns the receiver's background color.
 	 *
 	 * @return the background color
@@ -142,7 +133,7 @@ public class GridItem {
 		// coordinates are determined by this getBounds) we position it out in
 		// timbuktu.
 
-		if (!parent.isShown(this))
+		if (!parent.isShown(parent.indexOf(this)))
 			return new Rectangle(-1000, -1000, 0, 0);
 
 		Point origin = parent.getOrigin(parent.getColumn(columnIndex), this);
