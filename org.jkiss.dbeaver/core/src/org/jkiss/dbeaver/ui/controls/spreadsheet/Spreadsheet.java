@@ -13,6 +13,8 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.commands.ActionHandler;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -37,15 +39,14 @@ import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
-//import org.jkiss.dbeaver.ui.controls.grid.Grid;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridEditor;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridEditor;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -84,7 +85,11 @@ public class Spreadsheet extends Composite implements Listener {
     private transient LazyGridRow lazyRow;
     private SelectionListener gridSelectionListener;
 
-    public Spreadsheet(Composite parent, int style, IWorkbenchPartSite site, IGridDataProvider dataProvider)
+    public Spreadsheet(
+        Composite parent,
+        int style,
+        IWorkbenchPartSite site,
+        IGridDataProvider dataProvider)
     {
         super(parent, SWT.NONE);
         GridLayout layout = new GridLayout(1, true);
@@ -354,6 +359,52 @@ public class Spreadsheet extends Composite implements Listener {
         tableEditor.minimumWidth = 50;
 
         hookContextMenu();
+
+        grid.setContentProvider(new IGridContentProvider() {
+            public Point getSize()
+            {
+                return new Point(10, 10);
+            }
+
+            public Object[] getElements(Object inputElement)
+            {
+                return null;
+            }
+
+            public void dispose()
+            {
+            }
+
+            public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
+            {
+            }
+        });
+        grid.setContentLabelProvider(new LabelProvider() {
+            @Override
+            public Image getImage(Object element)
+            {
+                return null;
+            }
+
+            @Override
+            public String getText(Object element)
+            {
+                return "CELL " + element;
+            }
+        });
+        grid.setColumnLabelProvider(new LabelProvider() {
+            @Override
+            public Image getImage(Object element)
+            {
+                return null;
+            }
+
+            @Override
+            public String getText(Object element)
+            {
+                return "COLUMN " + element;
+            }
+        });
     }
 
     public void dispose()
