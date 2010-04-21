@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultEmptyCellRendere
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultEmptyColumnFooterRenderer;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultEmptyColumnHeaderRenderer;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultEmptyRowHeaderRenderer;
-import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultFocusRenderer;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultInsertMarkRenderer;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultRowHeaderRenderer;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultTopLeftRenderer;
@@ -203,11 +202,6 @@ public class LightGrid extends Canvas {
      * dropped.
      */
     private IGridRenderer dropPointRenderer = new DefaultDropPointRenderer();
-
-    /**
-     * Renderer used to paint on top of an already painted row to denote focus.
-     */
-    private IGridRenderer focusRenderer = new DefaultFocusRenderer();
 
     /**
      * Are row headers visible?
@@ -598,7 +592,6 @@ public class LightGrid extends Canvas {
         emptyColumnFooterRenderer.setDisplay(getDisplay());
         emptyCellRenderer.setDisplay(getDisplay());
         dropPointRenderer.setDisplay(getDisplay());
-        focusRenderer.setDisplay(getDisplay());
         emptyRowHeaderRenderer.setDisplay(getDisplay());
         insertMarkRenderer.setDisplay(getDisplay());
 
@@ -1102,17 +1095,6 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
         return vScroll;
-    }
-
-    /**
-     * Gets the focus renderer.
-     *
-     * @return Returns the focusRenderer.
-     */
-    public IGridRenderer getFocusRenderer()
-    {
-        checkWidget();
-        return focusRenderer;
     }
 
     /**
@@ -2129,17 +2111,6 @@ public class LightGrid extends Canvas {
             {
             }
         });
-    }
-
-    /**
-     * Sets the focus renderer.
-     *
-     * @param focusRenderer The focusRenderer to set.
-     */
-    public void setFocusRenderer(IGridRenderer focusRenderer)
-    {
-        checkWidget();
-        this.focusRenderer = focusRenderer;
     }
 
     /**
