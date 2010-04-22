@@ -12,6 +12,8 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -36,6 +38,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.*;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.runtime.sql.*;
 
@@ -45,7 +48,7 @@ import java.util.List;
 /**
  * ResultSetViewer
  */
-public class ResultSetViewer extends Viewer implements IGridDataProvider, IPropertyChangeListener
+public class ResultSetViewer extends Viewer implements ISpreadsheetController, IPropertyChangeListener
 {
     static Log log = LogFactory.getLog(ResultSetViewer.class);
 
@@ -84,7 +87,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     // columns
     private ResultSetColumn[] metaColumns;
     // Data
-    private List<Object[]> curRows = new ArrayList<Object[]>();
+    private final List<Object[]> curRows = new ArrayList<Object[]>();
     // Current row number (for record mode)
     private int curRowNum = -1;
 
@@ -116,7 +119,11 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             parent,
             SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
             site,
-            this);
+            this,
+            new ContentProvider(),
+            new ContentLabelProvider(),
+            new ColumnLabelProvider(),
+            new RowLabelProvider());
 
         createStatusBar(spreadsheet);
         changeMode(ResultSetMode.GRID);
@@ -408,7 +415,8 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
 
     public void setData(List<Object[]> rows)
     {
-        this.curRows = rows;
+        this.curRows.clear();
+        this.curRows.addAll(rows);
         this.initResultSet();
     }
 
@@ -432,23 +440,8 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         spreadsheet.setRedraw(false);
         spreadsheet.clearGrid();
         if (mode == ResultSetMode.RECORD) {
-            spreadsheet.addColumn("Value", "Column Value", null);
             this.showCurrentRows();
         } else {
-            if (metaColumns != null) {
-                for (ResultSetColumn column : metaColumns) {
-                    Image columnImage = null;
-                    if (column.editable) {
-                        columnImage = DBIcon.EDIT_COLUMN.getImage();
-                    }
-                    spreadsheet.addColumn(
-                        column.metaData.getLabel(),
-                        CommonUtils.isEmpty(column.metaData.getTableName()) ?
-                            column.metaData.getColumnName() :
-                            column.metaData.getTableName() + "." + column.metaData.getColumnName(),
-                        columnImage);
-                }
-            }
             this.showRowsCount();
         }
 
@@ -525,23 +518,6 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             row.setHeaderText(String.valueOf(row.getIndex() + 1));
         }
     }
-
-/*
-    public void fillRowInfo(int rowNum, IGridRowInfo rowInfo)
-    {
-        if (mode == ResultSetMode.RECORD) {
-            if (rowNum < 0 || rowNum >= metaColumns.length) {
-                return;
-            }
-            rowInfo.setText(metaColumns[rowNum].metaData.getColumnName());
-            if (metaColumns[rowNum].editable) {
-                rowInfo.setImage(DBIcon.EDIT_COLUMN.getImage());
-            }
-        } else {
-            rowInfo.setText(String.valueOf(rowNum + 1));
-        }
-    }
-*/
 
     private String getCellValue(Object colValue)
     {
@@ -883,4 +859,121 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         }
     }
 
+    private class ContentProvider implements IGridContentProvider {
+
+        public Point getSize()
+        {
+            return new Point(
+                metaColumns == null ? 0 : metaColumns.length, 
+                curRows.size());
+        }
+
+        public Object[] getElements(Object inputElement)
+        {
+            return curRows.get(((Number)inputElement).intValue());
+        }
+
+        public void dispose()
+        {
+        }
+
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
+        {
+        }
+    }
+
+    private class ContentLabelProvider extends LabelProvider {
+        @Override
+        public Image getImage(Object element)
+        {
+            return super.getImage(
+                element);    //To change body of overridden methods use File | Settings | File Templates.
+        }
+
+        @Override
+        public String getText(Object element)
+        {
+            Point cell = (Point)element;
+            if (mode == ResultSetMode.RECORD) {
+                // Fill record
+                if (curRowNum >= curRows.size() || curRowNum < 0) {
+                    log.warn("Bad current row number: " + cell.y);
+                    return null;
+                }
+                Object[] values = curRows.get(curRowNum);
+                if (cell.y >= values.length) {
+                    log.warn("Bad record row number: " + cell.y);
+                    return null;
+                }
+                return getCellValue(values[cell.y]);
+/*
+                row.setData(value);
+                row.setText(0, getCellValue(value));
+                row.setHeaderText(metaColumns[rowNum].metaData.getColumnName());
+                if (metaColumns[rowNum].editable) {
+                    row.setHeaderImage(DBIcon.EDIT_COLUMN.getImage());
+                }
+*/
+            } else {
+                if (cell.y >= curRows.size()) {
+                    log.warn("Bad grid row number: " + cell.y);
+                    return null;
+                }
+                if (cell.x >= metaColumns.length) {
+                    log.warn("Bad grid column number: " + cell.x);
+                    return null;
+                }
+                return getCellValue(curRows.get(cell.y)[cell.x]);
+            }
+        }
+    }
+
+    private class ColumnLabelProvider extends LabelProvider {
+        @Override
+        public Image getImage(Object element)
+        {
+            if (mode == ResultSetMode.GRID) {
+                int colNumber = ((Number)element).intValue();
+                ResultSetColumn metaColumn = metaColumns[colNumber];
+                if (metaColumn.editable) {
+                    return DBIcon.EDIT_COLUMN.getImage();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public String getText(Object element)
+        {
+            int colNumber = ((Number)element).intValue();
+            if (mode == ResultSetMode.RECORD) {
+                if (colNumber == 0) {
+                    return "Value";
+                } else {
+                    log.warn("Bad column index: " + colNumber);
+                    return null;
+                }
+            } else {
+                ResultSetColumn metaColumn = metaColumns[colNumber];
+                return CommonUtils.isEmpty(metaColumn.metaData.getTableName()) ?
+                    metaColumn.metaData.getColumnName() :
+                    metaColumn.metaData.getTableName() + "." + metaColumn.metaData.getColumnName();
+            }
+        }
+    }
+
+    private class RowLabelProvider extends LabelProvider {
+        @Override
+        public Image getImage(Object element)
+        {
+            return super.getImage(
+                element);    //To change body of overridden methods use File | Settings | File Templates.
+        }
+
+        @Override
+        public String getText(Object element)
+        {
+            return String.valueOf(((Number)element).intValue() + 1);
+        }
+    }
 }

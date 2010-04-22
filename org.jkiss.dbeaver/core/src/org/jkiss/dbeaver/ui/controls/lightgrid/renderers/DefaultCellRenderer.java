@@ -193,7 +193,7 @@ public class DefaultCellRenderer extends GridCellRenderer
 
         GC gc = new GC(grid);
         gc.setFont(grid.getCellFont(row, getColumn()));
-        Point size = gc.stringExtent(grid.getCellText(row, getColumn()));
+        Point size = gc.stringExtent(grid.getCellText(getColumn(), row));
 
         bounds.height = size.y;
 

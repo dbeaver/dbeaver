@@ -662,9 +662,15 @@ public class LightGrid extends Canvas {
         gridSize = contentProvider.getSize();
         currentVisibleItems = gridSize.y;
         // Add columns
-        for (int i = 0; i < gridSize.x; i++) {
-
+        if (contentProvider != null) {
+            int columnCount = contentProvider.getSize().x;
+            for (int i = 0; i < columnCount; i++) {
+                GridColumn column = new GridColumn(this, SWT.NONE);
+                column.setText(columnLabelProvider.getText(i));
+                column.setImage(columnLabelProvider.getImage(i));
+            }
         }
+
         updateScrollbars();
     }
 
@@ -1725,11 +1731,15 @@ public class LightGrid extends Canvas {
     public void removeAll()
     {
         checkWidget();
+        deselectAll();
 
         gridSize = null;
         currentVisibleItems = 0;
 
-        deselectAll();
+        List<GridColumn> columnsCopy = new ArrayList<GridColumn>(columns);
+        for (GridColumn column : columnsCopy) {
+            column.dispose();
+        }
         redraw();
     }
 
@@ -2809,7 +2819,7 @@ public class LightGrid extends Canvas {
             x -= getHScrollSelectionInPixels();
 
             // get the item to draw
-            if (row != -1) {
+            if (row >= 0 && row < getItemCount()) {
                 boolean cellInRowSelected = false;
 
 

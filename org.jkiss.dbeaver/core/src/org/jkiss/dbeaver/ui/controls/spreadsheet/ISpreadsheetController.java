@@ -5,21 +5,18 @@
 package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 
 /**
  * GridDataProvider
  */
-public interface IGridDataProvider {
+public interface ISpreadsheetController {
 
     boolean isEditable();
 
     boolean isCellEditable(int col, int row);
 
-    boolean isCellModified(int col, int row);
-
     boolean isInsertable();
-
-    void fillRowData(IGridRowData row);
 
     boolean showCellEditor(
         int column,

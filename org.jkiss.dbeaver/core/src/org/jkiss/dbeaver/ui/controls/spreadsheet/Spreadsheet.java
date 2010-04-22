@@ -13,8 +13,7 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.commands.ActionHandler;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.events.SelectionEvent;
@@ -60,12 +59,14 @@ public class Spreadsheet extends Composite implements Listener {
 
     private LightGrid grid;
     private GridEditor tableEditor;
-    private List<GridColumn> curColumns = new ArrayList<GridColumn>();
-
-    //private GridPanel gridPanel;
 
     private IWorkbenchPartSite site;
-    private IGridDataProvider dataProvider;
+    private ISpreadsheetController spreadsheetController;
+    private IGridContentProvider contentProvider;
+    private ILabelProvider contentLabelProvider;
+    private ILabelProvider columnLabelProvider;
+    private ILabelProvider rowLabelProvider;
+
     private GridSelectionProvider selectionProvider;
 
     private Clipboard clipboard;
@@ -79,14 +80,18 @@ public class Spreadsheet extends Composite implements Listener {
     private Color backgroundControl;
     private Color backgroundSelected;
 
-    private transient LazyGridRow lazyRow;
     private SelectionListener gridSelectionListener;
 
     public Spreadsheet(
         Composite parent,
         int style,
         IWorkbenchPartSite site,
-        IGridDataProvider dataProvider)
+        ISpreadsheetController spreadsheetController,
+        IGridContentProvider contentProvider,
+        ILabelProvider contentLabelProvider,
+        ILabelProvider columnLabelProvider,
+        ILabelProvider rowLabelProvider
+        )
     {
         super(parent, SWT.NONE);
         GridLayout layout = new GridLayout(1, true);
@@ -96,7 +101,11 @@ public class Spreadsheet extends Composite implements Listener {
         this.setLayout(layout);
 
         this.site = site;
-        this.dataProvider = dataProvider;
+        this.spreadsheetController = spreadsheetController;
+        this.contentProvider = contentProvider;
+        this.contentLabelProvider = contentLabelProvider;
+        this.columnLabelProvider = columnLabelProvider;
+        this.rowLabelProvider = rowLabelProvider;
         this.selectionProvider = new GridSelectionProvider(this);
 
         foregroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
@@ -322,11 +331,6 @@ public class Spreadsheet extends Composite implements Listener {
         grid.addListener(SWT.FocusIn, this);
         grid.addListener(SWT.FocusOut, this);
 
-        if ((style & SWT.VIRTUAL) != 0) {
-            lazyRow = new LazyGridRow();
-            grid.addListener(SWT.SetData, this);
-        }
-
         gridSelectionListener = new SelectionListener() {
             public void widgetSelected(SelectionEvent e)
             {
@@ -357,6 +361,12 @@ public class Spreadsheet extends Composite implements Listener {
 
         hookContextMenu();
 
+        grid.setContentProvider(contentProvider);
+        grid.setContentLabelProvider(contentLabelProvider);
+        grid.setColumnLabelProvider(columnLabelProvider);
+        grid.setRowLabelProvider(rowLabelProvider);
+
+/*
         grid.setContentProvider(new IGridContentProvider() {
             public Point getSize()
             {
@@ -415,6 +425,7 @@ public class Spreadsheet extends Composite implements Listener {
                 return String.valueOf(((Number)element).intValue() + 1);
             }
         });
+*/
     }
 
     public void dispose()
@@ -460,6 +471,7 @@ public class Spreadsheet extends Composite implements Listener {
         }
     }
 
+/*
     public GridColumn getColumn(int index)
     {
         return curColumns.get(index);
@@ -484,31 +496,22 @@ public class Spreadsheet extends Composite implements Listener {
         curColumns.add(column);
         return column;
     }
+*/
 
     public void reinitState()
     {
         cancelInlineEditor();
         // Repack columns
-        if (curColumns.size() == 1) {
-            curColumns.get(0).setWidth(grid.getSize().x);
+        grid.refreshData();
+        if (grid.getColumnCount() == 1) {
+            grid.getColumn(0).setWidth(grid.getSize().x);
         } else {
-            for (GridColumn curColumn : curColumns) {
+            for (GridColumn curColumn : grid.getColumns()) {
                 curColumn.pack();
                 if (curColumn.getWidth() > MAX_DEF_COLUMN_WIDTH) {
                     curColumn.setWidth(MAX_DEF_COLUMN_WIDTH);
                 }
             }
-        }
-        grid.refreshData();
-    }
-
-    private void clearColumns()
-    {
-        if (!curColumns.isEmpty()) {
-            for (GridColumn column : curColumns) {
-                column.dispose();
-            }
-            curColumns.clear();
         }
     }
 
@@ -526,10 +529,8 @@ public class Spreadsheet extends Composite implements Listener {
     public void clearGrid()
     {
         //spreadsheet.setSelection(new int[0]);
-
         cancelInlineEditor();
         grid.removeAll();
-        this.clearColumns();
     }
 
     private void copySelectionToClipboard()
@@ -619,7 +620,7 @@ public class Spreadsheet extends Composite implements Listener {
 
     public void openCellViewer(boolean inline)
     {
-        if (dataProvider == null) {
+        if (spreadsheetController == null) {
             return;
         }
         // The control that will be the editor must be a child of the Table
@@ -628,7 +629,7 @@ public class Spreadsheet extends Composite implements Listener {
         if (focusCell == null || focusCell.y < 0 || focusCell.x < 0) {
             return;
         }
-        if (!dataProvider.isEditable() || !dataProvider.isCellEditable(focusCell.x, focusCell.y)) {
+        if (!spreadsheetController.isEditable() || !spreadsheetController.isCellEditable(focusCell.x, focusCell.y)) {
             return;
         }
         //GridItem item = grid.getItem(focusCell.y);
@@ -653,7 +654,7 @@ public class Spreadsheet extends Composite implements Listener {
             gd.grabExcessVerticalSpace = true;
             placeholder.setLayoutData(gd);
         }
-        boolean editSuccess = dataProvider.showCellEditor(focusCell.x, focusCell.y, inline, placeholder);
+        boolean editSuccess = spreadsheetController.showCellEditor(focusCell.x, focusCell.y, inline, placeholder);
         if (inline) {
             if (editSuccess) {
                 int minHeight, minWidth;
@@ -768,64 +769,6 @@ public class Spreadsheet extends Composite implements Listener {
                 shiftCursor(grid.getColumnCount(), grid.getItemCount(), keepSelection);
             }
         }
-    }
-
-    private class LazyGridRow implements IGridRowData {
-
-        ///private GridItem item;
-        private int index;
-        private int column;
-
-        public int getIndex()
-        {
-            return index;
-        }
-
-        public int getColumn()
-        {
-            return column;
-        }
-
-        public void setImage(int column, Image image)
-        {
-            //item.setImage(column, image);
-        }
-
-        public String getText(int column)
-        {
-            return null;//item.getText(column);
-        }
-
-        public void setText(int column, String text)
-        {
-            //item.setText(column, text);
-        }
-
-        public void setHeaderText(String text)
-        {
-            //item.setHeaderText(text);
-        }
-
-        public void setHeaderImage(Image image)
-        {
-            //item.setHeaderImage(image);
-        }
-
-        public void setModified(int column, boolean modified)
-        {
-            //item.setBackground(column, modified ? backgroundModified : backgroundNormal);
-        }
-
-        public Object getData()
-        {
-            return null;//item.getData();
-        }
-
-        public void setData(Object data)
-        {
-            //item.setData(data);
-        }
-
     }
 
 }
