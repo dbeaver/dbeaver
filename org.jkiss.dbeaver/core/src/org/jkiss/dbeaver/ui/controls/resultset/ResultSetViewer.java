@@ -56,35 +56,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private static final String NULL_VALUE_LABEL = "[NULL]";
     private static final int DEFAULT_ROW_HEADER_WIDTH = 50;
 
-    private static class CellInfo {
-        int col;
-        int row;
-        Object value;
-
-        private CellInfo(int col, int row, Object value) {
-            this.col = col;
-            this.row = row;
-            this.value = value;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return col ^ row;
-        }
-
-        public boolean equals (Object cell)
-        {
-            return cell instanceof CellInfo &&
-                this.col == ((CellInfo)cell).col &&
-                this.row == ((CellInfo)cell).row;
-        }
-        boolean equals (int col, int row)
-        {
-            return this.col == col && this.row == row;
-        }
-    }
-
     private IWorkbenchPartSite site;
     private ResultSetMode mode;
     private Spreadsheet spreadsheet;
@@ -116,6 +87,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     // Edited cells
     private Set<CellInfo> editedValues = new HashSet<CellInfo>();
     private Color backgroundModified;
+    private Color foregroundNull;
     // Flag saying that edited values update is in progress
     private boolean updateInProgress = false;
 
@@ -154,6 +126,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         });
         backgroundModified = new Color(spreadsheet.getDisplay(), 0xFF, 0xE4, 0xB5);
+        foregroundNull = spreadsheet.getDisplay().getSystemColor(SWT.COLOR_GRAY);
 
         applyThemeSettings();
     }
@@ -669,6 +642,35 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         new CellDataSaver().rejectChanges();
     }
 
+    private static class CellInfo {
+        int col;
+        int row;
+        Object value;
+
+        private CellInfo(int col, int row, Object value) {
+            this.col = col;
+            this.row = row;
+            this.value = value;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return col ^ row;
+        }
+
+        public boolean equals (Object cell)
+        {
+            return cell instanceof CellInfo &&
+                this.col == ((CellInfo)cell).col &&
+                this.row == ((CellInfo)cell).row;
+        }
+        boolean equals (int col, int row)
+        {
+            return this.col == col && this.row == row;
+        }
+    }
+
     class TableRowInfo {
         DBSTable table;
         DBCTableIdentifier id;
@@ -870,14 +872,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     }
 
     private class ContentLabelProvider extends LabelProvider implements IColorProvider {
-        @Override
-        public Image getImage(Object element)
-        {
-            return null;
-        }
-
-        @Override
-        public String getText(Object element)
+        private Object getValue(Object element)
         {
             GridPos cell = (GridPos)element;
             if (mode == ResultSetMode.RECORD) {
@@ -891,7 +886,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     log.warn("Bad record row number: " + cell.row);
                     return null;
                 }
-                return getCellValue(values[cell.row]);
+                return values[cell.row];
             } else {
                 if (cell.row >= curRows.size()) {
                     log.warn("Bad grid row number: " + cell.row);
@@ -901,13 +896,29 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     log.warn("Bad grid column number: " + cell.col);
                     return null;
                 }
-                return getCellValue(curRows.get(cell.row)[cell.col]);
+                return curRows.get(cell.row)[cell.col];
             }
+        }
+        @Override
+        public Image getImage(Object element)
+        {
+            return null;
+        }
+
+        @Override
+        public String getText(Object element)
+        {
+            return getCellValue(getValue(element));
         }
 
         public Color getForeground(Object element)
         {
-            return null;
+            Object value = getValue(element);
+            if (value == null) {
+                return foregroundNull;
+            } else {
+                return null;
+            }
         }
 
         public Color getBackground(Object element)
