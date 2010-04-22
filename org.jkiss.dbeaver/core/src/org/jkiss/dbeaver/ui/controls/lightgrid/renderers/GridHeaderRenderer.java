@@ -5,7 +5,7 @@
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
 import org.eclipse.swt.graphics.Rectangle;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractGridWidget;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * <p>
@@ -20,7 +20,11 @@ import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractGridWidget;
 public abstract class GridHeaderRenderer extends AbstractGridWidget
 {
     private boolean wordWrap = false;
-    
+
+    protected GridHeaderRenderer(LightGrid grid) {
+        super(grid);
+    }
+
     /**
      * Returns the bounds of the text in the cell.  This is used when displaying in-place tooltips.
      * If <code>null</code> is returned here, in-place tooltips will not be displayed.  If the 

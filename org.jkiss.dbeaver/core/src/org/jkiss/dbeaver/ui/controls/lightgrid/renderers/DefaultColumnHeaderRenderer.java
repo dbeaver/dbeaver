@@ -13,6 +13,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.TextLayout;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * The column header renderer.
@@ -35,9 +36,14 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer
 
     int imageSpacing = 3;
 
-    private SortArrowRenderer arrowRenderer = new SortArrowRenderer();
+    private SortArrowRenderer arrowRenderer;
 
     private TextLayout textLayout;
+
+    public DefaultColumnHeaderRenderer(LightGrid grid) {
+        super(grid);
+        arrowRenderer = new SortArrowRenderer(grid);
+    }
 
     /**
      * {@inheritDoc}
@@ -299,15 +305,6 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer
         }
 
 
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setDisplay(Display display)
-    {
-        super.setDisplay(display);
-        arrowRenderer.setDisplay(display);
     }
 
     /**

@@ -6,7 +6,6 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
@@ -21,8 +20,6 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
  */
 public abstract class GridCellRenderer extends AbstractGridWidget
 {
-    protected final LightGrid grid;
-
     private int column = 0;
 
     private int alignment = SWT.LEFT;
@@ -43,7 +40,7 @@ public abstract class GridCellRenderer extends AbstractGridWidget
 
     protected GridCellRenderer(LightGrid grid)
     {
-        this.grid = grid;
+        super(grid);
     }
 
     /**

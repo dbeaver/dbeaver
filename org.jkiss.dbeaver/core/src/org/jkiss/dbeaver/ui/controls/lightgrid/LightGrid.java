@@ -164,29 +164,29 @@ public class LightGrid extends Canvas {
      * Renderer to paint the top left area when both column and row headers are
      * shown.
      */
-    private IGridRenderer topLeftRenderer = new DefaultTopLeftRenderer();
+    private IGridRenderer topLeftRenderer;
 
     /**
      * Renderer to paint the bottom left area when row headers and column footers are shown
      */
-    private IGridRenderer bottomLeftRenderer = new DefaultBottomLeftRenderer();
+    private IGridRenderer bottomLeftRenderer;
 
     /**
      * Renderer used to paint row headers.
      */
-    private IGridRenderer rowHeaderRenderer = new DefaultRowHeaderRenderer();
+    private IGridRenderer rowHeaderRenderer;
 
     /**
      * Renderer used to paint empty column headers, used when the columns don't
      * fill the horz space.
      */
-    private IGridRenderer emptyColumnHeaderRenderer = new DefaultEmptyColumnHeaderRenderer();
+    private IGridRenderer emptyColumnHeaderRenderer;
 
     /**
      * Renderer used to paint empty column footers, used when the columns don't
      * fill the horz space.
      */
-    private IGridRenderer emptyColumnFooterRenderer = new DefaultEmptyColumnFooterRenderer();
+    private IGridRenderer emptyColumnFooterRenderer;
 
     /**
      * Renderer used to paint empty cells to fill horz and vert space.
@@ -197,13 +197,13 @@ public class LightGrid extends Canvas {
      * Renderer used to paint empty row headers when the rows don't fill the
      * vertical space.
      */
-    private IGridRenderer emptyRowHeaderRenderer = new DefaultEmptyRowHeaderRenderer();
+    private IGridRenderer emptyRowHeaderRenderer;
 
     /**
      * Renderers the UI affordance identifying where the dragged column will be
      * dropped.
      */
-    private IGridRenderer dropPointRenderer = new DefaultDropPointRenderer();
+    private IGridRenderer dropPointRenderer;
 
     /**
      * Are row headers visible?
@@ -229,8 +229,6 @@ public class LightGrid extends Canvas {
      * Default height of items.
      */
     private int itemHeight = 1;
-
-    private boolean userModifiedItemHeight = false;
 
     /**
      * Width of each row header.
@@ -480,13 +478,6 @@ public class LightGrid extends Canvas {
     private String toolTipText = null;
 
     /**
-     * Flag that is set to true as soon as one image is set on any one item.
-     * This is used to mimic Table behavior that resizes the rows on the first image added.
-     * See imageSetOnItem.
-     */
-    private boolean firstImageSet = false;
-
-    /**
      * Mouse capture flag.  Used for inplace tooltips.  This flag must be used to ensure that
      * we don't setCapture(false) in situations where we didn't do setCapture(true).  The OS (SWT?)
      * will automatically capture the mouse for us during a drag operation.
@@ -517,8 +508,7 @@ public class LightGrid extends Canvas {
     private int insertMarkItem = -1;
     private GridColumn insertMarkColumn = null;
     private boolean insertMarkBefore = false;
-    private IGridRenderer insertMarkRenderer = new DefaultInsertMarkRenderer();
-    private boolean sizeOnEveryItemImageChange;
+    private IGridRenderer insertMarkRenderer;
     private boolean autoWidth = true;
     private boolean wordWrapRowHeader = false;
 
@@ -586,17 +576,15 @@ public class LightGrid extends Canvas {
         setData("DEFAULT_DROP_TARGET_EFFECT", new GridDropTargetEffect(this));
 
         sizingGC = new GC(this);
+        topLeftRenderer = new DefaultTopLeftRenderer(this);
+        bottomLeftRenderer = new DefaultBottomLeftRenderer(this);
+        rowHeaderRenderer = new DefaultRowHeaderRenderer(this);
+        emptyColumnHeaderRenderer = new DefaultEmptyColumnHeaderRenderer(this);
+        emptyColumnFooterRenderer = new DefaultEmptyColumnFooterRenderer(this);
         emptyCellRenderer = new DefaultEmptyCellRenderer(this);
-
-        topLeftRenderer.setDisplay(getDisplay());
-        bottomLeftRenderer.setDisplay(getDisplay());
-        rowHeaderRenderer.setDisplay(getDisplay());
-        emptyColumnHeaderRenderer.setDisplay(getDisplay());
-        emptyColumnFooterRenderer.setDisplay(getDisplay());
-        emptyCellRenderer.setDisplay(getDisplay());
-        dropPointRenderer.setDisplay(getDisplay());
-        emptyRowHeaderRenderer.setDisplay(getDisplay());
-        insertMarkRenderer.setDisplay(getDisplay());
+        emptyRowHeaderRenderer = new DefaultEmptyRowHeaderRenderer(this);
+        dropPointRenderer = new DefaultDropPointRenderer(this);
+        insertMarkRenderer = new DefaultInsertMarkRenderer(this);
 
         setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
         setLineColor(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
@@ -1301,7 +1289,6 @@ public class LightGrid extends Canvas {
         if (height < 1)
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
         itemHeight = height;
-        userModifiedItemHeight = true;
         setScrollValuesObsolete();
         redraw();
     }
@@ -2028,7 +2015,6 @@ public class LightGrid extends Canvas {
     public void setEmptyCellRenderer(GridCellRenderer emptyCellRenderer)
     {
         checkWidget();
-        emptyCellRenderer.setDisplay(getDisplay());
         this.emptyCellRenderer = emptyCellRenderer;
     }
 
@@ -2040,7 +2026,6 @@ public class LightGrid extends Canvas {
     public void setEmptyColumnHeaderRenderer(IGridRenderer emptyColumnHeaderRenderer)
     {
         checkWidget();
-        emptyColumnHeaderRenderer.setDisplay(getDisplay());
         this.emptyColumnHeaderRenderer = emptyColumnHeaderRenderer;
     }
 
@@ -2052,7 +2037,6 @@ public class LightGrid extends Canvas {
     public void setEmptyColumnFooterRenderer(IGridRenderer emptyColumnFooterRenderer)
     {
         checkWidget();
-        emptyColumnFooterRenderer.setDisplay(getDisplay());
         this.emptyColumnFooterRenderer = emptyColumnFooterRenderer;
     }
 
@@ -2064,7 +2048,6 @@ public class LightGrid extends Canvas {
     public void setEmptyRowHeaderRenderer(IGridRenderer emptyRowHeaderRenderer)
     {
         checkWidget();
-        emptyRowHeaderRenderer.setDisplay(getDisplay());
         this.emptyRowHeaderRenderer = emptyRowHeaderRenderer;
     }
 
@@ -2197,7 +2180,6 @@ public class LightGrid extends Canvas {
     public void setRowHeaderRenderer(IGridRenderer rowHeaderRenderer)
     {
         checkWidget();
-        rowHeaderRenderer.setDisplay(getDisplay());
         this.rowHeaderRenderer = rowHeaderRenderer;
     }
 
@@ -2341,7 +2323,6 @@ public class LightGrid extends Canvas {
     public void setTopLeftRenderer(IGridRenderer topLeftRenderer)
     {
         checkWidget();
-        topLeftRenderer.setDisplay(getDisplay());
         this.topLeftRenderer = topLeftRenderer;
     }
 
@@ -2353,7 +2334,6 @@ public class LightGrid extends Canvas {
     public void setBottomLeftRenderer(IGridRenderer bottomLeftRenderer)
     {
         checkWidget();
-        bottomLeftRenderer.setDisplay(getDisplay());
         this.bottomLeftRenderer = bottomLeftRenderer;
     }
 
@@ -5767,11 +5747,6 @@ public class LightGrid extends Canvas {
         endColumnIndex = Math.max(0, endColumnIndex);
 
         return endColumnIndex;
-    }
-
-    void setSizeOnEveryItemImageChange(boolean sizeOnEveryItemImageChange)
-    {
-        this.sizeOnEveryItemImageChange = sizeOnEveryItemImageChange;
     }
 
     /**

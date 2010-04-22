@@ -4,17 +4,12 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.TextLayout;
+import org.eclipse.swt.graphics.*;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * The row header renderer.
@@ -34,7 +29,11 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
     int bottomMargin = 3;
 
     private TextLayout textLayout;
-    
+
+    public DefaultRowHeaderRenderer(LightGrid grid) {
+        super(grid);
+    }
+
     /**
      * {@inheritDoc}
      */

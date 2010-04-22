@@ -4,12 +4,18 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
+
 /**
  */
 public abstract class AbstractGridWidget extends AbstractRenderer implements IGridWidget
 {
 
     String hoverDetail = "";
+
+    protected AbstractGridWidget(LightGrid grid) {
+        super(grid);
+    }
 
     /**
      * @return the hoverDetail

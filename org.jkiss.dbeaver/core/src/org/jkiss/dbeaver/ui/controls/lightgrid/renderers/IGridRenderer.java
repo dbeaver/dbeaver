@@ -115,10 +115,4 @@ public interface IGridRenderer
      */
     void setSize(Point size);
 
-    /**
-     * Sets the display.
-     * 
-     * @param display Display.
-     */
-    void setDisplay(Display display);
 }

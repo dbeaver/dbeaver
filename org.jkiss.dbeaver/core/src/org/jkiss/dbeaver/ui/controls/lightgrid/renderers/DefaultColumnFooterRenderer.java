@@ -5,6 +5,7 @@
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
 import  org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridFooterRenderer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
@@ -31,6 +32,10 @@ public class DefaultColumnFooterRenderer extends GridFooterRenderer
     int arrowMargin = 6;
 
     int imageSpacing = 3;
+
+    public DefaultColumnFooterRenderer(LightGrid grid) {
+        super(grid);
+    }
 
     /**
      * {@inheritDoc}

@@ -4,12 +4,11 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridCellRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * The empty cell renderer.

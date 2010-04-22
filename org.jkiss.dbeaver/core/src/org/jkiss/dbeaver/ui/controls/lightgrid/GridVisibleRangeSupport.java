@@ -7,13 +7,8 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.GridVisibleRange;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EventObject;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * This support class adds the possibility to get informed when the visual range
@@ -27,15 +22,7 @@ public class GridVisibleRangeSupport {
 	private LightGrid grid;
 	private GridVisibleRange oldRange = new GridVisibleRange();
 
-	private Listener paintListener = new Listener() {
-
-		public void handleEvent(Event event) {
-			calculateChange();
-		}
-
-	};
-
-	/**
+    /**
 	 * Listener notified when the visible range changes
 	 */
 	public interface VisibleRangeChangedListener {
@@ -91,9 +78,15 @@ public class GridVisibleRangeSupport {
 
 	private GridVisibleRangeSupport(LightGrid grid) {
 		this.grid = grid;
-		this.grid.setSizeOnEveryItemImageChange(true);
 		// FIXME Maybe better to listen to resize, ... ?
-		grid.addListener(SWT.Paint, paintListener);
+        Listener paintListener = new Listener() {
+
+            public void handleEvent(Event event) {
+                calculateChange();
+            }
+
+        };
+        grid.addListener(SWT.Paint, paintListener);
 	}
 
 	/**

@@ -4,10 +4,10 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * A renderer for the last empty column header.
@@ -17,8 +17,11 @@ import org.eclipse.swt.graphics.Point;
  */
 public class DefaultEmptyColumnFooterRenderer extends AbstractRenderer
 {
+    public DefaultEmptyColumnFooterRenderer(LightGrid grid) {
+        super(grid);
+    }
 
-    /** 
+    /**
      * {@inheritDoc}
      */
     public Point computeSize(GC gc, int wHint, int hHint, Object value)

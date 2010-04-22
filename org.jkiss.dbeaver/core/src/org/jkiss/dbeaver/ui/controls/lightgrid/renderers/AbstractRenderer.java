@@ -7,6 +7,7 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * <p>
@@ -19,6 +20,8 @@ import org.eclipse.swt.widgets.Display;
  */
 public abstract class AbstractRenderer implements IGridRenderer
 {
+    protected final LightGrid grid;
+
     /** Hover state. */
     private boolean hover;
 
@@ -35,8 +38,13 @@ public abstract class AbstractRenderer implements IGridRenderer
     private Rectangle bounds = new Rectangle(0, 0, 0, 0);
 
     /** Display used to create GC to perform painting. */
-    private Display display;
-    
+    private final Display display;
+
+    protected AbstractRenderer(LightGrid grid) {
+        this.grid = grid;
+        this.display = grid.getDisplay();
+    }
+
     /**
      * Returns the bounds.
      * 
@@ -189,11 +197,4 @@ public abstract class AbstractRenderer implements IGridRenderer
         return display;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void setDisplay(Display display)
-    {
-        this.display = display;
-    }
 }

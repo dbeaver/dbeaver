@@ -4,10 +4,10 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * A renderer which displays the drop point location affordance when dragging columns.
@@ -17,8 +17,11 @@ import org.eclipse.swt.graphics.Point;
  */
 public class DefaultDropPointRenderer extends AbstractRenderer
 {
+    public DefaultDropPointRenderer(LightGrid grid) {
+        super(grid);
+    }
 
-    /** 
+    /**
      * {@inheritDoc}
      */
     public void paint(GC gc, Object value)

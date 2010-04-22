@@ -4,10 +4,10 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * The column header sort arrow renderer.
@@ -17,13 +17,12 @@ import org.eclipse.swt.graphics.Point;
  */
 public class SortArrowRenderer extends AbstractRenderer
 {
-
     /**
      * Default constructor.
      */
-    public SortArrowRenderer()
+    public SortArrowRenderer(LightGrid grid)
     {
-        super();
+        super(grid);
 
         setSize(7, 4);
     }

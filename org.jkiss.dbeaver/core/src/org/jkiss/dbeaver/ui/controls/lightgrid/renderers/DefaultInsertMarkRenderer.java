@@ -4,7 +4,7 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
@@ -18,6 +18,10 @@ import org.eclipse.swt.graphics.Rectangle;
  */
 public class DefaultInsertMarkRenderer extends AbstractRenderer
 {
+    public DefaultInsertMarkRenderer(LightGrid grid) {
+        super(grid);
+    }
+
     /**
      * Renders the insertion mark.  The bounds of the renderer
      * need not be set.
