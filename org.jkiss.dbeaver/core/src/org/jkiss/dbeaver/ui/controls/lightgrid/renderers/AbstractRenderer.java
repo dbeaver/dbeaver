@@ -22,6 +22,9 @@ public abstract class AbstractRenderer implements IGridRenderer
 {
     protected final LightGrid grid;
 
+    private int column = -1;
+    private int row = -1;
+
     /** Hover state. */
     private boolean hover;
 
@@ -43,6 +46,24 @@ public abstract class AbstractRenderer implements IGridRenderer
     protected AbstractRenderer(LightGrid grid) {
         this.grid = grid;
         this.display = grid.getDisplay();
+    }
+
+    public int getColumn()
+    {
+        return column;
+    }
+
+    public void setColumn(int column)
+    {
+        this.column = column;
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public void setRow(int row) {
+        this.row = row;
     }
 
     /**

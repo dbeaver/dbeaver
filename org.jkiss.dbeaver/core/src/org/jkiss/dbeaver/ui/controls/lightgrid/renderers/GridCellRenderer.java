@@ -20,8 +20,6 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
  */
 public abstract class GridCellRenderer extends AbstractGridWidget
 {
-    private int column = 0;
-
     private int alignment = SWT.LEFT;
 
     private boolean rowHover = false;
@@ -55,22 +53,6 @@ public abstract class GridCellRenderer extends AbstractGridWidget
     public void setAlignment(int alignment)
     {
         this.alignment = alignment;
-    }
-
-    /**
-     * @return Returns the column.
-     */
-    public int getColumn()
-    {
-        return column;
-    }
-
-    /**
-     * @param column The column to set.
-     */
-    public void setColumn(int column)
-    {
-        this.column = column;
     }
 
     /**

@@ -20,13 +20,9 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 public class DefaultRowHeaderRenderer extends AbstractRenderer
 {
 
-    int leftMargin = 6;
+    private int leftMargin = 6;
 
-    int rightMargin = 8;
-
-    int topMargin = 3;
-
-    int bottomMargin = 3;
+    private int rightMargin = 8;
 
     private TextLayout textLayout;
 
