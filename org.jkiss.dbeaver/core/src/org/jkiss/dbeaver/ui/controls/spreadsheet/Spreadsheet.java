@@ -16,6 +16,8 @@ import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -43,6 +45,8 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * ResultSetControl
@@ -189,9 +193,9 @@ public class Spreadsheet extends Composite implements Listener {
         //gridPanel.setFont(font);
     }
 
-    public List<GridPos> getSelection()
+    public Collection<GridPos> getSelection()
     {
-        return Collections.emptyList();
+        return grid.getCellSelection();
     }
 
     public GridPos getCursorPosition()
@@ -469,12 +473,11 @@ public class Spreadsheet extends Composite implements Listener {
 
     private void copySelectionToClipboard()
     {
-/*
         String lineSeparator = System.getProperty("line.separator");
         List<Integer> colsSelected = new ArrayList<Integer>();
         int firstCol = Integer.MAX_VALUE, lastCol = Integer.MIN_VALUE;
         int firstRow = Integer.MAX_VALUE;
-        List<GridPos> selection = getSelection();
+        Collection<GridPos> selection = getSelection();
         for (GridPos pos : selection) {
             if (firstCol > pos.col) {
                 firstCol = pos.col;
@@ -493,7 +496,6 @@ public class Spreadsheet extends Composite implements Listener {
         int prevRow = firstRow;
         int prevCol = firstCol;
         for (GridPos pos : selection) {
-            GridItem tableItem = grid.getItem(pos.row);
             if (pos.row > prevRow) {
                 if (prevCol < lastCol) {
                     for (int i = prevCol; i < lastCol; i++) {
@@ -510,14 +512,13 @@ public class Spreadsheet extends Composite implements Listener {
                 }
                 prevCol = pos.col;
             }
-            String text = tableItem.getText(pos.col);
+            String text = contentLabelProvider.getText(pos);
             tdt.append(text == null ? "" : text);
         }
         TextTransfer textTransfer = TextTransfer.getInstance();
         clipboard.setContents(
             new Object[]{tdt.toString()},
             new Transfer[]{textTransfer});
-*/
     }
 
     private void hookContextMenu()
