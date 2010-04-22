@@ -509,7 +509,6 @@ public class LightGrid extends Canvas {
     private GridColumn insertMarkColumn = null;
     private boolean insertMarkBefore = false;
     private IGridRenderer insertMarkRenderer;
-    private boolean autoWidth = true;
     private boolean wordWrapRowHeader = false;
 
     /**
@@ -664,7 +663,15 @@ public class LightGrid extends Canvas {
      */
     private void refreshData()
     {
+        this.removeAll();
+        if (contentProvider == null) {
+            return;
+        }
+        Point gridSize = contentProvider.getSize();
+        // Add columns
+        for (int i = 0; i < gridSize.x; i++) {
 
+        }
     }
 
     /**
@@ -1353,8 +1360,11 @@ public class LightGrid extends Canvas {
         if (index >= items.size()) {
             return -1;
         }
-
-        return index + 1;
+        if (index == items.size() - 1) {
+            return index;
+        } else {
+            return index + 1;
+        }
     }
 
     /**
@@ -2494,9 +2504,7 @@ public class LightGrid extends Canvas {
 
         int colHeaderHeight = 0;
         for (GridColumn column : columns) {
-            colHeaderHeight = Math
-                .max(column.getHeaderRenderer().computeSize(gc, column.getWidth(), SWT.DEFAULT,
-                                                            column).y, colHeaderHeight);
+            colHeaderHeight = Math.max(column.computeHeaderHeight(gc), colHeaderHeight);
         }
 
         headerHeight = colHeaderHeight;
@@ -2504,12 +2512,9 @@ public class LightGrid extends Canvas {
 
     private void computeFooterHeight(GC gc)
     {
-
         int colFooterHeight = 0;
         for (GridColumn column : columns) {
-            colFooterHeight = Math
-                .max(column.getFooterRenderer().computeSize(gc, column.getWidth(), SWT.DEFAULT,
-                                                            column).y, colFooterHeight);
+            colFooterHeight = Math.max(column.computeFooterHeight(gc), colFooterHeight);
         }
 
         footerHeight = colFooterHeight;
@@ -3124,13 +3129,12 @@ public class LightGrid extends Canvas {
                         + dragDropAfterColumn.getWidth();
                 }
 
-                Point size = dropPointRenderer.computeSize(e.gc, SWT.DEFAULT, SWT.DEFAULT, null);
-                x -= size.x / 2;
+                int dropPointwidth = 9;
+                x -= dropPointwidth / 2;
                 if (x < 0) {
                     x = 0;
                 }
-                dropPointRenderer.setBounds(x - 1, headerHeight + DROP_POINT_LOWER_OFFSET, size.x,
-                                            size.y);
+                dropPointRenderer.setBounds(x - 1, headerHeight + DROP_POINT_LOWER_OFFSET, dropPointwidth, 7);
                 dropPointRenderer.paint(e.gc, null);
             }
         }
@@ -4648,8 +4652,7 @@ public class LightGrid extends Canvas {
                 Rectangle preferredTextBounds = null;
 
                 if (hoveringItem > 0 && items.get(hoveringItem).getToolTipText(
-                    indexOf(col)) == null && //no inplace tooltips when regular tooltip
-                    !col.getWordWrap()) //dont show inplace tooltips for cells with wordwrap
+                    indexOf(col)) == null) //no inplace tooltips when regular tooltip
                 {
                     cellBounds = col.getCellRenderer().getBounds();
                     if (cellBounds.x + cellBounds.width > getSize().x) {
@@ -4844,11 +4847,6 @@ public class LightGrid extends Canvas {
         } else {
             items.add(index, item);
             row = index;
-        }
-
-        if (isRowHeaderVisible() && isAutoWidth()) {
-            rowHeaderWidth = Math.max(rowHeaderWidth, rowHeaderRenderer
-                .computeSize(sizingGC, SWT.DEFAULT, SWT.DEFAULT, item).x);
         }
 
         scrollValuesObsolete = true;
@@ -5486,13 +5484,11 @@ public class LightGrid extends Canvas {
      *
      * @param width the width of the row header
      * @see #getItemHeaderWidth()
-     * @see #setAutoWidth(boolean)
      */
     public void setItemHeaderWidth(int width)
     {
         checkWidget();
         rowHeaderWidth = width;
-        setAutoWidth(false);
         redraw();
     }
 
@@ -5758,34 +5754,6 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
         return rowHeaderWidth;
-    }
-
-    /**
-     * Sets the value of the auto-width feature. When enabled, this feature resizes the width of the row headers to
-     * reflect the content of row headers.
-     *
-     * @param enabled Set to true to enable this feature, false (default) otherwise.
-     * @see #isAutoWidth()
-     */
-    public void setAutoWidth(boolean enabled)
-    {
-        if (autoWidth == enabled)
-            return;
-
-        checkWidget();
-        autoWidth = enabled;
-        redraw();
-    }
-
-    /**
-     * Returns the value of the auto-height feature, which resizes row header width based on content.
-     *
-     * @return Returns whether or not the auto-width feature is enabled.
-     * @see #setAutoWidth(boolean)
-     */
-    public boolean isAutoWidth()
-    {
-        return autoWidth;
     }
 
     /**

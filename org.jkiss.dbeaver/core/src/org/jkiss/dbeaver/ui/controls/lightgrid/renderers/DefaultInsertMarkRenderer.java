@@ -7,7 +7,6 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 /**
@@ -44,11 +43,4 @@ public class DefaultInsertMarkRenderer extends AbstractRenderer
     	gc.drawLine(r.x-2,  r.y-3,  r.x-2,   r.y+3);
     }
 
-    /** 
-     * {@inheritDoc}
-     */
-    public Point computeSize(GC gc, int wHint, int hHint, Object value)
-    {
-        return new Point(9, 7);
-    }
 }

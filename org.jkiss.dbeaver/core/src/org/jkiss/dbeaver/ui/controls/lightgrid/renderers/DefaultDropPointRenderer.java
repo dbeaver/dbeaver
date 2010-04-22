@@ -6,7 +6,6 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
@@ -44,14 +43,6 @@ public class DefaultDropPointRenderer extends AbstractRenderer
                                    getBounds().x + 2, getBounds().y + 5, getBounds().x + 1,
                                    getBounds().y + 5 });
 
-    }
-
-    /** 
-     * {@inheritDoc}
-     */
-    public Point computeSize(GC gc, int wHint, int hHint, Object value)
-    {
-        return new Point(9, 7);
     }
 
 }

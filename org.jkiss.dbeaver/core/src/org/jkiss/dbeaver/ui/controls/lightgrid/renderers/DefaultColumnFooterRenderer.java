@@ -40,39 +40,6 @@ public class DefaultColumnFooterRenderer extends GridFooterRenderer
     /**
      * {@inheritDoc}
      */
-    public Point computeSize(GC gc, int wHint, int hHint, Object value)
-    {
-        GridColumn column = (GridColumn)value;
-
-        gc.setFont(column.getFooterFont());
-
-        int x = 0;
-
-        x += leftMargin;
-
-        x += gc.stringExtent(column.getText()).x + rightMargin;
-
-        int y = 0;
-
-        y += topMargin;
-
-        y += gc.getFontMetrics().getHeight();
-
-        y += bottomMargin;
-
-        if (column.getFooterImage() != null)
-        {
-            x += column.getFooterImage().getBounds().width + imageSpacing;
-
-            y = Math.max(y, topMargin + column.getFooterImage().getBounds().height + bottomMargin);
-        }
-
-        return new Point(x, y);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public void paint(GC gc, Object value)
     {
         GridColumn column = (GridColumn)value;

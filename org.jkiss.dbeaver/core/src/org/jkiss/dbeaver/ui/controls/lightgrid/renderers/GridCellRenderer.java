@@ -34,8 +34,6 @@ public abstract class GridCellRenderer extends AbstractGridWidget
 
     private boolean cellSelected = false;
 
-    private boolean wordWrap = false;
-
     private boolean dragging = false;
 
     protected GridCellRenderer(LightGrid grid)
@@ -169,22 +167,6 @@ public abstract class GridCellRenderer extends AbstractGridWidget
     public Rectangle getTextBounds(int row, boolean preferred)
     {
         return null;
-    }
-
-    /**
-     * @return the wordWrap
-     */
-    public boolean isWordWrap()
-    {
-        return wordWrap;
-    }
-
-    /**
-     * @param wordWrap the wordWrap to set
-     */
-    public void setWordWrap(boolean wordWrap)
-    {
-        this.wordWrap = wordWrap;
     }
 
     /**

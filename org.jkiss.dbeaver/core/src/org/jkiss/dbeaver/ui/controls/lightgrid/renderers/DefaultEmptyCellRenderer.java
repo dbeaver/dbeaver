@@ -77,15 +77,7 @@ public class DefaultEmptyCellRenderer extends GridCellRenderer
         }
     }
 
-    /** 
-     * {@inheritDoc}
-     */
-    public Point computeSize(GC gc, int wHint, int hHint, Object value)
-    {
-        return new Point(wHint, hHint);
-    }
-
-    /** 
+    /**
      * {@inheritDoc}
      */
     public boolean notify(int event, Point point, Object value)

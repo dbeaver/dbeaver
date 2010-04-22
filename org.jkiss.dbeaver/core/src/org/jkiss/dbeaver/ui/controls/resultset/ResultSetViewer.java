@@ -119,7 +119,7 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
             this);
 
         createStatusBar(spreadsheet);
-
+        changeMode(ResultSetMode.GRID);
         this.resultSetProvider = resultSetProvider;
         this.dataPump = new ResultSetDataPump(this);
 

@@ -30,17 +30,6 @@ public interface IGridRenderer
     void paint(GC gc, Object value);
 
     /**
-     * Returns the size of the given value's visual representation.
-     * 
-     * @param gc convenience GC for string and text extents
-     * @param wHint given width (or SWT.DEFAULT)
-     * @param hHint given height (or SWT.DEFAULT)
-     * @param value value to be sized
-     * @return the size
-     */
-    Point computeSize(GC gc, int wHint, int hHint, Object value);
-
-    /**
      * Sets the bounds of the drawing.
      * 
      * @param bounds Bounds.

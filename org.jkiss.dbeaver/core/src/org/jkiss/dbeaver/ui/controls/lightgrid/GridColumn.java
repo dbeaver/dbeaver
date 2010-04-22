@@ -11,14 +11,9 @@ import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridCellRenderer;
 import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridFooterRenderer;
 import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridHeaderRenderer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTException;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Item;
@@ -42,6 +37,13 @@ public class GridColumn extends Item {
 	 * Default width of the column.
 	 */
 	private static final int DEFAULT_WIDTH = 10;
+
+    private int topMargin = 3;
+    private int bottomMargin = 3;
+    private int leftMargin = 6;
+    private int rightMargin = 6;
+    private int imageSpacing = 3;
+    private int insideMargin = 3;
 
 	/**
 	 * Parent table.
@@ -217,6 +219,54 @@ public class GridColumn extends Item {
 		}
 	}
 
+    public int computeHeaderHeight(GC gc)
+    {
+        gc.setFont(getHeaderFont());
+
+        int y = topMargin + gc.getFontMetrics().getHeight() + bottomMargin;
+
+
+        if (getImage() != null) {
+            y = Math.max(y, topMargin + getImage().getBounds().height + bottomMargin);
+        }
+
+        if( getHeaderControl() != null ) {
+            y += getHeaderControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+        }
+
+		return y;
+    }
+
+    public int computeHeaderWidth(GC gc)
+    {
+        gc.setFont(getHeaderFont());
+
+        int x = leftMargin;
+        if (getImage() != null) {
+            x += getImage().getBounds().width + imageSpacing;
+        }
+        x += gc.stringExtent(getText()).x + rightMargin;
+
+        return x;
+    }
+
+    public int computeFooterHeight(GC gc)
+    {
+        gc.setFont(getFooterFont());
+
+        int y = topMargin;
+
+        y += gc.getFontMetrics().getHeight();
+
+        y += bottomMargin;
+
+        if (getFooterImage() != null) {
+            y = Math.max(y, topMargin + getFooterImage().getBounds().height + bottomMargin);
+        }
+
+        return y;
+    }
+
 	/**
 	 * Sets the sort indicator style for the column. This method does not actual
 	 * sort the data in the table. Valid values include: SWT.UP, SWT.DOWN,
@@ -291,20 +341,40 @@ public class GridColumn extends Item {
 		checkWidget();
 
 		GC gc = new GC(parent);
-		int newWidth = getHeaderRenderer().computeSize(gc, SWT.DEFAULT,
-				SWT.DEFAULT, this).x;
-		GridItem[] items = parent.getItems();
-        for (GridItem item : items) {
-            newWidth = Math.max(newWidth, getCellRenderer().computeSize(
-                gc,
-                SWT.DEFAULT, SWT.DEFAULT, item).x);
+		int newWidth = computeHeaderWidth(gc);
+        if (parent.getContentLabelProvider() != null) {
+            int columnIndex = parent.indexOf(this);
+            int topIndex = parent.getTopIndex();
+            int bottomIndex = parent.getBottomIndex();
+            if (topIndex >= 0 && bottomIndex > topIndex) {
+                for (int i = topIndex; i <= bottomIndex; i++) {
+                    newWidth = Math.max(newWidth, computeCellWidth(gc, columnIndex, i));
+                }
+            }
         }
 		gc.dispose();
 		setWidth(newWidth);
 		parent.redraw();
 	}
 
-	/**
+    private int computeCellWidth(GC gc, int column, int row) {
+        Font cellFont = parent.getCellFont(column, row);
+        gc.setFont(cellFont);
+
+        int x = 0;
+
+        x += leftMargin;
+
+        Image image = parent.getCellImage(column, row);
+        if (image != null) {
+            x += image.getBounds().width + insideMargin;
+        }
+
+        x += gc.textExtent(parent.getCellText(column, row)).x + rightMargin;
+        return x;
+    }
+
+    /**
 	 * Sets the cell renderer.
 	 *
 	 * @param cellRenderer
@@ -510,31 +580,6 @@ public class GridColumn extends Item {
 
 	void setColumnIndex(int newIndex) {
 		cellRenderer.setColumn(newIndex);
-	}
-
-	/**
-	 * Returns the true if the cells in receiver wrap their text.
-	 *
-	 * @return true if the cells wrap their text.
-	 */
-	public boolean getWordWrap() {
-		checkWidget();
-		return cellRenderer.isWordWrap();
-	}
-
-	/**
-	 * If the argument is true, wraps the text in the receiver's cells. This
-	 * feature will not cause the row height to expand to accommodate the
-	 * wrapped text. Please use <code>Grid#setItemHeight</code> to change the
-	 * height of each row.
-	 *
-	 * @param wordWrap
-	 *            true to make cells wrap their text.
-	 */
-	public void setWordWrap(boolean wordWrap) {
-		checkWidget();
-		cellRenderer.setWordWrap(wordWrap);
-		parent.redraw();
 	}
 
 	/**

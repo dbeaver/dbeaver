@@ -6,7 +6,6 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
@@ -22,14 +21,6 @@ public class DefaultEmptyColumnFooterRenderer extends AbstractRenderer
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public Point computeSize(GC gc, int wHint, int hHint, Object value)
-    {
-        return new Point(wHint, hHint);
-    }
-
-    /** 
      * {@inheritDoc}
      */
     public void paint(GC gc, Object value)

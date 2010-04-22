@@ -110,42 +110,6 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
 
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public Point computeSize(GC gc, int wHint, int hHint, Object value)
-    {
-        GridItem item = (GridItem) value;
-
-        String text = getHeaderText(item);
-        Image image = getHeaderImage(item);
-
-        int x = 0;
-
-        x += leftMargin;
-
-        if( image != null ) {
-        	x += image.getBounds().width + 5;
-        }
-
-        x += gc.stringExtent(text).x + rightMargin;
-
-        int y = 0;
-
-        y += topMargin;
-
-        if( image != null ) {
-        	y += Math.max(gc.getFontMetrics().getHeight(),image.getBounds().height);
-        } else {
-        	y += gc.getFontMetrics().getHeight();
-        }
-
-
-        y += bottomMargin;
-
-        return new Point(x, y);
-    }
-
     private Image getHeaderImage(GridItem item) {
     	return item.getHeaderImage();
     }
