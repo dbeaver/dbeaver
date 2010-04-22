@@ -499,34 +499,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return false;
     }
 
-    public void fillRowData(IGridRowData row)
-    {
-        int rowNum = row.getIndex();
-        if (mode == ResultSetMode.RECORD) {
-            // Fill record
-            if (curRowNum >= curRows.size() || curRowNum < 0) {
-                return;
-            }
-            Object[] values = curRows.get(curRowNum);
-            assert(row.getIndex() < values.length);
-            Object value = values[row.getIndex()];
-            row.setData(value);
-            row.setText(0, getCellValue(value));
-            row.setHeaderText(metaColumns[rowNum].metaData.getColumnName());
-            if (metaColumns[rowNum].editable) {
-                row.setHeaderImage(DBIcon.EDIT_COLUMN.getImage());
-            }
-        } else {
-            // Fill rows
-            Object[] values = curRows.get(rowNum);
-            row.setData(values);
-            for (int i = 0; i < values.length; i++) {
-                row.setText(i, getCellValue(values[i]));
-            }
-            row.setHeaderText(String.valueOf(row.getIndex() + 1));
-        }
-    }
-
     private String getCellValue(Object colValue)
     {
         if (colValue == null) {
