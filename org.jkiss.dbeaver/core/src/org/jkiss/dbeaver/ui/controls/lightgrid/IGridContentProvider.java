@@ -13,6 +13,6 @@ public interface IGridContentProvider extends IStructuredContentProvider {
      * Row count
      * @return row count
      */
-    public Point getSize();
+    public GridPos getSize();
 
 }

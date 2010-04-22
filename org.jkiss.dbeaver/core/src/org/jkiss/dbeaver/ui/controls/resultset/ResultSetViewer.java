@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.runtime.sql.*;
 
@@ -159,11 +160,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void updateGridCursor()
     {
-        Point point = spreadsheet.getCursorPosition();
+        GridPos point = spreadsheet.getCursorPosition();
         if (point == null) {
             onChangeGridCursor(0, 0);
         } else {
-            onChangeGridCursor(point.x, point.y);
+            onChangeGridCursor(point.col, point.row);
         }
     }
 
@@ -320,15 +321,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
             spreadsheet.setRowHeaderWidth(defaultWidth + DEFAULT_ROW_HEADER_WIDTH);
             itemToggleView.setImage(DBIcon.RS_MODE_RECORD.getImage());
-            Point curPos = spreadsheet.getCursorPosition();
+            GridPos curPos = spreadsheet.getCursorPosition();
             if (curPos != null) {
-                curRowNum = curPos.y;
+                curRowNum = curPos.row;
                 if (curRowNum < 0) {
                     curRowNum = 0;
                 }
             } else {
                 curRowNum = 0;
             }
+            updateRecord();
         }
 
         this.initResultSet();
@@ -841,14 +843,14 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private class ContentProvider implements IGridContentProvider {
 
-        public Point getSize()
+        public GridPos getSize()
         {
             if (mode == ResultSetMode.RECORD) {
-                return new Point(
+                return new GridPos(
                     1,
                     metaColumns == null ? 0 : metaColumns.length);
             } else {
-                return new Point(
+                return new GridPos(
                     metaColumns == null ? 0 : metaColumns.length,
                     curRows.size());
             }
@@ -879,29 +881,29 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         @Override
         public String getText(Object element)
         {
-            Point cell = (Point)element;
+            GridPos cell = (GridPos)element;
             if (mode == ResultSetMode.RECORD) {
                 // Fill record
                 if (curRowNum >= curRows.size() || curRowNum < 0) {
-                    log.warn("Bad current row number: " + cell.y);
+                    log.warn("Bad current row number: " + curRowNum);
                     return null;
                 }
                 Object[] values = curRows.get(curRowNum);
-                if (cell.y >= values.length) {
-                    log.warn("Bad record row number: " + cell.y);
+                if (cell.row >= values.length) {
+                    log.warn("Bad record row number: " + cell.row);
                     return null;
                 }
-                return getCellValue(values[cell.y]);
+                return getCellValue(values[cell.row]);
             } else {
-                if (cell.y >= curRows.size()) {
-                    log.warn("Bad grid row number: " + cell.y);
+                if (cell.row >= curRows.size()) {
+                    log.warn("Bad grid row number: " + cell.row);
                     return null;
                 }
-                if (cell.x >= metaColumns.length) {
-                    log.warn("Bad grid column number: " + cell.x);
+                if (cell.col >= metaColumns.length) {
+                    log.warn("Bad grid column number: " + cell.col);
                     return null;
                 }
-                return getCellValue(curRows.get(cell.y)[cell.x]);
+                return getCellValue(curRows.get(cell.row)[cell.col]);
             }
         }
 
@@ -912,9 +914,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public Color getBackground(Object element)
         {
-            Point cell = (Point)element;
-            int col = cell.x;
-            int row = cell.y;
+            GridPos cell = (GridPos)element;
+            int col = cell.col;
+            int row = cell.row;
             if (mode == ResultSetMode.RECORD) {
                 col = row;
                 row = curRowNum;

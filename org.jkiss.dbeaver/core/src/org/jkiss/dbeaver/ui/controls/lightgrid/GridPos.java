@@ -9,8 +9,8 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid;
  */
 public class GridPos
 {
-    public final int col;
-    public final int row;
+    public int col;
+    public int row;
 
     public GridPos(int col, int row)
     {

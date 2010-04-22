@@ -194,10 +194,10 @@ public class Spreadsheet extends Composite implements Listener {
         return Collections.emptyList();
     }
 
-    public Point getCursorPosition()
+    public GridPos getCursorPosition()
     {
         if (grid.isDisposed() || grid.getItemCount() <= 0 || grid.getColumnCount() <= 0) {
-            return new Point(-1, -1);
+            return new GridPos(-1, -1);
         }
         return grid.getFocusCell();
     }
@@ -212,38 +212,38 @@ public class Spreadsheet extends Composite implements Listener {
         if (xOffset == 0 && yOffset == 0) {
             return;
         }
-        Point curPos = getCursorPosition();
+        GridPos curPos = getCursorPosition();
         if (curPos == null) {
             return;
         }
-        Point newPos = new Point(curPos.x, curPos.y);
+        GridPos newPos = new GridPos(curPos.col, curPos.row);
         Event fakeEvent = new Event();
         fakeEvent.widget = grid;
         SelectionEvent selectionEvent = new SelectionEvent(fakeEvent);
         // Move row
         if (yOffset != 0) {
-            int newRow = curPos.y + yOffset;
+            int newRow = curPos.row + yOffset;
             if (newRow < 0) {
                 newRow = 0;
             }
             if (newRow >= getItemCount()) {
                 newRow = getItemCount() - 1;
             }
-            newPos.y = newRow;
+            newPos.row = newRow;
             selectionEvent.data = newRow;
             grid.setFocusItem(newRow);
             grid.showItem(newRow);
         }
         // Move column
         if (xOffset != 0) {
-            int newCol = curPos.x + xOffset;
+            int newCol = curPos.col + xOffset;
             if (newCol < 0) {
                 newCol = 0;
             }
             if (newCol >= getColumnsCount()) {
                 newCol = getColumnsCount() - 1;
             }
-            newPos.x = newCol;
+            newPos.col = newCol;
             GridColumn column = grid.getColumn(newCol);
             if (column != null) {
                 grid.setFocusColumn(column);
@@ -258,8 +258,8 @@ public class Spreadsheet extends Composite implements Listener {
         grid.redraw();
 
         // Change selection event
-        selectionEvent.x = newPos.x;
-        selectionEvent.y = newPos.y;
+        selectionEvent.x = newPos.col;
+        selectionEvent.y = newPos.row;
         gridSelectionListener.widgetSelected(selectionEvent);
 /*
         if (currentPosition == null) {
@@ -330,13 +330,13 @@ public class Spreadsheet extends Composite implements Listener {
             public void widgetSelected(SelectionEvent e)
             {
                 Integer row = (Integer) e.data;
-                Point focusCell = grid.getFocusCell();
+                GridPos focusCell = grid.getFocusCell();
                 if (focusCell != null) {
                     Event event = new Event();
                     event.data = row;
                     event.data = e.data;
-                    event.x = focusCell.x;
-                    event.y = focusCell.y;
+                    event.x = focusCell.col;
+                    event.y = focusCell.row;
                     notifyListeners(Event_ChangeCursor, event);
                 }
             }
@@ -360,67 +360,6 @@ public class Spreadsheet extends Composite implements Listener {
         grid.setContentLabelProvider(contentLabelProvider);
         grid.setColumnLabelProvider(columnLabelProvider);
         grid.setRowLabelProvider(rowLabelProvider);
-
-/*
-        grid.setContentProvider(new IGridContentProvider() {
-            public Point getSize()
-            {
-                return new Point(100, 100);
-            }
-
-            public Object[] getElements(Object inputElement)
-            {
-                return null;
-            }
-
-            public void dispose()
-            {
-            }
-
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-            {
-            }
-        });
-        grid.setContentLabelProvider(new LabelProvider() {
-            @Override
-            public Image getImage(Object element)
-            {
-                return null;
-            }
-
-            @Override
-            public String getText(Object element)
-            {
-                return "CELL " + element;
-            }
-        });
-        grid.setColumnLabelProvider(new LabelProvider() {
-            @Override
-            public Image getImage(Object element)
-            {
-                return null;
-            }
-
-            @Override
-            public String getText(Object element)
-            {
-                return "COLUMN " + element;
-            }
-        });
-        grid.setRowLabelProvider(new LabelProvider() {
-            @Override
-            public Image getImage(Object element)
-            {
-                return null;
-            }
-
-            @Override
-            public String getText(Object element)
-            {
-                return String.valueOf(((Number)element).intValue() + 1);
-            }
-        });
-*/
     }
 
     public void dispose()
@@ -619,12 +558,12 @@ public class Spreadsheet extends Composite implements Listener {
             return;
         }
         // The control that will be the editor must be a child of the Table
-        Point focusCell = grid.getFocusCell();
+        GridPos focusCell = grid.getFocusCell();
         //GridPos pos = getPosFromPoint(event.x, event.y);
-        if (focusCell == null || focusCell.y < 0 || focusCell.x < 0) {
+        if (focusCell == null || focusCell.row < 0 || focusCell.col < 0) {
             return;
         }
-        if (!spreadsheetController.isEditable() || !spreadsheetController.isCellEditable(focusCell.x, focusCell.y)) {
+        if (!spreadsheetController.isEditable() || !spreadsheetController.isCellEditable(focusCell.col, focusCell.row)) {
             return;
         }
         //GridItem item = grid.getItem(focusCell.y);
@@ -649,7 +588,7 @@ public class Spreadsheet extends Composite implements Listener {
             gd.grabExcessVerticalSpace = true;
             placeholder.setLayoutData(gd);
         }
-        boolean editSuccess = spreadsheetController.showCellEditor(focusCell.x, focusCell.y, inline, placeholder);
+        boolean editSuccess = spreadsheetController.showCellEditor(focusCell.col, focusCell.row, inline, placeholder);
         if (inline) {
             if (editSuccess) {
                 int minHeight, minWidth;
@@ -668,7 +607,7 @@ public class Spreadsheet extends Composite implements Listener {
                     tableEditor.verticalAlignment = SWT.CENTER;
                 }
 */
-                tableEditor.setEditor(placeholder, focusCell.x, focusCell.y);
+                tableEditor.setEditor(placeholder, focusCell.col, focusCell.row);
             } else {
                 // No editor was created so just drop placeholder
                 placeholder.dispose();

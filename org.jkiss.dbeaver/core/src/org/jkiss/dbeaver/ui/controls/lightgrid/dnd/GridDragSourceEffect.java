@@ -9,11 +9,11 @@ import org.eclipse.swt.dnd.DragSourceEffect;
 import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridCellRenderer;
 
 import java.util.ArrayList;
@@ -87,14 +87,14 @@ public class GridDragSourceEffect extends DragSourceEffect {
 		Rectangle empty = new Rectangle(0,0,0,0);
 		
 		// Collect the currently selected items. 
-		Collection<Point> selection;
-        selection = new ArrayList<Point>(grid.getCellSelection());
+		Collection<GridPos> selection;
+        selection = new ArrayList<GridPos>(grid.getCellSelection());
 		if (selection.isEmpty()) return null;
 		
 		Rectangle bounds=null;
-		for (Iterator<Point> cellIter = selection.iterator(); cellIter.hasNext(); ) {
-            Point cell = cellIter.next();
-			Rectangle currBounds = grid.getCellBounds(cell.x, cell.y);
+		for (Iterator<GridPos> cellIter = selection.iterator(); cellIter.hasNext(); ) {
+            GridPos cell = cellIter.next();
+			Rectangle currBounds = grid.getCellBounds(cell.col, cell.row);
 			
 			if(empty.equals(currBounds)){
 				cellIter.remove();
@@ -111,14 +111,14 @@ public class GridDragSourceEffect extends DragSourceEffect {
 		
 		dragSourceImage = new Image(display,bounds.width,bounds.height);
 		GC gc = new GC(dragSourceImage);
-		for (Point cell : selection) {
-			GridColumn column = grid.getColumn(cell.x);
-			Rectangle currBounds = grid.getCellBounds(cell.x, cell.y);
+		for (GridPos cell : selection) {
+			GridColumn column = grid.getColumn(cell.col);
+			Rectangle currBounds = grid.getCellBounds(cell.col, cell.row);
 			GridCellRenderer r = column.getCellRenderer();
 			r.setBounds(currBounds.x-bounds.x, currBounds.y-bounds.y, currBounds.width, currBounds.height);
             gc.setClipping(currBounds.x-bounds.x-1, currBounds.y-bounds.y-1, currBounds.width+2, currBounds.height+2);
-			r.setColumn(cell.x);
-            r.setRow(cell.y);
+			r.setColumn(cell.col);
+            r.setRow(cell.row);
             r.setSelected(false);
             r.setFocus(false);
             r.setRowFocus(false);

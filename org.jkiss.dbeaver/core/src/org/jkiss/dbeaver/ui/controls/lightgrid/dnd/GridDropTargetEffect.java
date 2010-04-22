@@ -11,6 +11,7 @@ import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 
 /**
  * This class provides a default drag under effect (eg. select, insert, scroll and expand) 
@@ -55,9 +56,9 @@ public class GridDropTargetEffect extends DropTargetEffect {
 	private int scrollItem;
 	private long		scrollBeginTime;
 
-	private Point		insertCell;
+	private GridPos		insertCell;
 	private boolean		insertBefore;
-	private Point		selectedCell;
+	private GridPos		selectedCell;
 	
 	/**
 	 * Creates a new <code>GridDropTargetEffect</code> to handle the drag under effect on the specified 
@@ -187,7 +188,7 @@ public class GridDropTargetEffect extends DropTargetEffect {
 		int effect = checkEffect(event.feedback);
 		Point coordinates = new Point(event.x, event.y);
 		coordinates = grid.toControl(coordinates);
-		Point hoverCell = grid.getCell(coordinates);
+		GridPos hoverCell = grid.getCell(coordinates);
 		
 		// handle scrolling
 		if ((effect & DND.FEEDBACK_SCROLL) == 0)
@@ -197,11 +198,11 @@ public class GridDropTargetEffect extends DropTargetEffect {
 		}
 		else
 		{
-			if (hoverCell != null && scrollItem == hoverCell.y && scrollBeginTime != 0)
+			if (hoverCell != null && scrollItem == hoverCell.row && scrollBeginTime != 0)
 			{
 				if (System.currentTimeMillis() >= scrollBeginTime)
 				{
-                    int hoverRow = hoverCell.y;
+                    int hoverRow = hoverCell.row;
 					int topItem = grid.getTopIndex();
 					int nextItem = hoverRow == topItem ? hoverRow - 1 : hoverRow + 1;
 					boolean scroll = nextItem != -1 && grid.isInDragScrollArea(coordinates);
@@ -216,7 +217,7 @@ public class GridDropTargetEffect extends DropTargetEffect {
 			else
 			{
 				scrollBeginTime = System.currentTimeMillis() + SCROLL_HYSTERESIS;
-				scrollItem = hoverCell == null ? -1 : hoverCell.y;
+				scrollItem = hoverCell == null ? -1 : hoverCell.row;
 			}
 		}
 		
@@ -229,7 +230,7 @@ public class GridDropTargetEffect extends DropTargetEffect {
 				if (selectedCell != null)
 					deselect(selectedCell);
 				select(hoverCell);
-				selectedCell = new Point(hoverCell.x,hoverCell.y);
+				selectedCell = new GridPos(hoverCell.col, hoverCell.row);
 			}
 		}
 		if ((effect & DND.FEEDBACK_SELECT) == 0 && selectedCell != null)
@@ -248,7 +249,7 @@ public class GridDropTargetEffect extends DropTargetEffect {
 				{
 					setInsertMark(hoverCell, before);
 				}
-				insertCell = new Point(hoverCell.x,hoverCell.y);
+				insertCell = new GridPos(hoverCell.col, hoverCell.row);
 				insertBefore = before;
 			}
 			else
@@ -270,18 +271,18 @@ public class GridDropTargetEffect extends DropTargetEffect {
 		}
 	}
 	
-	private void select(Point cell) {
-        grid.select(cell.y);
+	private void select(GridPos cell) {
+        grid.select(cell.row);
 		
 	}
-	private void deselect(Point cell) {
-        grid.deselect(cell.y);
+	private void deselect(GridPos cell) {
+        grid.deselect(cell.row);
 		
 	}
-	private void setInsertMark(Point cell, boolean before) {
+	private void setInsertMark(GridPos cell, boolean before) {
 		if(cell!=null)
 		{
-            grid.setInsertMark(cell.y, grid.getColumn(cell.x), before);
+            grid.setInsertMark(cell.row, grid.getColumn(cell.col), before);
 		}
 		else
 		{
