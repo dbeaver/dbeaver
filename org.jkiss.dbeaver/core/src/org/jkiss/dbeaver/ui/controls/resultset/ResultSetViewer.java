@@ -12,8 +12,8 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -65,6 +65,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             this.row = row;
             this.value = value;
         }
+
+        @Override
+        public int hashCode()
+        {
+            return col ^ row;
+        }
+
         public boolean equals (Object cell)
         {
             return cell instanceof CellInfo &&
@@ -106,7 +113,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private ToolItem itemRefresh;
 
     // Edited cells
-    private List<CellInfo> editedValues = new ArrayList<CellInfo>();
+    private Set<CellInfo> editedValues = new HashSet<CellInfo>();
+    private Color backgroundModified;
     // Flag saying that edited values update is in progress
     private boolean updateInProgress = false;
 
@@ -144,6 +152,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 onChangeGridCursor(event.x, event.y);
             }
         });
+        backgroundModified = new Color(spreadsheet.getDisplay(), 0xFF, 0xE4, 0xB5);
+
         applyThemeSettings();
     }
 
@@ -473,17 +483,15 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     }
 
     public boolean isCellModified(int col, int row) {
+        if (editedValues.isEmpty()) {
+            return false;
+        }
         if (mode == ResultSetMode.RECORD) {
             int oldcol = col;
             col = row;
             row = oldcol;
         }
-        for (int i = 0; i < editedValues.size(); i++) {
-            if (editedValues.get(i).equals(col, row)) {
-                return true;
-            }
-        }
-        return false;
+        return editedValues.contains(new CellInfo(col, row, null));
     }
 
     public boolean isInsertable()
@@ -863,9 +871,15 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public Point getSize()
         {
-            return new Point(
-                metaColumns == null ? 0 : metaColumns.length, 
-                curRows.size());
+            if (mode == ResultSetMode.RECORD) {
+                return new Point(
+                    1,
+                    metaColumns == null ? 0 : metaColumns.length);
+            } else {
+                return new Point(
+                    metaColumns == null ? 0 : metaColumns.length,
+                    curRows.size());
+            }
         }
 
         public Object[] getElements(Object inputElement)
@@ -882,7 +896,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
-    private class ContentLabelProvider extends LabelProvider {
+    private class ContentLabelProvider extends LabelProvider implements IColorProvider {
         @Override
         public Image getImage(Object element)
         {
@@ -906,14 +920,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     return null;
                 }
                 return getCellValue(values[cell.y]);
-/*
-                row.setData(value);
-                row.setText(0, getCellValue(value));
-                row.setHeaderText(metaColumns[rowNum].metaData.getColumnName());
-                if (metaColumns[rowNum].editable) {
-                    row.setHeaderImage(DBIcon.EDIT_COLUMN.getImage());
-                }
-*/
             } else {
                 if (cell.y >= curRows.size()) {
                     log.warn("Bad grid row number: " + cell.y);
@@ -925,6 +931,26 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 }
                 return getCellValue(curRows.get(cell.y)[cell.x]);
             }
+        }
+
+        public Color getForeground(Object element)
+        {
+            return null;
+        }
+
+        public Color getBackground(Object element)
+        {
+            Point cell = (Point)element;
+            int col = cell.x;
+            int row = cell.y;
+            if (mode == ResultSetMode.RECORD) {
+                col = row;
+                row = curRowNum;
+            }
+            if (isCellModified(col, row)) {
+                return backgroundModified;
+            }
+            return null;
         }
     }
 
@@ -966,14 +992,24 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         @Override
         public Image getImage(Object element)
         {
-            return super.getImage(
-                element);    //To change body of overridden methods use File | Settings | File Templates.
+            if (mode == ResultSetMode.RECORD) {
+                int rowNumber = ((Number) element).intValue();
+                if (metaColumns[rowNumber].editable) {
+                    return DBIcon.EDIT_COLUMN.getImage();
+                }
+            }
+            return null;
         }
 
         @Override
         public String getText(Object element)
         {
-            return String.valueOf(((Number)element).intValue() + 1);
+            int rowNumber = ((Number) element).intValue();
+            if (mode == ResultSetMode.RECORD) {
+                return metaColumns[rowNumber].metaData.getColumnName();
+            } else {
+                return String.valueOf(rowNumber + 1);
+            }
         }
     }
 }

@@ -20,7 +20,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -42,7 +41,6 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -75,7 +73,6 @@ public class Spreadsheet extends Composite implements Listener {
     private Color foregroundNormal;
     private Color foregroundLines;
     private Color foregroundSelected;
-    private Color backgroundModified;
     private Color backgroundNormal;
     private Color backgroundControl;
     private Color backgroundSelected;
@@ -111,8 +108,6 @@ public class Spreadsheet extends Composite implements Listener {
         foregroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
         foregroundLines = getDisplay().getSystemColor(SWT.COLOR_GRAY);
         foregroundSelected = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
-        backgroundModified = new Color(getDisplay(), 0xFF, 0xE4,
-                                       0xB5);//getDisplay().getSystemColor(SWT.COLOR_DARK_RED);
         backgroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
         backgroundSelected = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
         backgroundControl = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
