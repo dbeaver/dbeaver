@@ -335,6 +335,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         this.initResultSet();
 
+        if (mode == ResultSetMode.GRID) {
+            if (curRowNum >= 0) {
+                spreadsheet.setCursor(new GridPos(0, curRowNum), false);
+            }
+        }
 /*
         if (mode == ResultSetMode.GRID) {
             spreadsheet.shiftCursor(curRowNum.col, curRowNum.row);
@@ -485,15 +490,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     }
 
     public boolean isCellModified(int col, int row) {
-        if (editedValues.isEmpty()) {
-            return false;
-        }
-        if (mode == ResultSetMode.RECORD) {
-            int oldcol = col;
-            col = row;
-            row = oldcol;
-        }
-        return editedValues.contains(new CellInfo(col, row, null));
+        return 
+            !editedValues.isEmpty() &&
+                editedValues.contains(new CellInfo(col, row, null));
     }
 
     public boolean isInsertable()
@@ -520,7 +519,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         final Composite inlinePlaceholder)
     {
         final int columnIndex = (mode == ResultSetMode.GRID ? column : row);
-        final int rowIndex = (mode == ResultSetMode.GRID ? row : column);
+        final int rowIndex = (mode == ResultSetMode.GRID ? row : curRowNum);
         final Object[] curRow = curRows.get(rowIndex);
         DBDValueController valueController = new DBDValueController() {
             public DBCColumnMetaData getColumnMetaData()
@@ -874,8 +873,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         @Override
         public Image getImage(Object element)
         {
-            return super.getImage(
-                element);    //To change body of overridden methods use File | Settings | File Templates.
+            return null;
         }
 
         @Override

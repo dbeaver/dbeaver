@@ -15,16 +15,16 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import java.util.List;
 
 /**
- * GridSelectionProvider
+ * SpreadsheetSelectionProvider
  */
-public class GridSelectionProvider implements ISelectionProvider
+public class SpreadsheetSelectionProvider implements ISelectionProvider
 {
-    static Log log = LogFactory.getLog(GridSelectionProvider.class);
+    static Log log = LogFactory.getLog(SpreadsheetSelectionProvider.class);
 
     private Spreadsheet grid;
     private List<ISelectionChangedListener> listeners;
 
-    public GridSelectionProvider(Spreadsheet grid)
+    public SpreadsheetSelectionProvider(Spreadsheet grid)
     {
         this.grid = grid;
     }
@@ -41,7 +41,7 @@ public class GridSelectionProvider implements ISelectionProvider
 
     public ISelection getSelection()
     {
-        return new GridSelection(grid);
+        return new SpreadsheetSelection(grid);
     }
 
     public void setSelection(ISelection selection)

@@ -16,8 +16,8 @@ import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -43,10 +43,9 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * ResultSetControl
@@ -69,7 +68,7 @@ public class Spreadsheet extends Composite implements Listener {
     private ILabelProvider columnLabelProvider;
     private ILabelProvider rowLabelProvider;
 
-    private GridSelectionProvider selectionProvider;
+    private SpreadsheetSelectionProvider selectionProvider;
 
     private Clipboard clipboard;
     private ActionInfo[] actionsInfo;
@@ -107,7 +106,7 @@ public class Spreadsheet extends Composite implements Listener {
         this.contentLabelProvider = contentLabelProvider;
         this.columnLabelProvider = columnLabelProvider;
         this.rowLabelProvider = rowLabelProvider;
-        this.selectionProvider = new GridSelectionProvider(this);
+        this.selectionProvider = new SpreadsheetSelectionProvider(this);
 
         foregroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
         foregroundLines = getDisplay().getSystemColor(SWT.COLOR_GRAY);
@@ -221,9 +220,6 @@ public class Spreadsheet extends Composite implements Listener {
             return;
         }
         GridPos newPos = new GridPos(curPos.col, curPos.row);
-        Event fakeEvent = new Event();
-        fakeEvent.widget = grid;
-        SelectionEvent selectionEvent = new SelectionEvent(fakeEvent);
         // Move row
         if (yOffset != 0) {
             int newRow = curPos.row + yOffset;
@@ -234,9 +230,6 @@ public class Spreadsheet extends Composite implements Listener {
                 newRow = getItemCount() - 1;
             }
             newPos.row = newRow;
-            selectionEvent.data = newRow;
-            grid.setFocusItem(newRow);
-            grid.showItem(newRow);
         }
         // Move column
         if (xOffset != 0) {
@@ -248,10 +241,27 @@ public class Spreadsheet extends Composite implements Listener {
                 newCol = getColumnsCount() - 1;
             }
             newPos.col = newCol;
-            GridColumn column = grid.getColumn(newCol);
-            if (column != null) {
-                grid.setFocusColumn(column);
-                grid.showColumn(column);
+        }
+        setCursor(newPos, keepSelection);
+    }
+
+    public void setCursor(GridPos newPos, boolean keepSelection)
+    {
+        Event fakeEvent = new Event();
+        fakeEvent.widget = grid;
+        SelectionEvent selectionEvent = new SelectionEvent(fakeEvent);
+        // Move row
+        if (newPos.row >= 0) {
+            selectionEvent.data = newPos.row;
+            grid.setFocusItem(newPos.row);
+            grid.showItem(newPos.row);
+        }
+        // Move column
+        if (newPos.col >= 0) {
+            GridColumn gridColumn = grid.getColumn(newPos.col);
+            if (gridColumn != null) {
+                grid.setFocusColumn(gridColumn);
+                grid.showColumn(gridColumn);
             }
         }
         if (!keepSelection) {
@@ -265,26 +275,6 @@ public class Spreadsheet extends Composite implements Listener {
         selectionEvent.x = newPos.col;
         selectionEvent.y = newPos.row;
         gridSelectionListener.widgetSelected(selectionEvent);
-/*
-        if (currentPosition == null) {
-            currentPosition = cursorPosition;
-        }
-        if (newCol != currentPosition.col || newRow != currentPosition.row) {
-            changeSelection(newCol, newRow, false, inKeyboardSelection, keepSelection, false);
-            // Ensure seletion is visible
-            TableItem tableItem = table.getItem(newRow);
-            if (newCol != currentPosition.col) {
-                TableColumn newColumn = table.getColumn(newCol);
-                table.showColumn(newColumn);
-            }
-            if (newRow != currentPosition.row) {
-                table.showItem(tableItem);
-                gridPanel.redraw();
-            }
-
-            currentPosition = new GridPos(newCol, newRow);
-        }
-*/
     }
 
     public void addCursorChangeListener(Listener listener)
