@@ -23,7 +23,7 @@ public class DefaultDropPointRenderer extends AbstractRenderer
     /**
      * {@inheritDoc}
      */
-    public void paint(GC gc, Object value)
+    public void paint(GC gc)
     {
         gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
 

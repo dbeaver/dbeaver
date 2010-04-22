@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.controls.grid.dnd;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEffect;

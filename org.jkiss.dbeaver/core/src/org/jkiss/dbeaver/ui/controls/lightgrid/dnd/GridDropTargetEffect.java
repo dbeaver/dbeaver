@@ -11,8 +11,6 @@ import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 
 /**
  * This class provides a default drag under effect (eg. select, insert, scroll and expand) 
@@ -54,11 +52,9 @@ public class GridDropTargetEffect extends DropTargetEffect {
 	private LightGrid grid;
 	private boolean		ignoreCellSelection = false;
 	
-	private GridItem scrollItem;
+	private int scrollItem;
 	private long		scrollBeginTime;
-	private GridItem	expandItem;
-	private long		expandBeginTime;
-	
+
 	private Point		insertCell;
 	private boolean		insertBefore;
 	private Point		selectedCell;
@@ -111,8 +107,8 @@ public class GridDropTargetEffect extends DropTargetEffect {
 	 * {@inheritDoc}
 	 */
 	public Widget getItem(int x, int y) {
-		Point coordinates = new Point(x, y);
-		coordinates = grid.toControl(coordinates);
+		//Point coordinates = new Point(x, y);
+		//coordinates = grid.toControl(coordinates);
 		//return grid.getItem(coordinates);
         return null;
 	}
@@ -132,10 +128,8 @@ public class GridDropTargetEffect extends DropTargetEffect {
 	 * @see DropTargetEvent
 	 */
 	public void dragEnter(DropTargetEvent event) {
-		expandBeginTime = 0;
-		expandItem = null;
 		scrollBeginTime = 0;
-		scrollItem = null;
+		scrollItem = -1;
 		
 		insertCell = null;
 		selectedCell = null;
@@ -166,10 +160,8 @@ public class GridDropTargetEffect extends DropTargetEffect {
 			setInsertMark(null, false);
 			insertCell = null;
 		}
-		expandBeginTime = 0;
-		expandItem = null;
 		scrollBeginTime = 0;
-		scrollItem = null;
+		scrollItem = -1;
 	}
 
 	/**
@@ -195,30 +187,21 @@ public class GridDropTargetEffect extends DropTargetEffect {
 		int effect = checkEffect(event.feedback);
 		Point coordinates = new Point(event.x, event.y);
 		coordinates = grid.toControl(coordinates);
-		GridItem hoverItem = grid.getItem(coordinates);
-		GridColumn hoverColumn = grid.getColumn(coordinates);
 		Point hoverCell = grid.getCell(coordinates);
-		
-		if (hoverItem == null || hoverColumn == null || hoverCell == null)
-		{
-			hoverItem = null;
-			hoverColumn = null;
-			hoverCell = null;
-		}
 		
 		// handle scrolling
 		if ((effect & DND.FEEDBACK_SCROLL) == 0)
 		{
 			scrollBeginTime = 0;
-			scrollItem = null;
+			scrollItem = -1;
 		}
 		else
 		{
-			if (hoverItem != null && scrollItem == hoverItem && scrollBeginTime != 0)
+			if (hoverCell != null && scrollItem == hoverCell.y && scrollBeginTime != 0)
 			{
 				if (System.currentTimeMillis() >= scrollBeginTime)
 				{
-                    int hoverRow = grid.indexOf(hoverItem);
+                    int hoverRow = hoverCell.y;
 					int topItem = grid.getTopIndex();
 					int nextItem = hoverRow == topItem ? hoverRow - 1 : hoverRow + 1;
 					boolean scroll = nextItem != -1 && grid.isInDragScrollArea(coordinates);
@@ -227,30 +210,13 @@ public class GridDropTargetEffect extends DropTargetEffect {
 						grid.showItem(nextItem);
 					}
 					scrollBeginTime = 0;
-					scrollItem = null;
+					scrollItem = -1;
 				}
 			}
 			else
 			{
 				scrollBeginTime = System.currentTimeMillis() + SCROLL_HYSTERESIS;
-				scrollItem = hoverItem;
-			}
-		}
-		
-		
-		// handle expand
-		if ((effect & DND.FEEDBACK_EXPAND) == 0) {
-			expandBeginTime = 0;
-			expandItem = null;
-		} else {
-			if (hoverItem != null && expandItem == hoverItem && expandBeginTime != 0) {
-				if (System.currentTimeMillis() >= expandBeginTime) {
-					expandBeginTime = 0;
-					expandItem = null;
-				}
-			} else {
-				expandBeginTime = System.currentTimeMillis() + EXPAND_HYSTERESIS;
-				expandItem = hoverItem;
+				scrollItem = hoverCell == null ? -1 : hoverCell.y;
 			}
 		}
 		

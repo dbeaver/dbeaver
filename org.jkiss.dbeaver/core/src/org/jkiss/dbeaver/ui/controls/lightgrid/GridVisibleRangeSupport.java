@@ -47,12 +47,12 @@ public class GridVisibleRangeSupport {
 		/**
 		 * Rows new in the visible range
 		 */
-		public GridItem[] addedRows;
+		public Integer[] addedRows;
 
 		/**
 		 * Rows removed from the range
 		 */
-		public GridItem[] removedRows;
+		public Integer[] removedRows;
 
 		/**
 		 * Columns added to the range
@@ -121,13 +121,17 @@ public class GridVisibleRangeSupport {
 		if (rangeChangeListener != null) {
 			GridVisibleRange range = grid.getVisibleRange();
 
-			List<GridItem> lOrigItems = new ArrayList<GridItem>();
-			lOrigItems.addAll(Arrays.asList(oldRange.getItems()));
+			List<Integer> lOrigItems = new ArrayList<Integer>();
+            for (int row : oldRange.getItems()) {
+			    lOrigItems.add(row);
+            }
 
-			List<GridItem> lNewItems = new ArrayList<GridItem>();
-			lNewItems.addAll(Arrays.asList(range.getItems()));
+			List<Integer> lNewItems = new ArrayList<Integer>();
+            for (int row : range.getItems()) {
+                lOrigItems.add(row);
+            }
 
-			Iterator<GridItem> it = lNewItems.iterator();
+			Iterator<Integer> it = lNewItems.iterator();
 			while (it.hasNext()) {
 				if (lOrigItems.remove(it.next())) {
 					it.remove();
@@ -150,10 +154,10 @@ public class GridVisibleRangeSupport {
 			if (lOrigItems.size() != 0 || lNewItems.size() != 0
 					|| lOrigColumns.size() != 0 || lNewColumns.size() != 0) {
 				RangeChangedEvent evt = new RangeChangedEvent(grid, range);
-				evt.addedRows = new GridItem[lNewItems.size()];
+				evt.addedRows = new Integer[lNewItems.size()];
 				lNewItems.toArray(evt.addedRows);
 
-				evt.removedRows = new GridItem[lOrigItems.size()];
+				evt.removedRows = new Integer[lOrigItems.size()];
 				lOrigItems.toArray(evt.removedRows);
 
 				evt.addedColumns = new GridColumn[lNewColumns.size()];

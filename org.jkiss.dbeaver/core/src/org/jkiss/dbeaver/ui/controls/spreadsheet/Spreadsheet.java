@@ -17,8 +17,6 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -41,7 +39,6 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridEditor;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
@@ -405,6 +402,19 @@ public class Spreadsheet extends Composite implements Listener {
                 return "COLUMN " + element;
             }
         });
+        grid.setRowLabelProvider(new LabelProvider() {
+            @Override
+            public Image getImage(Object element)
+            {
+                return null;
+            }
+
+            @Override
+            public String getText(Object element)
+            {
+                return String.valueOf(((Number)element).intValue() + 1);
+            }
+        });
     }
 
     public void dispose()
@@ -416,6 +426,7 @@ public class Spreadsheet extends Composite implements Listener {
     public void handleEvent(Event event)
     {
         switch (event.type) {
+/*
             case SWT.SetData: {
                 lazyRow.item = (GridItem) event.data;
                 lazyRow.index = event.index;
@@ -424,6 +435,7 @@ public class Spreadsheet extends Composite implements Listener {
                 }
                 break;
             }
+*/
             case SWT.KeyDown:
                 switch (event.keyCode) {
                     case SWT.CR:
@@ -487,6 +499,7 @@ public class Spreadsheet extends Composite implements Listener {
                 }
             }
         }
+        grid.refreshData();
     }
 
     private void clearColumns()
@@ -521,6 +534,7 @@ public class Spreadsheet extends Composite implements Listener {
 
     private void copySelectionToClipboard()
     {
+/*
         String lineSeparator = System.getProperty("line.separator");
         List<Integer> colsSelected = new ArrayList<Integer>();
         int firstCol = Integer.MAX_VALUE, lastCol = Integer.MIN_VALUE;
@@ -568,6 +582,7 @@ public class Spreadsheet extends Composite implements Listener {
         clipboard.setContents(
             new Object[]{tdt.toString()},
             new Transfer[]{textTransfer});
+*/
     }
 
     private void hookContextMenu()
@@ -616,7 +631,7 @@ public class Spreadsheet extends Composite implements Listener {
         if (!dataProvider.isEditable() || !dataProvider.isCellEditable(focusCell.x, focusCell.y)) {
             return;
         }
-        GridItem item = grid.getItem(focusCell.y);
+        //GridItem item = grid.getItem(focusCell.y);
 
         Composite placeholder = null;
         if (inline) {
@@ -638,10 +653,7 @@ public class Spreadsheet extends Composite implements Listener {
             gd.grabExcessVerticalSpace = true;
             placeholder.setLayoutData(gd);
         }
-        lazyRow.index = focusCell.y;
-        lazyRow.column = focusCell.x;
-        lazyRow.item = item;
-        boolean editSuccess = dataProvider.showCellEditor(lazyRow, inline, placeholder);
+        boolean editSuccess = dataProvider.showCellEditor(focusCell.x, focusCell.y, inline, placeholder);
         if (inline) {
             if (editSuccess) {
                 int minHeight, minWidth;
@@ -660,7 +672,7 @@ public class Spreadsheet extends Composite implements Listener {
                     tableEditor.verticalAlignment = SWT.CENTER;
                 }
 */
-                tableEditor.setEditor(placeholder, item, focusCell.x);
+                tableEditor.setEditor(placeholder, focusCell.x, focusCell.y);
             } else {
                 // No editor was created so just drop placeholder
                 placeholder.dispose();
@@ -677,11 +689,6 @@ public class Spreadsheet extends Composite implements Listener {
     public int getItemCount()
     {
         return grid.getItemCount();
-    }
-
-    public void setItemCount(int count)
-    {
-        grid.setItemCount(count);
     }
 
     public int getColumnsCount()
@@ -765,7 +772,7 @@ public class Spreadsheet extends Composite implements Listener {
 
     private class LazyGridRow implements IGridRowData {
 
-        private GridItem item;
+        ///private GridItem item;
         private int index;
         private int column;
 
@@ -781,42 +788,42 @@ public class Spreadsheet extends Composite implements Listener {
 
         public void setImage(int column, Image image)
         {
-            item.setImage(column, image);
+            //item.setImage(column, image);
         }
 
         public String getText(int column)
         {
-            return item.getText(column);
+            return null;//item.getText(column);
         }
 
         public void setText(int column, String text)
         {
-            item.setText(column, text);
+            //item.setText(column, text);
         }
 
         public void setHeaderText(String text)
         {
-            item.setHeaderText(text);
+            //item.setHeaderText(text);
         }
 
         public void setHeaderImage(Image image)
         {
-            item.setHeaderImage(image);
+            //item.setHeaderImage(image);
         }
 
         public void setModified(int column, boolean modified)
         {
-            item.setBackground(column, modified ? backgroundModified : backgroundNormal);
+            //item.setBackground(column, modified ? backgroundModified : backgroundNormal);
         }
 
         public Object getData()
         {
-            return item.getData();
+            return null;//item.getData();
         }
 
         public void setData(Object data)
         {
-            item.setData(data);
+            //item.setData(data);
         }
 
     }

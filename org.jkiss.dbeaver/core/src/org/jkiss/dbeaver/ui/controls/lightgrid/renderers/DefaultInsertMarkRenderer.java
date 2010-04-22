@@ -26,11 +26,10 @@ public class DefaultInsertMarkRenderer extends AbstractRenderer
      * need not be set.
      * 
      * @param gc
-     * @param value  must be a {@link Rectangle} with height == 0.
      */
-    public void paint(GC gc, Object value)
+    public void paint(GC gc)
     {
-    	Rectangle r = (Rectangle)value;
+    	Rectangle r = getBounds();
 
     	gc.setLineStyle(SWT.LINE_SOLID);
     	gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));

@@ -415,7 +415,6 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     public void appendData(List<Object[]> rows)
     {
         curRows.addAll(rows);
-        spreadsheet.setItemCount(curRows.size());
     }
 
     private void clearResultsView()
@@ -434,7 +433,6 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
         spreadsheet.clearGrid();
         if (mode == ResultSetMode.RECORD) {
             spreadsheet.addColumn("Value", "Column Value", null);
-            spreadsheet.setItemCount(metaColumns == null ? 0 : metaColumns.length);
             this.showCurrentRows();
         } else {
             if (metaColumns != null) {
@@ -451,7 +449,6 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                         columnImage);
                 }
             }
-            spreadsheet.setItemCount(curRows.size());
             this.showRowsCount();
         }
 
@@ -559,12 +556,13 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
     }
 
     public boolean showCellEditor(
-        final IGridRowData row,
+        final int column,
+        final int row,
         final boolean inline,
         final Composite inlinePlaceholder)
     {
-        final int columnIndex = (mode == ResultSetMode.GRID ? row.getColumn() : row.getIndex());
-        final int rowIndex = (mode == ResultSetMode.GRID ? row.getIndex() : row.getColumn());
+        final int columnIndex = (mode == ResultSetMode.GRID ? column : row);
+        final int rowIndex = (mode == ResultSetMode.GRID ? row : column);
         final Object[] curRow = curRows.get(rowIndex);
         DBDValueController valueController = new DBDValueController() {
             public DBCColumnMetaData getColumnMetaData()
@@ -598,8 +596,6 @@ public class ResultSetViewer extends Viewer implements IGridDataProvider, IPrope
                         editedValues.add(cell);
                     }
                     curRow[columnIndex] = value;
-                    row.setText(row.getColumn(), getCellValue(value));
-                    row.setModified(row.getColumn(), true);
                     updateEditControls();
                 }
             }

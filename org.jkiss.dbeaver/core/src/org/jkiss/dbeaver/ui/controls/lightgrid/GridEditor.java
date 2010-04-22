@@ -31,11 +31,12 @@ import org.eclipse.swt.widgets.Listener;
  */
 public class GridEditor extends ControlEditor
 {
-    LightGrid table;
+    LightGrid grid;
 
-    GridItem item;
+    //GridItem item;
 
     int column = -1;
+    int row = -1;
 
     ControlListener columnListener;
     
@@ -46,12 +47,12 @@ public class GridEditor extends ControlEditor
     /**
      * Creates a TableEditor for the specified Table.
      * 
-     * @param table the Table Control above which this editor will be displayed
+     * @param grid the Table Control above which this editor will be displayed
      */
-    public GridEditor(final LightGrid table)
+    public GridEditor(final LightGrid grid)
     {
-        super(table);
-        this.table = table;
+        super(grid);
+        this.grid = grid;
         
         columnListener = new ControlListener()
         {
@@ -88,15 +89,15 @@ public class GridEditor extends ControlEditor
         // The following three listeners are workarounds for
         // Eclipse bug 105764
         // https://bugs.eclipse.org/bugs/show_bug.cgi?id=105764
-        table.addListener(SWT.Resize, resizeListener);
+        grid.addListener(SWT.Resize, resizeListener);
         
-        if (table.getVerticalScrollBarProxy() != null)
+        if (grid.getVerticalScrollBarProxy() != null)
         {
-            table.getVerticalScrollBarProxy().addSelectionListener(scrollListener);
+            grid.getVerticalScrollBarProxy().addSelectionListener(scrollListener);
         }
-        if (table.getHorizontalScrollBarProxy() != null)
+        if (grid.getHorizontalScrollBarProxy() != null)
         {
-            table.getHorizontalScrollBarProxy().addSelectionListener(scrollListener);
+            grid.getHorizontalScrollBarProxy().addSelectionListener(scrollListener);
         }
 
         // To be consistent with older versions of SWT, grabVertical defaults to
@@ -111,10 +112,10 @@ public class GridEditor extends ControlEditor
      */
     protected Rectangle computeBounds()
     {
-        if (item == null || column == -1)
+        if (row == -1 || column == -1)
             return new Rectangle(0, 0, 0, 0);
-        Rectangle cell = item.getBounds(column);
-        Rectangle area = table.getClientArea();
+        Rectangle cell = grid.getCellBounds(column, row);
+        Rectangle area = grid.getClientArea();
         if (cell.x < area.x + area.width)
         {
             if (cell.x + cell.width > area.x + area.width)
@@ -169,27 +170,27 @@ public class GridEditor extends ControlEditor
      */
     public void dispose()
     {
-        if (!table.isDisposed() && this.column > -1 && this.column < table.getColumnCount())
+        if (!grid.isDisposed() && this.column > -1 && this.column < grid.getColumnCount())
         {
-            GridColumn tableColumn = table.getColumn(this.column);
+            GridColumn tableColumn = grid.getColumn(this.column);
             tableColumn.removeControlListener(columnListener);
         }
         
-        if (!table.isDisposed())
+        if (!grid.isDisposed())
         {
-            table.removeListener(SWT.Resize, resizeListener);
+            grid.removeListener(SWT.Resize, resizeListener);
             
-            if (table.getVerticalScrollBarProxy() != null)
-                table.getVerticalScrollBarProxy().removeSelectionListener(scrollListener);
+            if (grid.getVerticalScrollBarProxy() != null)
+                grid.getVerticalScrollBarProxy().removeSelectionListener(scrollListener);
             
-            if (table.getHorizontalScrollBarProxy() != null)
-                table.getHorizontalScrollBarProxy().removeSelectionListener(scrollListener);
+            if (grid.getHorizontalScrollBarProxy() != null)
+                grid.getHorizontalScrollBarProxy().removeSelectionListener(scrollListener);
         }
         
         columnListener = null;
         resizeListener = null;
-        table = null;
-        item = null;
+        grid = null;
+        row = -1;
         column = -1;        
         super.dispose();
     }
@@ -213,9 +214,14 @@ public class GridEditor extends ControlEditor
      * @return the TableItem for the row of the cell being tracked by this
      * editor
      */
-    public GridItem getItem()
+    public int getRow()
     {
-        return item;
+        return row;
+    }
+
+    public void setRow(int row) {
+        this.row = row;
+        layout();
     }
 
     /**
@@ -227,8 +233,8 @@ public class GridEditor extends ControlEditor
      */
     public void setColumn(int column)
     {
-        int columnCount = table.getColumnCount();
-        // Separately handle the case where the table has no TableColumns.
+        int columnCount = grid.getColumnCount();
+        // Separately handle the case where the grid has no TableColumns.
         // In this situation, there is a single default column.
         if (columnCount == 0)
         {
@@ -238,28 +244,17 @@ public class GridEditor extends ControlEditor
         }
         if (this.column > -1 && this.column < columnCount)
         {
-            GridColumn tableColumn = table.getColumn(this.column);
+            GridColumn tableColumn = grid.getColumn(this.column);
             tableColumn.removeControlListener(columnListener);
             this.column = -1;
         }
 
-        if (column < 0 || column >= table.getColumnCount())
+        if (column < 0 || column >= grid.getColumnCount())
             return;
 
         this.column = column;
-        GridColumn tableColumn = table.getColumn(this.column);
+        GridColumn tableColumn = grid.getColumn(this.column);
         tableColumn.addControlListener(columnListener);
-        layout();
-    }
-
-    /**
-     * Sets the item that this editor will function over.
-     * 
-     * @param item editing item.
-     */
-    public void setItem(GridItem item)
-    {
-        this.item = item;
         layout();
     }
 
@@ -276,9 +271,9 @@ public class GridEditor extends ControlEditor
      * @param column the zero based index of the column of the cell being
      * tracked by this editor
      */
-    public void setEditor(Control editor, GridItem item, int column)
+    public void setEditor(Control editor, int column, int row)
     {
-        setItem(item);
+        setRow(row);
         setColumn(column);
         setEditor(editor);
 
@@ -291,11 +286,11 @@ public class GridEditor extends ControlEditor
     public void layout()
     {
 
-        if (table.isDisposed())
+        if (grid.isDisposed())
             return;
-        if (item == null)
+        if (row == -1)
             return;
-        int columnCount = table.getColumnCount();
+        int columnCount = grid.getColumnCount();
         if (columnCount == 0 && column != 0)
             return;
         if (columnCount > 0 && (column < 0 || column >= columnCount))

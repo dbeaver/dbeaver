@@ -8,18 +8,18 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid;
      * Object holding the visible range
  */
 public class GridVisibleRange {
-    private GridItem[] items = new GridItem[0];
+    private int[] items = new int[0];
     private GridColumn[] columns = new GridColumn[0];
 
     /**
      * @return the current items shown
      */
-    public GridItem[] getItems()
+    public int[] getItems()
     {
         return items;
     }
 
-    void setItems(GridItem[] items)
+    void setItems(int[] items)
     {
         this.items = items;
     }

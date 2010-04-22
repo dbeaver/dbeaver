@@ -4,11 +4,11 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
+import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.graphics.*;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
@@ -19,12 +19,9 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
  */
 public class DefaultRowHeaderRenderer extends AbstractRenderer
 {
-
     private int leftMargin = 6;
 
     private int rightMargin = 8;
-
-    private TextLayout textLayout;
 
     public DefaultRowHeaderRenderer(LightGrid grid) {
         super(grid);
@@ -33,15 +30,13 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
     /**
      * {@inheritDoc}
      */
-    public void paint(GC gc, Object value)
+    public void paint(GC gc)
     {
-        GridItem item = (GridItem) value;
-
-        String text = getHeaderText(item);
+        String text = getHeaderText();
 
         gc.setFont(getDisplay().getSystemFont());
         
-        Color background = getHeaderBackground(item);
+        Color background = getHeaderBackground();
         if( background == null ) {
         	background = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
         }
@@ -49,7 +44,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
 
         if (isSelected())
         {
-            gc.setBackground(item.getParent().getCellHeaderSelectionBackground());
+            gc.setBackground(grid.getCellHeaderSelectionBackground());
         }
 
         gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width, getBounds().height + 1);
@@ -68,7 +63,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
 
         int x = leftMargin;
 
-        Image image = getHeaderImage(item);
+        Image image = getHeaderImage();
 
         if( image != null ) {
             gc.drawImage(image, x, getBounds().y + (getBounds().height - image.getBounds().height)/2);
@@ -79,7 +74,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
 
         width -= rightMargin;
 
-        Color foreground = getHeaderForeground(item);
+        Color foreground = getHeaderForeground();
         if( foreground == null ) {
         	foreground = getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
         }
@@ -90,57 +85,38 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
         int y = getBounds().y;
         int selectionOffset = 0;
         
-        if (!item.getParent().isWordWrapHeader())
-        {
-            y += (getBounds().height - gc.stringExtent(text).y) / 2;
-            gc.drawString(TextUtils.getShortString(gc, text, width), getBounds().x + x + selectionOffset, y + selectionOffset, true);
-        }
-        else
-        {
-          getTextLayout(gc, item);
-          textLayout.setWidth(width < 1 ? 1 : width);
-          textLayout.setText(text);
-          
-          textLayout.draw(gc, getBounds().x + x + selectionOffset, y + selectionOffset);
-        }
-
+        y += (getBounds().height - gc.stringExtent(text).y) / 2;
+        gc.drawString(TextUtils.getShortString(gc, text, width), getBounds().x + x + selectionOffset, y + selectionOffset, true);
     }
 
-    private Image getHeaderImage(GridItem item) {
-    	return item.getHeaderImage();
+    private Image getHeaderImage() {
+        return grid.getRowLabelProvider() == null ? null : grid.getRowLabelProvider().getImage(getRow());
     }
 
-    private String getHeaderText(GridItem item)
+    private String getHeaderText()
     {
-        String text = item.getHeaderText();
+        String text = grid.getRowLabelProvider() == null ? null : grid.getRowLabelProvider().getText(getRow());
         if (text == null)
         {
-            text = (item.getParent().indexOf(item) + 1) + "";
+            text = String.valueOf(getRow());
         }
         return text;
     }
     
-    private Color getHeaderBackground(GridItem item) {
-    	return item.getHeaderBackground();
-    }
-    
-    private Color getHeaderForeground(GridItem item) {
-    	return item.getHeaderForeground();
-    }
-    
-    private void getTextLayout(GC gc, GridItem gridItem)
-    {
-        if (textLayout == null)
-        {
-            textLayout = new TextLayout(gc.getDevice());
-            textLayout.setFont(gc.getFont());
-            gridItem.getParent().addDisposeListener(new DisposeListener()
-            {                
-                public void widgetDisposed(DisposeEvent e)
-                {
-                    textLayout.dispose();
-                }                
-            });
+    private Color getHeaderBackground() {
+        if (grid.getRowLabelProvider() instanceof IColorProvider) {
+    	    return ((IColorProvider)grid.getRowLabelProvider()).getBackground(getRow());
+        } else {
+            return null;
         }
     }
+    
+    private Color getHeaderForeground() {
+        if (grid.getRowLabelProvider() instanceof IColorProvider) {
+    	    return ((IColorProvider)grid.getRowLabelProvider()).getForeground(getRow());
+        } else {
+            return null;
+        }
+    }
+    
 }

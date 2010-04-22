@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TypedListener;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.IFontProvider;
+import org.eclipse.jface.viewers.IColorProvider;
 import org.jkiss.dbeaver.ui.controls.lightgrid.dnd.GridDragSourceEffect;
 import org.jkiss.dbeaver.ui.controls.lightgrid.dnd.GridDropTargetEffect;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultBottomLeftRenderer;
@@ -66,10 +67,6 @@ import java.util.TreeSet;
  * </p>
  * Instances of this class implement a selectable user interface object that
  * displays a list of images and strings and issue notification when selected.
- * <p>
- * The item children that may be added to instances of this class must be of
- * type {@code GridItem}.
- * </p>
  * <dl>
  * <dt><b>Styles:</b></dt>
  * <dd>SWT.SINGLE, SWT.MULTI, SWT.NO_FOCUS, SWT.CHECK, SWT.VIRTUAL</dd>
@@ -113,6 +110,7 @@ public class LightGrid extends Canvas {
     private ILabelProvider columnLabelProvider;
     private ILabelProvider rowLabelProvider;
 
+    private Point gridSize;
     /**
      * Tracks whether the scroll values are correct. If not they will be
      * recomputed in onPaint. This allows us to get a free ride on top of the
@@ -120,11 +118,6 @@ public class LightGrid extends Canvas {
      * operation when unnecessary.
      */
     private boolean scrollValuesObsolete = false;
-
-    /**
-     * All items in the table, not just root items.
-     */
-    private List<GridItem> items = new ArrayList<GridItem>();
 
     /**
      * Reference to the item in focus.
@@ -397,7 +390,7 @@ public class LightGrid extends Canvas {
     private IGridScrollBar hScroll;
 
     /**
-     * The number of GridItems whose visible = true. Maintained for
+     * The number of visible items. Maintained for
      * performance reasons (rather than iterating over all items).
      */
     private int currentVisibleItems = 0;
@@ -509,7 +502,6 @@ public class LightGrid extends Canvas {
     private GridColumn insertMarkColumn = null;
     private boolean insertMarkBefore = false;
     private IGridRenderer insertMarkRenderer;
-    private boolean wordWrapRowHeader = false;
 
     /**
      * A range of rows in a <code>Grid</code>.
@@ -661,17 +653,19 @@ public class LightGrid extends Canvas {
     /**
      * Refresh grid data
      */
-    private void refreshData()
+    public void refreshData()
     {
         this.removeAll();
         if (contentProvider == null) {
             return;
         }
-        Point gridSize = contentProvider.getSize();
+        gridSize = contentProvider.getSize();
+        currentVisibleItems = gridSize.y;
         // Add columns
         for (int i = 0; i < gridSize.x; i++) {
 
         }
+        updateScrollbars();
     }
 
     /**
@@ -791,7 +785,7 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
 
-        if (index < 0 || index > items.size() - 1) {
+        if (index < 0 || index > getItemCount() - 1) {
             return;
         }
 
@@ -820,7 +814,7 @@ public class LightGrid extends Canvas {
             if (i < 0) {
                 continue;
             }
-            if (i > items.size() - 1) {
+            if (i > getItemCount() - 1) {
                 break;
             }
             deselectCells(getCells(i));
@@ -848,7 +842,7 @@ public class LightGrid extends Canvas {
         }
 
         for (int j : indices) {
-            if (j >= 0 && j < items.size()) {
+            if (j >= 0 && j < getItemCount()) {
                 deselectCells(getCells(j));
             }
         }
@@ -1152,72 +1146,6 @@ public class LightGrid extends Canvas {
         return columnFootersVisible;
     }
 
-    /**
-     * Returns the item at the given, zero-relative index in the receiver.
-     * Throws an exception if the index is out of range.
-     *
-     * @param index the index of the item to return
-     * @return the item at the given index
-     */
-    public GridItem getItem(int index)
-    {
-        checkWidget();
-
-        if (index < 0 || index >= items.size()) {
-            SWT.error(SWT.ERROR_INVALID_RANGE);
-        }
-
-        return items.get(index);
-    }
-
-    /**
-     * Returns the item at the given point in the receiver or null if no such
-     * item exists. The point is in the coordinate system of the receiver.
-     *
-     * @param point the point used to locate the item
-     * @return the item at the given point
-     */
-    public GridItem getItem(Point point)
-    {
-        checkWidget();
-
-        if (point == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-            return null;
-        }
-
-        if (point.x < 0 || point.x > getClientArea().width) return null;
-
-        Point p = new Point(point.x, point.y);
-
-        int y2 = 0;
-
-        if (columnHeadersVisible) {
-            if (p.y <= headerHeight) {
-                return null;
-            }
-            y2 += headerHeight;
-        }
-
-        GridItem itemToReturn = null;
-
-        int row = getTopIndex();
-        int currItemHeight = getItemHeight();
-
-        while (row < items.size() && y2 <= getClientArea().height) {
-            if (p.y >= y2 && p.y < y2 + currItemHeight + 1) {
-                itemToReturn = items.get(row);
-                break;
-            }
-
-            y2 += currItemHeight + 1;
-
-            row++;
-        }
-
-        return itemToReturn;
-    }
-
     public int getRow(Point point)
     {
         checkWidget();
@@ -1243,7 +1171,8 @@ public class LightGrid extends Canvas {
         int row = getTopIndex();
         int currItemHeight = getItemHeight();
 
-        while (row < items.size() && y2 <= getClientArea().height) {
+        int itemCount = getItemCount();
+        while (row < itemCount && y2 <= getClientArea().height) {
             if (p.y >= y2 && p.y < y2 + currItemHeight + 1) {
                 return row;
             }
@@ -1263,8 +1192,7 @@ public class LightGrid extends Canvas {
      */
     public int getItemCount()
     {
-        checkWidget();
-        return getItems().length;
+        return gridSize == null ? 0 : gridSize.y;
     }
 
     /**
@@ -1298,22 +1226,6 @@ public class LightGrid extends Canvas {
         itemHeight = height;
         setScrollValuesObsolete();
         redraw();
-    }
-
-    /**
-     * Returns a (possibly empty) array of {@code GridItem}s which are the
-     * items in the receiver.
-     * <p>
-     * Note: This is not the actual structure used by the receiver to maintain
-     * its list of items, so modifying the array will not affect the receiver.
-     * </p>
-     *
-     * @return the items in the receiver
-     */
-    public GridItem[] getItems()
-    {
-        checkWidget();
-        return items.toArray(new GridItem[items.size()]);
     }
 
     /**
@@ -1357,10 +1269,10 @@ public class LightGrid extends Canvas {
      */
     public int getNextVisibleItem(int index)
     {
-        if (index >= items.size()) {
+        if (index >= getItemCount()) {
             return -1;
         }
-        if (index == items.size() - 1) {
+        if (index == getItemCount() - 1) {
             return index;
         } else {
             return index + 1;
@@ -1543,7 +1455,7 @@ public class LightGrid extends Canvas {
         if (bottomIndex != -1)
             return bottomIndex;
 
-        if (items.size() == 0) {
+        if (getItemCount() == 0) {
             bottomIndex = 0;
         } else if (getVisibleGridHeight() < 1) {
             bottomIndex = getTopIndex();
@@ -1576,16 +1488,16 @@ public class LightGrid extends Canvas {
         if (startIndex == -1) {
             // search frist visible item
             startIndex = 0;
-            if (startIndex == items.size()) return null;
+            if (startIndex == getItemCount()) return null;
         }
         if (endIndex == -1) {
             // search last visible item
-            endIndex = items.size() - 1;
+            endIndex = getItemCount() - 1;
             if (endIndex <= 0) return null;
         }
 
         // fail fast
-        if (startIndex < 0 || endIndex < 0 || startIndex >= items.size() || endIndex >= items.size()
+        if (startIndex < 0 || endIndex < 0 || startIndex >= getItemCount() || endIndex >= getItemCount()
             || endIndex < startIndex)
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
         RowRange range = new RowRange();
@@ -1628,16 +1540,16 @@ public class LightGrid extends Canvas {
             if (!inverse) {
                 // search frist visible item
                 startIndex = 0;
-                if (startIndex == items.size()) return null;
+                if (startIndex >= getItemCount()) return null;
             } else {
                 // search last visible item
-                startIndex = items.size() - 1;
+                startIndex = getItemCount() - 1;
                 if (startIndex == -1) return null;
             }
         }
 
         // fail fast
-        if (startIndex < 0 || startIndex >= items.size())
+        if (startIndex < 0 || startIndex >= getItemCount())
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
 
         RowRange range = new RowRange();
@@ -1662,7 +1574,7 @@ public class LightGrid extends Canvas {
 
         int otherIndex = startIndex + ((availableRows - 1) * (!inverse ? 1 : -1));
         if (otherIndex < 0) otherIndex = 0;
-        if (otherIndex >= items.size()) otherIndex = items.size() - 1;
+        if (otherIndex >= getItemCount()) otherIndex = getItemCount() - 1;
 
         range.startIndex = !inverse ? startIndex : otherIndex;
         range.endIndex = !inverse ? otherIndex : startIndex;
@@ -1760,19 +1672,6 @@ public class LightGrid extends Canvas {
     }
 
     /**
-     * Searches the receiver's list starting at the first item (index 0) until
-     * an item is found that is equal to the argument, and returns the index of
-     * that item. If no item is found, returns -1.
-     *
-     * @param item the search item
-     * @return the index of the item
-     */
-    public int indexOf(GridItem item)
-    {
-        return items.indexOf(item);
-    }
-
-    /**
      * Returns {@code true} if the receiver's row header is visible, and
      * {@code false} otherwise.
      * <p/>
@@ -1796,7 +1695,7 @@ public class LightGrid extends Canvas {
      */
     public boolean isSelected(int index)
     {
-        if (index < 0 || index >= items.size()) return false;
+        if (index < 0 || index >= getItemCount()) return false;
 
         for (Point cell : selectedCells) {
             if (cell.y == index) return true;
@@ -1821,74 +1720,13 @@ public class LightGrid extends Canvas {
     }
 
     /**
-     * Removes the item from the receiver at the given zero-relative index.
-     *
-     * @param index the index for the item
-     */
-    public void remove(int index)
-    {
-        checkWidget();
-        if (index < 0 || index > items.size() - 1) {
-            SWT.error(SWT.ERROR_INVALID_RANGE);
-        }
-        items.remove(index);
-        redraw();
-    }
-
-    /**
-     * Removes the items from the receiver which are between the given
-     * zero-relative start and end indices (inclusive).
-     *
-     * @param start the start of the range
-     * @param end   the end of the range
-     */
-    public void remove(int start, int end)
-    {
-        checkWidget();
-
-        for (int i = end; i >= start; i--) {
-            if (i < 0 || i > items.size() - 1) {
-                SWT.error(SWT.ERROR_INVALID_RANGE);
-            }
-            items.remove(i);
-        }
-        redraw();
-    }
-
-    /**
-     * Removes the items from the receiver's list at the given zero-relative
-     * indices.
-     *
-     * @param indices the array of indices of the items
-     */
-    public void remove(int[] indices)
-    {
-        checkWidget();
-
-        if (indices == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-            return;
-        }
-
-        for (int j : indices) {
-            if (j < items.size() && j >= 0) {
-                items.remove(j);
-            } else {
-                SWT.error(SWT.ERROR_INVALID_RANGE);
-            }
-
-        }
-        redraw();
-    }
-
-    /**
      * Removes all of the items from the receiver.
      */
     public void removeAll()
     {
         checkWidget();
 
-        items.clear();
+        gridSize = null;
         currentVisibleItems = 0;
 
         deselectAll();
@@ -1923,7 +1761,7 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
 
-        if (index < 0 || index >= items.size()) return;
+        if (index < 0 || index >= getItemCount()) return;
 
         selectCells(getCells(index));
 
@@ -1957,7 +1795,7 @@ public class LightGrid extends Canvas {
             if (i < 0) {
                 continue;
             }
-            if (i > items.size() - 1) {
+            if (i > getItemCount() - 1) {
                 break;
             }
 
@@ -1995,7 +1833,7 @@ public class LightGrid extends Canvas {
         if (selectionType == SWT.SINGLE && indices.length > 1) return;
 
         for (int j : indices) {
-            if (j >= 0 && j < items.size()) {
+            if (j >= 0 && j < getItemCount()) {
                 selectCells(getCells(j));
             }
         }
@@ -2223,7 +2061,7 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
 
-        if (index >= 0 && index < items.size()) {
+        if (index >= 0 && index < getItemCount()) {
             selectedCells.clear();
             selectCells(getCells(index));
         }
@@ -2257,7 +2095,7 @@ public class LightGrid extends Canvas {
             if (i < 0) {
                 continue;
             }
-            if (i > items.size() - 1) {
+            if (i > getItemCount() - 1) {
                 break;
             }
 
@@ -2292,7 +2130,7 @@ public class LightGrid extends Canvas {
             if (j < 0) {
                 continue;
             }
-            if (j > items.size() - 1) {
+            if (j > getItemCount() - 1) {
                 break;
             }
 
@@ -2311,7 +2149,7 @@ public class LightGrid extends Canvas {
     public void setTopIndex(int index)
     {
         checkWidget();
-        if (index < 0 || index >= items.size()) {
+        if (index < 0 || index >= getItemCount()) {
             return;
         }
 
@@ -2952,7 +2790,7 @@ public class LightGrid extends Canvas {
 
         int availableHeight = getClientArea().height - y;
         int visibleRows = availableHeight / getItemHeight() + 1;
-        if (items.size() > 0 && availableHeight > 0) {
+        if (getItemCount() > 0 && availableHeight > 0) {
             RowRange range = getRowRange(getTopIndex(), availableHeight, false, false);
             if (range.height >= availableHeight)
                 visibleRows = range.rows;
@@ -2971,12 +2809,7 @@ public class LightGrid extends Canvas {
             x -= getHScrollSelectionInPixels();
 
             // get the item to draw
-            GridItem item = null;
-            if (row < items.size()) {
-                item = items.get(row);
-            }
-
-            if (item != null) {
+            if (row != -1) {
                 boolean cellInRowSelected = false;
 
 
@@ -3023,8 +2856,8 @@ public class LightGrid extends Canvas {
                         } else {
                             column.getCellRenderer().setHoverDetail("");
                         }
-
-                        column.getCellRenderer().paint(e.gc, item);
+                        column.getCellRenderer().setRow(row);
+                        column.getCellRenderer().paint(e.gc);
 
                         e.gc.setClipping((Rectangle) null);
 
@@ -3060,7 +2893,7 @@ public class LightGrid extends Canvas {
                     emptyCellRenderer.setFocus(this.isFocusControl());
                     emptyCellRenderer.setBounds(x, y, getClientArea().width - x + 1, getItemHeight());
                     emptyCellRenderer.setColumn(getColumnCount());
-                    emptyCellRenderer.paint(e.gc, item);
+                    emptyCellRenderer.paint(e.gc);
                 }
 
                 x = 0;
@@ -3070,7 +2903,8 @@ public class LightGrid extends Canvas {
                     rowHeaderRenderer.setSelected(cellInRowSelected);
                     if (y >= headerHeight) {
                         rowHeaderRenderer.setBounds(0, y, rowHeaderWidth, getItemHeight() + 1);
-                        rowHeaderRenderer.paint(e.gc, item);
+                        rowHeaderRenderer.setRow(row);
+                        rowHeaderRenderer.paint(e.gc);
                     }
                     x += rowHeaderWidth;
                 }
@@ -3090,7 +2924,7 @@ public class LightGrid extends Canvas {
                 for (GridColumn column : displayOrderedColumns) {
                     emptyCellRenderer.setBounds(x, y, column.getWidth(), getItemHeight());
                     emptyCellRenderer.setColumn(indexOf(column));
-                    emptyCellRenderer.paint(e.gc, this);
+                    emptyCellRenderer.paint(e.gc);
 
                     x += column.getWidth();
                 }
@@ -3098,7 +2932,7 @@ public class LightGrid extends Canvas {
                 if (x < getClientArea().width) {
                     emptyCellRenderer.setBounds(x, y, getClientArea().width - x + 1, getItemHeight());
                     emptyCellRenderer.setColumn(getColumnCount());
-                    emptyCellRenderer.paint(e.gc, this);
+                    emptyCellRenderer.paint(e.gc);
                 }
 
 
@@ -3106,7 +2940,7 @@ public class LightGrid extends Canvas {
 
                 if (rowHeaderVisible) {
                     emptyRowHeaderRenderer.setBounds(x, y, rowHeaderWidth, getItemHeight() + 1);
-                    emptyRowHeaderRenderer.paint(e.gc, this);
+                    emptyRowHeaderRenderer.paint(e.gc);
 
                     x += rowHeaderWidth;
                 }
@@ -3135,7 +2969,7 @@ public class LightGrid extends Canvas {
                     x = 0;
                 }
                 dropPointRenderer.setBounds(x - 1, headerHeight + DROP_POINT_LOWER_OFFSET, dropPointwidth, 7);
-                dropPointRenderer.paint(e.gc, null);
+                dropPointRenderer.paint(e.gc);
             }
         }
 
@@ -3146,9 +2980,8 @@ public class LightGrid extends Canvas {
                 columnHeadersVisible ? headerHeight : 0,
                 getClientArea().width,
                 getClientArea().height);
-            insertMarkRenderer.paint(e.gc,
-                                     new Rectangle(insertMarkPosX1, insertMarkPosY, insertMarkPosX2 - insertMarkPosX1,
-                                                   0));
+            insertMarkRenderer.setBounds(new Rectangle(insertMarkPosX1, insertMarkPosY, insertMarkPosX2 - insertMarkPosX1, 0));
+            insertMarkRenderer.paint(e.gc);
         }
 
         if (columnFootersVisible) {
@@ -3228,14 +3061,13 @@ public class LightGrid extends Canvas {
                 column.getHeaderRenderer().setHover(hoveringColumnHeader == column);
             }
 
+            column.getHeaderRenderer().setColumn(indexOf(column));
             column.getHeaderRenderer().setHoverDetail(hoveringDetail);
-
             column.getHeaderRenderer().setBounds(x, y, column.getWidth(), height);
-
             column.getHeaderRenderer().setSelected(selectedColumns.contains(column));
 
             if (x + column.getWidth() >= 0) {
-                column.getHeaderRenderer().paint(gc, column);
+                column.getHeaderRenderer().paint(gc);
             }
 
             x += column.getWidth();
@@ -3243,7 +3075,7 @@ public class LightGrid extends Canvas {
 
         if (x < getClientArea().width) {
             emptyColumnHeaderRenderer.setBounds(x, 0, getClientArea().width - x, headerHeight);
-            emptyColumnHeaderRenderer.paint(gc, null);
+            emptyColumnHeaderRenderer.paint(gc);
         }
 
         x = 0;
@@ -3251,7 +3083,7 @@ public class LightGrid extends Canvas {
         if (rowHeaderVisible) {
             // paint left corner
             topLeftRenderer.setBounds(0, 0, rowHeaderWidth, headerHeight);
-            topLeftRenderer.paint(gc, this);
+            topLeftRenderer.paint(gc);
             x += rowHeaderWidth;
         }
 
@@ -3269,7 +3101,8 @@ public class LightGrid extends Canvas {
                     getColumnHeaderXPosition(columnBeingPushed)
                         + (currentHeaderDragX - startHeaderDragX), y,
                     columnBeingPushed.getWidth(), height);
-            columnBeingPushed.getHeaderRenderer().paint(gc, columnBeingPushed);
+            columnBeingPushed.getHeaderRenderer().setColumn(indexOf(columnBeingPushed));
+            columnBeingPushed.getHeaderRenderer().paint(gc);
             columnBeingPushed.getHeaderRenderer().setSelected(false);
 
             gc.setAlpha(-1);
@@ -3302,8 +3135,9 @@ public class LightGrid extends Canvas {
             y = getClientArea().height - height;
 
             column.getFooterRenderer().setBounds(x, y, column.getWidth(), height);
+            column.getFooterRenderer().setColumn(indexOf(column));
             if (x + column.getWidth() >= 0) {
-                column.getFooterRenderer().paint(gc, column);
+                column.getFooterRenderer().paint(gc);
             }
 
             x += column.getWidth();
@@ -3312,13 +3146,13 @@ public class LightGrid extends Canvas {
         if (x < getClientArea().width) {
             emptyColumnFooterRenderer.setBounds(x, getClientArea().height - footerHeight, getClientArea().width - x,
                                                 footerHeight);
-            emptyColumnFooterRenderer.paint(gc, null);
+            emptyColumnFooterRenderer.paint(gc);
         }
 
         if (rowHeaderVisible) {
             // paint left corner
             bottomLeftRenderer.setBounds(0, getClientArea().height - footerHeight, rowHeaderWidth, footerHeight);
-            bottomLeftRenderer.paint(gc, this);
+            bottomLeftRenderer.paint(gc);
             x += rowHeaderWidth;
         }
     }
@@ -3589,7 +3423,7 @@ public class LightGrid extends Canvas {
         if (newCell.x < 0 || newCell.x >= columns.size())
             return;
 
-        if (newCell.y < 0 || newCell.y >= items.size())
+        if (newCell.y < 0 || newCell.y >= getItemCount())
             return;
 
         if (getColumn(newCell.x).getCellSelectionEnabled()) {
@@ -3734,7 +3568,7 @@ public class LightGrid extends Canvas {
 
     private void onFocusIn()
     {
-        if (!items.isEmpty() && focusItem < 0) {
+        if (getItemCount() > 0 && focusItem < 0) {
             focusItem = 0;
         }
     }
@@ -3750,8 +3584,6 @@ public class LightGrid extends Canvas {
         disposing = true;
 
         cellHeaderSelectionBackground.dispose();
-
-        items.clear();
 
         for (GridColumn col : columns) {
             col.dispose();
@@ -3789,9 +3621,9 @@ public class LightGrid extends Canvas {
         // there are any children
         // the setFocus method on Composite will not set focus to the
         // Composite if one of its
-        // children can get focus instead. This only affects the table
+        // children can get focus instead. This only affects the grid
         // when an editor is open
-        // and therefore the table has a child. The solution is to
+        // and therefore the grid has a child. The solution is to
         // forceFocus()
         if ((getStyle() & SWT.NO_FOCUS) != SWT.NO_FOCUS) {
             forceFocus();
@@ -3893,7 +3725,7 @@ public class LightGrid extends Canvas {
             }
         } else if (e.button == 1 && rowHeaderVisible && e.x <= rowHeaderWidth && e.y < headerHeight) {
             // Nothing to select
-            if (items.size() == 0) {
+            if (getItemCount() == 0) {
                 return;
             }
 
@@ -3917,7 +3749,7 @@ public class LightGrid extends Canvas {
             selectionEvent = updateCellSelection(cells, e.stateMask, false, true);
             cellColumnSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
 
-            if (!items.isEmpty()) {
+            if (getItemCount() > 0) {
                 focusColumn = col;
                 focusItem = 0;
             }
@@ -4102,7 +3934,7 @@ public class LightGrid extends Canvas {
                     if (hoveringItem < 0) {
                         if (e.y > headerHeight) {
                             //then we must be hovering way to the bottom
-                            intentItem = items.size() - 1;
+                            intentItem = getItemCount() - 1;
                         } else {
                             intentItem = 0;
                         }
@@ -4129,7 +3961,7 @@ public class LightGrid extends Canvas {
                     if (hoveringItem < 0) {
                         if (e.y > headerHeight) {
                             //then we must be hovering way to the bottom
-                            intentItem = items.size() - 1;
+                            intentItem = getItemCount() - 1;
                         } else {
                             if (getTopIndex() > 0) {
                                 intentItem = getTopIndex() - 1;
@@ -4280,7 +4112,7 @@ public class LightGrid extends Canvas {
 
         if (e.character == '\r' && focusItem >= 0) {
             Event newEvent = new Event();
-            newEvent.data = items.get(focusItem);
+            newEvent.data = focusItem;
 
             notifyListeners(SWT.DefaultSelection, newEvent);
             return;
@@ -4355,7 +4187,7 @@ public class LightGrid extends Canvas {
                 if (impliedFocusItem >= 0) {
                     newSelection = getNextVisibleItem(impliedFocusItem);
                 } else {
-                    if (items.size() > 0) {
+                    if (getItemCount() > 0) {
                         newSelection = 0;
                     }
                 }
@@ -4651,8 +4483,7 @@ public class LightGrid extends Canvas {
                 Rectangle textBounds = null;
                 Rectangle preferredTextBounds = null;
 
-                if (hoveringItem > 0 && items.get(hoveringItem).getToolTipText(
-                    indexOf(col)) == null) //no inplace tooltips when regular tooltip
+                if (hoveringItem >= 0 && getCellToolTip(indexOf(col), hoveringItem) == null) //no inplace tooltips when regular tooltip
                 {
                     cellBounds = col.getCellRenderer().getBounds();
                     if (cellBounds.x + cellBounds.width > getSize().x) {
@@ -4689,7 +4520,7 @@ public class LightGrid extends Canvas {
             String newTip = null;
             if ((hoveringItem >= 0) && (hoveringColumn != null)) {
                 // get cell specific tooltip
-                newTip = items.get(hoveringItem).getToolTipText(indexOf(hoveringColumn));
+                newTip = getCellToolTip(indexOf(hoveringColumn), hoveringItem);
             } else if ((hoveringColumn != null) && (hoveringColumnHeader != null)) {
                 // get column header specific tooltip
                 newTip = hoveringColumn.getHeaderTooltip();
@@ -4759,10 +4590,6 @@ public class LightGrid extends Canvas {
         computeHeaderHeight(sizingGC);
         computeFooterHeight(sizingGC);
 
-        for (GridItem item : items) {
-            item.columnAdded(index);
-        }
-
         scrollValuesObsolete = true;
         redraw();
 
@@ -4813,10 +4640,6 @@ public class LightGrid extends Canvas {
         scrollValuesObsolete = true;
         redraw();
 
-        for (GridItem item : items) {
-            item.columnRemoved(index);
-        }
-
         int i = 0;
         for (GridColumn col : columns) {
             col.setColumnIndex(i);
@@ -4827,37 +4650,6 @@ public class LightGrid extends Canvas {
             updateColumnSelection();
         }
 
-    }
-
-    /**
-     * Creates the new item at the given index. Only called from GridItem
-     * constructor.
-     *
-     * @param item  new item
-     * @param index index to insert the item at
-     * @return the index where the item was insert
-     */
-    int newItem(GridItem item, int index)
-    {
-        int row;
-
-        if (index == -1) {
-            items.add(item);
-            row = items.size() - 1;
-        } else {
-            items.add(index, item);
-            row = index;
-        }
-
-        scrollValuesObsolete = true;
-        topIndex = -1;
-        bottomIndex = -1;
-
-        currentVisibleItems++;
-
-        redraw();
-
-        return row;
     }
 
     /**
@@ -5147,7 +4939,7 @@ public class LightGrid extends Canvas {
         if (columns.size() == 0)
             return null;
 
-        if (items.size() == 0)
+        if (getItemCount() == 0)
             return null;
 
         GridColumn oldFocusColumn = focusColumn;
@@ -5264,7 +5056,7 @@ public class LightGrid extends Canvas {
     {
         int colIndex = indexOf(col);
 
-        for (int i = 0; i < items.size(); i++) {
+        for (int i = 0; i < getItemCount(); i++) {
             cells.add(new Point(colIndex, i));
         }
     }
@@ -5278,7 +5070,7 @@ public class LightGrid extends Canvas {
 
     private void getAllCells(List<Point> cells)
     {
-        for (int i = 0; i < items.size(); i++) {
+        for (int i = 0; i < getItemCount(); i++) {
             for (int k = 0; k < columns.size(); k++) {
                 cells.add(new Point(k, i));
             }
@@ -5404,7 +5196,7 @@ public class LightGrid extends Canvas {
         if (cell.x < 0 || cell.x >= columns.size())
             return false;
 
-        return !(cell.y < 0 || cell.y >= items.size());
+        return !(cell.y < 0 || cell.y >= getItemCount());
 
     }
 
@@ -5490,29 +5282,6 @@ public class LightGrid extends Canvas {
         checkWidget();
         rowHeaderWidth = width;
         redraw();
-    }
-
-    /**
-     * Sets the number of items contained in the receiver.
-     *
-     * @param count the number of items
-     */
-    public void setItemCount(int count)
-    {
-        checkWidget();
-        setRedraw(false);
-        if (count < 0)
-            count = 0;
-
-
-        if (count < items.size()) {
-            //TODO delete and clear items if necessary
-        }
-
-        while (count > items.size()) {
-            new GridItem(this);
-        }
-        setRedraw(true);
     }
 
     /**
@@ -5658,14 +5427,14 @@ public class LightGrid extends Canvas {
         int endColumnIndex = getEndColumnIndex();
 
         GridVisibleRange range = new GridVisibleRange();
-        range.setItems(new GridItem[0]);
+        range.setItems(new int[0]);
         range.setColumns(new GridColumn[0]);
 
         if (topIndex <= bottomIndex) {
-            if (items.size() > 0) {
-                range.setItems(new GridItem[bottomIndex - topIndex + 1]);
+            if (getItemCount() > 0) {
+                range.setItems(new int[bottomIndex - topIndex + 1]);
                 for (int i = topIndex; i <= bottomIndex; i++) {
-                    range.getItems()[i - topIndex] = items.get(i);
+                    range.getItems()[i - topIndex] = i;
                 }
             }
         }
@@ -5756,34 +5525,15 @@ public class LightGrid extends Canvas {
         return rowHeaderWidth;
     }
 
-    /**
-     * Sets the value of the word-wrap feature for row headers. When enabled, this feature will word-wrap the contents of row headers.
-     *
-     * @param enabled Set to true to enable this feature, false (default) otherwise.
-     * @see #isWordWrapHeader()
-     */
-    public void setWordWrapHeader(boolean enabled)
-    {
-        if (wordWrapRowHeader == enabled)
-            return;
-
-        checkWidget();
-        wordWrapRowHeader = enabled;
-        redraw();
-    }
-
-    /**
-     * Returns the value of the row header word-wrap feature, which word-wraps the content of row headers.
-     *
-     * @return Returns whether or not the row header word-wrap feature is enabled.
-     * @see #setWordWrapHeader(boolean)
-     */
-    public boolean isWordWrapHeader()
-    {
-      return wordWrapRowHeader;
-    }
-
     public String getCellText(int column, int row)
+    {
+        if (contentLabelProvider != null) {
+            return contentLabelProvider.getText(new Point(column,  row));
+        }
+        return null;
+    }
+
+    public String getCellToolTip(int column, int row)
     {
         if (contentLabelProvider != null) {
             return contentLabelProvider.getText(new Point(column,  row));
@@ -5806,6 +5556,24 @@ public class LightGrid extends Canvas {
             font = ((IFontProvider)contentLabelProvider).getFont(new Point(column,  row));
         }
         return font != null ? font : getFont();
+    }
+
+    public Color getCellBackground(int column, int row)
+    {
+        Color color = null;
+        if (contentLabelProvider instanceof IColorProvider) {
+            color = ((IColorProvider)contentLabelProvider).getBackground(new Point(column,  row));
+        }
+        return color != null ? color : getBackground();
+    }
+
+    public Color getCellForeground(int column, int row)
+    {
+        Color color = null;
+        if (contentLabelProvider instanceof IColorProvider) {
+            color = ((IColorProvider)contentLabelProvider).getForeground(new Point(column,  row));
+        }
+        return color != null ? color : getForeground();
     }
 
     public Rectangle getCellBounds(int columnIndex, int rowIndex) {

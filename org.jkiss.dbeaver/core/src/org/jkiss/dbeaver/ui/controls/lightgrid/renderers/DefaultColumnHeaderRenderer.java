@@ -46,8 +46,8 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer {
     /**
      * {@inheritDoc}
      */
-    public void paint(GC gc, Object value) {
-        GridColumn column = (GridColumn) value;
+    public void paint(GC gc) {
+        GridColumn column = grid.getColumn(getColumn());
 
         // set the font to be used to display the text.
         gc.setFont(column.getHeaderFont());
@@ -165,7 +165,7 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer {
                         getBounds().x + getBounds().width - arrowMargin
                             - arrowRenderer.getBounds().width, y);
             }
-            arrowRenderer.paint(gc, null);
+            arrowRenderer.paint(gc);
         }
 
         if (!flat) {

@@ -22,7 +22,8 @@ public interface IGridDataProvider {
     void fillRowData(IGridRowData row);
 
     boolean showCellEditor(
-        IGridRowData row,
+        int column,
+        int row,
         boolean inline,
         Composite inlinePlaceholder);
     

@@ -29,7 +29,7 @@ public class SortArrowRenderer extends AbstractRenderer
     /** 
      * {@inheritDoc}
      */
-    public void paint(GC gc, Object value)
+    public void paint(GC gc)
     {
         gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
         if (isSelected())

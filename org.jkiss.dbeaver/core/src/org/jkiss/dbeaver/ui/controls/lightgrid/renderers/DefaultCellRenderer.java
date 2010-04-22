@@ -6,7 +6,6 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
@@ -42,11 +41,9 @@ public class DefaultCellRenderer extends GridCellRenderer
     /**
      * {@inheritDoc}
      */
-    public void paint(GC gc, Object value)
+    public void paint(GC gc)
     {
-        GridItem item = (GridItem)value;
-
-        gc.setFont(item.getFont(getColumn()));
+        gc.setFont(grid.getCellFont(getColumn(), getRow()));
 
         boolean drawAsSelected = isSelected();
 
@@ -64,9 +61,9 @@ public class DefaultCellRenderer extends GridCellRenderer
         }
         else
         {
-            if (item.getParent().isEnabled())
+            if (grid.isEnabled())
             {
-                Color back = item.getBackground(getColumn());
+                Color back = grid.getCellBackground(getColumn(), getRow());
 
                 if (back != null)
                 {
@@ -81,7 +78,7 @@ public class DefaultCellRenderer extends GridCellRenderer
             {
                 gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
             }
-            gc.setForeground(item.getForeground(getColumn()));
+            gc.setForeground(grid.getCellForeground(getColumn(), getRow()));
         }
 
         if (drawBackground)
@@ -91,7 +88,7 @@ public class DefaultCellRenderer extends GridCellRenderer
 
         int x = leftMargin;
 
-        Image image = item.getImage(getColumn());
+        Image image = grid.getCellImage(getColumn(), getRow());
         if (image != null)
         {
             int y = getBounds().y;
@@ -111,10 +108,10 @@ public class DefaultCellRenderer extends GridCellRenderer
         }
         else
         {
-            gc.setForeground(item.getForeground(getColumn()));
+            gc.setForeground(grid.getCellForeground(getColumn(), getRow()));
         }
 
-        String text = TextUtils.getShortString(gc, item.getText(getColumn()), width);
+        String text = TextUtils.getShortString(gc, grid.getCellText(getColumn(), getRow()), width);
 
         if (getAlignment() == SWT.RIGHT)
         {
@@ -135,7 +132,7 @@ public class DefaultCellRenderer extends GridCellRenderer
 
         gc.drawString(text, getBounds().x + x, getBounds().y + textTopMargin + topMargin, true);
 
-        if (item.getParent().getLinesVisible())
+        if (grid.getLinesVisible())
         {
             if (isCellSelected())
             {
@@ -144,7 +141,7 @@ public class DefaultCellRenderer extends GridCellRenderer
             }
             else
             {
-                gc.setForeground(item.getParent().getLineColor());
+                gc.setForeground(grid.getLineColor());
             }
             gc.drawLine(getBounds().x, getBounds().y + getBounds().height, getBounds().x + getBounds().width -1,
                         getBounds().y + getBounds().height);

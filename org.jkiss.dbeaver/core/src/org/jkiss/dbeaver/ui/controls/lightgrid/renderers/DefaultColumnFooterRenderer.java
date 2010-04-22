@@ -4,13 +4,12 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
-import  org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridFooterRenderer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * The column footer renderer.
@@ -40,9 +39,9 @@ public class DefaultColumnFooterRenderer extends GridFooterRenderer
     /**
      * {@inheritDoc}
      */
-    public void paint(GC gc, Object value)
+    public void paint(GC gc)
     {
-        GridColumn column = (GridColumn)value;
+        GridColumn column = grid.getColumn(getColumn());
 
         // set the font to be used to display the text.
         gc.setFont(column.getFooterFont());

@@ -25,9 +25,8 @@ public interface IGridRenderer
      * </p>
      * 
      * @param gc GC to paint with
-     * @param value the value being painted
      */
-    void paint(GC gc, Object value);
+    void paint(GC gc);
 
     /**
      * Sets the bounds of the drawing.
@@ -104,4 +103,7 @@ public interface IGridRenderer
      */
     void setSize(Point size);
 
+    public void setColumn(int column);
+    public void setRow(int row);
+    
 }

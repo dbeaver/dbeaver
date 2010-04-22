@@ -7,7 +7,6 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridItem;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
@@ -26,19 +25,8 @@ public class DefaultEmptyCellRenderer extends GridCellRenderer
     /**
      * {@inheritDoc}
      */
-    public void paint(GC gc, Object value)
+    public void paint(GC gc)
     {
-
-        LightGrid table = null;
-        if (value instanceof LightGrid)
-            table = (LightGrid)value;
-
-        GridItem item;
-        if (value instanceof GridItem)
-        {
-            item = (GridItem)value;
-            table = item.getParent();
-        }
 
         boolean drawBackground = true;
         
@@ -49,7 +37,7 @@ public class DefaultEmptyCellRenderer extends GridCellRenderer
         }
         else
         {
-            if (table.isEnabled())
+            if (grid.isEnabled())
             {
                 drawBackground = false;
             }
@@ -57,16 +45,16 @@ public class DefaultEmptyCellRenderer extends GridCellRenderer
             {
                 gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
             }
-            gc.setForeground(table.getForeground());
+            gc.setForeground(grid.getForeground());
         }
 
         if (drawBackground)
             gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width + 1,
                          getBounds().height);
 
-        if (table.getLinesVisible())
+        if (grid.getLinesVisible())
         {
-            gc.setForeground(table.getLineColor());
+            gc.setForeground(grid.getLineColor());
             gc.drawLine(getBounds().x, getBounds().y + getBounds().height, getBounds().x
                                                                            + getBounds().width,
                         getBounds().y + getBounds().height);
