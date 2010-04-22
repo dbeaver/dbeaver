@@ -5206,8 +5206,11 @@ public class LightGrid extends Canvas {
         if (cell.x < 0 || cell.x >= columns.size())
             return false;
 
-        return !(cell.y < 0 || cell.y >= getItemCount());
-
+        if (cell.y < 0 || cell.y >= getItemCount()) {
+            return false;
+        }
+        // Valid
+        return true;
     }
 
     /**
