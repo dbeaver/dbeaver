@@ -37,7 +37,6 @@ import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridEditor;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
@@ -258,11 +257,8 @@ public class Spreadsheet extends Composite implements Listener {
         }
         // Move column
         if (newPos.col >= 0) {
-            GridColumn gridColumn = grid.getColumn(newPos.col);
-            if (gridColumn != null) {
-                grid.setFocusColumn(gridColumn);
-                grid.showColumn(gridColumn);
-            }
+            grid.setFocusColumn(newPos.col);
+            grid.showColumn(newPos.col);
         }
         if (!keepSelection) {
             grid.deselectAll();
@@ -310,6 +306,7 @@ public class Spreadsheet extends Composite implements Listener {
 
         grid.setLinesVisible(true);
         grid.setHeaderVisible(true);
+        grid.setMaxColumnDefWidth(MAX_DEF_COLUMN_WIDTH);
 
         gd = new GridData(GridData.FILL_BOTH);
         grid.setLayoutData(gd);
@@ -431,16 +428,6 @@ public class Spreadsheet extends Composite implements Listener {
         cancelInlineEditor();
         // Repack columns
         grid.refreshData();
-        if (grid.getColumnCount() == 1) {
-            grid.getColumn(0).setWidth(grid.getSize().x);
-        } else {
-            for (GridColumn curColumn : grid.getColumns()) {
-                curColumn.pack();
-                if (curColumn.getWidth() > MAX_DEF_COLUMN_WIDTH) {
-                    curColumn.setWidth(MAX_DEF_COLUMN_WIDTH);
-                }
-            }
-        }
     }
 
     public int getVisibleRowsCount()

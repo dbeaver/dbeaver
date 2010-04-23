@@ -5,12 +5,9 @@
 package org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.graphics.TextLayout;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
@@ -20,7 +17,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
  * @author chris.gross@us.ibm.com
  * @since 2.0.0
  */
-public class DefaultColumnHeaderRenderer extends GridHeaderRenderer {
+public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
 
     int leftMargin = 6;
 
@@ -35,8 +32,6 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer {
     int imageSpacing = 3;
 
     private SortArrowRenderer arrowRenderer;
-
-    private TextLayout textLayout;
 
     public DefaultColumnHeaderRenderer(LightGrid grid) {
         super(grid);
@@ -104,10 +99,7 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer {
 
         String text = column.getText();
 
-        if (!isWordWrap()) {
-            text = TextUtils.getShortString(gc, text, width);
-            //y -= gc.getFontMetrics().getHeight();
-        }
+        text = TextUtils.getShortString(gc, text, width);
 
         if (column.getAlignment() == SWT.RIGHT) {
             int len = gc.stringExtent(text).x;
@@ -122,17 +114,8 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer {
         }
 
 
-        if (!isWordWrap()) {
-            gc.drawString(text, getBounds().x + x + pushedDrawingOffset,
-                y + pushedDrawingOffset, true);
-        } else {
-            getTextLayout(gc, column);
-            textLayout.setWidth(width < 1 ? 1 : width);
-            textLayout.setText(text);
-            y -= textLayout.getBounds().height;
-
-            textLayout.draw(gc, getBounds().x + x + pushedDrawingOffset, y + pushedDrawingOffset);
-        }
+        gc.drawString(text, getBounds().x + x + pushedDrawingOffset,
+            y + pushedDrawingOffset, true);
 
         if (column.getSort() != SWT.NONE) {
             if (column.getHeaderControl() == null) {
@@ -293,16 +276,4 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer {
         return new Point(0, 0);
     }
 
-    private void getTextLayout(GC gc, GridColumn column) {
-        if (textLayout == null) {
-            textLayout = new TextLayout(gc.getDevice());
-            textLayout.setFont(gc.getFont());
-            column.getParent().addDisposeListener(new DisposeListener() {
-                public void widgetDisposed(DisposeEvent e) {
-                    textLayout.dispose();
-                }
-            });
-        }
-        textLayout.setAlignment(column.getAlignment());
-    }
 }

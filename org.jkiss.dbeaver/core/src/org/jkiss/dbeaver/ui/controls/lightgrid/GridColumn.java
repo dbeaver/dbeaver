@@ -4,12 +4,7 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultCellRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultColumnFooterRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultColumnHeaderRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridCellRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridFooterRenderer;
-import  org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridHeaderRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionListener;
@@ -21,13 +16,7 @@ import org.eclipse.swt.widgets.TypedListener;
 
 /**
  * Instances of this class represent a column in a grid widget.
- * <p>
- * <dl>
- * <dt><b>Styles:</b></dt>
- * <dd>SWT.LEFT, SWT.RIGHT, SWT.CENTER, SWT.CHECK</dd>
- * <dt><b>Events:</b></dt>
- * <dd>Move, Resize, Selection, Show, Hide</dd>
- * </dl>
+ * For grid internal use.
  */
 public class GridColumn extends Item {
 
@@ -53,9 +42,9 @@ public class GridColumn extends Item {
 	/**
 	 * Header renderer.
 	 */
-	private GridHeaderRenderer headerRenderer;
+	private GridColumnRenderer headerRenderer;
 
-	private GridFooterRenderer footerRenderer;
+	private GridColumnRenderer footerRenderer;
 
 	/**
 	 * Cell renderer.
@@ -173,11 +162,11 @@ public class GridColumn extends Item {
 	 *
 	 * @return header renderer
 	 */
-	public GridHeaderRenderer getHeaderRenderer() {
+	public GridColumnRenderer getHeaderRenderer() {
 		return headerRenderer;
 	}
 
-	GridFooterRenderer getFooterRenderer() {
+	GridColumnRenderer getFooterRenderer() {
 		return footerRenderer;
 	}
 
@@ -393,7 +382,7 @@ public class GridColumn extends Item {
 	 * @param headerRenderer
 	 *            The headerRenderer to set.
 	 */
-	public void setHeaderRenderer(GridHeaderRenderer headerRenderer) {
+	public void setHeaderRenderer(GridColumnRenderer headerRenderer) {
 		checkWidget();
 		this.headerRenderer = headerRenderer;
 	}
@@ -404,7 +393,7 @@ public class GridColumn extends Item {
 	 * @param footerRenderer
 	 *            The footerRenderer to set.
 	 */
-	public void setFooterRenderer(GridFooterRenderer footerRenderer) {
+	public void setFooterRenderer(GridColumnRenderer footerRenderer) {
 		checkWidget();
 		this.footerRenderer = footerRenderer;
 	}
@@ -580,33 +569,6 @@ public class GridColumn extends Item {
 
 	void setColumnIndex(int newIndex) {
 		cellRenderer.setColumn(newIndex);
-	}
-
-	/**
-	 * Sets whether or not text is word-wrapped in the header for this column.
-	 * If Grid.setAutoHeight(true) is set, the row height is adjusted to
-	 * accommodate word-wrapped text.
-	 *
-	 * @param wordWrap
-	 *            Set to true to wrap the text, false otherwise
-	 * @see #getHeaderWordWrap()
-	 */
-	public void setHeaderWordWrap(boolean wordWrap) {
-		checkWidget();
-		headerRenderer.setWordWrap(wordWrap);
-		parent.redraw();
-	}
-
-	/**
-	 * Returns whether or not text is word-wrapped in the header for this
-	 * column.
-	 *
-	 * @return true if the header wraps its text.
-	 * @see GridColumn#setHeaderWordWrap(boolean)
-	 */
-	public boolean getHeaderWordWrap() {
-		checkWidget();
-		return headerRenderer.isWordWrap();
 	}
 
 	/**

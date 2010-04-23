@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
  * @author Tom Schindl - tom.schindl@bestsolution.at
  * @since 2.0.0
  */
-public class DefaultColumnFooterRenderer extends GridFooterRenderer
+public class DefaultColumnFooterRenderer extends GridColumnRenderer
 {
 
     int leftMargin = 6;

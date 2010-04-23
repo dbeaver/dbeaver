@@ -153,6 +153,7 @@ public class LightGrid extends Canvas {
      */
     private List<GridColumn> displayOrderedColumns = new ArrayList<GridColumn>();
 
+    private int maxColumnDefWidth = 1000;
     /**
      * Renderer to paint the top left area when both column and row headers are
      * shown.
@@ -650,6 +651,14 @@ public class LightGrid extends Canvas {
         this.rowLabelProvider = rowLabelProvider;
     }
 
+    public int getMaxColumnDefWidth() {
+        return maxColumnDefWidth;
+    }
+
+    public void setMaxColumnDefWidth(int maxColumnDefWidth) {
+        this.maxColumnDefWidth = maxColumnDefWidth;
+    }
+
     /**
      * Refresh grid data
      */
@@ -669,6 +678,18 @@ public class LightGrid extends Canvas {
                 column.setText(columnLabelProvider.getText(i));
                 column.setImage(columnLabelProvider.getImage(i));
             }
+
+            if (getColumnCount() == 1) {
+                getColumn(0).setWidth(getSize().x);
+            } else {
+                for (GridColumn curColumn : getColumns()) {
+                    curColumn.pack();
+                    if (curColumn.getWidth() > maxColumnDefWidth) {
+                        curColumn.setWidth(maxColumnDefWidth);
+                    }
+                }
+            }
+
         }
 
         updateScrollbars();
@@ -2204,7 +2225,16 @@ public class LightGrid extends Canvas {
      *
      * @param col the column to be shown
      */
-    public void showColumn(GridColumn col)
+    public void showColumn(int column)
+    {
+        GridColumn col = getColumn(column);
+        if (col == null) {
+            return;
+        }
+        showColumn(col);
+    }
+
+    private void showColumn(GridColumn col)
     {
         checkWidget();
 
@@ -2339,8 +2369,7 @@ public class LightGrid extends Canvas {
 
         GridPos cell = selectedCells.iterator().next();
         showItem(cell.row);
-        GridColumn col = getColumn(cell.col);
-        showColumn(col);
+        showColumn(cell.col);
     }
 
     /**
@@ -4719,9 +4748,10 @@ public class LightGrid extends Canvas {
      *
      * @param column column to focus.
      */
-    public void setFocusColumn(GridColumn column)
+    public void setFocusColumn(int col)
     {
         checkWidget();
+        GridColumn column = getColumn(col);
         if (column == null || column.isDisposed() || column.getParent() != this) {
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
             return;
