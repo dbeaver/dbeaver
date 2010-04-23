@@ -8,6 +8,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
@@ -41,10 +42,10 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer
      */
     public void paint(GC gc)
     {
-        GridColumn column = grid.getColumn(getColumn());
+        GridColumn col = grid.getColumn(getColumn());
 
         // set the font to be used to display the text.
-        gc.setFont(column.getFooterFont());
+        gc.setFont(getColumnFont());
 
         gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
         gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
@@ -57,16 +58,17 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer
 
         int x = leftMargin;
 
-        if (column.getFooterImage() != null)
+        Image columnImage = getColumnImage();
+        if (columnImage != null)
         {
-                gc.drawImage(column.getFooterImage(), getBounds().x + x,
-                        getBounds().y + getBounds().height - bottomMargin - column.getFooterImage().getBounds().height);
-            x += column.getFooterImage().getBounds().width + imageSpacing;
+                gc.drawImage(columnImage, getBounds().x + x,
+                        getBounds().y + getBounds().height - bottomMargin - columnImage.getBounds().height);
+            x += columnImage.getBounds().width + imageSpacing;
         }
 
         int width = getBounds().width - x;
 
-        if (column.getSort() == SWT.NONE)
+        if (col.getSort() == SWT.NONE)
         {
             width -= rightMargin;
         }
@@ -76,9 +78,9 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer
 
         int y = getBounds().y + getBounds().height - bottomMargin - gc.getFontMetrics().getHeight();
 
-        String text = TextUtils.getShortString(gc, column.getFooterText(), width);
+        String text = TextUtils.getShortString(gc, getColumnText(), width);
 
-        if (column.getAlignment() == SWT.RIGHT)
+        if (col.getAlignment() == SWT.RIGHT)
         {
             int len = gc.stringExtent(text).x;
             if (len < width)
@@ -86,7 +88,7 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer
                 x += width - len;
             }
         }
-        else if (column.getAlignment() == SWT.CENTER)
+        else if (col.getAlignment() == SWT.CENTER)
         {
             int len = gc.stringExtent(text).x;
             if (len < width)

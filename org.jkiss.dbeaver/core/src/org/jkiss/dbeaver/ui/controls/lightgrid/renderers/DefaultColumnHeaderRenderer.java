@@ -8,14 +8,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * The column header renderer.
- *
- * @author chris.gross@us.ibm.com
- * @since 2.0.0
  */
 public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
 
@@ -38,23 +36,20 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
         arrowRenderer = new SortArrowRenderer(grid);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void paint(GC gc) {
-        GridColumn column = grid.getColumn(getColumn());
+        GridColumn col = grid.getColumn(getColumn());
 
         // set the font to be used to display the text.
-        gc.setFont(column.getHeaderFont());
+        gc.setFont(getColumnFont());
 
-        boolean flat = !column.getMoveable();
+        boolean flat = !col.getMoveable();
 
         boolean drawSelected = ((isMouseDown() && isHover()));
 
         gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
         if (flat && isSelected()) {
-            gc.setBackground(column.getParent().getCellHeaderSelectionBackground());
+            gc.setBackground(grid.getCellHeaderSelectionBackground());
         }
 
         gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width,
@@ -67,20 +62,21 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
 
         int x = leftMargin;
 
-        if (column.getImage() != null) {
+        Image columnImage = getColumnImage();
+        if (columnImage != null) {
             int y = bottomMargin;
 
-            if (column.getHeaderControl() == null) {
-                y = getBounds().y + pushedDrawingOffset + getBounds().height - bottomMargin - column.getImage().getBounds().height;
+            if (col.getHeaderControl() == null) {
+                y = getBounds().y + pushedDrawingOffset + getBounds().height - bottomMargin - columnImage.getBounds().height;
             }
 
-            gc.drawImage(column.getImage(), getBounds().x + x + pushedDrawingOffset, y);
-            x += column.getImage().getBounds().width + imageSpacing;
+            gc.drawImage(columnImage, getBounds().x + x + pushedDrawingOffset, y);
+            x += columnImage.getBounds().width + imageSpacing;
         }
 
         int width = getBounds().width - x;
 
-        if (column.getSort() == SWT.NONE) {
+        if (col.getSort() == SWT.NONE) {
             width -= rightMargin;
         } else {
             width -= arrowMargin + arrowRenderer.getSize().x + arrowMargin;
@@ -90,45 +86,44 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
 
         int y;
 
-        if (column.getHeaderControl() == null) {
+        if (col.getHeaderControl() == null) {
             y = getBounds().y + getBounds().height - bottomMargin
                 - gc.getFontMetrics().getHeight();
         } else {
-            y = getBounds().y + getBounds().height - bottomMargin - gc.getFontMetrics().getHeight() - computeControlSize(column).y;
+            y = getBounds().y + getBounds().height - bottomMargin - gc.getFontMetrics().getHeight() - computeControlSize(col).y;
         }
 
-        String text = column.getText();
+        String text = getColumnText();
 
         text = TextUtils.getShortString(gc, text, width);
 
-        if (column.getAlignment() == SWT.RIGHT) {
+        if (col.getAlignment() == SWT.RIGHT) {
             int len = gc.stringExtent(text).x;
             if (len < width) {
                 x += width - len;
             }
-        } else if (column.getAlignment() == SWT.CENTER) {
+        } else if (col.getAlignment() == SWT.CENTER) {
             int len = gc.stringExtent(text).x;
             if (len < width) {
                 x += (width - len) / 2;
             }
         }
 
-
         gc.drawString(text, getBounds().x + x + pushedDrawingOffset,
             y + pushedDrawingOffset, true);
 
-        if (column.getSort() != SWT.NONE) {
-            if (column.getHeaderControl() == null) {
+        if (col.getSort() != SWT.NONE) {
+            if (col.getHeaderControl() == null) {
                 y = getBounds().y
                     + ((getBounds().height - arrowRenderer.getBounds().height) / 2)
                     + 1;
             } else {
                 y = getBounds().y
-                    + ((getBounds().height - computeControlSize(column).y - arrowRenderer.getBounds().height) / 2)
+                    + ((getBounds().height - computeControlSize(col).y - arrowRenderer.getBounds().height) / 2)
                     + 1;
             }
 
-            arrowRenderer.setSelected(column.getSort() == SWT.UP);
+            arrowRenderer.setSelected(col.getSort() == SWT.UP);
             if (drawSelected) {
                 arrowRenderer
                     .setLocation(
@@ -136,12 +131,12 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
                             - arrowRenderer.getBounds().width + 1, y
                     );
             } else {
-                if (column.getHeaderControl() == null) {
+                if (col.getHeaderControl() == null) {
                     y = getBounds().y
                         + ((getBounds().height - arrowRenderer.getBounds().height) / 2);
                 } else {
                     y = getBounds().y
-                        + ((getBounds().height - computeControlSize(column).y - arrowRenderer.getBounds().height) / 2);
+                        + ((getBounds().height - computeControlSize(col).y - arrowRenderer.getBounds().height) / 2);
                 }
                 arrowRenderer
                     .setLocation(
