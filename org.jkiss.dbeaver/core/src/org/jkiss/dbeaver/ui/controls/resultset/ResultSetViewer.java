@@ -34,8 +34,10 @@ import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -621,6 +623,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             this.curRow = curRow;
             this.columnIndex = columnIndex;
             this.inlinePlaceholder = inlinePlaceholder;
+        }
+
+        public DBCSession getSession()
+            throws DBException
+        {
+            return resultSetProvider.getSession();
         }
 
         public DBCColumnMetaData getColumnMetaData()

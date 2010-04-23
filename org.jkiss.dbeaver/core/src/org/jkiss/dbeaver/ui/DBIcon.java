@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.dbeaver.core.DBeaverIcons;
 
 /**
@@ -47,6 +48,7 @@ public enum DBIcon
     ACCEPT("accept", "/icons/sql/accept.png"),
     REJECT("reject", "/icons/sql/cancel.png"),
 
+    LOB("lob", "/icons/misc/lob.png"),
     EDIT_DATABSE("edit_database", "/icons/misc/edit_database.png"),
     EDIT_TABLE("edit_table", "/icons/misc/edit_table.png"),
     EDIT_COLUMN("edit_column", "/icons/misc/edit_column.png"),
@@ -75,6 +77,11 @@ public enum DBIcon
     public Image getImage()
     {
         return DBeaverIcons.getImage(this);
+    }
+
+    public ImageDescriptor getImageDescriptor()
+    {
+        return DBeaverIcons.getImageDescriptor(this);
     }
 
 }

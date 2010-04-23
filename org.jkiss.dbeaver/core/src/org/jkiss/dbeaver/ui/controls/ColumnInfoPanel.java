@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
@@ -26,7 +30,6 @@ public class ColumnInfoPanel extends Composite {
         gd.horizontalIndent = 0;
         gd.verticalIndent = 0;
         this.setLayoutData(gd);
-        this.setLayout(new GridLayout(2, false));
 
         {
             Group infoGroup = new Group(this, SWT.NONE);
@@ -87,6 +90,9 @@ public class ColumnInfoPanel extends Composite {
             }
 
         }
+        int extraGroupsNum = createInfoGroups(this, valueController);
+
+        this.setLayout(new GridLayout(2 + extraGroupsNum, false));
     }
 
     protected void createInfoControls(Composite infoGroup, DBDValueController valueController)
@@ -100,4 +106,8 @@ public class ColumnInfoPanel extends Composite {
         text.setLayoutData(gd);
     }
 
+    protected int createInfoGroups(Composite infoGroup, DBDValueController valueController)
+    {
+        return 0;
+    }
 }

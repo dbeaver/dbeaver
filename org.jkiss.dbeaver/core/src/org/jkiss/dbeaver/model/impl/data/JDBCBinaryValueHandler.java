@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.editors.lob.LOBEditor;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.dbc.DBCException;
@@ -37,7 +38,7 @@ public class JDBCBinaryValueHandler extends JDBCAbstractValueHandler {
         if (controller.isInlineEdit()) {
             return false;
         } else {
-            return false;
+            return LOBEditor.openEditor(controller);
         }
     }
 

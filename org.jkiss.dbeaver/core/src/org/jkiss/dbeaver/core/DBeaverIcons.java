@@ -54,6 +54,11 @@ public class DBeaverIcons
         return getImage(icon.getToken());
     }
 
+    public static ImageDescriptor getImageDescriptor(DBIcon icon)
+    {
+        return getImageDescriptor(icon.getToken());
+    }
+
     public static Image createImage(DBIcon icon)
     {
         return createImage(icon.getToken());
@@ -66,6 +71,15 @@ public class DBeaverIcons
             return null;
         }
         return iconDescriptor.image;
+    }
+
+    public static ImageDescriptor getImageDescriptor(String token)
+    {
+        IconDescriptor iconDescriptor = iconMap.get(token);
+        if (iconDescriptor == null) {
+            return null;
+        }
+        return iconDescriptor.imageDescriptor;
     }
 
     public static Image createImage(String token)

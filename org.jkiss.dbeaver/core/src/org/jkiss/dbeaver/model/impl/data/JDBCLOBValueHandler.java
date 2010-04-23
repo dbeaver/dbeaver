@@ -4,24 +4,26 @@
 
 package org.jkiss.dbeaver.model.impl.data;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
-import org.jkiss.dbeaver.ui.dialogs.data.LobViewDialog;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IContributionItem;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.editors.lob.LOBEditor;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.PreparedStatement;
 
 /**
  * JDBC string value handler
  */
 public class JDBCLOBValueHandler extends JDBCAbstractValueHandler {
+
+    static Log log = LogFactory.getLog(JDBCLOBValueHandler.class);
 
     public static final JDBCLOBValueHandler INSTANCE = new JDBCLOBValueHandler();
 
@@ -52,11 +54,11 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler {
         throws DBException
     {
         if (controller.isInlineEdit()) {
+            // Open inline editor
             return false;
         } else {
-            LobViewDialog dialog = new LobViewDialog(controller);
-            dialog.open();
-            return true;
+            // Open LOB editor
+            return LOBEditor.openEditor(controller);
         }
     }
 
