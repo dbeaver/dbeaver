@@ -33,7 +33,12 @@ public interface DBDValueController
 
     void closeInlineEditor();
 
+    void nextInlineEditor(boolean next);
+
+    void registerEditor(DBDValueEditor editor);
+
+    void unregisterEditor(DBDValueEditor editor);
+
     void showMessage(String message, boolean error);
 
-    void nextInlineEditor(boolean next);
 }

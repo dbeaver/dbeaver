@@ -10,7 +10,12 @@ package org.jkiss.dbeaver.model.data;
  */
 public interface DBDValueEditor
 {
+    DBDValueController getValueController();
 
+    /**
+     * Closes this editor.
+     * Implementor must call removeEditor on it's value controller
+     */
     void closeValueEditor();
 
 }

@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.eclipse.jface.action.IMenuManager;
 
 /**
  * DBD Value Handler.
@@ -48,9 +49,25 @@ public interface DBDValueHandler
         throws DBCException;
 
     /**
-     * Shows value editor
+     * Fills context menu for certain value
+     * @param menuManager context menu manager
+     * @throws DBCException on error
+     */
+    void fillContextMenu(IMenuManager menuManager, DBDValueController controller)
+        throws DBCException;
+
+    /**
+     * Shows value editor.
+     * Value editor could be:
+     * <li>inline editor (control created withing inline placeholder)</li>
+     * <li>dialog (modal or modeless)</li>
+     * <li>workbench editor</li>
+     * Modeless dialogs and editors must implement DBDValueEditor and
+     * must register themselves within value controller. On close they must unregister themselves within
+     * value controller.
      * @param controller value controller
-     * @return true if editor was successfully opened
+     * @return true if editor was successfully opened.
+     * makes sence only for inline editors, otherwise return value is ignored.
      * @throws org.jkiss.dbeaver.DBException on error
      */
     boolean editValue(DBDValueController controller)

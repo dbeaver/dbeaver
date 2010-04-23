@@ -17,6 +17,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.jface.action.IMenuManager;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -52,6 +53,12 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         throws DBCException
     {
         return null;
+    }
+
+    public void fillContextMenu(IMenuManager menuManager, DBDValueController controller)
+        throws DBCException
+    {
+
     }
 
     protected static interface ValueExtractor <T extends Control> {

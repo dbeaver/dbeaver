@@ -14,6 +14,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.IColorProvider;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -28,6 +29,7 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
@@ -86,10 +88,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     // Edited cells
     private Set<CellInfo> editedValues = new HashSet<CellInfo>();
-    private Color backgroundModified;
-    private Color foregroundNull;
+    private Map<ResultSetValueController, DBDValueEditor> openEditors = new HashMap<ResultSetValueController, DBDValueEditor>();
     // Flag saying that edited values update is in progress
     private boolean updateInProgress = false;
+
+    // UI modifiers
+    private Color backgroundModified;
+    private Color foregroundNull;
 
     public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
     {
@@ -486,13 +491,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     }
 
     public boolean showCellEditor(
-        final int column,
-        final int row,
+        final GridPos cell,
         final boolean inline,
         final Composite inlinePlaceholder)
     {
-        final int columnIndex = (mode == ResultSetMode.GRID ? column : row);
-        final int rowIndex = (mode == ResultSetMode.GRID ? row : curRowNum);
+        final int columnIndex = (mode == ResultSetMode.GRID ? cell.col : cell.row);
+        final int rowIndex = (mode == ResultSetMode.GRID ? cell.row : curRowNum);
         ResultSetValueController valueController = new ResultSetValueController(
             curRows.get(rowIndex),
             columnIndex,
@@ -503,6 +507,21 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         catch (Exception e) {
             log.error(e);
             return false;
+        }
+    }
+
+    public void fillContextMenu(GridPos cell, IMenuManager manager) {
+        final int columnIndex = (mode == ResultSetMode.GRID ? cell.col : cell.row);
+        final int rowIndex = (mode == ResultSetMode.GRID ? cell.row : curRowNum);
+        ResultSetValueController valueController = new ResultSetValueController(
+            curRows.get(rowIndex),
+            columnIndex,
+            null);
+        try {
+            metaColumns[columnIndex].valueHandler.fillContextMenu(manager, valueController);
+        }
+        catch (Exception e) {
+            log.error(e);
         }
     }
 
@@ -646,16 +665,25 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             spreadsheet.cancelInlineEditor();
         }
 
-        public void showMessage(String message, boolean error)
-        {
-            setStatus(message, error);
-        }
-
         public void nextInlineEditor(boolean next) {
             spreadsheet.cancelInlineEditor();
             spreadsheet.shiftCursor(next ? 1 : -1, 0, false);
             spreadsheet.openCellViewer(true);
         }
+
+        public void registerEditor(DBDValueEditor editor) {
+            openEditors.put(this, editor);
+        }
+
+        public void unregisterEditor(DBDValueEditor editor) {
+            openEditors.remove(this);
+        }
+
+        public void showMessage(String message, boolean error)
+        {
+            setStatus(message, error);
+        }
+
     };
 
     private static class CellInfo {

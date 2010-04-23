@@ -523,6 +523,9 @@ public class Spreadsheet extends Composite implements Listener {
                 manager.add(copyAction);
                 manager.add(selectAllAction);
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
+                // Let controlles to provide it's own menu items
+                spreadsheetController.fillContextMenu(grid.getFocusCell(), manager);
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
@@ -566,7 +569,7 @@ public class Spreadsheet extends Composite implements Listener {
             gd.grabExcessVerticalSpace = true;
             placeholder.setLayoutData(gd);
         }
-        boolean editSuccess = spreadsheetController.showCellEditor(focusCell.col, focusCell.row, inline, placeholder);
+        boolean editSuccess = spreadsheetController.showCellEditor(focusCell, inline, placeholder);
         if (inline) {
             if (editSuccess) {
                 int minHeight, minWidth;

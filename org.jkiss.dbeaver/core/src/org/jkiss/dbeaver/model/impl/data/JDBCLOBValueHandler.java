@@ -8,6 +8,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.Action;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,12 +26,24 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler {
     protected Object getValueObject(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException, SQLException
     {
-        return null;
+        return resultSet.getObject(columnIndex);
     }
 
     protected void bindParameter(PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
         throws DBCException, SQLException
     {
+    }
+
+    public void fillContextMenu(IMenuManager menuManager, DBDValueController controller)
+        throws DBCException
+    {
+        Action saveAction = new Action() {
+            @Override
+            public void run() {
+            }
+        };
+        saveAction.setText("Save to file ...");
+        menuManager.add(saveAction);
     }
 
     public boolean editValue(final DBDValueController controller)

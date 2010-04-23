@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.jface.action.IMenuManager;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 
 /**
  * GridDataProvider
@@ -18,9 +20,12 @@ public interface ISpreadsheetController {
     boolean isInsertable();
 
     boolean showCellEditor(
-        int column,
-        int row,
+        GridPos cell,
         boolean inline,
         Composite inlinePlaceholder);
-    
+
+    void fillContextMenu(
+        GridPos cell,
+        IMenuManager manager);
+
 }
