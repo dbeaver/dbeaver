@@ -71,9 +71,11 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
                 if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) {
                     controller.updateValue(extractor.getValueFromControl(control));
                     controller.closeInlineEditor();
-                } else if (e.keyCode == SWT.TAB) {
-                    controller.updateValue(extractor.getValueFromControl(control));
-                    controller.nextInlineEditor(true);
+                } else if (e.keyCode == SWT.ARROW_RIGHT || e.keyCode == SWT.ARROW_LEFT) {
+                    if ((e.stateMask & SWT.ALT) != 0) {
+                        controller.updateValue(extractor.getValueFromControl(control));
+                        controller.nextInlineEditor(e.keyCode == SWT.ARROW_RIGHT);
+                    }
                 } else if (e.keyCode == SWT.ESC) {
                     controller.closeInlineEditor();
                 }

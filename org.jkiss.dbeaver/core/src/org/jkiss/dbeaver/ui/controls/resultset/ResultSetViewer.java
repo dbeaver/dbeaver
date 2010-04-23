@@ -313,11 +313,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 spreadsheet.setCursor(new GridPos(0, curRowNum), false);
             }
         }
-/*
-        if (mode == ResultSetMode.GRID) {
-            spreadsheet.shiftCursor(curRowNum.col, curRowNum.row);
-        }
-*/
         spreadsheet.layout(true, true);
     }
 
@@ -381,6 +376,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     public int getRowsCount()
     {
         return curRows.size();
+    }
+
+    int getRowIndex(Object[] row)
+    {
+        return curRows.indexOf(row);
     }
 
     public void setStatus(String status)
@@ -493,84 +493,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     {
         final int columnIndex = (mode == ResultSetMode.GRID ? column : row);
         final int rowIndex = (mode == ResultSetMode.GRID ? row : curRowNum);
-        final Object[] curRow = curRows.get(rowIndex);
-        DBDValueController valueController = new DBDValueController() {
-            public DBCColumnMetaData getColumnMetaData()
-            {
-                return metaColumns[columnIndex].metaData;
-            }
-
-            public Object getColumnValue(DBCColumnMetaData column)
-            {
-                for (int i = 0; i < metaColumns.length; i++) {
-                    ResultSetColumn metaColumn = metaColumns[i];
-                    if (metaColumn.metaData == column) {
-                        return curRow[i];
-                    }
-                }
-                log.warn("Unknown column value requested: " + column);
-                return null;
-            }
-
-            public Object getValue()
-            {
-                return curRow[columnIndex];
-            }
-
-            public void updateValue(Object value)
-            {
-                Object oldValue = curRow[columnIndex];
-                if (!CommonUtils.equalObjects(oldValue, value)) {
-                    CellInfo cell = new CellInfo(columnIndex, rowIndex, oldValue);
-                    if (!editedValues.contains(cell)) {
-                        editedValues.add(cell);
-                    }
-                    curRow[columnIndex] = value;
-                    updateEditControls();
-                }
-            }
-
-            public DBDValueLocator getValueLocator()
-            {
-                return metaColumns[columnIndex].valueLocator;
-            }
-
-            public boolean isInlineEdit()
-            {
-                return inline;
-            }
-
-            public boolean isReadOnly()
-            {
-                return false;
-            }
-
-            public IWorkbenchPartSite getValueSite()
-            {
-                return site;
-            }
-
-            public Composite getInlinePlaceholder()
-            {
-                return inlinePlaceholder;
-            }
-
-            public void closeInlineEditor()
-            {
-                spreadsheet.cancelInlineEditor();
-            }
-
-            public void showMessage(String message, boolean error)
-            {
-                setStatus(message, error);
-            }
-
-            public void nextInlineEditor(boolean next) {
-                spreadsheet.cancelInlineEditor();
-                spreadsheet.shiftCursor(1, 0, false);
-                spreadsheet.openCellViewer(true);
-            }
-        };
+        ResultSetValueController valueController = new ResultSetValueController(
+            curRows.get(rowIndex),
+            columnIndex,
+            inline ? inlinePlaceholder : null);
         try {
             return metaColumns[columnIndex].valueHandler.editValue(valueController);
         }
@@ -641,6 +567,96 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     {
         new CellDataSaver().rejectChanges();
     }
+
+    private class ResultSetValueController implements DBDValueController {
+
+        private Object[] curRow;
+        private int columnIndex;
+        private Composite inlinePlaceholder;
+
+        private ResultSetValueController(Object[] curRow, int columnIndex, Composite inlinePlaceholder) {
+            this.curRow = curRow;
+            this.columnIndex = columnIndex;
+            this.inlinePlaceholder = inlinePlaceholder;
+        }
+
+        public DBCColumnMetaData getColumnMetaData()
+        {
+            return metaColumns[columnIndex].metaData;
+        }
+
+        public Object getColumnValue(DBCColumnMetaData column)
+        {
+            for (int i = 0; i < metaColumns.length; i++) {
+                ResultSetColumn metaColumn = metaColumns[i];
+                if (metaColumn.metaData == column) {
+                    return curRow[i];
+                }
+            }
+            log.warn("Unknown column value requested: " + column);
+            return null;
+        }
+
+        public Object getValue()
+        {
+            return curRow[columnIndex];
+        }
+
+        public void updateValue(Object value)
+        {
+            Object oldValue = curRow[columnIndex];
+            if (!CommonUtils.equalObjects(oldValue, value)) {
+                int rowIndex = getRowIndex(curRow);
+                if (rowIndex >= 0) {
+                    CellInfo cell = new CellInfo(columnIndex, rowIndex, oldValue);
+                    editedValues.add(cell);
+                    curRow[columnIndex] = value;
+                    updateEditControls();
+                }
+            }
+        }
+
+        public DBDValueLocator getValueLocator()
+        {
+            return metaColumns[columnIndex].valueLocator;
+        }
+
+        public boolean isInlineEdit()
+        {
+            return inlinePlaceholder != null;
+        }
+
+        public boolean isReadOnly()
+        {
+            return false;
+        }
+
+        public IWorkbenchPartSite getValueSite()
+        {
+            return site;
+        }
+
+        public Composite getInlinePlaceholder()
+        {
+            return inlinePlaceholder;
+        }
+
+        public void closeInlineEditor()
+        {
+            spreadsheet.cancelInlineEditor();
+        }
+
+        public void showMessage(String message, boolean error)
+        {
+            setStatus(message, error);
+        }
+
+        public void nextInlineEditor(boolean next) {
+            spreadsheet.cancelInlineEditor();
+            spreadsheet.shiftCursor(next ? 1 : -1, 0, false);
+            spreadsheet.openCellViewer(true);
+        }
+    };
 
     private static class CellInfo {
         int col;
