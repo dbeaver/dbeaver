@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -15,7 +14,6 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
-import java.util.*;
 import java.util.List;
 
 /**
@@ -58,32 +56,31 @@ public abstract class ValueViewDialog extends Dialog {
             infoGroup.setLayout(new GridLayout(2, false));
             infoGroup.setText("Column info");
 
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 50;
-
             Label label = new Label(infoGroup, SWT.NONE);
             label.setText("Table Name: ");
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.minimumWidth = 50;
             Text text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
             text.setText(valueController.getColumnMetaData().getTableName());
             text.setLayoutData(gd);
 
             label = new Label(infoGroup, SWT.NONE);
             label.setText("Column Name: ");
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.minimumWidth = 50;
             text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
             text.setText(valueController.getColumnMetaData().getColumnName());
             text.setLayoutData(gd);
 
             label = new Label(infoGroup, SWT.NONE);
             label.setText("Column Type: ");
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.minimumWidth = 50;
             text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
             text.setText(valueController.getColumnMetaData().getTypeName());
             text.setLayoutData(gd);
 
-            label = new Label(infoGroup, SWT.NONE);
-            label.setText("Column Size: ");
-            text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-            text.setText(String.valueOf(valueController.getColumnMetaData().getDisplaySize()));
-            text.setLayoutData(gd);
+            createInfoControls(infoGroup);
         }
         {
             Group idGroup = new Group(valueInfoGroup, SWT.NONE);
@@ -111,6 +108,17 @@ public abstract class ValueViewDialog extends Dialog {
         }
 
         return dialogGroup;
+    }
+
+    protected void createInfoControls(Composite infoGroup)
+    {
+        Label label = new Label(infoGroup, SWT.NONE);
+        label.setText("Column Size: ");
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.minimumWidth = 50;
+        Text text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
+        text.setText(String.valueOf(valueController.getColumnMetaData().getDisplaySize()));
+        text.setLayoutData(gd);
     }
 
     protected void createButtonsForButtonBar(Composite parent) {

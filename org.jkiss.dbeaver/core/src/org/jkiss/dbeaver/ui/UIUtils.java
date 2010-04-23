@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.VerifyListener;
+import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.ui.DBIcon;
 
@@ -16,6 +18,32 @@ import java.text.NumberFormat;
  * UI Utils
  */
 public class UIUtils {
+
+    public static final VerifyListener INTEGER_VERIFY_LISTENER = new VerifyListener() {
+        public void verifyText(VerifyEvent e)
+        {
+            for (int i = 0; i < e.text.length(); i++) {
+                char ch = e.text.charAt(i);
+                if (!Character.isDigit(ch)) {
+                    e.doit = false;
+                    return;
+                }
+            }
+        }
+    };
+
+    public static final VerifyListener NUMBER_VERIFY_LISTENER = new VerifyListener() {
+        public void verifyText(VerifyEvent e)
+        {
+            for (int i = 0; i < e.text.length(); i++) {
+                char ch = e.text.charAt(i);
+                if (!Character.isDigit(ch) && ch != '.' && ch != '-') {
+                    e.doit = false;
+                    return;
+                }
+            }
+        }
+    };
 
     public static Object makeStringForUI(Object object)
     {

@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
+import org.jkiss.dbeaver.ui.dialogs.data.LobViewDialog;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.dbc.DBCException;
@@ -52,7 +54,9 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler {
         if (controller.isInlineEdit()) {
             return false;
         } else {
-            return false;
+            LobViewDialog dialog = new LobViewDialog(controller);
+            dialog.open();
+            return true;
         }
     }
 

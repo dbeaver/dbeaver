@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.sql.*;
 import org.jkiss.dbeaver.ui.controls.DefaultMenuCreator;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
@@ -373,18 +374,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                 }
                 //resultSetSize.setDigits(7);
                 resultSetSize.setLayoutData(gd);
-                resultSetSize.addVerifyListener(new VerifyListener() {
-                    public void verifyText(VerifyEvent e)
-                    {
-                        for (int i = 0; i < e.text.length(); i++) {
-                            char ch = e.text.charAt(i);
-                            if (!Character.isDigit(ch)) {
-                                e.doit = false;
-                                return;
-                            }
-                        }
-                    }
-                });
+                resultSetSize.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
                 resultSetSize.addFocusListener(new FocusListener() {
                     public void focusGained(FocusEvent e)
                     {

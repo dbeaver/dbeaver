@@ -53,6 +53,18 @@ public class TextViewDialog extends ValueViewDialog {
         return dialogGroup;
     }
 
+    protected void createInfoControls(Composite infoGroup)
+    {
+        Label label = new Label(infoGroup, SWT.NONE);
+        label.setText("Length: ");
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.minimumWidth = 50;
+        Text text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
+        text.setText(String.valueOf(getValueController().getColumnMetaData().getDisplaySize()));
+        text.setLayoutData(gd);
+    }
+
+
     @Override
     protected void applyChanges()
     {
