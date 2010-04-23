@@ -6,11 +6,14 @@ package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
@@ -21,7 +24,9 @@ import java.util.List;
  *
  * @author Serge Rider
  */
-public abstract class ValueViewDialog extends Dialog {
+public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
+
+    private static int dialogCount = 0;
 
     private DBDValueController valueController;
 
@@ -29,10 +34,31 @@ public abstract class ValueViewDialog extends Dialog {
         super(valueController.getValueSite().getShell());
         setShellStyle(SWT.SHELL_TRIM);
         this.valueController = valueController;
+        this.valueController.registerEditor(this);
+        dialogCount++;
     }
 
     public DBDValueController getValueController() {
         return valueController;
+    }
+
+    public void showValueEditor() {
+        getShell().setFocus();
+    }
+
+    public void closeValueEditor() {
+        this.setReturnCode(CANCEL);
+        this.close();
+    }
+
+    @Override
+    public boolean close() {
+        dialogCount--;
+        if (this.valueController != null) {
+            this.valueController.unregisterEditor(this);
+            this.valueController = null;
+        }
+        return super.close();
     }
 
     @Override
@@ -126,6 +152,21 @@ public abstract class ValueViewDialog extends Dialog {
         createButton(parent, IDialogConstants.OK_ID, "&Save", true);
         createButton(parent, IDialogConstants.IGNORE_ID, "Set &NULL", false);
         createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", false);
+    }
+
+    protected void initializeBounds()
+    {
+        super.initializeBounds();
+
+        Shell shell = getShell();
+        Monitor primary = shell.getMonitor();
+        Rectangle bounds = primary.getBounds ();
+        Rectangle rect = shell.getBounds ();
+        int x = bounds.x + (bounds.width - rect.width) / 2;
+        int y = bounds.y + (bounds.height - rect.height) / 3;
+        x += dialogCount * 20;
+        y += dialogCount * 20;
+        shell.setLocation (x, y);
     }
 
     @Override

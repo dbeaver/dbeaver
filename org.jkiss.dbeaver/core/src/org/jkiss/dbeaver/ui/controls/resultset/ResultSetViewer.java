@@ -333,6 +333,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void dispose()
     {
+        closeEditors();
+
         if (!spreadsheet.isDisposed()) {
             spreadsheet.dispose();
         }
@@ -428,8 +430,20 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         spreadsheet.setRedraw(true);
     }
 
+    private void closeEditors() {
+        List<DBDValueEditor> editors = new ArrayList<DBDValueEditor>(openEditors.values());
+        for (DBDValueEditor editor : editors) {
+            editor.closeValueEditor();
+        }
+        if (!openEditors.isEmpty()) {
+            log.warn("Some value editors are still registered at resulset: " + openEditors.size());
+        }
+        openEditors.clear();
+    }
+
     private void initResultSet()
     {
+        closeEditors();
         this.editedValues.clear();
 
         spreadsheet.setRedraw(false);
@@ -497,6 +511,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     {
         final int columnIndex = (mode == ResultSetMode.GRID ? cell.col : cell.row);
         final int rowIndex = (mode == ResultSetMode.GRID ? cell.row : curRowNum);
+        if (!inline) {
+            GridPos testCell = new GridPos(columnIndex, rowIndex);
+            for (ResultSetValueController valueController : openEditors.keySet()) {
+                GridPos cellPos = valueController.getCellPos();
+                if (cellPos != null && cellPos.equalsTo(testCell)) {
+                    openEditors.get(valueController).showValueEditor();
+                    return true;
+                }
+            }
+        }
         ResultSetValueController valueController = new ResultSetValueController(
             curRows.get(rowIndex),
             columnIndex,
@@ -684,6 +708,15 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             setStatus(message, error);
         }
 
+        private GridPos getCellPos()
+        {
+            int rowIndex = getRowIndex(curRow);
+            if (rowIndex >= 0) {
+                return new GridPos(columnIndex, rowIndex);
+            } else {
+                return null;
+            }
+        }
     };
 
     private static class CellInfo {

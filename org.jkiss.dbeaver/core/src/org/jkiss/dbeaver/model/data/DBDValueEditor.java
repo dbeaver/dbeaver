@@ -13,6 +13,11 @@ public interface DBDValueEditor
     DBDValueController getValueController();
 
     /**
+     * Brings editor to the top of screen
+     */
+    void showValueEditor();
+
+    /**
      * Closes this editor.
      * Implementor must call removeEditor on it's value controller
      */
