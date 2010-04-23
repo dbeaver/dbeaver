@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 
 import java.util.List;
 
@@ -66,85 +67,18 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     {
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
-        Composite valueInfoGroup = new Composite(dialogGroup, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalIndent = 0;
-        gd.verticalIndent = 0;
-        valueInfoGroup.setLayoutData(gd);
-        valueInfoGroup.setLayout(new GridLayout(2, false));
-
-        {
-            Group infoGroup = new Group(valueInfoGroup, SWT.NONE);
-            gd = new GridData(GridData.FILL_BOTH);
-            gd.horizontalIndent = 0;
-            gd.verticalIndent = 0;
-            infoGroup.setLayoutData(gd);
-            infoGroup.setLayout(new GridLayout(2, false));
-            infoGroup.setText("Column info");
-
-            Label label = new Label(infoGroup, SWT.NONE);
-            label.setText("Table Name: ");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 50;
-            Text text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-            text.setText(valueController.getColumnMetaData().getTableName());
-            text.setLayoutData(gd);
-
-            label = new Label(infoGroup, SWT.NONE);
-            label.setText("Column Name: ");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 50;
-            text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-            text.setText(valueController.getColumnMetaData().getColumnName());
-            text.setLayoutData(gd);
-
-            label = new Label(infoGroup, SWT.NONE);
-            label.setText("Column Type: ");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 50;
-            text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-            text.setText(valueController.getColumnMetaData().getTypeName());
-            text.setLayoutData(gd);
-
-            createInfoControls(infoGroup);
-        }
-        {
-            Group idGroup = new Group(valueInfoGroup, SWT.NONE);
-            gd = new GridData(GridData.FILL_BOTH);
-            gd.horizontalIndent = 0;
-            gd.verticalIndent = 0;
-            idGroup.setLayoutData(gd);
-            idGroup.setLayout(new GridLayout(2, false));
-            idGroup.setText("Key info");
-
-            List<? extends DBCColumnMetaData> keyColumns = this.valueController.getValueLocator().getKeyColumns();
-            for (DBCColumnMetaData keyColumn : keyColumns) {
-                Label label = new Label(idGroup, SWT.NONE);
-                label.setText(keyColumn.getColumnName() + ":");
-
-                Text text = new Text(idGroup, SWT.BORDER | SWT.READ_ONLY);
-                gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.minimumWidth = 50;
-                text.setLayoutData(gd);
-                Object keyValue = this.valueController.getColumnValue(keyColumn);
-                String strValue = keyValue == null ? "[NULL" : keyValue.toString();
-                text.setText(strValue);
+        new ColumnInfoPanel(dialogGroup, SWT.NONE, getValueController()) {
+            @Override
+            protected void createInfoControls(Composite infoGroup, DBDValueController valueController) {
+                ValueViewDialog.this.createInfoControls(infoGroup);
             }
-
-        }
+        };
 
         return dialogGroup;
     }
 
     protected void createInfoControls(Composite infoGroup)
     {
-        Label label = new Label(infoGroup, SWT.NONE);
-        label.setText("Column Size: ");
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 50;
-        Text text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-        text.setText(String.valueOf(valueController.getColumnMetaData().getDisplaySize()));
-        text.setLayoutData(gd);
     }
 
     protected void createButtonsForButtonBar(Composite parent) {

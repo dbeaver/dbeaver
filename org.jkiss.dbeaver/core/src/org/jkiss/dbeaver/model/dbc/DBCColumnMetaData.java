@@ -28,10 +28,6 @@ public interface DBCColumnMetaData extends DBSTypedObject
 
     String getColumnName();
 
-    int getPrecision();
-
-    int getScale();
-
     String getTableName();
 
     String getCatalogName();

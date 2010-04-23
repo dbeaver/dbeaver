@@ -104,7 +104,7 @@ public class NumberViewDialog extends ValueViewDialog {
             getValueController().updateValue(
                 JDBCNumberValueHandler.convertStringToNumber(
                     textEdit.getText(),
-                    getValueController().getColumnMetaData().getValueType()));
+                    getValueController().getColumnMetaData()));
         } else if (bitEdit != null) {
             getValueController().updateValue((byte)bitEdit.getSelectionIndex());
         }

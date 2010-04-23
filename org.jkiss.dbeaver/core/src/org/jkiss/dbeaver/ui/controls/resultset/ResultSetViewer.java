@@ -1041,9 +1041,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 }
             } else {
                 ResultSetColumn metaColumn = metaColumns[colNumber];
+                return metaColumn.metaData.getLabel();
+/*
                 return CommonUtils.isEmpty(metaColumn.metaData.getTableName()) ?
                     metaColumn.metaData.getColumnName() :
                     metaColumn.metaData.getTableName() + "." + metaColumn.metaData.getColumnName();
+*/
             }
         }
     }

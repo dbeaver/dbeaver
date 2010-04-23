@@ -131,7 +131,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                         if (CommonUtils.isEmpty(text)) {
                             return null;
                         }
-                        return convertStringToNumber(text, controller.getColumnMetaData().getValueType());
+                        return convertStringToNumber(text, controller.getColumnMetaData());
                     }
                 });
             }
@@ -143,10 +143,10 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    public static Number convertStringToNumber(String text, int valueType)
+    public static Number convertStringToNumber(String text, DBSTypedObject type)
     {
         try {
-            switch (valueType) {
+            switch (type.getValueType()) {
             case java.sql.Types.BIGINT:
                 return new Long(text);
             case java.sql.Types.DECIMAL:
@@ -157,8 +157,6 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 return new Float(text);
             case java.sql.Types.INTEGER:
                 return new Integer(text);
-            case java.sql.Types.NUMERIC:
-                return new Double(text);
             case java.sql.Types.REAL:
                 return new Double(text);
             case java.sql.Types.SMALLINT:
@@ -166,7 +164,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             case java.sql.Types.TINYINT:
                 return new Byte(text);
             default:
-                return new Double(text);
+                if (type.getScale() > 0) {
+                    return new Double(text);
+                } else {
+                    return new Long(text);
+                }
             }
         }
         catch (NumberFormatException e) {
