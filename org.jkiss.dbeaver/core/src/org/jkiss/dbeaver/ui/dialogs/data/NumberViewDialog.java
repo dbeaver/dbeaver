@@ -75,26 +75,20 @@ public class NumberViewDialog extends ValueViewDialog {
         return dialogGroup;
     }
 
-    protected void createInfoControls(Composite infoGroup)
+    protected void createInfoControls(Tree infoTree)
     {
         if (getValueController().getColumnMetaData().getValueType() == Types.BIT) {
             return;
         }
-        Label label = new Label(infoGroup, SWT.NONE);
-        label.setText("Precision: ");
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 50;
-        Text text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-        text.setText(String.valueOf(getValueController().getColumnMetaData().getPrecision()));
-        text.setLayoutData(gd);
+        TreeItem precisionItem = new TreeItem(infoTree, SWT.NONE);
+        precisionItem.setText(new String[] {
+            "Precision",
+            String.valueOf(getValueController().getColumnMetaData().getPrecision()) });
 
-        label = new Label(infoGroup, SWT.NONE);
-        label.setText("Scale: ");
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 50;
-        text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-        text.setText(String.valueOf(getValueController().getColumnMetaData().getScale()));
-        text.setLayoutData(gd);
+        TreeItem scaleItem = new TreeItem(infoTree, SWT.NONE);
+        scaleItem.setText(new String[] {
+            "Scale",
+            String.valueOf(getValueController().getColumnMetaData().getScale()) });
     }
 
     @Override

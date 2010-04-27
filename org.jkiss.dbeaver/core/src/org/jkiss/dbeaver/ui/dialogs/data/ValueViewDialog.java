@@ -6,19 +6,14 @@ package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
-
-import java.util.List;
 
 /**
  * ValueViewDialog
@@ -69,15 +64,15 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
         new ColumnInfoPanel(dialogGroup, SWT.NONE, getValueController()) {
             @Override
-            protected void createInfoControls(Composite infoGroup, DBDValueController valueController) {
-                ValueViewDialog.this.createInfoControls(infoGroup);
+            protected void createInfoItems(Tree infoTree, DBDValueController valueController) {
+                ValueViewDialog.this.createInfoControls(infoTree);
             }
         };
 
         return dialogGroup;
     }
 
-    protected void createInfoControls(Composite infoGroup)
+    protected void createInfoControls(Tree infoTree)
     {
     }
 

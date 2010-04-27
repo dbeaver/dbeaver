@@ -5,19 +5,13 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.TableCursor;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
@@ -32,166 +26,74 @@ public class ColumnInfoPanel extends Composite {
         this.createPanel(valueController);
     }
 
-    protected void createPanel(DBDValueController valueController)
+    protected void createPanel(final DBDValueController valueController)
     {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalIndent = 0;
         gd.verticalIndent = 0;
         this.setLayoutData(gd);
 
+        GridLayout layout = new GridLayout(1, false);
+        layout.marginTop = 0;
+        layout.marginWidth = 0;
+        this.setLayout(layout);
         {
-            Group infoGroup = new Group(this, SWT.NONE);
-            gd = new GridData(GridData.FILL_BOTH);
-            gd.horizontalIndent = 0;
-            gd.verticalIndent = 0;
-            infoGroup.setLayoutData(gd);
-            infoGroup.setLayout(new GridLayout(2, false));
-            infoGroup.setText("Column info");
+            Label label = new Label(this, SWT.NONE);
+            label.setText("Value Info: ");
 
-            Label label = new Label(infoGroup, SWT.NONE);
-            label.setText("Table Name: ");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 50;
-            Text text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-            text.setText(valueController.getColumnMetaData().getTableName());
-            text.setLayoutData(gd);
+            InfoTreePanel infoTree = new InfoTreePanel(this, SWT.NONE) {
+                protected void createItems(Tree infoTree) {
 
-            label = new Label(infoGroup, SWT.NONE);
-            label.setText("Column Name: ");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 50;
-            text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-            text.setText(valueController.getColumnMetaData().getColumnName());
-            text.setLayoutData(gd);
+                    TreeItem tableNameitem = new TreeItem(infoTree, SWT.NONE);
+                    tableNameitem.setText(new String[] { "Table Name", valueController.getColumnMetaData().getTableName() });
 
-            label = new Label(infoGroup, SWT.NONE);
-            label.setText("Column Type: ");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 50;
-            text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-            text.setText(valueController.getColumnMetaData().getTypeName());
-            text.setLayoutData(gd);
+                    TreeItem columnNameitem = new TreeItem(infoTree, SWT.NONE);
+                    columnNameitem.setText(new String[] { "Column Name", valueController.getColumnMetaData().getColumnName() });
 
-            createInfoControls(infoGroup, valueController);
+                    TreeItem columnTypeItem = new TreeItem(infoTree, SWT.NONE);
+                    columnTypeItem.setText(new String[] { "Column Type", valueController.getColumnMetaData().getTypeName() });
+
+                    createInfoItems(infoTree, valueController);
+
+                    TreeItem keyItem = new TreeItem(infoTree, SWT.NONE);
+                    keyItem.setText(new String[] { "Key", valueController.getValueLocator().getUniqueKey().getConstraintType().name() });
+                    {
+                        java.util.List<? extends DBCColumnMetaData> keyColumns = valueController.getValueLocator().getKeyColumns();
+
+                        TreeItem keyNameitem = new TreeItem(keyItem, SWT.NONE);
+                        keyNameitem.setText(new String[] { "Name", valueController.getValueLocator().getUniqueKey().getName() });
+
+                        TreeItem columnsItem = new TreeItem(keyItem, SWT.NONE);
+                        columnsItem.setText(new String[] { "Columns", String.valueOf(keyColumns.size()) });
+
+                        for (DBCColumnMetaData keyColumn : keyColumns) {
+
+                            TreeItem columnItem = new TreeItem(columnsItem, SWT.NONE);
+                            String columnName = keyColumn.getColumnName();
+
+                            Object keyValue = valueController.getColumnValue(keyColumn);
+                            String strValue = keyValue == null ? "[NULL" : keyValue.toString();
+
+                            columnItem.setText(0, columnName);
+                            columnItem.setText(1, strValue);
+                        }
+                        columnsItem.setExpanded(true);
+                    }
+                    keyItem.setExpanded(false);
+                }
+            };
+            infoTree.createControl();
+
         }
-        {
-            Group idGroup = new Group(this, SWT.NONE);
-            gd = new GridData(GridData.FILL_BOTH);
-            gd.horizontalIndent = 0;
-            gd.verticalIndent = 0;
-            idGroup.setLayoutData(gd);
-            idGroup.setLayout(new GridLayout(2, false));
-            idGroup.setText("Key info");
-
-            Tree infoTree = new Tree(idGroup, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-            gd = new GridData(GridData.FILL_BOTH);
-            gd.minimumWidth = 100;// + maxNameWidth + maxValueWidth;
-            //gd.widthHint = nameColumn.getWidth() + valueColumn.getWidth();
-            gd.horizontalSpan = 2;
-            infoTree.setLayoutData(gd);
-            infoTree.setHeaderVisible(true);
-            infoTree.setLinesVisible(true);
-
-            TreeColumn column1 = new TreeColumn(infoTree, SWT.LEFT);
-            column1.setText("Property");
-            column1.setResizable(true);
-            //column1.setWidth(200);
-            TreeColumn column2 = new TreeColumn(infoTree, SWT.LEFT);
-            column2.setText("Value");
-            column2.setResizable(true);
-            //column2.setWidth(200);
-
-            TreeItem keyNameitem = new TreeItem(infoTree, SWT.NONE);
-            keyNameitem.setText(new String[] { "Name", valueController.getValueLocator().getUniqueKey().getName() });
-
-            TreeItem keyTypeitem = new TreeItem(infoTree, SWT.NONE);
-            keyTypeitem.setText(new String[] { "Type", valueController.getValueLocator().getUniqueKey().getConstraintType().name() });
-
-            TreeItem columnsItem = new TreeItem(infoTree, SWT.NONE);
-            columnsItem.setText("Columns");
-
-            java.util.List<? extends DBCColumnMetaData> keyColumns = valueController.getValueLocator().getKeyColumns();
-            for (DBCColumnMetaData keyColumn : keyColumns) {
-
-                TreeItem keyItem = new TreeItem(columnsItem, SWT.NONE);
-                String columnName = keyColumn.getColumnName();
-
-                Object keyValue = valueController.getColumnValue(keyColumn);
-                String strValue = keyValue == null ? "[NULL" : keyValue.toString();
-
-                keyItem.setText(0, columnName);
-                keyItem.setText(1, strValue);
-            }
-            columnsItem.setExpanded(true);
-
-            column1.pack();
-            column2.pack();
-/*
-            Label label = new Label(idGroup, SWT.NONE);
-            label.setText("Key: ");
-
-            Text text = new Text(idGroup, SWT.BORDER | SWT.READ_ONLY);
-            text.setText(valueController.getValueLocator().getUniqueKey().getName());
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 50;
-            text.setLayoutData(gd);
-
-            Table keyColumnTable = new Table(idGroup, SWT.BORDER| SWT.FULL_SELECTION);
-            keyColumnTable.setHeaderVisible(true);
-            keyColumnTable.setLinesVisible(true);
-            TableCursor cursor = new TableCursor(keyColumnTable, SWT.NONE);
-
-            TableColumn nameColumn = new TableColumn(keyColumnTable, SWT.LEFT);
-            nameColumn.setText("Name");
-
-            TableColumn valueColumn = new TableColumn(keyColumnTable, SWT.LEFT);
-            valueColumn.setText("Value");
-
-            int maxNameWidth = 0, maxValueWidth = 0;
-            GC gc = new GC(this);
-            gc.setFont(keyColumnTable.getFont());
-            java.util.List<? extends DBCColumnMetaData> keyColumns = valueController.getValueLocator().getKeyColumns();
-            for (DBCColumnMetaData keyColumn : keyColumns) {
-
-                TableItem keyItem = new TableItem(keyColumnTable, SWT.NONE);
-                String columnName = keyColumn.getColumnName();
-                keyItem.setText(0, columnName);
-
-                Object keyValue = valueController.getColumnValue(keyColumn);
-                String strValue = keyValue == null ? "[NULL" : keyValue.toString();
-                keyItem.setText(1, strValue);
-
-                maxNameWidth = Math.max(maxNameWidth, gc.stringExtent(columnName).x);
-                maxValueWidth = Math.max(maxValueWidth, gc.stringExtent(strValue).x);
-            }
-
-            int maxColumnWidth = 300;
-            nameColumn.pack();
-            nameColumn.setWidth(Math.min(maxColumnWidth, nameColumn.getWidth() + 20));
-            valueColumn.pack();
-            valueColumn.setWidth(Math.min(maxColumnWidth, valueColumn.getWidth() + 20));
-
-            gd = new GridData(GridData.FILL_BOTH);
-            gd.minimumWidth = 100;// + maxNameWidth + maxValueWidth;
-            gd.widthHint = nameColumn.getWidth() + valueColumn.getWidth();
-            gd.horizontalSpan = 2;
-            keyColumnTable.setLayoutData(gd);
-*/
-        }
-        int extraGroupsNum = createInfoGroups(this, valueController);
-
-        this.setLayout(new GridLayout(2 + extraGroupsNum, false));
+        createInfoGroups(this, valueController);
     }
 
-    protected void createInfoControls(Composite infoGroup, DBDValueController valueController)
+    protected void createInfoItems(Tree infoTree, DBDValueController valueController)
     {
-        Label label = new Label(infoGroup, SWT.NONE);
-        label.setText("Column Size: ");
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 50;
-        Text text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-        text.setText(String.valueOf(valueController.getColumnMetaData().getDisplaySize()));
-        text.setLayoutData(gd);
+        TreeItem columnTypeItem = new TreeItem(infoTree, SWT.NONE);
+        columnTypeItem.setText(new String[] {
+            "Column Size",
+            String.valueOf(valueController.getColumnMetaData().getDisplaySize()) });
     }
 
     protected int createInfoGroups(Composite infoGroup, DBDValueController valueController)

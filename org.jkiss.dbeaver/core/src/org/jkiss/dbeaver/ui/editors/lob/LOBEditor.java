@@ -10,17 +10,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.DBException;
@@ -113,15 +106,12 @@ public class LOBEditor extends EditorPart implements IDataSourceUser, DBDValueEd
 
         infoPanel = new ColumnInfoPanel(panel, SWT.NONE, getValueController()) {
             @Override
-            protected void createInfoControls(Composite infoGroup, DBDValueController valueController)
+            protected void createInfoItems(Tree infoTree, DBDValueController valueController)
             {
-                Label label = new Label(infoGroup, SWT.NONE);
-                label.setText("Maximum Length: ");
-                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.minimumWidth = 50;
-                Text text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-                text.setText(String.valueOf(getValueController().getColumnMetaData().getDisplaySize()));
-                text.setLayoutData(gd);
+                TreeItem columnTypeItem = new TreeItem(infoTree, SWT.NONE);
+                columnTypeItem.setText(new String[] {
+                    "Maximum Length",
+                    String.valueOf(valueController.getColumnMetaData().getDisplaySize()) });
             }
 
             @Override

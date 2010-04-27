@@ -5,8 +5,6 @@
 package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -53,15 +51,12 @@ public class TextViewDialog extends ValueViewDialog {
         return dialogGroup;
     }
 
-    protected void createInfoControls(Composite infoGroup)
+    protected void createInfoControls(Tree infoTree)
     {
-        Label label = new Label(infoGroup, SWT.NONE);
-        label.setText("Length: ");
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 50;
-        Text text = new Text(infoGroup, SWT.BORDER | SWT.READ_ONLY);
-        text.setText(String.valueOf(getValueController().getColumnMetaData().getDisplaySize()));
-        text.setLayoutData(gd);
+        TreeItem columnTypeItem = new TreeItem(infoTree, SWT.NONE);
+        columnTypeItem.setText(new String[] {
+            "Length",
+            String.valueOf(getValueController().getColumnMetaData().getDisplaySize()) });
     }
 
 
