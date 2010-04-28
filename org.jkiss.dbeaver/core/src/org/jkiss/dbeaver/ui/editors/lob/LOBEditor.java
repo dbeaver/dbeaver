@@ -19,7 +19,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.part.EditorPart;
+import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -35,7 +35,7 @@ import java.util.SortedMap;
 /**
  * LOBEditor
  */
-public class LOBEditor extends EditorPart implements IDataSourceUser, DBDValueEditor
+public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, DBDValueEditor
 {
     static Log log = LogFactory.getLog(LOBEditor.class);
 
@@ -100,9 +100,6 @@ public class LOBEditor extends EditorPart implements IDataSourceUser, DBDValueEd
 
         getValueController().registerEditor(this);
         valueEditorRegistered = true;
-
-        textEditor = new LOBTextEditor();
-        textEditor.init(site, input);
     }
 
     public void dispose()
@@ -137,7 +134,18 @@ public class LOBEditor extends EditorPart implements IDataSourceUser, DBDValueEd
         return false;
     }
 
-    public void createPartControl(Composite parent)
+    protected void createPages() {
+        textEditor = new LOBTextEditor();
+        try {
+            int index = addPage(textEditor, lobInput);
+            setPageText(index, "Text");
+
+        } catch (PartInitException e) {
+            log.error(e);
+        }
+    }
+
+    protected Composite createPageContainer(Composite parent)
     {
         Composite panel = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(1, false);
@@ -146,6 +154,12 @@ public class LOBEditor extends EditorPart implements IDataSourceUser, DBDValueEd
         panel.setLayout(layout);
         GridData gd = new GridData(GridData.FILL_BOTH);
         panel.setLayoutData(gd);
+
+        Composite editotPanel = new Composite(panel, SWT.NONE);
+        layout = new GridLayout(1, false);
+        editotPanel.setLayout(layout);
+        gd = new GridData(GridData.FILL_BOTH);
+        editotPanel.setLayoutData(gd);
 
 /*
         infoPanel = new ColumnInfoPanel(panel, SWT.NONE, getValueController()) {
@@ -161,15 +175,9 @@ public class LOBEditor extends EditorPart implements IDataSourceUser, DBDValueEd
         };
 
 */
-        textEditor.createPartControl(panel);
-
-/*
-        Text valuePanel = new Text(panel, SWT.BORDER);
-        gd = new GridData(GridData.FILL_BOTH);
-        valuePanel.setLayoutData(gd);
-*/
-
         createToolbar(panel);
+
+        return editotPanel;
     }
 
     private void createToolbar(Composite panel) {

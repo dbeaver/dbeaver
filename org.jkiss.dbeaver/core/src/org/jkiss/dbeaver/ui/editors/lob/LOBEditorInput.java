@@ -5,20 +5,18 @@
 package org.jkiss.dbeaver.ui.editors.lob;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IPersistableElement;
-import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IPersistableElement;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.util.List;
@@ -26,7 +24,7 @@ import java.util.List;
 /**
  * LOBEditorInput
  */
-public class LOBEditorInput implements IEditorInput //IDatabaseEditorInput
+public class LOBEditorInput implements IFileEditorInput //IDatabaseEditorInput
 {
     private DBDValueController valueController;
     private IFile lobFile;
@@ -135,5 +133,15 @@ public class LOBEditorInput implements IEditorInput //IDatabaseEditorInput
             lobFile.delete(true, false, monitor);
             lobFile = null;
         }
+    }
+
+    public IFile getFile() {
+        return lobFile;
+    }
+
+    public IStorage getStorage()
+        throws CoreException
+    {
+        return lobFile;
     }
 }
