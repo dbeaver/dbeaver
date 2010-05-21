@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Collection;
 
 /**
  * PropertyAnnoDescriptor
@@ -225,5 +226,10 @@ public class PropertyAnnoDescriptor implements IPropertyDescriptor
             }
         });
         return annoProps;
+    }
+
+    public boolean isCollectionAnno()
+    {
+        return Collection.class.isAssignableFrom(getter.getReturnType());
     }
 }

@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.events.KeyListener;
@@ -59,6 +60,14 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         throws DBCException
     {
 
+    }
+
+    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
+    {
+        propertySource.addProperty(
+            "column_size",
+            "Column Size",
+            controller.getColumnMetaData().getDisplaySize());
     }
 
     protected static interface ValueExtractor <T extends Control> {

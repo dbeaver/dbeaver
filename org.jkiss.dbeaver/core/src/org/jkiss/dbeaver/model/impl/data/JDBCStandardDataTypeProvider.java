@@ -35,7 +35,6 @@ public class JDBCStandardDataTypeProvider implements DBDDataTypeProvider {
             case DATETIME:
                 return JDBCDateTimeValueHandler.INSTANCE;
             case BINARY:
-                return JDBCBinaryValueHandler.INSTANCE;
             case LOB:
                 return JDBCLOBValueHandler.INSTANCE;
             default:

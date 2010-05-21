@@ -62,18 +62,9 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     {
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
-        new ColumnInfoPanel(dialogGroup, SWT.NONE, getValueController()) {
-            @Override
-            protected void createInfoItems(Tree infoTree, DBDValueController valueController) {
-                ValueViewDialog.this.createInfoControls(infoTree);
-            }
-        };
+        new ColumnInfoPanel(dialogGroup, SWT.BORDER, getValueController());
 
         return dialogGroup;
-    }
-
-    protected void createInfoControls(Tree infoTree)
-    {
     }
 
     protected void createButtonsForButtonBar(Composite parent) {

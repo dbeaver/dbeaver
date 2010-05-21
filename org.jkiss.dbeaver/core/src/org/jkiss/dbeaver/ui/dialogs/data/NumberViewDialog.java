@@ -75,22 +75,6 @@ public class NumberViewDialog extends ValueViewDialog {
         return dialogGroup;
     }
 
-    protected void createInfoControls(Tree infoTree)
-    {
-        if (getValueController().getColumnMetaData().getValueType() == Types.BIT) {
-            return;
-        }
-        TreeItem precisionItem = new TreeItem(infoTree, SWT.NONE);
-        precisionItem.setText(new String[] {
-            "Precision",
-            String.valueOf(getValueController().getColumnMetaData().getPrecision()) });
-
-        TreeItem scaleItem = new TreeItem(infoTree, SWT.NONE);
-        scaleItem.setText(new String[] {
-            "Scale",
-            String.valueOf(getValueController().getColumnMetaData().getScale()) });
-    }
-
     @Override
     protected void applyChanges()
     {

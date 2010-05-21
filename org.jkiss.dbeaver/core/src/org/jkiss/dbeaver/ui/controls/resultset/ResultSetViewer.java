@@ -30,6 +30,7 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
@@ -670,6 +671,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         public DBDValueLocator getValueLocator()
         {
             return metaColumns[columnIndex].valueLocator;
+        }
+
+        public DBDValueHandler getValueHandler()
+        {
+            return metaColumns[columnIndex].valueHandler;
         }
 
         public boolean isInlineEdit()

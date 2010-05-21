@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
 
 import java.sql.PreparedStatement;
@@ -142,6 +143,19 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             return true;
         }
     }
+
+    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
+    {
+        propertySource.addProperty(
+            "precision",
+            "Precision",
+            controller.getColumnMetaData().getPrecision());
+        propertySource.addProperty(
+            "scale",
+            "Scale",
+            controller.getColumnMetaData().getScale());
+    }
+
 
     public static Number convertStringToNumber(String text, DBSTypedObject type)
     {

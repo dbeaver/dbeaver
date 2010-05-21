@@ -8,13 +8,18 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeItem;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.ui.views.properties.PropertiesPage;
+import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Column info panel.
@@ -26,78 +31,83 @@ public class ColumnInfoPanel extends Composite {
         this.createPanel(valueController);
     }
 
-    protected void createPanel(final DBDValueController valueController)
+    protected void createPanel(DBDValueController valueController)
     {
+        PropertyCollector infoItem = new PropertyCollector(valueController.getColumnMetaData());
+        infoItem.addProperty("Table_Name", "Table Name", valueController.getColumnMetaData().getTableName());
+        infoItem.addProperty("Column_Name", "Column Name", valueController.getColumnMetaData().getColumnName() );
+        infoItem.addProperty("Column_Type", "Column Type", valueController.getColumnMetaData().getTypeName() );
+        valueController.getValueHandler().fillProperties(infoItem, valueController);
+        infoItem.addProperty("Key", "Key", new CellKeyInfo(valueController) );
+
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalIndent = 0;
         gd.verticalIndent = 0;
         this.setLayoutData(gd);
 
-        GridLayout layout = new GridLayout(1, false);
-        layout.marginTop = 0;
-        layout.marginWidth = 0;
-        this.setLayout(layout);
         {
-            Label label = new Label(this, SWT.NONE);
-            label.setText("Value Info: ");
-
-            InfoTreePanel infoTree = new InfoTreePanel(this, SWT.NONE) {
-                protected void createItems(Tree infoTree) {
-
-                    TreeItem tableNameitem = new TreeItem(infoTree, SWT.NONE);
-                    tableNameitem.setText(new String[] { "Table Name", valueController.getColumnMetaData().getTableName() });
-
-                    TreeItem columnNameitem = new TreeItem(infoTree, SWT.NONE);
-                    columnNameitem.setText(new String[] { "Column Name", valueController.getColumnMetaData().getColumnName() });
-
-                    TreeItem columnTypeItem = new TreeItem(infoTree, SWT.NONE);
-                    columnTypeItem.setText(new String[] { "Column Type", valueController.getColumnMetaData().getTypeName() });
-
-                    createInfoItems(infoTree, valueController);
-
-                    TreeItem keyItem = new TreeItem(infoTree, SWT.NONE);
-                    keyItem.setText(new String[] { "Key", valueController.getValueLocator().getUniqueKey().getConstraintType().name() });
-                    {
-                        java.util.List<? extends DBCColumnMetaData> keyColumns = valueController.getValueLocator().getKeyColumns();
-
-                        TreeItem keyNameitem = new TreeItem(keyItem, SWT.NONE);
-                        keyNameitem.setText(new String[] { "Name", valueController.getValueLocator().getUniqueKey().getName() });
-
-                        TreeItem columnsItem = new TreeItem(keyItem, SWT.NONE);
-                        columnsItem.setText(new String[] { "Columns", String.valueOf(keyColumns.size()) });
-
-                        for (DBCColumnMetaData keyColumn : keyColumns) {
-
-                            TreeItem columnItem = new TreeItem(columnsItem, SWT.NONE);
-                            String columnName = keyColumn.getColumnName();
-
-                            Object keyValue = valueController.getColumnValue(keyColumn);
-                            String strValue = keyValue == null ? "[NULL" : keyValue.toString();
-
-                            columnItem.setText(0, columnName);
-                            columnItem.setText(1, strValue);
-                        }
-                        columnsItem.setExpanded(true);
-                    }
-                    keyItem.setExpanded(false);
-                }
-            };
-            infoTree.createControl();
-
+            PropertiesPage properties = new PropertiesPage();
+            properties.createControl(this);
+            gd = new GridData(GridData.FILL_BOTH);
+            properties.getControl().setLayoutData(gd);
+            properties.setCurrentObject(valueController.getValueSite().getPart(), infoItem);
         }
-        createInfoGroups(this, valueController);
+
+        this.setLayout(new GridLayout(1, false));
     }
 
-    protected void createInfoItems(Tree infoTree, DBDValueController valueController)
-    {
-        TreeItem columnTypeItem = new TreeItem(infoTree, SWT.NONE);
-        columnTypeItem.setText(new String[] {
-            "Column Size",
-            String.valueOf(valueController.getColumnMetaData().getDisplaySize()) });
+    public static class KeyColumnValue implements DBPNamedObject {
+        private DBCColumnMetaData column;
+        private Object value;
+        public KeyColumnValue(DBCColumnMetaData column, Object value)
+        {
+            this.column = column;
+            this.value = value;
+        }
+        public String getName()
+        {
+            return column.getColumnName();
+        }
+        public String toString()
+        {
+            return value == null ? "[NULL]" : value.toString();
+        }
     }
 
-    protected int createInfoGroups(Composite infoGroup, DBDValueController valueController)
-    {
-        return 0;
+    public static class CellKeyInfo implements DBPObject {
+        private DBDValueController valueController;
+
+        private CellKeyInfo(DBDValueController valueController)
+        {
+            this.valueController = valueController;
+        }
+        @Property(name = "Name", viewable = true, order = 1, category = "general")
+        public String getName()
+        {
+            return valueController.getValueLocator().getUniqueKey().getName();
+        }
+
+        @Property(name = "Type", viewable = true, order = 2, category = "general")
+        public Object getType()
+        {
+            return valueController.getValueLocator().getUniqueKey().getConstraintType();
+        }
+
+        @Property(name = "Columns", viewable = true, order = 3, category = "columns")
+        public List<KeyColumnValue> getColumns()
+        {
+            List<KeyColumnValue> columns = new ArrayList<KeyColumnValue>();
+            for (DBCColumnMetaData col : valueController.getValueLocator().getKeyColumns()) {
+                columns.add(new KeyColumnValue(col, valueController.getColumnValue(col)));
+            }
+            return columns;
+        }
+
+        @Override
+        public String toString()
+        {
+            return getName();
+        }
     }
+
 }

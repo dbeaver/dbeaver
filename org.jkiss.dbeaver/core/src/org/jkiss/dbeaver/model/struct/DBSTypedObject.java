@@ -4,10 +4,12 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.dbeaver.model.DBPObject;
+
 /**
  * DBSColumnDefinition
  */
-public interface DBSTypedObject
+public interface DBSTypedObject extends DBPObject
 {
     /**
      * Database specific type name

@@ -10,15 +10,14 @@ import org.eclipse.ui.views.properties.IPropertySheetEntry;
 import org.eclipse.ui.views.properties.PropertySheetEntry;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetSorter;
-import org.jkiss.dbeaver.model.DBPObject;
 
 import java.util.Hashtable;
 import java.util.Map;
 
 public class PropertiesPage extends PropertySheetPage
 {
-    private static Map<DBPObject, PropertiesPage> pagesMap = new Hashtable<DBPObject, PropertiesPage>();
-    private DBPObject curObject;
+    private static Map<Object, PropertiesPage> pagesMap = new Hashtable<Object, PropertiesPage>();
+    private Object curObject;
 
     public PropertiesPage()
     {
@@ -43,12 +42,12 @@ public class PropertiesPage extends PropertySheetPage
         super.dispose();
     }
 
-    public static PropertiesPage getPageByObject(DBPObject object)
+    public static PropertiesPage getPageByObject(Object object)
     {
         return pagesMap.get(object);
     }
 
-    public void setCurrentObject(IWorkbenchPart sourcePart, DBPObject object)
+    public void setCurrentObject(IWorkbenchPart sourcePart, Object object)
     {
         assert this.curObject == null;
         this.curObject = object;

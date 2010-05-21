@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.editors.lob.LOBEditor;
+import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -48,6 +49,14 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler {
         };
         saveAction.setText("Save to file ...");
         menuManager.add(saveAction);
+    }
+
+    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
+    {
+        propertySource.addProperty(
+            "max_length",
+            "Max Length",
+            controller.getColumnMetaData().getDisplaySize());
     }
 
     public boolean editValue(final DBDValueController controller)

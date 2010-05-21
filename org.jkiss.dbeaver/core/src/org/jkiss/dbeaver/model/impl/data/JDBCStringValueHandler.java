@@ -8,8 +8,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
+import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.anno.Property;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -64,6 +66,14 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
             dialog.open();
             return true;
         }
+    }
+
+    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
+    {
+        propertySource.addProperty(
+            "max_length",
+            "Max Length",
+            controller.getColumnMetaData().getDisplaySize());
     }
 
 }

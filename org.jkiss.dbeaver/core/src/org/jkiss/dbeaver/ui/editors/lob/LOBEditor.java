@@ -21,6 +21,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -161,6 +162,7 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
         gd = new GridData(GridData.FILL_BOTH);
         editotPanel.setLayoutData(gd);
 
+        //ColumnInfoPanel infoPanel = new ColumnInfoPanel(panel, SWT.NONE, getValueController());
 /*
         infoPanel = new ColumnInfoPanel(panel, SWT.NONE, getValueController()) {
             @Override

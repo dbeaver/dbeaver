@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
@@ -55,6 +57,8 @@ public interface DBDValueHandler
      */
     void fillContextMenu(IMenuManager menuManager, DBDValueController controller)
         throws DBCException;
+
+    void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller);
 
     /**
      * Shows value editor.

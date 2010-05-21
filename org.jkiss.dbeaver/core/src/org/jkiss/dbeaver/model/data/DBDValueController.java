@@ -6,10 +6,9 @@ package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.DBException;
 
 /**
  * DBD Value Controller
@@ -27,6 +26,8 @@ public interface DBDValueController
     void updateValue(Object value);
 
     DBDValueLocator getValueLocator();
+
+    DBDValueHandler getValueHandler();
 
     boolean isInlineEdit();
 
