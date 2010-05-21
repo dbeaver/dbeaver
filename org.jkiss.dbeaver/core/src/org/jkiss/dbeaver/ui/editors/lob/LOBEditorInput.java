@@ -29,9 +29,11 @@ public class LOBEditorInput implements IFileEditorInput //IDatabaseEditorInput
     private DBDValueController valueController;
     private IFile lobFile;
 
-    public LOBEditorInput(DBDValueController valueController)
+    public LOBEditorInput(DBDValueController valueController, IProgressMonitor monitor)
+        throws CoreException
     {
         this.valueController = valueController;
+        this.saveDataToFile(monitor);
     }
 
     public DBDValueController getValueController()
@@ -75,13 +77,9 @@ public class LOBEditorInput implements IFileEditorInput //IDatabaseEditorInput
         return null;
     }
 
-    void saveDataToFile(IProgressMonitor monitor)
+    private void saveDataToFile(IProgressMonitor monitor)
         throws CoreException
     {
-        if (lobFile != null) {
-            release(monitor);
-        }
-
         // Construct file name
         String fileName;
         try {
@@ -131,7 +129,7 @@ public class LOBEditorInput implements IFileEditorInput //IDatabaseEditorInput
     {
         if (lobFile != null) {
             lobFile.delete(true, false, monitor);
-            lobFile = null;
+            //lobFile = null;
         }
     }
 

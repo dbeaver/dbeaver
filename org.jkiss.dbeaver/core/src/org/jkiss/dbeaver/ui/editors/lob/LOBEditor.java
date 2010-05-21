@@ -45,9 +45,40 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
 
     private LOBTextEditor textEditor;
 
+    private static class LOBInitializer implements IRunnableWithProgress {
+        DBDValueController valueController;
+        LOBEditorInput editorInput;
+
+        private LOBInitializer(DBDValueController valueController)
+        {
+            this.valueController = valueController;
+        }
+
+        public void run(IProgressMonitor monitor)
+            throws InvocationTargetException, InterruptedException
+        {
+            try {
+                editorInput = new LOBEditorInput(valueController, monitor);
+            } catch (CoreException e) {
+                throw new InvocationTargetException(e);
+            }
+        }
+    }
     public static boolean openEditor(DBDValueController valueController)
     {
-        LOBEditorInput editorInput = new LOBEditorInput(valueController);
+        LOBEditorInput editorInput;
+        // Save data to file
+        try {
+            LOBInitializer initializer = new LOBInitializer(valueController);
+            valueController.getValueSite().getWorkbenchWindow().run(false, true, initializer);
+            editorInput = initializer.editorInput;
+        } catch (Throwable e) {
+            if (e instanceof InvocationTargetException) {
+                e = ((InvocationTargetException)e).getTargetException();
+            }
+            log.error("Could not init LOB data", e);
+            return false;
+        }
         try {
             valueController.getValueSite().getWorkbenchWindow().getActivePage().openEditor(
             editorInput,
@@ -76,23 +107,6 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
         }
 
         this.lobInput = (LOBEditorInput)input;
-        // Save data to file
-        try {
-            site.getWorkbenchWindow().run(false, true, new IRunnableWithProgress() {
-                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        lobInput.saveDataToFile(monitor);
-                    } catch (CoreException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
-        } catch (Throwable e) {
-            if (e instanceof InvocationTargetException) {
-                e = ((InvocationTargetException)e).getTargetException();
-            }
-            throw new PartInitException("Could not extract LOB data", e);
-        }
 
         setSite(site);
         setInput(input);
@@ -109,6 +123,10 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
             getValueController().unregisterEditor(this);
             valueEditorRegistered = false;
         }
+        if (textEditor != null) {
+            textEditor.dispose();
+            textEditor = null;
+        }
         if (lobInput != null) {
             // Release LOB input resources
             try {
@@ -117,10 +135,6 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
                 log.warn("Error releasing LOB input", e);
             }
             lobInput = null;
-        }
-        if (textEditor != null) {
-            textEditor.dispose();
-            textEditor = null;
         }
         super.dispose();
     }
