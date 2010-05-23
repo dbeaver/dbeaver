@@ -105,14 +105,14 @@ public class HexTexts extends Composite {
     static final int SHIFT_FORWARD = 1;  // frame
     static final int SHIFT_BACKWARD = 2;
 
-    int charsForFileSizeAddress = 0;
-    String charset = null;
-    boolean delayedInQueue = false;
-    Runnable delayedWaiting = null;
-    boolean dragging = false;
-    int fontCharWidth = -1;
+    private int charsForFileSizeAddress = 0;
+    private String charset = null;
+    private boolean delayedInQueue = false;
+    private Runnable delayedWaiting = null;
+    private boolean dragging = false;
+    private int fontCharWidth = -1;
     private List<Integer> highlightRangesInScreen = null;
-    private List mergeChangeRanges = null;
+    private List<Long> mergeChangeRanges = null;
     private List<Integer> mergeHighlightRanges = null;
     private int mergeIndexChange = -2;
     private int mergeIndexHighlight = -2;
@@ -125,36 +125,36 @@ public class HexTexts extends Composite {
     private BinaryContent myContent = null;
     private long myEnd = 0L;
     private Finder myFinder = null;
-    boolean myInserting = false;
+    private boolean myInserting = false;
     private KeyListener myKeyAdapter = new MyKeyAdapter();
     private int myLastFocusedTextArea = -1;  // 1 or 2;
     private long myLastLocationPosition = -1L;
-    List<SelectionListener> myLongSelectionListeners = null;
-    long myPreviousFindEnd = -1;
-    boolean myPreviousFindIgnoredCase = false;
-    String myPreviousFindString = null;
-    boolean myPreviousFindStringWasHex = false;
-    int myPreviousLine = -1;
-    long myPreviousRedrawStart = -1;
+    private List<SelectionListener> myLongSelectionListeners = null;
+    private long myPreviousFindEnd = -1;
+    private boolean myPreviousFindIgnoredCase = false;
+    private String myPreviousFindString = null;
+    private boolean myPreviousFindStringWasHex = false;
+    private int myPreviousLine = -1;
+    private long myPreviousRedrawStart = -1;
     private long myStart = 0L;
     private long myTextAreasStart = -1L;
-    final MyTraverseAdapter myTraverseAdapter = new MyTraverseAdapter();
-    int myUpANibble = 0;  // always 0 or 1
-    final MyVerifyKeyAdapter myVerifyKeyAdapter = new MyVerifyKeyAdapter();
-    int numberOfLines = 16;
-    int numberOfLines_1 = numberOfLines - 1;
+    private final MyTraverseAdapter myTraverseAdapter = new MyTraverseAdapter();
+    private int myUpANibble = 0;  // always 0 or 1
+    private final MyVerifyKeyAdapter myVerifyKeyAdapter = new MyVerifyKeyAdapter();
+    private int numberOfLines = 16;
+    private int numberOfLines_1 = numberOfLines - 1;
     private boolean stopSearching = false;
     private byte[] tmpRawBuffer = new byte[maxScreenResolution / minCharSize / 3 * maxScreenResolution /
         minCharSize];
     private int verticalBarFactor = 0;
 
     // visual components
-    Color colorCaretLine = null;
-    Color colorHighlight = null;
-    Font fontCurrent = null;  // disposed externally
-    Font fontDefault = null;  // disposed internally
-    GridData gridData5 = null;
-    GridData gridData6 = null;
+    private Color colorCaretLine = null;
+    private Color colorHighlight = null;
+    private Font fontCurrent = null;  // disposed externally
+    private Font fontDefault = null;  // disposed internally
+    private GridData gridData5 = null;
+    private GridData gridData6 = null;
     private GC styledText1GC = null;
     private GC styledText2GC = null;
     // indentation means containment (ie. 'linesTextSeparator' and 'linesText' are contained within 'linesColumn')
@@ -1367,12 +1367,12 @@ public class HexTexts extends Composite {
      *
      * @return list of StyleRanges, each with a style of type 'changed', 'highlighted', or both.
      */
-    ArrayList mergeRanges(List<Long> changeRanges, List<Integer> highlightRanges)
+    List<StyleRange> mergeRanges(List<Long> changeRanges, List<Integer> highlightRanges)
     {
         if (!mergerInit(changeRanges, highlightRanges)) {
             return null;
         }
-        ArrayList result = new ArrayList();
+        List<StyleRange> result = new ArrayList<StyleRange>();
         mergerNext();
         int start = mergeRangesPosition;
         boolean blue = mergeRangesIsBlue;
@@ -1470,13 +1470,13 @@ public class HexTexts extends Composite {
 
     int mergerPosition(boolean changesNotHighlights)
     {
-        int result = -1;
+        int result;
         if (changesNotHighlights) {
-            result = (int) (((Long) mergeChangeRanges.get(mergeIndexChange & 0xfffffffe)).longValue() -
+            result = (int) (mergeChangeRanges.get(mergeIndexChange & 0xfffffffe) -
                 myTextAreasStart);
             if ((mergeIndexChange & 1) == 1) {
                 result = (int) Math.min(myBytesPerLine * numberOfLines,
-                                        result + ((Long) mergeChangeRanges.get(mergeIndexChange)).longValue());
+                                        result + mergeChangeRanges.get(mergeIndexChange));
             }
         } else {
             result = mergeHighlightRanges.get(mergeIndexHighlight & 0xfffffffe);
@@ -1501,10 +1501,7 @@ public class HexTexts extends Composite {
         anEvent.height = (int) (myEnd >>> 32);
         anEvent.y = (int) myEnd;
 
-        Iterator listeners = myLongSelectionListeners.iterator();
-
-        while (listeners.hasNext()) {
-            SelectionListener aListener = (SelectionListener) listeners.next();
+        for (SelectionListener aListener : myLongSelectionListeners) {
             aListener.widgetSelected(anEvent);
         }
     }
@@ -1542,7 +1539,7 @@ public class HexTexts extends Composite {
 
 
     void redrawTextAreas(int mode, StringBuffer newText, StringBuffer resultHex, StringBuffer resultChar,
-                         ArrayList viewRanges)
+                         List<StyleRange> viewRanges)
     {
         hexText.getCaret().setVisible(false);
         previewText.getCaret().setVisible(false);
@@ -1568,8 +1565,7 @@ public class HexTexts extends Composite {
                 myPreviousLine = -1;
         }
         if (viewRanges != null) {
-            for (Iterator i = viewRanges.iterator(); i.hasNext();) {
-                StyleRange styleRange = (StyleRange) i.next();
+            for (StyleRange styleRange : viewRanges) {
                 previewText.setStyleRange(styleRange);
                 styleRange = (StyleRange) styleRange.clone();
                 styleRange.start *= 3;
@@ -1607,7 +1603,7 @@ public class HexTexts extends Composite {
         StringBuffer newText = cookAddresses(newLinesStart, linesShifted * myBytesPerLine);
 
         List<Long> changeRanges = new ArrayList<Long>();
-        int actuallyRead = 0;
+        int actuallyRead;
         try {
             actuallyRead = myContent.get(ByteBuffer.wrap(tmpRawBuffer, 0, linesShifted * myBytesPerLine),
                                          changeRanges, newLinesStart);
@@ -1618,7 +1614,7 @@ public class HexTexts extends Composite {
         StringBuffer resultHex = cookTexts(true, actuallyRead);
         StringBuffer resultChar = cookTexts(false, actuallyRead);
         getHighlightRangesInScreen(newLinesStart, linesShifted * myBytesPerLine);
-        ArrayList viewRanges = mergeRanges(changeRanges, highlightRangesInScreen);
+        List<StyleRange> viewRanges = mergeRanges(changeRanges, highlightRangesInScreen);
         redrawTextAreas(mode, newText, resultHex, resultChar, viewRanges);
         refreshSelections();
         refreshCaretsPosition();
