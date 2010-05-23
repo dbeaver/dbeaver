@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.core;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.osgi.framework.BundleContext;
 
@@ -30,7 +32,7 @@ public class DBeaverActivator extends AbstractUIPlugin
     {
     }
 
-    static DBeaverActivator getInstance()
+    public static DBeaverActivator getInstance()
     {
         return instance;
     }
@@ -97,6 +99,12 @@ public class DBeaverActivator extends AbstractUIPlugin
         } catch (MissingResourceException e) {
             return key;
         }
+    }
+    /**
+     * Returns the workspace instance.
+     */
+    public static IWorkspace getWorkspace() {
+        return ResourcesPlugin.getWorkspace();
     }
 
 }

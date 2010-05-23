@@ -60,6 +60,7 @@ public class JDBCUtils
             case java.sql.Types.CHAR:
             case java.sql.Types.VARCHAR:
             case java.sql.Types.LONGVARCHAR:
+            case java.sql.Types.LONGNVARCHAR:
                 return DBSDataKind.STRING;
             case java.sql.Types.BIGINT:
             case java.sql.Types.BIT:

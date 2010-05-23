@@ -29,7 +29,12 @@ public class JDBCStandardDataTypeProvider implements DBDDataTypeProvider {
             case BOOLEAN:
                 return JDBCBooleanValueHandler.INSTANCE;
             case STRING:
-                return JDBCStringValueHandler.INSTANCE;
+                if (type.getValueType() == java.sql.Types.LONGVARCHAR || type.getValueType() == java.sql.Types.LONGNVARCHAR) {
+                    // Eval longvarchars as LOBs
+                    return JDBCLOBValueHandler.INSTANCE;
+                } else {
+                    return JDBCStringValueHandler.INSTANCE;
+                }
             case NUMERIC:
                 return JDBCNumberValueHandler.INSTANCE;
             case DATETIME:

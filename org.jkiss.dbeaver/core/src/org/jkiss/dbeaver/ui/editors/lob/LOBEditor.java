@@ -14,20 +14,28 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorActionBarContributor;
+import org.eclipse.ui.editors.text.TextEditorActionContributor;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.ui.editors.hex.HexEditor;
+import org.jkiss.dbeaver.ui.editors.hex.HexEditorActionBarContributor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
@@ -44,6 +52,7 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
     private boolean valueEditorRegistered = false;
 
     private LOBTextEditor textEditor;
+    private HexEditor hexEditor;
 
     private static class LOBInitializer implements IRunnableWithProgress {
         DBDValueController valueController;
@@ -123,10 +132,6 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
             getValueController().unregisterEditor(this);
             valueEditorRegistered = false;
         }
-        if (textEditor != null) {
-            textEditor.dispose();
-            textEditor = null;
-        }
         if (lobInput != null) {
             // Release LOB input resources
             try {
@@ -149,14 +154,33 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
         return false;
     }
 
-    protected void createPages() {
-        textEditor = new LOBTextEditor();
-        try {
-            int index = addPage(textEditor, lobInput);
-            setPageText(index, "Text");
+    @Override
+    protected IEditorSite createSite(IEditorPart editor)
+    {
+        return new LOBEditorSite(this, editor);
+    }
 
-        } catch (PartInitException e) {
-            log.error(e);
+    protected void createPages() {
+        {
+            textEditor = new LOBTextEditor();
+            try {
+                int index = addPage(textEditor, lobInput);
+                setPageText(index, "Text");
+
+            } catch (PartInitException e) {
+                log.error(e);
+            }
+        }
+
+        {
+            hexEditor = new HexEditor();
+            try {
+                int index = addPage(hexEditor, lobInput);
+                setPageText(index, "Binary");
+
+            } catch (PartInitException e) {
+                log.error(e);
+            }
         }
     }
 

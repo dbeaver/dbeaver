@@ -4,15 +4,14 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.eclipse.jface.action.IMenuManager;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
-import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.eclipse.jface.action.IMenuManager;
+import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
 /**
  * DBD Value Handler.
@@ -21,10 +20,11 @@ import org.eclipse.jface.action.IMenuManager;
 public interface DBDValueHandler
 {
     /**
-     * Extract string representation of spcified value
+     * Extracts object from result set
      * @param resultSet result set
-     * @param columnType
-     *@param columnIndex column index  @return string
+     * @param columnType columns type
+     * @param columnIndex column index
+     * @return value or null
      * @throws DBCException on error
      */
     Object getValueObject(DBCResultSet resultSet, DBSTypedObject columnType, int columnIndex)
@@ -35,7 +35,8 @@ public interface DBDValueHandler
      * @param statement statement
      * @param columnType column type
      * @param paramIndex parameter index (starts from 0)
-     * @param value parameter value (can be null)   @throws DBCException on error
+     * @param value parameter value (can be null). Value is get from getValueObject function or from
+     * object set by editor (editValue function). 
      * @throws DBCException on error
      */
     void bindParameter(DBCStatement statement, DBSTypedObject columnType, int paramIndex, Object value)
@@ -58,6 +59,11 @@ public interface DBDValueHandler
     void fillContextMenu(IMenuManager menuManager, DBDValueController controller)
         throws DBCException;
 
+    /**
+     * Fills value's custom properties
+     * @param propertySource proprty source
+     * @param controller value controller
+     */
     void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller);
 
     /**

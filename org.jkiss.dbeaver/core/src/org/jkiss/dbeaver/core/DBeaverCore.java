@@ -217,6 +217,11 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return plugin.getPreferenceStore();
     }
 
+    public void saveGlobalPreferences()
+    {
+        plugin.savePluginPreferences();
+    }
+
     public DBeaverAdapterFactory getPropertiesAdapter()
     {
         return propertiesAdapter;

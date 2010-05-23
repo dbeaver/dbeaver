@@ -9,22 +9,27 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPersistableElement;
+import org.eclipse.ui.IPathEditorInput;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDStreamHandler;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.util.List;
+import java.io.IOException;
 
 /**
  * LOBEditorInput
  */
-public class LOBEditorInput implements IFileEditorInput //IDatabaseEditorInput
+public class LOBEditorInput implements IFileEditorInput, IPathEditorInput //IDatabaseEditorInput
 {
     private DBDValueController valueController;
     private IFile lobFile;
@@ -80,19 +85,46 @@ public class LOBEditorInput implements IFileEditorInput //IDatabaseEditorInput
     private void saveDataToFile(IProgressMonitor monitor)
         throws CoreException
     {
-        // Construct file name
-        String fileName;
         try {
-            fileName = makeFileName();
-        } catch (DBException e) {
+            DBDStreamHandler streamHandler;
+            if (valueController.getValueHandler() instanceof DBDStreamHandler) {
+                streamHandler = (DBDStreamHandler) valueController.getValueHandler();
+            } else {
+                throw new DBCException("Value do not support streaming");
+            }
+
+            // Construct file name
+            String fileName;
+            try {
+                fileName = makeFileName();
+            } catch (DBException e) {
+                throw new CoreException(
+                    DBeaverUtils.makeExceptionStatus(e));
+            }
+            // Create file
+            lobFile = DBeaverCore.getInstance().makeTempFile(
+                fileName,
+                "data",
+                monitor);
+
+            // Write value to file
+            Object value = valueController.getValue();
+            if (value != null) {
+                lobFile.setContents(
+                    streamHandler.getContentStream(value),
+                    true,
+                    false,
+                    monitor);
+            }
+        }
+        catch (DBCException e) {
             throw new CoreException(
                 DBeaverUtils.makeExceptionStatus(e));
         }
-
-        lobFile = DBeaverCore.getInstance().makeTempFile(
-            fileName,
-            "data",
-            monitor);
+        catch (IOException e) {
+            throw new CoreException(
+                DBeaverUtils.makeExceptionStatus(e));
+        }
     }
 
     private String makeFileName() throws DBException {
@@ -141,5 +173,10 @@ public class LOBEditorInput implements IFileEditorInput //IDatabaseEditorInput
         throws CoreException
     {
         return lobFile;
+    }
+
+    public IPath getPath()
+    {
+        return lobFile == null ? null : lobFile.getLocation();
     }
 }
