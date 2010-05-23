@@ -19,6 +19,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.hex;
 
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -33,17 +36,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.Action;
-import org.jkiss.dbeaver.ui.editors.hex.dialogs.SelectBlockDialog;
-import org.jkiss.dbeaver.ui.editors.hex.dialogs.GoToDialog;
 import org.jkiss.dbeaver.ui.editors.hex.dialogs.FindReplaceDialog;
+import org.jkiss.dbeaver.ui.editors.hex.dialogs.GoToDialog;
+import org.jkiss.dbeaver.ui.editors.hex.dialogs.SelectBlockDialog;
 
 import java.io.File;
 import java.io.FileInputStream;
