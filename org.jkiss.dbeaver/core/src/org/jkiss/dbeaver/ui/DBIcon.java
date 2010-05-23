@@ -53,6 +53,10 @@ public enum DBIcon
     EDIT_TABLE("edit_table", "/icons/misc/edit_table.png"),
     EDIT_COLUMN("edit_column", "/icons/misc/edit_column.png"),
     LOCKED("locked", "/icons/misc/locked.png"),
+
+    HEX("hex", "/icons/misc/hex.png"),
+    TEXT("text", "/icons/misc/text.png"),
+    IMAGE("image", "/icons/misc/image.png"),
     ;
 
     private final String token;

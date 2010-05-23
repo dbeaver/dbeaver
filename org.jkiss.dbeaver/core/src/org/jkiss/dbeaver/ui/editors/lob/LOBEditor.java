@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -33,10 +34,13 @@ import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.editors.hex.HexEditor;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.SortedMap;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * LOBEditor
@@ -48,9 +52,22 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
     private LOBEditorInput lobInput;
     private boolean valueEditorRegistered = false;
 
-    private LOBTextEditor textEditor;
-    private HexEditor hexEditor;
+    private List<ContentEditor> contentEditors = new ArrayList<ContentEditor>();
 
+    private static class ContentEditor {
+        IEditorPart editor;
+        String title;
+        String tollTip;
+        Image image;
+
+        private ContentEditor(IEditorPart editor, String title, String tollTip, Image image)
+        {
+            this.editor = editor;
+            this.title = title;
+            this.tollTip = tollTip;
+            this.image = image;
+        }
+    }
     private static class LOBInitializer implements IRunnableWithProgress {
         DBDValueController valueController;
         LOBEditorInput editorInput;
@@ -70,6 +87,13 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
             }
         }
     }
+
+    public LOBEditor()
+    {
+        contentEditors.add(new ContentEditor(new HexEditor(), "Binary", "Binary Editor", DBIcon.HEX.getImage()));
+        contentEditors.add(new ContentEditor(new LOBTextEditor(), "Text", "Text Editor", DBIcon.TEXT.getImage()));
+    }
+
     public static boolean openEditor(DBDValueController valueController)
     {
         LOBEditorInput editorInput;
@@ -158,23 +182,11 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
     }
 
     protected void createPages() {
-        {
-            textEditor = new LOBTextEditor();
+        for (ContentEditor contentEditor : contentEditors) {
             try {
-                int index = addPage(textEditor, lobInput);
-                setPageText(index, "Text");
-
-            } catch (PartInitException e) {
-                log.error(e);
-            }
-        }
-
-        {
-            hexEditor = new HexEditor();
-            try {
-                int index = addPage(hexEditor, lobInput);
-                setPageText(index, "Binary");
-
+                int index = addPage(contentEditor.editor, lobInput);
+                setPageText(index, contentEditor.title);
+                setPageImage(index, contentEditor.image);
             } catch (PartInitException e) {
                 log.error(e);
             }
