@@ -36,6 +36,11 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.ui.editors.hex.dialogs.SelectBlockDialog;
 import org.jkiss.dbeaver.ui.editors.hex.dialogs.GoToDialog;
 import org.jkiss.dbeaver.ui.editors.hex.dialogs.FindReplaceDialog;
@@ -57,7 +62,6 @@ import java.util.Properties;
  * @author Jordi
  */
 public class HexManager {
-
 
     class MySelectionAdapter extends SelectionAdapter {
         static final int PASTE = 1;
@@ -209,7 +213,7 @@ public class HexManager {
     private HexTexts hexTexts = null;
     private StatusLine statusLine = null;
     private Composite textsParent = null;
-
+    private IMenuListener menuListener;
 
     /**
      * Blocks the caller until the task is finished. Does not block the user interface thread.
@@ -272,7 +276,7 @@ public class HexManager {
      * @throws IllegalStateException when editor part exists already (method called twice or more)
      * @throws NullPointerException  if textsParent is null
      */
-    public void createEditorPart(Composite parent)
+    public Composite createEditorPart(Composite parent)
     {
         if (hexTexts != null) throw new IllegalStateException("Editor part exists already");
         if (parent == null) throw new NullPointerException("Cannot use null parent");
@@ -313,6 +317,27 @@ public class HexManager {
             }
             listOfLongListeners = null;
         }
+
+        {
+            // Context menu
+            MenuManager menuManager = new MenuManager();
+            menuManager.setRemoveAllWhenShown(true);
+            menuManager.addMenuListener(new IMenuListener() {
+                public void menuAboutToShow(IMenuManager manager)
+                {
+                    if (menuListener != null) {
+                        menuListener.menuAboutToShow(manager);
+                    }
+                }
+            });
+            Menu contextMenu = menuManager.createContextMenu(hexTexts.getHexText());
+            hexTexts.getHexText().setMenu(contextMenu);
+            contextMenu = menuManager.createContextMenu(hexTexts.getPreviewText());
+            hexTexts.getPreviewText().setMenu(contextMenu);
+            //getSite().registerContextMenu(menuManager, this);
+        }
+
+        return hexTexts;
     }
 
 
@@ -1027,6 +1052,10 @@ public class HexManager {
             fontToDispose.dispose();
     }
 
+    public void setMenuListener(IMenuListener menuListener)
+    {
+        this.menuListener = menuListener;
+    }
 
     /**
      * Show an error box with the last error message

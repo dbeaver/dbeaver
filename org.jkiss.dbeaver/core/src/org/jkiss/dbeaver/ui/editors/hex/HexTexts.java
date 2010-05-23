@@ -156,17 +156,19 @@ public class HexTexts extends Composite {
     GridData gridData6 = null;
     private GC styledText1GC = null;
     private GC styledText2GC = null;
-    // indentation means containment (ie. 'textSeparator' and 'styledText' are contained within 'column')
-    private Composite column = null;
-    private Text textSeparator = null;
-    private StyledText styledText = null;
-    private Composite column1 = null;
-    private Composite column1Header = null;
-    private StyledText header1Text = null;
-    private StyledText styledText1 = null;
-    private Composite column2 = null;
-    private Text textSeparator2 = null;
-    private StyledText styledText2 = null;
+    // indentation means containment (ie. 'linesTextSeparator' and 'linesText' are contained within 'linesColumn')
+    private Composite linesColumn = null;
+    private Text linesTextSeparator = null;
+    private StyledText linesText = null;
+
+    private Composite hexColumn = null;
+    private Composite hexHeaderGroup = null;
+    private StyledText hexHeaderText = null;
+    private StyledText hexText = null;
+
+    private Composite previewColumn = null;
+    private Text previewTextSeparator = null;
+    private StyledText previewText = null;
 
     public BinaryContent getMyContent()
     {
@@ -193,7 +195,7 @@ public class HexTexts extends Composite {
      */
     private void composeByteToCharMap()
     {
-        if (charset == null || styledText2 == null) return;
+        if (charset == null || previewText == null) return;
 
         CharsetDecoder d = Charset.forName(charset).newDecoder().
             onMalformedInput(CodingErrorAction.REPLACE).
@@ -216,13 +218,13 @@ public class HexTexts extends Composite {
                 char decoded = cb.get();
                 // neither font metrics nor graphic context work for charset 8859-1 chars between 128 and
                 // 159
-                String text = styledText2.getText();
-                styledText2.setText("|" + decoded);
-                if (styledText2.getLocationAtOffset(2).x - styledText2.getLocationAtOffset(1).x <
-                    styledText2.getLocationAtOffset(1).x - styledText2.getLocationAtOffset(0).x) {
+                String text = previewText.getText();
+                previewText.setText("|" + decoded);
+                if (previewText.getLocationAtOffset(2).x - previewText.getLocationAtOffset(1).x <
+                    previewText.getLocationAtOffset(1).x - previewText.getLocationAtOffset(0).x) {
                     decoded = '.';
                 }
-                styledText2.setText(text);
+                previewText.setText(text);
                 byteToChar[i] = decoded;
             }
         }
@@ -314,7 +316,7 @@ public class HexTexts extends Composite {
                         shiftStartAndEnd(newPos);
                     } else {  // if no modifier or control or alt
                         myEnd = myStart = doNavigateKeyPressed(ctrlKey, e.keyCode, getCaretPos(),
-                                                               e.widget == styledText1 && !myInserting);
+                                                               e.widget == hexText && !myInserting);
                         myCaretStickToStart = false;
                     }
                     ensureCaretIsVisible();
@@ -570,6 +572,16 @@ public class HexTexts extends Composite {
         myPreviousLine = -1;
     }
 
+    public StyledText getHexText()
+    {
+        return hexText;
+    }
+
+    public StyledText getPreviewText()
+    {
+        return previewText;
+    }
+
     /**
      * redraw the caret with respect of Inserting/Overwriting mode
      */
@@ -623,89 +635,89 @@ public class HexTexts extends Composite {
         gridLayout1.marginWidth = 0;
         setLayout(gridLayout1);
 
-        column = new Composite(this, SWT.NONE);
+        linesColumn = new Composite(this, SWT.NONE);
         GridLayout columnLayout = new GridLayout();
         columnLayout.marginHeight = 0;
         columnLayout.verticalSpacing = 1;
         columnLayout.horizontalSpacing = 0;
         columnLayout.marginWidth = 0;
-        column.setLayout(columnLayout);
-        column.setBackground(colorLightShadow);
+        linesColumn.setLayout(columnLayout);
+        linesColumn.setBackground(colorLightShadow);
         GridData gridDataColumn = new GridData(SWT.BEGINNING, SWT.FILL, false, true);
-        column.setLayoutData(gridDataColumn);
+        linesColumn.setLayoutData(gridDataColumn);
 
         GridData gridDataTextSeparator = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         gridDataTextSeparator.widthHint = 10;
-        textSeparator = new Text(column, SWT.SEPARATOR);
-        textSeparator.setEnabled(false);
-        textSeparator.setBackground(colorLightShadow);
-        textSeparator.setLayoutData(gridDataTextSeparator);
+        linesTextSeparator = new Text(linesColumn, SWT.SEPARATOR);
+        linesTextSeparator.setEnabled(false);
+        linesTextSeparator.setBackground(colorLightShadow);
+        linesTextSeparator.setLayoutData(gridDataTextSeparator);
 
-        styledText = new StyledText(column, SWT.MULTI | SWT.READ_ONLY);
-        styledText.setEditable(false);
-        styledText.setEnabled(false);
-        styledText.setBackground(colorLightShadow);
-        styledText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
+        linesText = new StyledText(linesColumn, SWT.MULTI | SWT.READ_ONLY);
+        linesText.setEditable(false);
+        linesText.setEnabled(false);
+        linesText.setBackground(colorLightShadow);
+        linesText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
         fontDefault = new Font(Display.getCurrent(), fontDataDefault);
         fontCurrent = fontDefault;
-        styledText.setFont(fontCurrent);
-        GC styledTextGC = new GC(styledText);
+        linesText.setFont(fontCurrent);
+        GC styledTextGC = new GC(linesText);
         fontCharWidth = styledTextGC.getFontMetrics().getAverageCharWidth();
         styledTextGC.dispose();
         GridData gridDataAddresses = new GridData(SWT.BEGINNING, SWT.FILL, false, true);
-        gridDataAddresses.heightHint = numberOfLines * styledText.getLineHeight();
-        styledText.setLayoutData(gridDataAddresses);
+        gridDataAddresses.heightHint = numberOfLines * linesText.getLineHeight();
+        linesText.setLayoutData(gridDataAddresses);
         setAddressesGridDataWidthHint();
-        styledText.setContent(new DisplayedContent(styledText, charsForAddress, numberOfLines));
+        linesText.setContent(new DisplayedContent(linesText, charsForAddress, numberOfLines));
 
-        column1 = new Composite(this, SWT.NONE);
+        hexColumn = new Composite(this, SWT.NONE);
         GridLayout column1Layout = new GridLayout();
         column1Layout.marginHeight = 0;
         column1Layout.verticalSpacing = 1;
         column1Layout.horizontalSpacing = 0;
         column1Layout.marginWidth = 0;
-        column1.setLayout(column1Layout);
-        column1.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+        hexColumn.setLayout(column1Layout);
+        hexColumn.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
         GridData gridDataColumn1 = new GridData(SWT.BEGINNING, SWT.FILL, false, true);
-        column1.setLayoutData(gridDataColumn1);
+        hexColumn.setLayoutData(gridDataColumn1);
 
-        column1Header = new Composite(column1, SWT.NONE);
-        column1Header.setBackground(colorLightShadow);
+        hexHeaderGroup = new Composite(hexColumn, SWT.NONE);
+        hexHeaderGroup.setBackground(colorLightShadow);
         GridLayout column1HeaderLayout = new GridLayout();
         column1HeaderLayout.marginHeight = 0;
         column1HeaderLayout.marginWidth = 0;
-        column1Header.setLayout(column1HeaderLayout);
+        hexHeaderGroup.setLayout(column1HeaderLayout);
         GridData gridDataColumn1Header = new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false);
-        column1Header.setLayoutData(gridDataColumn1Header);
+        hexHeaderGroup.setLayoutData(gridDataColumn1Header);
 
         GridData gridData = new GridData();
         gridData.horizontalIndent = 1;
-        header1Text = new StyledText(column1Header, SWT.SINGLE | SWT.READ_ONLY);
-        header1Text.setEditable(false);
-        header1Text.setEnabled(false);
-        header1Text.setBackground(colorLightShadow);
-        header1Text.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
-        header1Text.setLayoutData(gridData);
-        header1Text.setFont(fontCurrent);
+        hexHeaderText = new StyledText(hexHeaderGroup, SWT.SINGLE | SWT.READ_ONLY);
+        hexHeaderText.setEditable(false);
+        hexHeaderText.setEnabled(false);
+        hexHeaderText.setBackground(colorLightShadow);
+        hexHeaderText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
+        hexHeaderText.setLayoutData(gridData);
+        hexHeaderText.setFont(fontCurrent);
         refreshHeader();
 
-        styledText1 = new StyledText(column1, SWT.MULTI);
-        styledText1.setFont(fontCurrent);
-        styledText1GC = new GC(styledText1);
+        hexText = new StyledText(hexColumn, SWT.MULTI);
+        hexText.setFont(fontCurrent);
+        styledText1GC = new GC(hexText);
         int width = myBytesPerLine * 3 * fontCharWidth;
         gridData5 = new GridData();
         gridData5.horizontalIndent = 1;
         gridData5.verticalAlignment = SWT.FILL;
-        gridData5.widthHint = styledText1.computeTrim(0, 0, width, 0).width;
+        gridData5.widthHint = hexText.computeTrim(0, 0, width, 0).width;
         gridData5.grabExcessVerticalSpace = true;
-        styledText1.setLayoutData(gridData5);
-        styledText1.addKeyListener(myKeyAdapter);
+        hexText.setLayoutData(gridData5);
+        hexText.addKeyListener(myKeyAdapter);
         FocusListener myFocusAdapter = new FocusAdapter() {
             public void focusGained(FocusEvent e)
             {
                 drawUnfocusedCaret(false);
                 myLastFocusedTextArea = 1;
-                if (e.widget == styledText2)
+                if (e.widget == previewText)
                     myLastFocusedTextArea = 2;
                 getDisplay().asyncExec(new Runnable() {
                     public void run()
@@ -715,66 +727,66 @@ public class HexTexts extends Composite {
                 });
             }
         };
-        styledText1.addFocusListener(myFocusAdapter);
-        styledText1.addMouseListener(new MyMouseAdapter(true));
-        styledText1.addPaintListener(new MyPaintAdapter(true));
-        styledText1.addTraverseListener(myTraverseAdapter);
-        styledText1.addVerifyKeyListener(myVerifyKeyAdapter);
-        styledText1.setContent(new DisplayedContent(styledText1, myBytesPerLine * 3, numberOfLines));
-        styledText1.setDoubleClickEnabled(false);
-        styledText1.addSelectionListener(new MySelectionAdapter(true));
+        hexText.addFocusListener(myFocusAdapter);
+        hexText.addMouseListener(new MyMouseAdapter(true));
+        hexText.addPaintListener(new MyPaintAdapter(true));
+        hexText.addTraverseListener(myTraverseAdapter);
+        hexText.addVerifyKeyListener(myVerifyKeyAdapter);
+        hexText.setContent(new DisplayedContent(hexText, myBytesPerLine * 3, numberOfLines));
+        hexText.setDoubleClickEnabled(false);
+        hexText.addSelectionListener(new MySelectionAdapter(true));
         // StyledText.setCaretOffset() version 3.448 bug resets the caret size if using the default one,
         // so we use not the default one.
-        Caret defaultCaret = styledText1.getCaret();
+        Caret defaultCaret = hexText.getCaret();
         Caret nonDefaultCaret = new Caret(defaultCaret.getParent(), defaultCaret.getStyle());
         nonDefaultCaret.setBounds(defaultCaret.getBounds());
-        styledText1.setCaret(nonDefaultCaret);
+        hexText.setCaret(nonDefaultCaret);
 
-        column2 = new Composite(this, SWT.NONE);
+        previewColumn = new Composite(this, SWT.NONE);
         GridLayout column2Layout = new GridLayout();
         column2Layout.marginHeight = 0;
         column2Layout.verticalSpacing = 1;
         column2Layout.horizontalSpacing = 0;
         column2Layout.marginWidth = 0;
-        column2.setLayout(column2Layout);
-        column2.setBackground(styledText1.getBackground());
+        previewColumn.setLayout(column2Layout);
+        previewColumn.setBackground(hexText.getBackground());
         GridData gridDataColumn2 = new GridData(SWT.FILL, SWT.FILL, true, true);
-        column2.setLayoutData(gridDataColumn2);
+        previewColumn.setLayoutData(gridDataColumn2);
 
         GridData gridDataTextSeparator2 = new GridData();
         gridDataTextSeparator2.horizontalAlignment = SWT.FILL;
         gridDataTextSeparator2.verticalAlignment = SWT.FILL;
         gridDataTextSeparator2.grabExcessHorizontalSpace = true;
-        textSeparator2 = new Text(column2, SWT.SEPARATOR);
-        textSeparator2.setEnabled(false);
-        textSeparator2.setBackground(colorLightShadow);
-        textSeparator2.setLayoutData(gridDataTextSeparator2);
+        previewTextSeparator = new Text(previewColumn, SWT.SEPARATOR);
+        previewTextSeparator.setEnabled(false);
+        previewTextSeparator.setBackground(colorLightShadow);
+        previewTextSeparator.setLayoutData(gridDataTextSeparator2);
         makeFirstRowSameHeight();
 
-        styledText2 = new StyledText(column2, SWT.MULTI);
-        styledText2.setFont(fontCurrent);
-        width = myBytesPerLine * fontCharWidth + 1;  // one pixel for caret in last column
+        previewText = new StyledText(previewColumn, SWT.MULTI);
+        previewText.setFont(fontCurrent);
+        width = myBytesPerLine * fontCharWidth + 1;  // one pixel for caret in last linesColumn
         gridData6 = new GridData();
         gridData6.verticalAlignment = SWT.FILL;
-        gridData6.widthHint = styledText2.computeTrim(0, 0, width, 0).width;
+        gridData6.widthHint = previewText.computeTrim(0, 0, width, 0).width;
         gridData6.grabExcessVerticalSpace = true;
-        styledText2.setLayoutData(gridData6);
-        styledText2.addKeyListener(myKeyAdapter);
-        styledText2.addFocusListener(myFocusAdapter);
-        styledText2.addMouseListener(new MyMouseAdapter(false));
-        styledText2.addPaintListener(new MyPaintAdapter(false));
-        styledText2.addTraverseListener(myTraverseAdapter);
-        styledText2.addVerifyKeyListener(myVerifyKeyAdapter);
-        styledText2.setContent(new DisplayedContent(styledText2, myBytesPerLine, numberOfLines));
-        styledText2.setDoubleClickEnabled(false);
-        styledText2.addSelectionListener(new MySelectionAdapter(false));
+        previewText.setLayoutData(gridData6);
+        previewText.addKeyListener(myKeyAdapter);
+        previewText.addFocusListener(myFocusAdapter);
+        previewText.addMouseListener(new MyMouseAdapter(false));
+        previewText.addPaintListener(new MyPaintAdapter(false));
+        previewText.addTraverseListener(myTraverseAdapter);
+        previewText.addVerifyKeyListener(myVerifyKeyAdapter);
+        previewText.setContent(new DisplayedContent(previewText, myBytesPerLine, numberOfLines));
+        previewText.setDoubleClickEnabled(false);
+        previewText.addSelectionListener(new MySelectionAdapter(false));
         // StyledText.setCaretOffset() version 3.448 bug resets the caret size if using the default one,
         // so we use not the default one.
-        defaultCaret = styledText2.getCaret();
+        defaultCaret = previewText.getCaret();
         nonDefaultCaret = new Caret(defaultCaret.getParent(), defaultCaret.getStyle());
         nonDefaultCaret.setBounds(defaultCaret.getBounds());
-        styledText2.setCaret(nonDefaultCaret);
-        styledText2GC = new GC(styledText2);
+        previewText.setCaret(nonDefaultCaret);
+        styledText2GC = new GC(previewText);
         setCharset(null);
 
         super.setFont(fontCurrent);
@@ -962,7 +974,7 @@ public class HexTexts extends Composite {
     {
         char aChar = event.character;
         if (aChar == '\0' || aChar == '\b' || aChar == '\u007f' || event.stateMask == SWT.CTRL ||
-            event.widget == styledText1 && ((event.stateMask & SWT.MODIFIER_MASK) != 0 ||
+            event.widget == hexText && ((event.stateMask & SWT.MODIFIER_MASK) != 0 ||
                 aChar < '0' || aChar > '9' && aChar < 'A' || aChar > 'F' && aChar < 'a' || aChar > 'f')) {
             return;
         }
@@ -975,7 +987,7 @@ public class HexTexts extends Composite {
         handleSelectedPreModify();
         try {
             if (myInserting) {
-                if (event.widget == styledText2) {
+                if (event.widget == previewText) {
                     myContent.insert((byte) aChar, getCaretPos());
                 } else if (myUpANibble == 0) {
                     myContent.insert((byte) (hexToNibble[aChar - '0'] << 4), getCaretPos());
@@ -983,24 +995,24 @@ public class HexTexts extends Composite {
                     myContent.overwrite(hexToNibble[aChar - '0'], 4, 4, getCaretPos());
                 }
             } else {
-                if (event.widget == styledText2) {
+                if (event.widget == previewText) {
                     myContent.overwrite((byte) aChar, getCaretPos());
                 } else {
                     myContent.overwrite(hexToNibble[aChar - '0'], myUpANibble * 4, 4, getCaretPos());
                 }
                 myContent.get(ByteBuffer.wrap(tmpRawBuffer, 0, 1), null, getCaretPos());
                 int offset = (int) (getCaretPos() - myTextAreasStart);
-                styledText1.replaceTextRange(offset * 3, 2, byteToHex[tmpRawBuffer[0] & 0x0ff]);
-                styledText1.setStyleRange(new StyleRange(offset * 3, 2, colorBlue, null));
-                styledText2.replaceTextRange(offset, 1,
+                hexText.replaceTextRange(offset * 3, 2, byteToHex[tmpRawBuffer[0] & 0x0ff]);
+                hexText.setStyleRange(new StyleRange(offset * 3, 2, colorBlue, null));
+                previewText.replaceTextRange(offset, 1,
                                              Character.toString(byteToChar[tmpRawBuffer[0] & 0x0ff]));
-                styledText2.setStyleRange(new StyleRange(offset, 1, colorBlue, null));
+                previewText.setStyleRange(new StyleRange(offset, 1, colorBlue, null));
             }
         }
         catch (IOException e) {
             throw new RuntimeException(e);
         }
-        myStart = myEnd = incrementPosWithinLimits(getCaretPos(), event.widget == styledText1);
+        myStart = myEnd = incrementPosWithinLimits(getCaretPos(), event.widget == hexText);
         Runnable delayed = new Runnable() {
             public void run()
             {
@@ -1092,20 +1104,20 @@ public class HexTexts extends Composite {
 
     void drawUnfocusedCaret(boolean visible)
     {
-        if (styledText1.isDisposed()) return;
+        if (hexText.isDisposed()) return;
 
         GC unfocusedGC = null;
         Caret unfocusedCaret = null;
         int chars = 0;
         int shift = 0;
         if (myLastFocusedTextArea == 1) {
-            unfocusedCaret = styledText2.getCaret();
+            unfocusedCaret = previewText.getCaret();
             unfocusedGC = styledText2GC;
         } else {
-            unfocusedCaret = styledText1.getCaret();
+            unfocusedCaret = hexText.getCaret();
             unfocusedGC = styledText1GC;
             chars = 1;
-            if (styledText1.getCaretOffset() % 3 == 1)
+            if (hexText.getCaretOffset() % 3 == 1)
                 shift = -1;
         }
         if (unfocusedCaret.getVisible()) {
@@ -1342,10 +1354,10 @@ public class HexTexts extends Composite {
 
     void makeFirstRowSameHeight()
     {
-        ((GridData) textSeparator.getLayoutData()).heightHint =
-            header1Text.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
-        ((GridData) textSeparator2.getLayoutData()).heightHint =
-            header1Text.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+        ((GridData) linesTextSeparator.getLayoutData()).heightHint =
+            hexHeaderText.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+        ((GridData) previewTextSeparator.getLayoutData()).heightHint =
+            hexHeaderText.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
     }
 
 
@@ -1533,24 +1545,24 @@ public class HexTexts extends Composite {
     void redrawTextAreas(int mode, StringBuffer newText, StringBuffer resultHex, StringBuffer resultChar,
                          ArrayList viewRanges)
     {
-        styledText1.getCaret().setVisible(false);
-        styledText2.getCaret().setVisible(false);
+        hexText.getCaret().setVisible(false);
+        previewText.getCaret().setVisible(false);
         if (mode == SET_TEXT) {
-            styledText.getContent().setText(newText.toString());
-            styledText1.getContent().setText(resultHex.toString());
-            styledText2.getContent().setText(resultChar.toString());
+            linesText.getContent().setText(newText.toString());
+            hexText.getContent().setText(resultHex.toString());
+            previewText.getContent().setText(resultChar.toString());
             myPreviousLine = -1;
         } else {
             boolean forward = mode == SHIFT_FORWARD;
-            styledText.setRedraw(false);
-            styledText1.setRedraw(false);
-            styledText2.setRedraw(false);
-            ((DisplayedContent) styledText.getContent()).shiftLines(newText.toString(), forward);
-            ((DisplayedContent) styledText1.getContent()).shiftLines(resultHex.toString(), forward);
-            ((DisplayedContent) styledText2.getContent()).shiftLines(resultChar.toString(), forward);
-            styledText.setRedraw(true);
-            styledText1.setRedraw(true);
-            styledText2.setRedraw(true);
+            linesText.setRedraw(false);
+            hexText.setRedraw(false);
+            previewText.setRedraw(false);
+            ((DisplayedContent) linesText.getContent()).shiftLines(newText.toString(), forward);
+            ((DisplayedContent) hexText.getContent()).shiftLines(resultHex.toString(), forward);
+            ((DisplayedContent) previewText.getContent()).shiftLines(resultChar.toString(), forward);
+            linesText.setRedraw(true);
+            hexText.setRedraw(true);
+            previewText.setRedraw(true);
             if (myPreviousLine >= 0 && myPreviousLine < numberOfLines)
                 myPreviousLine += newText.length() / charsForAddress * (forward ? 1 : -1);
             if (myPreviousLine < -1 || myPreviousLine >= numberOfLines)
@@ -1559,11 +1571,11 @@ public class HexTexts extends Composite {
         if (viewRanges != null) {
             for (Iterator i = viewRanges.iterator(); i.hasNext();) {
                 StyleRange styleRange = (StyleRange) i.next();
-                styledText2.setStyleRange(styleRange);
+                previewText.setStyleRange(styleRange);
                 styleRange = (StyleRange) styleRange.clone();
                 styleRange.start *= 3;
                 styleRange.length *= 3;
-                styledText1.setStyleRange(styleRange);
+                hexText.setStyleRange(styleRange);
             }
         }
     }
@@ -1571,7 +1583,7 @@ public class HexTexts extends Composite {
 
     void redrawTextAreas(boolean fromScratch)
     {
-        if (myContent == null || styledText1.isDisposed()) return;
+        if (myContent == null || hexText.isDisposed()) return;
 
         long newLinesStart = myTextAreasStart;
         int linesShifted = numberOfLines;
@@ -1622,24 +1634,24 @@ public class HexTexts extends Composite {
             getCaretPos() == myContent.length() && caretLocation == myBytesPerLine * numberOfLines) {
             int tmp = (int) caretLocation;
             if (tmp == myBytesPerLine * numberOfLines) {
-                styledText1.setCaretOffset(tmp * 3 - 1);
-                styledText2.setCaretOffset(tmp);
+                hexText.setCaretOffset(tmp * 3 - 1);
+                previewText.setCaretOffset(tmp);
             } else {
-                styledText1.setCaretOffset(tmp * 3 + myUpANibble);
-                styledText2.setCaretOffset(tmp);
+                hexText.setCaretOffset(tmp * 3 + myUpANibble);
+                previewText.setCaretOffset(tmp);
             }
-            int line = styledText1.getLineAtOffset(styledText1.getCaretOffset());
+            int line = hexText.getLineAtOffset(hexText.getCaretOffset());
             if (line != myPreviousLine) {
                 if (myPreviousLine >= 0 && myPreviousLine < numberOfLines) {
-                    styledText1.setLineBackground(myPreviousLine, 1, null);
-                    styledText2.setLineBackground(myPreviousLine, 1, null);
+                    hexText.setLineBackground(myPreviousLine, 1, null);
+                    previewText.setLineBackground(myPreviousLine, 1, null);
                 }
-                styledText1.setLineBackground(line, 1, colorCaretLine);
-                styledText2.setLineBackground(line, 1, colorCaretLine);
+                hexText.setLineBackground(line, 1, colorCaretLine);
+                previewText.setLineBackground(line, 1, colorCaretLine);
                 myPreviousLine = line;
             }
-            styledText1.getCaret().setVisible(true);
-            styledText2.getCaret().setVisible(true);
+            hexText.getCaret().setVisible(true);
+            previewText.getCaret().setVisible(true);
             getDisplay().asyncExec(new Runnable() {
                 public void run()
                 {
@@ -1647,15 +1659,15 @@ public class HexTexts extends Composite {
                 }
             });
         } else {
-            styledText1.getCaret().setVisible(false);
-            styledText2.getCaret().setVisible(false);
+            hexText.getCaret().setVisible(false);
+            previewText.getCaret().setVisible(false);
         }
     }
 
 
     void refreshHeader()
     {
-        header1Text.setText(headerRow.substring(0, Math.min(myBytesPerLine * 3, headerRow.length())));
+        hexHeaderText.setText(headerRow.substring(0, Math.min(myBytesPerLine * 3, headerRow.length())));
     }
 
 
@@ -1681,10 +1693,10 @@ public class HexTexts extends Composite {
             intEnd = tmp;
         }
 
-        styledText1.setSelection(intStart * 3, intEnd * 3);
-        styledText1.setTopIndex(0);
-        styledText2.setSelection(intStart, intEnd);
-        styledText2.setTopIndex(0);
+        hexText.setSelection(intStart * 3, intEnd * 3);
+        hexText.setTopIndex(0);
+        previewText.setSelection(intStart, intEnd);
+        previewText.setTopIndex(0);
     }
 
 
@@ -1842,7 +1854,7 @@ public class HexTexts extends Composite {
 
     void setAddressesGridDataWidthHint()
     {
-        ((GridData) styledText.getLayoutData()).widthHint = charsForAddress * fontCharWidth;
+        ((GridData) linesText.getLayoutData()).widthHint = charsForAddress * fontCharWidth;
     }
 
 
@@ -1850,12 +1862,12 @@ public class HexTexts extends Composite {
     {
         myInserting = insert;
         int width = 0;
-        int height = styledText1.getCaret().getSize().y;
+        int height = hexText.getCaret().getSize().y;
         if (!myInserting)
             width = fontCharWidth;
 
-        styledText1.getCaret().setSize(width, height);
-        styledText2.getCaret().setSize(width, height);
+        hexText.getCaret().setSize(width, height);
+        previewText.getCaret().setSize(width, height);
     }
 
 
@@ -1898,9 +1910,9 @@ public class HexTexts extends Composite {
     {
         redrawCaret(false);
         if (myLastFocusedTextArea == 1)
-            return styledText1.setFocus();
+            return hexText.setFocus();
         else
-            return styledText2.setFocus();
+            return previewText.setFocus();
     }
 
 
@@ -1925,19 +1937,19 @@ public class HexTexts extends Composite {
             fontCurrent = fontDefault;
         }
         super.setFont(fontCurrent);
-        header1Text.setFont(fontCurrent);
-        header1Text.pack(true);
-        GC gc = new GC(header1Text);
+        hexHeaderText.setFont(fontCurrent);
+        hexHeaderText.pack(true);
+        GC gc = new GC(hexHeaderText);
         fontCharWidth = gc.getFontMetrics().getAverageCharWidth();
         gc.dispose();
         makeFirstRowSameHeight();
-        styledText.setFont(fontCurrent);
+        linesText.setFont(fontCurrent);
         setAddressesGridDataWidthHint();
-        styledText.pack(true);
-        styledText1.setFont(fontCurrent);
-        styledText1.pack(true);
-        styledText2.setFont(fontCurrent);
-        styledText2.pack(true);
+        linesText.pack(true);
+        hexText.setFont(fontCurrent);
+        hexText.pack(true);
+        previewText.setFont(fontCurrent);
+        previewText.pack(true);
         updateTextsMetrics();
         layout();
         setCaretsSize(myInserting);
@@ -2043,17 +2055,17 @@ public class HexTexts extends Composite {
 
     void updateNumberOfLines()
     {
-        int height = getClientArea().height - header1Text.computeSize(SWT.DEFAULT, SWT.DEFAULT, false).y;
+        int height = getClientArea().height - hexHeaderText.computeSize(SWT.DEFAULT, SWT.DEFAULT, false).y;
 
-        numberOfLines = height / styledText.getLineHeight();
+        numberOfLines = height / linesText.getLineHeight();
         if (numberOfLines < 1)
             numberOfLines = 1;
 
         numberOfLines_1 = numberOfLines - 1;
 
-        ((DisplayedContent) styledText.getContent()).setDimensions(charsForAddress, numberOfLines);
-        ((DisplayedContent) styledText1.getContent()).setDimensions(myBytesPerLine * 3, numberOfLines);
-        ((DisplayedContent) styledText2.getContent()).setDimensions(myBytesPerLine, numberOfLines);
+        ((DisplayedContent) linesText.getContent()).setDimensions(charsForAddress, numberOfLines);
+        ((DisplayedContent) hexText.getContent()).setDimensions(myBytesPerLine * 3, numberOfLines);
+        ((DisplayedContent) previewText.getContent()).setDimensions(myBytesPerLine, numberOfLines);
     }
 
 
@@ -2075,17 +2087,17 @@ public class HexTexts extends Composite {
 
     void updateTextsMetrics()
     {
-        int width = getClientArea().width - styledText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
-        int displayedNumberWidth = fontCharWidth * 4;  // styledText1 and styledText2
+        int width = getClientArea().width - linesText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+        int displayedNumberWidth = fontCharWidth * 4;  // hexText and previewText
         myBytesPerLine = (width / displayedNumberWidth) & 0xfffffff8;  // 0, 8, 16, 24, etc.
         if (myBytesPerLine < 16)
             myBytesPerLine = 16;
-        gridData5.widthHint = styledText1.computeTrim(0, 0,
+        gridData5.widthHint = hexText.computeTrim(0, 0,
                                                       myBytesPerLine * 3 * fontCharWidth, 100).width;
-        gridData6.widthHint = styledText2.computeTrim(0, 0,
+        gridData6.widthHint = previewText.computeTrim(0, 0,
                                                       myBytesPerLine * fontCharWidth, 100).width;
         updateNumberOfLines();
-        changed(new Control[]{header1Text, styledText, styledText1, styledText2});
+        changed(new Control[]{hexHeaderText, linesText, hexText, previewText});
         updateScrollBar();
         refreshHeader();
         myTextAreasStart = (((long) getVerticalBar().getSelection()) * myBytesPerLine) << verticalBarFactor;

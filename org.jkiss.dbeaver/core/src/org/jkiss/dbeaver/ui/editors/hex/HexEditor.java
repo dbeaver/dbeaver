@@ -31,6 +31,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -55,6 +57,7 @@ import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.editors.text.ILocationProvider;
 import org.eclipse.ui.part.EditorPart;
@@ -73,38 +76,44 @@ import java.util.HashSet;
 import java.util.Set;
 
 
-public class HexEditor extends EditorPart implements ISelectionProvider {
+public class HexEditor extends EditorPart implements ISelectionProvider, IMenuListener {
 
+    class EditorAction extends Action {
+        String actionId = null;
 
-    class MyAction extends Action {
-        String myId = null;
-
-        MyAction(String id)
+        EditorAction(String actionId, String text)
         {
-            myId = id;
+            super(text);
+            this.actionId = actionId;
+            setActionDefinitionId(actionId);
+        }
+
+        EditorAction(String id)
+        {
+            actionId = id;
+            setActionDefinitionId(actionId);
         }
 
         public void run()
         {
-            if (myId.equals(ActionFactory.UNDO.getId()))
+            if (actionId.equals(IWorkbenchActionDefinitionIds.UNDO))
                 getManager().doUndo();
-            else if (myId.equals(ActionFactory.REDO.getId()))
+            else if (actionId.equals(IWorkbenchActionDefinitionIds.REDO))
                 getManager().doRedo();
-            else if (myId.equals(ActionFactory.CUT.getId()))
+            else if (actionId.equals(IWorkbenchActionDefinitionIds.CUT))
                 getManager().doCut();
-            else if (myId.equals(ActionFactory.COPY.getId()))
+            else if (actionId.equals(IWorkbenchActionDefinitionIds.COPY))
                 getManager().doCopy();
-            else if (myId.equals(ActionFactory.PASTE.getId()))
+            else if (actionId.equals(IWorkbenchActionDefinitionIds.PASTE))
                 getManager().doPaste();
-            else if (myId.equals(ActionFactory.DELETE.getId()))
+            else if (actionId.equals(IWorkbenchActionDefinitionIds.DELETE))
                 getManager().doDelete();
-            else if (myId.equals(ActionFactory.SELECT_ALL.getId()))
+            else if (actionId.equals(IWorkbenchActionDefinitionIds.SELECT_ALL))
                 getManager().doSelectAll();
-            else if (myId.equals(ActionFactory.FIND.getId()))
+            else if (actionId.equals(IWorkbenchActionDefinitionIds.FIND_REPLACE))
                 getManager().doFind();
         }
     }
-
 
     static final String textSavingFilePleaseWait = "Saving file, please wait";
 
@@ -136,7 +145,8 @@ public class HexEditor extends EditorPart implements ISelectionProvider {
         getManager().setTextFont(HexConfig.getFontData());
         getManager().setFindReplaceLists(HexConfig.getFindReplaceFindList(),
                                          HexConfig.getFindReplaceReplaceList());
-        manager.createEditorPart(parent);
+        getManager().setMenuListener(this);
+        getManager().createEditorPart(parent);
         FillLayout fillLayout = new FillLayout();
         parent.setLayout(fillLayout);
 
@@ -202,22 +212,22 @@ public class HexEditor extends EditorPart implements ISelectionProvider {
 
         // Register any global actions with the site's IActionBars.
         IActionBars bars = getEditorSite().getActionBars();
-        String id = ActionFactory.UNDO.getId();
-        bars.setGlobalActionHandler(id, new MyAction(id));
-        id = ActionFactory.REDO.getId();
-        bars.setGlobalActionHandler(id, new MyAction(id));
-        id = ActionFactory.CUT.getId();
-        bars.setGlobalActionHandler(id, new MyAction(id));
-        id = ActionFactory.COPY.getId();
-        bars.setGlobalActionHandler(id, new MyAction(id));
-        id = ActionFactory.PASTE.getId();
-        bars.setGlobalActionHandler(id, new MyAction(id));
-        id = ActionFactory.DELETE.getId();
-        bars.setGlobalActionHandler(id, new MyAction(id));
-        id = ActionFactory.SELECT_ALL.getId();
-        bars.setGlobalActionHandler(id, new MyAction(id));
-        id = ActionFactory.FIND.getId();
-        bars.setGlobalActionHandler(id, new MyAction(id));
+        String id = IWorkbenchActionDefinitionIds.UNDO;
+        bars.setGlobalActionHandler(id, new EditorAction(id));
+        id = IWorkbenchActionDefinitionIds.REDO;
+        bars.setGlobalActionHandler(id, new EditorAction(id));
+        id = IWorkbenchActionDefinitionIds.CUT;
+        bars.setGlobalActionHandler(id, new EditorAction(id));
+        id = IWorkbenchActionDefinitionIds.COPY;
+        bars.setGlobalActionHandler(id, new EditorAction(id));
+        id = IWorkbenchActionDefinitionIds.PASTE;
+        bars.setGlobalActionHandler(id, new EditorAction(id));
+        id = IWorkbenchActionDefinitionIds.DELETE;
+        bars.setGlobalActionHandler(id, new EditorAction(id));
+        id = IWorkbenchActionDefinitionIds.SELECT_ALL;
+        bars.setGlobalActionHandler(id, new EditorAction(id));
+        id = IWorkbenchActionDefinitionIds.FIND_REPLACE;
+        bars.setGlobalActionHandler(id, new EditorAction(id));
 
         manager.addListener(new Listener() {
             public void handleEvent(Event event)
@@ -263,6 +273,7 @@ public class HexEditor extends EditorPart implements ISelectionProvider {
                  }
              });
 //	getSite().setSelectionProvider(this);
+
     }
 
 
@@ -523,21 +534,31 @@ public class HexEditor extends EditorPart implements ISelectionProvider {
         boolean textSelected = getManager().isTextSelected();
         boolean lengthModifiable = textSelected && !manager.isOverwriteMode();
         IActionBars bars = getEditorSite().getActionBars();
-        IAction action = bars.getGlobalActionHandler(ActionFactory.UNDO.getId());
+        IAction action = bars.getGlobalActionHandler(IWorkbenchActionDefinitionIds.UNDO);
         if (action != null) action.setEnabled(manager.canUndo());
 
-        action = bars.getGlobalActionHandler(ActionFactory.REDO.getId());
+        action = bars.getGlobalActionHandler(IWorkbenchActionDefinitionIds.REDO);
         if (action != null) action.setEnabled(manager.canRedo());
 
-        action = bars.getGlobalActionHandler(ActionFactory.CUT.getId());
+        action = bars.getGlobalActionHandler(IWorkbenchActionDefinitionIds.CUT);
         if (action != null) action.setEnabled(lengthModifiable);
 
-        action = bars.getGlobalActionHandler(ActionFactory.COPY.getId());
+        action = bars.getGlobalActionHandler(IWorkbenchActionDefinitionIds.COPY);
         if (action != null) action.setEnabled(textSelected);
 
-        action = bars.getGlobalActionHandler(ActionFactory.DELETE.getId());
+        action = bars.getGlobalActionHandler(IWorkbenchActionDefinitionIds.DELETE);
         if (action != null) action.setEnabled(lengthModifiable);
 
         bars.updateActionBars();
     }
+
+    public void menuAboutToShow(IMenuManager manager)
+    {
+        EditorAction copyAction = new EditorAction(IWorkbenchActionDefinitionIds.COPY, "Copy");
+        manager.add(copyAction);
+        manager.add(new EditorAction(IWorkbenchActionDefinitionIds.PASTE, "Paste"));
+        manager.add(new EditorAction(IWorkbenchActionDefinitionIds.SELECT_ALL, "Select All"));
+        manager.add(new EditorAction(IWorkbenchActionDefinitionIds.FIND_REPLACE, "Find/Replace"));
+    }
+
 }
