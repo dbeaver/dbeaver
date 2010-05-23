@@ -433,7 +433,7 @@ public class BinaryContent {
 
 
     void fillWithRange(ByteBuffer dst, Range sourceRange, long overlapBytes, long position,
-                       ArrayList rangesModified)
+                       List<Long> rangesModified)
         throws IOException
     {
         long positionSoFar = position;
@@ -458,11 +458,11 @@ public class BinaryContent {
 
         if (rangesModified != null) {
             if (sourceRange.dirty) {
-                rangesModified.add(new Long(position));
-                rangesModified.add(new Long(positionSoFar - position));
+                rangesModified.add(position);
+                rangesModified.add(positionSoFar - position);
             } else if (changesAdded > 0) {//&& !myChangesInserted) {
-                rangesModified.add(new Long(changesPosition));
-                rangesModified.add(new Long(changesAdded));
+                rangesModified.add(changesPosition);
+                rangesModified.add((long)changesAdded);
 //		} else if (myChanges != null && changesPosition >= myChangesPosition && myChangesInserted &&
                 //		positionSoFar - changesPosition > 0) {
                 //	rangesModified.add(new Long(changesPosition));
@@ -508,7 +508,7 @@ public class BinaryContent {
      * @return number of bytes read
      * @throws IOException
      */
-    public int get(ByteBuffer dst, ArrayList rangesModified, long position)
+    public int get(ByteBuffer dst, List<Long> rangesModified, long position)
         throws IOException
     {
         if (rangesModified != null) rangesModified.clear();
@@ -533,8 +533,8 @@ public class BinaryContent {
             positionSoFar + positionShift < myChangesPosition + myChanges.size()) {
             int size = fillWithChanges(dst, positionSoFar + positionShift);
             if (rangesModified != null) {
-                rangesModified.add(new Long(positionSoFar + positionShift));
-                rangesModified.add(new Long(size));
+                rangesModified.add(positionSoFar + positionShift);
+                rangesModified.add((long)size);
             }
         }
 

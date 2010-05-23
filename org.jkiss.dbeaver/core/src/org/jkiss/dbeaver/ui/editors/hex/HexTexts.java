@@ -27,6 +27,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
@@ -110,9 +111,9 @@ public class HexTexts extends Composite {
     Runnable delayedWaiting = null;
     boolean dragging = false;
     int fontCharWidth = -1;
-    ArrayList highlightRangesInScreen = null;
-    private ArrayList mergeChangeRanges = null;
-    private ArrayList mergeHighlightRanges = null;
+    private List<Integer> highlightRangesInScreen = null;
+    private List mergeChangeRanges = null;
+    private List<Integer> mergeHighlightRanges = null;
     private int mergeIndexChange = -2;
     private int mergeIndexHighlight = -2;
     private boolean mergeRangesIsBlue = false;
@@ -128,7 +129,7 @@ public class HexTexts extends Composite {
     private KeyListener myKeyAdapter = new MyKeyAdapter();
     private int myLastFocusedTextArea = -1;  // 1 or 2;
     private long myLastLocationPosition = -1L;
-    ArrayList myLongSelectionListeners = null;
+    List<SelectionListener> myLongSelectionListeners = null;
     long myPreviousFindEnd = -1;
     boolean myPreviousFindIgnoredCase = false;
     String myPreviousFindString = null;
@@ -386,7 +387,7 @@ public class HexTexts extends Composite {
         {
             if (e.button == 1)
                 dragging = true;
-            int textOffset = 0;
+            int textOffset;
             try {
                 textOffset = ((StyledText) e.widget).getOffsetAtLocation(new Point(e.x, e.y));
             }
@@ -540,13 +541,13 @@ public class HexTexts extends Composite {
 
         colorCaretLine = new Color(Display.getCurrent(), 232, 242, 254);  // very light blue
         colorHighlight = new Color(Display.getCurrent(), 255, 248, 147);  // mellow yellow
-        highlightRangesInScreen = new ArrayList();
+        highlightRangesInScreen = new ArrayList<Integer>();
 
         composeByteToHexMap();
         composeHeaderRow();
 
         myClipboard = new BinaryClipboard(parent.getDisplay());
-        myLongSelectionListeners = new ArrayList();
+        myLongSelectionListeners = new ArrayList<SelectionListener>();
         addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e)
             {
@@ -900,7 +901,7 @@ public class HexTexts extends Composite {
     StringBuffer cookTexts(boolean isHexOutput, int length)
     {
         if (length > tmpRawBuffer.length) length = tmpRawBuffer.length;
-        StringBuffer result = null;
+        StringBuffer result;
 
         if (isHexOutput) {
             result = new StringBuffer(length * 3);
@@ -1106,8 +1107,8 @@ public class HexTexts extends Composite {
     {
         if (hexText.isDisposed()) return;
 
-        GC unfocusedGC = null;
-        Caret unfocusedCaret = null;
+        GC unfocusedGC;
+        Caret unfocusedCaret;
         int chars = 0;
         int shift = 0;
         if (myLastFocusedTextArea == 1) {
@@ -1177,9 +1178,7 @@ public class HexTexts extends Composite {
                                  boolean ignoreCase)
         throws IOException
     {
-        boolean result = findAndSelectInternal(findString, isHexString, searchForward, ignoreCase, true);
-
-        return result;
+        return findAndSelectInternal(findString, isHexString, searchForward, ignoreCase, true);
     }
 
 
@@ -1207,12 +1206,12 @@ public class HexTexts extends Composite {
         }
         Object[] vector = (Object[]) result[0];
         if (vector != null && vector.length > 1 && vector[0] != null && vector[1] != null) {
-            myStart = ((Long) vector[0]).longValue();
+            myStart = (Long) vector[0];
             myCaretStickToStart = false;
             if (updateGui) {
-                setSelection(myStart, myStart + ((Integer) vector[1]).intValue());
+                setSelection(myStart, myStart + (Integer) vector[1]);
             } else {
-                select(myStart, myStart + ((Integer) vector[1]).intValue());
+                select(myStart, myStart + (Integer) vector[1]);
             }
             myPreviousFindEnd = getCaretPos();
 
@@ -1267,8 +1266,8 @@ public class HexTexts extends Composite {
     {
         highlightRangesInScreen.clear();
         if (myLastLocationPosition >= start && myLastLocationPosition < start + length) {
-            highlightRangesInScreen.add(new Integer((int) (myLastLocationPosition - myTextAreasStart)));
-            highlightRangesInScreen.add(new Integer(1));
+            highlightRangesInScreen.add((int) (myLastLocationPosition - myTextAreasStart));
+            highlightRangesInScreen.add(1);
         }
     }
 
@@ -1368,7 +1367,7 @@ public class HexTexts extends Composite {
      *
      * @return list of StyleRanges, each with a style of type 'changed', 'highlighted', or both.
      */
-    ArrayList mergeRanges(ArrayList changeRanges, ArrayList highlightRanges)
+    ArrayList mergeRanges(List<Long> changeRanges, List<Integer> highlightRanges)
     {
         if (!mergerInit(changeRanges, highlightRanges)) {
             return null;
@@ -1417,7 +1416,7 @@ public class HexTexts extends Composite {
      *
      * @return whether the parameters hold any data
      */
-    boolean mergerInit(ArrayList changeRanges, ArrayList highlightRanges)
+    boolean mergerInit(List<Long> changeRanges, List<Integer> highlightRanges)
     {
         if ((changeRanges == null || changeRanges.size() < 2) &&
             (highlightRanges == null || highlightRanges.size() < 2)) {
@@ -1480,9 +1479,9 @@ public class HexTexts extends Composite {
                                         result + ((Long) mergeChangeRanges.get(mergeIndexChange)).longValue());
             }
         } else {
-            result = ((Integer) mergeHighlightRanges.get(mergeIndexHighlight & 0xfffffffe)).intValue();
+            result = mergeHighlightRanges.get(mergeIndexHighlight & 0xfffffffe);
             if ((mergeIndexHighlight & 1) == 1) {
-                result += ((Integer) mergeHighlightRanges.get(mergeIndexHighlight)).intValue();
+                result += mergeHighlightRanges.get(mergeIndexHighlight);
             }
         }
 
@@ -1607,7 +1606,7 @@ public class HexTexts extends Composite {
 
         StringBuffer newText = cookAddresses(newLinesStart, linesShifted * myBytesPerLine);
 
-        ArrayList changeRanges = new ArrayList();
+        List<Long> changeRanges = new ArrayList<Long>();
         int actuallyRead = 0;
         try {
             actuallyRead = myContent.get(ByteBuffer.wrap(tmpRawBuffer, 0, linesShifted * myBytesPerLine),
