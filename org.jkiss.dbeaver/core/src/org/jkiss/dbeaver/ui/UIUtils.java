@@ -24,7 +24,7 @@ public class UIUtils {
         {
             for (int i = 0; i < e.text.length(); i++) {
                 char ch = e.text.charAt(i);
-                if (!Character.isDigit(ch)) {
+                if (!Character.isDigit(ch) && ch != '-' && ch != '+') {
                     e.doit = false;
                     return;
                 }

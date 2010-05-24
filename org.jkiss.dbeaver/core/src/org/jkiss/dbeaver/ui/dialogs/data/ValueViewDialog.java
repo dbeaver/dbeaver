@@ -69,8 +69,8 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
     protected void createButtonsForButtonBar(Composite parent) {
         // create OK and Cancel buttons by default
-        createButton(parent, IDialogConstants.OK_ID, "&Save", true);
-        createButton(parent, IDialogConstants.IGNORE_ID, "Set &NULL", false);
+        createButton(parent, IDialogConstants.OK_ID, "&Save", true).setEnabled(!valueController.isReadOnly());
+        createButton(parent, IDialogConstants.IGNORE_ID, "Set &NULL", false).setEnabled(!valueController.isReadOnly());
         createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", false);
     }
 
@@ -106,7 +106,9 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     @Override
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.IGNORE_ID) {
-            getValueController().updateValue(null);
+            if (!valueController.isReadOnly()) {
+                getValueController().updateValue(null);
+            }
             super.okPressed();
         } else {
             super.buttonPressed(buttonId);

@@ -29,6 +29,7 @@ import java.sql.SQLException;
  */
 public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
 
+    private static final String NULL_VALUE_LABEL = "[NULL]";
 
     public final Object getValueObject(DBCResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException
@@ -48,6 +49,10 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         catch (SQLException e) {
             throw new DBCException("Could not bind statement parameter", e);
         }
+    }
+
+    public String getValueDisplayString(Object value) {
+        return value == null ? NULL_VALUE_LABEL : value.toString();
     }
 
     public DBDValueAnnotation[] getValueAnnotations(DBCColumnMetaData column)

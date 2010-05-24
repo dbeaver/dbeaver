@@ -146,12 +146,14 @@ public class LOBEditorInput implements IFileEditorInput, IPathEditorInput //IDat
         if (!CommonUtils.isEmpty(columnName)) {
             fileName.append('.').append(CommonUtils.escapeIdentifier(columnName));
         }
-        List<? extends DBCColumnMetaData> keyColumns = valueController.getValueLocator().getKeyColumns();
-        for (DBCColumnMetaData keyColumn : keyColumns) {
-            fileName.append('.').append(CommonUtils.escapeIdentifier(keyColumn.getColumnName()));
-            Object keyValue = valueController.getColumnValue(keyColumn);
-            fileName.append('-');
-            fileName.append(CommonUtils.escapeIdentifier(keyValue == null ? "NULL" : keyValue.toString()));
+        if (valueController.getValueLocator() != null) {
+            List<? extends DBCColumnMetaData> keyColumns = valueController.getValueLocator().getKeyColumns();
+            for (DBCColumnMetaData keyColumn : keyColumns) {
+                fileName.append('.').append(CommonUtils.escapeIdentifier(keyColumn.getColumnName()));
+                Object keyValue = valueController.getColumnValue(keyColumn);
+                fileName.append('-');
+                fileName.append(CommonUtils.escapeIdentifier(keyValue == null ? "NULL" : keyValue.toString()));
+            }
         }
         return fileName.toString();
     }

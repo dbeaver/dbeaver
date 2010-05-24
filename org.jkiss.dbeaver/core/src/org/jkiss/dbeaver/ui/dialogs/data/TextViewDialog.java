@@ -48,6 +48,7 @@ public class TextViewDialog extends ValueViewDialog {
         gd.grabExcessVerticalSpace = true;
         textEdit.setLayoutData(gd);
         textEdit.setFocus();
+        textEdit.setEditable(!getValueController().isReadOnly());
         return dialogGroup;
     }
 

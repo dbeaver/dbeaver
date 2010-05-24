@@ -52,11 +52,12 @@ public class NumberViewDialog extends ValueViewDialog {
             gd.grabExcessVerticalSpace = true;
             bitEdit.setLayoutData(gd);
             bitEdit.setFocus();
+            bitEdit.setEnabled(!getValueController().isReadOnly());
         } else {
             // Numbers
             textEdit = new Text(dialogGroup, style);
             textEdit.addVerifyListener(
-                getValueController().getColumnMetaData().getScale() == 0 ?
+                getValueController().getColumnMetaData().getScale() <= 0 ?
                     UIUtils.INTEGER_VERIFY_LISTENER :
                     UIUtils.NUMBER_VERIFY_LISTENER);
 
@@ -71,6 +72,7 @@ public class NumberViewDialog extends ValueViewDialog {
             gd.grabExcessVerticalSpace = true;
             textEdit.setLayoutData(gd);
             textEdit.setFocus();
+            textEdit.setEditable(!getValueController().isReadOnly());
         }
         return dialogGroup;
     }

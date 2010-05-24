@@ -43,6 +43,13 @@ public interface DBDValueHandler
         throws DBCException;
 
     /**
+     * Converts value to human readable format
+     * @param value value
+     * @return string representation
+     */
+    String getValueDisplayString(Object value);
+
+    /**
      * Returns any additional annotations of value
      * @param column column info
      * @return annotations array or null

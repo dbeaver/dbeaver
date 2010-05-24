@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -58,7 +57,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 {
     static Log log = LogFactory.getLog(ResultSetViewer.class);
 
-    private static final String NULL_VALUE_LABEL = "[NULL]";
     private static final int DEFAULT_ROW_HEADER_WIDTH = 50;
 
     private IWorkbenchPartSite site;
@@ -469,19 +467,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     }
 
     public boolean isCellEditable(int col, int row) {
-        if (mode == ResultSetMode.RECORD) {
-            if (row < 0 || row >= metaColumns.length) {
-                log.warn("Bad cell requsted - " + col + ":" + row);
-                return false;
-            }
-            return metaColumns[row].editable;
-        } else {
-            if (col < 0 || col >= metaColumns.length) {
-                log.warn("Bad cell requsted - " + col + ":" + row);
-                return false;
-            }
-            return metaColumns[col].editable;
-        }
+        return true;
     }
 
     public boolean isCellModified(int col, int row) {
@@ -493,18 +479,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     public boolean isInsertable()
     {
         return false;
-    }
-
-    private String getCellValue(Object colValue)
-    {
-        if (colValue == null) {
-            return NULL_VALUE_LABEL;
-        } else if (colValue.getClass().isArray()) {
-            // Array of objects
-            return colValue.getClass().getComponentType().getName() + " array (" + java.lang.reflect.Array.getLength(colValue) + ")";
-        } else {
-            return colValue.toString();
-        }
     }
 
     public boolean showCellEditor(
@@ -524,12 +498,18 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 }
             }
         }
+        ResultSetColumn metaColumn = metaColumns[columnIndex];
+        boolean readOnly = !metaColumn.editable;
+        if (readOnly && inline) {
+            // No inline editors for readonly columns
+            return false;
+        }
         ResultSetValueController valueController = new ResultSetValueController(
             curRows.get(rowIndex),
             columnIndex,
             inline ? inlinePlaceholder : null);
         try {
-            return metaColumns[columnIndex].valueHandler.editValue(valueController);
+            return metaColumn.valueHandler.editValue(valueController);
         }
         catch (Exception e) {
             log.error(e);
@@ -685,7 +665,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public boolean isReadOnly()
         {
-            return false;
+            return !metaColumns[columnIndex].editable;
         }
 
         public IWorkbenchPartSite getValueSite()
@@ -963,9 +943,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     }
 
     private class ContentLabelProvider extends LabelProvider implements IColorProvider {
-        private Object getValue(Object element)
+        private String getValue(Object element)
         {
             GridPos cell = (GridPos)element;
+            Object value;
+            DBDValueHandler valueHandler;
             if (mode == ResultSetMode.RECORD) {
                 // Fill record
                 if (curRowNum >= curRows.size() || curRowNum < 0) {
@@ -977,7 +959,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     log.warn("Bad record row number: " + cell.row);
                     return null;
                 }
-                return values[cell.row];
+                value = values[cell.row];
+                valueHandler = metaColumns[cell.row].valueHandler;
             } else {
                 if (cell.row >= curRows.size()) {
                     log.warn("Bad grid row number: " + cell.row);
@@ -987,8 +970,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     log.warn("Bad grid column number: " + cell.col);
                     return null;
                 }
-                return curRows.get(cell.row)[cell.col];
+                value = curRows.get(cell.row)[cell.col];
+                valueHandler = metaColumns[cell.col].valueHandler;
             }
+            return valueHandler.getValueDisplayString(value);
         }
         @Override
         public Image getImage(Object element)
@@ -999,7 +984,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         @Override
         public String getText(Object element)
         {
-            return getCellValue(getValue(element));
+            String text = getValue(element);
+            if (text == null) {
+                return "null";
+            }
+            return text;
         }
 
         public Color getForeground(Object element)

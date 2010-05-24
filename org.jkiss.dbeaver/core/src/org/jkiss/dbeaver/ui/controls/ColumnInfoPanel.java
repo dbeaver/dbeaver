@@ -38,7 +38,9 @@ public class ColumnInfoPanel extends Composite {
         infoItem.addProperty("Column_Name", "Column Name", valueController.getColumnMetaData().getColumnName() );
         infoItem.addProperty("Column_Type", "Column Type", valueController.getColumnMetaData().getTypeName() );
         valueController.getValueHandler().fillProperties(infoItem, valueController);
-        infoItem.addProperty("Key", "Key", new CellKeyInfo(valueController) );
+        if (valueController.getValueLocator() != null) {
+            infoItem.addProperty("Key", "Key", new CellKeyInfo(valueController) );
+        }
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalIndent = 0;

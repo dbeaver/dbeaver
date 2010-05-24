@@ -51,6 +51,19 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler implements DBD
     {
     }
 
+    public String getValueDisplayString(Object value)
+    {
+        if (value instanceof byte[]) {
+            return "binary [" + ((byte[]) value).length + "]";
+        } else if (value instanceof DBCBLOB || value instanceof Blob) {
+            return "BLOB";
+        } else if (value instanceof DBCCLOB || value instanceof Clob) {
+            return "CLOB";
+        } else {
+            return super.getValueDisplayString(value);
+        }
+    }
+
     public void fillContextMenu(IMenuManager menuManager, DBDValueController controller)
         throws DBCException
     {
