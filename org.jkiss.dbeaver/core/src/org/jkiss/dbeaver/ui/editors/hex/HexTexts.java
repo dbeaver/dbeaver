@@ -536,7 +536,7 @@ public class HexTexts extends Composite {
      */
     public HexTexts(final Composite parent, int style)
     {
-        super(parent, style | SWT.BORDER | SWT.V_SCROLL);
+        super(parent, style | SWT.V_SCROLL);
 
         colorCaretLine = new Color(Display.getCurrent(), 232, 242, 254);  // very light blue
         colorHighlight = new Color(Display.getCurrent(), 255, 248, 147);  // mellow yellow
