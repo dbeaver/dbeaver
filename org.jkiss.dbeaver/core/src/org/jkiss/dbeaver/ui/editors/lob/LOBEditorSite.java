@@ -21,22 +21,17 @@ import org.jkiss.dbeaver.ui.editors.hex.HexEditor;
  */
 class LOBEditorSite extends MultiPageEditorSite {
 
-    private TextEditorActionContributor textEditorActionContributor;
-    private HexEditorActionBarContributor hexEditorActionBarContributor;
-
     public LOBEditorSite(LOBEditor lobEditor, IEditorPart editor)
     {
         super(lobEditor, editor);
-        textEditorActionContributor = new TextEditorActionContributor();
-        hexEditorActionBarContributor = new HexEditorActionBarContributor();
     }
 
     public IEditorActionBarContributor getActionBarContributor() {
         IEditorPart editor = getEditor();
-        if (editor instanceof TextEditor) {
-            return textEditorActionContributor;
-        } else if (editor instanceof HexEditor) {
-            return hexEditorActionBarContributor;
+        LOBEditor lobEditor = (LOBEditor) getMultiPageEditor();
+        LOBEditor.ContentEditor contentEditor = lobEditor.getContentEditor(editor);
+        if (contentEditor != null) {
+            return contentEditor.actionBarContributor;
         } else {
             return super.getActionBarContributor();
         }

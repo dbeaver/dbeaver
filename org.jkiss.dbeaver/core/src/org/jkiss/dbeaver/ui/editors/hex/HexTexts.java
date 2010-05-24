@@ -104,6 +104,7 @@ public class HexTexts extends Composite {
     static final int SHIFT_FORWARD = 1;  // frame
     static final int SHIFT_BACKWARD = 2;
 
+    private boolean readOnly;
     private int charsForFileSizeAddress = 0;
     private String charset = null;
     private boolean delayedInQueue = false;
@@ -336,7 +337,7 @@ public class HexTexts extends Composite {
                 case SWT.INSERT:
                     if ((e.stateMask & SWT.MODIFIER_MASK) == 0) {
                         redrawCaret(true);
-                    } else if (e.stateMask == SWT.SHIFT) {
+                    } else if (!readOnly && e.stateMask == SWT.SHIFT) {
                         paste();
                     } else if (e.stateMask == SWT.CONTROL) {
                         copy();
@@ -351,19 +352,19 @@ public class HexTexts extends Composite {
                         copy();
                     break;
                 case 'v':
-                    if (e.stateMask == SWT.CONTROL)  // control mod1
+                    if (!readOnly && e.stateMask == SWT.CONTROL)  // control mod1
                         paste();
                     break;
                 case 'x':
-                    if (e.stateMask == SWT.CONTROL)  // control mod1
+                    if (!readOnly && e.stateMask == SWT.CONTROL)  // control mod1
                         cut();
                     break;
                 case 'y':
-                    if (e.stateMask == SWT.CONTROL)  // control mod1
+                    if (!readOnly && e.stateMask == SWT.CONTROL)  // control mod1
                         redo();
                     break;
                 case 'z':
-                    if (e.stateMask == SWT.CONTROL)  // control mod1
+                    if (!readOnly && e.stateMask == SWT.CONTROL)  // control mod1
                         undo();
                     break;
                 default:
@@ -492,6 +493,9 @@ public class HexTexts extends Composite {
         public void verifyKey(VerifyEvent e)
         {
 //System.out.println("int:"+(int)e.character+", char:"+e.character+", keycode:"+e.keyCode);
+            if (readOnly) {
+                return;
+            }
             if ((e.character == SWT.DEL || e.character == SWT.BS) && myInserting) {
                 if (!deleteSelected()) {
                     if (e.character == SWT.BS) {
@@ -538,6 +542,7 @@ public class HexTexts extends Composite {
     {
         super(parent, style | SWT.V_SCROLL);
 
+        this.readOnly = (style & SWT.READ_ONLY) != 0;
         colorCaretLine = new Color(Display.getCurrent(), 232, 242, 254);  // very light blue
         colorHighlight = new Color(Display.getCurrent(), 255, 248, 147);  // mellow yellow
         highlightRangesInScreen = new ArrayList<Integer>();
@@ -703,6 +708,9 @@ public class HexTexts extends Composite {
 
         hexText = new StyledText(hexColumn, SWT.MULTI);
         hexText.setFont(fontCurrent);
+        if (readOnly) {
+            hexText.setEditable(false);
+        }
         styledText1GC = new GC(hexText);
         int width = myBytesPerLine * 3 * fontCharWidth;
         gridData5 = new GridData();
@@ -765,6 +773,9 @@ public class HexTexts extends Composite {
 
         previewText = new StyledText(previewColumn, SWT.MULTI);
         previewText.setFont(fontCurrent);
+        if (readOnly) {
+            previewText.setEditable(false);
+        }
         width = myBytesPerLine * fontCharWidth + 1;  // one pixel for caret in last linesColumn
         gridData6 = new GridData();
         gridData6.verticalAlignment = SWT.FILL;

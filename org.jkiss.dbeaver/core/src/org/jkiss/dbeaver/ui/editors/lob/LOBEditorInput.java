@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.editors.lob;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IStorage;
+import org.eclipse.core.resources.ResourceAttributes;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IPath;
@@ -116,6 +117,16 @@ public class LOBEditorInput implements IFileEditorInput, IPathEditorInput //IDat
                     false,
                     monitor);
             }
+
+            // Mark file as readonly
+            if (valueController.isReadOnly()) {
+                ResourceAttributes attributes = lobFile.getResourceAttributes();
+                if (attributes != null) {
+                    attributes.setReadOnly(true);
+                    lobFile.setResourceAttributes(attributes);
+                }
+            }
+
         }
         catch (DBCException e) {
             throw new CoreException(
@@ -180,5 +191,9 @@ public class LOBEditorInput implements IFileEditorInput, IPathEditorInput //IDat
     public IPath getPath()
     {
         return lobFile == null ? null : lobFile.getLocation();
+    }
+
+    public boolean isReadOnly() {
+        return valueController.isReadOnly();
     }
 }

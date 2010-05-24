@@ -25,7 +25,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.editors.text.TextEditorActionContributor;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.part.EditorActionBarContributor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -34,6 +36,7 @@ import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.editors.hex.HexEditor;
+import org.jkiss.dbeaver.ui.editors.hex.HexEditorActionBarContributor;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.lang.reflect.InvocationTargetException;
@@ -54,18 +57,20 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
 
     private List<ContentEditor> contentEditors = new ArrayList<ContentEditor>();
 
-    private static class ContentEditor {
+    static class ContentEditor {
         IEditorPart editor;
         String title;
         String tollTip;
         Image image;
+        EditorActionBarContributor actionBarContributor;
+        boolean activated;
 
-        private ContentEditor(IEditorPart editor, String title, String tollTip, Image image)
-        {
+        private ContentEditor(IEditorPart editor, String title, String tollTip, Image image, EditorActionBarContributor actionBarContributor) {
             this.editor = editor;
             this.title = title;
             this.tollTip = tollTip;
             this.image = image;
+            this.actionBarContributor = actionBarContributor;
         }
     }
     private static class LOBInitializer implements IRunnableWithProgress {
@@ -90,8 +95,27 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
 
     public LOBEditor()
     {
-        contentEditors.add(new ContentEditor(new HexEditor(), "Binary", "Binary Editor", DBIcon.HEX.getImage()));
-        contentEditors.add(new ContentEditor(new LOBTextEditor(), "Text", "Text Editor", DBIcon.TEXT.getImage()));
+        contentEditors.add(new ContentEditor(
+            new HexEditor(),
+            "Binary",
+            "Binary Editor",
+            DBIcon.HEX.getImage(),
+            new HexEditorActionBarContributor()));
+        contentEditors.add(new ContentEditor(
+            new LOBTextEditor(),
+            "Text",
+            "Text Editor",
+            DBIcon.TEXT.getImage(),
+            new TextEditorActionContributor()));
+    }
+
+    public ContentEditor getContentEditor(IEditorPart editor) {
+        for (ContentEditor contentEditor : contentEditors) {
+            if (contentEditor.editor == editor) {
+                return contentEditor;
+            }
+        }
+        return null;
     }
 
     public static boolean openEditor(DBDValueController valueController)

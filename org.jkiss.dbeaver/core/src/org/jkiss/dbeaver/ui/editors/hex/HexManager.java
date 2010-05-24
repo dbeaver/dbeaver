@@ -275,13 +275,13 @@ public class HexManager {
      * @throws IllegalStateException when editor part exists already (method called twice or more)
      * @throws NullPointerException  if textsParent is null
      */
-    public Composite createEditorPart(Composite parent)
+    public Composite createEditorPart(Composite parent, int style)
     {
         if (hexTexts != null) throw new IllegalStateException("Editor part exists already");
         if (parent == null) throw new NullPointerException("Cannot use null parent");
 
         textsParent = parent;
-        hexTexts = new HexTexts(textsParent, SWT.NONE);
+        hexTexts = new HexTexts(textsParent, style);
         hexTexts.addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e)
             {
