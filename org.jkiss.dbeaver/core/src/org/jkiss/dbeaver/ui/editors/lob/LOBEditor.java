@@ -16,34 +16,31 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.*;
 import org.eclipse.ui.editors.text.TextEditorActionContributor;
-import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.EditorActionBarContributor;
+import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.data.DBDStreamHandler;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.hex.HexEditor;
 import org.jkiss.dbeaver.ui.editors.hex.HexEditorActionBarContributor;
-import org.jkiss.dbeaver.ui.DBIcon;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.Charset;
-import java.util.SortedMap;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * LOBEditor
@@ -63,16 +60,19 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
         String tollTip;
         Image image;
         EditorActionBarContributor actionBarContributor;
+        String preferedMimeType;
         boolean activated;
 
-        private ContentEditor(IEditorPart editor, String title, String tollTip, Image image, EditorActionBarContributor actionBarContributor) {
+        private ContentEditor(IEditorPart editor, EditorActionBarContributor actionBarContributor, String title, String tollTip, Image image, String preferedMimeType) {
             this.editor = editor;
+            this.actionBarContributor = actionBarContributor;
             this.title = title;
             this.tollTip = tollTip;
             this.image = image;
-            this.actionBarContributor = actionBarContributor;
+            this.preferedMimeType = preferedMimeType;
         }
     }
+
     private static class LOBInitializer implements IRunnableWithProgress {
         DBDValueController valueController;
         LOBEditorInput editorInput;
@@ -97,16 +97,22 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
     {
         contentEditors.add(new ContentEditor(
             new HexEditor(),
-            "Binary",
+            new HexEditorActionBarContributor(), "Binary",
             "Binary Editor",
             DBIcon.HEX.getImage(),
-            new HexEditorActionBarContributor()));
+            "application"));
         contentEditors.add(new ContentEditor(
             new LOBTextEditor(),
-            "Text",
+            new TextEditorActionContributor(), "Text",
             "Text Editor",
             DBIcon.TEXT.getImage(),
-            new TextEditorActionContributor()));
+            "text"));
+        contentEditors.add(new ContentEditor(
+            new LOBImageEditor(),
+            null, "Image",
+            "Image Editor",
+            DBIcon.IMAGE.getImage(),
+            "image"));
     }
 
     public ContentEditor getContentEditor(IEditorPart editor) {
@@ -206,14 +212,40 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
     }
 
     protected void createPages() {
+        String contentType = null;
+        DBDStreamHandler streamHandler = getStreamHandler();
+        if (streamHandler != null) {
+            try {
+                contentType = streamHandler.getContentType(getValueController().getValue());
+            } catch (Exception e) {
+                log.error("Could not determine value content type", e);
+            }
+        }
+        MimeType mimeType = null;
+        if (contentType != null) {
+            try {
+                mimeType = new MimeType(contentType);
+            } catch (MimeTypeParseException e) {
+                log.error("Invalid content MIME type", e);
+            }
+        }
+        int defaultPage = -1;
         for (ContentEditor contentEditor : contentEditors) {
             try {
                 int index = addPage(contentEditor.editor, lobInput);
                 setPageText(index, contentEditor.title);
                 setPageImage(index, contentEditor.image);
+
+                // Check MIME type
+                if (mimeType != null && mimeType.getPrimaryType().equals(contentEditor.preferedMimeType)) {
+                    defaultPage = index;
+                }
             } catch (PartInitException e) {
                 log.error(e);
             }
+        }
+        if (defaultPage != -1) {
+            setActivePage(defaultPage);
         }
     }
 
@@ -265,54 +297,64 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
             layout.marginWidth = 0;
             toolbarGroup.setLayout(layout);
         }
-        {
+
+        Object value = getValueController().getValue();
+        DBDStreamHandler streamHandler = getStreamHandler();
+        try {
             Composite contentGroup = new Composite(toolbarGroup, SWT.NONE);
 
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             contentGroup.setLayoutData(gd);
             RowLayout layout = new RowLayout(SWT.HORIZONTAL);
             layout.center = true;
+            layout.spacing = 5;
             contentGroup.setLayout(layout);
 
             // Content length
             Label label = new Label(contentGroup, SWT.NONE);
-            label.setText("Content Length: ");
+            label.setText("Content Length:");
             Text text = new Text(contentGroup, SWT.BORDER | SWT.READ_ONLY);
-            text.setText("1000");
+            if (streamHandler != null) {
+                text.setText(String.valueOf(streamHandler.getContentSize(value)));
+            }
 
             // Content type
             label = new Label(contentGroup, SWT.NONE);
-            label.setText("Content Type: ");
-            Combo ctCombo = new Combo(contentGroup, SWT.READ_ONLY);
-            ctCombo.add("Binary");
-            ctCombo.add("Text");
-            ctCombo.add("Image");
-            ctCombo.select(0);
+            label.setText("Content Type:");
+            Text ctText = new Text(contentGroup, SWT.BORDER | SWT.READ_ONLY);
+            if (streamHandler != null) {
+                String contentType = streamHandler.getContentType(value);
+                ctText.setText(contentType == null ? "unknown" : contentType);
+            }
 
             // Content sub type
             label = new Label(contentGroup, SWT.NONE);
-            label.setText("Sub Type: ");
-            Combo subTypeCombo = new Combo(contentGroup, SWT.READ_ONLY);
-
-            // Content sub type
-            label = new Label(contentGroup, SWT.NONE);
-            label.setText("Encoding: ");
-            Combo encodingCombo = new Combo(contentGroup, SWT.READ_ONLY);
-            encodingCombo.setVisibleItemCount(30);
+            label.setText("Content Encoding:");
+            Text encodingText = new Text (contentGroup, SWT.BORDER | SWT.READ_ONLY);
+            if (streamHandler != null) {
+                String contentEncoding = streamHandler.getContentEncoding(value);
+                encodingText.setText(contentEncoding == null ? "" : contentEncoding);
+            }
+/*
+            encodingText.setVisibleItemCount(30);
             SortedMap<String,Charset> charsetMap = Charset.availableCharsets();
             int index = 0;
             int defIndex = -1;
             for (String csName : charsetMap.keySet()) {
                 Charset charset = charsetMap.get(csName);
-                encodingCombo.add(charset.displayName());
+                encodingText.add(charset.displayName());
                 if (charset.equals(Charset.defaultCharset())) {
                     defIndex = index;
                 }
                 index++;
             }
             if (defIndex >= 0) {
-                encodingCombo.select(defIndex);
+                encodingText.select(defIndex);
             }
+*/
+        }
+        catch (Exception e) {
+            log.error("Could not initialize LOB editor toolbar", e);
         }
 
         {
@@ -335,6 +377,18 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
             Button closeButton = new Button(controlGroup, SWT.PUSH);
             closeButton.setText("Close");
         }
+    }
+
+    DBDValueHandler getValueHandler()
+    {
+        DBDValueController valueController = getValueController();
+        return valueController == null ? null : valueController.getValueHandler();
+    }
+
+    DBDStreamHandler getStreamHandler()
+    {
+        DBDValueHandler valueHandler = getValueHandler();
+        return valueHandler != null && valueHandler instanceof DBDStreamHandler ? (DBDStreamHandler) valueHandler : null;
     }
 
     public DBDValueController getValueController()

@@ -30,6 +30,8 @@ import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.Reader;
 
+import net.sf.jkiss.utils.streams.MimeTypes;
+
 /**
  * JDBC LOB value handler.
  * Handle LOBs, LONGs and BINARY types.
@@ -153,7 +155,13 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler implements DBD
     public String getContentType(Object value)
         throws DBCException, IOException
     {
-        return null;
+        if (value instanceof byte[] || value instanceof DBCBLOB || value instanceof Blob) {
+            return MimeTypes.OCTET_STREAM;
+        } else if (value instanceof String || value instanceof DBCCLOB || value instanceof Clob) {
+            return MimeTypes.TEXT_PLAIN;
+        } else {
+            return null;
+        }
     }
 
     public String getContentEncoding(Object value)
