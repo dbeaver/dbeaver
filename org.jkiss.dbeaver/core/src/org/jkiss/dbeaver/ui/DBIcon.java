@@ -50,6 +50,9 @@ public enum DBIcon
     FIT_WINDOW("fit_window", "/icons/misc/fit-window.png"),
     ORIGINAL_SIZE("original_size", "/icons/misc/original-size.png"),
 
+    INFO("info", "/icons/file/info.png"),
+    SAVE("save", "/icons/file/save.png"),
+    LOAD("load", "/icons/file/load.png"),
     ACCEPT("accept", "/icons/sql/accept.png"),
     REJECT("reject", "/icons/sql/cancel.png"),
 

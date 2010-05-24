@@ -83,4 +83,9 @@ public class UIUtils {
         return item;
     }
 
+    public static void createSeparator(ToolBar toolBar)
+    {
+        new ToolItem(toolBar, SWT.SEPARATOR);
+    }
+
 }

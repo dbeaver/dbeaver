@@ -11,15 +11,21 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.*;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.TextEditorActionContributor;
 import org.eclipse.ui.part.EditorActionBarContributor;
 import org.eclipse.ui.part.MultiPageEditorPart;
@@ -33,6 +39,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.hex.HexEditor;
 import org.jkiss.dbeaver.ui.editors.hex.HexEditorActionBarContributor;
 
@@ -280,7 +287,7 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
         };
 
 */
-        createToolbar(panel);
+        //createToolbar(panel);
 
         return editotPanel;
     }
@@ -292,7 +299,7 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
             gd.horizontalIndent = 0;
             gd.verticalIndent = 0;
             toolbarGroup.setLayoutData(gd);
-            GridLayout layout = new GridLayout(2, false);
+            GridLayout layout = new GridLayout(3, false);
             layout.marginHeight = 0;
             layout.marginWidth = 0;
             toolbarGroup.setLayout(layout);
@@ -358,24 +365,44 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
         }
 
         {
-            Composite controlGroup = new Composite(toolbarGroup, SWT.NONE);
+            ToolBar toolBar = new ToolBar(toolbarGroup, SWT.FLAT);
 
             GridData gd = new GridData();
             gd.horizontalAlignment = SWT.RIGHT;
-            controlGroup.setLayoutData(gd);
-            RowLayout layout = new RowLayout(SWT.HORIZONTAL);
-            layout.center = true;
-            layout.fill = true;
-            controlGroup.setLayout(layout);
+            toolBar.setLayoutData(gd);
 
-            Button infoButton = new Button(controlGroup, SWT.PUSH);
-            infoButton.setText("Info");
-
-            Button saveButton = new Button(controlGroup, SWT.PUSH);
-            saveButton.setText("Save");
-
-            Button closeButton = new Button(controlGroup, SWT.PUSH);
-            closeButton.setText("Close");
+            UIUtils.createToolItem(toolBar, "Save To File", DBIcon.SAVE, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                }
+            });
+            UIUtils.createToolItem(toolBar, "Load from File", DBIcon.LOAD, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                }
+            });
+            UIUtils.createSeparator(toolBar);
+            UIUtils.createToolItem(toolBar, "Column Info", DBIcon.INFO, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                }
+            });
+            UIUtils.createSeparator(toolBar);
+            UIUtils.createToolItem(toolBar, "Apply Changes", DBIcon.ACCEPT, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                }
+            });
+            UIUtils.createToolItem(toolBar, "Close", DBIcon.REJECT, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                }
+            });
         }
     }
 

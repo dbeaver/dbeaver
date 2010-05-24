@@ -52,7 +52,6 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
 
     private static class StatusFieldDef
     {
-
         private String category;
         private String actionId;
         private boolean visible;
@@ -119,11 +118,11 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                     fieldDef.visible,
                     fieldDef.widthInChars));
         }
+/*
 
         // Init standard actions
         ResourceBundle textEditorBundle = ResourceBundle.getBundle("org.eclipse.ui.texteditor.ConstructedEditorMessages");
 
-/*
         editorActionFindNext= new RetargetTextEditorAction(textEditorBundle, "Editor.FindNext."); //$NON-NLS-1$
         editorActionFindNext.setActionDefinitionId(IWorkbenchActionDefinitionIds.FIND_NEXT);
         editorActionFindPrevious= new RetargetTextEditorAction(textEditorBundle, "Editor.FindPrevious."); //$NON-NLS-1$
@@ -207,8 +206,8 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         // Update previous statuses
         if (activeEditorPart instanceof ITextEditorExtension) {
             ITextEditorExtension extension= (ITextEditorExtension)activeEditorPart;
-            for (int i= 0; i < STATUS_FIELD_DEFS.length; i++) {
-                extension.setStatusField(null, STATUS_FIELD_DEFS[i].category);
+            for (StatusFieldDef STATUS_FIELD_DEF : STATUS_FIELD_DEFS) {
+                extension.setStatusField(null, STATUS_FIELD_DEF.category);
             }
         }
         if (activeEditorPart instanceof SQLEditor) {
@@ -235,11 +234,11 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
 
         // Update status line
         if (activeEditorPart instanceof ITextEditorExtension) {
-            for (int i = 0; i < STATUS_FIELD_DEFS.length; i++) {
-                StatusLineContributionItem statusField = statusFields.get(STATUS_FIELD_DEFS[i]);
-                statusField.setActionHandler(getAction(editor, STATUS_FIELD_DEFS[i].actionId));
+            for (StatusFieldDef STATUS_FIELD_DEF : STATUS_FIELD_DEFS) {
+                StatusLineContributionItem statusField = statusFields.get(STATUS_FIELD_DEF);
+                statusField.setActionHandler(getAction(editor, STATUS_FIELD_DEF.actionId));
                 ITextEditorExtension extension = (ITextEditorExtension) activeEditorPart;
-                extension.setStatusField(statusField, STATUS_FIELD_DEFS[i].category);
+                extension.setStatusField(statusField, STATUS_FIELD_DEF.category);
             }
         }
         if (activeEditorPart instanceof SQLEditor) {
@@ -253,10 +252,10 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
 
         IActionBars actionBars = getActionBars();
         if (actionBars != null) {
+/*
 
             ITextEditor editor = (activeEditorPart instanceof ITextEditor) ? (ITextEditor) activeEditorPart : null;
 
-/*
             actionBars.setGlobalActionHandler(
                 ActionFactory.DELETE.getId(),
                 getAction(editor, ITextEditorActionConstants.DELETE));
