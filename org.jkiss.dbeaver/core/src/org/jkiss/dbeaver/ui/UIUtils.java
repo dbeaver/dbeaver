@@ -9,7 +9,10 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.SWT;
+import org.eclipse.jface.action.IAction;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.text.NumberFormat;
@@ -62,6 +65,21 @@ public class UIUtils {
         item.setToolTipText(text);
         item.setImage(icon.getImage());
         item.addSelectionListener(listener);
+        return item;
+    }
+
+    public static ToolItem createToolItem(ToolBar toolBar, String text, DBIcon icon, final IAction action)
+    {
+        ToolItem item = new ToolItem(toolBar, SWT.PUSH);
+        item.setToolTipText(text);
+        item.setImage(icon.getImage());
+        item.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                action.run();
+            }
+        });
         return item;
     }
 

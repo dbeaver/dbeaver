@@ -57,6 +57,8 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Text;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -78,7 +80,7 @@ import java.util.List;
  */
 public class HexTexts extends Composite {
 
-
+    static Log log = LogFactory.getLog(HexTexts.class);
     /**
      * Map of displayed chars. Chars that cannot be displayed correctly are changed for a '.' char.
      * There are differences on which chars can correctly be displayed in each operating system,
@@ -563,12 +565,7 @@ public class HexTexts extends Composite {
                     myClipboard.dispose();
                 }
                 catch (IOException ex) {
-                    MessageBox box = new MessageBox(parent.getShell(), SWT.ICON_WARNING | SWT.OK);
-                    box.setText("Inconsistent clipboard files");
-                    box.setMessage("Could not cleanup temporary clipboard files.\n" +
-                        "Clipboard files are stored in your user temp directory\n" +
-                        "with names 'javahexeditorClipboard' and 'javahexeditorPasted'");
-                    box.open();
+                    log.warn("Could not cleanup clipboard temporary data");
                 }
             }
         });
@@ -1021,7 +1018,7 @@ public class HexTexts extends Composite {
             }
         }
         catch (IOException e) {
-            throw new RuntimeException(e);
+            log.warn(e);
         }
         myStart = myEnd = incrementPosWithinLimits(getCaretPos(), event.widget == hexText);
         Runnable delayed = new Runnable() {
@@ -1256,7 +1253,7 @@ public class HexTexts extends Composite {
             myContent.get(ByteBuffer.wrap(tmpRawBuffer, 0, 1), null, pos);
         }
         catch (IOException e) {
-            e.printStackTrace();
+            log.warn(e);
         }
         return tmpRawBuffer[0];
     }

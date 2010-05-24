@@ -50,6 +50,8 @@ import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,6 +63,8 @@ import java.util.Set;
 
 
 public class HexEditor extends EditorPart implements ISelectionProvider, IMenuListener {
+
+    static Log log = LogFactory.getLog(HexTexts.class);
 
     class EditorAction extends Action {
         String actionId = null;
@@ -137,7 +141,7 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
                     editorStyle |= SWT.READ_ONLY;
                 }
             } catch (CoreException e) {
-                e.printStackTrace();
+                log.warn(e);
                 // do nothing
             }
         }
@@ -171,7 +175,7 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
                     files = (IFile[]) method.invoke(root, uri);
                 }
                 catch (Exception e) {
-                    // do nothing
+                    log.warn(e);
                 }  // keep going with no charset
                 // since 3.2
                 //IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(uri);
@@ -191,7 +195,7 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
                 charset = localFile.getCharset(true);
             }
             catch (CoreException e1) {
-                e1.printStackTrace();
+                log.warn(e1);
             }
         }
         // open file
@@ -199,7 +203,7 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
             manager.openFile(systemFile, charset);
         }
         catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error("Could not open hex content", e);
         }
         if (systemFile != null) {
             setPartName(systemFile.getName());
@@ -485,10 +489,10 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
             monitorDialog.run(false, false, runnable);
         }
         catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
+            log.error(e.getTargetException());
         }
         catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            // do nothing
         }
     }
 

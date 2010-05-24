@@ -37,6 +37,8 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.dnd.TransferData;
 import org.eclipse.swt.widgets.Display;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * A clipboard for binary content. Data up to 4Mbytes is made available as text as well
@@ -45,6 +47,7 @@ import org.eclipse.swt.widgets.Display;
  */
 public class BinaryClipboard {
 
+    static Log log = LogFactory.getLog(HexTexts.class);
 
     static class FileByteArrayTransfer extends ByteArrayTransfer {
         static final String MYTYPENAME = "myFileByteArrayTypeName";
@@ -80,6 +83,7 @@ public class BinaryClipboard {
 
                 }
                 catch (IOException e) {
+                    log.warn(e);
                 }  // copy nothing then
             }
         }
@@ -101,6 +105,7 @@ public class BinaryClipboard {
                 myData = new File(new String(name));
             }
             catch (IOException ex) {
+                log.warn(ex);
             }  // paste nothing then
 
             return myData;
@@ -165,7 +170,7 @@ public class BinaryClipboard {
 
 
     static final File clipboardDir = new File(System.getProperty("java.io.tmpdir", "."));
-    static final File clipboardFile = new File(clipboardDir, "javahexeditorClipboard.tmp");
+    static final File clipboardFile = new File(clipboardDir, "dbeaver-hex-clipboard.tmp");
     static final long maxClipboardDataInMemory = 4 * 1024 * 1024;  // 4 Megs for byte[], 4 Megs for text
     Clipboard myClipboard = null;
     HashMap myFilesReferencesCounter = null;
@@ -190,7 +195,9 @@ public class BinaryClipboard {
             try {
                 Thread.sleep(333);
             }
-            catch (InterruptedException e) { /* Keep trying */ }
+            catch (InterruptedException e) {
+                /* Keep trying */
+            }
         }
         if (success)
             System.gc();
@@ -233,6 +240,7 @@ public class BinaryClipboard {
                 file.close();
             }
             catch (IOException e) {
+                log.warn(e);
             }  // ok, leave it alone
         }
     }
@@ -406,6 +414,7 @@ public class BinaryClipboard {
                 file = file.getCanonicalFile();
             }
             catch (IOException e) {
+                log.warn(e);
             }  // use non-canonical one then
             boolean success = true;
             try {

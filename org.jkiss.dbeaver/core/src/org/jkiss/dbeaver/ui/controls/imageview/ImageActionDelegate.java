@@ -1,10 +1,8 @@
 package org.jkiss.dbeaver.ui.controls.imageview;
 
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.action.Action;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
-import org.eclipse.ui.IActionDelegate;
 
 /**
  * Action delegate for all toolbar push-buttons.
@@ -12,7 +10,14 @@ import org.eclipse.ui.IActionDelegate;
  *
  * @author Chengdong Li: cli4@uky.edu
  */
-public class ImageActionDelegate implements IActionDelegate {
+public class ImageActionDelegate extends Action {
+
+    public static final String TOOLBAR_ZOOMIN = "toolbar.zoomin";
+    public static final String TOOLBAR_ZOOMOUT = "toolbar.zoomout";
+    public static final String TOOLBAR_FIT = "toolbar.fit";
+    public static final String TOOLBAR_ROTATE = "toolbar.rotate";
+    public static final String TOOLBAR_ORIGINAL = "toolbar.original";
+
     /**
      * pointer to image view
      */
@@ -22,28 +27,25 @@ public class ImageActionDelegate implements IActionDelegate {
      */
     public String id;
 
-    public ImageActionDelegate(ImageViewControl viewControl) {
+    public ImageActionDelegate(ImageViewControl viewControl, String id) {
         this.imageViewControl = viewControl;
+        this.id = id;
     }
 
-    /* (non-Javadoc)
-      * @see org.eclipse.ui.IActionDelegate#run(org.eclipse.jface.action.IAction)
-      */
-    public void run(IAction action) {
-        String id = action.getId();
-        if (imageViewControl.getSourceImage() == null) return;
-        if (id.equals("toolbar.zoomin")) {
-            imageViewControl.zoomIn();
-            return;
-        } else if (id.equals("toolbar.zoomout")) {
-            imageViewControl.zoomOut();
-            return;
-        } else if (id.equals("toolbar.fit")) {
-            imageViewControl.fitCanvas();
-            return;
-        } else if (id.equals("toolbar.rotate")) {
+    @Override
+    public void run()
+    {
+        ImageViewCanvas imageViewCanvas = imageViewControl.getCanvas();
+        if (imageViewCanvas.getSourceImage() == null) return;
+        if (id.equals(TOOLBAR_ZOOMIN)) {
+            imageViewCanvas.zoomIn();
+        } else if (id.equals(TOOLBAR_ZOOMOUT)) {
+            imageViewCanvas.zoomOut();
+        } else if (id.equals(TOOLBAR_FIT)) {
+            imageViewCanvas.fitCanvas();
+        } else if (id.equals(TOOLBAR_ROTATE)) {
             /* rotate image anti-clockwise */
-            ImageData src = imageViewControl.getImageData();
+            ImageData src = imageViewCanvas.getSourceImage().getImageData();
             if (src == null) return;
             PaletteData srcPal = src.palette;
             PaletteData destPal;
@@ -62,17 +64,10 @@ public class ImageActionDelegate implements IActionDelegate {
                     dest.setPixel(j, src.width - 1 - i, pixel);
                 }
             }
-            imageViewControl.setImageData(dest);
-            return;
-        } else if (id.equals("toolbar.original")) {
-            imageViewControl.showOriginal();
-            return;
+            imageViewCanvas.updateImage(dest);
+        } else if (id.equals(TOOLBAR_ORIGINAL)) {
+            imageViewCanvas.showOriginal();
         }
     }
-
-    /* (non-Javadoc)
-      * @see org.eclipse.ui.IActionDelegate#selectionChanged(org.eclipse.jface.action.IAction, org.eclipse.jface.viewers.ISelection)
-      */
-    public void selectionChanged(IAction action, ISelection selection) {}
 
 }

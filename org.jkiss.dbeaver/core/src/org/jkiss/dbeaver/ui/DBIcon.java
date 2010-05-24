@@ -44,6 +44,11 @@ public enum DBIcon
     ZOOM("zoom", "/icons/misc/zoom.png"),
     ZOOM_IN("zoom_in", "/icons/misc/zoom_in.png"),
     ZOOM_OUT("zoom_out", "/icons/misc/zoom_out.png"),
+    ROTATE("rotate", "/icons/misc/rotate.png"),
+    ROTATE_LEFT("rotate_left", "/icons/misc/rotate_left.png"),
+    ROTATE_RIGHT("rotate_right", "/icons/misc/rotate_right.png"),
+    FIT_WINDOW("fit_window", "/icons/misc/fit-window.png"),
+    ORIGINAL_SIZE("original_size", "/icons/misc/original-size.png"),
 
     ACCEPT("accept", "/icons/sql/accept.png"),
     REJECT("reject", "/icons/sql/cancel.png"),
