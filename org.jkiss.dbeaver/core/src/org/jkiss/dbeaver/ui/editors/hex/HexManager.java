@@ -37,7 +37,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.ui.editors.hex.dialogs.FindReplaceDialog;
@@ -67,16 +66,11 @@ public class HexManager {
         static final int DELETE = 2;
         static final int SELECT_ALL = 3;
         static final int FIND = 4;
-        static final int OPEN = 5;
-        static final int SAVE = 6;
-        static final int SAVE_AS = 7;
-        static final int SAVE_SELECTION_AS = 8;
         static final int CUT = 10;
         static final int COPY = 11;
         static final int GO_TO = 12;
         static final int GUIDELOCAL = 13;
         static final int GUIDEONLINE = 14;
-        static final int NEW = 15;
         static final int PREFERENCES = 16;
         static final int REDO = 17;
         static final int TRIM = 18;
@@ -105,20 +99,6 @@ public class HexManager {
                 case FIND:
                     doFind();
                     break;
-                case OPEN:
-                    doOpen(null, false, null);
-                    break;
-                case SAVE:
-                    doSave();
-                    break;
-                case SAVE_AS:
-                    doSaveAs();
-                    break;
-                case SAVE_SELECTION_AS:
-                    File aFile = showSaveAsDialog(sShell, true);
-                    if (aFile != null && !doSaveSelectionAs(aFile))
-                        showErrorBox(sShell);
-                    break;
                 case CUT:
                     doCut();
                     break;
@@ -133,9 +113,6 @@ public class HexManager {
                     break;
                 case GUIDEONLINE:
                     doOpenUserGuideUrl(true);
-                    break;
-                case NEW:
-                    doOpen(null, true, null);
                     break;
                 case PREFERENCES:
                     doPreferences();
@@ -200,12 +177,6 @@ public class HexManager {
 
     // visual controls
     private Shell sShell = null;  //  @jve:decl-index=0:visual-constraint="70,45"
-    private MenuItem pushFind = null;
-    private MenuItem pushGoTo = null;
-    private MenuItem pushPaste = null;
-    private MenuItem pushSaveAs = null;
-    private MenuItem pushSelectBlock = null;
-    private MenuItem pushSelectAll = null;
     private FindReplaceDialog findDialog = null;
     private GoToDialog goToDialog = null;
     private SelectBlockDialog selectBlockDialog = null;
@@ -427,23 +398,6 @@ public class HexManager {
     }
 
 
-    boolean doClose()
-    {
-        if (content == null || !content.isDirty()) return true;
-
-        MessageBox box = new MessageBox(sShell, SWT.ICON_WARNING | SWT.YES | SWT.NO | SWT.CANCEL);
-        box.setText("Modified file");
-        box.setMessage("The current file has been modified.\nSave changes?");
-        int result = box.open();
-        if (result == SWT.CANCEL)
-            return false;
-        if (result == SWT.YES)
-            return doSave();
-
-        return true;
-    }
-
-
     /**
      * Copies selection into clipboard
      */
@@ -530,44 +484,6 @@ public class HexManager {
     }
 
 
-    void doOpen(File forceThisFile, boolean isNewFile, String charset)
-    {
-        if (!doClose()) return;
-
-        if (forceThisFile == null && !isNewFile) {
-            String fileName = new FileDialog(sShell, SWT.OPEN).open();
-            if (fileName == null) return;
-            forceThisFile = new File(fileName);
-        }
-        if (forceThisFile != null) {
-            try {
-                forceThisFile = forceThisFile.getCanonicalFile();
-            }
-            catch (IOException e) {
-                // do nothing
-            }  // use non-canonical one then
-        }
-        hexTexts.setEnabled(true);
-        pushFind.setEnabled(true);
-        pushGoTo.setEnabled(true);
-        pushPaste.setEnabled(true);
-        pushSelectAll.setEnabled(true);
-        pushSelectBlock.setEnabled(true);
-        pushSaveAs.setEnabled(true);
-        try {
-            openFile(forceThisFile, charset);
-        }
-        catch (IOException e) {
-            MessageBox box = new MessageBox(sShell, SWT.ICON_ERROR | SWT.OK);
-            box.setText("File Read Error");
-            box.setMessage("The file " + forceThisFile + "\n cannot be opened for reading.");
-            box.open();
-        }
-
-        hexTexts.setFocus();
-    }
-
-
     void doOpenUserGuideUrl(boolean online)
     {
         Program browser = Program.findProgram("html");
@@ -637,61 +553,6 @@ public class HexManager {
             setTextFont(preferences.getFontData());
             writeNonDefaultFont();
         }
-    }
-
-
-    boolean doSave()
-    {
-        if (myFile == null) {
-            return doSaveAs();
-        } else if (!saveFile()) {
-            showErrorBox(sShell);
-            return false;
-        }
-
-        return true;
-    }
-
-
-    boolean doSaveAs()
-    {
-        File file = showSaveAsDialog(sShell, false);
-        if (file == null) return false;
-
-        if (!saveAsFile(file)) {
-            showErrorBox(sShell);
-            return false;
-        }
-
-        return true;
-    }
-
-
-    /**
-     * Perform save-selected-as action on selected data
-     *
-     * @return whether the action was successful
-     */
-    public boolean doSaveSelectionAs(File theFile)
-    {
-        if (isFileBeingRead(theFile)) {
-            lastErrorText = textErrorSave;
-            lastErrorMessage = textTheFile + theFile + textIsBeingUsed;
-            return false;
-        }
-
-        long[] startAndEnd = hexTexts.getSelection();
-        try {
-            content.get(theFile, startAndEnd[0], startAndEnd[1] - startAndEnd[0]);
-        }
-        catch (IOException e) {
-            lastErrorText = textErrorSave;
-            lastErrorMessage = textCouldNotWriteOnFile + theFile;
-
-            return false;
-        }
-
-        return true;
     }
 
 
@@ -781,15 +642,6 @@ public class HexManager {
     {
         return content != null && content.isDirty();
 
-    }
-
-
-    boolean isFileBeingRead(File aFile)
-    {
-//System.out.println("saving file:"+aFile);
-//System.out.println("current file:"+myFile);
-//System.out.println("using files:"+content.getOpenFiles());
-        return aFile.equals(myFile) || content.getOpenFiles().contains(aFile);
     }
 
 
@@ -889,96 +741,6 @@ public class HexManager {
     public void reuseStatusControlFrom(HexManager other)
     {
         statusLine = other.statusLine;
-    }
-
-
-    /**
-     * Perform save-as action on opened file
-     *
-     * @return whether the action was successful
-     */
-    public boolean saveAsFile(File theFile)
-    {
-        if (theFile.equals(myFile))
-            return saveFile();
-
-        if (isFileBeingRead(theFile)) {
-            lastErrorText = textErrorSave;
-            lastErrorMessage = textTheFile + theFile + textIsBeingUsed;
-            return false;
-        }
-
-        boolean successful = true;
-        String errorMessage = textCouldNotWriteOnFile + theFile;
-        try {
-            content.get(theFile);
-            content.dispose();
-            content = new BinaryContent();
-            myFile = null;
-            errorMessage = textCouldNotRead;
-            content = new BinaryContent(theFile);
-            myFile = theFile;
-        }
-        catch (IOException e) {
-            successful = false;
-            lastErrorText = textErrorSave;
-            lastErrorMessage = errorMessage;
-        }
-        hexTexts.setContentProvider(content);
-
-        return successful;
-    }
-
-
-    /**
-     * Perform save action on opened file
-     *
-     * @return whether the action was successful
-     */
-    public boolean saveFile()
-    {
-        boolean successful = false;
-        String errorMessage = "Could not create temporary file with a unique name";
-        File tempFile = null;
-        // It can happen that in two successive "Save File"'s the first one didn't get the temp file
-        // deleted due to limitations in the os (windows). With this loop it's possible to save many times
-        for (int tries = 9999; tries >= 0 && !successful; --tries) {
-            try {
-                // + "99" is to avoid IllegalArgumentException
-                tempFile = File.createTempFile(myFile.getName() + "99", "" + tries, myFile.getParentFile());
-                successful = true;
-            }
-            catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        }
-        if (successful) {
-            successful = false;
-            try {
-                errorMessage = "Could not write on temp file " + tempFile;
-                content.get(tempFile);
-                content.dispose();
-                content = new BinaryContent();
-                errorMessage = "Could not overwrite file " + myFile.getName() +
-                    ", a temporary copy can be found in file " + tempFile.getAbsolutePath();
-                BinaryClipboard.deleteFileALaMs(myFile);
-                if (tempFile.renameTo(myFile)) {  // successful delete or not try renaming anyway
-                    errorMessage = textCouldNotRead;
-                    content = new BinaryContent(myFile);
-                    successful = true;
-                }
-            }
-            catch (IOException e) {
-                // error handling below
-            }
-            hexTexts.setContentProvider(content);
-        }
-        if (!successful) {
-            lastErrorText = textErrorSave;
-            lastErrorMessage = errorMessage;
-        }
-
-        return successful;
     }
 
 

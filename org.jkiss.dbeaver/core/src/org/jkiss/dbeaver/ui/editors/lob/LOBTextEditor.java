@@ -11,4 +11,10 @@ public class LOBTextEditor extends TextEditor {
         setDocumentProvider(new LOBDocumentProvider());
     }
 
+    @Override
+    protected void updateStatusField(String category)
+    {
+        super.updateStatusField(
+            category);    //To change body of overridden methods use File | Settings | File Templates.
+    }
 }

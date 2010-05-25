@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.Set;
 
 
 /**
@@ -66,7 +67,6 @@ public class BinaryContent {
         boolean dirty = true;
         long dataOffset = 0L;
         Object data = null;
-        File file = null;  // used when data is a RandomAccessFile since we cannot get a File from it
 
         Range(long aPosition, long aLength)
         {
@@ -87,8 +87,7 @@ public class BinaryContent {
             this(aPosition, aFile.length());
             if (length < 0L) throw new IOException("File error");
 
-            file = aFile;
-            data = new RandomAccessFile(file, "r");
+            data = new RandomAccessFile(aFile, "r");
             dirty = isDirty;
         }
 
@@ -651,28 +650,6 @@ public class BinaryContent {
         }
 
         return result;
-    }
-
-
-    /**
-     * Get the list of files that back this object.
-     *
-     * @return list of File's. It is not a live list (changes are not propagated)
-     */
-    public List getOpenFiles()
-    {
-        HashSet result = new HashSet();
-        if (myRanges == null || myRanges.size() == 0)
-            return new ArrayList(result);
-
-        for (Iterator i = myRanges.iterator(); i.hasNext();) {
-            Range value = (Range) i.next();
-            if (value.data instanceof RandomAccessFile && value.file != null) {
-                result.add(value.file);
-            }
-        }
-
-        return new ArrayList(result);
     }
 
 

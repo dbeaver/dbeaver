@@ -54,7 +54,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Text;
 import org.apache.commons.logging.Log;
@@ -200,7 +199,7 @@ public class HexTexts extends Composite {
     {
         if (charset == null || previewText == null) return;
 
-        CharsetDecoder d = Charset.forName(charset).newDecoder().
+        CharsetDecoder decoder = Charset.forName(charset).newDecoder().
             onMalformedInput(CodingErrorAction.REPLACE).
             onUnmappableCharacter(CodingErrorAction.REPLACE).
             replaceWith(".");
@@ -214,13 +213,15 @@ public class HexTexts extends Composite {
                 bb.put((byte) i);
                 bb.rewind();
                 cb.clear();
-                d.reset();
-                d.decode(bb, cb, true);
-                d.flush(cb);
+                decoder.reset();
+                decoder.decode(bb, cb, true);
+                decoder.flush(cb);
                 cb.rewind();
                 char decoded = cb.get();
                 // neither font metrics nor graphic context work for charset 8859-1 chars between 128 and
                 // 159
+                // It works too slow. Dumn with it.
+/*
                 String text = previewText.getText();
                 previewText.setText("|" + decoded);
                 if (previewText.getLocationAtOffset(2).x - previewText.getLocationAtOffset(1).x <
@@ -228,6 +229,7 @@ public class HexTexts extends Composite {
                     decoded = '.';
                 }
                 previewText.setText(text);
+*/
                 byteToChar[i] = decoded;
             }
         }
@@ -1882,6 +1884,9 @@ public class HexTexts extends Composite {
     public void setContentProvider(BinaryContent aContent)
     {
         boolean firstContent = myContent == null;
+        if (!firstContent) {
+            myContent.dispose();
+        }
         myContent = aContent;
         myFinder = null;
         if (myContent != null) {

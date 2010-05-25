@@ -22,7 +22,10 @@ import org.jkiss.dbeaver.model.data.DBDStreamHandler;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.editors.hex.HexTexts;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.List;
 import java.io.IOException;
@@ -32,6 +35,8 @@ import java.io.IOException;
  */
 public class LOBEditorInput implements IFileEditorInput, IPathEditorInput //IDatabaseEditorInput
 {
+    static Log log = LogFactory.getLog(LOBEditorInput.class);
+
     private DBDValueController valueController;
     private IFile lobFile;
 
@@ -170,10 +175,14 @@ public class LOBEditorInput implements IFileEditorInput, IPathEditorInput //IDat
     }
 
     void release(IProgressMonitor monitor)
-        throws CoreException
     {
         if (lobFile != null) {
-            lobFile.delete(true, false, monitor);
+            try {
+                lobFile.delete(true, false, monitor);
+            }
+            catch (CoreException e) {
+                log.warn(e);
+            }
             //lobFile = null;
         }
     }

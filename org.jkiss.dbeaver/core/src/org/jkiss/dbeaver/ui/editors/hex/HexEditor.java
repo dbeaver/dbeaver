@@ -19,20 +19,34 @@
  */
 package org.jkiss.dbeaver.ui.editors.hex;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -41,28 +55,30 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IPathEditorInput;
+import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IStorageEditorInput;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.ILocationProvider;
 import org.eclipse.ui.part.EditorPart;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.WorkbenchPart;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
 
-public class HexEditor extends EditorPart implements ISelectionProvider, IMenuListener {
+public class HexEditor extends EditorPart implements ISelectionProvider, IMenuListener, IResourceChangeListener {
 
     static Log log = LogFactory.getLog(HexTexts.class);
 
@@ -117,6 +133,34 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
     }
 
 
+    public void resourceChanged(IResourceChangeEvent event)
+    {
+        IResourceDelta delta= event.getDelta();
+        if (delta == null) {
+            return;
+        }
+        IPath localPath = null;
+        IEditorInput input = getEditorInput();
+        if (input instanceof IFileEditorInput) {
+            localPath = ((IFileEditorInput)input).getFile().getFullPath();
+        } else if (input instanceof IPathEditorInput) {
+            localPath = ((IPathEditorInput)input).getPath();
+        } else if (input instanceof ILocationProvider) {
+            localPath = ((ILocationProvider)input).getPath(input);
+        }
+        if (localPath == null) {
+            return;
+        }
+        delta = delta.findMember(localPath);
+        if (delta == null) {
+            return;
+        }
+        if (delta.getKind() == IResourceDelta.CHANGED) {
+            // Refresh editor
+            this.loadBinaryContent();
+        }
+    }
+
     public void addSelectionChangedListener(ISelectionChangedListener listener)
     {
         if (listener == null) return;
@@ -131,8 +175,7 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
     public void createPartControl(Composite parent)
     {
         getManager().setTextFont(HexConfig.getFontData());
-        getManager().setFindReplaceLists(HexConfig.getFindReplaceFindList(),
-                                         HexConfig.getFindReplaceReplaceList());
+        getManager().setFindReplaceLists(HexConfig.getFindReplaceFindList(), HexConfig.getFindReplaceReplaceList());
         getManager().setMenuListener(this);
         int editorStyle = SWT.NONE;
         if (getEditorInput() instanceof IStorageEditorInput) {
@@ -149,65 +192,7 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
         FillLayout fillLayout = new FillLayout();
         parent.setLayout(fillLayout);
 
-        String charset = null;
-        IEditorInput unresolved = getEditorInput();
-        File systemFile = null;
-        IFile localFile = null;
-        if (unresolved instanceof FileEditorInput) {
-            localFile = ((FileEditorInput) unresolved).getFile();
-        } else if (unresolved instanceof IPathEditorInput) {  // eg. FileInPlaceEditorInput
-            IPathEditorInput file = (IPathEditorInput) unresolved;
-            systemFile = file.getPath().toFile();
-        } else if (unresolved instanceof ILocationProvider) {
-            ILocationProvider location = (ILocationProvider) unresolved;
-            IWorkspaceRoot rootWorkspace = ResourcesPlugin.getWorkspace().getRoot();
-            localFile = rootWorkspace.getFile(location.getPath(location));
-        } else {
-            URI uri = inputForVersion3_3(unresolved);
-            if (uri != null) {
-                IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-                IFile[] files = new IFile[0];
-                try {
-                    // throws NoSuchMethodException
-                    Method method = ResourcesPlugin.class.getMethod("findFilesForLocationURI",
-                                                                    new Class[]{URI.class});
-                    // throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
-                    files = (IFile[]) method.invoke(root, uri);
-                }
-                catch (Exception e) {
-                    log.warn(e);
-                }  // keep going with no charset
-                // since 3.2
-                //IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(uri);
-                if (files.length != 0) {
-                    localFile = files[0];
-                } else {
-                    systemFile = new File(uri);
-                }
-            } else {
-                systemFile = null;
-            }
-        }
-        // charset
-        if (localFile != null) {
-            systemFile = localFile.getLocation().toFile();
-            try {
-                charset = localFile.getCharset(true);
-            }
-            catch (CoreException e1) {
-                log.warn(e1);
-            }
-        }
-        // open file
-        try {
-            manager.openFile(systemFile, charset);
-        }
-        catch (IOException e) {
-            log.error("Could not open hex content", e);
-        }
-        if (systemFile != null) {
-            setPartName(systemFile.getName());
-        }
+        loadBinaryContent();
 
         // Register any global actions with the site's IActionBars.
         IActionBars bars = getEditorSite().getActionBars();
@@ -275,6 +260,44 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
 
     }
 
+    private void loadBinaryContent()
+    {
+        String charset = null;
+        IEditorInput unresolved = getEditorInput();
+        File systemFile = null;
+        IFile localFile = null;
+        if (unresolved instanceof IFileEditorInput) {
+            localFile = ((IFileEditorInput) unresolved).getFile();
+        } else if (unresolved instanceof IPathEditorInput) {  // eg. FileInPlaceEditorInput
+            IPathEditorInput file = (IPathEditorInput) unresolved;
+            systemFile = file.getPath().toFile();
+        } else if (unresolved instanceof ILocationProvider) {
+            ILocationProvider location = (ILocationProvider) unresolved;
+            IWorkspaceRoot rootWorkspace = ResourcesPlugin.getWorkspace().getRoot();
+            localFile = rootWorkspace.getFile(location.getPath(location));
+        }
+        // charset
+        if (localFile != null) {
+            systemFile = localFile.getLocation().toFile();
+            try {
+                charset = localFile.getCharset(true);
+            }
+            catch (CoreException e1) {
+                log.warn(e1);
+            }
+        }
+        // open file
+        try {
+            manager.openFile(systemFile, charset);
+        }
+        catch (IOException e) {
+            log.error("Could not open hex content", e);
+        }
+        if (systemFile != null) {
+            setPartName(systemFile.getName());
+        }
+    }
+
 
     /**
      * Removes preferences-changed listener
@@ -285,6 +308,8 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
     {
         IPreferenceStore store = HexConfig.getInstance().getPreferenceStore();
         store.removePropertyChangeListener(preferencesChangeListener);
+
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
     }
 
 
@@ -293,12 +318,6 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
      */
     public void doSave(IProgressMonitor monitor)
     {
-        monitor.beginTask(textSavingFilePleaseWait, IProgressMonitor.UNKNOWN);
-        boolean successful = getManager().saveFile();
-        monitor.done();
-        if (!successful) {
-            manager.showErrorBox(getEditorSite().getShell());
-        }
     }
 
 
@@ -307,7 +326,6 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
      */
     public void doSaveAs()
     {
-        saveToFile(false);
     }
 
 
@@ -407,12 +425,11 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
         throws PartInitException
     {
         setSite(site);
-        if (!(input instanceof IPathEditorInput) &&
-            !(input instanceof ILocationProvider) &&
-            (!implementsInterface(input, "org.eclipse.ui.IURIEditorInput") ||  // since 3.3 only
-                inputForVersion3_3(input) == null))
+        if (!(input instanceof IFileEditorInput) &&
+            !(input instanceof IPathEditorInput) &&
+            !(input instanceof ILocationProvider))
         {
-            throw new PartInitException("Input is not a file");
+            throw new PartInitException("Editor Input is not a file");
         }
         setInput(input);
         // when opening an external file the workbench (Eclipse 3.1) calls HexEditorActionBarContributor.
@@ -420,24 +437,8 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
         // but we need an editor to fill the status bar.
         site.getActionBarContributor().setActiveEditor(this);
         site.setSelectionProvider(this);
-    }
 
-
-    private URI inputForVersion3_3(IEditorInput input)
-    {
-        URI result;
-        try {
-            Class aClass = input.getClass();
-            // throws NoSuchMethodException
-            Method uriMethod = aClass.getMethod("getURI");
-            // throws IllegalAccessException, InvocationTargetException
-            result = (URI) uriMethod.invoke(input);
-        }
-        catch (Throwable e) {
-            return null;
-        }
-
-        return result;
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
 
 
@@ -459,43 +460,6 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
             selectionListeners.remove(listener);
         }
     }
-
-
-    void saveToFile(final boolean selection)
-    {
-        final File file = getManager().showSaveAsDialog(getEditorSite().getShell(), selection);
-        if (file == null) return;
-
-        IRunnableWithProgress runnable = new IRunnableWithProgress() {
-            public void run(IProgressMonitor monitor)
-            {
-                monitor.beginTask(textSavingFilePleaseWait, IProgressMonitor.UNKNOWN);
-                boolean successful;
-                if (selection)
-                    successful = manager.doSaveSelectionAs(file);
-                else
-                    successful = manager.saveAsFile(file);
-                monitor.done();
-                if (successful && !selection) {
-                    setPartName(file.getName());
-                    firePropertyChange(PROP_DIRTY);
-                }
-                if (!successful)
-                    manager.showErrorBox(getEditorSite().getShell());
-            }
-        };
-        ProgressMonitorDialog monitorDialog = new ProgressMonitorDialog(getEditorSite().getShell());
-        try {
-            monitorDialog.run(false, false, runnable);
-        }
-        catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
-        }
-        catch (InterruptedException e) {
-            // do nothing
-        }
-    }
-
 
     public void setFocus()
     {

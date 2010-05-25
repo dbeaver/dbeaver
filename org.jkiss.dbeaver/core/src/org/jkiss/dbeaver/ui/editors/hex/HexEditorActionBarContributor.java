@@ -57,18 +57,9 @@ public class HexEditorActionBarContributor extends EditorActionBarContributor {
         public void fill(Menu parent, int index)
         {
             boolean textSelected =
-                activeEditor == null ? false : activeEditor.getManager().isTextSelected();
+                activeEditor != null && activeEditor.getManager().isTextSelected();
             myMenuItem = new MenuItem(parent, SWT.PUSH, index);
-            if (menuSaveSelectionAsId.equals(getId())) {
-                myMenuItem.setText("Save Selection As...");
-                myMenuItem.setEnabled(textSelected);
-                myMenuItem.addSelectionListener(new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        activeEditor.saveToFile(true);
-                    }
-                });
-            } else if (menuTrimId.equals(getId())) {
+            if (menuTrimId.equals(getId())) {
                 myMenuItem.setText("Trim");
                 myMenuItem.setEnabled(textSelected && !activeEditor.getManager().isOverwriteMode());
                 myMenuItem.addSelectionListener(new SelectionAdapter() {
@@ -99,13 +90,6 @@ public class HexEditorActionBarContributor extends EditorActionBarContributor {
             IActionBars bars = getActionBars();
 
             IContributionItem contributionItem = bars.getMenuManager().findUsingPath(
-                IWorkbenchActionConstants.M_FILE + '/' + menuSaveSelectionAsId);
-            if (contributionItem != null &&
-                ((MyMenuContributionItem) contributionItem).myMenuItem != null &&
-                !((MyMenuContributionItem) contributionItem).myMenuItem.isDisposed())
-                ((MyMenuContributionItem) contributionItem).myMenuItem.setEnabled(textSelected);
-
-            contributionItem = bars.getMenuManager().findUsingPath(
                 IWorkbenchActionConstants.M_EDIT + '/' + menuTrimId);
             if (contributionItem != null &&
                 ((MyMenuContributionItem) contributionItem).myMenuItem != null &&
@@ -129,7 +113,6 @@ public class HexEditorActionBarContributor extends EditorActionBarContributor {
     }
 
 
-    static final String menuSaveSelectionAsId = "saveSelectionAs";
     static final String menuTrimId = "trim";
     static final String menuSelectBlock = "selectBlock";
     static final String statusLineItemId = "AllHexEditorStatusItemsItem";
@@ -141,14 +124,9 @@ public class HexEditorActionBarContributor extends EditorActionBarContributor {
      */
     public void contributeToMenu(IMenuManager menuManager)
     {
-        IMenuManager menu = menuManager.findMenuUsingPath(IWorkbenchActionConstants.M_FILE);
         IMenuListener myMenuListener = new MyMenuListener();
-        if (menu != null) {
-            menu.insertAfter("saveAs", new MyMenuContributionItem(menuSaveSelectionAsId));
-            menu.addMenuListener(myMenuListener);
-        }
 
-        menu = menuManager.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
+        IMenuManager menu = menuManager.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
         if (menu != null) {
             menu.insertAfter("delete", new MyMenuContributionItem(menuTrimId));
             menu.addMenuListener(myMenuListener);
