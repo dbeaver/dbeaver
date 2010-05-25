@@ -127,7 +127,7 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler implements DBD
         }
     }
 
-    public long getContentSize(Object value)
+    public long getContentLength(Object value)
         throws DBCException, IOException
     {
         try {

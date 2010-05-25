@@ -732,7 +732,6 @@
 
             <action
                   class="org.jkiss.dbeaver.ui.actions.TransactionModeAction"
-                  disabledIcon="/icons/sql/txn_config_2.png"
                   icon="/icons/sql/txn_config.png"
                   id="org.jkiss.dbeaver.ui.actions.TransactionModeAction"
                   label="Transactions mode"

@@ -26,6 +26,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.editors.text.TextEditorActionContributor;
 import org.eclipse.ui.part.EditorActionBarContributor;
 import org.eclipse.ui.part.MultiPageEditorPart;
@@ -54,6 +55,9 @@ import java.util.List;
  */
 public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, DBDValueEditor
 {
+    public static final long MAX_TEXT_LENGTH = 10 * 1024 * 1024;
+    public static final long MAX_IMAGE_LENGTH = 10 * 1024 * 1024;
+
     static Log log = LogFactory.getLog(LOBEditor.class);
 
     private LOBEditorInput lobInput;
@@ -63,20 +67,23 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
 
     static class ContentEditor {
         IEditorPart editor;
+        IEditorActionBarContributor actionBarContributor;
         String title;
         String tollTip;
         Image image;
-        EditorActionBarContributor actionBarContributor;
         String preferedMimeType;
+        long maxContentLength;
         boolean activated;
 
-        private ContentEditor(IEditorPart editor, EditorActionBarContributor actionBarContributor, String title, String tollTip, Image image, String preferedMimeType) {
+        private ContentEditor(IEditorPart editor, EditorActionBarContributor actionBarContributor, String title,
+                              String tollTip, Image image, String preferedMimeType, long maxContentLength) {
             this.editor = editor;
             this.actionBarContributor = actionBarContributor;
             this.title = title;
             this.tollTip = tollTip;
             this.image = image;
             this.preferedMimeType = preferedMimeType;
+            this.maxContentLength = maxContentLength;
         }
     }
 
@@ -107,19 +114,22 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
             new HexEditorActionBarContributor(), "Binary",
             "Binary Editor",
             DBIcon.HEX.getImage(),
-            "application"));
+            "application",
+            Long.MAX_VALUE));
         contentEditors.add(new ContentEditor(
             new LOBTextEditor(),
             new TextEditorActionContributor(), "Text",
             "Text Editor",
             DBIcon.TEXT.getImage(),
-            "text"));
+            "text",
+            MAX_TEXT_LENGTH));
         contentEditors.add(new ContentEditor(
             new LOBImageEditor(),
             null, "Image",
             "Image Editor",
             DBIcon.IMAGE.getImage(),
-            "image"));
+            "image",
+            MAX_IMAGE_LENGTH));
     }
 
     @Override
@@ -224,14 +234,23 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
     }
 
     protected void createPages() {
-        String contentType = null;
         DBDStreamHandler streamHandler = getStreamHandler();
-        if (streamHandler != null) {
-            try {
-                contentType = streamHandler.getContentType(getValueController().getValue());
-            } catch (Exception e) {
-                log.error("Could not determine value content type", e);
-            }
+        if (streamHandler == null) {
+            return;
+        }
+        String contentType = null;
+        try {
+            contentType = streamHandler.getContentType(getValueController().getValue());
+        } catch (Exception e) {
+            log.error("Could not determine value content type", e);
+        }
+        long contentLength;
+        try {
+            contentLength = streamHandler.getContentLength(getValueController().getValue());
+        } catch (Exception e) {
+            log.error("Could not determine value content length", e);
+            // Get file length
+            contentLength = getEditorInput().getFile().getFullPath().toFile().length();
         }
         MimeType mimeType = null;
         if (contentType != null) {
@@ -243,6 +262,9 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
         }
         int defaultPage = -1;
         for (ContentEditor contentEditor : contentEditors) {
+            if (contentLength > contentEditor.maxContentLength) {
+                continue;
+            }
             try {
                 int index = addPage(contentEditor.editor, lobInput);
                 setPageText(index, contentEditor.title);
@@ -327,7 +349,7 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
             label.setText("Content Length:");
             Text text = new Text(contentGroup, SWT.BORDER | SWT.READ_ONLY);
             if (streamHandler != null) {
-                text.setText(String.valueOf(streamHandler.getContentSize(value)));
+                text.setText(String.valueOf(streamHandler.getContentLength(value)));
             }
 
             // Content type

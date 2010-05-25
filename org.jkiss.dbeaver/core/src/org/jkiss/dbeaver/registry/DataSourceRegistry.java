@@ -82,7 +82,7 @@ public class DataSourceRegistry implements DBPRegistry
     {
         synchronized (dataSourceListeners) {
             if (!this.dataSourceListeners.isEmpty()) {
-                log.warn("Some data source listeners are still registered");
+                log.warn("Some data source listeners are still registered: " + dataSourceListeners);
             }
             this.dataSourceListeners.clear();
         }

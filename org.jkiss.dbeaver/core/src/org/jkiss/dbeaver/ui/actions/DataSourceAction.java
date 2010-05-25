@@ -29,6 +29,7 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
     private IWorkbenchPart activePart;
     private IAction delegateAction;
     private IDataSourceListener dataSourceListener;
+    private boolean registered;
 
     /**
 	 * The constructor.
@@ -88,11 +89,18 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
 	 */
 	public void init(IWorkbenchWindow window) {
 		this.window = window;
+        if (!registered) {
+            DataSourceRegistry.getDefault().addDataSourceListener(dataSourceListener);
+            registered = true;
+        }
 	}
 
 	public void init(IAction action) {
         this.delegateAction = action;
-        DataSourceRegistry.getDefault().addDataSourceListener(dataSourceListener);
+        if (!registered) {
+            DataSourceRegistry.getDefault().addDataSourceListener(dataSourceListener);
+            registered = true;
+        }
 	}
 
     public void runWithEvent(IAction action, Event event)
@@ -107,6 +115,7 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
      */
     public void dispose() {
         DataSourceRegistry.getDefault().removeDataSourceListener(dataSourceListener);
+        this.registered = false;
         this.window = null;
         this.selection = null;
     }

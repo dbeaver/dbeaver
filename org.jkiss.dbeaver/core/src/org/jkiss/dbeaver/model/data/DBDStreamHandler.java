@@ -27,7 +27,7 @@ public interface DBDStreamHandler {
     InputStream getContentStream(Object value)
         throws DBCException, IOException;
 
-    long getContentSize(Object value)
+    long getContentLength(Object value)
         throws DBCException, IOException;
 
     String getContentType(Object value)
