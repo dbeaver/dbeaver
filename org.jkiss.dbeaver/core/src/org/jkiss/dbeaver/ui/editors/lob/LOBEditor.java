@@ -122,6 +122,11 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
             "image"));
     }
 
+    @Override
+    public LOBEditorInput getEditorInput() {
+        return (LOBEditorInput)super.getEditorInput();
+    }
+
     public ContentEditor getContentEditor(IEditorPart editor) {
         for (ContentEditor contentEditor : contentEditors) {
             if (contentEditor.editor == editor) {
