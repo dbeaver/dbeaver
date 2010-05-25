@@ -6,11 +6,7 @@ package org.jkiss.dbeaver.ui.editors.lob;
 
 import org.eclipse.ui.part.EditorActionBarContributor;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorActionBarContributor;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IMenuManager;
@@ -20,17 +16,17 @@ import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -42,16 +38,21 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.List;
 import java.util.SortedMap;
 import java.nio.charset.Charset;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * LOB Editor contributor
  */
 public class LOBEditorContributor extends MultiPageEditorActionBarContributor
 {
+    static Log log = LogFactory.getLog(LOBEditorContributor.class);
+
     private IEditorPart activeEditor;
     private IEditorPart activePage;
 
@@ -63,6 +64,14 @@ public class LOBEditorContributor extends MultiPageEditorActionBarContributor
 
     public LOBEditorContributor()
     {
+    }
+
+    LOBEditor getEditor()
+    {
+        if (activeEditor instanceof LOBEditor) {
+            return ((LOBEditor)activeEditor);
+        }
+        return null;
     }
 
     @Override
@@ -139,6 +148,33 @@ public class LOBEditorContributor extends MultiPageEditorActionBarContributor
                     encodingText.select(defIndex);
                 }
                 encodingText.setToolTipText("Content Encoding");
+                encodingText.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        final LOBEditor lobEditor = getEditor();
+                        if (lobEditor != null) {
+                            final LOBEditorInput lobEditorInput = (LOBEditorInput)lobEditor.getEditorInput();
+                            Combo combo = (Combo) e.widget;
+                            final String charset = combo.getItem(combo.getSelectionIndex());
+                            try {
+                                lobEditor.getSite().getWorkbenchWindow().run(false, false, new IRunnableWithProgress() {
+                                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                                        try {
+                                            lobEditorInput.getFile().setCharset(charset, monitor);
+                                        } catch (CoreException e1) {
+                                            throw new InvocationTargetException(e1);
+                                        }
+                                    }
+                                });
+                            } catch (InvocationTargetException e1) {
+                                log.error(e1.getTargetException());
+                            } catch (InterruptedException e1) {
+                                // do nothing
+                            }
+                        }
+
+                    }
+                });
                 return encodingText;
             }
         });
@@ -210,8 +246,9 @@ public class LOBEditorContributor extends MultiPageEditorActionBarContributor
         @Override
         public void run()
         {
-            if (activeEditor instanceof LOBEditor) {
-                ((LOBEditor)activeEditor).closeValueEditor();
+            LOBEditor lobEditor = getEditor();
+            if (lobEditor != null) {
+                lobEditor.closeValueEditor();
             }
         }
     }
