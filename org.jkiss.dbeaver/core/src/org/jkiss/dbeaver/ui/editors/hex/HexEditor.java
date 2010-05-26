@@ -35,10 +35,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -517,11 +514,13 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
 
     public void menuAboutToShow(IMenuManager manager)
     {
-        EditorAction copyAction = new EditorAction(IWorkbenchActionDefinitionIds.COPY, "Copy");
-        manager.add(copyAction);
+        manager.add(new EditorAction(IWorkbenchActionDefinitionIds.COPY, "Copy"));
         manager.add(new EditorAction(IWorkbenchActionDefinitionIds.PASTE, "Paste"));
         manager.add(new EditorAction(IWorkbenchActionDefinitionIds.SELECT_ALL, "Select All"));
         manager.add(new EditorAction(IWorkbenchActionDefinitionIds.FIND_REPLACE, "Find/Replace"));
+        manager.add(new Separator());
+        manager.add(new EditorAction(IWorkbenchActionDefinitionIds.UNDO, "Undo"));
+        manager.add(new EditorAction(IWorkbenchActionDefinitionIds.REDO, "Redo"));
     }
 
 }

@@ -18,6 +18,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -97,8 +98,8 @@ public class LOBEditorContributor extends MultiPageEditorActionBarContributor
 
         IMenuManager menu = new MenuManager("L&OB Editor");
         manager.prependToGroup(IWorkbenchActionConstants.MB_ADDITIONS, menu);
-        menu.add(saveAction);
         menu.add(loadAction);
+        menu.add(saveAction);
         menu.add(new Separator());
         menu.add(infoAction);
         menu.add(new Separator());
@@ -117,8 +118,8 @@ public class LOBEditorContributor extends MultiPageEditorActionBarContributor
     {
         super.contributeToToolBar(manager);
         // Execution
-        manager.add(saveAction);
         manager.add(loadAction);
+        manager.add(saveAction);
         manager.add(new Separator());
         manager.add(infoAction);
         manager.add(new Separator());
@@ -204,6 +205,8 @@ public class LOBEditorContributor extends MultiPageEditorActionBarContributor
         @Override
         public void run()
         {
+            FileDialog fileDialog = new FileDialog(getEditor().getSite().getShell(), SWT.SAVE);
+            fileDialog.open();
         }
     }
 
@@ -217,6 +220,8 @@ public class LOBEditorContributor extends MultiPageEditorActionBarContributor
         @Override
         public void run()
         {
+            FileDialog fileDialog = new FileDialog(getEditor().getSite().getShell(), SWT.OPEN);
+            fileDialog.open();
         }
     }
 
