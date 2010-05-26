@@ -33,10 +33,10 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
-import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridEditor;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
@@ -117,7 +117,7 @@ public class Spreadsheet extends Composite implements Listener {
         clipboard = new Clipboard(getDisplay());
 
         actionsInfo = new ActionInfo[]{
-            new ActionInfo(new GridAction(IWorkbenchActionDefinitionIds.COPY) {
+            new ActionInfo(new GridAction(IWorkbenchCommandConstants.EDIT_COPY) {
                 public void run()
                 {
                     copySelectionToClipboard();
@@ -127,7 +127,7 @@ public class Spreadsheet extends Composite implements Listener {
             new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.LINE_END)),
             new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.TEXT_START)),
             new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.TEXT_END)),
-            new ActionInfo(new GridAction(ITextEditorActionDefinitionIds.SELECT_ALL) {
+            new ActionInfo(new GridAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL) {
                 public void run()
                 {
                     grid.selectAll();
@@ -511,8 +511,8 @@ public class Spreadsheet extends Composite implements Listener {
                         copySelectionToClipboard();
                     }
                 };
-                copyAction.setActionDefinitionId(IWorkbenchActionDefinitionIds.COPY);
-                copyAction.setId(IWorkbenchActionDefinitionIds.COPY);
+                copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
+                copyAction.setId(IWorkbenchCommandConstants.EDIT_COPY);
                 IAction selectAllAction = new Action("Select All") {
                     public void run()
                     {

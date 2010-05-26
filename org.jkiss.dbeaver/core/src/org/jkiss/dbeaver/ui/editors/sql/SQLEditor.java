@@ -68,7 +68,6 @@ import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.views.console.ConsoleManager;
 import org.jkiss.dbeaver.ui.views.console.ConsoleMessageType;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -87,7 +86,7 @@ public class SQLEditor extends TextEditor
     private static final String ACTION_CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal";
     private static final String ACTION_CONTENT_ASSIST_TIP = "ContentAssistTip";
     private static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal";
-    private static final String ACTION_DEFINE_FOLDING_REGION = "DefineFoldingRegion";
+    //private static final String ACTION_DEFINE_FOLDING_REGION = "DefineFoldingRegion";
 
     private SashForm sashForm;
     private Control editorControl;
@@ -233,7 +232,7 @@ public class SQLEditor extends TextEditor
             resultTabs.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
-                    int newPageIndex = resultTabs.indexOf((CTabItem) e.item);
+                    resultTabs.indexOf((CTabItem) e.item);
                     //pageChange(newPageIndex);
                 }
             });
@@ -872,9 +871,9 @@ public class SQLEditor extends TextEditor
         }
 
         // Add new annotations
-        for (int i = 0; i < positions.size(); i++) {
+        for (Position position : positions) {
             ProjectionAnnotation annotation = new ProjectionAnnotation();
-            newAnnotations.put(annotation, positions.get(i));
+            newAnnotations.put(annotation, position);
         }
 
         // Modify annotation set

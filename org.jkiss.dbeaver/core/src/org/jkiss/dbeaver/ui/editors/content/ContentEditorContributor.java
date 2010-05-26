@@ -19,18 +19,24 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.actions.SimpleAction;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.SortedMap;
 import java.nio.charset.Charset;
 import java.lang.reflect.InvocationTargetException;
+import java.io.File;
+
+import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * LOB Editor contributor
@@ -205,8 +211,52 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         @Override
         public void run()
         {
-            FileDialog fileDialog = new FileDialog(getEditor().getSite().getShell(), SWT.SAVE);
-            fileDialog.open();
+            Shell shell = getEditor().getSite().getShell();
+            FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
+            fileDialog.setText("Save Content As");
+            String fileName = fileDialog.open();
+            if (CommonUtils.isEmpty(fileName)) {
+                return;
+            }
+            final File saveFile = new File(fileName);
+            File saveDir = saveFile.getParentFile();
+            if (!saveDir.exists()) {
+                DBeaverUtils.showErrorDialog(shell, "Bad file name", "Directory '" + saveDir.getAbsolutePath() + "' does not exists");
+                return;
+            }
+            if (saveFile.exists()) {
+                MessageBox aMessageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+                aMessageBox.setText("File already exists");
+                aMessageBox.setMessage("The file "+ saveFile.getAbsolutePath() + " already exists.\nOverwrite file?");
+
+                if (aMessageBox.open() != SWT.YES) {
+                    return;
+                }
+            }
+            try {
+                getEditor().getSite().getWorkbenchWindow().run(false, true, new IRunnableWithProgress() {
+                    public void run(IProgressMonitor monitor)
+                        throws InvocationTargetException, InterruptedException
+                    {
+                        try {
+                            getEditor().getEditorInput().saveToExternalFile(saveFile, monitor);
+                        }
+                        catch (CoreException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                });
+            }
+            catch (InvocationTargetException e) {
+                DBeaverUtils.showErrorDialog(
+                    shell,
+                    "Could not save content",
+                    "Could not save content to file '" + saveFile.getAbsolutePath() + "'",
+                    e.getTargetException());
+            }
+            catch (InterruptedException e) {
+                // do nothing
+            }
         }
     }
 

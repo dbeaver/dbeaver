@@ -27,6 +27,11 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.IOException;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 
 /**
  * LOBEditorInput
@@ -37,7 +42,8 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
 
     private DBDValueController valueController;
     private IContentEditorPart[] editorParts;
-    private IFile lobFile;
+    private IFile contentFile;
+    private static final int STREAM_COPY_BUFFER_SIZE = 10000;
 
     ContentEditorInput(
         DBDValueController valueController,
@@ -91,7 +97,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
     public Object getAdapter(Class adapter)
     {
         if (adapter == IFile.class) {
-            return lobFile;
+            return contentFile;
         }
         return null;
     }
@@ -116,7 +122,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
                     DBeaverUtils.makeExceptionStatus(e));
             }
             // Create file
-            lobFile = DBeaverCore.getInstance().makeTempFile(
+            contentFile = DBeaverCore.getInstance().makeTempFile(
                 fileName,
                 "data",
                 monitor);
@@ -124,7 +130,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
             // Write value to file
             Object value = valueController.getValue();
             if (value != null) {
-                lobFile.setContents(
+                contentFile.setContents(
                     streamHandler.getContentStream(value),
                     true,
                     false,
@@ -133,10 +139,10 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
 
             // Mark file as readonly
             if (valueController.isReadOnly()) {
-                ResourceAttributes attributes = lobFile.getResourceAttributes();
+                ResourceAttributes attributes = contentFile.getResourceAttributes();
                 if (attributes != null) {
                     attributes.setReadOnly(true);
-                    lobFile.setResourceAttributes(attributes);
+                    contentFile.setResourceAttributes(attributes);
                 }
             }
 
@@ -161,33 +167,78 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
 
     void release(IProgressMonitor monitor)
     {
-        if (lobFile != null) {
+        if (contentFile != null) {
             try {
-                lobFile.delete(true, false, monitor);
+                contentFile.delete(true, false, monitor);
             }
             catch (CoreException e) {
                 log.warn(e);
             }
-            //lobFile = null;
+            //contentFile = null;
         }
     }
 
     public IFile getFile() {
-        return lobFile;
+        return contentFile;
     }
 
     public IStorage getStorage()
         throws CoreException
     {
-        return lobFile;
+        return contentFile;
     }
 
     public IPath getPath()
     {
-        return lobFile == null ? null : lobFile.getLocation();
+        return contentFile == null ? null : contentFile.getLocation();
     }
 
     public boolean isReadOnly() {
         return valueController.isReadOnly();
+    }
+
+    void saveToExternalFile(File file, IProgressMonitor monitor)
+        throws CoreException
+    {
+        try {
+            InputStream contents = contentFile.getContents(true);
+            try {
+                int segmentSize = (int)(file.length() / STREAM_COPY_BUFFER_SIZE);
+                monitor.beginTask("Save content to file '" + file.getName() + "'", segmentSize);
+                
+                OutputStream os = new FileOutputStream(file);
+                try {
+                    byte[] buffer = new byte[STREAM_COPY_BUFFER_SIZE];
+                    for (;;) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        int count = contents.read(buffer);
+                        if (count <= 0) {
+                            break;
+                        }
+                        os.write(buffer, 0, count);
+                        monitor.worked(1);
+                    }
+                }
+                finally {
+                    monitor.done();
+                    os.close();
+                }
+                // Check for cancel
+                if (monitor.isCanceled()) {
+                    // Delete output file
+                    if (!file.delete()) {
+                        log.warn("Could not delete incomplete file '" + file.getAbsolutePath() + "'");
+                    }
+                }
+            }
+            finally {
+                contents.close();
+            }
+        }
+        catch (IOException e) {
+            throw new CoreException(DBeaverUtils.makeExceptionStatus(e));
+        }
     }
 }
