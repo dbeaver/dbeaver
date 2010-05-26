@@ -285,21 +285,6 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         editotPanel.setLayout(layout);
         gd = new GridData(GridData.FILL_BOTH);
         editotPanel.setLayoutData(gd);
-/*
-        infoPanel = new ColumnInfoPanel(panel, SWT.NONE, getValueController()) {
-            @Override
-            protected void createInfoItems(Tree infoTree, DBDValueController valueController)
-            {
-                TreeItem columnTypeItem = new TreeItem(infoTree, SWT.NONE);
-                columnTypeItem.setText(new String[] {
-                    "Maximum Length",
-                    String.valueOf(valueController.getColumnMetaData().getDisplaySize()) });
-            }
-
-        };
-
-*/
-        //createToolbar(panel);
 
         return editotPanel;
     }

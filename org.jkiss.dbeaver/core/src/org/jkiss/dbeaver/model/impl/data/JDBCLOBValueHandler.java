@@ -82,6 +82,19 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler implements DBD
 
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
+        try {
+            propertySource.addProperty(
+                "content_type",
+                "Content Type",
+                getContentType(controller.getValue()));
+            propertySource.addProperty(
+                "content_length",
+                "Content Length",
+                getContentLength(controller.getValue()));
+        }
+        catch (Exception e) {
+            log.warn("Could not extract LOB value information", e);
+        }
         propertySource.addProperty(
             "max_length",
             "Max Length",
