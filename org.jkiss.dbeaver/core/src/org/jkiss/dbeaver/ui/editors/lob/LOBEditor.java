@@ -219,6 +219,11 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
 
     public boolean isDirty()
     {
+        for (ContentEditor contentEditor : contentEditors) {
+            if (contentEditor.activated && contentEditor.editor.isDirty()) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -269,7 +274,7 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
                 int index = addPage(contentEditor.editor, lobInput);
                 setPageText(index, contentEditor.title);
                 setPageImage(index, contentEditor.image);
-
+                contentEditor.activated = true;
                 // Check MIME type
                 if (mimeType != null && mimeType.getPrimaryType().equals(contentEditor.preferedMimeType)) {
                     defaultPage = index;

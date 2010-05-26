@@ -52,9 +52,13 @@ public enum DBIcon
 
     INFO("info", "/icons/file/info.png"),
     SAVE("save", "/icons/file/save.png"),
+    SAVE_ALL("save_all", "/icons/file/save_all.png"),
+    SAVE_AS("save_as", "/icons/file/save_as.png"),
     LOAD("load", "/icons/file/load.png"),
     ACCEPT("accept", "/icons/sql/accept.png"),
     REJECT("reject", "/icons/sql/cancel.png"),
+    IMPORT("import", "/icons/file/import.png"),
+    EXPORT("export", "/icons/file/export.png"),
 
     LOB("lob", "/icons/misc/lob.png"),
     EDIT_DATABSE("edit_database", "/icons/misc/edit_database.png"),
