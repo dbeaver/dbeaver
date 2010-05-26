@@ -80,20 +80,9 @@
         <editor
             name="Large Object Editor"
             icon="icons/misc/lob.png"
-            contributorClass="org.jkiss.dbeaver.ui.editors.lob.LOBEditorContributor"
-            class="org.jkiss.dbeaver.ui.editors.lob.LOBEditor"
-            id="org.jkiss.dbeaver.ui.editors.lob.LOBEditor">
-        </editor>
-        <editor
-              class="org.jkiss.dbeaver.ui.editors.hex.HexEditor"
-              contributorClass="org.jkiss.dbeaver.ui.editors.hex.HexEditorActionBarContributor"
-              extensions="a,bin,cab,class,com,dat,data,drv,dll,exe,hex,iso,jar,lib,o,out,part,pdf,png,ram,res,rom,sys,txt,zip"
-              icon="icons/hex.png"
-              id="org.jkiss.dbeaver.ui.editors.hex.HexEditor"
-              name="Hex Editor">
-           <contentTypeBinding
-                 contentTypeId="org.jkiss.dbeaver.core.content-type-binary">
-           </contentTypeBinding>
+            contributorClass="org.jkiss.dbeaver.ui.editors.content.ContentEditorContributor"
+            class="org.jkiss.dbeaver.ui.editors.content.ContentEditor"
+            id="org.jkiss.dbeaver.ui.editors.content.ContentEditor">
         </editor>
     </extension>
     <extension
@@ -317,8 +306,8 @@
         </page>
         <page
               category="org.eclipse.ui.preferencePages.Editors"
-              class="org.jkiss.dbeaver.ui.editors.hex.PreferencesPage"
-              id="org.jkiss.dbeaver.ui.editors.hex.PreferencesPage"
+              class="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
+              id="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
               name="Hex Editor">
         </page>
     </extension>

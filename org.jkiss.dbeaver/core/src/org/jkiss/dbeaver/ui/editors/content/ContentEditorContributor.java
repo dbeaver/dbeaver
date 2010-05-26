@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.lob;
+package org.jkiss.dbeaver.ui.editors.content;
 
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.*;
@@ -35,11 +35,11 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * LOB Editor contributor
  */
-public class LOBEditorContributor extends MultiPageEditorActionBarContributor
+public class ContentEditorContributor extends MultiPageEditorActionBarContributor
 {
-    static Log log = LogFactory.getLog(LOBEditorContributor.class);
+    static Log log = LogFactory.getLog(ContentEditorContributor.class);
 
-    private LOBEditor activeEditor;
+    private ContentEditor activeEditor;
     private IEditorPart activePage;
 
     private IAction saveAction = new SaveAction();
@@ -49,11 +49,11 @@ public class LOBEditorContributor extends MultiPageEditorActionBarContributor
     private IAction closeAction = new CloseAction();
     private Combo encodingCombo;
 
-    public LOBEditorContributor()
+    public ContentEditorContributor()
     {
     }
 
-    LOBEditor getEditor()
+    ContentEditor getEditor()
     {
         return activeEditor;
     }
@@ -68,7 +68,7 @@ public class LOBEditorContributor extends MultiPageEditorActionBarContributor
     public void setActiveEditor(IEditorPart part)
     {
         super.setActiveEditor(part);
-        this.activeEditor = (LOBEditor) part;
+        this.activeEditor = (ContentEditor) part;
 
         if (this.activeEditor != null && encodingCombo != null && !encodingCombo.isDisposed()) {
             try {
@@ -156,16 +156,16 @@ public class LOBEditorContributor extends MultiPageEditorActionBarContributor
                 encodingCombo.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        final LOBEditor lobEditor = getEditor();
-                        if (lobEditor != null) {
-                            final LOBEditorInput lobEditorInput = lobEditor.getEditorInput();
+                        final ContentEditor contentEditor = getEditor();
+                        if (contentEditor != null) {
+                            final ContentEditorInput contentEditorInput = contentEditor.getEditorInput();
                             Combo combo = (Combo) e.widget;
                             final String charset = combo.getItem(combo.getSelectionIndex());
                             try {
-                                lobEditor.getSite().getWorkbenchWindow().run(false, false, new IRunnableWithProgress() {
+                                contentEditor.getSite().getWorkbenchWindow().run(false, false, new IRunnableWithProgress() {
                                     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                                         try {
-                                            lobEditorInput.getFile().setCharset(charset, monitor);
+                                            contentEditorInput.getFile().setCharset(charset, monitor);
                                         } catch (CoreException e1) {
                                             throw new InvocationTargetException(e1);
                                         }
@@ -255,15 +255,15 @@ public class LOBEditorContributor extends MultiPageEditorActionBarContributor
     {
         public CloseAction()
         {
-            super("org.jkiss.dbeaver.lob.actions.close", "Close", "Reject changes and close editor", DBIcon.REJECT);
+            super("org.jkiss.dbeaver.lob.actions.close", "Close", "Reject changes and close editorPart", DBIcon.REJECT);
         }
 
         @Override
         public void run()
         {
-            LOBEditor lobEditor = getEditor();
-            if (lobEditor != null) {
-                lobEditor.closeValueEditor();
+            ContentEditor contentEditor = getEditor();
+            if (contentEditor != null) {
+                contentEditor.closeValueEditor();
             }
         }
     }

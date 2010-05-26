@@ -4,33 +4,35 @@
 
 package org.jkiss.dbeaver.model.impl.data;
 
+import net.sf.jkiss.utils.streams.MimeTypes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDStreamHandler;
-import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCBLOB;
 import org.jkiss.dbeaver.model.dbc.DBCCLOB;
+import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCLOB;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.editors.lob.LOBEditor;
+import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
+import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
+import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
+import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.io.OutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-import java.io.Reader;
-
-import net.sf.jkiss.utils.streams.MimeTypes;
 
 /**
  * JDBC LOB value handler.
@@ -92,10 +94,14 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler implements DBD
         if (controller.isInlineEdit()) {
             // Open inline editor
             return false;
-        } else {
-            // Open LOB editor
-            return LOBEditor.openEditor(controller);
         }
+        // Open LOB editor
+        return ContentEditor.openEditor(
+            controller,
+            new IContentEditorPart[] {
+                new ContentBinaryEditorPart(),
+                new ContentTextEditorPart(),
+                new ContentImageEditorPart()} );
     }
 
     public InputStream getContentStream(Object value)

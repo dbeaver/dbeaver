@@ -85,7 +85,7 @@ public class LobViewDialog extends ValueViewDialog {
                     }
                 });
             } else {
-                UIUtils.createToolItem(toolBar, "View as text/hex", DBIcon.RS_MODE_GRID, new SelectionAdapter() {
+                UIUtils.createToolItem(toolBar, "View as text/binary", DBIcon.RS_MODE_GRID, new SelectionAdapter() {
                     public void widgetSelected(SelectionEvent e)
                     {
 

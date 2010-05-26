@@ -33,6 +33,7 @@ public class ImageViewControl extends Composite {
     private Color blackColor = Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
 
     private ImageViewCanvas canvas;
+    private SWTException lastError;
     private Label messageLabel;
 
     private ToolItem itemZoomIn;
@@ -101,22 +102,33 @@ public class ImageViewControl extends Composite {
         return canvas;
     }
 
-    public void loadImage(InputStream inputStream)
+    public boolean loadImage(InputStream inputStream)
     {
         canvas.loadImage(inputStream);
-        SWTException error = canvas.getError();
-        if (error != null) {
-            messageLabel.setText(error.getMessage());
-            messageLabel.setForeground(redColor);
-        } else {
-            ImageData imageData = canvas.getImageData();
+        try {
+            lastError = canvas.getError();
+            if (lastError != null) {
+                messageLabel.setText(lastError.getMessage());
+                messageLabel.setForeground(redColor);
+                return false;
+            } else {
+                ImageData imageData = canvas.getImageData();
 
-            messageLabel.setText(
-                getImageType(imageData.type) + " " + imageData.width + "x" + imageData.height + "x" + imageData.depth +
-                "  "/* + imageData.data.length + " bytes"*/);
-            messageLabel.setForeground(blackColor);
+                messageLabel.setText(
+                    getImageType(imageData.type) + " " + imageData.width + "x" + imageData.height + "x" + imageData.depth +
+                    "  "/* + imageData.data.length + " bytes"*/);
+                messageLabel.setForeground(blackColor);
+                return true;
+            }
         }
-        updateActions();
+        finally {
+            updateActions();
+        }
+    }
+
+    public SWTException getLastError()
+    {
+        return lastError;
     }
 
     public static String getImageType(int type)

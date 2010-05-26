@@ -1,7 +1,7 @@
 /*
- * hex, a java hex editor
+ * binary, a java binary editor
  * Copyright (C) 2006, 2009 Jordi Bergenthal, pestatije(-at_)users.sourceforge.net
- * The official hex site is sourceforge.net/projects/hex
+ * The official binary site is sourceforge.net/projects/binary
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.jkiss.dbeaver.ui.editors.hex;
+package org.jkiss.dbeaver.ui.editors.binary;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -25,7 +25,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jkiss.dbeaver.ui.editors.hex.BinaryContent.Range;
+import org.jkiss.dbeaver.ui.editors.binary.BinaryContent.Range;
 
 /**
  * Keeps track of actions performed on a BinaryContent so they can be undone and redone.

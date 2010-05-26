@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.lob;
+package org.jkiss.dbeaver.ui.editors.content;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
@@ -18,6 +18,7 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDStreamHandler;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -30,23 +31,33 @@ import java.io.IOException;
 /**
  * LOBEditorInput
  */
-public class LOBEditorInput implements IFileEditorInput, IPathEditorInput //IDatabaseEditorInput
+public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //IDatabaseEditorInput
 {
-    static Log log = LogFactory.getLog(LOBEditorInput.class);
+    static Log log = LogFactory.getLog(ContentEditorInput.class);
 
     private DBDValueController valueController;
+    private IContentEditorPart[] editorParts;
     private IFile lobFile;
 
-    public LOBEditorInput(DBDValueController valueController, IProgressMonitor monitor)
+    ContentEditorInput(
+        DBDValueController valueController,
+        IContentEditorPart[] editorParts,
+        IProgressMonitor monitor)
         throws CoreException
     {
         this.valueController = valueController;
+        this.editorParts = editorParts;
         this.saveDataToFile(monitor);
     }
 
     public DBDValueController getValueController()
     {
         return valueController;
+    }
+
+    IContentEditorPart[] getEditors()
+    {
+        return editorParts;
     }
 
     public boolean exists()
@@ -74,7 +85,7 @@ public class LOBEditorInput implements IFileEditorInput, IPathEditorInput //IDat
 
     public String getToolTipText()
     {
-        return "LOB column editor";
+        return "LOB column editorPart";
     }
 
     public Object getAdapter(Class adapter)

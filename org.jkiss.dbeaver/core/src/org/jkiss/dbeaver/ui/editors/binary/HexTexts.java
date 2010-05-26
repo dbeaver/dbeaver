@@ -1,7 +1,7 @@
 /*
- * hex, a java hex editor
+ * binary, a java binary editor
  * Copyright (C) 2006, 2009 Jordi Bergenthal, pestatije(-at_)users.sourceforge.net
- * The official hex site is sourceforge.net/projects/hex
+ * The official binary site is sourceforge.net/projects/binary
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.jkiss.dbeaver.ui.editors.hex;
+package org.jkiss.dbeaver.ui.editors.binary;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
@@ -87,7 +87,7 @@ public class HexTexts extends Composite {
      */
     public static final char[] byteToChar = new char[256];
     public static final String[] byteToHex = new String[256];
-    static final int charsForAddress = 12;  // Files up to 16 Ters: 11 hex digits + ':'
+    static final int charsForAddress = 12;  // Files up to 16 Ters: 11 binary digits + ':'
     static final Color colorBlue = Display.getCurrent().getSystemColor(SWT.COLOR_BLUE);
     static final Color colorLightShadow =
         Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);

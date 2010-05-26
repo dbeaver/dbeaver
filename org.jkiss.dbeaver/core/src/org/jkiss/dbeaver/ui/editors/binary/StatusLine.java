@@ -1,7 +1,7 @@
 /*
- * hex, a java hex editor
+ * binary, a java binary editor
  * Copyright (C) 2006, 2009 Jordi Bergenthal, pestatije(-at_)users.sourceforge.net
- * The official hex site is sourceforge.net/projects/hex
+ * The official binary site is sourceforge.net/projects/binary
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.jkiss.dbeaver.ui.editors.hex;
+package org.jkiss.dbeaver.ui.editors.binary;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.FontMetrics;
@@ -153,8 +153,8 @@ public class StatusLine extends Composite {
     {
         if (isDisposed() || position.isDisposed()) return;
 
-        String posText = "Offset: " + pos + " (dec) = " + Long.toHexString(pos) + " (hex)";
-//	String posText = String.format("Offset: %1$d (dec) = %1$X (hex)", pos);
+        String posText = "Offset: " + pos + " (dec) = " + Long.toHexString(pos) + " (binary)";
+//	String posText = String.format("Offset: %1$d (dec) = %1$X (binary)", pos);
         position.setText(posText);
         //position.pack(true);
     }
@@ -169,9 +169,9 @@ public class StatusLine extends Composite {
         if (isDisposed() || position.isDisposed()) return;
 
         String valBinText = "0000000" + Long.toBinaryString(val);
-        String valText = "Value: " + val + " (dec) = " + Integer.toHexString(0x0ff & val) + " (hex) = " +
+        String valText = "Value: " + val + " (dec) = " + Integer.toHexString(0x0ff & val) + " (binary) = " +
             valBinText.substring(valBinText.length() - 8) + " (bin)";
-//	String valText = String.format("Value: %1$d (dec) = %1$X (hex) = %2$s (bin)", val, valBinText.substring(valBinText.length()-8));
+//	String valText = String.format("Value: %1$d (dec) = %1$X (binary) = %2$s (bin)", val, valBinText.substring(valBinText.length()-8));
         value.setText(valText);
         //value.pack(true);
     }

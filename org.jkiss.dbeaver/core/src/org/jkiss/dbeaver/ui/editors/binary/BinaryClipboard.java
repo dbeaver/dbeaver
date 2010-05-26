@@ -1,7 +1,7 @@
 /*
- * hex, a java hex editor
+ * binary, a java binary editor
  * Copyright (C) 2006, 2009 Jordi Bergenthal, pestatije(-at_)users.sourceforge.net
- * The official hex site is sourceforge.net/projects/hex
+ * The official binary site is sourceforge.net/projects/binary
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.jkiss.dbeaver.ui.editors.hex;
+package org.jkiss.dbeaver.ui.editors.binary;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -170,7 +170,7 @@ public class BinaryClipboard {
 
 
     static final File clipboardDir = new File(System.getProperty("java.io.tmpdir", "."));
-    static final File clipboardFile = new File(clipboardDir, "dbeaver-hex-clipboard.tmp");
+    static final File clipboardFile = new File(clipboardDir, "dbeaver-binary-clipboard.tmp");
     static final long maxClipboardDataInMemory = 4 * 1024 * 1024;  // 4 Megs for byte[], 4 Megs for text
     Clipboard myClipboard = null;
     HashMap myFilesReferencesCounter = null;
@@ -338,7 +338,7 @@ public class BinaryClipboard {
 
 
     /*
-    * The file is being reference counted. It will be deleted as soon as no hex process is
+    * The file is being reference counted. It will be deleted as soon as no binary process is
     * referencing it anymore.
     */
     long tryGettingFileByteArray(BinaryContent content, long start, boolean insert)

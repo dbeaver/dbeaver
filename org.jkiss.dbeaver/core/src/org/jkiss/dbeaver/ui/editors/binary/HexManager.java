@@ -1,7 +1,7 @@
 /*
- * hex, a java hex editor
+ * binary, a java binary editor
  * Copyright (C) 2006, 2009 Jordi Bergenthal, pestatije(-at_)users.sourceforge.net
- * The official hex site is sourceforge.net/projects/hex
+ * The official binary site is sourceforge.net/projects/binary
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.jkiss.dbeaver.ui.editors.hex;
+package org.jkiss.dbeaver.ui.editors.binary;
 
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -39,9 +39,11 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.ui.editors.hex.dialogs.FindReplaceDialog;
-import org.jkiss.dbeaver.ui.editors.hex.dialogs.GoToDialog;
-import org.jkiss.dbeaver.ui.editors.hex.dialogs.SelectBlockDialog;
+import org.jkiss.dbeaver.ui.editors.binary.dialogs.FindReplaceDialog;
+import org.jkiss.dbeaver.ui.editors.binary.dialogs.GoToDialog;
+import org.jkiss.dbeaver.ui.editors.binary.dialogs.SelectBlockDialog;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,6 +62,8 @@ import java.util.Properties;
  * @author Jordi
  */
 public class HexManager {
+
+    static Log log = LogFactory.getLog(HexManager.class);
 
     class MySelectionAdapter extends SelectionAdapter {
         static final int PASTE = 1;
@@ -148,7 +152,7 @@ public class HexManager {
     }
 
 
-    static final String applicationName = "hex";
+    static final String applicationName = "binary";
     static final String fontExtension = ".font";
     static final String nameExtension = ".name";
     static final String propertiesExtension = ".properties";
@@ -491,14 +495,14 @@ public class HexManager {
             MessageBox box = new MessageBox(sShell, SWT.ICON_WARNING | SWT.OK);
             box.setText("Browser not found");
             box.setMessage("Could not find a browser program to open html files.\n" +
-                "Visit hex.sourceforge.net/userGuide.html to see the User Guide.\n");
+                "Visit binary.sourceforge.net/userGuide.html to see the User Guide.\n");
             box.open();
             return;
         }
 
         String fileName = "userGuide.html";
         if (online) {
-            fileName = "hex.sourceforge.net/" + fileName;
+            fileName = "binary.sourceforge.net/" + fileName;
         } else {
             File theFile = new File(fileName);
             if (!theFile.exists()) {
@@ -874,7 +878,9 @@ public class HexManager {
         File propertiesFile = new File(applicationName + propertiesExtension);
         if (fontData == null) {
             if (propertiesFile.exists()) {
-                propertiesFile.delete();
+                if (!propertiesFile.delete()) {
+                    log.warn("Could not delete property file '" + propertiesFile.getAbsolutePath() + "'");
+                }
             }
             return;
         }

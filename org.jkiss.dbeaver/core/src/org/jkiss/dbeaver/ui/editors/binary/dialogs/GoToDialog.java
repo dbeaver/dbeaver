@@ -1,7 +1,7 @@
 /*
- * hex, a java hex editor
+ * binary, a java binary editor
  * Copyright (C) 2006, 2009 Jordi Bergenthal, pestatije(-at_)users.sourceforge.net
- * The official hex site is sourceforge.net/projects/hex
+ * The official binary site is sourceforge.net/projects/binary
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.jkiss.dbeaver.ui.editors.hex.dialogs;
+package org.jkiss.dbeaver.ui.editors.binary.dialogs;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,7 +41,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ui.editors.hex.HexManager;
+import org.jkiss.dbeaver.ui.editors.binary.HexManager;
 
 
 /**
@@ -128,7 +128,7 @@ public class GoToDialog extends Dialog {
 	};
 */
 // Besides the crashes: the user always knows which number is entering, don't need any automatic
-// conversion. What does sometimes happen is one enters the right number and the wrong hex or dec was
+// conversion. What does sometimes happen is one enters the right number and the wrong binary or dec was
 // selected. In that case automatic conversion is the wrong thing to do and very annoying.
         hexRadioButton = new Button(composite, SWT.RADIO);
         hexRadioButton.setText("Hex");

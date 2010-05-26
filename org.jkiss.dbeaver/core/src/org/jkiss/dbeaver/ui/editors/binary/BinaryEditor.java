@@ -1,7 +1,7 @@
 /*
- * hex, a java hex editor
+ * binary, a java binary editor
  * Copyright (C) 2006, 2009 Jordi Bergenthal, pestatije(-at_)users.sourceforge.net
- * The official hex site is sourceforge.net/projects/hex
+ * The official binary site is sourceforge.net/projects/binary
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.jkiss.dbeaver.ui.editors.hex;
+package org.jkiss.dbeaver.ui.editors.binary;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,7 +35,11 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -59,12 +63,12 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IStorageEditorInput;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.ILocationProvider;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.WorkbenchPart;
-import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
@@ -75,7 +79,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 
-public class HexEditor extends EditorPart implements ISelectionProvider, IMenuListener, IResourceChangeListener {
+public class BinaryEditor extends EditorPart implements ISelectionProvider, IMenuListener, IResourceChangeListener {
 
     static Log log = LogFactory.getLog(HexTexts.class);
 
@@ -97,21 +101,21 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
 
         public void run()
         {
-            if (actionId.equals(IWorkbenchActionDefinitionIds.UNDO))
+            if (actionId.equals(IWorkbenchCommandConstants.EDIT_UNDO))
                 getManager().doUndo();
-            else if (actionId.equals(IWorkbenchActionDefinitionIds.REDO))
+            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_REDO))
                 getManager().doRedo();
-            else if (actionId.equals(IWorkbenchActionDefinitionIds.CUT))
+            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_CUT))
                 getManager().doCut();
-            else if (actionId.equals(IWorkbenchActionDefinitionIds.COPY))
+            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY))
                 getManager().doCopy();
-            else if (actionId.equals(IWorkbenchActionDefinitionIds.PASTE))
+            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_PASTE))
                 getManager().doPaste();
-            else if (actionId.equals(IWorkbenchActionDefinitionIds.DELETE))
+            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_DELETE))
                 getManager().doDelete();
-            else if (actionId.equals(IWorkbenchActionDefinitionIds.SELECT_ALL))
+            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_SELECT_ALL))
                 getManager().doSelectAll();
-            else if (actionId.equals(IWorkbenchActionDefinitionIds.FIND_REPLACE))
+            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE))
                 getManager().doFind();
         }
     }
@@ -124,7 +128,7 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
     Set<ISelectionChangedListener> selectionListeners = null;  // of ISelectionChangedListener
 
 
-    public HexEditor()
+    public BinaryEditor()
     {
         super();
     }
@@ -193,21 +197,21 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
 
         // Register any global actions with the site's IActionBars.
         IActionBars bars = getEditorSite().getActionBars();
-        String id = IWorkbenchActionDefinitionIds.UNDO;
+        String id = IWorkbenchCommandConstants.EDIT_UNDO;
         bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = IWorkbenchActionDefinitionIds.REDO;
+        id = IWorkbenchCommandConstants.EDIT_REDO;
         bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = IWorkbenchActionDefinitionIds.CUT;
+        id = IWorkbenchCommandConstants.EDIT_CUT;
         bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = IWorkbenchActionDefinitionIds.COPY;
+        id = IWorkbenchCommandConstants.EDIT_COPY;
         bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = IWorkbenchActionDefinitionIds.PASTE;
+        id = IWorkbenchCommandConstants.EDIT_PASTE;
         bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = IWorkbenchActionDefinitionIds.DELETE;
+        id = IWorkbenchCommandConstants.EDIT_DELETE;
         bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = IWorkbenchActionDefinitionIds.SELECT_ALL;
+        id = IWorkbenchCommandConstants.EDIT_SELECT_ALL;
         bars.setGlobalActionHandler(id, new EditorAction(id));
-        id = IWorkbenchActionDefinitionIds.FIND_REPLACE;
+        id = IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE;
         bars.setGlobalActionHandler(id, new EditorAction(id));
 
         manager.addListener(new Listener() {
@@ -237,7 +241,7 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
 
                 long[] longSelection = HexTexts.getLongSelection(e);
                 SelectionChangedEvent event = new SelectionChangedEvent(
-                    HexEditor.this,
+                    BinaryEditor.this,
                     new StructuredSelection(new Object[]{
                         longSelection[0], longSelection[1]}));
                 for (ISelectionChangedListener selectionListener : selectionListeners) {
@@ -250,7 +254,7 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
                  public void selectionChanged(IWorkbenchPart part,
                                               ISelection selection)
                  {
-                     //if ("org.jkiss.dbeaver.ui.editors.hex".equals(part.getSite().getId())) return;
+                     //if ("org.jkiss.dbeaver.ui.editors.binary".equals(part.getSite().getId())) return;
                  }
              });
 //	getSite().setSelectionProvider(this);
@@ -288,7 +292,7 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
             manager.openFile(systemFile, charset);
         }
         catch (IOException e) {
-            log.error("Could not open hex content", e);
+            log.error("Could not open binary content", e);
         }
         if (systemFile != null) {
             setPartName(systemFile.getName());
@@ -362,7 +366,7 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
     IContentOutlinePage getOutlinePage()
     {
         IExtensionRegistry registry = Platform.getExtensionRegistry();
-        IExtensionPoint point = registry.getExtensionPoint("org.jkiss.dbeaver.ui.editors.hex.outline");
+        IExtensionPoint point = registry.getExtensionPoint("org.jkiss.dbeaver.ui.editors.binary.outline");
         if (point == null) return null;
 
         IExtension[] extensions = point.getExtensions();
@@ -432,7 +436,6 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
         // when opening an external file the workbench (Eclipse 3.1) calls HexEditorActionBarContributor.
         // MyStatusLineContributionItem.fill() before HexEditorActionBarContributor.setActiveEditor()
         // but we need an editor to fill the status bar.
-        site.getActionBarContributor().setActiveEditor(this);
         site.setSelectionProvider(this);
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
@@ -494,19 +497,19 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
         boolean textSelected = getManager().isTextSelected();
         boolean lengthModifiable = textSelected && !manager.isOverwriteMode();
         IActionBars bars = getEditorSite().getActionBars();
-        IAction action = bars.getGlobalActionHandler(IWorkbenchActionDefinitionIds.UNDO);
+        IAction action = bars.getGlobalActionHandler(IWorkbenchCommandConstants.EDIT_UNDO);
         if (action != null) action.setEnabled(manager.canUndo());
 
-        action = bars.getGlobalActionHandler(IWorkbenchActionDefinitionIds.REDO);
+        action = bars.getGlobalActionHandler(IWorkbenchCommandConstants.EDIT_REDO);
         if (action != null) action.setEnabled(manager.canRedo());
 
-        action = bars.getGlobalActionHandler(IWorkbenchActionDefinitionIds.CUT);
+        action = bars.getGlobalActionHandler(IWorkbenchCommandConstants.EDIT_CUT);
         if (action != null) action.setEnabled(lengthModifiable);
 
-        action = bars.getGlobalActionHandler(IWorkbenchActionDefinitionIds.COPY);
+        action = bars.getGlobalActionHandler(IWorkbenchCommandConstants.EDIT_COPY);
         if (action != null) action.setEnabled(textSelected);
 
-        action = bars.getGlobalActionHandler(IWorkbenchActionDefinitionIds.DELETE);
+        action = bars.getGlobalActionHandler(IWorkbenchCommandConstants.EDIT_DELETE);
         if (action != null) action.setEnabled(lengthModifiable);
 
         bars.updateActionBars();
@@ -514,13 +517,13 @@ public class HexEditor extends EditorPart implements ISelectionProvider, IMenuLi
 
     public void menuAboutToShow(IMenuManager manager)
     {
-        manager.add(new EditorAction(IWorkbenchActionDefinitionIds.COPY, "Copy"));
-        manager.add(new EditorAction(IWorkbenchActionDefinitionIds.PASTE, "Paste"));
-        manager.add(new EditorAction(IWorkbenchActionDefinitionIds.SELECT_ALL, "Select All"));
-        manager.add(new EditorAction(IWorkbenchActionDefinitionIds.FIND_REPLACE, "Find/Replace"));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_COPY, "Copy"));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_PASTE, "Paste"));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL, "Select All"));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, "Find/Replace"));
         manager.add(new Separator());
-        manager.add(new EditorAction(IWorkbenchActionDefinitionIds.UNDO, "Undo"));
-        manager.add(new EditorAction(IWorkbenchActionDefinitionIds.REDO, "Redo"));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_UNDO, "Undo"));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_REDO, "Redo"));
     }
 
 }

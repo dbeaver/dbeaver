@@ -1,7 +1,7 @@
 /*
- * hex, a java hex editor
+ * binary, a java binary editor
  * Copyright (C) 2006, 2009 Jordi Bergenthal, pestatije(-at_)users.sourceforge.net
- * The official hex site is sourceforge.net/projects/hex
+ * The official binary site is sourceforge.net/projects/binary
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.jkiss.dbeaver.ui.editors.hex;
+package org.jkiss.dbeaver.ui.editors.binary;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +27,6 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.EventListener;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
@@ -61,7 +60,7 @@ public class BinaryContent {
     /**
      * A subset of data contained in a ByteBuffer or a File
      */
-    final static class Range implements Comparable, Cloneable {
+    final static class Range implements Comparable<Range>, Cloneable {
         long position = -1L;
         long length = -1L;
         boolean dirty = true;
@@ -101,9 +100,8 @@ public class BinaryContent {
             }
         }
 
-        public int compareTo(Object o)
+        public int compareTo(Range other)
         {
-            Range other = (Range) o;
             if (position < other.position && exclusiveEnd() <= other.position) return -1;
             if (other.position < position && other.exclusiveEnd() <= position) return 1;
 
@@ -112,7 +110,7 @@ public class BinaryContent {
 
         public boolean equals(Object obj)
         {
-            return obj instanceof Range && compareTo(obj) == 0;
+            return obj instanceof Range && compareTo((Range)obj) == 0;
 
         }
 
@@ -142,7 +140,7 @@ public class BinaryContent {
     boolean myChangesInserted = false;
     long myChangesPosition = -1L;
     TreeSet<Range> myRanges = null;
-    Iterator tailTree = null;
+    Iterator<Range> tailTree = null;
 
 
     /**
@@ -259,7 +257,7 @@ public class BinaryContent {
         if (myChanges != null && myChangesInserted && myChangesPosition <= position &&
             myChangesPosition + myChanges.size() >= position + length) {
             int deleteStart = (int) (position - myChangesPosition);
-            List subList = myChanges.subList(deleteStart, deleteStart + (int) length);
+            List<Integer> subList = myChanges.subList(deleteStart, deleteStart + (int) length);
             if (actions != null) {
                 actions.addDeleted(position, subList, length == 1L);
                 if (length > 1) actions.endAction();
@@ -293,7 +291,7 @@ public class BinaryContent {
         if (!tailTree.hasNext()) return;
 
         java.util.List<Range> deleted = new ArrayList<Range>();
-        Range firstRange = (Range) tailTree.next();
+        Range firstRange = tailTree.next();
         Range secondRange = (Range) firstRange.clone();  // will be tail part of firstRange
         Range lastRange = null;
         if (firstRange.position < startPosition) {
@@ -315,7 +313,7 @@ public class BinaryContent {
         deleted.add(secondRange);  // actions
         if (endSoFar < exclusiveEnd) {
             while (tailTree.hasNext() && lastRange == null) {
-                lastRange = (Range) tailTree.next();
+                lastRange = tailTree.next();
                 if (lastRange.exclusiveEnd() <= exclusiveEnd) {
                     tailTree.remove();
                     deleted.add(lastRange);  // actions
@@ -341,13 +339,13 @@ public class BinaryContent {
     }
 
 
-    private long[] deleteRanges(List currentAction)
+    private long[] deleteRanges(List<Range> currentAction)
     {
         long[] result = new long[2];
-        result[0] = result[1] = ((Range) currentAction.get(0)).position;
+        result[0] = result[1] = currentAction.get(0).position;
         actionsOn(false);
         deleteAndShift(result[0],
-                       ((Range) currentAction.get(currentAction.size() - 1)).exclusiveEnd() - result[0]);
+                       currentAction.get(currentAction.size() - 1).exclusiveEnd() - result[0]);
         actionsOn(true);
 
         return result;
@@ -519,8 +517,8 @@ public class BinaryContent {
         long positionSoFar = position - positionShift;
         initSubtreeTraversing(positionSoFar, dst.remaining());
 
-        Range partialRange = null;
-        while (tailTree.hasNext() && (partialRange = (Range) tailTree.next()).position < exclusiveEnd) {
+        Range partialRange;
+        while (tailTree.hasNext() && (partialRange = tailTree.next()).position < exclusiveEnd) {
             fillWithRange(dst, partialRange, positionSoFar - partialRange.position,
                           positionSoFar + positionShift, rangesModified);
             positionSoFar = partialRange.exclusiveEnd();
@@ -655,17 +653,17 @@ public class BinaryContent {
 
     Range getRangeAt(long position)
     {
-        SortedSet subSet = myRanges.tailSet(new Range(position, 1L));
+        SortedSet<Range> subSet = myRanges.tailSet(new Range(position, 1L));
         if (subSet.isEmpty())
             return null;
 
-        return (Range) subSet.first();
+        return subSet.first();
     }
 
 
-    SortedSet initSubtreeTraversing(long position, long length)
+    Set<Range> initSubtreeTraversing(long position, long length)
     {
-        SortedSet result = myRanges.tailSet(new Range(position, 1L));
+        Set<Range> result = myRanges.tailSet(new Range(position, 1L));
         tailTree = result.iterator();
         exclusiveEnd = position + length;
         if (exclusiveEnd > length())
@@ -759,14 +757,13 @@ public class BinaryContent {
     }
 
 
-    private long[] insertRanges(List ranges)
+    private long[] insertRanges(List<Range> ranges)
     {
-        BinaryContent.Range firstRange = (BinaryContent.Range) ranges.get(0);
-        BinaryContent.Range lastRange = (BinaryContent.Range) ranges.get(ranges.size() - 1);
+        BinaryContent.Range firstRange = ranges.get(0);
+        BinaryContent.Range lastRange = ranges.get(ranges.size() - 1);
         splitAndShift(firstRange.position, lastRange.exclusiveEnd() - firstRange.position);
-        ArrayList cloned = new ArrayList(ranges.size());
-        for (int i = 0; i < ranges.size(); ++i)
-            cloned.add(((Range) ranges.get(i)).clone());
+        List<Range> cloned = new ArrayList<Range>(ranges.size());
+        for (Range range : ranges) cloned.add((Range)range.clone());
         myRanges.addAll(cloned);
 
         return new long[]{firstRange.position, lastRange.exclusiveEnd()};
@@ -805,7 +802,7 @@ public class BinaryContent {
         long result = 0L;
 
         if (myRanges.size() > 0) {
-            result = ((Range) myRanges.last()).exclusiveEnd();
+            result = myRanges.last().exclusiveEnd();
         }
 
         if (myChanges != null && myChangesInserted) {
@@ -876,7 +873,7 @@ public class BinaryContent {
         myChanges.set((int) (position - myChangesPosition), newValue);
         if (actions != null) {
             if (range == null)
-                actions.addLostByte(position, new Integer(previous));
+                actions.addLostByte(position, previous);
             else {
                 Range clone = (Range) range.clone();
                 clone.position = position;
@@ -945,25 +942,24 @@ public class BinaryContent {
     }
 
 
-    private long[] overwriteRanges(List ranges)
+    private long[] overwriteRanges(List<Range> ranges)
     {
-        BinaryContent.Range firstRange = (BinaryContent.Range) ranges.get(0);
-        BinaryContent.Range lastRange = (BinaryContent.Range) ranges.get(ranges.size() - 1);
+        BinaryContent.Range firstRange = ranges.get(0);
+        BinaryContent.Range lastRange = ranges.get(ranges.size() - 1);
         splitAndShift(firstRange.position, 0);
         splitAndShift(lastRange.exclusiveEnd(), 0);
         initSubtreeTraversing(firstRange.position, 0L);
         if (tailTree.hasNext()) {
-            Range goingRange = (Range) tailTree.next();
+            Range goingRange = tailTree.next();
             while (goingRange != null && goingRange.exclusiveEnd() <= lastRange.exclusiveEnd()) {
                 tailTree.remove();
                 goingRange = null;
                 if (tailTree.hasNext())
-                    goingRange = (Range) tailTree.next();
+                    goingRange = tailTree.next();
             }
         }
-        ArrayList cloned = new ArrayList(ranges.size());
-        for (int i = 0; i < ranges.size(); ++i)
-            cloned.add(((Range) ranges.get(i)).clone());
+        List<Range> cloned = new ArrayList<Range>(ranges.size());
+        for (Range range : ranges) cloned.add((Range)range.clone());
         myRanges.addAll(cloned);
 
         return new long[]{firstRange.position, lastRange.exclusiveEnd()};
@@ -984,7 +980,8 @@ public class BinaryContent {
         if (action == null) return null;
 
         long[] result = null;
-        ArrayList currentAction = (ArrayList) action[1];
+        @SuppressWarnings("unchecked")
+        List<Range> currentAction = (List<Range>) action[1];
         if (action[0] == ActionHistory.TYPE_DELETE) {
             result = deleteRanges(currentAction);
         } else if (action[0] == ActionHistory.TYPE_INSERT) {
@@ -1029,7 +1026,7 @@ public class BinaryContent {
         if (increment == 0L) return;
 
         while (tailTree.hasNext()) {
-            Range currentRange = (Range) tailTree.next();
+            Range currentRange = tailTree.next();
             currentRange.position += increment;
 //		currentRange.dirty = true;
         }
@@ -1041,7 +1038,7 @@ public class BinaryContent {
         initSubtreeTraversing(position, 0);
         if (!tailTree.hasNext()) return;
 
-        Range firstRange = (Range) tailTree.next();
+        Range firstRange = tailTree.next();
         Range secondRange = null;
         if (firstRange.position < position) {
             secondRange = (Range) firstRange.clone();  // will be tail part of firstRange
@@ -1068,9 +1065,9 @@ public class BinaryContent {
     public String toString()
     {
         StringBuffer result = new StringBuffer("BinaryContent: {length:").append(length()).append("}\n");
-        Iterator rangeIterator = myRanges.iterator();
-        while (rangeIterator.hasNext())
-            result.append(rangeIterator.next()).append('\n');
+        for (Range myRange : myRanges) {
+            result.append(myRange).append('\n');
+        }
 
         return result.toString();
     }
@@ -1091,7 +1088,8 @@ public class BinaryContent {
 
         commitChanges();
         long[] result = null;
-        ArrayList currentAction = (ArrayList) action[1];
+        @SuppressWarnings("unchecked")
+        List<Range> currentAction = (List<Range>) action[1];
         if (action[0] == ActionHistory.TYPE_DELETE) {
             result = insertRanges(currentAction);
         } else if (action[0] == ActionHistory.TYPE_INSERT) {

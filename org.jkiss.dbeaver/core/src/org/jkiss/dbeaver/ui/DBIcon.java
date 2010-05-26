@@ -66,7 +66,7 @@ public enum DBIcon
     EDIT_COLUMN("edit_column", "/icons/misc/edit_column.png"),
     LOCKED("locked", "/icons/misc/locked.png"),
 
-    HEX("hex", "/icons/misc/hex.png"),
+    HEX("binary", "/icons/misc/binary.png"),
     TEXT("text", "/icons/misc/text.png"),
     IMAGE("image", "/icons/misc/image.png"),
     ;

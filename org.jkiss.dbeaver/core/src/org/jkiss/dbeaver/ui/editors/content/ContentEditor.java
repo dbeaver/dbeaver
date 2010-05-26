@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.lob;
+package org.jkiss.dbeaver.ui.editors.content;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,7 +13,6 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -26,12 +25,10 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.IEditorActionBarContributor;
-import org.eclipse.ui.editors.text.TextEditorActionContributor;
-import org.eclipse.ui.part.EditorActionBarContributor;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
+import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDStreamHandler;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -41,8 +38,6 @@ import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.hex.HexEditor;
-import org.jkiss.dbeaver.ui.editors.hex.HexEditorActionBarContributor;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
@@ -53,105 +48,72 @@ import java.util.List;
 /**
  * LOBEditor
  */
-public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, DBDValueEditor
+public class ContentEditor extends MultiPageEditorPart implements IDataSourceUser, DBDValueEditor
 {
     public static final long MAX_TEXT_LENGTH = 10 * 1024 * 1024;
     public static final long MAX_IMAGE_LENGTH = 10 * 1024 * 1024;
 
-    static Log log = LogFactory.getLog(LOBEditor.class);
+    static Log log = LogFactory.getLog(ContentEditor.class);
 
-    private LOBEditorInput lobInput;
     private boolean valueEditorRegistered = false;
 
-    private List<ContentEditor> contentEditors = new ArrayList<ContentEditor>();
+    private List<ContentPartInfo> contentParts = new ArrayList<ContentPartInfo>();
 
-    static class ContentEditor {
-        IEditorPart editor;
-        IEditorActionBarContributor actionBarContributor;
-        String title;
-        String tollTip;
-        Image image;
-        String preferedMimeType;
-        long maxContentLength;
+    static class ContentPartInfo {
+        IContentEditorPart editorPart;
         boolean activated;
 
-        private ContentEditor(IEditorPart editor, EditorActionBarContributor actionBarContributor, String title,
-                              String tollTip, Image image, String preferedMimeType, long maxContentLength) {
-            this.editor = editor;
-            this.actionBarContributor = actionBarContributor;
-            this.title = title;
-            this.tollTip = tollTip;
-            this.image = image;
-            this.preferedMimeType = preferedMimeType;
-            this.maxContentLength = maxContentLength;
+        private ContentPartInfo(IContentEditorPart editorPart) {
+            this.editorPart = editorPart;
         }
     }
 
     private static class LOBInitializer implements IRunnableWithProgress {
         DBDValueController valueController;
-        LOBEditorInput editorInput;
+        IContentEditorPart[] editorParts;
+        ContentEditorInput editorInput;
 
-        private LOBInitializer(DBDValueController valueController)
+        private LOBInitializer(DBDValueController valueController, IContentEditorPart[] editorParts)
         {
             this.valueController = valueController;
+            this.editorParts = editorParts;
         }
 
         public void run(IProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             try {
-                editorInput = new LOBEditorInput(valueController, monitor);
+                editorInput = new ContentEditorInput(valueController, editorParts, monitor);
             } catch (CoreException e) {
                 throw new InvocationTargetException(e);
             }
         }
     }
 
-    public LOBEditor()
+    public ContentEditor()
     {
-        contentEditors.add(new ContentEditor(
-            new HexEditor(),
-            new HexEditorActionBarContributor(), "Binary",
-            "Binary Editor",
-            DBIcon.HEX.getImage(),
-            "application",
-            Long.MAX_VALUE));
-        contentEditors.add(new ContentEditor(
-            new LOBTextEditor(),
-            new TextEditorActionContributor(), "Text",
-            "Text Editor",
-            DBIcon.TEXT.getImage(),
-            "text",
-            MAX_TEXT_LENGTH));
-        contentEditors.add(new ContentEditor(
-            new LOBImageEditor(),
-            null, "Image",
-            "Image Editor",
-            DBIcon.IMAGE.getImage(),
-            "image",
-            MAX_IMAGE_LENGTH));
     }
 
     @Override
-    public LOBEditorInput getEditorInput() {
-        return (LOBEditorInput)super.getEditorInput();
+    public ContentEditorInput getEditorInput() {
+        return (ContentEditorInput)super.getEditorInput();
     }
 
-    public ContentEditor getContentEditor(IEditorPart editor) {
-        for (ContentEditor contentEditor : contentEditors) {
-            if (contentEditor.editor == editor) {
-                return contentEditor;
+    public ContentPartInfo getContentEditor(IEditorPart editor) {
+        for (ContentPartInfo contentPart : contentParts) {
+            if (contentPart.editorPart == editor) {
+                return contentPart;
             }
         }
         return null;
     }
 
-    public static boolean openEditor(DBDValueController valueController)
+    public static boolean openEditor(DBDValueController valueController, IContentEditorPart[] editorParts)
     {
-        LOBEditorInput editorInput;
+        ContentEditorInput editorInput;
         // Save data to file
         try {
-            LOBInitializer initializer = new LOBInitializer(valueController);
+            LOBInitializer initializer = new LOBInitializer(valueController, editorParts);
             valueController.getValueSite().getWorkbenchWindow().run(false, true, initializer);
             editorInput = initializer.editorInput;
         } catch (Throwable e) {
@@ -164,10 +126,10 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
         try {
             valueController.getValueSite().getWorkbenchWindow().getActivePage().openEditor(
             editorInput,
-            LOBEditor.class.getName());
+            ContentEditor.class.getName());
         }
         catch (PartInitException e) {
-            log.error("Could not open LOB editor", e);
+            log.error("Could not open LOB editorPart", e);
             return false;
         }
         return true;
@@ -184,19 +146,23 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {
-        if (!(input instanceof LOBEditorInput)) {
-            throw new PartInitException("Invalid Input: Must be LOBEditorInput");
+        if (!(input instanceof ContentEditorInput)) {
+            throw new PartInitException("Invalid Input: Must be ContentEditorInput");
         }
-
-        this.lobInput = (LOBEditorInput)input;
 
         setSite(site);
         setInput(input);
-        setPartName(this.lobInput.getName());
-        setTitleImage(this.lobInput.getImageDescriptor().createImage());
+        setPartName(input.getName());
+        setTitleImage(input.getImageDescriptor().createImage());
 
         getValueController().registerEditor(this);
         valueEditorRegistered = true;
+
+        // Fill nested editorParts info
+        IContentEditorPart[] editorParts = getEditorInput().getEditors();
+        for (IContentEditorPart editorPart : editorParts) {
+            contentParts.add(new ContentPartInfo(editorPart));
+        }
     }
 
     public void dispose()
@@ -205,22 +171,21 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
             getValueController().unregisterEditor(this);
             valueEditorRegistered = false;
         }
-        if (lobInput != null) {
+        if (getEditorInput() != null) {
             // Release LOB input resources
             try {
-                lobInput.release(new NullProgressMonitor());
+                getEditorInput().release(new NullProgressMonitor());
             } catch (Throwable e) {
                 log.warn("Error releasing LOB input", e);
             }
-            lobInput = null;
         }
         super.dispose();
     }
 
     public boolean isDirty()
     {
-        for (ContentEditor contentEditor : contentEditors) {
-            if (contentEditor.activated && contentEditor.editor.isDirty()) {
+        for (ContentPartInfo contentPart : contentParts) {
+            if (contentPart.activated && contentPart.editorPart.isDirty()) {
                 return true;
             }
         }
@@ -235,7 +200,7 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
     @Override
     protected IEditorSite createSite(IEditorPart editor)
     {
-        return new LOBEditorSite(this, editor);
+        return new ContentEditorSite(this, editor);
     }
 
     protected void createPages() {
@@ -266,17 +231,18 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
             }
         }
         int defaultPage = -1;
-        for (ContentEditor contentEditor : contentEditors) {
-            if (contentLength > contentEditor.maxContentLength) {
+        for (ContentPartInfo contentPart : contentParts) {
+            IContentEditorPart editorPart = contentPart.editorPart;
+            if (contentLength > editorPart.getMaxContentLength()) {
                 continue;
             }
             try {
-                int index = addPage(contentEditor.editor, lobInput);
-                setPageText(index, contentEditor.title);
-                setPageImage(index, contentEditor.image);
-                contentEditor.activated = true;
+                int index = addPage(contentPart.editorPart, getEditorInput());
+                setPageText(index, editorPart.getContentTypeTitle());
+                setPageImage(index, editorPart.getContentTypeImage());
+                contentPart.activated = true;
                 // Check MIME type
-                if (mimeType != null && mimeType.getPrimaryType().equals(contentEditor.preferedMimeType)) {
+                if (mimeType != null && mimeType.getPrimaryType().equals(editorPart.getPreferedMimeType())) {
                     defaultPage = index;
                 }
             } catch (PartInitException e) {
@@ -393,7 +359,7 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
 */
         }
         catch (Exception e) {
-            log.error("Could not initialize LOB editor toolbar", e);
+            log.error("Could not initialize LOB editorPart toolbar", e);
         }
 
         {
@@ -452,7 +418,8 @@ public class LOBEditor extends MultiPageEditorPart implements IDataSourceUser, D
 
     public DBDValueController getValueController()
     {
-        return lobInput == null ? null : lobInput.getValueController();
+        ContentEditorInput input = getEditorInput();
+        return input == null ? null : input.getValueController();
     }
 
     public void showValueEditor()
