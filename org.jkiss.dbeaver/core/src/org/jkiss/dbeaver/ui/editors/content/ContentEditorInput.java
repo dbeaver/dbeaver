@@ -18,20 +18,20 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDStreamHandler;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
 
 /**
  * LOBEditorInput
@@ -190,7 +190,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
 
     public IPath getPath()
     {
-        return contentFile == null ? null : contentFile.getLocation();
+        return contentFile == null ? null : contentFile.getFullPath();
     }
 
     public boolean isReadOnly() {
@@ -232,6 +232,23 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
                         log.warn("Could not delete incomplete file '" + file.getAbsolutePath() + "'");
                     }
                 }
+            }
+            finally {
+                contents.close();
+            }
+        }
+        catch (IOException e) {
+            throw new CoreException(DBeaverUtils.makeExceptionStatus(e));
+        }
+    }
+
+    void loadFromExternalFile(File file, IProgressMonitor monitor)
+        throws CoreException
+    {
+        try {
+            InputStream contents = new FileInputStream(file);
+            try {
+                contentFile.setContents(contents, true, false, monitor);
             }
             finally {
                 contents.close();

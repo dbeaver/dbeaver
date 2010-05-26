@@ -9,6 +9,11 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -25,6 +30,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IPathEditorInput;
+import org.eclipse.ui.editors.text.ILocationProvider;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
@@ -49,7 +57,7 @@ import java.util.List;
 /**
  * LOBEditor
  */
-public class ContentEditor extends MultiPageEditorPart implements IDataSourceUser, DBDValueEditor
+public class ContentEditor extends MultiPageEditorPart implements IDataSourceUser, DBDValueEditor, IResourceChangeListener
 {
     public static final long MAX_TEXT_LENGTH = 10 * 1024 * 1024;
     public static final long MAX_IMAGE_LENGTH = 10 * 1024 * 1024;
@@ -60,6 +68,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
 
     private List<ContentPartInfo> contentParts = new ArrayList<ContentPartInfo>();
     private ColumnInfoPanel infoPanel;
+    private boolean dirty;
 
     static class ContentPartInfo {
         IContentEditorPart editorPart;
@@ -139,6 +148,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
 
     public void doSave(IProgressMonitor monitor)
     {
+        this.dirty = false;
     }
 
     public void doSaveAs()
@@ -165,10 +175,14 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         for (IContentEditorPart editorPart : editorParts) {
             contentParts.add(new ContentPartInfo(editorPart));
         }
+
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
 
     public void dispose()
     {
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+
         if (valueEditorRegistered) {
             getValueController().unregisterEditor(this);
             valueEditorRegistered = false;
@@ -186,6 +200,9 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
 
     public boolean isDirty()
     {
+        if (dirty) {
+            return true;
+        }
         for (ContentPartInfo contentPart : contentParts) {
             if (contentPart.activated && contentPart.editorPart.isDirty()) {
                 return true;
@@ -475,6 +492,25 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
             throw new DBException("No value controller");
         }
         return valueController.getSession();
+    }
+
+    public void resourceChanged(IResourceChangeEvent event)
+    {
+        IResourceDelta delta= event.getDelta();
+        if (delta == null) {
+            return;
+        }
+        delta = delta.findMember(getEditorInput().getPath());
+        if (delta == null) {
+            return;
+        }
+        if (delta.getKind() == IResourceDelta.CHANGED &&
+            (delta.getFlags() & IResourceDelta.CONTENT) != 0)
+        {
+            // Content was changed somehow so mark editor as dirty
+            dirty = true;
+            firePropertyChange(PROP_DIRTY);
+        }
     }
 
 }

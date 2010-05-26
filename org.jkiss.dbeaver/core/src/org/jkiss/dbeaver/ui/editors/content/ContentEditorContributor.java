@@ -205,7 +205,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     {
         public SaveAction()
         {
-            super(IWorkbenchActionDefinitionIds.SAVE, "Save", "Save to File", DBIcon.SAVE);
+            super(IWorkbenchCommandConstants.FILE_EXPORT, "Save", "Save to File", DBIcon.SAVE);
         }
 
         @Override
@@ -264,14 +264,50 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     {
         public LoadAction()
         {
-            super("org.jkiss.dbeaver.lob.actions.load", "Load", "Load from File", DBIcon.LOAD);
+            super(IWorkbenchCommandConstants.FILE_IMPORT, "Load", "Load from File", DBIcon.LOAD);
         }
 
         @Override
         public void run()
         {
-            FileDialog fileDialog = new FileDialog(getEditor().getSite().getShell(), SWT.OPEN);
-            fileDialog.open();
+            Shell shell = getEditor().getSite().getShell();
+            FileDialog fileDialog = new FileDialog(shell, SWT.OPEN);
+            String fileName = fileDialog.open();
+            if (CommonUtils.isEmpty(fileName)) {
+                return;
+            }
+            final File loadFile = new File(fileName);
+            if (!loadFile.exists()) {
+                MessageBox aMessageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.OK);
+                aMessageBox.setText("File doesn't exists");
+                aMessageBox.setMessage("The file "+ loadFile.getAbsolutePath() + " doesn't exists.");
+                aMessageBox.open();
+                return;
+            }
+            try {
+                getEditor().getSite().getWorkbenchWindow().run(false, true, new IRunnableWithProgress() {
+                    public void run(IProgressMonitor monitor)
+                        throws InvocationTargetException, InterruptedException
+                    {
+                        try {
+                            getEditor().getEditorInput().loadFromExternalFile(loadFile, monitor);
+                        }
+                        catch (CoreException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                });
+            }
+            catch (InvocationTargetException e) {
+                DBeaverUtils.showErrorDialog(
+                    shell,
+                    "Could not load content",
+                    "Could not load content from file '" + loadFile.getAbsolutePath() + "'",
+                    e.getTargetException());
+            }
+            catch (InterruptedException e) {
+                // do nothing
+            }
         }
     }
 
