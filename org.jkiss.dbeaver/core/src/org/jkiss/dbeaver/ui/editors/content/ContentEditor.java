@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
@@ -58,6 +59,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
     private boolean valueEditorRegistered = false;
 
     private List<ContentPartInfo> contentParts = new ArrayList<ContentPartInfo>();
+    private ColumnInfoPanel infoPanel;
 
     static class ContentPartInfo {
         IContentEditorPart editorPart;
@@ -260,17 +262,29 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         GridLayout layout = new GridLayout(1, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
         panel.setLayout(layout);
         GridData gd = new GridData(GridData.FILL_BOTH);
         panel.setLayoutData(gd);
 
+        {
+            infoPanel = new ColumnInfoPanel(panel, SWT.NONE, getValueController());
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.exclude = true;
+            infoPanel.setLayoutData(gd);
+            infoPanel.setVisible(false);
+        }
+
         Composite editotPanel = new Composite(panel, SWT.NONE);
         layout = new GridLayout(1, false);
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
         editotPanel.setLayout(layout);
         gd = new GridData(GridData.FILL_BOTH);
         editotPanel.setLayoutData(gd);
-
-        //ColumnInfoPanel infoPanel = new ColumnInfoPanel(panel, SWT.NONE, getValueController());
 /*
         infoPanel = new ColumnInfoPanel(panel, SWT.NONE, getValueController()) {
             @Override
@@ -288,6 +302,17 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         //createToolbar(panel);
 
         return editotPanel;
+    }
+
+    void toggleInfoBar()
+    {
+        boolean visible = infoPanel.isVisible();
+        visible = !visible;
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.exclude = !visible;
+        infoPanel.setLayoutData(gd);
+        infoPanel.setVisible(visible);
+        infoPanel.getParent().layout();
     }
 
     private void createToolbar(Composite panel) {

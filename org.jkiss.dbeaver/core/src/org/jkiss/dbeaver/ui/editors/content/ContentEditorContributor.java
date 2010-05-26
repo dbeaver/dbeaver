@@ -285,6 +285,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         @Override
         public void run()
         {
+            getEditor().toggleInfoBar();
         }
     }
 
