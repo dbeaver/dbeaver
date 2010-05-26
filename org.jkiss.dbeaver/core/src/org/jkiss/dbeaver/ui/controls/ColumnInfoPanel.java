@@ -4,15 +4,13 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.data.DBDRowController;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.ui.views.properties.PropertiesPage;
@@ -99,8 +97,9 @@ public class ColumnInfoPanel extends Composite {
         public List<KeyColumnValue> getColumns()
         {
             List<KeyColumnValue> columns = new ArrayList<KeyColumnValue>();
+            DBDRowController row = valueController.getRow();
             for (DBCColumnMetaData col : valueController.getValueLocator().getKeyColumns()) {
-                columns.add(new KeyColumnValue(col, valueController.getColumnValue(col)));
+                columns.add(new KeyColumnValue(col, row.getColumnValue(col)));
             }
             return columns;
         }

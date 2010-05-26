@@ -5,29 +5,26 @@
 package org.jkiss.dbeaver.ui.editors.lob;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.resources.ResourceAttributes;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IPathEditorInput;
+import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDStreamHandler;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.editors.hex.HexTexts;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-import java.util.List;
 import java.io.IOException;
 
 /**
@@ -144,32 +141,9 @@ public class LOBEditorInput implements IFileEditorInput, IPathEditorInput //IDat
     }
 
     private String makeFileName() throws DBException {
-        String dsName = valueController.getSession().getDataSource().getContainer().getName();
-        String catalogName = valueController.getColumnMetaData().getCatalogName();
-        String schemaName = valueController.getColumnMetaData().getSchemaName();
-        String tableName = valueController.getColumnMetaData().getTableName();
-        String columnName = valueController.getColumnMetaData().getColumnName();
-        StringBuilder fileName = new StringBuilder(CommonUtils.escapeIdentifier(dsName));
-        if (!CommonUtils.isEmpty(catalogName)) {
-            fileName.append('.').append(CommonUtils.escapeIdentifier(catalogName));
-        }
-        if (!CommonUtils.isEmpty(schemaName)) {
-            fileName.append('.').append(CommonUtils.escapeIdentifier(schemaName));
-        }
-        if (!CommonUtils.isEmpty(tableName)) {
-            fileName.append('.').append(CommonUtils.escapeIdentifier(tableName));
-        }
-        if (!CommonUtils.isEmpty(columnName)) {
-            fileName.append('.').append(CommonUtils.escapeIdentifier(columnName));
-        }
+        StringBuilder fileName = new StringBuilder(valueController.getColumnId());
         if (valueController.getValueLocator() != null) {
-            List<? extends DBCColumnMetaData> keyColumns = valueController.getValueLocator().getKeyColumns();
-            for (DBCColumnMetaData keyColumn : keyColumns) {
-                fileName.append('.').append(CommonUtils.escapeIdentifier(keyColumn.getColumnName()));
-                Object keyValue = valueController.getColumnValue(keyColumn);
-                fileName.append('-');
-                fileName.append(CommonUtils.escapeIdentifier(keyValue == null ? "NULL" : keyValue.toString()));
-            }
+            fileName.append(valueController.getValueLocator().getKeyId(valueController.getRow()));
         }
         return fileName.toString();
     }

@@ -12,6 +12,8 @@ import org.jkiss.dbeaver.model.anno.Property;
 
 import java.util.List;
 
+import net.sf.jkiss.utils.CommonUtils;
+
 /**
  * Value locator.
  * Unique identifier of row in certain table.
@@ -27,6 +29,19 @@ public class DBDValueLocator implements DBPObject {
         this.table = table;
         this.uniqueKey = uniqueKey;
         this.keyColumns = keyColumns;
+    }
+
+    public String getKeyId(DBDRowController rowController)
+    {
+        StringBuilder keyId = new StringBuilder();
+        List<? extends DBCColumnMetaData> keyColumns = getKeyColumns();
+        for (DBCColumnMetaData keyColumn : keyColumns) {
+            keyId.append('.').append(CommonUtils.escapeIdentifier(keyColumn.getColumnName()));
+            Object keyValue = rowController.getColumnValue(keyColumn);
+            keyId.append('-');
+            keyId.append(CommonUtils.escapeIdentifier(keyValue == null ? "NULL" : keyValue.toString()));
+        }
+        return keyId.toString();
     }
 
     @Property(name = "Table", viewable = true, order = 1)

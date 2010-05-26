@@ -27,10 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueLocator;
-import org.jkiss.dbeaver.model.data.DBDValueEditor;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
@@ -594,7 +591,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         new CellDataSaver().rejectChanges();
     }
 
-    private class ResultSetValueController implements DBDValueController {
+    private class ResultSetValueController implements DBDValueController, DBDRowController {
 
         private Object[] curRow;
         private int columnIndex;
@@ -612,21 +609,41 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return resultSetProvider.getSession();
         }
 
+        public DBDRowController getRow() {
+            return this;
+        }
+
         public DBCColumnMetaData getColumnMetaData()
         {
             return metaColumns[columnIndex].metaData;
         }
 
-        public Object getColumnValue(DBCColumnMetaData column)
-        {
-            for (int i = 0; i < metaColumns.length; i++) {
-                ResultSetColumn metaColumn = metaColumns[i];
-                if (metaColumn.metaData == column) {
-                    return curRow[i];
-                }
+        public String getColumnId() {
+            String dsName;
+            try {
+                dsName = getSession().getDataSource().getContainer().getName();
+            } catch (DBException e) {
+                dsName = "datasource";
+                log.warn(e);
             }
-            log.warn("Unknown column value requested: " + column);
-            return null;
+            String catalogName = getColumnMetaData().getCatalogName();
+            String schemaName = getColumnMetaData().getSchemaName();
+            String tableName = getColumnMetaData().getTableName();
+            String columnName = getColumnMetaData().getColumnName();
+            StringBuilder columnId = new StringBuilder(CommonUtils.escapeIdentifier(dsName));
+            if (!CommonUtils.isEmpty(catalogName)) {
+                columnId.append('.').append(CommonUtils.escapeIdentifier(catalogName));
+            }
+            if (!CommonUtils.isEmpty(schemaName)) {
+                columnId.append('.').append(CommonUtils.escapeIdentifier(schemaName));
+            }
+            if (!CommonUtils.isEmpty(tableName)) {
+                columnId.append('.').append(CommonUtils.escapeIdentifier(tableName));
+            }
+            if (!CommonUtils.isEmpty(columnName)) {
+                columnId.append('.').append(CommonUtils.escapeIdentifier(columnName));
+            }
+            return columnId.toString();
         }
 
         public Object getValue()
@@ -700,6 +717,26 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         public void showMessage(String message, boolean error)
         {
             setStatus(message, error);
+        }
+
+        public Collection<DBCColumnMetaData> getColumnsMetaData() {
+            List<DBCColumnMetaData> columns = new ArrayList<DBCColumnMetaData>();
+            for (ResultSetColumn column : metaColumns) {
+                columns.add(column.metaData);
+            }
+            return columns;
+        }
+
+        public Object getColumnValue(DBCColumnMetaData column)
+        {
+            for (int i = 0; i < metaColumns.length; i++) {
+                ResultSetColumn metaColumn = metaColumns[i];
+                if (metaColumn.metaData == column) {
+                    return curRow[i];
+                }
+            }
+            log.warn("Unknown column value requested: " + column);
+            return null;
         }
 
         private GridPos getCellPos()

@@ -15,12 +15,35 @@ import org.jkiss.dbeaver.model.dbc.DBCSession;
  */
 public interface DBDValueController
 {
+    /**
+     * Controller's session
+     * @return session
+     * @throws DBException
+     */
     DBCSession getSession() throws DBException;
 
+    /**
+     * Row controller
+     * @return row controller
+     */
+    DBDRowController getRow();
+
+    /**
+     * Column meta data
+     * @return meta data
+     */
     DBCColumnMetaData getColumnMetaData();
 
-    Object getColumnValue(DBCColumnMetaData column);
+    /**
+     * Column unique ID string
+     * @return string
+     */
+    String getColumnId();
 
+    /**
+     * Column value
+     * @return
+     */
     Object getValue();
 
     void updateValue(Object value);
