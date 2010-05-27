@@ -2,13 +2,13 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.content;
+package org.jkiss.dbeaver.utils;
 
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
@@ -19,11 +19,11 @@ public class ContentUtils {
 
     static final int STREAM_COPY_BUFFER_SIZE = 10000;
 
-    static void copyStreams(
+    public static void copyStreams(
         InputStream inputStream,
         long contentLength,
         OutputStream outputStream,
-        IProgressMonitor monitor)
+        DBRProgressMonitor monitor)
         throws IOException
     {
         int segmentSize = (int)(contentLength / STREAM_COPY_BUFFER_SIZE);
@@ -48,11 +48,11 @@ public class ContentUtils {
         }
     }
 
-    static void copyStreams(
+    public static void copyStreams(
         Reader reader,
         long contentLength,
         Writer writer,
-        IProgressMonitor monitor)
+        DBRProgressMonitor monitor)
         throws IOException
     {
         int segmentSize = (int)(contentLength / STREAM_COPY_BUFFER_SIZE);

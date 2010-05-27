@@ -14,11 +14,11 @@ import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDStreamHandler;
 import org.jkiss.dbeaver.model.data.DBDStreamKind;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.dbc.DBCBLOB;
-import org.jkiss.dbeaver.model.dbc.DBCCLOB;
+import org.jkiss.dbeaver.model.dbc.DBCContentBinary;
+import org.jkiss.dbeaver.model.dbc.DBCContentCharacter;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCLOB;
+import org.jkiss.dbeaver.model.dbc.DBCContent;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -37,14 +36,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * JDBC LOB value handler.
+ * JDBC Content value handler.
  * Handle LOBs, LONGs and BINARY types.
  */
-public class JDBCLOBValueHandler extends JDBCAbstractValueHandler implements DBDStreamHandler {
+public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements DBDStreamHandler {
 
-    static Log log = LogFactory.getLog(JDBCLOBValueHandler.class);
+    static Log log = LogFactory.getLog(JDBCContentValueHandler.class);
 
-    public static final JDBCLOBValueHandler INSTANCE = new JDBCLOBValueHandler();
+    public static final JDBCContentValueHandler INSTANCE = new JDBCContentValueHandler();
 
     protected Object getValueObject(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException, SQLException
@@ -61,9 +60,9 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler implements DBD
     {
         if (value instanceof byte[]) {
             return "binary [" + ((byte[]) value).length + "]";
-        } else if (value instanceof DBCBLOB || value instanceof Blob) {
+        } else if (value instanceof DBCContentBinary || value instanceof Blob) {
             return "BLOB";
-        } else if (value instanceof DBCCLOB || value instanceof Clob) {
+        } else if (value instanceof DBCContentCharacter || value instanceof Clob) {
             return "CLOB";
         } else {
             return super.getValueDisplayString(value);
@@ -149,10 +148,10 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler implements DBD
                 return new ByteArrayInputStream((byte[]) value);
             } else if (value instanceof String) {
                 return new StringReader((String)value);
-            } else if (value instanceof DBCBLOB) {
-                return ((DBCBLOB)value).getBinaryStream();
-            } else if (value instanceof DBCCLOB) {
-                return ((DBCCLOB)value).getCharacterStream();
+            } else if (value instanceof DBCContentBinary) {
+                return ((DBCContentBinary)value).getContents();
+            } else if (value instanceof DBCContentCharacter) {
+                return ((DBCContentCharacter)value).getContents();
             } else if (value instanceof Blob) {
                 return ((Blob)value).getBinaryStream();
             } else if (value instanceof Clob) {
@@ -176,8 +175,8 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler implements DBD
                 return ((byte[]) value).length;
             } else if (value instanceof String) {
                 return ((String)value).length();
-            } else if (value instanceof DBCLOB) {
-                return ((DBCLOB)value).getLength();
+            } else if (value instanceof DBCContent) {
+                return ((DBCContent)value).getContentLength();
             } else if (value instanceof Blob) {
                 return ((Blob)value).length();
             } else if (value instanceof Clob) {
@@ -194,9 +193,9 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler implements DBD
     public String getContentType(Object value)
         throws DBCException, IOException
     {
-        if (value instanceof byte[] || value instanceof DBCBLOB || value instanceof Blob) {
+        if (value instanceof byte[] || value instanceof DBCContentBinary || value instanceof Blob) {
             return MimeTypes.OCTET_STREAM;
-        } else if (value instanceof String || value instanceof DBCCLOB || value instanceof Clob) {
+        } else if (value instanceof String || value instanceof DBCContentCharacter || value instanceof Clob) {
             return MimeTypes.TEXT_PLAIN;
         } else {
             return null;

@@ -577,7 +577,7 @@ public class SQLEditor extends TextEditor
             Collection<? extends Position> selectedPositions = syntaxManager.getPositions(startOffset, length);
             for (Position position : selectedPositions) {
                 try {
-                    String query = document.get(position.getOffset(), position.getLength());
+                    String query = document.get(position.getOffset(), position.getContentLength());
                     System.out.println(query);
                 } catch (BadLocationException e) {
                     e.printStackTrace();

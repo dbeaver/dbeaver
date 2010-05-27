@@ -31,7 +31,7 @@ public class JDBCStandardDataTypeProvider implements DBDDataTypeProvider {
             case STRING:
                 if (type.getValueType() == java.sql.Types.LONGVARCHAR || type.getValueType() == java.sql.Types.LONGNVARCHAR) {
                     // Eval longvarchars as LOBs
-                    return JDBCLOBValueHandler.INSTANCE;
+                    return JDBCContentValueHandler.INSTANCE;
                 } else {
                     return JDBCStringValueHandler.INSTANCE;
                 }
@@ -41,7 +41,7 @@ public class JDBCStandardDataTypeProvider implements DBDDataTypeProvider {
                 return JDBCDateTimeValueHandler.INSTANCE;
             case BINARY:
             case LOB:
-                return JDBCLOBValueHandler.INSTANCE;
+                return JDBCContentValueHandler.INSTANCE;
             default:
                 return null;
         }

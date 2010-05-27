@@ -17,16 +17,15 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
-import org.eclipse.swt.SWTError;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDStreamHandler;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDStreamKind;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
 
@@ -209,7 +208,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
             try {
                 OutputStream os = new FileOutputStream(file);
                 try {
-                    ContentUtils.copyStreams(contents, file.length(), os, monitor);
+                    ContentUtils.copyStreams(contents, file.length(), os, DBeaverUtils.makeMonitor(monitor));
                 }
                 finally {
                     os.close();
@@ -240,7 +239,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
                 File intFile = contentFile.getLocation().toFile();
                 OutputStream outputStream = new FileOutputStream(intFile);
                 try {
-                    ContentUtils.copyStreams(inputStream, extFile.length(), outputStream, monitor);
+                    ContentUtils.copyStreams(inputStream, extFile.length(), outputStream, DBeaverUtils.makeMonitor(monitor));
                 }
                 finally {
                     outputStream.close();
@@ -269,7 +268,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
             try {
                 OutputStream outputStream = new FileOutputStream(file);
                 try {
-                    ContentUtils.copyStreams(inputStream, contentLength, outputStream, monitor);
+                    ContentUtils.copyStreams(inputStream, contentLength, outputStream, DBeaverUtils.makeMonitor(monitor));
                 }
                 finally {
                     outputStream.close();
@@ -283,7 +282,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
             try {
                 Writer writer = new FileWriter(file);
                 try {
-                    ContentUtils.copyStreams(reader, contentLength, writer, monitor);
+                    ContentUtils.copyStreams(reader, contentLength, writer, DBeaverUtils.makeMonitor(monitor));
                 }
                 finally {
                     writer.close();

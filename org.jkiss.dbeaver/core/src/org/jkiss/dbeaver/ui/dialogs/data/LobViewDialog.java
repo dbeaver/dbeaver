@@ -30,7 +30,7 @@ public class LobViewDialog extends ValueViewDialog {
         long lobLength = 0;
         if (lob != null) {
             try {
-                lobLength = lob.getLength();
+                lobLength = lob.getContentLength();
             } catch (DBCException e) {
                 log.error("Can't obtain LOB information", e);
             }
@@ -42,12 +42,12 @@ public class LobViewDialog extends ValueViewDialog {
             Text text = new Text(getInfoGroup(), SWT.BORDER | SWT.READ_ONLY);
             text.setText(String.valueOf(lobLength));
         }
-        if (lob instanceof DBCCLOB) {
+        if (lob instanceof DBCContentCharacter) {
             Label label = new Label(dialogGroup, SWT.NONE);
             label.setText("Content (sample 64k):");
             String content = null;
             try {
-                DBCCLOB clob = (DBCCLOB)lob;
+                DBCContentCharacter clob = (DBCContentCharacter)lob;
                 content = clob.getString(0, lobLength >= 64000 ? 64000 : (int)lobLength);
             } catch (DBCException e) {
                 log.warn("Error reading content", e);
@@ -78,7 +78,7 @@ public class LobViewDialog extends ValueViewDialog {
 
                 }
             });
-            if (lob instanceof DBCCLOB) {
+            if (lob instanceof DBCContentCharacter) {
                 UIUtils.createToolItem(toolBar, "Copy to clipboard", DBIcon.RS_MODE_GRID, new SelectionAdapter() {
                     public void widgetSelected(SelectionEvent e)
                     {

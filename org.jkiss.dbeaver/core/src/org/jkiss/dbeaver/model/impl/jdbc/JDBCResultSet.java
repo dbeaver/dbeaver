@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
+import org.jkiss.dbeaver.model.impl.data.JDBCContentBLOB;
+import org.jkiss.dbeaver.model.impl.data.JDBCContentCLOB;
 
 import java.sql.Blob;
 import java.sql.Clob;
@@ -51,9 +53,9 @@ public class JDBCResultSet implements DBCResultSet
             index,
             metaData.getColumns().get(index - 1).getValueType());
         if (object instanceof Blob) {
-            object = new JDBCBLOB((Blob)object);
+            object = new JDBCContentBLOB((Blob)object);
         } else if (object instanceof Clob) {
-            object = new JDBCCLOB((Clob)object);
+            object = new JDBCContentCLOB((Clob)object);
         }
         return object;
     }

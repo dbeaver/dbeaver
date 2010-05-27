@@ -9,8 +9,10 @@ package org.jkiss.dbeaver.model.dbc;
  *
  * @author Serge Rider
  */
-public interface DBCLOB {
+public interface DBCContent {
 
-    long getLength() throws DBCException;
+    long getContentLength() throws DBCException;
+
+    String getContentType();
 
 }
