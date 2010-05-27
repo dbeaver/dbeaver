@@ -12,9 +12,11 @@ import org.eclipse.jface.action.IMenuManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDStreamHandler;
+import org.jkiss.dbeaver.model.data.DBDStreamKind;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCBLOB;
 import org.jkiss.dbeaver.model.dbc.DBCCLOB;
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCLOB;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -26,9 +28,13 @@ import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
-import java.sql.*;
+import java.io.StringReader;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * JDBC LOB value handler.
@@ -113,7 +119,27 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler implements DBD
                 new ContentImageEditorPart()} );
     }
 
-    public InputStream getContentStream(Object value)
+    public DBDStreamKind getContentKind(DBCColumnMetaData columnMetaData)
+    {
+        switch (columnMetaData.getValueType()) {
+            case java.sql.Types.CHAR:
+            case java.sql.Types.VARCHAR:
+            case java.sql.Types.NVARCHAR:
+            case java.sql.Types.LONGVARCHAR:
+            case java.sql.Types.LONGNVARCHAR:
+            case java.sql.Types.CLOB:
+            case java.sql.Types.NCLOB:
+                return DBDStreamKind.CHARACTER;
+            case java.sql.Types.BINARY:
+            case java.sql.Types.VARBINARY:
+            case java.sql.Types.LONGVARBINARY:
+            case java.sql.Types.BLOB:
+            default:
+                return DBDStreamKind.BINARY;
+        }
+    }
+
+    public Object getContents(Object value)
         throws DBCException, IOException
     {
         try {
@@ -122,17 +148,15 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler implements DBD
             } else if (value instanceof byte[]) {
                 return new ByteArrayInputStream((byte[]) value);
             } else if (value instanceof String) {
-                return makeStreamFromString((String)value);
+                return new StringReader((String)value);
             } else if (value instanceof DBCBLOB) {
                 return ((DBCBLOB)value).getBinaryStream();
             } else if (value instanceof DBCCLOB) {
-                return makeStreamFromString(
-                    readStringFromReader(((DBCCLOB)value).getCharacterStream()));
+                return ((DBCCLOB)value).getCharacterStream();
             } else if (value instanceof Blob) {
                 return ((Blob)value).getBinaryStream();
             } else if (value instanceof Clob) {
-                return makeStreamFromString(
-                    readStringFromReader(((Clob)value).getCharacterStream()));
+                return ((Clob)value).getCharacterStream();
             } else {
                 throw new DBCException("Unsupported value type: " + value.getClass().getName());
             }
@@ -185,30 +209,10 @@ public class JDBCLOBValueHandler extends JDBCAbstractValueHandler implements DBD
         return null;
     }
 
-    public Object updateContent(Object value, InputStream content, long contentSize)
+    public Object updateContents(Object value, Object content, long contentSize)
         throws DBCException, IOException
     {
         return null;
-    }
-
-    private InputStream makeStreamFromString(String string)
-    {
-        return new ByteArrayInputStream(string.getBytes());
-    }
-
-    private String readStringFromReader(Reader in)
-        throws IOException
-    {
-        StringBuilder result = new StringBuilder();
-        char[] buf = new char[10000];
-        for (;;) {
-            int len = in.read(buf);
-            if (len <= 0) {
-                break;
-            }
-            result.append(buf, 0, len);
-        }
-        return result.toString();
     }
 
 }

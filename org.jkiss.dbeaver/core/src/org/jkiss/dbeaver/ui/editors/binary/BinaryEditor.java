@@ -92,7 +92,12 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         }
         if (delta.getKind() == IResourceDelta.CHANGED) {
             // Refresh editor
-            this.loadBinaryContent();
+            getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                public void run()
+                {
+                    loadBinaryContent();
+                }
+            });
         }
     }
 

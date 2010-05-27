@@ -17,11 +17,13 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
+import org.eclipse.swt.SWTError;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDStreamHandler;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDStreamKind;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -38,7 +40,6 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
     private DBDValueController valueController;
     private IContentEditorPart[] editorParts;
     private IFile contentFile;
-    private static final int STREAM_COPY_BUFFER_SIZE = 10000;
 
     ContentEditorInput(
         DBDValueController valueController,
@@ -97,16 +98,23 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
         return null;
     }
 
+    private DBDStreamHandler getStreamHandler()
+        throws DBCException
+    {
+        DBDStreamHandler streamHandler;
+        if (valueController.getValueHandler() instanceof DBDStreamHandler) {
+            streamHandler = (DBDStreamHandler) valueController.getValueHandler();
+        } else {
+            throw new DBCException("Value do not support streaming");
+        }
+        return streamHandler;
+    }
+
     private void saveDataToFile(IProgressMonitor monitor)
         throws CoreException
     {
         try {
-            DBDStreamHandler streamHandler;
-            if (valueController.getValueHandler() instanceof DBDStreamHandler) {
-                streamHandler = (DBDStreamHandler) valueController.getValueHandler();
-            } else {
-                throw new DBCException("Value do not support streaming");
-            }
+            DBDStreamHandler streamHandler = getStreamHandler();
 
             // Construct file name
             String fileName;
@@ -125,11 +133,12 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
             // Write value to file
             Object value = valueController.getValue();
             if (value != null) {
-                contentFile.setContents(
-                    streamHandler.getContentStream(value),
-                    true,
-                    false,
-                    monitor);
+                File file = contentFile.getLocation().toFile();
+                Object contents = streamHandler.getContents(value);
+                long contentLength = streamHandler.getContentLength(value);
+                if (contents != null) {
+                    copyContentToFile(contents, contentLength, file, monitor);
+                }
             }
 
             // Mark file as readonly
@@ -198,26 +207,11 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
         try {
             InputStream contents = contentFile.getContents(true);
             try {
-                int segmentSize = (int)(file.length() / STREAM_COPY_BUFFER_SIZE);
-                monitor.beginTask("Save content to file '" + file.getName() + "'", segmentSize);
-                
                 OutputStream os = new FileOutputStream(file);
                 try {
-                    byte[] buffer = new byte[STREAM_COPY_BUFFER_SIZE];
-                    for (;;) {
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
-                        int count = contents.read(buffer);
-                        if (count <= 0) {
-                            break;
-                        }
-                        os.write(buffer, 0, count);
-                        monitor.worked(1);
-                    }
+                    ContentUtils.copyStreams(contents, file.length(), os, monitor);
                 }
                 finally {
-                    monitor.done();
                     os.close();
                 }
                 // Check for cancel
@@ -237,20 +231,100 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
         }
     }
 
-    void loadFromExternalFile(File file, IProgressMonitor monitor)
+    void loadFromExternalFile(File extFile, IProgressMonitor monitor)
         throws CoreException
     {
         try {
-            InputStream contents = new FileInputStream(file);
+            InputStream inputStream = new FileInputStream(extFile);
             try {
-                contentFile.setContents(contents, true, false, monitor);
+                File intFile = contentFile.getLocation().toFile();
+                OutputStream outputStream = new FileOutputStream(intFile);
+                try {
+                    ContentUtils.copyStreams(inputStream, extFile.length(), outputStream, monitor);
+                }
+                finally {
+                    outputStream.close();
+                }
+                // Append zero empty content to trigger content refresh
+                contentFile.appendContents(
+                    new ByteArrayInputStream(new byte[0]),
+                    true,
+                    false,
+                    monitor);
             }
             finally {
-                contents.close();
+                inputStream.close();
             }
         }
-        catch (IOException e) {
+        catch (Throwable e) {
             throw new CoreException(DBeaverUtils.makeExceptionStatus(e));
         }
     }
+
+    private void copyContentToFile(Object contents, long contentLength, File file, IProgressMonitor monitor)
+        throws DBCException, IOException
+    {
+        if (contents instanceof InputStream) {
+            InputStream inputStream = (InputStream)contents;
+            try {
+                OutputStream outputStream = new FileOutputStream(file);
+                try {
+                    ContentUtils.copyStreams(inputStream, contentLength, outputStream, monitor);
+                }
+                finally {
+                    outputStream.close();
+                }
+            }
+            finally {
+                inputStream.close();
+            }
+        } else if (contents instanceof Reader) {
+            Reader reader = (Reader)contents;
+            try {
+                Writer writer = new FileWriter(file);
+                try {
+                    ContentUtils.copyStreams(reader, contentLength, writer, monitor);
+                }
+                finally {
+                    writer.close();
+                }
+            }
+            finally {
+                reader.close();
+            }
+        } else {
+            throw new DBCException("Unsupported content stream type: " + contents);
+        }
+    }
+
+    void updateContentFromFile(IProgressMonitor monitor)
+        throws DBCException, IOException
+    {
+        if (valueController.isReadOnly()) {
+            throw new DBCException("Could not update read-only value");
+        }
+
+/*
+        DBDStreamHandler streamHandler = getStreamHandler();
+        DBDStreamKind streamKind = streamHandler.getContentKind(valueController.getColumnMetaData());
+        Object originalValue = valueController.getValue();
+
+        File file = contentFile.getLocation().toFile();
+
+        InputStream inputStream = new FileInputStream(file);
+        try {
+            Object newContent;
+            if (streamKind == DBDStreamKind.BINARY) {
+                newContent = inputStream;
+            } else {
+                newContent = new InputStreamReader(inputStream);
+            }
+            streamHandler.updateContents(originalValue, newContent, file.length(), monitor);
+        }
+        finally {
+            inputStream.close();
+        }
+*/
+    }
+
 }

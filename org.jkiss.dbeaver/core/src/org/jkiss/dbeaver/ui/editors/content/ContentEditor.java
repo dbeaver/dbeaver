@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -117,7 +118,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         // Save data to file
         try {
             LOBInitializer initializer = new LOBInitializer(valueController, editorParts);
-            valueController.getValueSite().getWorkbenchWindow().run(false, true, initializer);
+            valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
             editorInput = initializer.editorInput;
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
@@ -140,7 +141,17 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
 
     public void doSave(IProgressMonitor monitor)
     {
-        this.dirty = false;
+        try {
+            getEditorInput().updateContentFromFile(monitor);
+            this.dirty = false;
+        }
+        catch (Exception e) {
+            DBeaverUtils.showErrorDialog(
+                getSite().getShell(),
+                "Could not save content",
+                "Could not save content to database",
+                e);
+        }
     }
 
     public void doSaveAs()
@@ -501,7 +512,12 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         {
             // Content was changed somehow so mark editor as dirty
             dirty = true;
-            firePropertyChange(PROP_DIRTY);
+            getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                public void run()
+                {
+                    firePropertyChange(PROP_DIRTY);
+                }
+            });
         }
     }
 

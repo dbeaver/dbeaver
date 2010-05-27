@@ -5,9 +5,9 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Extension of DBDValueHandler.
@@ -17,13 +17,19 @@ import java.io.InputStream;
 public interface DBDStreamHandler {
 
     /**
+     * Content kind
+     * @return
+     */
+    DBDStreamKind getContentKind(DBCColumnMetaData columnMetaData);
+
+    /**
      * Gets stream representation of value
      * @param value value object
-     * @return stream
+     * @return InputStream or Reader depending on content kind
      * @throws DBCException
      * @throws IOException
      */
-    InputStream getContentStream(Object value)
+    Object getContents(Object value)
         throws DBCException, IOException;
 
     long getContentLength(Object value)
@@ -38,13 +44,13 @@ public interface DBDStreamHandler {
     /**
      * Updates value from specified content
      * @param value
-     * @param content
+     * @param content InputStream or Reader depending on content kind
      * @param contentSize
      * @return
      * @throws DBCException
      * @throws IOException
      */
-    Object updateContent(Object value, InputStream content, long contentSize)
+    Object updateContents(Object value, Object content, long contentSize)
         throws DBCException, IOException;
 
 }

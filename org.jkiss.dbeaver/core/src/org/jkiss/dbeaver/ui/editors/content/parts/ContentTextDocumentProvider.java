@@ -10,6 +10,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.texteditor.IDocumentProviderExtension;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**
  * SQLDocumentProvider
@@ -24,4 +27,19 @@ class ContentTextDocumentProvider extends FileDocumentProvider implements IDocum
         return document;
     }
 
+    @Override
+    protected void handleElementContentChanged(IFileEditorInput fileEditorInput)
+    {
+        // Try to catch errors like OutOfMemory
+        try {
+            super.handleElementContentChanged(fileEditorInput);
+        }
+        catch (OutOfMemoryError e) {
+            DBeaverUtils.showErrorDialog(
+                null,
+                "Out of Memory",
+                "Could not load content into text editor",
+                e);
+        }
+    }
 }

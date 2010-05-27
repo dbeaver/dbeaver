@@ -9,12 +9,23 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.ControlContribution;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IStatusLineManager;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -224,7 +235,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                 }
             }
             try {
-                getEditor().getSite().getWorkbenchWindow().run(false, true, new IRunnableWithProgress() {
+                getEditor().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
                     public void run(IProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
@@ -275,7 +286,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                 return;
             }
             try {
-                getEditor().getSite().getWorkbenchWindow().run(false, true, new IRunnableWithProgress() {
+                getEditor().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
                     public void run(IProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
@@ -325,6 +336,26 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         @Override
         public void run()
         {
+            try {
+                getEditor().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
+                    public void run(IProgressMonitor monitor)
+                        throws InvocationTargetException, InterruptedException
+                    {
+                        getEditor().doSave(monitor);
+                    }
+                });
+            }
+            catch (InvocationTargetException e) {
+                DBeaverUtils.showErrorDialog(
+                    getEditor().getSite().getShell(),
+                    "Could not save content",
+                    "Could not save content to database",
+                    e.getTargetException());
+            }
+            catch (InterruptedException e) {
+                // do nothing
+            }
+
         }
     }
 

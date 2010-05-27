@@ -320,7 +320,7 @@ public class ERDEditor extends EditorPart implements IObjectEditor
                     }
                 }
                 if (refTableNode == null) {
-                    log.warn("Can't find model node for table " + refTable.getFullQualifiedName());
+                    log.debug("Can't find model node for table " + refTable.getFullQualifiedName());
                     continue;
                 }
 

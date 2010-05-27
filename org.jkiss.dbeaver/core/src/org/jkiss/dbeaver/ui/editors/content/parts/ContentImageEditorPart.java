@@ -125,7 +125,7 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
 
     public void resourceChanged(IResourceChangeEvent event) {
 
-        IResourceDelta delta= event.getDelta();
+        IResourceDelta delta = event.getDelta();
         if (delta == null) {
             return;
         }
@@ -147,7 +147,12 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
         }
         if (delta.getKind() == IResourceDelta.CHANGED) {
             // Refresh editor
-            this.loadImage();
+            getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                public void run()
+                {
+                    loadImage();
+                }
+            });
         }
     }
 

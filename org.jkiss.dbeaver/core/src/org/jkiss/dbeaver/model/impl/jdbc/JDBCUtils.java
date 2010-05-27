@@ -59,6 +59,7 @@ public class JDBCUtils
                 return DBSDataKind.BOOLEAN;
             case java.sql.Types.CHAR:
             case java.sql.Types.VARCHAR:
+            case java.sql.Types.NVARCHAR:
             case java.sql.Types.LONGVARCHAR:
             case java.sql.Types.LONGNVARCHAR:
                 return DBSDataKind.STRING;
@@ -83,6 +84,7 @@ public class JDBCUtils
                 return DBSDataKind.BINARY;
             case java.sql.Types.BLOB:
             case java.sql.Types.CLOB:
+            case java.sql.Types.NCLOB:
                 return DBSDataKind.LOB;
             case java.sql.Types.STRUCT:
                 return DBSDataKind.STRUCT;
