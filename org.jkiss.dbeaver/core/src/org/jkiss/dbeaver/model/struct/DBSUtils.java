@@ -4,12 +4,12 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import net.sf.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * DBSUtils

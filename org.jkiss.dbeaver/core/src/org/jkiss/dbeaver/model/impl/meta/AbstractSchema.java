@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.impl.meta;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSSchema;
 
 /**

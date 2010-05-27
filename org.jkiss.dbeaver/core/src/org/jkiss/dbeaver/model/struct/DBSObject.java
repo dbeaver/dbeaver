@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**

@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.ui.editors.entity;
 
-import org.jkiss.dbeaver.ui.editors.splitted.SplitterEditorActionBarContributor;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.ui.editors.splitted.SplitterEditorActionBarContributor;
 
 /**
  * Entity Editor contributor

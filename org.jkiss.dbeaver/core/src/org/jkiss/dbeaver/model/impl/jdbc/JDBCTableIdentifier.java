@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
 

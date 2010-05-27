@@ -6,7 +6,8 @@ package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 
 /**

@@ -18,15 +18,15 @@ import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.model.meta.DBMEvent;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.meta.DBMNode;
-import org.jkiss.dbeaver.model.meta.DBMEvent;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
-import org.jkiss.dbeaver.utils.ViewUtils;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 

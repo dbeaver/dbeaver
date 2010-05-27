@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.DBeaverIcons;
 
 /**
@@ -66,10 +66,9 @@ public enum DBIcon
     EDIT_COLUMN("edit_column", "/icons/misc/edit_column.png"),
     LOCKED("locked", "/icons/misc/locked.png"),
 
-    HEX("binary", "/icons/misc/binary.png"),
+    BINARY("binary", "/icons/misc/binary.png"),
     TEXT("text", "/icons/misc/text.png"),
-    IMAGE("image", "/icons/misc/image.png"),
-    ;
+    IMAGE("image", "/icons/misc/image.png");
 
     private final String token;
     private final String path;

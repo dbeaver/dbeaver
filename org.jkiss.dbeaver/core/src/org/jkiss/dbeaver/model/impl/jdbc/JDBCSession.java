@@ -4,12 +4,12 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.dbc.DBCConnector;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
-import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.DBPDataSource;
 
 import java.sql.Connection;
 import java.sql.SQLException;

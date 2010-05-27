@@ -1,8 +1,8 @@
 package org.jkiss.dbeaver.ui.editors.content.parts;
 
-import org.eclipse.ui.editors.text.TextEditor;
-import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.IEditorActionBarContributor;
+import org.eclipse.ui.editors.text.TextEditor;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ui.DBIcon;
 

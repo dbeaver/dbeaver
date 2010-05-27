@@ -7,10 +7,10 @@ package org.jkiss.dbeaver.ui.editors.entity;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.meta.DBMTreeNode;
-import org.jkiss.dbeaver.model.meta.DBMModel;
-import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**

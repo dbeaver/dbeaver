@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**

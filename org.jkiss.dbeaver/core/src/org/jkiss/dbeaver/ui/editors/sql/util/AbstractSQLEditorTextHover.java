@@ -4,15 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.util;
 
-import java.util.List;
-
-import org.eclipse.jface.text.DefaultInformationControl;
-import org.eclipse.jface.text.IInformationControl;
-import org.eclipse.jface.text.IInformationControlCreator;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextHover;
-import org.eclipse.jface.text.ITextHoverExtension;
-import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
@@ -23,6 +15,8 @@ import org.eclipse.ui.commands.ICommandManager;
 import org.eclipse.ui.commands.IKeySequenceBinding;
 import org.eclipse.ui.keys.KeySequence;
 import org.jkiss.dbeaver.core.DBeaverCore;
+
+import java.util.List;
 
 public abstract class AbstractSQLEditorTextHover implements ITextHover, ITextHoverExtension {
 

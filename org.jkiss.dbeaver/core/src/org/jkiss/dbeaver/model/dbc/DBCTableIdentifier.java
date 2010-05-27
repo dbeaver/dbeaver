@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.dbc;
 
-import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
 
 import java.util.List;

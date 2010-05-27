@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.runtime;
 
-import org.eclipse.ui.progress.IProgressConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.progress.IProgressConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 

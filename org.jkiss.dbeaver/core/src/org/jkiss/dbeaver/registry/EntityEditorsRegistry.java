@@ -4,12 +4,12 @@
 
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * EntityEditorsRegistry

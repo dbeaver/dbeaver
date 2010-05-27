@@ -4,9 +4,8 @@
 
 package org.jkiss.dbeaver.runtime.sql;
 
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 
 /**
  * SQLQueryListener

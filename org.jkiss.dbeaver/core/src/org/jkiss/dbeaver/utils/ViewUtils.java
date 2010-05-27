@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.utils;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -19,6 +21,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyDialogAction;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshableView;
 import org.jkiss.dbeaver.model.meta.DBMNode;
@@ -26,12 +29,9 @@ import org.jkiss.dbeaver.model.meta.DBMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
-import org.jkiss.dbeaver.ui.actions.SetActiveObjectAction;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.ui.actions.SetActiveObjectAction;
 
 import java.util.Iterator;
 

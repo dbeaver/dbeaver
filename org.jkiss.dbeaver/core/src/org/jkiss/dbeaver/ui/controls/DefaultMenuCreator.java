@@ -5,8 +5,8 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.action.IMenuCreator;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
 
 /**
  * DefaultMenuCreator

@@ -4,16 +4,11 @@
 
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.swt.widgets.ToolItem;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.events.VerifyListener;
-import org.eclipse.swt.events.VerifyEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.SWT;
 import org.eclipse.jface.action.IAction;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 
 import java.text.NumberFormat;
 

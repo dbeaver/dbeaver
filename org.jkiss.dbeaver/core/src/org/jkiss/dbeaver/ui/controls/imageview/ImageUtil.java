@@ -1,10 +1,10 @@
 package org.jkiss.dbeaver.ui.controls.imageview;
 
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
-
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 
 
 /**

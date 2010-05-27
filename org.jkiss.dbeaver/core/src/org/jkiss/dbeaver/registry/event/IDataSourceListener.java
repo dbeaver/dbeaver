@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.registry.event;
 
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
 /**
  * IDataSourceListener
  */

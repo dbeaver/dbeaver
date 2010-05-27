@@ -4,16 +4,16 @@
 
 package org.jkiss.dbeaver.core;
 
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.core.runtime.FileLocator;
-import org.osgi.framework.Bundle;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.osgi.framework.Bundle;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.net.URL;
-import java.io.IOException;
 
 /**
  * DBeaverIcons

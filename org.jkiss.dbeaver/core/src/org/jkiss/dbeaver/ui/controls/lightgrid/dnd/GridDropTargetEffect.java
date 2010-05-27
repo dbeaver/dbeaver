@@ -10,8 +10,8 @@ import org.eclipse.swt.dnd.DropTargetEffect;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Widget;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * This class provides a default drag under effect (eg. select, insert, scroll and expand) 

@@ -4,13 +4,13 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCCLOB;
+import org.jkiss.dbeaver.model.dbc.DBCException;
 
 import java.io.Reader;
 import java.io.Writer;
-import java.sql.SQLException;
 import java.sql.Clob;
+import java.sql.SQLException;
 
 /**
  * JDBCBLOB

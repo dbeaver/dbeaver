@@ -4,9 +4,9 @@
 
 package org.jkiss.dbeaver.registry.tree;
 
+import org.apache.commons.jexl2.Expression;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.jexl2.Expression;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.DBeaverCore;
 

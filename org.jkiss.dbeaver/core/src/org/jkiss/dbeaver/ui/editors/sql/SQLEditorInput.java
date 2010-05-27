@@ -5,8 +5,8 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.IMemento;
+import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 

@@ -4,18 +4,10 @@
 
 package org.jkiss.dbeaver.ui.actions;
 
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IObjectActionDelegate;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 
 public class EditConnectionAction extends DataSourceAction
 {

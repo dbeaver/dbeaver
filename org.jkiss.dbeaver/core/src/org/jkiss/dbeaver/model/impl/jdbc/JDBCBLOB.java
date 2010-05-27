@@ -9,8 +9,8 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.sql.SQLException;
 import java.sql.Blob;
+import java.sql.SQLException;
 
 /**
  * JDBCBLOB

@@ -4,11 +4,12 @@
 
 package org.jkiss.dbeaver.runtime.load.tree;
 
-import org.jkiss.dbeaver.runtime.load.*;
-import org.eclipse.jface.viewers.AbstractTreeViewer;
-import org.eclipse.swt.widgets.Widget;
-import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.jface.viewers.AbstractTreeViewer;
+import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.Widget;
+import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 
 /**
  * TreeLoadVisualizer

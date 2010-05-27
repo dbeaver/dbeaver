@@ -5,9 +5,9 @@
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Collections;
 
 /**
  * Determines whether a given character is valid as part of an SQL identifier.

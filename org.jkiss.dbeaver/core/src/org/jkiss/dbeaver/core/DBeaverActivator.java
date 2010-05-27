@@ -5,10 +5,10 @@
 package org.jkiss.dbeaver.core;
 
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.osgi.framework.BundleContext;
 

@@ -4,13 +4,13 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
-import java.util.Arrays;
-
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TextUtilities;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
+
+import java.util.Arrays;
 
 
 /**

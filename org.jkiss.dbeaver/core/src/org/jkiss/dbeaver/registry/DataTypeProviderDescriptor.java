@@ -10,9 +10,9 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.data.DBDDataTypeProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-import java.util.Set;
-import java.util.HashSet;
 import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * EntityEditorDescriptor

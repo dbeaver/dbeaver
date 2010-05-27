@@ -4,10 +4,10 @@
 
 package org.jkiss.dbeaver.ui.views.properties;
 
-import org.eclipse.ui.views.properties.PropertySheet;
-import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.eclipse.ui.part.IPage;
 import org.eclipse.ui.part.PageBook;
+import org.eclipse.ui.views.properties.PropertySheet;
+import org.eclipse.ui.views.properties.PropertySheetPage;
 
 /**
  * PropertiesView

@@ -6,9 +6,9 @@ package org.jkiss.dbeaver.ui.editors.folder;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
-import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
-import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.model.meta.DBMModel;
+import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**

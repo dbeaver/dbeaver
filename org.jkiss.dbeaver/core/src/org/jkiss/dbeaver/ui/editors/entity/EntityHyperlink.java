@@ -7,9 +7,9 @@ package org.jkiss.dbeaver.ui.editors.entity;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.model.meta.DBMDataSource;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
-import org.jkiss.dbeaver.model.meta.DBMDataSource;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
 
 /**

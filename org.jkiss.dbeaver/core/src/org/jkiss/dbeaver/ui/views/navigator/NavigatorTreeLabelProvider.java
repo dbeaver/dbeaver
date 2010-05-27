@@ -4,23 +4,22 @@
 
 package org.jkiss.dbeaver.ui.views.navigator;
 
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.IFontProvider;
-import org.eclipse.jface.viewers.IColorProvider;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.SWT;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
-import org.jkiss.dbeaver.model.meta.DBMNode;
-import org.jkiss.dbeaver.DBException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.viewers.IColorProvider;
+import org.eclipse.jface.viewers.IFontProvider;
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
+import org.jkiss.dbeaver.model.struct.DBSUtils;
 
 /**
  * NavigatorTreeLabelProvider

@@ -8,10 +8,10 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * JDBCResultSet

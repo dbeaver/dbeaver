@@ -5,9 +5,9 @@
 package org.jkiss.dbeaver.model.meta;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.jexl2.JexlContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.jexl2.JexlContext;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;

@@ -4,7 +4,6 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionListener;
@@ -13,6 +12,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.TypedListener;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 
 /**
  * Instances of this class represent a column in a grid widget.

@@ -12,8 +12,8 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 /**
  * DriverLibraryDescriptor

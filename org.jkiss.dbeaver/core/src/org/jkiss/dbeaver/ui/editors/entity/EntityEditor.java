@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.entity;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -12,29 +13,23 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
-import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
-import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
-import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
-import org.jkiss.dbeaver.ui.editors.splitted.SplitterEditorPart;
-import org.jkiss.dbeaver.runtime.load.ILoadService;
-import org.jkiss.dbeaver.runtime.load.NullLoadService;
+import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IObjectEditor;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
-import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
-import org.jkiss.dbeaver.model.meta.DBMModel;
-import org.jkiss.dbeaver.model.meta.*;
-import org.jkiss.dbeaver.model.meta.DBMNode;
-import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
-import org.jkiss.dbeaver.model.meta.DBMTreeNode;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.dbc.DBCSession;
+import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
+import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
+import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.runtime.load.ILoadService;
+import org.jkiss.dbeaver.runtime.load.NullLoadService;
+import org.jkiss.dbeaver.ui.editors.splitted.SplitterEditorPart;
 
 import java.util.List;
-
-import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * EntityEditor

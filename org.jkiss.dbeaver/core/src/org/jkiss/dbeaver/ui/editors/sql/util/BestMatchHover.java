@@ -4,21 +4,16 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.util;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtension;
-import org.eclipse.core.runtime.IExtensionPoint;
-import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.ui.DBeaverConstants;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.*;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.information.IInformationProviderExtension2;
 import org.eclipse.ui.IEditorPart;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.ui.DBeaverConstants;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BestMatchHover extends AbstractSQLEditorTextHover
     implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IInformationProviderExtension2

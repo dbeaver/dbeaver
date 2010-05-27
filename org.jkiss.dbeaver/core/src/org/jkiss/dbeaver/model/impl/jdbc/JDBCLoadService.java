@@ -4,15 +4,15 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.DBException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Statement;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * JDBCLoadService

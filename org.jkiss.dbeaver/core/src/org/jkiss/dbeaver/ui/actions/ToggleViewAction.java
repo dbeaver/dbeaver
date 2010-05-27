@@ -4,16 +4,10 @@
 
 package org.jkiss.dbeaver.ui.actions;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.IPartListener;
-import org.eclipse.ui.IWorkbenchPart;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.action.Action;
+import org.eclipse.ui.*;
 
 
 public class ToggleViewAction extends Action implements IPartListener

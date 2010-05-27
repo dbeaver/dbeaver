@@ -18,8 +18,8 @@ import org.jkiss.dbeaver.model.dbc.DBCCLOB;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCLOB;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
+import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
@@ -28,11 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 /**
  * JDBC LOB value handler.

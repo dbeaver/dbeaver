@@ -21,33 +21,13 @@ package org.jkiss.dbeaver.ui.editors.binary;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtension;
-import org.eclipse.core.runtime.IExtensionPoint;
-import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.*;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -56,16 +36,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IPathEditorInput;
-import org.eclipse.ui.ISelectionListener;
-import org.eclipse.ui.IStorageEditorInput;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.*;
 import org.eclipse.ui.editors.text.ILocationProvider;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.WorkbenchPart;
@@ -82,43 +53,6 @@ import java.util.Set;
 public class BinaryEditor extends EditorPart implements ISelectionProvider, IMenuListener, IResourceChangeListener {
 
     static Log log = LogFactory.getLog(HexTexts.class);
-
-    class EditorAction extends Action {
-        String actionId = null;
-
-        EditorAction(String actionId, String text)
-        {
-            super(text);
-            this.actionId = actionId;
-            setActionDefinitionId(actionId);
-        }
-
-        EditorAction(String id)
-        {
-            actionId = id;
-            setActionDefinitionId(actionId);
-        }
-
-        public void run()
-        {
-            if (actionId.equals(IWorkbenchCommandConstants.EDIT_UNDO))
-                getManager().doUndo();
-            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_REDO))
-                getManager().doRedo();
-            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_CUT))
-                getManager().doCut();
-            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY))
-                getManager().doCopy();
-            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_PASTE))
-                getManager().doPaste();
-            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_DELETE))
-                getManager().doDelete();
-            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_SELECT_ALL))
-                getManager().doSelectAll();
-            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE))
-                getManager().doFind();
-        }
-    }
 
     static final String textSavingFilePleaseWait = "Saving file, please wait";
 
@@ -524,6 +458,43 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         manager.add(new Separator());
         manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_UNDO, "Undo"));
         manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_REDO, "Redo"));
+    }
+
+    class EditorAction extends Action {
+        String actionId = null;
+
+        EditorAction(String actionId, String text)
+        {
+            super(text);
+            this.actionId = actionId;
+            setActionDefinitionId(actionId);
+        }
+
+        EditorAction(String id)
+        {
+            actionId = id;
+            setActionDefinitionId(actionId);
+        }
+
+        public void run()
+        {
+            if (actionId.equals(IWorkbenchCommandConstants.EDIT_UNDO))
+                getManager().doUndo();
+            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_REDO))
+                getManager().doRedo();
+            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_CUT))
+                getManager().doCut();
+            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY))
+                getManager().doCopy();
+            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_PASTE))
+                getManager().doPaste();
+            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_DELETE))
+                getManager().doDelete();
+            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_SELECT_ALL))
+                getManager().doSelectAll();
+            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE))
+                getManager().doFind();
+        }
     }
 
 }

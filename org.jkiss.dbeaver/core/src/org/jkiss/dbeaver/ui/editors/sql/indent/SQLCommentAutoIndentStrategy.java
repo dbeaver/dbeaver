@@ -4,21 +4,15 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
-import java.text.BreakIterator;
-
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.DefaultIndentLineAutoEditStrategy;
-import org.eclipse.jface.text.DocumentCommand;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITypedRegion;
-import org.eclipse.jface.text.TextUtilities;
-import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.*;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+
+import java.text.BreakIterator;
 
 
 /**

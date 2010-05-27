@@ -19,13 +19,13 @@
  */
 package org.jkiss.dbeaver.ui.editors.binary;
 
+import org.jkiss.dbeaver.ui.editors.binary.BinaryContent.Range;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.jkiss.dbeaver.ui.editors.binary.BinaryContent.Range;
 
 /**
  * Keeps track of actions performed on a BinaryContent so they can be undone and redone.

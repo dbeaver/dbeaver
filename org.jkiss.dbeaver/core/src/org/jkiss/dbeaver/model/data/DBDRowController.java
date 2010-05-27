@@ -4,12 +4,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IWorkbenchPartSite;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
-import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
 
 import java.util.Collection;
 

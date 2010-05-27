@@ -8,7 +8,6 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 /**
  * Extension of DBDValueHandler.

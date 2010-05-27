@@ -4,10 +4,10 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Rectangle;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * A renderer which paints the insert mark feedback during drag & drop.

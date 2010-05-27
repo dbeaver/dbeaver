@@ -4,9 +4,9 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 
 /**
  * ResultSet column info

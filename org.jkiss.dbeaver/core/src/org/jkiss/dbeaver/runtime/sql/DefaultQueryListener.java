@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.runtime.sql;
 
-import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
-
 /**
  * DefaultQueryListener
  */

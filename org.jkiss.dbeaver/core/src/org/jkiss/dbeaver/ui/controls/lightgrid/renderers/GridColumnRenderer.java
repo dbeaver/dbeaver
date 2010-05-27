@@ -4,13 +4,13 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.IFontProvider;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * 

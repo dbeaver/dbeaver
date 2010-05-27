@@ -19,14 +19,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.binary;
 
+import org.eclipse.swt.custom.*;
+
 import java.util.HashSet;
 import java.util.Set;
-
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.custom.StyledTextContent;
-import org.eclipse.swt.custom.TextChangeListener;
-import org.eclipse.swt.custom.TextChangedEvent;
-import org.eclipse.swt.custom.TextChangingEvent;
 
 
 /**

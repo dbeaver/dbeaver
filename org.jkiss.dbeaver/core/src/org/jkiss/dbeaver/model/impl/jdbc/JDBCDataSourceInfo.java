@@ -7,18 +7,13 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.dbc.DBCStateType;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * JDBCDataSourceInfo

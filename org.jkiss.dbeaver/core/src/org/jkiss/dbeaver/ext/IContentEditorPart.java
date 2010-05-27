@@ -4,9 +4,9 @@
 
 package org.jkiss.dbeaver.ext;
 
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.IEditorActionBarContributor;
+import org.eclipse.ui.IEditorPart;
 
 /**
  * Database content editor

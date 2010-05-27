@@ -12,15 +12,15 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener {
 

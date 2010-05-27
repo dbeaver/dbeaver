@@ -4,12 +4,12 @@
 
 package org.jkiss.dbeaver.ui.views.properties;
 
-import org.jkiss.dbeaver.model.DBPObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.model.DBPObject;
 
-import java.util.List;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 /**
  * PropertyCollector

@@ -5,7 +5,6 @@
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.swt.graphics.Point;
 
 public interface IGridContentProvider extends IStructuredContentProvider {
 

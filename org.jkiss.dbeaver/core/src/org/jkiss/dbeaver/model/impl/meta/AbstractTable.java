@@ -4,10 +4,12 @@
 
 package org.jkiss.dbeaver.model.impl.meta;
 
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
+import org.jkiss.dbeaver.model.struct.DBSTable;
 
 import java.util.Collection;
 

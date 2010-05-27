@@ -4,11 +4,11 @@
 
 package org.jkiss.dbeaver.ui.editors.content.parts;
 
-import org.jkiss.dbeaver.ui.editors.binary.BinaryEditor;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ext.IContentEditorPart;
-import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.IEditorActionBarContributor;
+import org.jkiss.dbeaver.ext.IContentEditorPart;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.editors.binary.BinaryEditor;
 
 /**
  * LOB Binary Editor
@@ -31,7 +31,7 @@ public class ContentBinaryEditorPart extends BinaryEditor implements IContentEdi
 
     public Image getContentTypeImage()
     {
-        return DBIcon.HEX.getImage();
+        return DBIcon.BINARY.getImage();
     }
 
     public String getPreferedMimeType()

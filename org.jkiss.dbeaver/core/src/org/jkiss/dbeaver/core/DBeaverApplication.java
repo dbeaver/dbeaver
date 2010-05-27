@@ -9,7 +9,6 @@ import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.core.ApplicationWorkbenchAdvisor;
 
 /**
  * This class controls all aspects of the application's execution

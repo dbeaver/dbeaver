@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.FileLocator;
@@ -16,8 +17,6 @@ import org.osgi.framework.Bundle;
 
 import java.io.IOException;
 import java.net.URL;
-
-import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * EntityEditorDescriptor

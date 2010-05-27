@@ -19,13 +19,13 @@
  */
 package org.jkiss.dbeaver.ui.editors.binary;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.core.DBeaverCore;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**

@@ -8,8 +8,8 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Used to scan and detect for SQL keywords

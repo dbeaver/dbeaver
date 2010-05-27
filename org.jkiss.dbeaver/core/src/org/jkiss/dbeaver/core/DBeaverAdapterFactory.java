@@ -5,16 +5,16 @@
 package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.eclipse.ui.views.properties.IPropertySource;
-import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.model.IWorkbenchAdapter;
+import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 
-import java.util.Map;
 import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * DBeaverAdapterFactory

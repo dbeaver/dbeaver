@@ -5,13 +5,12 @@
 package org.jkiss.dbeaver.runtime.load;
 
 import net.sf.jkiss.utils.BeanUtils;
-
-import java.lang.reflect.InvocationTargetException;
-
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Loading utils

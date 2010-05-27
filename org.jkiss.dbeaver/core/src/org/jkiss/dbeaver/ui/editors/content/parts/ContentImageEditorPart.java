@@ -6,15 +6,17 @@ package org.jkiss.dbeaver.ui.editors.content.parts;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IEditorActionBarContributor;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IStorageEditorInput;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.*;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -25,7 +27,7 @@ import java.io.InputStream;
 /**
  * LOB text editor
  */
-public class ContentImageEditorPart extends EditorPart implements IContentEditorPart {
+public class ContentImageEditorPart extends EditorPart implements IContentEditorPart, IResourceChangeListener {
 
     static Log log = LogFactory.getLog(ContentImageEditorPart.class);
 
@@ -41,6 +43,14 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         setSite(site);
         setInput(input);
+
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+    }
+
+    @Override
+    public void dispose()
+    {
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
     }
 
     public boolean isDirty() {
@@ -54,6 +64,10 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
     public void createPartControl(Composite parent) {
         imageViewer = new ImageViewControl(parent, SWT.NONE);
 
+        loadImage();
+    }
+
+    private void loadImage() {
         IEditorInput input = getEditorInput();
         if (input instanceof IStorageEditorInput) {
             try {
@@ -106,4 +120,33 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
     {
         return contentValid;
     }
+
+    public void resourceChanged(IResourceChangeEvent event) {
+
+        IResourceDelta delta= event.getDelta();
+        if (delta == null) {
+            return;
+        }
+        IEditorInput input = getEditorInput();
+        IPath localPath = null;
+        if (input instanceof IStorageEditorInput) {
+            try {
+                localPath = ((IStorageEditorInput) input).getStorage().getFullPath();
+            } catch (CoreException e) {
+                log.warn(e);
+            }
+        }
+        if (localPath == null) {
+            return;
+        }
+        delta = delta.findMember(localPath);
+        if (delta == null) {
+            return;
+        }
+        if (delta.getKind() == IResourceDelta.CHANGED) {
+            // Refresh editor
+            this.loadImage();
+        }
+    }
+
 }

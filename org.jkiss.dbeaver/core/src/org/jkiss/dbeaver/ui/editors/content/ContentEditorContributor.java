@@ -4,39 +4,29 @@
 
 package org.jkiss.dbeaver.ui.editors.content;
 
-import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
-import org.eclipse.ui.*;
-import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
-import org.eclipse.jface.action.IStatusLineManager;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.action.ControlContribution;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
-import org.eclipse.core.runtime.IProgressMonitor;
+import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.*;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.actions.SimpleAction;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-import java.util.SortedMap;
-import java.nio.charset.Charset;
-import java.lang.reflect.InvocationTargetException;
 import java.io.File;
-
-import net.sf.jkiss.utils.CommonUtils;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
+import java.util.SortedMap;
 
 /**
  * LOB Editor contributor
