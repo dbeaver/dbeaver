@@ -112,13 +112,12 @@ public class JDBCStatement implements DBCStatement
     }
 
     public void close()
-        throws DBCException
     {
         if (resultSet != null) {
             try {
                 resultSet.close();
             } catch (DBCException e) {
-                log.error(e.getMessage());
+                log.error("Could not close result set", e);
             } finally {
                 resultSet = null;
             }
@@ -127,7 +126,7 @@ public class JDBCStatement implements DBCStatement
             try {
                 statement.close();
             } catch (SQLException e) {
-                throw new JDBCException(e);
+                log.error("Could not close statement", e);
             }
             statement = null;
         }

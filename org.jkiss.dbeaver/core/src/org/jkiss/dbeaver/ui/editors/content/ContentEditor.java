@@ -24,14 +24,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDStreamHandler;
+import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentCharacter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -40,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
@@ -62,6 +67,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
     private List<ContentPartInfo> contentParts = new ArrayList<ContentPartInfo>();
     private ColumnInfoPanel infoPanel;
     private boolean dirty;
+    private boolean partsLoaded;
 
     static class ContentPartInfo {
         IContentEditorPart editorPart;
@@ -184,6 +190,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
 
     public void dispose()
     {
+        this.partsLoaded = true;
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 
         if (valueEditorRegistered) {
@@ -226,19 +233,19 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
     }
 
     protected void createPages() {
-        DBDStreamHandler streamHandler = getStreamHandler();
-        if (streamHandler == null) {
+        DBDContent content = getContent();
+        if (content == null) {
             return;
         }
         String contentType = null;
         try {
-            contentType = streamHandler.getContentType(getValueController().getValue());
+            contentType = content.getContentType();
         } catch (Exception e) {
             log.error("Could not determine value content type", e);
         }
         long contentLength;
         try {
-            contentLength = streamHandler.getContentLength(getValueController().getValue());
+            contentLength = content.getContentLength();
         } catch (Exception e) {
             log.error("Could not determine value content length", e);
             // Get file length
@@ -274,6 +281,8 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         if (defaultPage != -1) {
             setActivePage(defaultPage);
         }
+
+        this.partsLoaded = true;
     }
 
     protected Composite createPageContainer(Composite parent)
@@ -334,7 +343,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         }
 
         Object value = getValueController().getValue();
-        DBDStreamHandler streamHandler = getStreamHandler();
+        DBDContent content = getContent();
         try {
             Composite contentGroup = new Composite(toolbarGroup, SWT.NONE);
 
@@ -349,16 +358,16 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
             Label label = new Label(contentGroup, SWT.NONE);
             label.setText("Content Length:");
             Text text = new Text(contentGroup, SWT.BORDER | SWT.READ_ONLY);
-            if (streamHandler != null) {
-                text.setText(String.valueOf(streamHandler.getContentLength(value)));
+            if (content != null) {
+                text.setText(String.valueOf(content.getContentLength()));
             }
 
             // Content type
             label = new Label(contentGroup, SWT.NONE);
             label.setText("Content Type:");
             Text ctText = new Text(contentGroup, SWT.BORDER | SWT.READ_ONLY);
-            if (streamHandler != null) {
-                String contentType = streamHandler.getContentType(value);
+            if (content != null) {
+                String contentType = content.getContentType();
                 ctText.setText(contentType == null ? "unknown" : contentType);
             }
 
@@ -366,8 +375,8 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
             label = new Label(contentGroup, SWT.NONE);
             label.setText("Content Encoding:");
             Text encodingText = new Text (contentGroup, SWT.BORDER | SWT.READ_ONLY);
-            if (streamHandler != null) {
-                String contentEncoding = streamHandler.getContentEncoding(value);
+            if (content instanceof DBDContentCharacter) {
+                String contentEncoding = ((DBDContentCharacter)content).getCharset();
                 encodingText.setText(contentEncoding == null ? "" : contentEncoding);
             }
 /*
@@ -440,10 +449,14 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         return valueController == null ? null : valueController.getValueHandler();
     }
 
-    DBDStreamHandler getStreamHandler()
+    DBDContent getContent()
     {
-        DBDValueHandler valueHandler = getValueHandler();
-        return valueHandler != null && valueHandler instanceof DBDStreamHandler ? (DBDStreamHandler) valueHandler : null;
+        Object value = getValueController().getValue();
+        if (value instanceof DBDContent) {
+            return (DBDContent) value;
+        } else {
+            return null;
+        }
     }
 
     public DBDValueController getValueController()
@@ -499,6 +512,10 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
 
     public void resourceChanged(IResourceChangeEvent event)
     {
+        if (!partsLoaded) {
+            // No content change before all parts are loaded
+            return;
+        }
         IResourceDelta delta= event.getDelta();
         if (delta == null) {
             return;

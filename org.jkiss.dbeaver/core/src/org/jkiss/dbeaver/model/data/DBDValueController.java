@@ -46,7 +46,13 @@ public interface DBDValueController
      */
     Object getValue();
 
-    void updateValue(Object value);
+    /**
+     * Updates value
+     * @param value value
+     * @param immediate if false then just sets new value in owner control
+     * otherwise immediately updates value in database
+     */
+    void updateValue(Object value, boolean immediate);
 
     DBDValueLocator getValueLocator();
 

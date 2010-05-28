@@ -250,7 +250,7 @@ public class SQLQueryJob extends DataSourceJob
             // Bind parameters
             if (!CommonUtils.isEmpty(query.getParameters())) {
                 for (SQLStatementParameter param : query.getParameters()) {
-                    param.getValueHandler().bindParameter(curStatement, param.getParamType(), param.getIndex(), param.getValue());
+                    param.getValueHandler().bindValueObject(curStatement, param.getParamType(), param.getIndex(), param.getValue());
                 }
             }
             monitor.worked(1);
@@ -279,6 +279,14 @@ public class SQLQueryJob extends DataSourceJob
                     curStatement.close();
                     curStatement = null;
                 }
+
+                // Release parameters
+                if (!CommonUtils.isEmpty(query.getParameters())) {
+                    for (SQLStatementParameter param : query.getParameters()) {
+                        param.getValueHandler().releaseValueObject(param.getValue());
+                    }
+                }
+
                 monitor.worked(1);
                 subTasksPerformed++;
             }

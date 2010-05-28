@@ -42,13 +42,18 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         }
     }
 
-    public final void bindParameter(DBCStatement statement, DBSTypedObject columnMetaData, int paramIndex, Object value) throws DBCException {
+    public final void bindValueObject(DBCStatement statement, DBSTypedObject columnMetaData, int paramIndex, Object value) throws DBCException {
         try {
             this.bindParameter((PreparedStatement) statement.getNestedStatement(), columnMetaData, paramIndex + 1, value);
         }
         catch (SQLException e) {
             throw new DBCException("Could not bind statement parameter", e);
         }
+    }
+
+    public void releaseValueObject(Object value)
+    {
+        // do nothing by defaulr
     }
 
     public String getValueDisplayString(Object value) {
@@ -90,11 +95,11 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             public void keyPressed(KeyEvent e)
             {
                 if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) {
-                    controller.updateValue(extractor.getValueFromControl(control));
+                    controller.updateValue(extractor.getValueFromControl(control), false);
                     controller.closeInlineEditor();
                 } else if (e.keyCode == SWT.ARROW_RIGHT || e.keyCode == SWT.ARROW_LEFT) {
                     if ((e.stateMask & SWT.ALT) != 0) {
-                        controller.updateValue(extractor.getValueFromControl(control));
+                        controller.updateValue(extractor.getValueFromControl(control), false);
                         controller.nextInlineEditor(e.keyCode == SWT.ARROW_RIGHT);
                     }
                 } else if (e.keyCode == SWT.ESC) {

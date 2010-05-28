@@ -4,9 +4,12 @@
 
 package org.jkiss.dbeaver.model.impl.data;
 
-import org.jkiss.dbeaver.model.dbc.DBCContentBinary;
+import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.InputStream;
@@ -15,6 +18,7 @@ import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.sql.PreparedStatement;
 
 import net.sf.jkiss.utils.streams.MimeTypes;
 
@@ -23,9 +27,11 @@ import net.sf.jkiss.utils.streams.MimeTypes;
  *
  * @author Serge Rider
  */
-public class JDBCContentBLOB implements DBCContentBinary {
+public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBinary {
 
     private Blob blob;
+    private InputStream stream;
+    private long streamLength;
 
     public JDBCContentBLOB(Blob blob) {
         this.blob = blob;
@@ -47,6 +53,14 @@ public class JDBCContentBLOB implements DBCContentBinary {
         return MimeTypes.OCTET_STREAM;
     }
 
+    public void release()
+    {
+        if (stream != null) {
+            ContentUtils.close(stream);
+            stream = null;
+        }
+    }
+
     public InputStream getContents() throws DBCException {
         if (blob == null) {
             // Empty content
@@ -59,9 +73,18 @@ public class JDBCContentBLOB implements DBCContentBinary {
         }
     }
 
-    public void updateContents(InputStream stream, long contentLength, DBRProgressMonitor monitor) throws DBCException {
+    public void updateContents(
+        DBDValueController valueController,
+        InputStream stream,
+        long contentLength,
+        DBRProgressMonitor monitor)
+        throws DBCException
+    {
         if (blob == null) {
             // Update using value controller
+            this.stream = stream;
+            this.streamLength = contentLength;
+            valueController.updateValue(this, true);
         } else {
             // Update BLOB directly
             try {
@@ -82,8 +105,31 @@ public class JDBCContentBLOB implements DBCContentBinary {
         }
     }
 
+    public void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
+        throws DBCException
+    {
+        try {
+            if (blob != null) {
+                preparedStatement.setBlob(paramIndex, blob);
+            } else if (stream != null) {
+                preparedStatement.setBinaryStream(paramIndex, stream, streamLength);
+            } else {
+                preparedStatement.setNull(paramIndex, java.sql.Types.BLOB);
+            }
+        }
+        catch (SQLException e) {
+            throw new DBCException("JDBC error", e);
+        }
+    }
+
+    public boolean isNull()
+    {
+        return blob == null && stream == null;
+    }
+
     @Override
     public String toString() {
-        return "[BLOB]";
+        return blob == null && stream == null ? null : "[BLOB]";
     }
+
 }

@@ -4,28 +4,32 @@
 
 package org.jkiss.dbeaver.model.impl.data;
 
-import org.jkiss.dbeaver.model.dbc.DBCContentCharacter;
+import net.sf.jkiss.utils.streams.MimeTypes;
+import org.jkiss.dbeaver.model.data.DBDContentCharacter;
+import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
-import java.io.Reader;
-import java.io.Writer;
-import java.io.StringReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.Writer;
 import java.sql.Clob;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-
-import net.sf.jkiss.utils.streams.MimeTypes;
 
 /**
  * JDBCBLOB
  *
  * @author Serge Rider
  */
-public class JDBCContentCLOB implements DBCContentCharacter {
+public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCharacter {
 
     private Clob clob;
+    private Reader reader;
+    private long streamLength;
 
     public JDBCContentCLOB(Clob clob) {
         this.clob = clob;
@@ -47,6 +51,14 @@ public class JDBCContentCLOB implements DBCContentCharacter {
         return MimeTypes.TEXT_PLAIN;
     }
 
+    public void release()
+    {
+        if (reader != null) {
+            ContentUtils.close(reader);
+            reader = null;
+        }
+    }
+
     public String getCharset()
     {
         return null;
@@ -63,10 +75,18 @@ public class JDBCContentCLOB implements DBCContentCharacter {
         }
     }
 
-    public void updateContents(Reader stream, long contentLength, DBRProgressMonitor monitor) throws DBCException {
+    public void updateContents(
+        DBDValueController valueController,
+        Reader stream,
+        long contentLength,
+        DBRProgressMonitor monitor)
+        throws DBCException
+    {
         if (clob == null) {
             // Update with value controller
-            throw new DBCException("LOB value is null");
+            this.reader = stream;
+            this.streamLength = contentLength;
+            valueController.updateValue(this, true);
         }
         try {
             clob.truncate(0);
@@ -85,8 +105,31 @@ public class JDBCContentCLOB implements DBCContentCharacter {
         }
     }
 
+    public void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
+        throws DBCException
+    {
+        try {
+            if (clob != null) {
+                preparedStatement.setClob(paramIndex, clob);
+            } else if (reader != null) {
+                preparedStatement.setCharacterStream(paramIndex, reader, streamLength);
+            } else {
+                preparedStatement.setNull(paramIndex + 1, java.sql.Types.CLOB);
+            }
+        }
+        catch (SQLException e) {
+            throw new DBCException("JDBC error", e);
+        }
+    }
+
+    public boolean isNull()
+    {
+        return clob == null && reader == null;
+    }
+
     @Override
     public String toString() {
-        return "[CLOB]";
+        return clob == null && reader == null ? null : "[CLOB]";
     }
+
 }

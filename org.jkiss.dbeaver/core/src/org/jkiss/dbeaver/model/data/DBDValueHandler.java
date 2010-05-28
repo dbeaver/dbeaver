@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
  * DBD Value Handler.
  * Extract, edit and bind database values.
  */
-public interface DBDValueHandler
+public interface DBDValueHandler 
 {
     /**
      * Extracts object from result set
@@ -25,7 +25,7 @@ public interface DBDValueHandler
      * @param columnType columns type
      * @param columnIndex column index
      * @return value or null
-     * @throws DBCException on error
+     * @throws org.jkiss.dbeaver.model.dbc.DBCException on error
      */
     Object getValueObject(DBCResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException;
@@ -36,11 +36,18 @@ public interface DBDValueHandler
      * @param columnType column type
      * @param paramIndex parameter index (starts from 0)
      * @param value parameter value (can be null). Value is get from getValueObject function or from
-     * object set by editor (editValue function). 
-     * @throws DBCException on error
+     * object set by editor (editValue function).
+     * @throws org.jkiss.dbeaver.model.dbc.DBCException on error
      */
-    void bindParameter(DBCStatement statement, DBSTypedObject columnType, int paramIndex, Object value)
+    void bindValueObject(DBCStatement statement, DBSTypedObject columnType, int paramIndex, Object value)
         throws DBCException;
+
+    /**
+     * Release any internal resources associated with this value.
+     * This method is called after value binding and statement execution/close.
+     * @param value
+     */
+    void releaseValueObject(Object value);
 
     /**
      * Converts value to human readable format

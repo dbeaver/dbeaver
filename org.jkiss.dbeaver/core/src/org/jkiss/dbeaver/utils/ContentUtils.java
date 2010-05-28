@@ -5,12 +5,15 @@
 package org.jkiss.dbeaver.utils;
 
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.io.Closeable;
 
 /**
  * Content manipulation utilities
@@ -18,6 +21,8 @@ import java.io.Writer;
 public class ContentUtils {
 
     static final int STREAM_COPY_BUFFER_SIZE = 10000;
+
+    static Log log = LogFactory.getLog(ContentUtils.class);
 
     public static void copyStreams(
         InputStream inputStream,
@@ -74,6 +79,37 @@ public class ContentUtils {
         }
         finally {
             monitor.done();
+        }
+    }
+
+    public static long calculateContentLength(
+        Reader reader)
+        throws IOException
+    {
+        try {
+            long length = 0;
+            char[] buffer = new char[STREAM_COPY_BUFFER_SIZE];
+            for (;;) {
+                int count = reader.read(buffer);
+                if (count <= 0) {
+                    break;
+                }
+                length += count;
+            }
+            return length;
+        }
+        finally {
+            reader.close();
+        }
+    }
+
+    public static void close(Closeable closeable)
+    {
+        try {
+            closeable.close();
+        }
+        catch (IOException e) {
+            log.warn("Error closing stream", e);
         }
     }
 }

@@ -25,7 +25,7 @@ public interface DBCStatement
 
     void cancel() throws DBCException;
 
-    void close() throws DBCException;
+    void close();
 
     void setFirstResult(int offset) throws DBCException;
 

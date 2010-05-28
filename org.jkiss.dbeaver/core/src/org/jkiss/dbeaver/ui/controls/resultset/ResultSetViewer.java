@@ -644,7 +644,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return curRow[columnIndex];
         }
 
-        public void updateValue(Object value)
+        public void updateValue(Object value, boolean immediate)
         {
             Object oldValue = curRow[columnIndex];
             if (!CommonUtils.equalObjects(oldValue, value)) {
@@ -741,7 +741,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 return null;
             }
         }
-    };
+    }
 
     private static class CellInfo {
         int col;
@@ -973,7 +973,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     }
 
     private class ContentLabelProvider extends LabelProvider implements IColorProvider {
-        private String getValue(Object element)
+        private Object getValue(Object element, boolean formatString)
         {
             GridPos cell = (GridPos)element;
             Object value;
@@ -1003,8 +1003,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 value = curRows.get(cell.row)[cell.col];
                 valueHandler = metaColumns[cell.col].valueHandler;
             }
-            return valueHandler.getValueDisplayString(value);
+            if (formatString) {
+                return valueHandler.getValueDisplayString(value);
+            } else {
+                return value;
+            }
         }
+
         @Override
         public Image getImage(Object element)
         {
@@ -1014,7 +1019,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         @Override
         public String getText(Object element)
         {
-            String text = getValue(element);
+            String text = String.valueOf(getValue(element, true));
             if (text == null) {
                 return "null";
             }
@@ -1023,8 +1028,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public Color getForeground(Object element)
         {
-            Object value = getValue(element);
+            Object value = getValue(element, false);
             if (value == null) {
+                return foregroundNull;
+            } else if (value instanceof DBDValue && ((DBDValue)value).isNull()) {
                 return foregroundNull;
             } else {
                 return null;

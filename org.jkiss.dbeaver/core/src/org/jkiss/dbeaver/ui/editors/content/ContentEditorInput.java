@@ -20,9 +20,12 @@ import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
-import org.jkiss.dbeaver.model.data.DBDStreamHandler;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentBinary;
+import org.jkiss.dbeaver.model.data.DBDContentCharacter;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -35,6 +38,8 @@ import java.io.*;
 public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //IDatabaseEditorInput
 {
     static Log log = LogFactory.getLog(ContentEditorInput.class);
+
+    public static final String DEFAULT_FILE_CHARSET = "UTF-8";
 
     private DBDValueController valueController;
     private IContentEditorPart[] editorParts;
@@ -97,23 +102,22 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
         return null;
     }
 
-    private DBDStreamHandler getStreamHandler()
+    private DBDContent getContent()
         throws DBCException
     {
-        DBDStreamHandler streamHandler;
-        if (valueController.getValueHandler() instanceof DBDStreamHandler) {
-            streamHandler = (DBDStreamHandler) valueController.getValueHandler();
+        Object value = valueController.getValue();
+        if (value instanceof DBDContent) {
+            return (DBDContent)value;
         } else {
             throw new DBCException("Value do not support streaming");
         }
-        return streamHandler;
     }
 
     private void saveDataToFile(IProgressMonitor monitor)
         throws CoreException
     {
         try {
-            DBDStreamHandler streamHandler = getStreamHandler();
+            DBDContent content = getContent();
 
             // Construct file name
             String fileName;
@@ -132,12 +136,9 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
             // Write value to file
             Object value = valueController.getValue();
             if (value != null) {
-                File file = contentFile.getLocation().toFile();
-                Object contents = streamHandler.getContents(value);
-                long contentLength = streamHandler.getContentLength(value);
-                if (contents != null) {
-                    copyContentToFile(contents, contentLength, file, monitor);
-                }
+                //Object contents = content.getContents(value);
+                long contentLength = content.getContentLength();
+                copyContentToFile(content, contentLength, monitor);
             }
 
             // Mark file as readonly
@@ -260,11 +261,13 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
         }
     }
 
-    private void copyContentToFile(Object contents, long contentLength, File file, IProgressMonitor monitor)
+    private void copyContentToFile(DBDContent contents, long contentLength, IProgressMonitor monitor)
         throws DBCException, IOException
     {
-        if (contents instanceof InputStream) {
-            InputStream inputStream = (InputStream)contents;
+        File file = contentFile.getLocation().toFile();
+
+        if (contents instanceof DBDContentBinary) {
+            InputStream inputStream = ((DBDContentBinary)contents).getContents();
             try {
                 OutputStream outputStream = new FileOutputStream(file);
                 try {
@@ -277,15 +280,27 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
             finally {
                 inputStream.close();
             }
-        } else if (contents instanceof Reader) {
-            Reader reader = (Reader)contents;
+        } else if (contents instanceof DBDContentCharacter) {
+            Reader reader = ((DBDContentCharacter)contents).getContents();
             try {
-                Writer writer = new FileWriter(file);
+                OutputStream outputStream = new FileOutputStream(file);
                 try {
+                    String charset = ((DBDContentCharacter)contents).getCharset();
+                    if (charset == null) {
+                        charset = DEFAULT_FILE_CHARSET;
+                    }
+                    Writer writer = new OutputStreamWriter(outputStream, charset);
                     ContentUtils.copyStreams(reader, contentLength, writer, DBeaverUtils.makeMonitor(monitor));
+                    writer.flush();
+                    try {
+                        contentFile.setCharset(charset, monitor);
+                    }
+                    catch (CoreException e) {
+                        log.warn(e);
+                    }
                 }
                 finally {
-                    writer.close();
+                    outputStream.close();
                 }
             }
             finally {
@@ -303,27 +318,41 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
             throw new DBCException("Could not update read-only value");
         }
 
-/*
-        DBDStreamHandler streamHandler = getStreamHandler();
-        DBDStreamKind streamKind = streamHandler.getContentKind(valueController.getColumnMetaData());
-        Object originalValue = valueController.getValue();
-
+        DBRProgressMonitor localMonitor = DBeaverUtils.makeMonitor(monitor);
+        DBDContent content = getContent();
         File file = contentFile.getLocation().toFile();
 
         InputStream inputStream = new FileInputStream(file);
         try {
-            Object newContent;
-            if (streamKind == DBDStreamKind.BINARY) {
-                newContent = inputStream;
-            } else {
-                newContent = new InputStreamReader(inputStream);
+            if (content instanceof DBDContentBinary) {
+                ((DBDContentBinary)content).updateContents(
+                    valueController,
+                    inputStream,
+                    file.length(),
+                    localMonitor);
+            } else if (content instanceof DBDContentCharacter) {
+                String charset;
+                try {
+                    charset = contentFile.getCharset();
+                }
+                catch (CoreException e) {
+                    log.warn(e);
+                    charset = DEFAULT_FILE_CHARSET;
+                }
+
+                long contentLength = ContentUtils.calculateContentLength(new InputStreamReader(inputStream, charset));
+                Reader reader = new InputStreamReader(inputStream, charset);
+                ((DBDContentCharacter)content).updateContents(
+                    valueController,
+                    reader,
+                    contentLength,
+                    localMonitor);
             }
-            streamHandler.updateContents(originalValue, newContent, file.length(), monitor);
         }
         finally {
             inputStream.close();
         }
-*/
+
     }
 
 }
