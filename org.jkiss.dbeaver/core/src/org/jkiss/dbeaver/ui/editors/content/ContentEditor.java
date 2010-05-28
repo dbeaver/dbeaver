@@ -150,6 +150,12 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         try {
             getEditorInput().updateContentFromFile(monitor);
             this.dirty = false;
+            getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                public void run()
+                {
+                    firePropertyChange(PROP_DIRTY);
+                }
+            });
         }
         catch (Exception e) {
             DBeaverUtils.showErrorDialog(

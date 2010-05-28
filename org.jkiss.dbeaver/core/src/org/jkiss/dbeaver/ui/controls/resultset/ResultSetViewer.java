@@ -647,13 +647,18 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         public void updateValue(Object value, boolean immediate)
         {
             Object oldValue = curRow[columnIndex];
-            if (!CommonUtils.equalObjects(oldValue, value)) {
+            if (value instanceof DBDValue || !CommonUtils.equalObjects(oldValue, value)) {
                 int rowIndex = getRowIndex(curRow);
                 if (rowIndex >= 0) {
                     CellInfo cell = new CellInfo(columnIndex, rowIndex, oldValue);
                     editedValues.add(cell);
                     curRow[columnIndex] = value;
-                    updateEditControls();
+                    // Update controls
+                    site.getShell().getDisplay().asyncExec(new Runnable() {
+                        public void run() {
+                            updateEditControls();
+                        }
+                    });
                 }
             }
         }

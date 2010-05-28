@@ -84,9 +84,9 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentB
     {
         try {
             if (data != null) {
-                preparedStatement.setBytes(paramIndex + 1, data);
+                preparedStatement.setBytes(paramIndex, data);
             } else {
-                preparedStatement.setNull(paramIndex + 1, columnType.getValueType());
+                preparedStatement.setNull(paramIndex, columnType.getValueType());
             }
         }
         catch (SQLException e) {
