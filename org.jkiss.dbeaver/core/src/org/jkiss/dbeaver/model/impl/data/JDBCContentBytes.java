@@ -76,7 +76,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentB
                 throw new DBCException("IO error", e);
             }
         }
-        valueController.updateValue(this, true);
+        valueController.updateValueImmediately(this, monitor);
     }
 
     public void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)

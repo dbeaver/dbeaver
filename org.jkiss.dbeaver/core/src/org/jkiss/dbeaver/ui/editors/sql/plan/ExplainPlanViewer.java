@@ -17,8 +17,8 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * ResultSetViewer
@@ -95,7 +95,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
             });
 */
             new ToolItem(toolBar, SWT.SEPARATOR);
-            itemRefresh = createToolItem(toolBar, "Refresh", "/icons/sql/resultset_refresh.png", new SelectionAdapter() {
+            itemRefresh = createToolItem(toolBar, "Refresh", DBIcon.RS_REFRESH, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
                     refresh();
@@ -104,11 +104,11 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
         }
     }
 
-    private ToolItem createToolItem(ToolBar toolBar, String text, String imagePath, SelectionListener listener)
+    private ToolItem createToolItem(ToolBar toolBar, String text, DBIcon icon, SelectionListener listener)
     {
         ToolItem item = new ToolItem(toolBar, SWT.NONE);
         item.setToolTipText(text);
-        ImageDescriptor descriptor = DBeaverActivator.getImageDescriptor(imagePath);
+        ImageDescriptor descriptor = icon == null ? null : icon.getImageDescriptor();
         if (descriptor != null) {
             item.setImage(descriptor.createImage());
         }

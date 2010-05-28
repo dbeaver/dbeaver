@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.dbc.*;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.sql.*;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
@@ -644,7 +645,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return curRow[columnIndex];
         }
 
-        public void updateValue(Object value, boolean immediate)
+        public void updateValue(Object value)
         {
             Object oldValue = curRow[columnIndex];
             if (value instanceof DBDValue || !CommonUtils.equalObjects(oldValue, value)) {
@@ -659,6 +660,17 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             updateEditControls();
                         }
                     });
+                }
+            }
+        }
+
+        public void updateValueImmediately(Object value, DBRProgressMonitor progressMonitor) {
+            // Update cell value
+            Object oldValue = curRow[columnIndex];
+            if (value instanceof DBDValue || !CommonUtils.equalObjects(oldValue, value)) {
+                int rowIndex = getRowIndex(curRow);
+                if (rowIndex >= 0) {
+                    curRow[columnIndex] = value;
                 }
             }
         }
@@ -777,7 +789,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
-    class TableRowInfo {
+    static class TableRowInfo {
         DBSTable table;
         DBCTableIdentifier id;
         List<CellInfo> tableCells = new ArrayList<CellInfo>();

@@ -110,7 +110,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.IGNORE_ID) {
             if (!valueController.isReadOnly()) {
-                getValueController().updateValue(null, false);
+                getValueController().updateValue(null);
             }
             super.okPressed();
         } else {

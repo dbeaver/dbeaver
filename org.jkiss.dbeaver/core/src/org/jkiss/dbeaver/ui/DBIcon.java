@@ -59,6 +59,7 @@ public enum DBIcon
     REJECT("reject", "/icons/sql/cancel.png"),
     IMPORT("import", "/icons/file/import.png"),
     EXPORT("export", "/icons/file/export.png"),
+    REFRESH("refresh", "/icons/refresh.png"),
 
     LOB("lob", "/icons/misc/lob.png"),
     EDIT_DATABSE("edit_database", "/icons/misc/edit_database.png"),
@@ -68,7 +69,14 @@ public enum DBIcon
 
     BINARY("binary", "/icons/misc/binary.png"),
     TEXT("text", "/icons/misc/text.png"),
-    IMAGE("image", "/icons/misc/image.png");
+    IMAGE("image", "/icons/misc/image.png"),
+
+    SQL_EXECUTE("sql_exec", "/icons/sql/sql_exec.png"),
+    SQL_SCRIPT_EXECUTE("sql_script_exec", "/icons/sql/sql_script_exec.png"),
+    SQL_ANALYSE("sql_analyse", "/icons/sql/sql_analyse.png"),
+    SQL_EXPLAIN_PLAN("sql_explain", "/icons/sql/sql_plan.png"),
+    SQL_VALIDATE("sql_validate", "/icons/sql/sql_validate.png"),
+    ;
 
     private final String token;
     private final String path;

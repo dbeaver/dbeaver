@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DataSourceJob;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +60,7 @@ public class SQLQueryJob extends DataSourceJob
     {
         super(
             name,
-            DBeaverActivator.getImageDescriptor("icons/sql/sql_script_exec.png"),
+            DBIcon.SQL_SCRIPT_EXECUTE.getImageDescriptor(),
             session.getDataSource());
         this.session = session;
         this.queries = queries;

@@ -82,7 +82,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentC
             }
             data = new String(buffer);
         }
-        valueController.updateValue(this, true);
+        valueController.updateValueImmediately(this, monitor);
     }
 
     public void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)

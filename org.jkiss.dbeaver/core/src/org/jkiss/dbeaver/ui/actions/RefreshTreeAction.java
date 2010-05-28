@@ -17,7 +17,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.model.meta.DBMEvent;
 import org.jkiss.dbeaver.model.meta.DBMModel;
@@ -47,7 +47,7 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
         //setActionDefinitionId(ActionFactory.REFRESH.getId());
         setText("Refresh");
         setActionDefinitionId("org.eclipse.ui.file.refresh"); //$NON-NLS-1$
-        setImageDescriptor(DBeaverActivator.getImageDescriptor("/icons/refresh.png"));
+        setImageDescriptor(DBIcon.REFRESH.getImageDescriptor());
     }
 
     public RefreshTreeAction(IWorkbenchPart view)

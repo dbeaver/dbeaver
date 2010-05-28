@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.actions.sql;
 
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 
@@ -16,7 +17,7 @@ public class ExecuteScriptAction extends AbstractSQLAction
     {
         setId(ICommandIds.CMD_EXECUTE_SCRIPT);
         setActionDefinitionId(ICommandIds.CMD_EXECUTE_SCRIPT);
-        setImageDescriptor(DBeaverActivator.getImageDescriptor("/icons/sql/run_script.png"));
+        setImageDescriptor(DBIcon.SQL_SCRIPT_EXECUTE.getImageDescriptor());
         setText("Execute Script");
         setToolTipText("Execute Script");
     }

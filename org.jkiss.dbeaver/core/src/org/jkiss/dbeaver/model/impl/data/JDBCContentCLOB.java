@@ -86,7 +86,7 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
             // Update with value controller
             this.reader = stream;
             this.streamLength = contentLength;
-            valueController.updateValue(this, true);
+            valueController.updateValueImmediately(this, monitor);
         }
         try {
             clob.truncate(0);

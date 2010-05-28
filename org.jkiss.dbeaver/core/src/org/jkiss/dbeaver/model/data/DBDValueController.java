@@ -6,9 +6,11 @@ package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * DBD Value Controller
@@ -49,10 +51,15 @@ public interface DBDValueController
     /**
      * Updates value
      * @param value value
-     * @param immediate if false then just sets new value in owner control
-     * otherwise immediately updates value in database
      */
-    void updateValue(Object value, boolean immediate);
+    void updateValue(Object value);
+
+    /**
+     * Updates value immediately. Executes SQL update statement for this cell only.
+     * @param value new value
+     * @param progressMonitor progress monitor
+     */
+    void updateValueImmediately(Object value, DBRProgressMonitor progressMonitor);
 
     DBDValueLocator getValueLocator();
 

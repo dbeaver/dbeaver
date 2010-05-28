@@ -11,20 +11,8 @@ import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 
 public class EditConnectionAction extends DataSourceAction
 {
-    //private IWorkbenchWindow window;
-    //private ISelection selection;
-
-/*
-    public EditConnectionAction()
-    {
-        // The id is used to refer to the action in a menu or toolbar
-        setId(ICommandIds.CMD_EDIT_CONNECTION);
-        // Associate the action with a pre-defined command, to allow key bindings.
-        //setActionDefinitionId(ICommandIds.CMD_EDIT_CONNECTION);
-        setImageDescriptor(DBeaverActivator.getImageDescriptor("/icons/tree/edit_connection.png"));
-        setText("Edit Connection");
+    public EditConnectionAction() {
     }
-*/
 
     public void run(IAction action)
     {

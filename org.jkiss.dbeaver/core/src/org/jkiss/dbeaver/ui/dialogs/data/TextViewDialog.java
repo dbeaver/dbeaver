@@ -64,7 +64,7 @@ public class TextViewDialog extends ValueViewDialog {
     @Override
     protected void applyChanges()
     {
-        getValueController().updateValue(textEdit.getText(), false);
+        getValueController().updateValue(textEdit.getText());
     }
 
 }

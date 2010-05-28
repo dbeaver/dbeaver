@@ -6,13 +6,14 @@ package org.jkiss.dbeaver.ui.actions.sql;
 
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 public class AnalyseStatementAction extends AbstractSQLAction
 {
 
     public AnalyseStatementAction()
     {
-        setImageDescriptor(DBeaverActivator.getImageDescriptor("/icons/sql/sql_analyse.png"));
+        setImageDescriptor(DBIcon.SQL_ANALYSE.getImageDescriptor());
         setText("Analyse statement");
     }
 

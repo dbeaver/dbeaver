@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -84,7 +83,7 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
             // Update using value controller
             this.stream = stream;
             this.streamLength = contentLength;
-            valueController.updateValue(this, true);
+            valueController.updateValueImmediately(this, monitor);
         } else {
             // Update BLOB directly
             try {
