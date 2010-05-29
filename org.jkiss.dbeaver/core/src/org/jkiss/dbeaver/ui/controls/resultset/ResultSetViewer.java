@@ -10,26 +10,55 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.IColorProvider;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.dbc.*;
+import org.jkiss.dbeaver.model.data.DBDRowController;
+import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.DBDValueLocator;
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCSession;
+import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
+import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.sql.*;
+import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
+import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
+import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
+import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
+import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.runtime.sql.SQLStatementParameter;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -38,8 +67,14 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * ResultSetViewer
@@ -574,7 +609,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private void applyChanges()
     {
         try {
-            new CellDataSaver().applyChanges();
+            new CellDataSaver(editedValues).applyChanges(null);
         } catch (DBException e) {
             log.error("Could not obtain result set metdata", e);
         }
@@ -582,7 +617,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void rejectChanges()
     {
-        new CellDataSaver().rejectChanges();
+        new CellDataSaver(editedValues).rejectChanges();
     }
 
     private class ResultSetValueController implements DBDValueController, DBDRowController {
@@ -648,7 +683,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         public void updateValue(Object value)
         {
             Object oldValue = curRow[columnIndex];
-            if (value instanceof DBDValue || !CommonUtils.equalObjects(oldValue, value)) {
+            if (!CommonUtils.equalObjects(oldValue, value)) {
                 int rowIndex = getRowIndex(curRow);
                 if (rowIndex >= 0) {
                     CellInfo cell = new CellInfo(columnIndex, rowIndex, oldValue);
@@ -664,15 +699,27 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
-        public void updateValueImmediately(Object value, DBRProgressMonitor progressMonitor) {
-            // Run update SQL
-
+        public void updateValueImmediately(Object value, ISQLQueryListener listener)
+            throws DBException
+        {
             // Update cell value
             Object oldValue = curRow[columnIndex];
             if (value instanceof DBDValue || !CommonUtils.equalObjects(oldValue, value)) {
                 int rowIndex = getRowIndex(curRow);
                 if (rowIndex >= 0) {
                     curRow[columnIndex] = value;
+
+                    // Run update SQL
+                    Set<CellInfo> cells = new HashSet<CellInfo>();
+                    cells.add(new CellInfo(columnIndex, rowIndex, oldValue));
+                    try {
+                        new CellDataSaver(cells).applyChanges(listener);
+                    }
+                    catch (DBException e) {
+                        // Rollback value
+                        curRow[columnIndex] = oldValue;
+                        throw e;
+                    }
                 }
             }
         }
@@ -804,22 +851,33 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private class CellDataSaver {
 
+        private Set<CellInfo> cells;
         private Map<Integer, Map<DBSTable, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSTable, TableRowInfo>>();
         private List<SQLStatementInfo> statements = new ArrayList<SQLStatementInfo>();
 
-        void applyChanges()
+        private CellDataSaver(Set<CellInfo> cells)
+        {
+            this.cells = cells;
+        }
+
+        /**
+         * Applies changes.
+         * @throws DBException
+         * @param listener
+         */
+        void applyChanges(ISQLQueryListener listener)
             throws DBException
         {
             prepareRows();
             prepareStatements();
-            execute();
+            execute(listener);
         }
 
         private void prepareRows()
             throws DBException
         {
             // Prepare rows
-            for (CellInfo cell : editedValues) {
+            for (CellInfo cell : this.cells) {
                 Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(cell.row);
                 if (tableMap == null) {
                     tableMap = new HashMap<DBSTable, TableRowInfo>();
@@ -855,7 +913,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             query.append(",");
                         }
                         ResultSetColumn metaColumn = metaColumns[cell.col];
-                        query.append(metaColumn.metaData.getTableColumn().getName()).append("=?");
+                        String columnName = DBSUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), metaColumn.metaData.getTableColumn().getName());
+                        query.append(columnName).append("=?");
                         parameters.add(new SQLStatementParameter(
                             metaColumn.valueHandler,
                             metaColumn.metaData,
@@ -869,7 +928,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         if (!firstCol) {
                             query.append(" AND ");
                         }
-                        query.append(idColumn.getName()).append("=?");
+                        String columnName = DBSUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), idColumn.getName());
+                        query.append(columnName).append("=?");
                         firstCol = false;
                         // Find meta column and add statement parameter
                         ResultSetColumn metaColumn = null;
@@ -887,7 +947,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         }
                         Object keyValue = curRows.get(rowNum)[columnIndex];
                         // Try to find old key value
-                        for (CellInfo cell : editedValues) {
+                        for (CellInfo cell : this.cells) {
                             if (cell.equals(columnIndex, rowNum)) {
                                 keyValue = cell.value;
                             }
@@ -908,7 +968,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
-        private void execute()
+        private void execute(final ISQLQueryListener listener)
             throws DBException
         {
             // Execute statements
@@ -921,6 +981,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 @Override
                 public void onStartJob() {
                     updateInProgress = true;
+                    if (listener != null) listener.onStartJob();
                 }
 
                 @Override
@@ -930,10 +991,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         TableRowInfo rowInfo = (TableRowInfo)result.getStatement().getData();
                         if (rowInfo != null) {
                             for (CellInfo cell : rowInfo.tableCells) {
-                                editedValues.remove(cell);
+                                cells.remove(cell);
                             }
                         }
                     }
+                    if (listener != null) listener.onEndQuery(result);
                 }
 
                 @Override
@@ -946,6 +1008,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             updateInProgress = false;
                         }
                     });
+                    if (listener != null) listener.onEndJob(hasErrors);
                 }
             });
             executor.schedule();
@@ -953,10 +1016,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public void rejectChanges()
         {
-            for (CellInfo cell : editedValues) {
+            for (CellInfo cell : this.cells) {
                 curRows.get(cell.row)[cell.col] = cell.value;
             }
-            editedValues.clear();
+            this.cells.clear();
             spreadsheet.redrawGrid();
             updateEditControls();
         }

@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.runtime.sql;
 /**
  * SQLQueryListener
  */
-public interface SQLQueryListener {
+public interface ISQLQueryListener {
 
     void onStartJob();
 

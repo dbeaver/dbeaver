@@ -10,6 +10,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -76,14 +78,15 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
         DBDValueController valueController,
         InputStream stream,
         long contentLength,
-        DBRProgressMonitor monitor)
-        throws DBCException
+        DBRProgressMonitor monitor,
+        ISQLQueryListener listener)
+        throws DBException
     {
         if (blob == null) {
             // Update using value controller
             this.stream = stream;
             this.streamLength = contentLength;
-            valueController.updateValueImmediately(this, monitor);
+            valueController.updateValueImmediately(this, listener);
         } else {
             // Update BLOB directly
             try {

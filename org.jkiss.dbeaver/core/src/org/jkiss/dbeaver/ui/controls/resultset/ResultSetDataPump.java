@@ -16,7 +16,7 @@ import org.jkiss.dbeaver.model.impl.data.JDBCUnsupportedValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryDataPump;
+import org.jkiss.dbeaver.runtime.sql.ISQLQueryDataPump;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * Data pump for SQL queries
  */
-class ResultSetDataPump implements SQLQueryDataPump {
+class ResultSetDataPump implements ISQLQueryDataPump {
 
     private static DBDValueHandler DEFAULT_VALUE_HANDLER = JDBCUnsupportedValueHandler.INSTANCE;
 

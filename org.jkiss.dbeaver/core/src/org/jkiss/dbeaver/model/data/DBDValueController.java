@@ -6,8 +6,8 @@ package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -59,7 +59,7 @@ public interface DBDValueController
      * @param value new value
      * @param progressMonitor progress monitor
      */
-    void updateValueImmediately(Object value, DBRProgressMonitor progressMonitor);
+    void updateValueImmediately(Object value, ISQLQueryListener listener) throws DBException;
 
     DBDValueLocator getValueLocator();
 

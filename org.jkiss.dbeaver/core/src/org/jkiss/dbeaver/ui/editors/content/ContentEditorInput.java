@@ -18,6 +18,7 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -151,7 +152,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
             }
 
         }
-        catch (DBCException e) {
+        catch (DBException e) {
             throw new CoreException(
                 DBeaverUtils.makeExceptionStatus(e));
         }
@@ -262,7 +263,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
     }
 
     private void copyContentToFile(DBDContent contents, long contentLength, IProgressMonitor monitor)
-        throws DBCException, IOException
+        throws DBException, IOException
     {
         File file = contentFile.getLocation().toFile();
 
@@ -311,8 +312,8 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
         }
     }
 
-    void updateContentFromFile(IProgressMonitor monitor)
-        throws DBCException, IOException
+    void updateContentFromFile(IProgressMonitor monitor, ISQLQueryListener listener)
+        throws DBException, IOException
     {
         if (valueController.isReadOnly()) {
             throw new DBCException("Could not update read-only value");
@@ -329,7 +330,8 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
                     valueController,
                     inputStream,
                     file.length(),
-                    localMonitor);
+                    localMonitor,
+                    listener);
             } else if (content instanceof DBDContentCharacter) {
                 String charset;
                 try {
@@ -349,7 +351,8 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
                     valueController,
                     reader,
                     contentLength,
-                    localMonitor);
+                    localMonitor,
+                    listener);
             }
         }
         finally {

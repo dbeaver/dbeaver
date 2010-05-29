@@ -4,9 +4,9 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.dbc.DBCException;
 
 import java.io.Reader;
 
@@ -19,12 +19,13 @@ public interface DBDContentCharacter extends DBDContent {
 
     String getCharset();
 
-    Reader getContents() throws DBCException;
+    Reader getContents() throws DBException;
 
     void updateContents(
         DBDValueController valueController,
         Reader stream,
         long contentLength,
-        DBRProgressMonitor monitor) throws DBCException;
+        DBRProgressMonitor monitor,
+        ISQLQueryListener listener) throws DBException;
 
 }

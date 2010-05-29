@@ -10,7 +10,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
@@ -37,7 +36,7 @@ public class SQLQueryJob extends DataSourceJob
 
     private DBCSession session;
     private List<SQLStatementInfo> queries;
-    private SQLQueryDataPump dataPump;
+    private ISQLQueryDataPump dataPump;
     private DBSObject dataContainer;
 
     private SQLScriptCommitType commitType;
@@ -50,13 +49,13 @@ public class SQLQueryJob extends DataSourceJob
     private boolean statementCanceled = false;
     private Throwable lastError = null;
 
-    private List<SQLQueryListener> queryListeners = new ArrayList<SQLQueryListener>();
+    private List<ISQLQueryListener> queryListeners = new ArrayList<ISQLQueryListener>();
 
     public SQLQueryJob(
         String name,
         DBCSession session,
         List<SQLStatementInfo> queries,
-        SQLQueryDataPump dataPump)
+        ISQLQueryDataPump dataPump)
     {
         super(
             name,
@@ -84,14 +83,24 @@ public class SQLQueryJob extends DataSourceJob
         this.dataContainer = dataContainer;
     }
 
-    public void addQueryListener(SQLQueryListener listener)
+    public void addQueryListener(ISQLQueryListener listener)
     {
         this.queryListeners.add(listener);
     }
 
-    public void removeQueryListener(SQLQueryListener listener)
+    public void removeQueryListener(ISQLQueryListener listener)
     {
         this.queryListeners.remove(listener);
+    }
+
+    /**
+     * Exeucutes queries immediately (without job scheduling)
+     * @param monitor progress monitor
+     * @return status
+     */
+    public IStatus runImmediately(DBRProgressMonitor monitor)
+    {
+        return this.run(monitor);
     }
 
     protected IStatus run(DBRProgressMonitor monitor)
@@ -108,7 +117,7 @@ public class SQLQueryJob extends DataSourceJob
             monitor.beginTask(this.getName(), queries.size() * SUBTASK_COUNT);
 
             // Notify job start
-            for (SQLQueryListener listener : queryListeners) {
+            for (ISQLQueryListener listener : queryListeners) {
                 listener.onStartJob();
             }
 
@@ -216,7 +225,7 @@ public class SQLQueryJob extends DataSourceJob
         }
         finally {
             // Notify job end
-            for (SQLQueryListener listener : queryListeners) {
+            for (ISQLQueryListener listener : queryListeners) {
                 listener.onEndJob(lastError != null);
             }
 
@@ -229,7 +238,7 @@ public class SQLQueryJob extends DataSourceJob
         lastError = null;
 
         // Notify query start
-        for (SQLQueryListener listener : queryListeners) {
+        for (ISQLQueryListener listener : queryListeners) {
             listener.onStartQuery(query);
         }
 
@@ -298,7 +307,7 @@ public class SQLQueryJob extends DataSourceJob
         }
         result.setQueryTime(System.currentTimeMillis() - startTime);
         // Notify query end
-        for (SQLQueryListener listener : queryListeners) {
+        for (ISQLQueryListener listener : queryListeners) {
             listener.onEndQuery(result);
         }
         if (subTasksPerformed < SUBTASK_COUNT) {

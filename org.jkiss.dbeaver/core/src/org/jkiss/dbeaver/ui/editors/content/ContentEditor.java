@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -42,8 +43,6 @@ import javax.activation.MimeTypeParseException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Iterator;
-import java.io.IOException;
 
 /**
  * LOBEditor
@@ -177,8 +176,22 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
                     // Set dirty flag - if error will occure during content save
                     // then document remains dirty
                     ContentEditor.this.dirty = true;
-                    getEditorInput().updateContentFromFile(monitor);
-                    ContentEditor.this.dirty = false;
+
+                    getEditorInput().updateContentFromFile(
+                        monitor,
+                        new DefaultQueryListener() {
+                            @Override
+                            public void onEndJob(boolean hasErrors)
+                            {
+                                ContentEditor.this.dirty = hasErrors;
+                                getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                                    public void run()
+                                    {
+                                        firePropertyChange(PROP_DIRTY);
+                                    }
+                                });
+                            }
+                        });
                 }
                 catch (Exception e) {
                     DBeaverUtils.showErrorDialog(
@@ -186,9 +199,6 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
                         "Could not save content",
                         "Could not save content to database",
                         e);
-                }
-                finally {
-                    firePropertyChange(PROP_DIRTY);
                 }
             }
         });

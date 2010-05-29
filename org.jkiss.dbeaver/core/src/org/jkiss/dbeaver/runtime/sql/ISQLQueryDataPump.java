@@ -10,7 +10,7 @@ import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 /**
  * SQLQueryListener
  */
-public interface SQLQueryDataPump {
+public interface ISQLQueryDataPump {
 
     void fetchStart(DBCResultSet resultSet)
         throws DBCException;

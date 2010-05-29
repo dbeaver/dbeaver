@@ -11,6 +11,8 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -79,14 +81,15 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
         DBDValueController valueController,
         Reader stream,
         long contentLength,
-        DBRProgressMonitor monitor)
-        throws DBCException
+        DBRProgressMonitor monitor,
+        ISQLQueryListener listener)
+        throws DBException
     {
         if (clob == null) {
             // Update with value controller
             this.reader = stream;
             this.streamLength = contentLength;
-            valueController.updateValueImmediately(this, monitor);
+            valueController.updateValueImmediately(this, listener);
         }
         try {
             clob.truncate(0);

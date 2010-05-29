@@ -12,6 +12,8 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -59,8 +61,9 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentB
         DBDValueController valueController,
         InputStream stream,
         long contentLength,
-        DBRProgressMonitor monitor)
-        throws DBCException
+        DBRProgressMonitor monitor,
+        ISQLQueryListener listener)
+        throws DBException
     {
         if (stream == null) {
             data = null;
@@ -76,7 +79,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentB
                 throw new DBCException("IO error", e);
             }
         }
-        valueController.updateValueImmediately(this, monitor);
+        valueController.updateValueImmediately(this, listener);
     }
 
     public void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)

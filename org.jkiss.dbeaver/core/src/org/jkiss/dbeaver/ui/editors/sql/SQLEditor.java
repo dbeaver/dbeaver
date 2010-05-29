@@ -55,7 +55,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
+import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.ICommandIds;
@@ -660,7 +660,7 @@ public class SQLEditor extends TextEditor
                 curSession,
                 queries,
                 resultsView.getDataPump());
-            job.addQueryListener(new SQLQueryListener() {
+            job.addQueryListener(new ISQLQueryListener() {
                 public void onStartJob()
                 {
                     curJobRunning = true;
