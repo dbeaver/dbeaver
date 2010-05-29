@@ -43,6 +43,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
+import java.io.IOException;
 
 /**
  * LOBEditor
@@ -140,80 +141,57 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
 
     public void doSave(final IProgressMonitor monitor)
     {
-        try {
-            // Check for dirty parts
-            final List<IContentEditorPart> dirtyParts = new ArrayList<IContentEditorPart>();
-            for (ContentPartInfo partInfo : contentParts) {
-                if (partInfo.activated && partInfo.editorPart.isDirty()) {
-                    dirtyParts.add(partInfo.editorPart);
-                }
-            }
-
-            IContentEditorPart dirtyPart = null;
-            if (dirtyParts.isEmpty()) {
-                // No modified parts - no additional save required
-            } else if (dirtyParts.size() == 1) {
-                // Single part modified - save it
-                dirtyPart = dirtyParts.get(0);
-            } else {
-                // Multiple parts modified - need to choose one
-                // Run selector dialog in UI thread. Dirty parts will contain only selected one after return
-                Runnable partSelector = new Runnable() {
-                    public void run()
-                    {
-                        IContentEditorPart part = SelectContentPartDialog.selectContentPart(getSite().getShell(), dirtyParts);
-                        if (part == null) {
-                            dirtyParts.clear();
-                        } else {
-                            for (Iterator<IContentEditorPart> iter = dirtyParts.iterator(); iter.hasNext(); ) {
-                                if (iter.next() != part) {
-                                    iter.remove();
-                                }
-                            }
+        // Execute save in UI thread
+        getSite().getShell().getDisplay().syncExec(new Runnable() {
+            public void run()
+            {
+                try {
+                    // Check for dirty parts
+                    final List<IContentEditorPart> dirtyParts = new ArrayList<IContentEditorPart>();
+                    for (ContentPartInfo partInfo : contentParts) {
+                        if (partInfo.activated && partInfo.editorPart.isDirty()) {
+                            dirtyParts.add(partInfo.editorPart);
                         }
                     }
-                };
-                getSite().getShell().getDisplay().syncExec(partSelector);
 
-                if (dirtyParts.isEmpty()) {
-                    // Save canceled
-                    return;
-                }
-                dirtyPart = dirtyParts.get(0);
-            }
+                    IContentEditorPart dirtyPart = null;
+                    if (dirtyParts.isEmpty()) {
+                        // No modified parts - no additional save required
+                    } else if (dirtyParts.size() == 1) {
+                        // Single part modified - save it
+                        dirtyPart = dirtyParts.get(0);
+                    } else {
+                        // Multiple parts modified - need to choose one
+                        dirtyPart = SelectContentPartDialog.selectContentPart(getSite().getShell(), dirtyParts);
+                    }
 
-            if (dirtyPart != null) {
-                saveInProgress = true;
-                try {
-                    final IContentEditorPart partToSave = dirtyPart;
-                    getSite().getShell().getDisplay().syncExec(new Runnable() {
-                        public void run()
-                        {
-                            partToSave.doSave(monitor);
+                    if (dirtyPart != null) {
+                        saveInProgress = true;
+                        try {
+                            dirtyPart.doSave(monitor);
                         }
-                    });
+                        finally {
+                            saveInProgress = false;
+                        }
+                    }
+                    // Set dirty flag - if error will occure during content save
+                    // then document remains dirty
+                    ContentEditor.this.dirty = true;
+                    getEditorInput().updateContentFromFile(monitor);
+                    ContentEditor.this.dirty = false;
+                }
+                catch (Exception e) {
+                    DBeaverUtils.showErrorDialog(
+                        getSite().getShell(),
+                        "Could not save content",
+                        "Could not save content to database",
+                        e);
                 }
                 finally {
-                    saveInProgress = false;
-                }
-            }
-
-            getEditorInput().updateContentFromFile(monitor);
-            this.dirty = false;
-            getSite().getShell().getDisplay().asyncExec(new Runnable() {
-                public void run()
-                {
                     firePropertyChange(PROP_DIRTY);
                 }
-            });
-        }
-        catch (Exception e) {
-            DBeaverUtils.showErrorDialog(
-                getSite().getShell(),
-                "Could not save content",
-                "Could not save content to database",
-                e);
-        }
+            }
+        });
     }
 
     public void doSaveAs()

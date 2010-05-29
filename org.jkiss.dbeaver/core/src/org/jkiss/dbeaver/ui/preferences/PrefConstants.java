@@ -18,4 +18,7 @@ public final class PrefConstants
     public static final String DEFAULT_AUTO_COMMIT = "default.autocommit";
     public static final String STATEMENT_TIMEOUT = "statement.timeout";
 
+    public static final String RS_COMMIT_ON_EDIT_APPLY = "resultset.commit.oneditapply";
+    public static final String RS_COMMIT_ON_CONTENT_APPLY = "resultset.commit.oncontentapply";
+
 }

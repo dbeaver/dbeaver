@@ -163,9 +163,9 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
 
     private String makeFileName() throws DBException {
         StringBuilder fileName = new StringBuilder(valueController.getColumnId());
-        if (valueController.getValueLocator() != null) {
-            fileName.append(valueController.getValueLocator().getKeyId(valueController.getRow()));
-        }
+        //if (valueController.getValueLocator() != null) {
+        //    fileName.append(valueController.getValueLocator().getKeyId(valueController.getRow()));
+        //}
         return fileName.toString();
     }
 
@@ -340,7 +340,10 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
                     charset = DEFAULT_FILE_CHARSET;
                 }
 
-                long contentLength = ContentUtils.calculateContentLength(new InputStreamReader(inputStream, charset));
+                long contentLength = ContentUtils.calculateContentLength(
+                    new InputStreamReader(
+                        new FileInputStream(file),
+                        charset));
                 Reader reader = new InputStreamReader(inputStream, charset);
                 ((DBDContentCharacter)content).updateContents(
                     valueController,

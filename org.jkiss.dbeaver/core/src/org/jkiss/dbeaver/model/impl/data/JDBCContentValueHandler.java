@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDContentCharacter;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
@@ -25,6 +26,8 @@ import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * JDBC Content value handler.
@@ -150,12 +153,23 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             return false;
         }
         // Open LOB editor
+        Object value = controller.getValue();
+        boolean isText = value instanceof DBDContentCharacter;
+        if (isText) {
+            // Check for length
+
+        }
+        List<IContentEditorPart> parts = new ArrayList<IContentEditorPart>();
+        if (isText) {
+            parts.add(new ContentTextEditorPart());
+        } else {
+            parts.add(new ContentBinaryEditorPart());
+            parts.add(new ContentTextEditorPart());
+            parts.add(new ContentImageEditorPart());
+        }
         return ContentEditor.openEditor(
             controller,
-            new IContentEditorPart[] {
-                new ContentBinaryEditorPart(),
-                new ContentTextEditorPart(),
-                new ContentImageEditorPart()} );
+            parts.toArray(new IContentEditorPart[parts.size()]) );
     }
 
 }

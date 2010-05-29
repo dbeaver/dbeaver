@@ -665,6 +665,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
 
         public void updateValueImmediately(Object value, DBRProgressMonitor progressMonitor) {
+            // Run update SQL
+
             // Update cell value
             Object oldValue = curRow[columnIndex];
             if (value instanceof DBDValue || !CommonUtils.equalObjects(oldValue, value)) {
