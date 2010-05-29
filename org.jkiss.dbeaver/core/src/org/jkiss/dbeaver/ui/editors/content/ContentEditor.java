@@ -15,15 +15,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
@@ -35,14 +29,11 @@ import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDContentCharacter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
@@ -51,6 +42,7 @@ import javax.activation.MimeTypeParseException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 /**
  * LOBEditor
@@ -68,6 +60,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
     private ColumnInfoPanel infoPanel;
     private boolean dirty;
     private boolean partsLoaded;
+    private boolean saveInProgress;
 
     static class ContentPartInfo {
         IContentEditorPart editorPart;
@@ -145,9 +138,66 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         return true;
     }
 
-    public void doSave(IProgressMonitor monitor)
+    public void doSave(final IProgressMonitor monitor)
     {
         try {
+            // Check for dirty parts
+            final List<IContentEditorPart> dirtyParts = new ArrayList<IContentEditorPart>();
+            for (ContentPartInfo partInfo : contentParts) {
+                if (partInfo.activated && partInfo.editorPart.isDirty()) {
+                    dirtyParts.add(partInfo.editorPart);
+                }
+            }
+
+            IContentEditorPart dirtyPart = null;
+            if (dirtyParts.isEmpty()) {
+                // No modified parts - no additional save required
+            } else if (dirtyParts.size() == 1) {
+                // Single part modified - save it
+                dirtyPart = dirtyParts.get(0);
+            } else {
+                // Multiple parts modified - need to choose one
+                // Run selector dialog in UI thread. Dirty parts will contain only selected one after return
+                Runnable partSelector = new Runnable() {
+                    public void run()
+                    {
+                        IContentEditorPart part = SelectContentPartDialog.selectContentPart(getSite().getShell(), dirtyParts);
+                        if (part == null) {
+                            dirtyParts.clear();
+                        } else {
+                            for (Iterator<IContentEditorPart> iter = dirtyParts.iterator(); iter.hasNext(); ) {
+                                if (iter.next() != part) {
+                                    iter.remove();
+                                }
+                            }
+                        }
+                    }
+                };
+                getSite().getShell().getDisplay().syncExec(partSelector);
+
+                if (dirtyParts.isEmpty()) {
+                    // Save canceled
+                    return;
+                }
+                dirtyPart = dirtyParts.get(0);
+            }
+
+            if (dirtyPart != null) {
+                saveInProgress = true;
+                try {
+                    final IContentEditorPart partToSave = dirtyPart;
+                    getSite().getShell().getDisplay().syncExec(new Runnable() {
+                        public void run()
+                        {
+                            partToSave.doSave(monitor);
+                        }
+                    });
+                }
+                finally {
+                    saveInProgress = false;
+                }
+            }
+
             getEditorInput().updateContentFromFile(monitor);
             this.dirty = false;
             getSite().getShell().getDisplay().asyncExec(new Runnable() {
@@ -335,120 +385,6 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         infoPanel.getParent().layout();
     }
 
-    private void createToolbar(Composite panel) {
-        Composite toolbarGroup = new Composite(panel, SWT.NONE);
-        {
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalIndent = 0;
-            gd.verticalIndent = 0;
-            toolbarGroup.setLayoutData(gd);
-            GridLayout layout = new GridLayout(3, false);
-            layout.marginHeight = 0;
-            layout.marginWidth = 0;
-            toolbarGroup.setLayout(layout);
-        }
-
-        Object value = getValueController().getValue();
-        DBDContent content = getContent();
-        try {
-            Composite contentGroup = new Composite(toolbarGroup, SWT.NONE);
-
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            contentGroup.setLayoutData(gd);
-            RowLayout layout = new RowLayout(SWT.HORIZONTAL);
-            layout.center = true;
-            layout.spacing = 5;
-            contentGroup.setLayout(layout);
-
-            // Content length
-            Label label = new Label(contentGroup, SWT.NONE);
-            label.setText("Content Length:");
-            Text text = new Text(contentGroup, SWT.BORDER | SWT.READ_ONLY);
-            if (content != null) {
-                text.setText(String.valueOf(content.getContentLength()));
-            }
-
-            // Content type
-            label = new Label(contentGroup, SWT.NONE);
-            label.setText("Content Type:");
-            Text ctText = new Text(contentGroup, SWT.BORDER | SWT.READ_ONLY);
-            if (content != null) {
-                String contentType = content.getContentType();
-                ctText.setText(contentType == null ? "unknown" : contentType);
-            }
-
-            // Content sub type
-            label = new Label(contentGroup, SWT.NONE);
-            label.setText("Content Encoding:");
-            Text encodingText = new Text (contentGroup, SWT.BORDER | SWT.READ_ONLY);
-            if (content instanceof DBDContentCharacter) {
-                String contentEncoding = ((DBDContentCharacter)content).getCharset();
-                encodingText.setText(contentEncoding == null ? "" : contentEncoding);
-            }
-/*
-            encodingText.setVisibleItemCount(30);
-            SortedMap<String,Charset> charsetMap = Charset.availableCharsets();
-            int index = 0;
-            int defIndex = -1;
-            for (String csName : charsetMap.keySet()) {
-                Charset charset = charsetMap.get(csName);
-                encodingText.add(charset.displayName());
-                if (charset.equals(Charset.defaultCharset())) {
-                    defIndex = index;
-                }
-                index++;
-            }
-            if (defIndex >= 0) {
-                encodingText.select(defIndex);
-            }
-*/
-        }
-        catch (Exception e) {
-            log.error("Could not initialize LOB editorPart toolbar", e);
-        }
-
-        {
-            ToolBar toolBar = new ToolBar(toolbarGroup, SWT.FLAT);
-
-            GridData gd = new GridData();
-            gd.horizontalAlignment = SWT.RIGHT;
-            toolBar.setLayoutData(gd);
-
-            UIUtils.createToolItem(toolBar, "Save To File", DBIcon.SAVE, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                }
-            });
-            UIUtils.createToolItem(toolBar, "Load from File", DBIcon.LOAD, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                }
-            });
-            UIUtils.createSeparator(toolBar);
-            UIUtils.createToolItem(toolBar, "Column Info", DBIcon.INFO, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                }
-            });
-            UIUtils.createSeparator(toolBar);
-            UIUtils.createToolItem(toolBar, "Apply Changes", DBIcon.ACCEPT, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                }
-            });
-            UIUtils.createToolItem(toolBar, "Close", DBIcon.REJECT, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                }
-            });
-        }
-    }
-
     DBDValueHandler getValueHandler()
     {
         DBDValueController valueController = getValueController();
@@ -518,7 +454,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
 
     public void resourceChanged(IResourceChangeEvent event)
     {
-        if (!partsLoaded) {
+        if (!partsLoaded || saveInProgress) {
             // No content change before all parts are loaded
             return;
         }
