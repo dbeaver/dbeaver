@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.NullLoadService;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryInfo;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.assist.SQLAssistProposalsService;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 
 import java.util.ArrayList;
@@ -425,6 +426,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     public IContextInformationValidator getContextInformationValidator()
     {
         return validator;
+    }
+
+    public void setProposalsService(SQLAssistProposalsService proposalsService)
+    {
+        
     }
 
     /**

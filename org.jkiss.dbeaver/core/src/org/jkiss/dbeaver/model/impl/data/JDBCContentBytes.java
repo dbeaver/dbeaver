@@ -7,12 +7,12 @@ package org.jkiss.dbeaver.model.impl.data;
 import net.sf.jkiss.utils.streams.MimeTypes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 
 import java.io.ByteArrayInputStream;
@@ -104,7 +104,10 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentB
 
     @Override
     public String toString() {
-        return data == null ? null : "binary [" + getContentLength() + "]";
+        if (data == null) {
+            return null;
+        }
+        return "binary [" + data.length + "]";
     }
 
 }
