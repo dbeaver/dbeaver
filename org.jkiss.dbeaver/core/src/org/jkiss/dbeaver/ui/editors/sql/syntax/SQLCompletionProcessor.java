@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.NullLoadService;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryInfo;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.assist.SQLAssistProposalsService;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 
 import java.util.ArrayList;
@@ -390,10 +389,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 //        documentOffset);
 
         IContextInformation[] result = new IContextInformation[2];
-        result[0] = new ContextInformation("contextDisplayString",
-            "informationDisplayString");
-        result[1] = new ContextInformation("contextDisplayString2",
-            "informationDisplayString2");
+        result[0] = new ContextInformation("contextDisplayString", "informationDisplayString");
+        result[1] = new ContextInformation("contextDisplayString2", "informationDisplayString2");
 
         return result;
     }
@@ -428,11 +425,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     public IContextInformationValidator getContextInformationValidator()
     {
         return validator;
-    }
-
-    public void setProposalsService(SQLAssistProposalsService proposalsService)
-    {
-
     }
 
     /**

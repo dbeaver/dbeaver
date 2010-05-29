@@ -117,11 +117,11 @@ public class BestMatchHover extends AbstractSQLEditorTextHover
         }
 
         for (ITextHover hover : instantiatedTextHovers) {
-            Object info;
+            Object info = null;
             if (hover instanceof ITextHoverExtension2) {
                 info =  ((ITextHoverExtension2)hover).getHoverInfo2(textViewer, hoverRegion);
             } else {
-                info = hover.getHoverInfo(textViewer, hoverRegion);
+                //info = hover.getHoverInfo(textViewer, hoverRegion);
             }
             if (info != null) {
                 bestHover = hover;

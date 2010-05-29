@@ -408,7 +408,7 @@ public class PreferencesManager {
             int width = fontsGc.getAdvanceWidth((char) 0x020);
             boolean isFixedWidth = true;
             for (int j = 0x021; j < 0x0100 && isFixedWidth; ++j) {
-                if (HexTexts.byteToChar[j] == '.' && j != '.') continue;
+                if (HexEditControl.byteToChar[j] == '.' && j != '.') continue;
                 if (width != fontsGc.getAdvanceWidth((char) j)) isFixedWidth = false;
             }
             font.dispose();
@@ -487,7 +487,7 @@ public class PreferencesManager {
     public void setFontData(FontData aFontData)
     {
         if (aFontData == null)
-            aFontData = HexTexts.fontDataDefault;
+            aFontData = HexEditControl.fontDataDefault;
         sampleFontData = aFontData;
         refreshWidgets();
     }

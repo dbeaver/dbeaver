@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Display;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Map;
 
 /**
  * A clipboard for binary content. Data up to 4Mbytes is made available as text as well
@@ -36,12 +36,12 @@ import java.util.Iterator;
  */
 public class BinaryClipboard {
 
-    static Log log = LogFactory.getLog(HexTexts.class);
+    static Log log = LogFactory.getLog(HexEditControl.class);
 
     static class FileByteArrayTransfer extends ByteArrayTransfer {
-        static final String MYTYPENAME = "myFileByteArrayTypeName";
-        static final int MYTYPEID = registerType(MYTYPENAME);
-        static FileByteArrayTransfer _instance = new FileByteArrayTransfer();
+        static final String FORMAT_NAME = "BinaryFileByteArrayTypeName";
+        static final int FORMAT_ID = registerType(FORMAT_NAME);
+        static FileByteArrayTransfer instance = new FileByteArrayTransfer();
 
         private FileByteArrayTransfer()
         {
@@ -49,7 +49,7 @@ public class BinaryClipboard {
 
         static FileByteArrayTransfer getInstance()
         {
-            return _instance;
+            return instance;
         }
 
         public void javaToNative(Object object, TransferData transferData)
@@ -82,40 +82,44 @@ public class BinaryClipboard {
             if (!isSupportedType(transferData)) return null;
 
             byte[] buffer = (byte[]) super.nativeToJava(transferData);
-            if (buffer == null) return null;
+            if (buffer == null) {
+                return null;
+            }
 
-            File myData = null;
             DataInputStream readIn = new DataInputStream(new ByteArrayInputStream(buffer));
             try {
                 int size = readIn.readInt();
-                if (size < 1) return null;
-                byte[] name = new byte[size];
-                if (readIn.read(name) < size) return null;
-                myData = new File(new String(name));
+                if (size <= 0) {
+                    return null;
+                }
+                byte[] nameBytes = new byte[size];
+                if (readIn.read(nameBytes) < size){
+                    return null;
+                }
+                return new File(new String(nameBytes));
             }
             catch (IOException ex) {
                 log.warn(ex);
-            }  // paste nothing then
-
-            return myData;
+                return null;
+            }
         }
 
         protected String[] getTypeNames()
         {
-            return new String[]{MYTYPENAME};
+            return new String[]{FORMAT_NAME};
         }
 
         protected int[] getTypeIds()
         {
-            return new int[]{MYTYPEID};
+            return new int[]{FORMAT_ID};
         }
     }
 
 
     static class MemoryByteArrayTransfer extends ByteArrayTransfer {
-        static final String MYTYPENAME = "myMemoryByteArrayTypeName";
-        static final int MYTYPEID = registerType(MYTYPENAME);
-        static MemoryByteArrayTransfer _instance = new MemoryByteArrayTransfer();
+        static final String FORMAT_NAME = "BinaryMemoryByteArrayTypeName";
+        static final int FORMAT_ID = registerType(FORMAT_NAME);
+        static MemoryByteArrayTransfer instance = new MemoryByteArrayTransfer();
 
         private MemoryByteArrayTransfer()
         {
@@ -123,7 +127,7 @@ public class BinaryClipboard {
 
         static MemoryByteArrayTransfer getInstance()
         {
-            return _instance;
+            return instance;
         }
 
         public void javaToNative(Object object, TransferData transferData)
@@ -148,12 +152,12 @@ public class BinaryClipboard {
 
         protected String[] getTypeNames()
         {
-            return new String[]{MYTYPENAME};
+            return new String[]{FORMAT_NAME};
         }
 
         protected int[] getTypeIds()
         {
-            return new int[]{MYTYPEID};
+            return new int[]{FORMAT_ID};
         }
     }
 
@@ -162,7 +166,7 @@ public class BinaryClipboard {
     static final File clipboardFile = new File(clipboardDir, "dbeaver-binary-clipboard.tmp");
     static final long maxClipboardDataInMemory = 4 * 1024 * 1024;  // 4 Megs for byte[], 4 Megs for text
     Clipboard myClipboard = null;
-    HashMap myFilesReferencesCounter = null;
+    Map<File, Integer> myFilesReferencesCounter = null;
 
 
     /**
@@ -171,14 +175,14 @@ public class BinaryClipboard {
     public BinaryClipboard(Display aDisplay)
     {
         myClipboard = new Clipboard(aDisplay);
-        myFilesReferencesCounter = new HashMap();
+        myFilesReferencesCounter = new HashMap<File, Integer>();
     }
 
 
     static boolean deleteFileALaMs(File aFile)
     {
         long time = System.currentTimeMillis();  // horrible hack for even worse M$ os
-        boolean success = false;
+        boolean success;
         while (!(success = aFile.delete()) && System.currentTimeMillis() - time < 1234L) {
             System.gc();
             try {
@@ -208,9 +212,8 @@ public class BinaryClipboard {
         if (!clipboardFile.equals(lastPaste))  // null
             emptyClipboardFile();
 
-        for (Iterator i = myFilesReferencesCounter.keySet().iterator(); i.hasNext();) {
-            File aFile = (File) i.next();
-            int count = ((Integer) myFilesReferencesCounter.get(aFile)).intValue();
+        for (File aFile : myFilesReferencesCounter.keySet()) {
+            int count = myFilesReferencesCounter.get(aFile);
             File lock = getLockFromFile(aFile);
             if (updateLock(lock, -count)) {  // lock deleted
                 if (!deleteFileALaMs(aFile))
@@ -299,8 +302,8 @@ public class BinaryClipboard {
     {
         if (length < 1L) return;
 
-        Object[] data = null;
-        Transfer[] transfers = null;
+        Object[] data;
+        Transfer[] transfers;
         try {
             if (length <= maxClipboardDataInMemory) {
                 byte[] byteArrayData = new byte[(int) length];
@@ -340,7 +343,7 @@ public class BinaryClipboard {
         File lock = null;
         if (clipboardFile.equals(lastPaste)) {
             for (int i = 0; i < 9999; ++i) {
-                StringBuffer name = new StringBuffer("javahexeditorPasted").append(i);
+                StringBuffer name = new StringBuffer("binaryPasted").append(i);
                 lastPaste = new File(clipboardDir, name.toString() + ".tmp");
                 lock = new File(clipboardDir, name.append(".lock").toString());
                 if (!lock.exists())
@@ -371,7 +374,7 @@ public class BinaryClipboard {
                 myFilesReferencesCounter.remove(lastPaste);
                 return total;
             }
-            Integer value = (Integer) myFilesReferencesCounter.put(lastPaste, new Integer(1));
+            Integer value = myFilesReferencesCounter.put(lastPaste, new Integer(1));
             if (value != null)
                 myFilesReferencesCounter.put(lastPaste, new Integer(value.intValue() + 1));
         }

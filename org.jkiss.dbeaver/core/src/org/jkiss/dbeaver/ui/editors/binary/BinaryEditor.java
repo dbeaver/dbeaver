@@ -52,7 +52,7 @@ import java.util.Set;
 
 public class BinaryEditor extends EditorPart implements ISelectionProvider, IMenuListener, IResourceChangeListener {
 
-    static Log log = LogFactory.getLog(HexTexts.class);
+    static Log log = LogFactory.getLog(HexEditControl.class);
 
     static final String textSavingFilePleaseWait = "Saving file, please wait";
 
@@ -178,7 +178,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             {
                 if (selectionListeners == null) return;
 
-                long[] longSelection = HexTexts.getLongSelection(e);
+                long[] longSelection = HexEditControl.getLongSelection(e);
                 SelectionChangedEvent event = new SelectionChangedEvent(
                     BinaryEditor.this,
                     new StructuredSelection(new Object[]{

@@ -28,7 +28,7 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.editors.binary.Finder;
 import org.jkiss.dbeaver.ui.editors.binary.HexManager;
-import org.jkiss.dbeaver.ui.editors.binary.HexTexts;
+import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -86,7 +86,7 @@ public class FindReplaceDialog extends Dialog {
     };
     private List<Object[]> findReplaceFindList = null;
     private List<Object[]> findReplaceReplaceList = null;
-    private HexTexts myTarget = null;
+    private HexEditControl editControl = null;
     private TextHexInputGroup lastFocused = null;
     private boolean lastForward = true;
     private boolean lastFindHexButtonSelected = true;
@@ -236,8 +236,8 @@ public class FindReplaceDialog extends Dialog {
             String lastText = textCombo.getText();
             if ("".equals(lastText) || items == null) return;
 
-            for (Iterator iterator = items.iterator(); iterator.hasNext();) {
-                String itemString = (String) ((Object[]) iterator.next())[0];
+            for (Iterator<Object[]> iterator = items.iterator(); iterator.hasNext();) {
+                String itemString = (String)iterator.next()[0];
                 if (lastText.equals(itemString)) {
                     iterator.remove();
                 }
@@ -251,7 +251,6 @@ public class FindReplaceDialog extends Dialog {
         {
             textCombo.setSelection(new Point(0, textCombo.getText().length()));
         }
-
 
         private void setEnabled(boolean enabled)
         {
@@ -284,8 +283,8 @@ public class FindReplaceDialog extends Dialog {
                 }
             }
         });
-        long max = myTarget.getMyContent().length();
-        long min = myTarget.getCaretPos();
+        long max = editControl.getContent().length();
+        long min = editControl.getCaretPos();
         if (backwardRadioButton.getSelection()) {
             max = min;
             min = 0L;
@@ -306,8 +305,8 @@ public class FindReplaceDialog extends Dialog {
                 if (!searching || progressBar.isDisposed()) return;
 
                 int selection = 0;
-                if (myTarget.getMyFinder() != null) {
-                    selection = (int) (myTarget.getMyFinder().getSearchPosition() >>> finalFactor);
+                if (editControl.getFinder() != null) {
+                    selection = (int) (editControl.getFinder().getSearchPosition() >>> finalFactor);
                     if (backwardRadioButton.getSelection()) {
                         selection = progressBar.getMaximum() - selection;
                     }
@@ -330,20 +329,20 @@ public class FindReplaceDialog extends Dialog {
         sShell.pack();
         HexManager.reduceDistance(getParent(), sShell);
         findGroup.refreshCombo();
-        long selectionLength = myTarget.getSelection()[1] - myTarget.getSelection()[0];
+        long selectionLength = editControl.getSelection()[1] - editControl.getSelection()[0];
         if (selectionLength > 0L && selectionLength <= Finder.MAX_SEQUENCE_SIZE) {
             findGroup.refreshHexOrText(true);
             checkBox.setEnabled(false);
             StringBuffer selectedText = new StringBuffer();
             byte[] selection = new byte[(int) selectionLength];
             try {
-                myTarget.getMyContent().get(ByteBuffer.wrap(selection), myTarget.getSelection()[0]);
+                editControl.getContent().get(ByteBuffer.wrap(selection), editControl.getSelection()[0]);
             }
             catch (IOException e) {
                 throw new RuntimeException(e);
             }
             for (int i = 0; i < selectionLength; ++i) {
-                selectedText.append(HexTexts.byteToHex[selection[i] & 0x0ff]);
+                selectedText.append(HexEditControl.byteToHex[selection[i] & 0x0ff]);
             }
             findGroup.textCombo.setText(selectedText.toString());
             findGroup.selectText();
@@ -566,7 +565,7 @@ public class FindReplaceDialog extends Dialog {
         progressCancelButton.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent e)
             {
-                myTarget.stopSearching();
+                editControl.stopSearching();
             }
         });
         progressComposite.setVisible(false);
@@ -589,7 +588,7 @@ public class FindReplaceDialog extends Dialog {
         sShell.addListener(SWT.Close, new Listener() {
             public void handleEvent(Event event)
             {
-                myTarget.stopSearching();
+                editControl.stopSearching();
             }
         });
     }
@@ -613,9 +612,9 @@ public class FindReplaceDialog extends Dialog {
         progressCancelButton.setText(textCancel);
         String message = textLiteralNotFound;
         String literal = findGroup.textCombo.getText();
-        if (myTarget != null && literal.length() > 0) {
+        if (editControl != null && literal.length() > 0) {
             try {
-                if (myTarget.findAndSelect(literal, findGroup.hexRadioButton.getSelection(),
+                if (editControl.findAndSelect(literal, findGroup.hexRadioButton.getSelection(),
                                            forwardRadioButton.getSelection(), checkBox.getSelection()))
                     message = textFoundLiteral;
             }
@@ -633,9 +632,9 @@ public class FindReplaceDialog extends Dialog {
         progressCancelButton.setText(textStop);
         String message = textLiteralNotFound;
         String literal = findGroup.textCombo.getText();
-        if (myTarget != null && literal.length() > 0) {
+        if (editControl != null && literal.length() > 0) {
             try {
-                int replacements = myTarget.replaceAll(literal, findGroup.hexRadioButton.getSelection(),
+                int replacements = editControl.replaceAll(literal, findGroup.hexRadioButton.getSelection(),
                                                        forwardRadioButton.getSelection(), checkBox.getSelection(),
                                                        replaceGroup.textCombo.getText(),
                                                        replaceGroup.hexRadioButton.getSelection());
@@ -678,8 +677,8 @@ public class FindReplaceDialog extends Dialog {
         findButton.setEnabled(somethingToFind);
         replaceAllButton.setEnabled(somethingToFind);
         long selectionLength = 0L;
-        if (myTarget != null) {
-            selectionLength = myTarget.getSelection()[1] - myTarget.getSelection()[0];
+        if (editControl != null) {
+            selectionLength = editControl.getSelection()[1] - editControl.getSelection()[0];
         }
         replaceFindButton.setEnabled(selectionLength > 0L && somethingToFind);
         replaceButton.setEnabled(selectionLength > 0L);
@@ -714,7 +713,7 @@ public class FindReplaceDialog extends Dialog {
 
     private void replace()
     {
-        myTarget.replace(replaceGroup.textCombo.getText(), replaceGroup.hexRadioButton.getSelection());
+        editControl.replace(replaceGroup.textCombo.getText(), replaceGroup.hexRadioButton.getSelection());
     }
 
 
@@ -736,8 +735,8 @@ public class FindReplaceDialog extends Dialog {
      *
      * @param aTarget with data to search
      */
-    public void setTarget(HexTexts aTarget)
+    public void setTarget(HexEditControl aTarget)
     {
-        myTarget = aTarget;
+        editControl = aTarget;
     }
 }

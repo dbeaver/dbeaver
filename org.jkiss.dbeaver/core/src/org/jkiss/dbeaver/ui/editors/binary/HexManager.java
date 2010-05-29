@@ -121,11 +121,11 @@ public class HexManager {
                     break;
                 case UPDATE_POSITION_TEXT:
                     if (statusLine != null) {
-                        if (hexTexts != null) {
-                            if (hexTexts.isSelected())
-                                statusLine.updateSelectionValueText(hexTexts.getSelection(), hexTexts.getActualValue());
+                        if (hexEditControl != null) {
+                            if (hexEditControl.isSelected())
+                                statusLine.updateSelectionValueText(hexEditControl.getSelection(), hexEditControl.getActualValue());
                             else
-                                statusLine.updatePositionValueText(hexTexts.getCaretPos(), hexTexts.getActualValue());
+                                statusLine.updatePositionValueText(hexEditControl.getCaretPos(), hexEditControl.getActualValue());
                         } else {
                             statusLine.updatePositionValueText(0L, (byte) 0);
                         }
@@ -173,7 +173,7 @@ public class HexManager {
     private FindReplaceDialog findDialog = null;
     private GoToDialog goToDialog = null;
     private SelectBlockDialog selectBlockDialog = null;
-    private HexTexts hexTexts = null;
+    private HexEditControl hexEditControl = null;
     private StatusLine statusLine = null;
     private Composite textsParent = null;
     private IMenuListener menuListener;
@@ -241,12 +241,12 @@ public class HexManager {
      */
     public Composite createEditorPart(Composite parent, int style)
     {
-        if (hexTexts != null) throw new IllegalStateException("Editor part exists already");
+        if (hexEditControl != null) throw new IllegalStateException("Editor part exists already");
         if (parent == null) throw new NullPointerException("Cannot use null parent");
 
         textsParent = parent;
-        hexTexts = new HexTexts(textsParent, style);
-        hexTexts.addDisposeListener(new DisposeListener() {
+        hexEditControl = new HexEditControl(textsParent, style);
+        hexEditControl.addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e)
             {
                 if (fontText != null && !fontText.isDisposed())
@@ -255,28 +255,28 @@ public class HexManager {
         });
         if (fontData != null) {
             fontText = new Font(Display.getCurrent(), fontData);
-            hexTexts.setFont(fontText);
+            hexEditControl.setFont(fontText);
         }
 
-        hexTexts.addLongSelectionListener(new MySelectionAdapter(MySelectionAdapter.UPDATE_POSITION_TEXT));
-        hexTexts.addListener(SWT.Modify, new Listener() {
+        hexEditControl.addLongSelectionListener(new MySelectionAdapter(MySelectionAdapter.UPDATE_POSITION_TEXT));
+        hexEditControl.addListener(SWT.Modify, new Listener() {
             public void handleEvent(Event event)
             {
                 if (statusLine != null)
-                    statusLine.updateInsertModeText(hexTexts == null || !hexTexts.isOverwriteMode());
+                    statusLine.updateInsertModeText(hexEditControl == null || !hexEditControl.isOverwriteMode());
             }
         });
 
         if (listOfStatusChangedListeners != null) {
             for (Listener listOfStatusChangedListener : listOfStatusChangedListeners) {
-                hexTexts.addListener(SWT.Modify, listOfStatusChangedListener);
+                hexEditControl.addListener(SWT.Modify, listOfStatusChangedListener);
             }
             listOfStatusChangedListeners = null;
         }
 
         if (listOfLongListeners != null) {
             for (SelectionListener listOfLongListener : listOfLongListeners) {
-                hexTexts.addLongSelectionListener(listOfLongListener);
+                hexEditControl.addLongSelectionListener(listOfLongListener);
             }
             listOfLongListeners = null;
         }
@@ -293,14 +293,14 @@ public class HexManager {
                     }
                 }
             });
-            Menu contextMenu = menuManager.createContextMenu(hexTexts.getHexText());
-            hexTexts.getHexText().setMenu(contextMenu);
-            contextMenu = menuManager.createContextMenu(hexTexts.getPreviewText());
-            hexTexts.getPreviewText().setMenu(contextMenu);
+            Menu contextMenu = menuManager.createContextMenu(hexEditControl.getHexText());
+            hexEditControl.getHexText().setMenu(contextMenu);
+            contextMenu = menuManager.createContextMenu(hexEditControl.getPreviewText());
+            hexEditControl.getPreviewText().setMenu(contextMenu);
             //getSite().registerContextMenu(menuManager, this);
         }
 
-        return hexTexts;
+        return hexEditControl;
     }
 
 
@@ -314,12 +314,12 @@ public class HexManager {
     {
         if (aListener == null) return;
 
-        if (hexTexts == null) {
+        if (hexEditControl == null) {
             if (listOfStatusChangedListeners == null)
                 listOfStatusChangedListeners = new ArrayList<Listener>();
             listOfStatusChangedListeners.add(aListener);
         } else {
-            hexTexts.addListener(SWT.Modify, aListener);
+            hexEditControl.addListener(SWT.Modify, aListener);
         }
     }
 
@@ -328,7 +328,7 @@ public class HexManager {
      * Adds a long selection listener. Events sent to the listener have long start and end points.
      *
      * @param listener the listener
-     * @see HexTexts.addLongSelectionListener(SelectionListener)
+     * @see HexEditControl.addLongSelectionListener(SelectionListener)
      * @see StyledText#addSelectionListener(org.eclipse.swt.events.SelectionListener)
      */
     public void addLongSelectionListener(SelectionListener listener)
@@ -336,12 +336,12 @@ public class HexManager {
         if (listener == null)
             throw new IllegalArgumentException();
 
-        if (hexTexts == null) {
+        if (hexEditControl == null) {
             if (listOfLongListeners == null)
                 listOfLongListeners = new ArrayList<SelectionListener>();
             listOfLongListeners.add(listener);
         } else {
-            hexTexts.addLongSelectionListener(listener);
+            hexEditControl.addLongSelectionListener(listener);
         }
     }
 
@@ -353,7 +353,7 @@ public class HexManager {
      */
     public boolean canRedo()
     {
-        return hexTexts != null && hexTexts.canRedo();
+        return hexEditControl != null && hexEditControl.canRedo();
     }
 
 
@@ -364,7 +364,7 @@ public class HexManager {
      */
     public boolean canUndo()
     {
-        return hexTexts != null && hexTexts.canUndo();
+        return hexEditControl != null && hexEditControl.canUndo();
     }
 
 
@@ -381,12 +381,12 @@ public class HexManager {
         if (aParent == null) throw new NullPointerException("Cannot use null parent");
 
         statusLine = new StatusLine(aParent, SWT.NONE, withLeftSeparator);
-        if (hexTexts != null && hexTexts.getEnabled()) {
-            statusLine.updateInsertModeText(!hexTexts.isOverwriteMode());
-            if (hexTexts.isSelected())
-                statusLine.updateSelectionValueText(hexTexts.getSelection(), hexTexts.getActualValue());
+        if (hexEditControl != null && hexEditControl.getEnabled()) {
+            statusLine.updateInsertModeText(!hexEditControl.isOverwriteMode());
+            if (hexEditControl.isSelected())
+                statusLine.updateSelectionValueText(hexEditControl.getSelection(), hexEditControl.getActualValue());
             else
-                statusLine.updatePositionValueText(hexTexts.getCaretPos(), hexTexts.getActualValue());
+                statusLine.updatePositionValueText(hexEditControl.getCaretPos(), hexEditControl.getActualValue());
         }
     }
 
@@ -396,9 +396,9 @@ public class HexManager {
      */
     public void doCopy()
     {
-        if (hexTexts == null) return;
+        if (hexEditControl == null) return;
 
-        hexTexts.copy();
+        hexEditControl.copy();
     }
 
 
@@ -407,9 +407,9 @@ public class HexManager {
      */
     public void doCut()
     {
-        if (hexTexts == null) return;
+        if (hexEditControl == null) return;
 
-        hexTexts.cut();
+        hexEditControl.cut();
     }
 
 
@@ -418,7 +418,7 @@ public class HexManager {
      */
     public void doDelete()
     {
-        hexTexts.deleteSelected();
+        hexEditControl.deleteSelected();
     }
 
 
@@ -435,7 +435,7 @@ public class HexManager {
             }
             findDialog.setFindReplaceLists(findReplaceFindList, findReplaceReplaceList);
         }
-        findDialog.setTarget(hexTexts);
+        findDialog.setTarget(hexEditControl);
         findDialog.open();
     }
 
@@ -454,9 +454,9 @@ public class HexManager {
         if (location >= 0L) {
             long button = goToDialog.getButtonPressed();
             if (button == 1)
-                hexTexts.showMark(location);
+                hexEditControl.showMark(location);
             else
-                hexTexts.selectBlock(location, location);
+                hexEditControl.selectBlock(location, location);
         }
     }
 
@@ -469,10 +469,10 @@ public class HexManager {
 
         if (selectBlockDialog == null)
             selectBlockDialog = new SelectBlockDialog(textsParent.getShell());
-        long start = selectBlockDialog.open(hexTexts.getSelection(), content.length() - 1L);
+        long start = selectBlockDialog.open(hexEditControl.getSelection(), content.length() - 1L);
         long end = selectBlockDialog.getFinalEndResult();
         if ((start >= 0L) && (end >= 0L) && (start != end)) {
-            hexTexts.selectBlock(start, end);
+            hexEditControl.selectBlock(start, end);
         }
     }
 
@@ -531,16 +531,16 @@ public class HexManager {
      */
     public void doPaste()
     {
-        if (hexTexts == null) return;
+        if (hexEditControl == null) return;
 
-        hexTexts.paste();
+        hexEditControl.paste();
     }
 
 
     void doPreferences()
     {
         if (preferences == null) {
-            preferences = new PreferencesManager(fontData == null ? HexTexts.fontDataDefault : fontData);
+            preferences = new PreferencesManager(fontData == null ? HexEditControl.fontDataDefault : fontData);
         }
         if (preferences.openDialog(textsParent.getShell()) == SWT.OK) {
             setTextFont(preferences.getFontData());
@@ -554,9 +554,9 @@ public class HexManager {
      */
     public void doSelectAll()
     {
-        if (hexTexts == null) return;
+        if (hexEditControl == null) return;
 
-        hexTexts.selectAll();
+        hexEditControl.selectAll();
     }
 
 
@@ -565,7 +565,7 @@ public class HexManager {
      */
     public void doRedo()
     {
-        hexTexts.redo();
+        hexEditControl.redo();
     }
 
 
@@ -574,7 +574,7 @@ public class HexManager {
      */
     public void doTrim()
     {
-        hexTexts.deleteNotSelected();
+        hexEditControl.deleteNotSelected();
     }
 
 
@@ -583,7 +583,7 @@ public class HexManager {
      */
     public void doUndo()
     {
-        hexTexts.undo();
+        hexEditControl.undo();
     }
 
 
@@ -614,15 +614,15 @@ public class HexManager {
 
 
     /**
-     * @see HexTexts#getSelection()
+     * @see HexEditControl#getSelection()
      */
     public long[] getSelection()
     {
-        if (hexTexts == null) {
+        if (hexEditControl == null) {
             return new long[]{0L, 0L};
         }
 
-        return hexTexts.getSelection();
+        return hexEditControl.getSelection();
     }
 
 
@@ -645,7 +645,7 @@ public class HexManager {
      */
     public boolean isOverwriteMode()
     {
-        return hexTexts == null || hexTexts.isOverwriteMode();
+        return hexEditControl == null || hexEditControl.isOverwriteMode();
 
     }
 
@@ -657,9 +657,9 @@ public class HexManager {
      */
     public boolean isTextSelected()
     {
-        if (hexTexts == null) return false;
+        if (hexEditControl == null) return false;
 
-        long[] selection = hexTexts.getSelection();
+        long[] selection = hexEditControl.getSelection();
 
         return selection[0] != selection[1];
     }
@@ -676,8 +676,8 @@ public class HexManager {
     {
         content = new BinaryContent(aFile);  // throws IOException
         myFile = aFile;
-        hexTexts.setCharset(charset);
-        hexTexts.setContentProvider(content);
+        hexEditControl.setCharset(charset);
+        hexEditControl.setContentProvider(content);
     }
 
 
@@ -755,16 +755,16 @@ public class HexManager {
      */
     public void setFocus()
     {
-        if (hexTexts != null)
-            hexTexts.setFocus();
+        if (hexEditControl != null)
+            hexEditControl.setFocus();
 
         if (statusLine != null) {
-            statusLine.updateInsertModeText(hexTexts == null || !hexTexts.isOverwriteMode());
-            if (hexTexts != null) {
-                if (hexTexts.isSelected())
-                    statusLine.updateSelectionValueText(hexTexts.getSelection(), hexTexts.getActualValue());
+            statusLine.updateInsertModeText(hexEditControl == null || !hexEditControl.isOverwriteMode());
+            if (hexEditControl != null) {
+                if (hexEditControl.isSelected())
+                    statusLine.updateSelectionValueText(hexEditControl.getSelection(), hexEditControl.getActualValue());
                 else
-                    statusLine.updatePositionValueText(hexTexts.getCaretPos(), hexTexts.getActualValue());
+                    statusLine.updatePositionValueText(hexEditControl.getCaretPos(), hexEditControl.getActualValue());
             } else {
                 statusLine.updatePositionValueText(0L, (byte) 0);
             }
@@ -775,11 +775,11 @@ public class HexManager {
     /**
      * Delegates to HexTexts.setSelection(start, end)
      *
-     * @see HexTexts#setSelection(long, long)
+     * @see HexEditControl#setSelection(long, long)
      */
     public void setSelection(long start, long end)
     {
-        hexTexts.setSelection(start, end);
+        hexEditControl.setSelection(start, end);
     }
 
 
@@ -792,15 +792,15 @@ public class HexManager {
     public void setTextFont(FontData aFont)
     {
         fontData = aFont;
-        if (HexTexts.fontDataDefault.equals(fontData))
+        if (HexEditControl.fontDataDefault.equals(fontData))
             fontData = null;
         // dispose it after setting new one (StyledTextRenderer 3.448 bug in line 994)
         Font fontToDispose = fontText;
         fontText = null;
-        if (hexTexts != null) {
+        if (hexEditControl != null) {
             if (fontData != null)
                 fontText = new Font(Display.getCurrent(), fontData);
-            hexTexts.setFont(fontText);
+            hexEditControl.setFont(fontText);
         }
         if (fontToDispose != null && !fontToDispose.isDisposed())
             fontToDispose.dispose();

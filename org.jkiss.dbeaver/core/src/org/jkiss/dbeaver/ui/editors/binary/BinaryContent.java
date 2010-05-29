@@ -129,8 +129,8 @@ public class BinaryContent {
     boolean dirtySize = false;
     long exclusiveEnd = -1L;
     long lastUpperNibblePosition = -1L;
-    java.util.List<ModifyListener> listeners = null;
-    java.util.List<Integer> myChanges = null;
+    List<ModifyListener> listeners = null;
+    List<Integer> myChanges = null;
     boolean myChangesInserted = false;
     long myChangesPosition = -1L;
     TreeSet<Range> myRanges = null;
