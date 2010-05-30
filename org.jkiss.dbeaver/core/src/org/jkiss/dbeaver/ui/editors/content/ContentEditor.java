@@ -43,6 +43,7 @@ import javax.activation.MimeTypeParseException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 
 /**
  * LOBEditor
@@ -65,6 +66,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
     static class ContentPartInfo {
         IContentEditorPart editorPart;
         boolean activated;
+        public int index = -1;
 
         private ContentPartInfo(IContentEditorPart editorPart) {
             this.editorPart = editorPart;
@@ -304,30 +306,59 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
                 log.error("Invalid content MIME type", e);
             }
         }
-        int defaultPage = -1;
+        IEditorPart defaultPage = null, preferedPage = null;
         for (ContentPartInfo contentPart : contentParts) {
             IContentEditorPart editorPart = contentPart.editorPart;
             if (contentLength > editorPart.getMaxContentLength()) {
                 continue;
             }
+            if (preferedPage != null && editorPart.isOptionalContent()) {
+                // Do not add optional parts if we already have prefered one
+                continue;
+            }
             try {
-                int index = addPage(contentPart.editorPart, getEditorInput());
+                int index = addPage(editorPart, getEditorInput());
                 setPageText(index, editorPart.getContentTypeTitle());
                 setPageImage(index, editorPart.getContentTypeImage());
                 contentPart.activated = true;
+                contentPart.index = index;
                 // Check MIME type
                 if (mimeType != null && mimeType.getPrimaryType().equals(editorPart.getPreferedMimeType())) {
-                    defaultPage = index;
+                    defaultPage = editorPart;
+                }
+                if (editorPart.isPreferedContent()) {
+                    preferedPage = editorPart;
                 }
             } catch (PartInitException e) {
                 log.error(e);
             }
         }
-        if (defaultPage != -1) {
-            setActivePage(defaultPage);
+        if (preferedPage != null) {
+            // Remove all optional pages
+            for (ContentPartInfo contentPart : contentParts) {
+                if (contentPart.activated && contentPart.editorPart != preferedPage && contentPart.editorPart.isOptionalContent()) {
+                    removePage(contentPart.index);
+                }
+            }
+
+            // Set default page
+            setActiveEditor(preferedPage);
+        } else if (defaultPage != null) {
+            setActiveEditor(defaultPage);
         }
 
         this.partsLoaded = true;
+    }
+
+    public void removePage(int pageIndex) {
+        for (ContentPartInfo contentPart : contentParts) {
+            if (contentPart.index == pageIndex) {
+                contentPart.index = -1;
+            } else if (contentPart.index > pageIndex) {
+                contentPart.index--;
+            }
+        }
+        super.removePage(pageIndex);
     }
 
     protected Composite createPageContainer(Composite parent)

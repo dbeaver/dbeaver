@@ -53,9 +53,14 @@ public class ContentBinaryEditorPart extends BinaryEditor implements IContentEdi
      * Any content is valid for binary editor so always returns true
      * @return
      */
-    public boolean isContentValid()
+    public boolean isPreferedContent()
     {
-        return true;
+        return false;
+    }
+
+    public boolean isOptionalContent()
+    {
+        return false;
     }
 
 }

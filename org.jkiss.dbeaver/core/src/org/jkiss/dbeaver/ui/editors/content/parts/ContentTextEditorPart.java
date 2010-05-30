@@ -57,7 +57,12 @@ public class ContentTextEditorPart extends TextEditor implements IContentEditorP
      * Always return true cos' text editor can load any binary content
      * @return
      */
-    public boolean isContentValid()
+    public boolean isPreferedContent()
+    {
+        return false;
+    }
+
+    public boolean isOptionalContent()
     {
         return true;
     }

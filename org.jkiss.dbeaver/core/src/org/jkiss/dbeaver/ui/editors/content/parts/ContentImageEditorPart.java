@@ -119,12 +119,17 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
 
     public long getMaxContentLength()
     {
-        return 10 * 1024 * 1024;
+        return 20 * 1024 * 1024;
     }
 
-    public boolean isContentValid()
+    public boolean isPreferedContent()
     {
         return contentValid;
+    }
+
+    public boolean isOptionalContent()
+    {
+        return true;
     }
 
     public void resourceChanged(IResourceChangeEvent event) {
