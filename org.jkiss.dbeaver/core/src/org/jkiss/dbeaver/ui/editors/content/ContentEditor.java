@@ -227,6 +227,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         IContentEditorPart[] editorParts = getEditorInput().getEditors();
         for (IContentEditorPart editorPart : editorParts) {
             contentParts.add(new ContentPartInfo(editorPart));
+            editorPart.initPart(this);
         }
 
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);

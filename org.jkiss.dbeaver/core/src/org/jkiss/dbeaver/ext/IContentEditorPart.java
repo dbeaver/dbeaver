@@ -13,6 +13,8 @@ import org.eclipse.ui.IEditorPart;
  */
 public interface IContentEditorPart extends IEditorPart {
 
+    void initPart(IEditorPart contentEditor);
+
     IEditorActionBarContributor getActionBarContributor();
 
     String getContentTypeTitle();

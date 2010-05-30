@@ -93,6 +93,10 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
         imageViewer.setFocus();
     }
 
+    public void initPart(IEditorPart contentEditor)
+    {
+    }
+
     public IEditorActionBarContributor getActionBarContributor()
     {
         return null;

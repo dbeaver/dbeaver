@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.editors.content.parts;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
+import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryEditor;
@@ -16,6 +17,10 @@ import org.jkiss.dbeaver.ui.editors.binary.BinaryEditor;
 public class ContentBinaryEditorPart extends BinaryEditor implements IContentEditorPart {
 
     public ContentBinaryEditorPart()
+    {
+    }
+
+    public void initPart(IEditorPart contentEditor)
     {
     }
 
