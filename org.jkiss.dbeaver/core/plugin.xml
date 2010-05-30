@@ -305,6 +305,12 @@
             category="org.jkiss.dbeaver.preferences.main">
         </page>
         <page
+            id="org.jkiss.dbeaver.preferences.main.contenteditor"
+            class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor"
+            name="Content Editor"
+            category="org.jkiss.dbeaver.preferences.main">
+        </page>
+        <page
               category="org.eclipse.ui.preferencePages.Editors"
               class="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
               id="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"

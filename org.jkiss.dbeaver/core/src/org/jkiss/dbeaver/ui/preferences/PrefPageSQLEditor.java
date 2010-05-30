@@ -32,11 +32,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Spinner commitLinesText;
     private Button fetchResultSets;
 
-    private Spinner maxTextContentSize;
-    private Button editLongAsLobCheck;
-    private Button commitOnEditApplyCheck;
-    private Button commitOnContentApplyCheck;
-
     public PrefPageSQLEditor()
     {
         super();
@@ -53,12 +48,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
                 store.contains(PrefConstants.SCRIPT_COMMIT_TYPE) ||
                 store.contains(PrefConstants.SCRIPT_ERROR_HANDLING) ||
                 store.contains(PrefConstants.SCRIPT_COMMIT_LINES) ||
-                store.contains(PrefConstants.SCRIPT_FETCH_RESULT_SETS) ||
-
-                store.contains(PrefConstants.RS_EDIT_MAX_TEXT_SIZE) ||
-                store.contains(PrefConstants.RS_EDIT_LONG_AS_LOB) ||
-                store.contains(PrefConstants.RS_COMMIT_ON_EDIT_APPLY) ||
-                store.contains(PrefConstants.RS_COMMIT_ON_CONTENT_APPLY)
+                store.contains(PrefConstants.SCRIPT_FETCH_RESULT_SETS)
             ;
     }
 
@@ -156,34 +146,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             }
         }
 
-        // Content
-        {
-            Group contentGroup = new Group(composite, SWT.NONE);
-            contentGroup.setText("Content");
-            contentGroup.setLayout(new GridLayout(2, false));
-
-            Label label = new Label(contentGroup, SWT.NONE);
-            label.setText("Maximum text editor content length:");
-
-            maxTextContentSize = new Spinner(contentGroup, SWT.BORDER);
-            maxTextContentSize.setSelection(0);
-            maxTextContentSize.setDigits(0);
-            maxTextContentSize.setIncrement(1000000);
-            maxTextContentSize.setMinimum(0);
-            maxTextContentSize.setMaximum(Integer.MAX_VALUE);
-
-            label = new Label(contentGroup, SWT.NONE);
-            label.setText("Edit LONG columns as LOBs:");
-            editLongAsLobCheck = new Button(contentGroup, SWT.CHECK);
-
-            label = new Label(contentGroup, SWT.NONE);
-            label.setText("Commit session on value edit apply:");
-            commitOnEditApplyCheck = new Button(contentGroup, SWT.CHECK);
-
-            label = new Label(contentGroup, SWT.NONE);
-            label.setText("Commit session on content edit apply:");
-            commitOnContentApplyCheck = new Button(contentGroup, SWT.CHECK);
-        }
         return composite;
     }
 
@@ -198,11 +160,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(PrefConstants.SCRIPT_ERROR_HANDLING)).ordinal());
             commitLinesText.setSelection(store.getInt(PrefConstants.SCRIPT_COMMIT_LINES));
             fetchResultSets.setSelection(store.getBoolean(PrefConstants.SCRIPT_FETCH_RESULT_SETS));
-
-            maxTextContentSize.setSelection(store.getInt(PrefConstants.RS_EDIT_MAX_TEXT_SIZE));
-            editLongAsLobCheck.setSelection(store.getBoolean(PrefConstants.RS_EDIT_LONG_AS_LOB));
-            commitOnEditApplyCheck.setSelection(store.getBoolean(PrefConstants.RS_COMMIT_ON_EDIT_APPLY));
-            commitOnContentApplyCheck.setSelection(store.getBoolean(PrefConstants.RS_COMMIT_ON_CONTENT_APPLY));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -219,11 +176,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(PrefConstants.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
             store.setValue(PrefConstants.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.fromOrdinal(errorHandlingCombo.getSelectionIndex()).name());
             store.setValue(PrefConstants.SCRIPT_FETCH_RESULT_SETS, fetchResultSets.getSelection());
-
-            store.setValue(PrefConstants.RS_EDIT_MAX_TEXT_SIZE, maxTextContentSize.getSelection());
-            store.setValue(PrefConstants.RS_EDIT_LONG_AS_LOB, editLongAsLobCheck.getSelection());
-            store.setValue(PrefConstants.RS_COMMIT_ON_EDIT_APPLY, commitOnEditApplyCheck.getSelection());
-            store.setValue(PrefConstants.RS_COMMIT_ON_CONTENT_APPLY, commitOnContentApplyCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
