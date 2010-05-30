@@ -278,6 +278,11 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         setDefaultPreferenceValue(store, PrefConstants.DEFAULT_AUTO_COMMIT, true);
         setDefaultPreferenceValue(store, PrefConstants.STATEMENT_TIMEOUT, 10 * 1000);
 
+        setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
+        setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_LONG_AS_LOB, true);
+        setDefaultPreferenceValue(store, PrefConstants.RS_COMMIT_ON_EDIT_APPLY, false);
+        setDefaultPreferenceValue(store, PrefConstants.RS_COMMIT_ON_CONTENT_APPLY, false);
+        
         setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, true);
         setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, 500);
         setDefaultPreferenceValue(store, SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, true);

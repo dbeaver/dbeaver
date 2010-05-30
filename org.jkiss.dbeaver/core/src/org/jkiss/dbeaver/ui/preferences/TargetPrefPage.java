@@ -18,7 +18,11 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
@@ -232,7 +236,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
             PreferencesUtil.createPreferenceDialogOn(
                 getShell(),
                 getPropertyPageID(),
-                new String[]{getPropertyPageID()},
+                null,//new String[]{getPropertyPageID()},
                 null).open();
         } else if (supportsDataSourceSpecificOptions()) {
             // Select datasource
@@ -242,7 +246,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
                     getShell(),
                     dataSource,
                     getPropertyPageID(),
-                    new String[]{getPropertyPageID()},
+                    null,//new String[]{getPropertyPageID()},
                     null).open();
             }
         }

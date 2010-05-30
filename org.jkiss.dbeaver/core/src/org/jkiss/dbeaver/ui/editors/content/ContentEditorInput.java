@@ -13,27 +13,35 @@ import org.eclipse.core.resources.ResourceAttributes;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
-import org.eclipse.ui.ide.IDE;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
-import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
+import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 
 /**
  * LOBEditorInput
@@ -82,9 +90,13 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
     public String getName()
     {
         String tableName = valueController.getColumnMetaData().getTableName();
-        return CommonUtils.isEmpty(tableName) ?
+        String inputName = CommonUtils.isEmpty(tableName) ?
             valueController.getColumnMetaData().getColumnName() :
             tableName + "." + valueController.getColumnMetaData().getColumnName();
+        if (isReadOnly()) {
+            inputName += " [Read Only]";
+        }
+        return inputName;
     }
 
     public IPersistableElement getPersistable()
@@ -94,7 +106,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
 
     public String getToolTipText()
     {
-        return "LOB column editorPart";
+        return getName();
     }
 
     public Object getAdapter(Class adapter)

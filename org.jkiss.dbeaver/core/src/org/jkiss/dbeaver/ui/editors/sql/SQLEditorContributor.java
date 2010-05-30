@@ -701,7 +701,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                     shell,
                     (DataSourceDescriptor) editor.getDataSourceContainer(),
                     pageId,
-                    new String[]{pageId},
+                    null,//new String[]{pageId},
                     null).open();
             }
         });
