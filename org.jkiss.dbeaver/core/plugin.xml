@@ -16,7 +16,7 @@
     </extension>
     <extension point="org.eclipse.ui.perspectives">
         <perspective
-            name="RCP Perspective"
+            name="DBeaver Perspective"
             class="org.jkiss.dbeaver.core.DBeaverPerspective"
             id="org.jkiss.dbeaver.core.perspective">
         </perspective>

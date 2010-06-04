@@ -3,16 +3,16 @@ package org.jkiss.dbeaver.ui.editors.content.parts;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.editors.text.TextEditor;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 /**
  * LOB text editor
  */
-public class ContentTextEditorPart extends TextEditor implements IContentEditorPart {
+public class ContentTextEditorPart extends BaseTextEditor implements IContentEditorPart {
 
     private IEditorPart contentEditor;
 

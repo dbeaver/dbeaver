@@ -15,7 +15,12 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.ITextViewerExtension;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -39,7 +44,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
@@ -54,8 +58,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
+import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.ICommandIds;
@@ -68,16 +72,22 @@ import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
+import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.views.console.ConsoleManager;
 import org.jkiss.dbeaver.ui.views.console.ConsoleMessageType;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * SQL Executor
  */
-public class SQLEditor extends TextEditor
+public class SQLEditor extends BaseTextEditor
     implements
         IResourceChangeListener, IDataSourceListener, ResultSetProvider, ISaveablePart2
 {
