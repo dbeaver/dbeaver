@@ -20,9 +20,11 @@ public abstract class BaseTextEditor extends TextEditor {
 
     public Object getAdapter(Class required)
     {
+/*
         if (required == IPropertySheetPage.class) {
             return new PropertiesPage();
         }
+*/
         return super.getAdapter(required);
     }
 
