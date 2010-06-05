@@ -7,6 +7,12 @@ package org.jkiss.dbeaver.ui.views.properties;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
+import org.eclipse.ui.views.properties.PropertySheet;
+import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
+import org.eclipse.ui.views.properties.tabbed.ISection;
+import org.eclipse.ui.part.IPage;
+import org.eclipse.ui.IPageLayout;
+import org.eclipse.ui.IViewPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
@@ -154,27 +160,51 @@ public class PropertySourceAbstract implements IPropertySource
         }
         private void refreshProperties()
         {
-            // Here is some kind of dirty hack - use direct casts to propertyshet implementation
-            PropertiesPage page = PropertiesPage.getPageByObject(object);
-            if (page == null) {
-                PropertiesView view = ViewUtils.findView(
-                    DBeaverCore.getActiveWorkbenchWindow(),
-                    PropertiesView.class);
-                if (view != null) {
-                    page = view.getCurrentPage();
+            {
+                // If some view or editor contains properties page for current object - refresh it first
+                PropertiesPage page = PropertiesPage.getPageByObject(object);
+                if (page != null) {
+                    refreshProperties(page);
+                }
+            }
+
+            // Find our property page within views (PropertySheet view actually)
+            PropertiesPage page = null;
+            IViewPart view = ViewUtils.findView(
+                DBeaverCore.getActiveWorkbenchWindow(),
+                IPageLayout.ID_PROP_SHEET);
+            if (view != null && view instanceof PropertySheet) {
+                IPage testPage = ((PropertySheet)view).getCurrentPage();
+                if (testPage instanceof PropertiesPage) {
+                    page = (PropertiesPage)testPage;
+                } else if (testPage instanceof TabbedPropertySheetPage) {
+                    TabbedPropertySheetPage tabbedPage = (TabbedPropertySheetPage)testPage;
+                    if (tabbedPage.getCurrentTab() != null) {
+                        for (ISection section : tabbedPage.getCurrentTab().getSections()) {
+                            if (section instanceof PropertySectionStandard) {
+                                page = ((PropertySectionStandard)section).getPage();
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             if (page != null) {
-                Object curObject = page.getCurrentObject();
-                // Refresh only if current property sheet object is the same as for collector
-                if (curObject == object) {
-                    DBeaverCore.getInstance().getPropertiesAdapter().addToCache(object, PropertySourceAbstract.this);
-                    try {
-                        page.refresh();
-                    }
-                    finally {
-                        DBeaverCore.getInstance().getPropertiesAdapter().removeFromCache(object);
-                    }
+                refreshProperties(page);
+            }
+        }
+
+        private void refreshProperties(PropertiesPage page)
+        {
+            Object curObject = page.getCurrentObject();
+            // Refresh only if current property sheet object is the same as for collector
+            if (curObject == object) {
+                DBeaverCore.getInstance().getPropertiesAdapter().addToCache(object, PropertySourceAbstract.this);
+                try {
+                    page.refresh();
+                }
+                finally {
+                    DBeaverCore.getInstance().getPropertiesAdapter().removeFromCache(object);
                 }
             }
         }

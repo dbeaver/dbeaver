@@ -14,7 +14,12 @@ import java.io.Serializable;
  */
 public class DBeaverLogger implements Log, Serializable
 {
-    private String name;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private String name;
 
     public DBeaverLogger()
     {

@@ -8,7 +8,8 @@
     <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
 
     <extension id="application" point="org.eclipse.core.runtime.applications">
-        <application>
+        <application
+              visible="true">
             <run
                 class="org.jkiss.dbeaver.core.DBeaverApplication">
             </run>
@@ -37,14 +38,6 @@
             icon="icons/database_navigator.png"
             id="org.jkiss.dbeaver.core.navigationView"
             name="Navigator">
-        </view>
-        <view
-            allowMultiple="false"
-            category="org.jkiss.dbeaver.core.category"
-            class="org.jkiss.dbeaver.ui.views.properties.PropertiesView"
-            icon="icons/properties.png"
-            id="org.jkiss.dbeaver.core.propertiesView"
-            name="Properties">
         </view>
         <category
             id="org.jkiss.dbeaver.core.category"
@@ -161,8 +154,9 @@
         id="product"
         point="org.eclipse.core.runtime.products">
         <product
-            application="org.jkiss.dbeaver.core.application"
-            name="DBeaver">
+              application="org.jkiss.dbeaver.core.application"
+              description="Universal Database Manager"
+              name="DBeaver">
             <property
                 name="aboutText"
                 value="DBeaver">
@@ -755,6 +749,15 @@
             </action>
 
        </actionSet>
+    </extension>
+    <extension
+          point="org.eclipse.ui.views.properties.tabbed.propertyContributor">
+       <propertyContributor
+             contributorId="org.jkiss.dbeaver.core.propertyViewContributor"
+             tabDescriptorProvider="org.jkiss.dbeaver.ui.views.properties.PropertyTabDescriptorProvider">
+          <propertyCategory
+                category="core-properties"></propertyCategory>
+       </propertyContributor>
     </extension>
 
 </plugin>

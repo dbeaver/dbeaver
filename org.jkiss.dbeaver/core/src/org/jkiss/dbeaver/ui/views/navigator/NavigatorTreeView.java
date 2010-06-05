@@ -12,6 +12,9 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.views.properties.tabbed.ITabbedPropertySheetPageContributor;
+import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
+import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -21,9 +24,11 @@ import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.RefreshTreeAction;
+import org.jkiss.dbeaver.ui.views.properties.PropertiesContributor;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
-public class NavigatorTreeView extends ViewPart implements IDBMListener, IMetaModelView, IRefreshableView, IDoubleClickListener
+public class NavigatorTreeView extends ViewPart
+    implements IDBMListener, IMetaModelView, IRefreshableView, IDoubleClickListener, ITabbedPropertySheetPageContributor
 {
     static Log log = LogFactory.getLog(NavigatorTreeView.class);
 
@@ -32,6 +37,7 @@ public class NavigatorTreeView extends ViewPart implements IDBMListener, IMetaMo
     private TreeViewer viewer;
     private DBMModel model;
     private RefreshTreeAction refreshAction;
+    private TabbedPropertySheetPage propertySheetPage;
 
     public NavigatorTreeView()
     {
@@ -200,5 +206,24 @@ public class NavigatorTreeView extends ViewPart implements IDBMListener, IMetaMo
         if (!getSite().getShell().isDisposed() && !getSite().getShell().getDisplay().isDisposed()) {
             getSite().getShell().getDisplay().asyncExec(runnable);
         }
+    }
+
+    /**
+     * Returns the contributor ID for the tabbed property sheet page.
+     *
+     * @return the contributor ID for the tabbed property sheet page.
+     */
+    public String getContributorId()
+    {
+        return PropertiesContributor.CONTRIBUTOR_ID;
+    }
+
+    @Override
+    public Object getAdapter(Class adapter)
+    {
+        if (adapter == IPropertySheetPage.class) {
+            return new TabbedPropertySheetPage(this);
+        }
+        return super.getAdapter(adapter);
     }
 }

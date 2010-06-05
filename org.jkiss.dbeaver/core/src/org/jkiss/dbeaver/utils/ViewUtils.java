@@ -56,6 +56,17 @@ public class ViewUtils
         return null;
     }
 
+    public static IViewPart findView(IWorkbenchWindow workbenchWindow, String viewId)
+    {
+        IViewReference[] references = workbenchWindow.getActivePage().getViewReferences();
+        for (IViewReference ref : references) {
+            if (ref.getId().equals(viewId)) {
+                return ref.getView(false);
+            }
+        }
+        return null;
+    }
+
     public static DBMNode getSelectedNode(IMetaModelView metaModelView)
     {
         Viewer viewer = metaModelView.getViewer();

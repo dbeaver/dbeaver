@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.IExtension;
 import org.eclipse.jface.action.*;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.application.ActionBarAdvisor;
@@ -122,7 +123,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         // View
         viewMenu.add(new ToggleViewAction("Error Log", "org.eclipse.pde.runtime.LogView"));
         viewMenu.add(new ToggleViewAction("Console", "org.jkiss.dbeaver.core.consoleView"));
-        viewMenu.add(new ToggleViewAction("Properties", "org.jkiss.dbeaver.core.propertiesView"));
+        viewMenu.add(new ToggleViewAction("Properties", IPageLayout.ID_PROP_SHEET/*"org.jkiss.dbeaver.core.propertiesView"*/));
         viewMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         viewMenu.add(new Separator());
 
