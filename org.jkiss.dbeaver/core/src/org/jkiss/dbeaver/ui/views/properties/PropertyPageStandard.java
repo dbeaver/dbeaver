@@ -14,12 +14,12 @@ import org.eclipse.ui.views.properties.PropertySheetSorter;
 import java.util.Hashtable;
 import java.util.Map;
 
-public class PropertiesPage extends PropertySheetPage
+public class PropertyPageStandard extends PropertySheetPage
 {
-    private static Map<Object, PropertiesPage> pagesMap = new Hashtable<Object, PropertiesPage>();
+    private static Map<Object, PropertyPageStandard> pagesMap = new Hashtable<Object, PropertyPageStandard>();
     private Object curObject;
 
-    public PropertiesPage()
+    public PropertyPageStandard()
     {
         setSorter(
             new PropertySheetSorter() {
@@ -42,7 +42,7 @@ public class PropertiesPage extends PropertySheetPage
         super.dispose();
     }
 
-    public static PropertiesPage getPageByObject(Object object)
+    public static PropertyPageStandard getPageByObject(Object object)
     {
         return pagesMap.get(object);
     }

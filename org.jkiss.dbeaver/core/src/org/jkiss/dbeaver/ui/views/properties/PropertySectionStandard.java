@@ -10,7 +10,6 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 
@@ -19,11 +18,11 @@ import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
  */
 public class PropertySectionStandard extends AbstractPropertySection {
 
-	protected PropertiesPage page;
+	protected PropertyPageStandard pageStandard;
 
-    public PropertiesPage getPage()
+    public PropertyPageStandard getPage()
     {
-        return page;
+        return pageStandard;
     }
 
     public void createControls(Composite parent,
@@ -31,17 +30,17 @@ public class PropertySectionStandard extends AbstractPropertySection {
 		super.createControls(parent, atabbedPropertySheetPage);
 		Composite composite = getWidgetFactory()
 			.createFlatFormComposite(parent);
-		page = new PropertiesPage();
+		pageStandard = new PropertyPageStandard();
 
-		page.createControl(composite);
+		pageStandard.createControl(composite);
 		FormData data = new FormData();
 		data.left = new FormAttachment(0, 0);
 		data.right = new FormAttachment(100, 0);
 		data.top = new FormAttachment(0, 0);
 		data.bottom = new FormAttachment(100, 0);
-		page.getControl().setLayoutData(data);
+		pageStandard.getControl().setLayoutData(data);
 
-		page.getControl().addControlListener(new ControlAdapter() {
+		pageStandard.getControl().addControlListener(new ControlAdapter() {
 
 			public void controlResized(ControlEvent e) {
 				atabbedPropertySheetPage.resizeScrolledComposite();
@@ -51,20 +50,20 @@ public class PropertySectionStandard extends AbstractPropertySection {
 
 	public void setInput(IWorkbenchPart part, ISelection selection) {
 		super.setInput(part, selection);
-		page.selectionChanged(part, selection);
+		pageStandard.selectionChanged(part, selection);
 	}
 
 	public void dispose() {
 		super.dispose();
-		if (page != null) {
-			page.dispose();
-			page = null;
+		if (pageStandard != null) {
+			pageStandard.dispose();
+			pageStandard = null;
 		}
 
 	}
 
 	public void refresh() {
-		page.refresh();
+		pageStandard.refresh();
 	}
 
 	public boolean shouldUseExtraSpace()

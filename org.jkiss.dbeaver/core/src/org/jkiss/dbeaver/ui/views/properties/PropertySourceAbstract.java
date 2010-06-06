@@ -162,46 +162,46 @@ public class PropertySourceAbstract implements IPropertySource
         {
             {
                 // If some view or editor contains properties page for current object - refresh it first
-                PropertiesPage page = PropertiesPage.getPageByObject(object);
-                if (page != null) {
-                    refreshProperties(page);
+                PropertyPageStandard pageStandard = PropertyPageStandard.getPageByObject(object);
+                if (pageStandard != null) {
+                    refreshProperties(pageStandard);
                 }
             }
 
             // Find our property page within views (PropertySheet view actually)
-            PropertiesPage page = null;
+            PropertyPageStandard pageStandard = null;
             IViewPart view = ViewUtils.findView(
                 DBeaverCore.getActiveWorkbenchWindow(),
                 IPageLayout.ID_PROP_SHEET);
             if (view != null && view instanceof PropertySheet) {
                 IPage testPage = ((PropertySheet)view).getCurrentPage();
-                if (testPage instanceof PropertiesPage) {
-                    page = (PropertiesPage)testPage;
+                if (testPage instanceof PropertyPageStandard) {
+                    pageStandard = (PropertyPageStandard)testPage;
                 } else if (testPage instanceof TabbedPropertySheetPage) {
                     TabbedPropertySheetPage tabbedPage = (TabbedPropertySheetPage)testPage;
                     if (tabbedPage.getCurrentTab() != null) {
                         for (ISection section : tabbedPage.getCurrentTab().getSections()) {
                             if (section instanceof PropertySectionStandard) {
-                                page = ((PropertySectionStandard)section).getPage();
+                                pageStandard = ((PropertySectionStandard)section).getPage();
                                 break;
                             }
                         }
                     }
                 }
             }
-            if (page != null) {
-                refreshProperties(page);
+            if (pageStandard != null) {
+                refreshProperties(pageStandard);
             }
         }
 
-        private void refreshProperties(PropertiesPage page)
+        private void refreshProperties(PropertyPageStandard pageStandard)
         {
-            Object curObject = page.getCurrentObject();
+            Object curObject = pageStandard.getCurrentObject();
             // Refresh only if current property sheet object is the same as for collector
             if (curObject == object) {
                 DBeaverCore.getInstance().getPropertiesAdapter().addToCache(object, PropertySourceAbstract.this);
                 try {
-                    page.refresh();
+                    pageStandard.refresh();
                 }
                 finally {
                     DBeaverCore.getInstance().getPropertiesAdapter().removeFromCache(object);

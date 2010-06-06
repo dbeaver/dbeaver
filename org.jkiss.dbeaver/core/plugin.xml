@@ -159,7 +159,7 @@
               name="DBeaver">
             <property
                 name="aboutText"
-                value="DBeaver">
+                value="DBeaver Database Manager">
             </property>
             <property
                 name="windowImages"

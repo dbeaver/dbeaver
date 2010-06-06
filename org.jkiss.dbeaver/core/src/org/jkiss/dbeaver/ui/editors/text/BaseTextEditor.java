@@ -4,13 +4,8 @@
 
 package org.jkiss.dbeaver.ui.editors.text;
 
-import org.eclipse.ui.editors.text.TextEditor;
-import org.eclipse.ui.texteditor.ITextEditorActionConstants;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.eclipse.ui.actions.ContributionItemFactory;
-import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.jface.action.IMenuManager;
-import org.jkiss.dbeaver.ui.views.properties.PropertiesPage;
+import org.eclipse.ui.editors.text.TextEditor;
 
 /**
  * Abstract text editor.

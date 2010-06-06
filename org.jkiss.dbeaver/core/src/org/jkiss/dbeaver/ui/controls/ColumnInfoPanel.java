@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.data.DBDRowController;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.ui.views.properties.PropertiesPage;
+import org.jkiss.dbeaver.ui.views.properties.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class ColumnInfoPanel extends Composite {
         this.setLayoutData(gd);
 
         {
-            PropertiesPage properties = new PropertiesPage();
+            PropertyPageStandard properties = new PropertyPageStandard();
             properties.createControl(this);
             gd = new GridData(GridData.FILL_BOTH);
             properties.getControl().setLayoutData(gd);

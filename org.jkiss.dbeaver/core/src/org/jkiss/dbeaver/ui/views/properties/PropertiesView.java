@@ -19,16 +19,16 @@ public class PropertiesView extends PropertySheet
     }
 
     protected IPage createDefaultPage(PageBook book) {
-        PropertySheetPage page = new PropertiesPage();
+        PropertySheetPage page = new PropertyPageStandard();
         initPage(page);
         page.createControl(book);
         return page;
     }
 
     @Override
-    public PropertiesPage getCurrentPage()
+    public PropertyPageStandard getCurrentPage()
     {
-        return (PropertiesPage)super.getCurrentPage();
+        return (PropertyPageStandard)super.getCurrentPage();
     }
 
 }

@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
 import org.jkiss.dbeaver.model.meta.DBMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
-import org.jkiss.dbeaver.ui.views.properties.PropertiesPage;
+import org.jkiss.dbeaver.ui.views.properties.PropertyPageStandard;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ class DefaultObjectEditor extends EditorPart
     static Log log = LogFactory.getLog(DefaultObjectEditor.class);
 
     private DBMNode node;
-    private PropertiesPage properties;
+    private PropertyPageStandard properties;
 
     DefaultObjectEditor(DBMNode node)
     {
@@ -104,7 +104,7 @@ class DefaultObjectEditor extends EditorPart
             //final PropertyCollector propertyCollector = new PropertyCollector(itemObject);
             //List<PropertyAnnoDescriptor> annoProps = PropertyAnnoDescriptor.extractAnnotations(itemObject);
 
-            properties = new PropertiesPage();
+            properties = new PropertyPageStandard();
             //propertiesView.
             properties.createControl(propsGroup);
             gd = new GridData(GridData.FILL_BOTH);
