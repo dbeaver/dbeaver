@@ -7,7 +7,9 @@ package org.jkiss.dbeaver.ui.actions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.*;
+import org.eclipse.ui.views.IViewDescriptor;
 
 
 public class ToggleViewAction extends Action implements IPartListener
@@ -16,11 +18,40 @@ public class ToggleViewAction extends Action implements IPartListener
 
     private String viewId;
     private boolean listenerRegistered = false;
+    private IViewDescriptor viewDescriptor;
 
     public ToggleViewAction(String text, String viewId)
     {
         setText(text);
         this.viewId = viewId;
+        viewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(viewId);
+    }
+
+    @Override
+    public String getText()
+    {
+        if (viewDescriptor != null) {
+            return viewDescriptor.getLabel();
+        }
+        return super.getText();
+    }
+
+    @Override
+    public String getToolTipText()
+    {
+        if (viewDescriptor != null) {
+            return viewDescriptor.getDescription();
+        }
+        return super.getToolTipText();
+    }
+
+    @Override
+    public ImageDescriptor getImageDescriptor()
+    {
+        if (viewDescriptor != null) {
+            return viewDescriptor.getImageDescriptor();
+        }
+        return super.getImageDescriptor();
     }
 
     public int getStyle()

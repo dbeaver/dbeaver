@@ -39,7 +39,7 @@ public class NavigatorTreeView extends ViewPart
 {
     static Log log = LogFactory.getLog(NavigatorTreeView.class);
 
-    public static final String ID = "org.jkiss.dbeaver.core.navigationView";
+    public static final String VIEW_ID = "org.jkiss.dbeaver.core.navigationView";
 
     private TreeViewer viewer;
     private DBMModel model;

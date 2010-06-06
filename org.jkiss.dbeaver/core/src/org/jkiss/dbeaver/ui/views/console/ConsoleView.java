@@ -23,6 +23,8 @@ import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 
 public class ConsoleView extends ViewPart
 {
+    public static final String VIEW_ID = "org.jkiss.dbeaver.core.consoleView";
+
     private Document consoleDocument;
     private TextViewer consoleText;
     private IntKeyMap<Color> colorMap = new IntKeyMap<Color>();

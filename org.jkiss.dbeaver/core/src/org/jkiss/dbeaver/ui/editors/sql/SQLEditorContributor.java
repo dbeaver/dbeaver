@@ -118,7 +118,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                     fieldDef.visible,
                     fieldDef.widthInChars));
         }
-/*
+
 
         // Init standard actions
         ResourceBundle textEditorBundle = ResourceBundle.getBundle("org.eclipse.ui.texteditor.ConstructedEditorMessages");
@@ -133,7 +133,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         editorActionIncrementalFindReverse.setActionDefinitionId(IWorkbenchActionDefinitionIds.FIND_INCREMENTAL_REVERSE);
         editorActionGotoLine= new RetargetTextEditorAction(textEditorBundle, "Editor.GotoLine."); //$NON-NLS-1$
         editorActionGotoLine.setActionDefinitionId(ITextEditorActionDefinitionIds.LINE_GOTO);
-*/
+
 
         // Init custom actions
         ResourceBundle bundle = DBeaverCore.getInstance().getPlugin().getResourceBundle();
@@ -220,14 +220,13 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
 
         ITextEditor editor = (activeEditorPart instanceof ITextEditor) ? (ITextEditor)activeEditorPart : null;
 
-/*
+
         // Update editor actions
         editorActionFindNext.setAction(getAction(editor, ITextEditorActionConstants.FIND_NEXT));
         editorActionFindPrevious.setAction(getAction(editor, ITextEditorActionConstants.FIND_PREVIOUS));
         editorActionIncrementalFind.setAction(getAction(editor, ITextEditorActionConstants.FIND_INCREMENTAL));
         editorActionIncrementalFindReverse.setAction(getAction(editor, ITextEditorActionConstants.FIND_INCREMENTAL_REVERSE));
         editorActionGotoLine.setAction(getAction(editor, ITextEditorActionConstants.GOTO_LINE));
-*/
 
         contentAssistProposal.setAction(getAction(editor, "ContentAssistProposal")); //$NON-NLS-1$
         contentAssistTip.setAction(getAction(editor, "ContentAssistTip")); //$NON-NLS-1$
@@ -308,7 +307,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
 
     public void contributeToMenu(IMenuManager manager)
     {
-        super.contributeToMenu(manager);
+        //super.contributeToMenu(manager);
 
         IMenuManager menu = new MenuManager("S&QL Editor");
         manager.prependToGroup(IWorkbenchActionConstants.MB_ADDITIONS, menu);
@@ -318,7 +317,6 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         menu.add(explainPlanAction);
         menu.add(analyseStatementAction);
 
-/*
         IMenuManager editMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
         if (editMenu != null) {
             editMenu.prependToGroup(IWorkbenchActionConstants.FIND_EXT, editorActionIncrementalFindReverse);
@@ -334,7 +332,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
             editMenu.add(contentAssistTip);
 
         }
-*/
+
     }
 
     public void contributeToToolBar(IToolBarManager manager)
