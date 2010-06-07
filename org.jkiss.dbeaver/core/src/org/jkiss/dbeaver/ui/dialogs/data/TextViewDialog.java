@@ -52,15 +52,6 @@ public class TextViewDialog extends ValueViewDialog {
         return dialogGroup;
     }
 
-    protected void createInfoControls(Tree infoTree)
-    {
-        TreeItem columnTypeItem = new TreeItem(infoTree, SWT.NONE);
-        columnTypeItem.setText(new String[] {
-            "Length",
-            String.valueOf(getValueController().getColumnMetaData().getDisplaySize()) });
-    }
-
-
     @Override
     protected void applyChanges()
     {

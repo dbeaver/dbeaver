@@ -8,6 +8,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
+import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -66,21 +68,6 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
 
             Composite dateTimeGroup = controller.getInlinePlaceholder();
 
-/*
-            if (controller.getColumnMetaData().getValueType() == java.sql.Types.TIMESTAMP) {
-                dateTimeGroup = new Composite(controller.getInlinePlaceholder(), SWT.NONE);
-                GridLayout layout = new GridLayout(2, false);
-                layout.marginWidth = 0;
-                layout.marginHeight = 0;
-                dateTimeGroup.setLayout(layout);
-                GridData gd = new GridData(GridData.FILL_BOTH);
-                gd.horizontalIndent = 0;
-                gd.verticalIndent = 0;
-                gd.grabExcessHorizontalSpace = true;
-                gd.grabExcessVerticalSpace = true;
-                dateTimeGroup.setLayoutData(gd);
-            }
-*/
             boolean isDate = controller.getColumnMetaData().getValueType() == java.sql.Types.DATE;
             boolean isTime = controller.getColumnMetaData().getValueType() == java.sql.Types.TIME;
             boolean isTimeStamp = controller.getColumnMetaData().getValueType() == java.sql.Types.TIMESTAMP;
@@ -117,11 +104,13 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
             dateTimeGroup.setFocus();
             return true;
         } else {
-            return false;
+            DateTimeViewDialog dialog = new DateTimeViewDialog(controller);
+            dialog.open();
+            return true;
         }
     }
 
-    private static Date getDate(DateTime dateEditor, DateTime timeEditor)
+    public static Date getDate(DateTime dateEditor, DateTime timeEditor)
     {
         Calendar cl = Calendar.getInstance();
         if (dateEditor != null) {
