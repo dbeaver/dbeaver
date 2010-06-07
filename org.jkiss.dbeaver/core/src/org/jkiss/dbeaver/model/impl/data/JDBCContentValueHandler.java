@@ -8,6 +8,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -150,7 +152,35 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     {
         if (controller.isInlineEdit()) {
             // Open inline editor
-            return false;
+            switch (controller.getColumnMetaData().getValueType()) {
+                case java.sql.Types.CHAR:
+                case java.sql.Types.VARCHAR:
+                case java.sql.Types.NVARCHAR:
+                case java.sql.Types.LONGVARCHAR:
+                case java.sql.Types.LONGNVARCHAR:
+                {
+                    // String editor
+                    Object value = controller.getValue();
+
+                    Text editor = new Text(controller.getInlinePlaceholder(), SWT.NONE);
+                    editor.setText(value == null ? "" : value.toString());
+                    editor.setEditable(!controller.isReadOnly());
+                    editor.setTextLimit(controller.getColumnMetaData().getDisplaySize());
+                    editor.selectAll();
+                    editor.setFocus();
+                    initInlineControl(controller, editor, new ValueExtractor<Text>() {
+                        public Object getValueFromControl(Text control)
+                        {
+                            String newValue = control.getText();
+                            return new JDBCContentChars(newValue);
+                        }
+                    });
+                    return true;
+                }
+                default:
+                    controller.showMessage("LOB and binary data can't be edited inline", true);
+                    return false;
+            }
         }
         // Open LOB editor
         Object value = controller.getValue();

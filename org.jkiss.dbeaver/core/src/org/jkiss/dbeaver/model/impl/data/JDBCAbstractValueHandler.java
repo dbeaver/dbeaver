@@ -10,6 +10,7 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -19,6 +20,8 @@ import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
+import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
+import org.jkiss.dbeaver.DBException;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -117,4 +120,5 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
 
     protected abstract void bindParameter(PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
         throws DBCException, SQLException;
+
 }

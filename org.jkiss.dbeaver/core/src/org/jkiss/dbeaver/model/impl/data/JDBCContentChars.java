@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.data;
 
 import net.sf.jkiss.utils.streams.MimeTypes;
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
@@ -106,6 +107,16 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentC
     public boolean isNull()
     {
         return data == null;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof JDBCContentChars) {
+            return CommonUtils.equalObjects(data, ((JDBCContentChars)obj).data);
+        } else {
+            return false;
+        }
     }
 
     @Override
