@@ -37,10 +37,11 @@
     <extension
         point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
-            class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider"
-            id="generic"
-            label="Generic"
-            description="Generic JDBC connector">
+              class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider"
+              description="Generic JDBC connector"
+              icon="icons/database.gif"
+              id="generic"
+              label="Generic">
             <tree path="generic" label="Generic data source">
                 <icon icon="icons/tree/connection_disabled.png" default="true"/>
                 <icon icon="icons/tree/connection_enabled.png" if="object.connected"/>
@@ -106,7 +107,7 @@
                 <driver
                     id="mysql"
                     label="MySQL"
-                    icon="icons/sample.gif"
+                    icon="icons/database.gif"
                     class="com.mysql.jdbc.Driver"
                     sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                     webURL="http://mysql.com"
@@ -137,7 +138,7 @@
                 <driver
                     id="oracle"
                     label="Oracle"
-                    icon="icons/sample.gif"
+                    icon="icons/database.gif"
                     class="oracle.jdbc.OracleDriver"
                     sampleURL="jdbc:oracle:thin:@{host}[:{port}]:{database}"
                     webURL="http://oracle.com"
@@ -149,7 +150,7 @@
                 <driver
                     id="db2"
                     label="DB2"
-                    icon="icons/sample.gif"
+                    icon="icons/database.gif"
                     class="com.db2.jdbc.Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/[{database}]"
                     webURL="http://ibm.com"
@@ -159,7 +160,7 @@
                 <driver
                     id="odbc"
                     label="ODBC"
-                    icon="icons/sample.gif"
+                    icon="icons/database.gif"
                     class="sun.jdbc.odbc.JdbcOdbcDriver"
                     sampleURL="jdbc:odbc:{database}"
                     webURL="http://sun.com"
@@ -169,7 +170,7 @@
                 <driver
                     id="mssql"
                     label="MS SQL Server"
-                    icon="icons/sample.gif"
+                    icon="icons/database.gif"
                     class="com.microsoft.jdbc.sqlserver.SQLServerDriver"
                     sampleURL="jdbc:microsoft:sqlserver://{host}[:{port}][;DatabaseName={database}]"
                     webURL="http://microsoft.com"
@@ -187,13 +188,14 @@
                     targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
                     label="Generic JDBC Connection Settings"
                     class="org.jkiss.dbeaver.ext.generic.views.ConnectionEditorPage"
-                    icon="icons/sample.gif">
+                    icon="icons/database.gif">
                 </view>
                 <view
-                    id="org.jkiss.dbeaver.ext.generic.dataSourceEditorView"
-                    targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                    label="Generic JDBC Connection Settings"
-                    class="org.jkiss.dbeaver.ext.generic.views.ConnectionEditorPage">
+                      class="org.jkiss.dbeaver.ext.generic.views.ConnectionEditorPage"
+                      icon="icons/database.gif"
+                      id="org.jkiss.dbeaver.ext.generic.dataSourceEditorView"
+                      label="Generic JDBC Connection Settings"
+                      targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
                 </view>
             </views>
         </datasource>

@@ -75,6 +75,9 @@ public class EditDriverDialog extends Dialog
             getShell().setText("Edit Driver '" + driver.getName() + "'");
         }
 
+        boolean isReadOnly = !provider.isDriversManagable();
+        int advStyle = isReadOnly ? SWT.READ_ONLY : SWT.NONE;
+
         Composite group = (Composite) super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 400;
@@ -89,7 +92,7 @@ public class EditDriverDialog extends Dialog
 
             Label driverNameLabel = new Label(propsGroup, SWT.NONE);
             driverNameLabel.setText("Driver Name: ");
-            driverNameText = new Text(propsGroup, SWT.BORDER);
+            driverNameText = new Text(propsGroup, SWT.BORDER | advStyle);
             driverNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             driverNameText.setText(CommonUtils.getString(driver.getName()));
             driverNameText.addModifyListener(new ModifyListener()
@@ -102,13 +105,13 @@ public class EditDriverDialog extends Dialog
 
             Label driverDescLabel = new Label(propsGroup, SWT.NONE);
             driverDescLabel.setText("Description: ");
-            driverDescText = new Text(propsGroup, SWT.BORDER);
+            driverDescText = new Text(propsGroup, SWT.BORDER | advStyle);
             driverDescText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             driverDescText.setText(CommonUtils.getString(driver.getDescription()));
 
             Label driverClassLabel = new Label(propsGroup, SWT.NONE);
             driverClassLabel.setText("Class Name: ");
-            driverClassText = new Text(propsGroup, SWT.BORDER);
+            driverClassText = new Text(propsGroup, SWT.BORDER | advStyle);
             driverClassText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             driverClassText.setText(CommonUtils.getString(driver.getDriverClassName()));
             driverClassText.addModifyListener(new ModifyListener()
@@ -121,7 +124,7 @@ public class EditDriverDialog extends Dialog
 
             Label driverURLLabel = new Label(propsGroup, SWT.NONE);
             driverURLLabel.setText("Sample URL: ");
-            driverURLText = new Text(propsGroup, SWT.BORDER);
+            driverURLText = new Text(propsGroup, SWT.BORDER | advStyle);
             driverURLText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             driverURLText.setText(CommonUtils.getString(driver.getSampleURL()));
             driverURLText.addModifyListener(new ModifyListener()
@@ -134,7 +137,7 @@ public class EditDriverDialog extends Dialog
 
             Label defaultPortLabel = new Label(propsGroup, SWT.NONE);
             defaultPortLabel.setText("Default Port: ");
-            driverPortText= new Text(propsGroup, SWT.BORDER);
+            driverPortText= new Text(propsGroup, SWT.BORDER | advStyle);
             //driverPortText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             driverPortText.setText(driver.getDefaultPort() == null ? "" : driver.getDefaultPort().toString());
             driverPortText.addModifyListener(new ModifyListener()

@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class DataSourceRegistry implements DBPRegistry
 {
@@ -55,6 +57,18 @@ public class DataSourceRegistry implements DBPRegistry
                 DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, ext);
                 dataSourceProviders.add(provider);
             }
+            Collections.sort(dataSourceProviders, new Comparator<DataSourceProviderDescriptor>() {
+                public int compare(DataSourceProviderDescriptor o1, DataSourceProviderDescriptor o2)
+                {
+                    if (o1.isDriversManagable() && !o2.isDriversManagable()) {
+                        return -1;
+                    }
+                    if (o2.isDriversManagable() && !o1.isDriversManagable()) {
+                        return 1;
+                    }
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
         }
 
         // Load data type providers from external plugins

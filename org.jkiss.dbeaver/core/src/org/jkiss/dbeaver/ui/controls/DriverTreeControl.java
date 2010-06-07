@@ -121,7 +121,16 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         {
             String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
 			if (obj instanceof DataSourceProviderDescriptor) {
-			   imageKey = ISharedImages.IMG_OBJ_FOLDER;
+                Image icon = ((DataSourceProviderDescriptor) obj).getIcon();
+                if (icon != null) {
+                    return icon;
+                }
+			    imageKey = ISharedImages.IMG_OBJ_FOLDER;
+            } else if (obj instanceof DriverDescriptor) {
+                Image icon = ((DriverDescriptor) obj).getIcon();
+                if (icon != null) {
+                    return icon;
+                }
             }
 
             return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);

@@ -34,6 +34,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private String implClassName;
     private String name;
     private String description;
+    private Image icon;
     private DBPDataSourceProvider instance;
     private DBXTreeNode treeDescriptor;
     private boolean driversManagable;
@@ -49,6 +50,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         this.implClassName = config.getAttribute("class");
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
+        String iconName = config.getAttribute("icon");
+        if (!CommonUtils.isEmpty(iconName)) {
+            this.icon = iconToImage(iconName);
+        }
 
         // Load tree structure
         IConfigurationElement[] trees = config.getChildren("tree");
@@ -109,6 +114,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     public String getDescription()
     {
         return description;
+    }
+
+    public Image getIcon()
+    {
+        return icon;
     }
 
     public DBPDataSourceProvider getInstance()

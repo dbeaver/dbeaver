@@ -155,7 +155,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
 
     public void doubleClick(DoubleClickEvent event)
     {
-        if (selectedDriver != null && selectedDriver.getProviderDescriptor().isDriversManagable()) {
+        if (selectedDriver != null) {
             editDriver();
         }
     }
@@ -163,7 +163,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
     private void updateButtons()
     {
         newButton.setEnabled(selectedProvider != null && selectedProvider.isDriversManagable());
-        editButton.setEnabled(selectedDriver != null && selectedDriver.getProviderDescriptor().isDriversManagable());
+        editButton.setEnabled(selectedDriver != null);
         deleteButton.setEnabled(selectedDriver != null && selectedDriver.getProviderDescriptor().isDriversManagable());
     }
 
