@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeIcon;
@@ -53,6 +54,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         String iconName = config.getAttribute("icon");
         if (!CommonUtils.isEmpty(iconName)) {
             this.icon = iconToImage(iconName);
+        }
+        if (this.icon == null) {
+            this.icon = DBIcon.GEN_DATABASE_TYPE.getImage();
         }
 
         // Load tree structure

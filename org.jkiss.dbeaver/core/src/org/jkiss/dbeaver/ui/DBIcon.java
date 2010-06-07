@@ -13,6 +13,9 @@ import org.jkiss.dbeaver.core.DBeaverIcons;
  */
 public enum DBIcon
 {
+    GEN_DATABASE("gen_database", "icons/database.png"),
+    GEN_DATABASE_TYPE("gen_database_type", "icons/database_type.png"),
+
     TREE_DATABASE("database", "icons/tree/database.png"),
     TREE_CATALOG("catalog", "icons/tree/catalog.png"),
     TREE_SCHEMA("schema", "icons/tree/schema.png"),
