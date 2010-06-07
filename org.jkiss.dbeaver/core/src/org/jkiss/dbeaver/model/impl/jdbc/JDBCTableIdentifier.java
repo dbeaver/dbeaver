@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
+import org.jkiss.dbeaver.model.struct.DBSIndex;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ import java.util.List;
 public class JDBCTableIdentifier implements DBCTableIdentifier {
 
     private DBSConstraint constraint;
+    private DBSIndex index;
     private List<JDBCColumnMetaData> columns;
 
     public JDBCTableIdentifier(DBSConstraint constraint, List<JDBCColumnMetaData> columns)
@@ -23,9 +25,20 @@ public class JDBCTableIdentifier implements DBCTableIdentifier {
         this.columns = columns;
     }
 
+    public JDBCTableIdentifier(DBSIndex index, List<JDBCColumnMetaData> columns)
+    {
+        this.index = index;
+        this.columns = columns;
+    }
+
     public DBSConstraint getConstraint()
     {
         return constraint;
+    }
+
+    public DBSIndex getIndex()
+    {
+        return index;
     }
 
     public List<JDBCColumnMetaData> getResultSetColumns()

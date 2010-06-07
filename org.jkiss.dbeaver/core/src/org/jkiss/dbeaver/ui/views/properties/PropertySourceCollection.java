@@ -30,6 +30,7 @@ public class PropertySourceCollection extends PropertySourceAbstract {
                 itemName = item == null ? "[NULL]" : item.toString();
             }
             addProperty(itemId, itemName, item);
+            propIndex++;
         }
     }
 
@@ -41,6 +42,6 @@ public class PropertySourceCollection extends PropertySourceAbstract {
     @Override
     public Object getEditableValue()
     {
-        return ((Collection)super.getEditableValue()).size(); 
+        return "[" + ((Collection)super.getEditableValue()).size() + "]"; 
     }
 }

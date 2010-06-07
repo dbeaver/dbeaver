@@ -9,7 +9,7 @@ import java.util.Collection;
 /**
  * DBSConstraint
  */
-public interface DBSConstraint extends DBSObject
+public interface DBSConstraint extends DBSStructureObject
 {
     DBSConstraintType getConstraintType();
 

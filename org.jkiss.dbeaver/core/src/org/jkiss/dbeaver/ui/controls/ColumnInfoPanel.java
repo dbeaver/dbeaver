@@ -81,16 +81,17 @@ public class ColumnInfoPanel extends Composite {
         {
             this.valueController = valueController;
         }
-        @Property(name = "Name", viewable = true, order = 1, category = "general")
+
+        @Property(name = "Type", viewable = true, order = 1, category = "general")
+        public String getType()
+        {
+            return valueController.getValueLocator().getKeyType();
+        }
+
+        @Property(name = "Name", viewable = true, order = 2, category = "general")
         public String getName()
         {
             return valueController.getValueLocator().getUniqueKey().getName();
-        }
-
-        @Property(name = "Type", viewable = true, order = 2, category = "general")
-        public Object getType()
-        {
-            return valueController.getValueLocator().getUniqueKey().getConstraintType();
         }
 
         @Property(name = "Columns", viewable = true, order = 3, category = "columns")
@@ -107,7 +108,7 @@ public class ColumnInfoPanel extends Composite {
         @Override
         public String toString()
         {
-            return getName();
+            return valueController.getValueLocator().getKeyKind();
         }
     }
 

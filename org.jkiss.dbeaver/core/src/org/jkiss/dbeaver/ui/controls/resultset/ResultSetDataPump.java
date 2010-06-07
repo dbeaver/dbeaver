@@ -91,8 +91,7 @@ class ResultSetDataPump implements ISQLQueryDataPump {
                     }
                     DBDValueLocator valueLocator = new DBDValueLocator(
                         meta.getTable().getTable(),
-                        tableIdentifier.getConstraint(),
-                        tableIdentifier.getResultSetColumns());
+                        tableIdentifier);
                     locatorMap.put(meta.getTable().getTable(), valueLocator);
                     column.valueLocator = valueLocator;
                 }

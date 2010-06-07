@@ -11,6 +11,9 @@ import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSIndex;
+import org.jkiss.dbeaver.model.struct.DBSIndexColumn;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,21 +69,20 @@ public class JDBCTableMetaData implements DBCTableMetaData {
         if (identifiers == null) {
             // Load identifiers
             identifiers = new ArrayList<JDBCTableIdentifier>();
-
-            Collection<? extends DBSConstraint> constraints = table.getConstraints();
-            for (DBSConstraint constraint : constraints) {
+            // Check constraints
+            for (DBSConstraint constraint : table.getConstraints()) {
                 if (constraint.getConstraintType().isUnique()) {
                     // We need ALL columns from this constraint
                     List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
                     Collection<? extends DBSConstraintColumn> constrColumns = constraint.getColumns();
                     for (DBSConstraintColumn constrColumn : constrColumns) {
-                        JDBCColumnMetaData rsColumn = getColumnMetaData(constrColumn);
+                        JDBCColumnMetaData rsColumn = getColumnMetaData(constrColumn.getTableColumn());
                         if (rsColumn == null) {
                             break;
                         }
                         rsColumns.add(rsColumn);
                     }
-                    if (rsColumns.size() < constrColumns.size()) {
+                    if (rsColumns.isEmpty() || rsColumns.size() < constrColumns.size()) {
                         // Not all columns are here
                         continue;
                     }
@@ -88,24 +90,52 @@ public class JDBCTableMetaData implements DBCTableMetaData {
                         new JDBCTableIdentifier(constraint, rsColumns));
                 }
             }
+            if (identifiers.isEmpty()) {
+                // Check indexes only if no unique constraints found
+                for (DBSIndex index : table.getIndexes()) {
+                    if (index.isUnique()) {
+                        // We need ALL columns from this constraint
+                        List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
+                        Collection<? extends DBSIndexColumn> constrColumns = index.getColumns();
+                        for (DBSIndexColumn indexColumn : constrColumns) {
+                            JDBCColumnMetaData rsColumn = getColumnMetaData(indexColumn.getTableColumn());
+                            if (rsColumn == null) {
+                                break;
+                            }
+                            rsColumns.add(rsColumn);
+                        }
+                        if (rsColumns.isEmpty() || rsColumns.size() < constrColumns.size()) {
+                            // Not all columns are here
+                            continue;
+                        }
+                        identifiers.add(
+                            new JDBCTableIdentifier(index, rsColumns));
+                    }
+                }
+            }
         }
         // Find PK or unique key
         DBCTableIdentifier uniqueId = null;
+        DBCTableIdentifier uniqueIndex = null;
         for (DBCTableIdentifier id : identifiers) {
-            if (id.getConstraint().getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
-                return id;
-            } else if (id.getConstraint().getConstraintType() == DBSConstraintType.UNIQUE_KEY) {
-                uniqueId = id;
+            if (id.getConstraint() != null) {
+                if (id.getConstraint().getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
+                    return id;
+                } else if (id.getConstraint().getConstraintType() == DBSConstraintType.UNIQUE_KEY) {
+                    uniqueId = id;
+                }
+            } else {
+                uniqueIndex = id;
             }
         }
-        return uniqueId;
+        return uniqueId != null ? uniqueId : uniqueIndex;
     }
 
-    private JDBCColumnMetaData getColumnMetaData(DBSConstraintColumn constrColumn)
+    private JDBCColumnMetaData getColumnMetaData(DBSTableColumn column)
         throws DBException
     {
         for (JDBCColumnMetaData meta : columns) {
-            if (meta.getTableColumn() == constrColumn.getTableColumn()) {
+            if (meta.getTableColumn() == column) {
                 return meta;
             }
         }

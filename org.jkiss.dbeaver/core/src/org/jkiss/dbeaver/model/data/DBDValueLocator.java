@@ -8,8 +8,11 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSIndex;
+import org.jkiss.dbeaver.model.struct.DBSStructureObject;
 
 import java.util.List;
 
@@ -20,14 +23,12 @@ import java.util.List;
 public class DBDValueLocator implements DBPObject {
 
     private DBSTable table;
-    private DBSConstraint uniqueKey;
-    private List<? extends DBCColumnMetaData> keyColumns;
+    private DBCTableIdentifier tableIdentifier;
 
-    public DBDValueLocator(DBSTable table, DBSConstraint uniqueKey, List<? extends DBCColumnMetaData> keyColumns)
+    public DBDValueLocator(DBSTable table, DBCTableIdentifier tableIdentifier)
     {
         this.table = table;
-        this.uniqueKey = uniqueKey;
-        this.keyColumns = keyColumns;
+        this.tableIdentifier = tableIdentifier;
     }
 
     public String getKeyId(DBDRowController rowController)
@@ -49,13 +50,46 @@ public class DBDValueLocator implements DBPObject {
     }
 
     @Property(name = "Key", viewable = true, order = 2)
-    public DBSConstraint getUniqueKey() {
-        return uniqueKey;
+    public DBSStructureObject getUniqueKey() {
+        return tableIdentifier.getConstraint() != null ? tableIdentifier.getConstraint() : tableIdentifier.getIndex();
+    }
+
+    public DBCTableIdentifier getTableIdentifier()
+    {
+        return tableIdentifier;
+    }
+
+    public DBSConstraint getUniqueConstraint()
+    {
+        return tableIdentifier.getConstraint();
+    }
+
+    public DBSIndex getUniqueIndex()
+    {
+        return tableIdentifier.getIndex();
+    }
+
+    public String getKeyKind()
+    {
+        if (tableIdentifier.getConstraint() != null) {
+            return "CONSTRAINT";
+        } else {
+            return "INDEX";
+        }
+    }
+
+    public String getKeyType()
+    {
+        if (tableIdentifier.getConstraint() != null) {
+            return tableIdentifier.getConstraint().getConstraintType().name();
+        } else {
+            return tableIdentifier.getIndex().getIndexType().name();
+        }
     }
 
     public List<? extends DBCColumnMetaData> getKeyColumns()
     {
-        return keyColumns;
+        return tableIdentifier.getResultSetColumns();
     }
 
 /*
@@ -67,4 +101,5 @@ public class DBDValueLocator implements DBPObject {
         return keyValues;
     }
 */
+
 }
