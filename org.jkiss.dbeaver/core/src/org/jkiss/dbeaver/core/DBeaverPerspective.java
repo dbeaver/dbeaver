@@ -25,7 +25,6 @@ public class DBeaverPerspective implements IPerspectiveFactory
 
         // Bottom right.
         IFolderLayout bottomRight = layout.createFolder("bottomRight", IPageLayout.BOTTOM, (float) 0.66, editorArea);
-
-        //bottomRight.addView(IPageLayout.ID_TASK_LIST);
+        bottomRight.addView(IPageLayout.ID_PROP_SHEET);
     }
 }
