@@ -22,6 +22,7 @@ import java.sql.SQLException;
 public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCStringValueHandler INSTANCE = new JDBCStringValueHandler();
+
     private static final int MAX_STRING_LENGTH = 0xffff;
 
     protected Object getValueObject(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
@@ -50,7 +51,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
             Text editor = new Text(controller.getInlinePlaceholder(), SWT.NONE);
             editor.setText(value == null ? "" : value.toString());
             editor.setEditable(!controller.isReadOnly());
-            editor.setTextLimit(controller.getColumnMetaData().getDisplaySize());
+            editor.setTextLimit(MAX_STRING_LENGTH);
             editor.selectAll();
             editor.setFocus();
             initInlineControl(controller, editor, new ValueExtractor<Text>() {

@@ -39,6 +39,10 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentC
         this.data = data;
     }
 
+    public String getData() {
+        return data;
+    }
+
     public long getContentLength() throws DBCException {
         if (data == null) {
             return 0;

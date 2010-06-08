@@ -41,6 +41,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCContentValueHandler INSTANCE = new JDBCContentValueHandler();
 
+    private static final int MAX_STRING_LENGTH = 0xfffff;
+
     protected DBDContent getValueObject(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException, SQLException
     {
@@ -152,34 +154,33 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     {
         if (controller.isInlineEdit()) {
             // Open inline editor
-            switch (controller.getColumnMetaData().getValueType()) {
-                case java.sql.Types.CHAR:
-                case java.sql.Types.VARCHAR:
-                case java.sql.Types.NVARCHAR:
-                case java.sql.Types.LONGVARCHAR:
-                case java.sql.Types.LONGNVARCHAR:
-                {
-                    // String editor
-                    Object value = controller.getValue();
+            if (controller.getValue() instanceof JDBCContentChars) {
+                // String editor
+                JDBCContentChars value = (JDBCContentChars)controller.getValue();
 
-                    Text editor = new Text(controller.getInlinePlaceholder(), SWT.NONE);
-                    editor.setText(value == null ? "" : value.toString());
-                    editor.setEditable(!controller.isReadOnly());
-                    editor.setTextLimit(controller.getColumnMetaData().getDisplaySize());
-                    editor.selectAll();
-                    editor.setFocus();
-                    initInlineControl(controller, editor, new ValueExtractor<Text>() {
-                        public Object getValueFromControl(Text control)
-                        {
-                            String newValue = control.getText();
-                            return new JDBCContentChars(newValue);
-                        }
-                    });
-                    return true;
+                Text editor = new Text(controller.getInlinePlaceholder(), SWT.NONE);
+                editor.setText(value.getData() == null ? "" : value.getData());
+                editor.setEditable(!controller.isReadOnly());
+                int maxLength = controller.getColumnMetaData().getDisplaySize();
+                if (maxLength <= 0) {
+                    maxLength = MAX_STRING_LENGTH;
+                } else {
+                    maxLength = Math.min(maxLength, MAX_STRING_LENGTH);
                 }
-                default:
-                    controller.showMessage("LOB and binary data can't be edited inline", true);
-                    return false;
+                editor.setTextLimit(maxLength);
+                editor.selectAll();
+                editor.setFocus();
+                initInlineControl(controller, editor, new ValueExtractor<Text>() {
+                    public Object getValueFromControl(Text control)
+                    {
+                        String newValue = control.getText();
+                        return new JDBCContentChars(newValue);
+                    }
+                });
+                return true;
+            } else {
+                controller.showMessage("LOB and binary data can't be edited inline", true);
+                return false;
             }
         }
         // Open LOB editor
