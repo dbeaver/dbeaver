@@ -72,6 +72,57 @@ class ResultSetDataPump implements ISQLQueryDataPump {
             metaColumns[i] = new ResultSetColumn(columnMeta, typeHandler);
         }
 
+/*
+        // Find value locators
+        Map<DBSTable, DBDValueLocator> locatorMap = new HashMap<DBSTable, DBDValueLocator>();
+        try {
+            for (ResultSetColumn column : metaColumns) {
+                DBCColumnMetaData meta = column.metaData;
+                if (meta.getTable() == null || !meta.getTable().isIdentitied()) {
+                    continue;
+                }
+                // We got table name and column name
+                // To be editable we need this result set contain set of columns from the same table
+                // which construct any unique key
+                column.valueLocator = locatorMap.get(meta.getTable().getTable());
+                if (column.valueLocator == null) {
+                    DBCTableIdentifier tableIdentifier = meta.getTable().getBestIdentifier();
+                    if (tableIdentifier == null) {
+                        continue;
+                    }
+                    DBDValueLocator valueLocator = new DBDValueLocator(
+                        meta.getTable().getTable(),
+                        tableIdentifier);
+                    locatorMap.put(meta.getTable().getTable(), valueLocator);
+                    column.valueLocator = valueLocator;
+                }
+                column.editable = true;
+            }
+        }
+        catch (DBException e) {
+            log.error("Can't extract column identifier info", e);
+        }
+*/
+
+        resultSetViewer.setColumnsInfo(metaColumns);
+    }
+
+    public void fetchRow(DBCResultSet resultSet)
+        throws DBCException
+    {
+        Object[] row = new Object[columnsCount];
+        for (int i = 0; i < columnsCount; i++) {
+            row[i] = metaColumns[i].valueHandler.getValueObject(
+                resultSet,
+                metaColumns[i].metaData,
+                i);
+        }
+        rows.add(row);
+    }
+
+    public void fetchEnd(DBCResultSet resultSet)
+        throws DBCException
+    {
         // Find value locators
         Map<DBSTable, DBDValueLocator> locatorMap = new HashMap<DBSTable, DBDValueLocator>();
         try {
@@ -102,25 +153,6 @@ class ResultSetDataPump implements ISQLQueryDataPump {
             log.error("Can't extract column identifier info", e);
         }
 
-        resultSetViewer.setColumnsInfo(metaColumns);
-    }
-
-    public void fetchRow(DBCResultSet resultSet)
-        throws DBCException
-    {
-        Object[] row = new Object[columnsCount];
-        for (int i = 0; i < columnsCount; i++) {
-            row[i] = metaColumns[i].valueHandler.getValueObject(
-                resultSet,
-                metaColumns[i].metaData,
-                i);
-        }
-        rows.add(row);
-    }
-
-    public void fetchEnd(DBCResultSet resultSet)
-        throws DBCException
-    {
         display.asyncExec(new Runnable() {
             public void run()
             {

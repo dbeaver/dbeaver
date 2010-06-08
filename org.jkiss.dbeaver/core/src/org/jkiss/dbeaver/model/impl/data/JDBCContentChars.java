@@ -31,6 +31,8 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentC
 
     static Log log = LogFactory.getLog(JDBCContentChars.class);
 
+    public static final int MAX_STRING_LENGTH = 1000;
+
     private String data;
 
     public JDBCContentChars(String data) {
@@ -121,7 +123,14 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentC
 
     @Override
     public String toString() {
-        return data;
+        if (data == null) {
+            return null;
+        }
+        if (data.length() > MAX_STRING_LENGTH) {
+            return data.substring(0, MAX_STRING_LENGTH) + " ...";
+        } else {
+            return data;
+        }
     }
 
 }
