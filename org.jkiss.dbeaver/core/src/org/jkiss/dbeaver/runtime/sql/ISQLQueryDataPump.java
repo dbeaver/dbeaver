@@ -18,7 +18,11 @@ public interface ISQLQueryDataPump {
     void fetchRow(DBCResultSet resultSet)
         throws DBCException;
 
-    void fetchEnd(DBCResultSet resultSet)
+    /**
+     * Called after entire result set is fetched and closed
+     * @throws DBCException on error
+     */
+    void fetchEnd()
         throws DBCException;
 
 }

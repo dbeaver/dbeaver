@@ -88,7 +88,7 @@ class ResultSetDataPump implements ISQLQueryDataPump {
         rows.add(row);
     }
 
-    public void fetchEnd(DBCResultSet resultSet)
+    public void fetchEnd()
         throws DBCException
     {
         extractRowIdentifiers();

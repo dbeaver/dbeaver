@@ -217,7 +217,7 @@ public class SQLQueryJob extends DataSourceJob
                 DBeaverCore.getInstance().getPluginID(),
                 "SQL job completed");
         }
-        catch (DBCException ex) {
+        catch (Throwable ex) {
             return new Status(
                 Status.ERROR,
                 DBeaverCore.getInstance().getPluginID(),
@@ -333,8 +333,11 @@ public class SQLQueryJob extends DataSourceJob
             DBCResultSet resultSet = curStatement.getResultSet();
             if (resultSet != null) {
                 int rowCount = 0;
+
                 dataPump.fetchStart(resultSet);
+
                 try {
+
                     while (rowCount < maxResults && resultSet.next()) {
                         rowCount++;
                         
@@ -346,32 +349,16 @@ public class SQLQueryJob extends DataSourceJob
                     }
                 }
                 finally {
-                    dataPump.fetchEnd(resultSet);
+                    curStatement.closeResultSet();
                 }
-                result.setRowCount(rowCount);
-/*
-                DBCResultSetMetaData metaData = resultSet.getMetaData();
-                List<Object[]> rows = new ArrayList<Object[]>();
-                result.setResultSet(metaData, rows);
 
-                int columnsCount = metaData.getColumns().size();
-                while (rows.size() < maxResults && resultSet.next()) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
-                    Object[] row = new Object[columnsCount];
-                    for (int i = 0; i < columnsCount; i++) {
-                        row[i] = resultSet.getObject(i + 1);
-                        if (resultSet.wasNull()) {
-                            row[i] = null;
-                        }
-                    }
-                    rows.add(row);
-                    if (rows.size() % 10 == 0) {
-                        monitor.subTask(rows.size() + " rows fetched");
-                    }
+                try {
+                    dataPump.fetchEnd();
+                } catch (DBCException e) {
+                    log.error("Error while handling end of result set fetch");
                 }
-*/
+
+                result.setRowCount(rowCount);
                 monitor.subTask(rowCount + " rows fetched");
             }
         }

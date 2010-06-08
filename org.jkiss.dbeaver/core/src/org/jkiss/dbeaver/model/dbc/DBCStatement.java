@@ -21,6 +21,8 @@ public interface DBCStatement
 
     DBCResultSet getResultSet() throws DBCException;
 
+    void closeResultSet();
+
     int getUpdateCount() throws DBCException;
 
     void cancel() throws DBCException;

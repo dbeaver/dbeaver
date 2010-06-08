@@ -89,6 +89,19 @@ public class JDBCStatement implements DBCStatement
         }
     }
 
+    public void closeResultSet()
+    {
+        if (resultSet != null) {
+            try {
+                resultSet.close();
+            } catch (DBCException e) {
+                log.error("Could not close result set", e);
+            } finally {
+                resultSet = null;
+            }
+        }
+    }
+
     public int getUpdateCount()
         throws DBCException
     {
@@ -113,15 +126,7 @@ public class JDBCStatement implements DBCStatement
 
     public void close()
     {
-        if (resultSet != null) {
-            try {
-                resultSet.close();
-            } catch (DBCException e) {
-                log.error("Could not close result set", e);
-            } finally {
-                resultSet = null;
-            }
-        }
+        closeResultSet();
         if (statement != null) {
             try {
                 statement.close();
