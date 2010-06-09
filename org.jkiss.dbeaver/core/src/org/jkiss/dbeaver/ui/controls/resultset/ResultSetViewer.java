@@ -100,8 +100,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private int curRowNum = -1;
 
     private Label statusLabel;
-    private Color colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
-    private Color colorBlack = Display.getDefault().getSystemColor(SWT.COLOR_BLACK);
 
     private ToolItem itemAccept;
     private ToolItem itemReject;
@@ -120,6 +118,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private boolean updateInProgress = false;
 
     // UI modifiers
+    private Color colorRed;
     private Color backgroundModified;
     private Color foregroundNull;
 
@@ -128,6 +127,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         super();
         this.site = site;
         this.mode = ResultSetMode.GRID;
+
+        this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
+        this.backgroundModified = new Color(parent.getDisplay(), 0xFF, 0xE4, 0xB5);
+        this.foregroundNull = parent.getDisplay().getSystemColor(SWT.COLOR_GRAY);
+
         this.spreadsheet = new Spreadsheet(
             parent,
             SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
@@ -157,8 +161,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 onChangeGridCursor(event.x, event.y);
             }
         });
-        backgroundModified = new Color(spreadsheet.getDisplay(), 0xFF, 0xE4, 0xB5);
-        foregroundNull = spreadsheet.getDisplay().getSystemColor(SWT.COLOR_GRAY);
 
         applyThemeSettings();
     }
@@ -375,8 +377,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         itemRefresh.dispose();
         statusLabel.dispose();
         themeManager.removePropertyChangeListener(ResultSetViewer.this);
-        colorRed.dispose();
-        colorBlack.dispose();
     }
 
     private void applyThemeSettings()
@@ -427,7 +427,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (error) {
             statusLabel.setForeground(colorRed);
         } else {
-            statusLabel.setForeground(colorBlack);
+            statusLabel.setForeground(null);
         }
         statusLabel.setText(status);
     }
