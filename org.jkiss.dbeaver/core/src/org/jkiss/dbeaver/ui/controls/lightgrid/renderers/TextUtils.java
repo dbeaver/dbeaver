@@ -79,6 +79,9 @@ public class TextUtils
      * the width argument. Strings that have been shorted have an "..." attached
      * to the end of the string. The width is computed using the
      * {@link GC#stringExtent(String)}.
+     *
+     * Text shorten removed due to awfull aglorythm (it works really slow on long strings).
+     * TODO: make something better
      * 
      * @param gc GC used to perform calculation.
      * @param t text to modify.
@@ -87,7 +90,6 @@ public class TextUtils
      */
     public static String getShortString(GC gc, String t, int width)
     {
-
         if (t == null)
         {
             return null;
@@ -97,7 +99,8 @@ public class TextUtils
         {
             return "";
         }
-
+        return t;
+/*
         if (width >= gc.stringExtent(t).x)
         {
             return t;
@@ -130,6 +133,7 @@ public class TextUtils
         }
 
         return text;
+*/
     }
 
     /**

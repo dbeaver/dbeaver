@@ -1101,11 +1101,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         @Override
         public String getText(Object element)
         {
-            String text = String.valueOf(getValue(element, true));
-            if (text == null) {
-                return "null";
-            }
-            return text;
+            return String.valueOf(getValue(element, true));
         }
 
         public Color getForeground(Object element)
