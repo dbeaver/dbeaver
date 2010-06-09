@@ -14,6 +14,7 @@
    </configIni>
 
    <launcherArgs>
+      <vmArgs>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888</vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
@@ -31,10 +32,8 @@
       </win>
    </launcher>
 
-
    <vm>
    </vm>
-
 
    <plugins>
       <plugin id="com.ibm.icu"/>
