@@ -99,6 +99,12 @@ public class TextUtils
         {
             return "";
         }
+        int avgCharWidth = gc.getFontMetrics().getAverageCharWidth();
+        int length = t.length();
+        if (width < length * avgCharWidth) {
+            length = width / avgCharWidth;
+            t = t.substring(0, length);
+        }
         return t;
 /*
         if (width >= gc.stringExtent(t).x)
