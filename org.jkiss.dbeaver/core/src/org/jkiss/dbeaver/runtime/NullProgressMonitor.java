@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.runtime;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 
 /**
  * Progress monitor null implementation
@@ -38,6 +39,21 @@ public class NullProgressMonitor implements DBRProgressMonitor {
     public boolean isCanceled()
     {
         return false;
+    }
+
+    public void startBlock(DBRBlockingObject object)
+    {
+        // do nothing
+    }
+
+    public void endBlock()
+    {
+        // do nothing
+    }
+
+    public DBRBlockingObject getActiveBlock()
+    {
+        return null;
     }
 
 }

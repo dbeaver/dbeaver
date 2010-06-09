@@ -162,4 +162,11 @@ public class JDBCStatement implements DBCStatement
     public void setDataContainer(DBSObject container) {
         dataContainer = container;
     }
+
+    public void cancelBlock()
+        throws DBCException
+    {
+        this.cancel();
+    }
+
 }

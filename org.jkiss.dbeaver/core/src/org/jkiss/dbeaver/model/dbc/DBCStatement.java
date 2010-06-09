@@ -5,11 +5,12 @@
 package org.jkiss.dbeaver.model.dbc;
 
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 
 /**
  * DBCStatement
  */
-public interface DBCStatement
+public interface DBCStatement extends DBRBlockingObject
 {
     Object getNestedStatement();
 

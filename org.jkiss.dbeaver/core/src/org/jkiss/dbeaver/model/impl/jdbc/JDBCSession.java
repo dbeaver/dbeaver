@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.model.dbc.DBCConnector;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.DBException;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -128,5 +129,11 @@ public class JDBCSession implements DBCSession
                 throw new JDBCException(e);
             }
         }
+    }
+
+    public void cancelBlock()
+        throws DBException
+    {
+        this.close();
     }
 }

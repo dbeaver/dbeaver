@@ -29,4 +29,10 @@ public interface DBRProgressMonitor {
 
     public boolean isCanceled();
 
+    public void startBlock(DBRBlockingObject object);
+
+    public void endBlock();
+
+    public DBRBlockingObject getActiveBlock();
+
 }

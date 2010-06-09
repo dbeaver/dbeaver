@@ -6,11 +6,12 @@ package org.jkiss.dbeaver.model.dbc;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
+import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 
 /**
  * DBCSession
  */
-public interface DBCSession
+public interface DBCSession extends DBRBlockingObject
 {
     DBPDataSource getDataSource();
 
