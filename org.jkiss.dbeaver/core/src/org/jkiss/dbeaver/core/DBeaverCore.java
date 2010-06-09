@@ -240,6 +240,12 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         DBeaverUtils.run(this.getWorkbench().getProgressService(), fork, cancelable, runnable);
     }
 
+    public void run(boolean fork, boolean cancelable, final IRunnableWithProgress runnable)
+        throws InvocationTargetException, InterruptedException
+    {
+        this.getWorkbench().getProgressService().run(fork, cancelable, runnable);
+    }
+
     public IFolder getTempFolder(IProgressMonitor monitor)
     {
         IPath tempPath = defaultProject.getProjectRelativePath().append(AUTOSAVE_DIR);
