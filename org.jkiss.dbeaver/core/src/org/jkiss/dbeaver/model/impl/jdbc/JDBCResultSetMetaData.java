@@ -6,13 +6,10 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -29,7 +26,7 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData
     private JDBCResultSet resultSet;
     private ResultSetMetaData jdbcMetaData;
     private List<DBCColumnMetaData> columns = new ArrayList<DBCColumnMetaData>();
-    private Map<DBSObject, JDBCTableMetaData> tables = new HashMap<DBSObject, JDBCTableMetaData>();
+    private Map<String, JDBCTableMetaData> tables = new HashMap<String, JDBCTableMetaData>();
 
     JDBCResultSetMetaData(JDBCResultSet resultSet)
         throws SQLException
@@ -64,23 +61,42 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData
             // some constant instead of table name
             return null;
         }
-        DBPDataSource dataSource = resultSet.getStatement().getSession().getDataSource();
-        if (dataSource instanceof DBSStructureContainer) {
-            DBSObject tableObject = DBSUtils.getObjectByPath((DBSStructureContainer) dataSource, catalogName, schemaName, tableName);
-            if (tableObject instanceof DBSTable) {
-                return getTableMetaData((DBSTable)tableObject);
-            }
+        StringBuilder fullName = new StringBuilder();
+        if (catalogName != null) fullName.append(catalogName).append("|");
+        if (schemaName != null) fullName.append(schemaName).append("|");
+        fullName.append(tableName);
+        String fullQualifiedName = fullName.toString();
+
+        JDBCTableMetaData tableMetaData = tables.get(fullQualifiedName);
+        if (tableMetaData == null) {
+            tableMetaData = new JDBCTableMetaData(this, null, catalogName, schemaName, tableName, null);
+            tables.put(fullQualifiedName, tableMetaData);
         }
-        return null;
+        return tableMetaData;
     }
 
     public JDBCTableMetaData getTableMetaData(DBSTable table)
         throws DBException
     {
-        JDBCTableMetaData tableMetaData = tables.get(table);
+        DBSObject schema = table.getParentObject();
+        DBSObject catalog = schema == null ? null : schema.getParentObject();
+
+        StringBuilder fullName = new StringBuilder();
+        if (catalog != null) fullName.append(catalog.getName()).append("|");
+        if (schema != null) fullName.append(schema.getName()).append("|");
+        fullName.append(table.getName());
+        String fullQualifiedName = fullName.toString();
+
+        JDBCTableMetaData tableMetaData = tables.get(fullQualifiedName);
         if (tableMetaData == null) {
-            tableMetaData = new JDBCTableMetaData(this, table, null);
-            tables.put(table, tableMetaData);
+            tableMetaData = new JDBCTableMetaData(
+                this,
+                table,
+                catalog == null ? null : catalog.getName(),
+                schema == null ? null : schema.getName(),
+                table.getName(),
+                null);
+            tables.put(fullQualifiedName, tableMetaData);
         }
         return tableMetaData;
     }

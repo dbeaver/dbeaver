@@ -14,6 +14,10 @@ import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSIndex;
 import org.jkiss.dbeaver.model.struct.DBSIndexColumn;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.DBPDataSource;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,14 +29,20 @@ import java.util.List;
 public class JDBCTableMetaData implements DBCTableMetaData {
 
     private JDBCResultSetMetaData resultSetMetaData;
-    private DBSTable table;
+    private String catalogName;
+    private String schemaName;
+    private String tableName;
     private String alias;
     private List<JDBCColumnMetaData> columns = new ArrayList<JDBCColumnMetaData>();
     private List<JDBCTableIdentifier> identifiers;
+    private DBSTable table;
 
-    public JDBCTableMetaData(JDBCResultSetMetaData resultSetMetaData, DBSTable table, String alias)
+    public JDBCTableMetaData(JDBCResultSetMetaData resultSetMetaData, DBSTable table, String catalogName, String schemaName, String tableName, String alias)
     {
         this.resultSetMetaData = resultSetMetaData;
+        this.catalogName = catalogName;
+        this.schemaName = schemaName;
+        this.tableName = tableName;
         this.table = table;
         this.alias = alias;
     }
@@ -43,13 +53,37 @@ public class JDBCTableMetaData implements DBCTableMetaData {
     }
 
     public DBSTable getTable()
+        throws DBException
     {
+        if (table == null) {
+            DBPDataSource dataSource = resultSetMetaData.getResultSet().getStatement().getSession().getDataSource();
+            if (dataSource instanceof DBSStructureContainer) {
+                DBSObject tableObject = DBSUtils.getObjectByPath((DBSStructureContainer) dataSource, catalogName, schemaName, tableName);
+                if (tableObject == null) {
+                    throw new DBException("Table '" + tableName + "' not found in metadata catalog");
+                } else if (tableObject instanceof DBSTable) {
+                    table = (DBSTable) tableObject;
+                } else {
+                    throw new DBException("Unsupported table class: " + tableObject.getClass().getName());
+                }
+            }
+        }
         return table;
+    }
+
+    public String getCatalogName()
+    {
+        return catalogName;
+    }
+
+    public String getSchemaName()
+    {
+        return schemaName;
     }
 
     public String getTableName()
     {
-        return table.getName();
+        return tableName;
     }
 
     public String getTableAlias()
@@ -70,7 +104,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
             // Load identifiers
             identifiers = new ArrayList<JDBCTableIdentifier>();
             // Check constraints
-            for (DBSConstraint constraint : table.getConstraints()) {
+            for (DBSConstraint constraint : getTable().getConstraints()) {
                 if (constraint.getConstraintType().isUnique()) {
                     // We need ALL columns from this constraint
                     List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
@@ -92,7 +126,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
             }
             if (identifiers.isEmpty()) {
                 // Check indexes only if no unique constraints found
-                for (DBSIndex index : table.getIndexes()) {
+                for (DBSIndex index : getTable().getIndexes()) {
                     if (index.isUnique()) {
                         // We need ALL columns from this constraint
                         List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();

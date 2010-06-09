@@ -14,9 +14,10 @@ public interface DBCTableMetaData {
 
     /**
      * Table reference
-     * @return table
+     * @return table table reference. never returns null
      */
-    DBSTable getTable();
+    DBSTable getTable()
+        throws DBException;
 
     /**
      * Table name
