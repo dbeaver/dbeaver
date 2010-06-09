@@ -32,7 +32,7 @@ public class LoadingUtils {
         try {
             Method getter = findPropertyReadMethod(object.getClass(), propertyName);
             if (getter == null) {
-                log.warn("Could not find property '" + propertyName + "' read method");
+                log.warn("Could not find property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");
                 return null;
             }
             Class<?>[] paramTypes = getter.getParameterTypes();

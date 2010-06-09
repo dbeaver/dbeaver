@@ -71,22 +71,7 @@ class NavigatorTreeContentProvider implements IStructuredContentProvider, ITreeC
             return EMPTY_CHILDREN;
         }
         if (parentNode.isLazyNode()) {
-            return TreeLoadVisualizer.expandChildren(view.getViewer(), new TreeLoadService("Loading", parent) {
-                public Object[] evaluate()
-                    throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        return DBMNode.convertNodesToObjects(
-                            parentNode.getChildren(this));
-                    } catch (Throwable ex) {
-                        if (ex instanceof InvocationTargetException) {
-                            throw (InvocationTargetException)ex;
-                        } else {
-                            throw new InvocationTargetException(ex);
-                        }
-                    }
-                }
-            });
+            return TreeLoadVisualizer.expandChildren(view.getViewer(), new TreeLoadService("Loading", parent, parentNode));
         } else {
             try {
                 return DBMNode.convertNodesToObjects(

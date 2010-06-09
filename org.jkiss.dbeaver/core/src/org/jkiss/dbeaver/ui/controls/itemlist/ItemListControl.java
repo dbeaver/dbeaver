@@ -455,26 +455,7 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
                 // Load all lazy items in one job
                 if (!CommonUtils.isEmpty(lazyItems)) {
                     LoadingUtils.executeService(
-                        new AbstractLoadService<Object>("Load item values") {
-                            public Object evaluate()
-                                throws InvocationTargetException, InterruptedException
-                            {
-                                for (ItemCell item : lazyItems) {
-                                    try {
-                                        item.value = item.prop.readValue(item.node.getObject(), getProgressMonitor());
-                                    }
-                                    catch (InvocationTargetException e) {
-                                        log.warn(e.getTargetException());
-                                        item.value = "???";
-                                    }
-                                    catch (IllegalAccessException e) {
-                                        log.warn(e);
-                                        item.value = "???";
-                                    }
-                                }
-                                return null;
-                            }
-                        },
+                        new ValueLoadService(),
                         new ValuesLoadVisualizer());
                 }
             }
@@ -496,9 +477,15 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
 
             List<ItemCell> cells = new ArrayList<ItemCell>();
             for (PropertyAnnoDescriptor descriptor : annoProps) {
+                // Check control is disposed
+                if (isDisposed()) {
+                    break;
+                }
+                // Skip unviewable items
                 if (!descriptor.isViewable()) {
                     continue;
                 }
+                // Add coulmn if nexxessary
                 TableColumn propColumn = null;
                 for (TableColumn column : columns) {
                     if (descriptor.getId().equals(column.getData())) {
@@ -515,6 +502,7 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
 
                     ItemListControl.this.columns.add(propColumn);
                 }
+                // Read property value
                 Object value;
                 if (descriptor.isLazy()) {
                     value = LOADING_VALUE;
@@ -548,6 +536,36 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
             return item.getObject();
         }
 
+        private class ValueLoadService extends AbstractLoadService<Object> {
+            public ValueLoadService()
+            {
+                super("Load item values");
+            }
+
+            public Object evaluate()
+                throws InvocationTargetException, InterruptedException
+            {
+                for (ItemCell item : lazyItems) {
+                    // Check control is disposed
+                    if (isDisposed()) {
+                        break;
+                    }
+                    // Extract value with progress monitor
+                    try {
+                        item.value = item.prop.readValue(item.node.getObject(), getProgressMonitor());
+                    }
+                    catch (InvocationTargetException e) {
+                        log.warn(e.getTargetException());
+                        item.value = "???";
+                    }
+                    catch (IllegalAccessException e) {
+                        log.warn(e);
+                        item.value = "???";
+                    }
+                }
+                return null;
+            }
+        }
     }
 
     private class ValuesLoadVisualizer implements ILoadVisualizer<Object> {

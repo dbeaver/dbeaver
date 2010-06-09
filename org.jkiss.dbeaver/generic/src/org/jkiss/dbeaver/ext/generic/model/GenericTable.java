@@ -180,6 +180,11 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         return foreignKeys;
     }
 
+    public List<GenericTable> getSubTables()
+    {
+        return null;
+    }
+
     public boolean refreshObject()
         throws DBException
     {
