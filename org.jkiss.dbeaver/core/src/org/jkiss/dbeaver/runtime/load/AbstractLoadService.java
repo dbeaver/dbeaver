@@ -5,6 +5,10 @@
 package org.jkiss.dbeaver.runtime.load;
 
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
+import org.jkiss.dbeaver.DBException;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Lazy loading service
@@ -13,7 +17,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public abstract class AbstractLoadService<RESULT> implements ILoadService<RESULT> {
     private String serviceName;
     private DBRProgressMonitor progressMonitor;
-    private ILoadService<RESULT> nestedService;
 
     protected AbstractLoadService(String serviceName)
     {
@@ -40,24 +43,20 @@ public abstract class AbstractLoadService<RESULT> implements ILoadService<RESULT
         this.progressMonitor = monitor;
     }
 
-    public void setNestedService(ILoadService<RESULT> nested)
-    {
-        assert(this.nestedService == null);
-        assert(nested != null);
-        this.nestedService = nested;
-        this.nestedService.setProgressMonitor(getProgressMonitor());
-    }
-
-    public void clearNestedService()
-    {
-        assert(this.nestedService != null);
-        this.nestedService = null;
-    }
-
-    public boolean cancel()
+    public boolean cancel() throws InvocationTargetException
     {
         // Invoke nested service cancel
-        return nestedService != null && nestedService.cancel();
+        DBRBlockingObject block = progressMonitor.getActiveBlock();
+        if (block != null) {
+            try {
+                block.cancelBlock();
+                return true;
+            }
+            catch (DBException e) {
+                throw new InvocationTargetException(e, "Could not cancel blocking object");
+            }
+        }
+        return false;
     }
 
 }

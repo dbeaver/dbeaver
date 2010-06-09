@@ -18,14 +18,9 @@ public class PropertyCollector extends PropertySourceAbstract
 {
     static Log log = LogFactory.getLog(PropertyCollector.class);
 
-    public PropertyCollector(DBPObject object)
+    public PropertyCollector(DBPObject object, boolean loadLazyProps)
     {
-        this(object, true);
-    }
-
-    public PropertyCollector(DBPObject object, boolean loadLazyObjects)
-    {
-        super(object, loadLazyObjects);
+        super(object, loadLazyProps);
     }
 
     public void collectProperties()
@@ -40,7 +35,7 @@ public class PropertyCollector extends PropertySourceAbstract
             if (desc.isCollectionAnno()) {
                 // Add as collection
                 try {
-                    Object value = desc.readValue(getEditableValue());
+                    Object value = desc.readValue(getEditableValue(), null);
                     addProperty(desc.getId(), desc.getDisplayName(), value);
                 }
                 catch (IllegalAccessException e) {

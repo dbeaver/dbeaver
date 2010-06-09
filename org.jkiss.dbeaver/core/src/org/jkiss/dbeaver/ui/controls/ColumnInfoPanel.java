@@ -31,7 +31,7 @@ public class ColumnInfoPanel extends Composite {
 
     protected void createPanel(DBDValueController valueController)
     {
-        PropertyCollector infoItem = new PropertyCollector(valueController.getColumnMetaData());
+        PropertyCollector infoItem = new PropertyCollector(valueController.getColumnMetaData(), false);
         infoItem.addProperty("Table_Name", "Table Name", valueController.getColumnMetaData().getTableName());
         infoItem.addProperty("Column_Name", "Column Name", valueController.getColumnMetaData().getColumnName() );
         infoItem.addProperty("Column_Type", "Column Type", valueController.getColumnMetaData().getTypeName() );

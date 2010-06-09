@@ -10,8 +10,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.lang.reflect.InvocationTargetException;
 
 class LoadingUIJob<RESULT> extends AbstractUIJob {
+    static Log log = LogFactory.getLog(LoadingUIJob.class);
 
     private static final long DELAY = 200;
 
@@ -33,7 +38,12 @@ class LoadingUIJob<RESULT> extends AbstractUIJob {
     {
         if (mainMonitor.isCanceled()) {
             // Try to cancel current load service
-            loadService.cancel();
+            try {
+                loadService.cancel();
+            }
+            catch (InvocationTargetException e) {
+                log.warn("Error while canceling service", e.getTargetException());
+            }
             return Status.CANCEL_STATUS;
         } else {
             if (!visualizer.isCompleted()) {

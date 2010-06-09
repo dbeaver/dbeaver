@@ -20,12 +20,8 @@ public interface ILoadService<RESULT> {
 
     void setProgressMonitor(DBRProgressMonitor monitor);
 
-    void setNestedService(ILoadService<RESULT> nested);
-
-    void clearNestedService();
-
     RESULT evaluate() throws InvocationTargetException, InterruptedException;
 
-    boolean cancel();
+    boolean cancel() throws InvocationTargetException;
 
 }

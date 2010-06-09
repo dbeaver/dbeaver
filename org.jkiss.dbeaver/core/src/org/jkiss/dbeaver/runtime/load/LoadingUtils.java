@@ -8,9 +8,12 @@ import net.sf.jkiss.utils.BeanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /**
  * Loading utils
@@ -26,9 +29,23 @@ public class LoadingUtils {
         if (object == null) {
             return null;
         }
-        Object propertyValue;
         try {
-            propertyValue = BeanUtils.readObjectProperty(object, propertyName);
+            Method getter = findPropertyReadMethod(object.getClass(), propertyName);
+            if (getter == null) {
+                log.warn("Could not find property '" + propertyName + "' read method");
+                return null;
+            }
+            Class<?>[] paramTypes = getter.getParameterTypes();
+            if (paramTypes.length == 0) {
+                // No params - just read it
+                return getter.invoke(object);
+            } else if (paramTypes.length == 1 && paramTypes[0] == DBRProgressMonitor.class) {
+                // Read with progress monitor
+                return getter.invoke(object, loadService.getProgressMonitor());
+            } else {
+                log.warn("Could not read property '" + propertyName + "' - bad method signature: " + getter.toString());
+                return null;
+            }
         }
         catch (IllegalAccessException ex) {
             log.warn("Error accessing items " + propertyName, ex);
@@ -37,31 +54,36 @@ public class LoadingUtils {
         catch (InvocationTargetException ex) {
             throw new DBException("Error reading items " + propertyName, ex.getTargetException());
         }
-        if (propertyValue instanceof ILoadService) {
-            // Extract value using nested load service
-            ILoadService propService = (ILoadService)propertyValue;
-            loadService.setNestedService(propService);
-            try {
-                propertyValue = propService.evaluate();
-            }
-            catch (InvocationTargetException ex) {
-                throw new DBException("Error loading property: " + propertyName, ex.getTargetException());
-            }
-            catch (InterruptedException ex) {
-                log.info("Property '" + propertyName + "' load interrupted");
-                return null;
-            }
-            finally {
-                loadService.clearNestedService();
-            }
-        }
-        return propertyValue;
     }
 
-    public static void executeService(
-        ILoadService loadingService,
-        ILoadVisualizer visualizer)
+    private static Method findPropertyReadMethod(Class<?> clazz, String propertyName)
     {
-        new LoadingJob(loadingService, visualizer).schedule();
+        String methodName = BeanUtils.propertyNameToMethodName(propertyName);
+        String getName = "get" + methodName;
+        String isName = "is" + methodName;
+        Method[] methods = clazz.getMethods();
+
+        for (Method method : methods) {
+            if (
+                (!Modifier.isPublic(method.getModifiers())) ||
+                (!Modifier.isPublic(method.getDeclaringClass().getModifiers())) ||
+                (method.getReturnType().equals(void.class)))
+            {
+                // skip
+            } else if (method.getName().equals(getName)) {
+                // If it matches the get name, it's the right method
+                return method;
+            } else if (method.getName().equals(isName) && method.getReturnType().equals(boolean.class)) {
+                return method;
+            }
+        }
+        return null;
+    }
+
+    public static <RESULT> void executeService(
+        ILoadService<RESULT> loadingService,
+        ILoadVisualizer<RESULT> visualizer)
+    {
+        new LoadingJob<RESULT>(loadingService, visualizer).schedule();
     }
 }

@@ -406,7 +406,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
                 addr.append(':').append(connectionInfo.getHostPort());
             }
 
-            PropertyCollector props = new PropertyCollector(this);
+            PropertyCollector props = new PropertyCollector(this, false);
             props.addProperty("driverType", "Driver Type", driver.getName());
             if (info != null) {
                 //props.addProperty("driverName", "Driver Name", info.getDriverName() + " " + info.getDriverVersion());

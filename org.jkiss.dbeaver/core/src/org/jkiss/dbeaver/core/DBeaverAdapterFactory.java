@@ -43,7 +43,7 @@ public class DBeaverAdapterFactory implements IAdapterFactory
                 if (cached != null) {
                     return cached;
                 }
-                PropertyCollector props = new PropertyCollector((DBPObject)adaptableObject);
+                PropertyCollector props = new PropertyCollector((DBPObject)adaptableObject, true);
                 props.collectProperties();
                 if (props.isEmpty() && adaptableObject instanceof DBSObject) {
                     // Add default properties
@@ -53,6 +53,7 @@ public class DBeaverAdapterFactory implements IAdapterFactory
                 }
                 return props;
             } else if (adapterType == IWorkbenchAdapter.class) {
+                // Workbench adapter
                 if (adaptableObject instanceof DBSObject) {
                     final DBSObject dbObject = (DBSObject)adaptableObject;
                     return new IWorkbenchAdapter() {
@@ -84,34 +85,7 @@ public class DBeaverAdapterFactory implements IAdapterFactory
                     };
                 }
             }
-        }/* else if (adaptableObject instanceof ILoadService) {
-            if (adapterType == IPropertySource.class) {
-                return new IPropertySource() {
-                    public Object getEditableValue()
-                    {
-                        return ((ILoadService)adaptableObject).getServiceName();
-                    }
-                    public IPropertyDescriptor[] getPropertyDescriptors()
-                    {
-                        return new IPropertyDescriptor[0];
-                    }
-                    public Object getPropertyValue(Object id)
-                    {
-                        return null;
-                    }
-                    public boolean isPropertySet(Object id)
-                    {
-                        return false;
-                    }
-                    public void resetPropertyValue(Object id)
-                    {
-                    }
-                    public void setPropertyValue(Object id, Object value)
-                    {
-                    }
-                };
-            }
-        }*/
+        }
         return null;
     }
 

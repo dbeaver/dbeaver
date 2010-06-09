@@ -8,15 +8,30 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.ProgressBar;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertySource;
-import org.jkiss.dbeaver.core.DBeaverIcons;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.meta.DBMNode;
@@ -25,18 +40,19 @@ import org.jkiss.dbeaver.model.meta.DBMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
-import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.views.properties.PropertyAnnoDescriptor;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * ItemListControl
@@ -48,12 +64,7 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
     private final static int PROGRESS_MIN = 0;
     private final static int PROGRESS_MAX = 10;
 
-    private final static Image imgRotate1 = DBeaverIcons.getImage(DBIcon.ROTATE1);
-    private final static Image imgRotate2 = DBeaverIcons.getImage(DBIcon.ROTATE2);
-    private final static Image imgRotate3 = DBeaverIcons.getImage(DBIcon.ROTATE3);
-    private final static Image imgRotate4 = DBeaverIcons.getImage(DBIcon.ROTATE4);
-    private final static Image[] rotateImages = new Image[] {imgRotate1, imgRotate2, imgRotate3, imgRotate4};
-    private final static String[] rotateText = new String[] {"|", "/", "-", "\\"};
+    private final static Object LOADING_VALUE = new Object();
 
     private IWorkbenchPart workbenchPart;
     private DBMNode node;
@@ -191,7 +202,9 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
 
     public void fillData(DBXTreeNode metaNode)
     {
-        LoadingUtils.executeService(new ItemLoadService(metaNode), new ItemsLoadVisualizer());
+        LoadingUtils.executeService(
+            new ItemLoadService(metaNode),
+            new ItemsLoadVisualizer());
     }
 
     public ISelectionProvider getSelectionProvider()
@@ -321,7 +334,7 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
             if (cell.value instanceof DBSObject) {
                 return ((DBSObject)cell.value).getName();
             }
-            if (cell.value instanceof ILoadService) {
+            if (cell.value == LOADING_VALUE) {
                 return "...";
             }
             return UIUtils.makeStringForUI(cell.value).toString();
@@ -448,10 +461,14 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
                             {
                                 for (ItemCell item : lazyItems) {
                                     try {
-                                        item.value = ((ILoadService)item.value).evaluate();
+                                        item.value = item.prop.readValue(item.node.getObject(), getProgressMonitor());
                                     }
                                     catch (InvocationTargetException e) {
                                         log.warn(e.getTargetException());
+                                        item.value = "???";
+                                    }
+                                    catch (IllegalAccessException e) {
+                                        log.warn(e);
                                         item.value = "???";
                                     }
                                 }
@@ -498,19 +515,25 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
 
                     ItemListControl.this.columns.add(propColumn);
                 }
-                Object value = null;
-                try {
-                    value = descriptor.readValue(itemObject);
+                Object value;
+                if (descriptor.isLazy()) {
+                    value = LOADING_VALUE;
+                } else {
+                    try {
+                        value = descriptor.readValue(itemObject, null);
+                    }
+                    catch (IllegalAccessException e) {
+                        log.error(e);
+                        continue;
+                    }
+                    catch (InvocationTargetException e) {
+                        log.error(e.getTargetException());
+                        continue;
+                    }
                 }
-                catch (IllegalAccessException e) {
-                    log.error(e);
-                }
-                catch (InvocationTargetException e) {
-                    log.error(e.getTargetException());
-                }
-                ItemCell cell = new ItemCell(descriptor, value);
+                ItemCell cell = new ItemCell(item, descriptor, value);
                 cells.add(cell);
-                if (value instanceof ILoadService) {
+                if (descriptor.isLazy()) {
                     lazyItems.add(cell);
                 }
             }
@@ -527,7 +550,7 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
 
     }
 
-    private class ValuesLoadVisualizer implements ILoadVisualizer {
+    private class ValuesLoadVisualizer implements ILoadVisualizer<Object> {
 
         private boolean completed = false;
 

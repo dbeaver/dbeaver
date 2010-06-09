@@ -4,23 +4,28 @@
 
 package org.jkiss.dbeaver.ui.views.properties;
 
+import org.eclipse.ui.IPageLayout;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.part.IPage;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertySheet;
-import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.eclipse.ui.views.properties.tabbed.ISection;
-import org.eclipse.ui.part.IPage;
-import org.eclipse.ui.IPageLayout;
-import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.runtime.load.ILoadService;
+import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * PropertyCollector
@@ -28,19 +33,19 @@ import java.util.*;
 public class PropertySourceAbstract implements IPropertySource
 {
     private Object object;
-    private boolean loadLazyObjects;
+    private boolean loadLazyProps;
     private List<IPropertyDescriptor> props = new ArrayList<IPropertyDescriptor>();
     private Map<Object, Object> propValues = new HashMap<Object, Object>();
 
-    public PropertySourceAbstract(Object object)
-    {
-        this(object, true);
-    }
-
-    public PropertySourceAbstract(Object object, boolean loadLazyObjects)
+    /**
+     * constructs property source
+     * @param object object
+     * @param progressMonitor progress monitor. If null then no "lazy" properties will be extracted
+     */
+    public PropertySourceAbstract(Object object, boolean loadLazyProps)
     {
         this.object = object;
-        this.loadLazyObjects = loadLazyObjects;
+        this.loadLazyProps = loadLazyProps;
     }
 
     public PropertySourceAbstract addProperty(IPropertyDescriptor prop)
@@ -54,7 +59,7 @@ public class PropertySourceAbstract implements IPropertySource
     {
         if (value instanceof Collection) {
             props.add(new PropertyDescriptor(id, name));
-            propValues.put(id, new PropertySourceCollection(id, (Collection) value));
+            propValues.put(id, new PropertySourceCollection(id, loadLazyProps, (Collection) value));
         } else {
             props.add(new PropertyDescriptor(id, name));
             propValues.put(id, value);
@@ -82,24 +87,25 @@ public class PropertySourceAbstract implements IPropertySource
         Object value = propValues.get(id);
         if (value instanceof PropertyAnnoDescriptor) {
             try {
-                value = ((PropertyAnnoDescriptor)value).readValue(object);
+                PropertyAnnoDescriptor annoDescriptor = (PropertyAnnoDescriptor) value;
+                if (annoDescriptor.isLazy()) {
+                    if (!loadLazyProps) {
+                        return null;
+                    } else {
+                        // We assume that it can be called ONLY by properties viewer
+                        // So, start lazy loading job to update it after value will be loaded
+                        String loadText = "Loading";
+                        LoadingUtils.executeService(
+                            new PropertySheetLoadService(annoDescriptor),
+                            new PropertySheetLoadVisualizer(id, loadText));
+                        // Return dummy string for now
+                        return loadText;
+                    }
+                } else {
+                    value = annoDescriptor.readValue(object, null);
+                }
             } catch (Exception e) {
                 return e.getMessage();
-            }
-        }
-        if (value instanceof ILoadService) {
-            if (loadLazyObjects) {
-                final ILoadService loadService = (ILoadService) value;
-                String loadText = loadService.getServiceName();
-                // We assume that it can be called ONLY by properties viewer
-                // So, start lazy loading job to update it after value will be loaded
-                LoadingUtils.executeService(
-                    loadService,
-                    new PropertySheetLoadVisualizer(id, loadText));
-                // Return dummy string for now
-                return loadText;
-            } else {
-                return null;
             }
         }
         if (value instanceof Collection) {
@@ -124,7 +130,32 @@ public class PropertySourceAbstract implements IPropertySource
     {
     }
 
-    private class PropertySheetLoadVisualizer implements ILoadVisualizer {
+    private class PropertySheetLoadService extends AbstractLoadService<Object> {
+
+        private PropertyAnnoDescriptor annoDescriptor;
+        public PropertySheetLoadService(PropertyAnnoDescriptor annoDescriptor)
+        {
+            super("Loading");
+            this.annoDescriptor = annoDescriptor;
+        }
+
+        public Object evaluate()
+            throws InvocationTargetException, InterruptedException
+        {
+            try {
+                return annoDescriptor.readValue(object, getProgressMonitor());
+            } catch (Throwable ex) {
+                if (ex instanceof InvocationTargetException) {
+                    throw (InvocationTargetException)ex;
+                } else {
+                    throw new InvocationTargetException(ex);
+                }
+            }
+        }
+    }
+
+
+    private class PropertySheetLoadVisualizer implements ILoadVisualizer<Object> {
         private Object propertyId;
         private String loadText;
         private int callCount = 0;

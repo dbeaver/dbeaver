@@ -6,9 +6,12 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
+import org.jkiss.dbeaver.DBException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * JDBCUtils
@@ -161,4 +164,28 @@ public class JDBCUtils
         }
     }
 
+    public static DBRBlockingObject makeBlockingObject(Statement statement)
+    {
+        return new StatementBlockingObject(statement);
+    }
+
+    private static class StatementBlockingObject implements DBRBlockingObject {
+        private final Statement statement;
+
+        public StatementBlockingObject(Statement statement)
+        {
+            this.statement = statement;
+        }
+
+        public void cancelBlock()
+            throws DBException
+        {
+            try {
+                statement.cancel();
+            }
+            catch (SQLException e) {
+                throw new DBCException("Coud not cancel statement", e);
+            }
+        }
+    }
 }

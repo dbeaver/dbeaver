@@ -15,6 +15,7 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -32,11 +33,15 @@ public class PropertyAnnoDescriptor implements IPropertyDescriptor
     private Property propInfo;
     private Method getter;
     private Method setter;
+    private boolean isLazy;
 
     public PropertyAnnoDescriptor(Property propInfo, Method getter)
     {
         this.propInfo = propInfo;
         this.getter = getter;
+        if (getter.getParameterTypes().length == 1 && getter.getParameterTypes()[0] == DBRProgressMonitor.class) {
+            this.isLazy = true;
+        }
         this.id = BeanUtils.getPropertyNameFromGetter(getter.getName());
         this.setter = BeanUtils.getSetMethod(getter.getDeclaringClass(), id);
     }
@@ -63,6 +68,11 @@ public class PropertyAnnoDescriptor implements IPropertyDescriptor
     public boolean isViewable()
     {
         return propInfo == null || propInfo.viewable();
+    }
+
+    public boolean isLazy()
+    {
+        return isLazy;
     }
 
     public CellEditor createPropertyEditor(Composite parent)
@@ -166,14 +176,21 @@ public class PropertyAnnoDescriptor implements IPropertyDescriptor
         return propertyDescriptor != null && propertyDescriptor.isCompatibleWith(anotherProperty);
     }
 
-    public Object readValue(Object object)
+    public Object readValue(Object object, DBRProgressMonitor progressMonitor)
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         Object value;
         if (propertyDescriptor != null) {
             value = propertySource.getPropertyValue(propertyDescriptor.getId());
         } else {
-            value = getter.invoke(object);
+            if (isLazy) {
+                if (progressMonitor == null) {
+                    throw new IllegalAccessException("Can't read lazy poperties with null progress monitor");
+                }
+                value = getter.invoke(object, progressMonitor);
+            } else {
+                value = getter.invoke(object);
+            }
         }
         return value;
     }
@@ -208,7 +225,7 @@ public class PropertyAnnoDescriptor implements IPropertyDescriptor
         List<PropertyAnnoDescriptor> annoProps = new ArrayList<PropertyAnnoDescriptor>();
         for (Method method : methods) {
             final Property propInfo = method.getAnnotation(Property.class);
-            if (propInfo == null || !BeanUtils.isGetterName(method.getName()) || method.getReturnType() == null || method.getParameterTypes().length > 0) {
+            if (propInfo == null || !BeanUtils.isGetterName(method.getName()) || method.getReturnType() == null) {
                 continue;
             }
             PropertyAnnoDescriptor desc = new PropertyAnnoDescriptor(propInfo, method);

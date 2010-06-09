@@ -5,18 +5,22 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCLoadService;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.meta.AbstractTable;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.load.ILoadService;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
+import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
+import org.jkiss.dbeaver.model.struct.DBSConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,22 +44,25 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
     private List<GenericIndex> indexes;
     private List<GenericConstraint> constraints;
     private List<GenericForeignKey> foreignKeys;
+    private Long rowCount;
 
-    private final ILoadService<Long> rowCountLoader = new JDBCLoadService<Long>("Load row count", this, true) {
-        public Long evaluateQuery(Statement statement)
-            throws InvocationTargetException, InterruptedException, DBException, SQLException
-        {
-            ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM " + getFullQualifiedName());
-            try {
-                resultSet.next();
-                return resultSet.getLong(1);
+    /*
+        private final ILoadService<Long> rowCountLoader = new JDBCLoadService<Long>("Load row count", this, true) {
+            public Long evaluateQuery(Statement statement)
+                throws InvocationTargetException, InterruptedException, DBException, SQLException
+            {
+                ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM " + getFullQualifiedName());
+                try {
+                    resultSet.next();
+                    return resultSet.getLong(1);
+                }
+                finally {
+                    resultSet.close();
+                }
             }
-            finally {
-                resultSet.close();
-            }
-        }
-    };
+        };
 
+    */
     public GenericTable(
         GenericStructureContainer container,
         String tableName,
@@ -195,9 +202,36 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
     }
 
     @Property(name = "Row Count", viewable = true, order = 5)
-    public ILoadService<Long> getRowCount()
+    public long getRowCount(DBRProgressMonitor monitor)
+        throws DBCException
     {
-        return rowCountLoader;
+        if (rowCount != null) {
+            return rowCount;
+        }
+
+        try {
+            PreparedStatement statement = getDataSource().getConnection().prepareStatement(
+                "SELECT COUNT(*) FROM " + getFullQualifiedName());
+            monitor.startBlock(JDBCUtils.makeBlockingObject(statement));
+            try {
+                ResultSet resultSet = statement.executeQuery();
+                try {
+                    resultSet.next();
+                    rowCount = resultSet.getLong(1);
+                }
+                finally {
+                    resultSet.close();
+                }
+            }
+            finally {
+                monitor.endBlock();
+            }
+        }
+        catch (SQLException e) {
+            throw new DBCException(e);
+        }
+
+        return rowCount;
     }
 
     private List<GenericTableColumn> loadColumns()

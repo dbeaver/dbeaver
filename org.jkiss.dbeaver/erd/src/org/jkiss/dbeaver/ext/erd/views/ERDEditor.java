@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaEdge;
 import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaLayouter;
 import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaNode;
 import org.jkiss.dbeaver.ext.ui.IObjectEditor;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -397,7 +396,7 @@ public class ERDEditor extends EditorPart implements IObjectEditor
         }
     }
 
-    private class GraphLoadVisualizer implements ILoadVisualizer {
+    private class GraphLoadVisualizer implements ILoadVisualizer<Object> {
 
         private boolean completed = false;
         private int loadCount = 0;
