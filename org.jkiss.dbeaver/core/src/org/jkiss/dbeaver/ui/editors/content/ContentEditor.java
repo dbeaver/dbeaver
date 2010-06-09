@@ -25,7 +25,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
@@ -120,7 +119,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         // Save data to file
         try {
             LOBInitializer initializer = new LOBInitializer(valueController, editorParts);
-            DBeaverCore.getInstance().run(true, true, initializer);
+            valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
             editorInput = initializer.editorInput;
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {

@@ -13,7 +13,7 @@ public class NewConnectionDialog extends ConnectionDialog<NewConnectionDialog>
 {
     public NewConnectionDialog(IWorkbenchWindow window)
     {
-        super(window, new NewConnectionWizard());
+        super(window, new NewConnectionWizard(window));
     }
 
     protected NewConnectionWizard getWizard()

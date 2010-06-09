@@ -4,13 +4,18 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.ui.DBeaverExtensions;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -25,6 +30,7 @@ import java.util.Map;
 
 public class NewConnectionWizard extends ConnectionWizard
 {
+    private IWorkbenchWindow window;
     private DataSourceRegistry registry;
     private List<DataSourceProviderDescriptor> availableProvides = new ArrayList<DataSourceProviderDescriptor>();
     private ConnectionPageDriver pageDrivers;
@@ -33,12 +39,14 @@ public class NewConnectionWizard extends ConnectionWizard
 
     /**
      * Constructor for SampleNewWizard.
+     * @param window
      */
-    NewConnectionWizard()
+    NewConnectionWizard(IWorkbenchWindow window)
     {
         super();
         setWindowTitle("Create new connection");
         setNeedsProgressMonitor(true);
+        this.window = window;
         this.registry = DataSourceRegistry.getDefault();
     }
 
@@ -89,23 +97,15 @@ public class NewConnectionWizard extends ConnectionWizard
         addPage(pageDrivers);
 
         try {
-            registry.getCore().run(true, true, new DBRRunnableWithProgress()
+            window.getWorkbench().getProgressService().run(true, true, new IRunnableWithProgress()
             {
-                public void run(DBRProgressMonitor monitor)
+                public void run(IProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
-/*
-                    monitor.beginTask("Load data sources", 10);
-                    for (int i = 0; i < 10; i++) {
-                        Thread.sleep(500);
-                        monitor.worked(1);
-                        monitor.subTask("DS " + i);
-                    }
-                    monitor.done();
-*/
                     List<DataSourceProviderDescriptor> providers = registry.getDataSourceProviders();
                     monitor.beginTask("Load data sources", providers.size());
                     for (DataSourceProviderDescriptor provider : registry.getDataSourceProviders()) {
+                        monitor.subTask(provider.getName());
                         DataSourceViewDescriptor view = provider.getView(DBeaverExtensions.NEW_CONNECTION_POINT);
                         if (view == null) {
                             continue;

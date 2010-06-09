@@ -33,7 +33,6 @@ import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.actions.SimpleAction;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
-import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -170,7 +169,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                             Combo combo = (Combo) e.widget;
                             final String charset = combo.getItem(combo.getSelectionIndex());
                             try {
-                                DBeaverCore.getInstance().run(false, false, new IRunnableWithProgress() {
+                                contentEditor.getSite().getWorkbenchWindow().run(false, false, new IRunnableWithProgress() {
                                     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                                         try {
                                             contentEditorInput.getFile().setCharset(charset, monitor);
@@ -236,7 +235,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                 }
             }
             try {
-                DBeaverCore.getInstance().run(true, true, new IRunnableWithProgress() {
+                getEditor().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
                     public void run(IProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
@@ -287,7 +286,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                 return;
             }
             try {
-                DBeaverCore.getInstance().run(true, true, new IRunnableWithProgress() {
+                getEditor().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
                     public void run(IProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
@@ -338,7 +337,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         public void run()
         {
             try {
-                DBeaverCore.getInstance().run(true, true, new IRunnableWithProgress() {
+                getEditor().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
                     public void run(IProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
