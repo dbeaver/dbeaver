@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -97,7 +98,7 @@ public class NewConnectionWizard extends ConnectionWizard
         addPage(pageDrivers);
 
         try {
-            window.getWorkbench().getProgressService().run(true, true, new IRunnableWithProgress()
+            DBeaverCore.getInstance().run(true, true, new IRunnableWithProgress()
             {
                 public void run(IProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
