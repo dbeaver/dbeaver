@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.meta;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -43,7 +44,7 @@ public abstract class AbstractCatalog<DATASOURCE extends DBPDataSource> implemen
         this.catalogName = catalogName;
     }
 
-    public Collection<? extends DBSSchema> getSchemas()
+    public Collection<? extends DBSSchema> getSchemas(DBRProgressMonitor monitor)
         throws DBException
     {
         return null;
@@ -54,7 +55,7 @@ public abstract class AbstractCatalog<DATASOURCE extends DBPDataSource> implemen
         return getDataSource().getContainer();
     }
 
-    public boolean refreshObject()
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;

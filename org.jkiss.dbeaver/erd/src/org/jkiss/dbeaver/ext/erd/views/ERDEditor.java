@@ -305,11 +305,11 @@ public class ERDEditor extends EditorPart implements IObjectEditor
         }
 
         // Layot tables
-        layoutTables(tables);
+        layoutTables(monitor, tables);
 
         // Add links
         for (ERDTable table : tables) {
-            for (DBSForeignKey foreignKey : table.getTable().getImportedKeys()) {
+            for (DBSForeignKey foreignKey : table.getTable().getImportedKeys(monitor)) {
                 DBSTable refTable = foreignKey.getReferencedKey().getTable();
 
                 ERDTable refTableNode = null;
@@ -358,7 +358,7 @@ public class ERDEditor extends EditorPart implements IObjectEditor
         graphModel.insert(cells.toArray(), attributes, cs, null, null);
     }
 
-    private void layoutTables(List<ERDTable> tables)
+    private void layoutTables(DBRProgressMonitor monitor, List<ERDTable> tables)
         throws DBException
     {
         // Set table properties
@@ -369,7 +369,7 @@ public class ERDEditor extends EditorPart implements IObjectEditor
 
         int colIndex = 0, rowIndex = 0;
         for (ERDTable table : tables) {
-            table.calculateContent(graphics);
+            table.calculateContent(monitor, graphics);
             int tableWidth = table.getRectWidth(), tableHeight = table.getRectHeight();
 
             // Set bounds

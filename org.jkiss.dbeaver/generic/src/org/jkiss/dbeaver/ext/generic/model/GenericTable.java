@@ -118,22 +118,22 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         return getContainer().getSchema();
     }
 
-    public List<GenericTableColumn> getColumns()
+    public List<GenericTableColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {
-            this.columns = loadColumns();
+            this.columns = loadColumns(monitor);
         }
         return columns;
     }
 
-    public GenericTableColumn getColumn(String columnName)
+    public GenericTableColumn getColumn(DBRProgressMonitor monitor, String columnName)
         throws DBException
     {
-        return DBSUtils.findObject(getColumns(), columnName);
+        return DBSUtils.findObject(getColumns(monitor), columnName);
     }
 
-    public List<GenericIndex> getIndexes()
+    public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
 /*
@@ -145,37 +145,37 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         }
 */
         if (indexes == null) {
-            indexes = loadIndexes();
+            indexes = loadIndexes(monitor);
         }
         return indexes;
     }
 
-    public GenericIndex getIndex(String indexName)
+    public GenericIndex getIndex(DBRProgressMonitor monitor, String indexName)
         throws DBException
     {
-        return DBSUtils.findObject(getIndexes(), indexName);
+        return DBSUtils.findObject(getIndexes(monitor), indexName);
     }
 
-    public List<? extends GenericConstraint> getConstraints()
+    public List<? extends GenericConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
         if (constraints == null) {
-            constraints = loadConstraints();
+            constraints = loadConstraints(monitor);
         }
         return constraints;
     }
 
-    public List<GenericForeignKey> getExportedKeys()
+    public List<GenericForeignKey> getExportedKeys(DBRProgressMonitor monitor)
         throws DBException
     {
-        return loadForeignKeys(true);
+        return loadForeignKeys(monitor, true);
     }
 
-    public List<GenericForeignKey> getImportedKeys()
+    public List<GenericForeignKey> getImportedKeys(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null) {
-            foreignKeys = loadForeignKeys(false);
+            foreignKeys = loadForeignKeys(monitor, false);
         }
         return foreignKeys;
     }
@@ -185,7 +185,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         return null;
     }
 
-    public boolean refreshObject()
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;
@@ -239,9 +239,10 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         return rowCount;
     }
 
-    private List<GenericTableColumn> loadColumns()
+    private List<GenericTableColumn> loadColumns(DBRProgressMonitor monitor)
         throws DBException
     {
+        monitor.beginTask("Loading table columns", 1);
         try {
             List<GenericTableColumn> tmpColumns = new ArrayList<GenericTableColumn>();
 
@@ -292,13 +293,16 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         catch (SQLException ex) {
             throw new DBException(ex);
         }
+        finally {
+            monitor.done();
+        }
     }
 
-    private List<GenericIndex> loadIndexes()
+    private List<GenericIndex> loadIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         // Load columns first
-        getColumns();
+        getColumns(monitor);
         // Load index columns
         try {
             List<GenericIndex> tmpIndexList = new ArrayList<GenericIndex>();
@@ -345,7 +349,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                         tmpIndexList.add(index);
                         tmpIndexMap.put(indexName, index);
                     }
-                    GenericTableColumn tableColumn = this.getColumn(columnName);
+                    GenericTableColumn tableColumn = this.getColumn(monitor, columnName);
                     if (tableColumn == null) {
                         log.warn("Column '" + columnName + "' not found in table '" + this.getName() + "'");
                         continue;
@@ -367,9 +371,10 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         }
     }
 
-    private List<GenericConstraint> loadConstraints()
+    private List<GenericConstraint> loadConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
+        monitor.beginTask("Loading contraints", 1);
         try {
             List<GenericConstraint> pkList = new ArrayList<GenericConstraint>();
             Map<String, GenericConstraint> pkMap = new HashMap<String, GenericConstraint>();
@@ -398,7 +403,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                         // Bad index - can't evaluate it
                         continue;
                     }
-                    GenericTableColumn tableColumn = this.getColumn(columnName);
+                    GenericTableColumn tableColumn = this.getColumn(monitor, columnName);
                     if (tableColumn == null) {
                         log.warn("Column '" + columnName + "' not found in table '" + this.getName() + "' for PK");
                         continue;
@@ -416,10 +421,12 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
             return pkList;
         } catch (SQLException ex) {
             throw new DBException(ex);
+        } finally {
+            monitor.done();
         }
     }
 
-    private List<GenericForeignKey> loadForeignKeys(boolean exported)
+    private List<GenericForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean exported)
         throws DBException
     {
         try {
@@ -468,23 +475,23 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                     }
 
                     String pkTableFullName = DBSUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
-                    GenericTable pkTable = getDataSource().findTable(pkTableCatalog, pkTableSchema, pkTableName);
+                    GenericTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableSchema, pkTableName);
                     if (pkTable == null) {
                         log.warn("Can't find PK table " + pkTableFullName);
                         continue;
                     }
                     String fkTableFullName = DBSUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName);
-                    GenericTable fkTable = getDataSource().findTable(fkTableCatalog, fkTableSchema, fkTableName);
+                    GenericTable fkTable = getDataSource().findTable(monitor, fkTableCatalog, fkTableSchema, fkTableName);
                     if (fkTable == null) {
                         log.warn("Can't find FK table " + fkTableFullName);
                         continue;
                     }
-                    GenericTableColumn pkColumn = pkTable.getColumn(pkColumnName);
+                    GenericTableColumn pkColumn = pkTable.getColumn(monitor, pkColumnName);
                     if (pkColumn == null) {
                         log.warn("Can't find PK table " + DBSUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName) + " column " + pkColumnName);
                         continue;
                     }
-                    GenericTableColumn fkColumn = fkTable.getColumn(fkColumnName);
+                    GenericTableColumn fkColumn = fkTable.getColumn(monitor, fkColumnName);
                     if (fkColumn == null) {
                         log.warn("Can't find FK table " + DBSUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName) + " column " + fkColumnName);
                         continue;
@@ -530,6 +537,6 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
     public void cacheStructure(DBRProgressMonitor monitor)
         throws DBException
     {
-        getColumns();
+        getColumns(monitor);
     }
 }

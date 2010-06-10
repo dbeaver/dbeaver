@@ -4,6 +4,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * ERDTableColumn
@@ -15,7 +16,7 @@ public class ERDTableColumn implements Comparable<ERDTableColumn> {
     private String name;
     private int keyNumber;
 
-    public ERDTableColumn(ERDTable table, DBSTableColumn metaColumn)
+    public ERDTableColumn(DBRProgressMonitor monitor, ERDTable table, DBSTableColumn metaColumn)
         throws DBException
     {
         this.table = table;
@@ -23,7 +24,7 @@ public class ERDTableColumn implements Comparable<ERDTableColumn> {
         this.name = metaColumn.getName();
         this.keyNumber = 0;
         // Try to get key number from primary key constraint metaColumn
-        DBSConstraint primaryKey = table.getPrimaryKey();
+        DBSConstraint primaryKey = table.getPrimaryKey(monitor);
         if (primaryKey != null) {
             for (DBSConstraintColumn constrCol : primaryKey.getColumns()) {
                 if (constrCol.getTableColumn().equals(metaColumn)) {

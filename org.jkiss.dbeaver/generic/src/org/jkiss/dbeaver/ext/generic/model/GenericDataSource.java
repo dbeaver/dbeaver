@@ -117,7 +117,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         return info;
     }
 
-    public List<GenericCatalog> getCatalogs()
+    public List<GenericCatalog> getCatalogs(DBRProgressMonitor monitor)
     {
         return catalogs;
     }
@@ -132,19 +132,19 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         }
     }
 
-    public GenericCatalog getCatalog(String name)
+    public GenericCatalog getCatalog(DBRProgressMonitor monitor, String name)
     {
-        return DBSUtils.findObject(getCatalogs(), name);
+        return DBSUtils.findObject(getCatalogs(monitor), name);
     }
 
-    public List<GenericSchema> getSchemas()
+    public List<GenericSchema> getSchemas(DBRProgressMonitor monitor)
     {
         return schemas;
     }
 
-    public GenericSchema getSchema(String name)
+    public GenericSchema getSchema(DBRProgressMonitor monitor, String name)
     {
-        return DBSUtils.findObject(getSchemas(), name);
+        return DBSUtils.findObject(getSchemas(monitor), name);
     }
 
     public void checkConnection()
@@ -331,7 +331,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         return this;
     }
 
-    public boolean refreshObject()
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;
@@ -352,12 +352,12 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         return container;
     }
 
-    GenericTable findTable(String catalogName, String schemaName, String tableName)
+    GenericTable findTable(DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)
         throws DBException
     {
         GenericStructureContainer container = this;
         if (!CommonUtils.isEmpty(catalogName)) {
-            container = getCatalog(catalogName);
+            container = getCatalog(monitor, catalogName);
             if (container == null) {
                 log.error("Catalog " + catalogName + " not found");
                 return null;
@@ -367,35 +367,35 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
             if (container instanceof GenericCatalog) {
                 container = ((GenericCatalog)container).getSchema(schemaName);
             } else {
-                container = this.getSchema(schemaName);
+                container = this.getSchema(monitor, schemaName);
             }
             if (container == null) {
                 log.error("Schema " + schemaName + " not found");
                 return null;
             }
         }
-        return container.getTable(tableName);
+        return container.getTable(monitor, tableName);
     }
 
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!CommonUtils.isEmpty(getCatalogs())) {
-            return getCatalogs();
-        } else if (!CommonUtils.isEmpty(getSchemas())) {
-            return getSchemas();
+        if (!CommonUtils.isEmpty(getCatalogs(monitor))) {
+            return getCatalogs(monitor);
+        } else if (!CommonUtils.isEmpty(getSchemas(monitor))) {
+            return getSchemas(monitor);
         } else {
-            return getTables();
+            return getTables(monitor);
         }
     }
 
     public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
-        if (!CommonUtils.isEmpty(getCatalogs())) {
-            return getCatalog(childName);
-        } else if (!CommonUtils.isEmpty(getSchemas())) {
-            return getSchema(childName);
+        if (!CommonUtils.isEmpty(getCatalogs(monitor))) {
+            return getCatalog(monitor, childName);
+        } else if (!CommonUtils.isEmpty(getSchemas(monitor))) {
+            return getSchema(monitor, childName);
         } else {
             return super.getChild(monitor, childName);
         }
@@ -405,9 +405,9 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         throws DBException
     {
         if (object instanceof GenericCatalog) {
-            return getCatalogs().contains(GenericCatalog.class.cast(object));
+            return getCatalogs(monitor).contains(GenericCatalog.class.cast(object));
         } else if (object instanceof GenericSchema) {
-            return getSchemas().contains(GenericSchema.class.cast(object));
+            return getSchemas(monitor).contains(GenericSchema.class.cast(object));
         }
         return false;
     }

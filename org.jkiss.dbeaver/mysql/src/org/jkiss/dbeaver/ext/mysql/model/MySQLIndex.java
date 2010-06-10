@@ -6,6 +6,7 @@ import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
 import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -119,7 +120,7 @@ public class MySQLIndex extends AbstractIndex
         columns.add(column);
     }
 
-    public boolean refreshObject()
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;

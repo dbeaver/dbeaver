@@ -41,32 +41,32 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
 
     public abstract DBSObject getObject();
 
-    public List<GenericTable> getTables()
+    public List<GenericTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
         if (tableList == null) {
-            loadTables();
+            loadTables(monitor);
         }
         return tableList;
     }
 
-    public GenericTable getTable(String name)
+    public GenericTable getTable(DBRProgressMonitor monitor, String name)
         throws DBException
     {
         if (tableMap == null) {
-            loadTables();
+            loadTables(monitor);
         }
         return tableMap.get(name);
     }
 
-    public List<GenericIndex> getIndexes()
+    public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         // Copy indexes from tables because we do not want
         // to place the same objects in different places of the tree model
         List<GenericIndex> indexList = new ArrayList<GenericIndex>();
-        for (GenericTable table : getTables()) {
-            for (GenericIndex index : table.getIndexes()) {
+        for (GenericTable table : getTables(monitor)) {
+            for (GenericIndex index : table.getIndexes(monitor)) {
                 indexList.add(new GenericIndex(index));
             }
         }
@@ -87,9 +87,10 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         return procedures;
     }
 
-    private void loadTables()
+    private void loadTables(DBRProgressMonitor monitor)
         throws DBException
     {
+        monitor.beginTask("Load tables", 1);
         List<GenericTable> tmpTableList = new ArrayList<GenericTable>();
         Map<String, GenericTable> tmpTableMap = new HashMap<String, GenericTable>();
         try {
@@ -119,11 +120,11 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                     String typeSchemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_SCHEM);
                     GenericCatalog typeCatalog = CommonUtils.isEmpty(typeCatalogName) ?
                         null :
-                        getDataSource().getCatalog(typeCatalogName);
+                        getDataSource().getCatalog(monitor, typeCatalogName);
                     GenericSchema typeSchema = CommonUtils.isEmpty(typeSchemaName) ?
                         null :
                         typeCatalog == null ?
-                            getDataSource().getSchema(typeSchemaName) :
+                            getDataSource().getSchema(monitor, typeSchemaName) :
                             typeCatalog.getSchema(typeSchemaName);
                     GenericTable table = new GenericTable(
                         this,
@@ -135,6 +136,8 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                         typeSchema);
                     tmpTableList.add(table);
                     tmpTableMap.put(tableName, table);
+
+                    monitor.subTask(tableName);
                 }
             }
             finally {
@@ -143,6 +146,9 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         }
         catch (SQLException ex) {
             throw new DBException(ex);
+        }
+        finally {
+            monitor.done();
         }
         this.tableList = tmpTableList;
         this.tableMap = tmpTableMap;
@@ -194,7 +200,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         this.procedures = tmpProcedureList;
     }
 
-    public List<DBSTablePath> findTableNames(String tableMask, int maxResults) throws DBException
+    public List<DBSTablePath> findTableNames(DBRProgressMonitor monitor, String tableMask, int maxResults) throws DBException
     {
         List<DBSTablePath> pathList = new ArrayList<DBSTablePath>();
         try {
@@ -243,7 +249,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getTables();
+        return getTables(monitor);
     }
 
     public DBSObject getChild(DBRProgressMonitor monitor, String childName)

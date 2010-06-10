@@ -4,6 +4,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.meta.AbstractColumn;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * GenericTable
@@ -83,7 +84,7 @@ public class GenericTableColumn extends AbstractColumn implements DBSTableColumn
         return charLength;
     }
 
-    public boolean refreshObject()
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;

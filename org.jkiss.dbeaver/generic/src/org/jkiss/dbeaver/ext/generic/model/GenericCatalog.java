@@ -52,7 +52,7 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
         return this;
     }
 
-    public List<GenericSchema> getSchemas()
+    public List<GenericSchema> getSchemas(DBRProgressMonitor monitor)
         throws DBException
     {
         if (schemas == null && !isInitialized) {
@@ -82,7 +82,7 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
         return getDataSource().getContainer();
     }
 
-    public boolean refreshObject()
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;
@@ -123,17 +123,17 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!CommonUtils.isEmpty(getSchemas())) {
-            return getSchemas();
+        if (!CommonUtils.isEmpty(getSchemas(monitor))) {
+            return getSchemas(monitor);
         } else {
-            return getTables();
+            return getTables(monitor);
         }
     }
 
     public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
-        if (!CommonUtils.isEmpty(getSchemas())) {
+        if (!CommonUtils.isEmpty(getSchemas(monitor))) {
             return getSchema(childName);
         } else {
             return super.getChild(monitor, childName);

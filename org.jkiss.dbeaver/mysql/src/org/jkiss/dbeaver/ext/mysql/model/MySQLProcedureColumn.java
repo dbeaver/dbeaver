@@ -6,6 +6,7 @@ import org.jkiss.dbeaver.model.impl.meta.AbstractColumn;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumn;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * GenericTable
@@ -64,7 +65,7 @@ public class MySQLProcedureColumn extends AbstractColumn implements DBSProcedure
         return columnType;
     }
 
-    public boolean refreshObject()
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;

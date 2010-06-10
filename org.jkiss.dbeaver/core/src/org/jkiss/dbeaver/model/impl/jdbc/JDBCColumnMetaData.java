@@ -197,7 +197,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
         if (tableMetaData == null) {
             return null;
         }
-        tableColumn = tableMetaData.getTable(monitor).getColumn(name);
+        tableColumn = tableMetaData.getTable(monitor).getColumn(monitor, name);
         return tableColumn;
     }
 
@@ -207,7 +207,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
         if (getTableColumn(monitor) == null) {
             return false;
         }
-        Collection<? extends DBSForeignKey> foreignKeys = getTable().getTable(monitor).getImportedKeys();
+        Collection<? extends DBSForeignKey> foreignKeys = getTable().getTable(monitor).getImportedKeys(monitor);
         for (DBSForeignKey fk : foreignKeys) {
             if (fk.getColumn(tableColumn) != null) {
                 return true;

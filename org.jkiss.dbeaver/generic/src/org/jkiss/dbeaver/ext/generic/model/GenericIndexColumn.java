@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.meta.AbstractIndexColumn;
 import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * GenericIndexColumn
@@ -75,7 +76,7 @@ public class GenericIndexColumn extends AbstractIndexColumn
         return index.getDataSource();
     }
 
-    public boolean refreshObject()
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;

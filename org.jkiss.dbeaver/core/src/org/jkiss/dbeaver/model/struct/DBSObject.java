@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Meta object
@@ -45,8 +46,9 @@ public interface DBSObject extends DBPNamedObject
      * @return true if object refreshed and false if parent object have to be refreshed
      * to perform requested operation
      * @throws org.jkiss.dbeaver.DBException on error
+     * @param monitor
      */
-    boolean refreshObject()
+    boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException;
 
 }

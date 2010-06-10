@@ -57,7 +57,7 @@ public class DBMTreeItem extends DBMTreeNode
     public DBMNode refreshNode(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (object.refreshObject()) {
+        if (object.refreshObject(monitor)) {
             this.clearChildren();
             return this;
         } else if (this.getParentNode() != null) {

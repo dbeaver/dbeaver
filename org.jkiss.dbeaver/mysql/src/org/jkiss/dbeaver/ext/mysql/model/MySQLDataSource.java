@@ -111,13 +111,13 @@ public class MySQLDataSource extends AbstractDataSource implements DBSStructureA
         }
     }
 
-    public boolean refreshObject()
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;
     }
 
-    MySQLTable findTable(String catalogName, String tableName)
+    MySQLTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName)
         throws DBException
     {
         if (CommonUtils.isEmpty(catalogName)) {
@@ -128,7 +128,7 @@ public class MySQLDataSource extends AbstractDataSource implements DBSStructureA
             log.error("Catalog " + catalogName + " not found");
             return null;
         }
-        return catalog.getTable(tableName);
+        return catalog.getTable(monitor, tableName);
     }
 
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
@@ -203,7 +203,7 @@ public class MySQLDataSource extends AbstractDataSource implements DBSStructureA
         this.activeCatalog = (MySQLCatalog) child;
     }
 
-    public List<DBSTablePath> findTableNames(String tableMask, int maxResults)
+    public List<DBSTablePath> findTableNames(DBRProgressMonitor monitor, String tableMask, int maxResults)
         throws DBException
     {
         List<DBSTablePath> pathList = new ArrayList<DBSTablePath>();

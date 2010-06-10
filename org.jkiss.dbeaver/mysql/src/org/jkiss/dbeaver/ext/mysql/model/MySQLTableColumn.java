@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.model.impl.meta.AbstractColumn;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 
@@ -81,7 +82,7 @@ public class MySQLTableColumn extends AbstractColumn implements DBSTableColumn
         return charLength;
     }
 
-    public boolean refreshObject()
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;

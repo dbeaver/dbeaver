@@ -73,7 +73,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         return this.isSystem;
     }
 
-    public List<MySQLTableColumn> getColumns()
+    public List<MySQLTableColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {
@@ -82,52 +82,52 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         return columns;
     }
 
-    public MySQLTableColumn getColumn(String columnName)
+    public MySQLTableColumn getColumn(DBRProgressMonitor monitor, String columnName)
         throws DBException
     {
-        return DBSUtils.findObject(getColumns(), columnName);
+        return DBSUtils.findObject(getColumns(monitor), columnName);
     }
 
-    public List<MySQLIndex> getIndexes()
+    public List<MySQLIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         if (indexes == null) {
-            indexes = loadIndexes();
+            indexes = loadIndexes(monitor);
         }
         return indexes;
     }
 
-    public MySQLIndex getIndex(String indexName)
+    public MySQLIndex getIndex(DBRProgressMonitor monitor, String indexName)
         throws DBException
     {
-        return DBSUtils.findObject(getIndexes(), indexName);
+        return DBSUtils.findObject(getIndexes(monitor), indexName);
     }
 
-    public List<? extends AbstractConstraint<MySQLDataSource, MySQLTable>> getConstraints()
+    public List<? extends AbstractConstraint<MySQLDataSource, MySQLTable>> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
         if (constraints == null) {
-            constraints = loadConstraints();
+            constraints = loadConstraints(monitor);
         }
         return constraints;
     }
 
-    public List<MySQLForeignKey> getExportedKeys()
+    public List<MySQLForeignKey> getExportedKeys(DBRProgressMonitor monitor)
         throws DBException
     {
-        return loadForeignKeys(true);
+        return loadForeignKeys(monitor, true);
     }
 
-    public List<MySQLForeignKey> getImportedKeys()
+    public List<MySQLForeignKey> getImportedKeys(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null) {
-            foreignKeys = loadForeignKeys(false);
+            foreignKeys = loadForeignKeys(monitor, false);
         }
         return foreignKeys;
     }
 
-    public boolean refreshObject()
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;
@@ -233,11 +233,11 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
-    private List<MySQLIndex> loadIndexes()
+    private List<MySQLIndex> loadIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         // Load columns first
-        getColumns();
+        getColumns(monitor);
         // Load index columns
         try {
             List<MySQLIndex> tmpIndexList = new ArrayList<MySQLIndex>();
@@ -284,7 +284,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                         tmpIndexList.add(index);
                         tmpIndexMap.put(indexName, index);
                     }
-                    MySQLTableColumn tableColumn = this.getColumn(columnName);
+                    MySQLTableColumn tableColumn = this.getColumn(monitor, columnName);
                     if (tableColumn == null) {
                         log.warn("Column '" + columnName + "' not found in table '" + this.getName() + "'");
                         continue;
@@ -306,7 +306,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
-    private List<MySQLConstraint> loadConstraints()
+    private List<MySQLConstraint> loadConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
         try {
@@ -337,7 +337,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                         // Bad index - can't evaluate it
                         continue;
                     }
-                    MySQLTableColumn tableColumn = this.getColumn(columnName);
+                    MySQLTableColumn tableColumn = this.getColumn(monitor, columnName);
                     if (tableColumn == null) {
                         log.warn("Column '" + columnName + "' not found in table '" + this.getName() + "' for PK");
                         continue;
@@ -358,7 +358,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
-    private List<MySQLForeignKey> loadForeignKeys(boolean exported)
+    private List<MySQLForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean exported)
         throws DBException
     {
         try {
@@ -407,23 +407,23 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                     }
 
                     String pkTableFullName = DBSUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
-                    MySQLTable pkTable = getDataSource().findTable(pkTableCatalog, pkTableName);
+                    MySQLTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableName);
                     if (pkTable == null) {
                         log.warn("Can't find PK table " + pkTableFullName);
                         continue;
                     }
                     String fkTableFullName = DBSUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName);
-                    MySQLTable fkTable = getDataSource().findTable(fkTableCatalog, fkTableName);
+                    MySQLTable fkTable = getDataSource().findTable(monitor, fkTableCatalog, fkTableName);
                     if (fkTable == null) {
                         log.warn("Can't find FK table " + fkTableFullName);
                         continue;
                     }
-                    MySQLTableColumn pkColumn = pkTable.getColumn(pkColumnName);
+                    MySQLTableColumn pkColumn = pkTable.getColumn(monitor, pkColumnName);
                     if (pkColumn == null) {
                         log.warn("Can't find PK table " + DBSUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName) + " column " + pkColumnName);
                         continue;
                     }
-                    MySQLTableColumn fkColumn = fkTable.getColumn(fkColumnName);
+                    MySQLTableColumn fkColumn = fkTable.getColumn(monitor, fkColumnName);
                     if (fkColumn == null) {
                         log.warn("Can't find FK table " + DBSUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName) + " column " + fkColumnName);
                         continue;
@@ -469,7 +469,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
     public void cacheStructure(DBRProgressMonitor monitor)
         throws DBException
     {
-        getColumns();
+        getColumns(monitor);
     }
 
 }

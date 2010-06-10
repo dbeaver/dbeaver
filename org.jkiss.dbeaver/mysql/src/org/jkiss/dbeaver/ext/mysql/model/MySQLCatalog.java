@@ -88,50 +88,51 @@ public class MySQLCatalog
         this.tableMap = tableMap;
     }
 
-    public List<MySQLIndex> getIndexes()
+    public List<MySQLIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         // Copy indexes from tables because we do not want
         // to place the same objects in different places of the tree model
         List<MySQLIndex> indexList = new ArrayList<MySQLIndex>();
-        for (MySQLTable table : getTables()) {
-            for (MySQLIndex index : table.getIndexes()) {
+        for (MySQLTable table : getTables(monitor)) {
+            for (MySQLIndex index : table.getIndexes(monitor)) {
                 indexList.add(new MySQLIndex(index));
             }
         }
         return indexList;
     }
 
-    public List<MySQLTable> getTables()
+    public List<MySQLTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
         if (tableList == null) {
-            loadTables();
+            loadTables(monitor);
         }
         return tableList;
     }
 
-    public MySQLTable getTable(String name)
+    public MySQLTable getTable(DBRProgressMonitor monitor, String name)
         throws DBException
     {
         if (tableMap == null) {
-            loadTables();
+            loadTables(monitor);
         }
         return tableMap.get(name);
     }
 
-    public List<MySQLProcedure> getProcedures()
+    public List<MySQLProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         if (procedures == null) {
-            loadProcedures();
+            loadProcedures(monitor);
         }
         return procedures;
     }
 
-    private void loadTables()
+    private void loadTables(DBRProgressMonitor monitor)
         throws DBException
     {
+        monitor.beginTask("Loading table", 1);
         List<MySQLTable> tmpTableList = new ArrayList<MySQLTable>();
         Map<String, MySQLTable> tmpTableMap = new HashMap<String, MySQLTable>();
         try {
@@ -157,13 +158,17 @@ public class MySQLCatalog
         catch (SQLException ex) {
             throw new DBException(ex);
         }
+        finally {
+            monitor.done();
+        }
         this.tableList = tmpTableList;
         this.tableMap = tmpTableMap;
     }
 
-    private void loadProcedures()
+    private void loadProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
+        monitor.beginTask("Loading procedures", 1);
         List<MySQLProcedure> tmpProcedureList = new ArrayList<MySQLProcedure>();
 
         try {
@@ -188,24 +193,27 @@ public class MySQLCatalog
         catch (SQLException ex) {
             throw new DBException(ex);
         }
+        finally {
+            monitor.done();
+        }
         this.procedures = tmpProcedureList;
     }
 
-    public List<DBSTablePath> findTableNames(String tableMask, int maxResults) throws DBException
+    public List<DBSTablePath> findTableNames(DBRProgressMonitor monitor, String tableMask, int maxResults) throws DBException
     {
-        return getDataSource().findTableNames(tableMask, maxResults);
+        return getDataSource().findTableNames(monitor, tableMask, maxResults);
     }
 
     public Collection<MySQLTable> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getTables();
+        return getTables(monitor);
     }
 
     public MySQLTable getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
-        return getTable(childName);
+        return getTable(monitor, childName);
     }
 
     public void cacheStructure(DBRProgressMonitor monitor)

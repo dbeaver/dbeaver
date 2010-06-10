@@ -139,7 +139,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
         return null;
     }
 
-    public boolean refreshObject()
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         if (this.isConnected()) {

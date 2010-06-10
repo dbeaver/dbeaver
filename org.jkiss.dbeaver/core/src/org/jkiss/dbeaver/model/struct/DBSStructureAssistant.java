@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 
@@ -14,6 +15,6 @@ import java.util.List;
 public interface DBSStructureAssistant
 {
 
-    List<DBSTablePath> findTableNames(String tableMask, int maxResults) throws DBException;
+    List<DBSTablePath> findTableNames(DBRProgressMonitor monitor, String tableMask, int maxResults) throws DBException;
 
 }

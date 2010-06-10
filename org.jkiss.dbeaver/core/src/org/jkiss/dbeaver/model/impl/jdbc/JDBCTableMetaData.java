@@ -114,7 +114,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
             // Load identifiers
             identifiers = new ArrayList<JDBCTableIdentifier>();
             // Check constraints
-            for (DBSConstraint constraint : getTable(monitor).getConstraints()) {
+            for (DBSConstraint constraint : getTable(monitor).getConstraints(monitor)) {
                 if (constraint.getConstraintType().isUnique()) {
                     // We need ALL columns from this constraint
                     List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
@@ -136,7 +136,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
             }
             if (identifiers.isEmpty()) {
                 // Check indexes only if no unique constraints found
-                for (DBSIndex index : getTable(monitor).getIndexes()) {
+                for (DBSIndex index : getTable(monitor).getIndexes(monitor)) {
                     if (index.isUnique()) {
                         // We need ALL columns from this constraint
                         List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();

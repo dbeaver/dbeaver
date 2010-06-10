@@ -4,6 +4,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSSchema;
 import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * GenericSchema
@@ -65,7 +66,7 @@ public class GenericSchema extends GenericStructureContainer implements DBSSchem
         return catalog != null ? catalog : getDataSource().getContainer();
     }
 
-    public boolean refreshObject()
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;

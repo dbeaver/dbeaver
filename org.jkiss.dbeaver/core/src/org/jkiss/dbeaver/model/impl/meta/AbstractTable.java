@@ -91,13 +91,13 @@ public abstract class AbstractTable<
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getColumns();
+        return getColumns(monitor);
     }
 
     public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
-        return getColumn(childName);
+        return getColumn(monitor, childName);
     }
 
     public String toString()

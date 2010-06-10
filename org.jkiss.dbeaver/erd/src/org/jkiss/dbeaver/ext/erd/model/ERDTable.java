@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -67,10 +68,10 @@ public class ERDTable extends ERDNode {
         return independent;
     }
 
-    private boolean isInForeignKey(DBSTableColumn tableColumn)
+    private boolean isInForeignKey(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
         throws DBException
     {
-        Collection<? extends DBSForeignKey> constraints = getTable().getImportedKeys();
+        Collection<? extends DBSForeignKey> constraints = getTable().getImportedKeys(monitor);
         if (constraints != null) {
             for (DBSConstraint constraint : constraints) {
                 if (constraint.getColumn(tableColumn) != null) {
@@ -81,11 +82,11 @@ public class ERDTable extends ERDNode {
         return false;
     }
 
-    DBSConstraint getPrimaryKey()
+    DBSConstraint getPrimaryKey(DBRProgressMonitor monitor)
         throws DBException
     {
         // Try to get key number from primary key constraint column
-        Collection<? extends DBSConstraint> constraints = getTable().getConstraints();
+        Collection<? extends DBSConstraint> constraints = getTable().getConstraints(monitor);
         if (constraints != null) {
             for (DBSConstraint constraint : constraints) {
                 if (constraint.getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
@@ -96,16 +97,16 @@ public class ERDTable extends ERDNode {
         return null;
     }
 
-    public void calculateContent(Graphics graphics)
+    public void calculateContent(DBRProgressMonitor monitor, Graphics graphics)
         throws DBException
     {
         FontMetrics titleMetrics = graphics.getFontMetrics(ERDConstants.ENTITY_NAME_FONT);
         FontMetrics attrMetrics = graphics.getFontMetrics(ERDConstants.ENTITY_ATTR_FONT);
 
         // Get all columns
-        Collection<? extends DBSTableColumn> dbsTableColumns = getTable().getColumns();
+        Collection<? extends DBSTableColumn> dbsTableColumns = getTable().getColumns(monitor);
         for (DBSTableColumn column : dbsTableColumns) {
-            ERDTableColumn erdColumn = new ERDTableColumn(this, column);
+            ERDTableColumn erdColumn = new ERDTableColumn(monitor, this, column);
             columns.add(erdColumn);
             int columnStrWidth = attrMetrics.stringWidth(erdColumn.getName());
             if (columnStrWidth > tableRectWidth) {
@@ -128,10 +129,10 @@ public class ERDTable extends ERDNode {
 
         // check independence
         independent = true;
-        DBSConstraint primaryKey = getPrimaryKey();
+        DBSConstraint primaryKey = getPrimaryKey(monitor);
         if (primaryKey != null) {
             for (DBSConstraintColumn constrCol : primaryKey.getColumns()) {
-                if (isInForeignKey(constrCol.getTableColumn())) {
+                if (isInForeignKey(monitor, constrCol.getTableColumn())) {
                     independent = false;
                 }
             }

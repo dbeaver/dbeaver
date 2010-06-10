@@ -108,54 +108,51 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
         // Detect what all this means
         final DBPDataSource dataSource = editor.getDataSource();
         if (dataSource instanceof DBSStructureContainer && dataSource instanceof DBSStructureAssistant) {
+            final IRegion wordRegion = new Region(wordStart, wordEnd - wordStart);
+            final List<IHyperlink> links = new ArrayList<IHyperlink>();
+            final String checkWord = word;
             try {
-                final List<DBSTablePath> pathList = ((DBSStructureAssistant) editor.getDataSource()).findTableNames(word, 2);
-                if (pathList.isEmpty()) {
-                    return null;
-                }
-                final IRegion wordRegion = new Region(wordStart, wordEnd - wordStart);
-                final List<IHyperlink> links = new ArrayList<IHyperlink>();
-
-                try {
-                    DBRRunnableWithProgress objLoader = new DBRRunnableWithProgress() {
-                        public void run(DBRProgressMonitor monitor)
-                            throws InvocationTargetException, InterruptedException
-                        {
-                            monitor.beginTask("check tables", pathList.size());
-                            for (DBSTablePath path : pathList) {
-                                DBSObject object;
-                                try {
-                                    object = DBSUtils.getTableByPath(monitor, (DBSStructureContainer) dataSource, path);
-                                }
-                                catch (DBException e) {
-                                    throw new InvocationTargetException(e);
-                                }
-                                if (object != null) {
-                                    links.add(new EntityHyperlink(object, wordRegion));
+                DBRRunnableWithProgress objLoader = new DBRRunnableWithProgress() {
+                    public void run(DBRProgressMonitor monitor)
+                        throws InvocationTargetException, InterruptedException
+                    {
+                        monitor.beginTask("Find tables", 1);
+                        try {
+                            final List<DBSTablePath> pathList = ((DBSStructureAssistant) editor.getDataSource()).findTableNames(
+                                monitor, checkWord, 2);
+                            if (!pathList.isEmpty()) {
+                                for (DBSTablePath path : pathList) {
+                                    DBSObject object = DBSUtils.getTableByPath(monitor, (DBSStructureContainer) dataSource, path);
+                                    if (object != null) {
+                                        links.add(new EntityHyperlink(object, wordRegion));
+                                    }
                                 }
                             }
                         }
-                    };
-                    // Run it with dummy monitor
-                    // Using detached thread (job) or running with progress service breaks hyperlinks
-                    // TODO: investigate the reason and fix it
-                    objLoader.run(NullProgressMonitor.INSTANCE);
-                }
-                catch (InvocationTargetException e) {
-                    log.error(e.getTargetException());
-                }
-                catch (InterruptedException e) {
-                    // do nothing
-                }
+                        catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                        finally {
+                            monitor.done();
+                        }
+                    }
+                };
+                // Run it with dummy monitor
+                // Using detached thread (job) or running with progress service breaks hyperlinks
+                // TODO: investigate the reason and fix it
+                objLoader.run(NullProgressMonitor.INSTANCE);
+            }
+            catch (InvocationTargetException e) {
+                log.error(e.getTargetException());
+            }
+            catch (InterruptedException e) {
+                // do nothing
+            }
 
-                if (links.isEmpty()) {
-                    return null;
-                }
-                return links.toArray(new IHyperlink[links.size()]);
-            } catch (DBException e) {
-                log.error(e);
+            if (links.isEmpty()) {
                 return null;
             }
+            return links.toArray(new IHyperlink[links.size()]);
         }
         return null;
     }

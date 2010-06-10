@@ -160,7 +160,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     if (i == 0) {
                         // Assume it's a table name ?
                         if (sc instanceof DBSStructureAssistant) {
-                            List<DBSTablePath> tableNames = ((DBSStructureAssistant) sc).findTableNames(token, 2);
+                            List<DBSTablePath> tableNames = ((DBSStructureAssistant) sc).findTableNames(monitor, token, 2);
                             if (tableNames.isEmpty()) {
                                 // No, it isn't
                                 // May be it's an alias
@@ -269,7 +269,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             if (childObject == null && nameList.size() <= 1) {
                 // No such object found - may be it's start of table name
                 if (sc instanceof DBSStructureAssistant) {
-                    List<DBSTablePath> tableNames = ((DBSStructureAssistant) sc).findTableNames(startName, 2);
+                    List<DBSTablePath> tableNames = ((DBSStructureAssistant) sc).findTableNames(monitor, startName, 2);
                     if (!tableNames.isEmpty()) {
                         return DBSUtils.getTableByPath(monitor, sc, tableNames.get(0));
                     }
@@ -310,7 +310,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                                             List<ICompletionProposal> proposals)
     {
         try {
-            List<DBSTablePath> tableNames = assistant.findTableNames(tableName + "%", 100);
+            List<DBSTablePath> tableNames = assistant.findTableNames(monitor, tableName + "%", 100);
             for (DBSTablePath path : tableNames) {
                 DBSObject table = DBSUtils.getTableByPath(monitor, rootSC, path);
                 if (table != null) {

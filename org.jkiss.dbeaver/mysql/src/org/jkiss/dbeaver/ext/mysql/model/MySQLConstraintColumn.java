@@ -5,6 +5,7 @@ import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.impl.meta.AbstractConstraint;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * GenericConstraintColumn
@@ -59,7 +60,7 @@ public class MySQLConstraintColumn implements DBSConstraintColumn
         return constraint.getDataSource();
     }
 
-    public boolean refreshObject()
+    public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;
