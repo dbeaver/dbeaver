@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -187,7 +188,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
         return tableMetaData;
     }
 
-    public DBSTableColumn getTableColumn()
+    public DBSTableColumn getTableColumn(DBRProgressMonitor monitor)
         throws DBException
     {
         if (tableColumn != null) {
@@ -196,17 +197,17 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
         if (tableMetaData == null) {
             return null;
         }
-        tableColumn = tableMetaData.getTable().getColumn(name);
+        tableColumn = tableMetaData.getTable(monitor).getColumn(name);
         return tableColumn;
     }
 
-    public boolean isReference()
+    public boolean isReference(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (getTableColumn() == null) {
+        if (getTableColumn(monitor) == null) {
             return false;
         }
-        Collection<? extends DBSForeignKey> foreignKeys = getTable().getTable().getImportedKeys();
+        Collection<? extends DBSForeignKey> foreignKeys = getTable().getTable(monitor).getImportedKeys();
         for (DBSForeignKey fk : foreignKeys) {
             if (fk.getColumn(tableColumn) != null) {
                 return true;

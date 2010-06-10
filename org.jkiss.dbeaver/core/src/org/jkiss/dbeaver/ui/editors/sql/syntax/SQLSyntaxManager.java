@@ -15,7 +15,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -115,11 +114,7 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
     public void changeDataSource()
     {
         if (editor.getDataSourceContainer().isConnected()) {
-            try {
-                this.dataSourceInfo = editor.getDataSource().getInfo();
-            } catch (DBException e) {
-                log.warn("Can't obtain datasource information");
-            }
+            this.dataSourceInfo = editor.getDataSource().getInfo();
         } else {
             this.dataSourceInfo = null;
         }

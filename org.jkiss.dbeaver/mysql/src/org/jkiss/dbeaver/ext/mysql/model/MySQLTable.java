@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.meta.AbstractTable;
 import org.jkiss.dbeaver.model.impl.meta.AbstractConstraint;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -50,7 +51,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
 
     public String getFullQualifiedName()
     {
-        return getDataSource().getFullTableName(
+        return DBSUtils.getFullTableName(getDataSource(),
             getContainer().getName(),
             null,
             getName());
@@ -405,13 +406,13 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                         default: defferability = DBSConstraintDefferability.UNKNOWN; break;
                     }
 
-                    String pkTableFullName = getDataSource().getFullTableName(pkTableCatalog, pkTableSchema, pkTableName);
+                    String pkTableFullName = DBSUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
                     MySQLTable pkTable = getDataSource().findTable(pkTableCatalog, pkTableName);
                     if (pkTable == null) {
                         log.warn("Can't find PK table " + pkTableFullName);
                         continue;
                     }
-                    String fkTableFullName = getDataSource().getFullTableName(fkTableCatalog, fkTableSchema, fkTableName);
+                    String fkTableFullName = DBSUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName);
                     MySQLTable fkTable = getDataSource().findTable(fkTableCatalog, fkTableName);
                     if (fkTable == null) {
                         log.warn("Can't find FK table " + fkTableFullName);
@@ -419,12 +420,12 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                     }
                     MySQLTableColumn pkColumn = pkTable.getColumn(pkColumnName);
                     if (pkColumn == null) {
-                        log.warn("Can't find PK table " + getDataSource().getFullTableName(pkTableCatalog, pkTableSchema, pkTableName) + " column " + pkColumnName);
+                        log.warn("Can't find PK table " + DBSUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName) + " column " + pkColumnName);
                         continue;
                     }
                     MySQLTableColumn fkColumn = fkTable.getColumn(fkColumnName);
                     if (fkColumn == null) {
-                        log.warn("Can't find FK table " + getDataSource().getFullTableName(fkTableCatalog, fkTableSchema, fkTableName) + " column " + fkColumnName);
+                        log.warn("Can't find FK table " + DBSUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName) + " column " + fkColumnName);
                         continue;
                     }
 
@@ -465,7 +466,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
-    public void cacheStructure()
+    public void cacheStructure(DBRProgressMonitor monitor)
         throws DBException
     {
         getColumns();

@@ -50,8 +50,6 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
-import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
-import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
 import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
@@ -839,11 +837,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     }
 
     static class TableRowInfo {
-        DBSTable table;
+        DBCTableMetaData table;
         DBCTableIdentifier id;
         List<CellInfo> tableCells = new ArrayList<CellInfo>();
 
-        TableRowInfo(DBSTable table, DBCTableIdentifier id) {
+        TableRowInfo(DBCTableMetaData table, DBCTableIdentifier id) {
             this.table = table;
             this.id = id;
         }
@@ -852,7 +850,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private class CellDataSaver {
 
         private Set<CellInfo> cells;
-        private Map<Integer, Map<DBSTable, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSTable, TableRowInfo>>();
+        private Map<Integer, Map<DBCTableMetaData, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBCTableMetaData, TableRowInfo>>();
         private List<SQLStatementInfo> statements = new ArrayList<SQLStatementInfo>();
 
         private CellDataSaver(Set<CellInfo> cells)
@@ -878,17 +876,18 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         {
             // Prepare rows
             for (CellInfo cell : this.cells) {
-                Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(cell.row);
+                Map<DBCTableMetaData, TableRowInfo> tableMap = updatedRows.get(cell.row);
                 if (tableMap == null) {
-                    tableMap = new HashMap<DBSTable, TableRowInfo>();
+                    tableMap = new HashMap<DBCTableMetaData, TableRowInfo>();
                     updatedRows.put(cell.row, tableMap);
                 }
 
-                DBCTableMetaData metaTable = metaColumns[cell.col].metaData.getTable();
-                TableRowInfo tableRowInfo = tableMap.get(metaTable.getTable());
+                ResultSetColumn metaColumn = metaColumns[cell.col];
+                DBCTableMetaData metaTable = metaColumn.metaData.getTable();
+                TableRowInfo tableRowInfo = tableMap.get(metaTable);
                 if (tableRowInfo == null) {
-                    tableRowInfo = new TableRowInfo(metaTable.getTable(), metaTable.getBestIdentifier());
-                    tableMap.put(metaTable.getTable(), tableRowInfo);
+                    tableRowInfo = new TableRowInfo(metaTable, metaColumn.valueLocator.getTableIdentifier());
+                    tableMap.put(metaTable, tableRowInfo);
                 }
                 tableRowInfo.tableCells.add(cell);
             }
@@ -899,8 +898,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         {
             // Make statements
             for (Integer rowNum : updatedRows.keySet()) {
-                Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(rowNum);
-                for (DBSTable table : tableMap.keySet()) {
+                Map<DBCTableMetaData, TableRowInfo> tableMap = updatedRows.get(rowNum);
+                for (DBCTableMetaData table : tableMap.keySet()) {
                     TableRowInfo rowInfo = tableMap.get(table);
 
                     String tableName = rowInfo.table.getFullQualifiedName();
@@ -913,7 +912,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             query.append(",");
                         }
                         ResultSetColumn metaColumn = metaColumns[cell.col];
-                        String columnName = DBSUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), metaColumn.metaData.getTableColumn().getName());
+                        String columnName = DBSUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), metaColumn.metaData.getColumnName());
                         query.append(columnName).append("=?");
                         parameters.add(new SQLStatementParameter(
                             metaColumn.valueHandler,
@@ -922,28 +921,29 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             curRows.get(rowNum)[cell.col]));
                     }
                     query.append(" WHERE ");
-                    Collection<? extends DBSConstraintColumn> idColumns = rowInfo.id.getConstraint().getColumns();
+                    Collection<? extends DBCColumnMetaData> idColumns = rowInfo.id.getResultSetColumns();
                     boolean firstCol = true;
-                    for (DBSConstraintColumn idColumn : idColumns) {
+                    for (DBCColumnMetaData idColumn : idColumns) {
                         if (!firstCol) {
                             query.append(" AND ");
                         }
-                        String columnName = DBSUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), idColumn.getName());
+                        String columnName = DBSUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), idColumn.getColumnName());
                         query.append(columnName).append("=?");
                         firstCol = false;
+
                         // Find meta column and add statement parameter
                         ResultSetColumn metaColumn = null;
                         int columnIndex = -1;
                         for (int i = 0; i < metaColumns.length; i++) {
                             ResultSetColumn tmpColumn = metaColumns[i];
-                            if (idColumn.getTableColumn() == tmpColumn.metaData.getTableColumn()) {
+                            if (idColumn == tmpColumn.metaData) {
                                 metaColumn = tmpColumn;
                                 columnIndex = i;
                                 break;
                             }
                         }
                         if (metaColumn == null) {
-                            throw new DBCException("Can't find meta column for ID column " + idColumn.getName());
+                            throw new DBCException("Can't find meta column for ID column " + idColumn.getColumnName());
                         }
                         Object keyValue = curRows.get(rowNum)[columnIndex];
                         // Try to find old key value

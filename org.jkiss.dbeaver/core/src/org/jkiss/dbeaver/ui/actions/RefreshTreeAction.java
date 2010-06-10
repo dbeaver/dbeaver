@@ -17,6 +17,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.model.meta.DBMEvent;
@@ -113,13 +114,12 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
             }
             if (node != null) {
                 final DBMNode refNode = node;
-                new AbstractUIJob("Refresh tree node") {
-                    public IStatus runInUIThread(DBRProgressMonitor monitor)
+                targetPart.getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                    public void run()
                     {
                         model.fireNodeRefresh(targetPart, refNode, DBMEvent.NodeChange.REFRESH);
-                        return Status.OK_STATUS;
                     }
-                }.schedule();
+                });
             }
         }
     }

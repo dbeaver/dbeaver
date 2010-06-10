@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaLayouter;
 import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaNode;
 import org.jkiss.dbeaver.ext.ui.IObjectEditor;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
@@ -232,7 +233,7 @@ public class ERDEditor extends EditorPart implements IObjectEditor
                         throws InvocationTargetException, InterruptedException
                     {
                         try {
-                            loadModel();
+                            loadModel(getProgressMonitor());
                         }
                         catch (DBException e) {
                             log.error(e);
@@ -283,7 +284,7 @@ public class ERDEditor extends EditorPart implements IObjectEditor
         container = (DBSStructureContainer)object;
     }
 
-    private void loadModel()
+    private void loadModel(DBRProgressMonitor monitor)
         throws DBException
     {
         Map attributes = new Hashtable();
@@ -291,12 +292,12 @@ public class ERDEditor extends EditorPart implements IObjectEditor
 
         List<ERDTable> tables = new ArrayList<ERDTable>();
         List<ERDLink> links = new ArrayList<ERDLink>();
-        container.cacheStructure();
+        container.cacheStructure(monitor);
         if (container instanceof DBSTable) {
             tables.add(new ERDTable((DBSTable)container));
         } else {
             // Add content
-            for (DBSObject node : container.getChildren()) {
+            for (DBSObject node : container.getChildren(monitor)) {
                 if (node instanceof DBSTable) {
                     tables.add(new ERDTable((DBSTable)node));
                 }

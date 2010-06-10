@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.dbc;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Result set table metadata
@@ -15,8 +16,9 @@ public interface DBCTableMetaData {
     /**
      * Table reference
      * @return table table reference. never returns null
+     * @param monitor
      */
-    DBSTable getTable()
+    DBSTable getTable(DBRProgressMonitor monitor)
         throws DBException;
 
     /**
@@ -31,13 +33,16 @@ public interface DBCTableMetaData {
      */
     String getTableAlias();
 
+    String getFullQualifiedName();
+
     /**
      * Checks table is identitied.
      * Table is identitied if resultset contains at least one set of this table columns which will unique
      * identify table row
      * @return true if this table has at least one unique identitier in the whole resultset.
+     * @param monitor
      */
-    boolean isIdentitied()
+    boolean isIdentitied(DBRProgressMonitor monitor)
         throws DBException;
 
     /**
@@ -45,8 +50,9 @@ public interface DBCTableMetaData {
      * Best identifier is a primary key. If no such one then any unique key fits.
      * @return list of identifier columns which identifies this table row the best way
      * or null if no identifiers found.
+     * @param monitor
      */
-    DBCTableIdentifier getBestIdentifier()
+    DBCTableIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException;
 
 }

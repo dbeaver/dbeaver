@@ -86,7 +86,7 @@ public abstract class DBMNode
 
     public abstract boolean hasChildren();
     
-    public abstract List<? extends DBMNode> getChildren(ILoadService loadService)  throws DBException;
+    public abstract List<? extends DBMNode> getChildren(DBRProgressMonitor monitor)  throws DBException;
 
     /**
      * Refreshes node.

@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * DBSStructureContainerActive
@@ -13,8 +14,8 @@ public interface DBSStructureContainerActive
 {
     boolean supportsActiveChildChange();
 
-    DBSObject getActiveChild() throws DBException;
+    DBSObject getActiveChild(DBRProgressMonitor monitor) throws DBException;
 
-    void setActiveChild(DBSObject child) throws DBException;
+    void setActiveChild(DBRProgressMonitor monitor, DBSObject child) throws DBException;
 
 }

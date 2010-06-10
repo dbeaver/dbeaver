@@ -11,6 +11,12 @@ import java.lang.reflect.InvocationTargetException;
  */
 public interface DBRRunnableContext
 {
-    public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable)
-        throws InvocationTargetException, InterruptedException;
+    /**
+     * Runs blocking process.
+     * If any exception will occure when running this process then it'll written in log
+     * @param fork fork
+     * @param cancelable cancalable
+     * @param runnable runnable implementation
+     */
+    public void runAndWait(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable);
 }

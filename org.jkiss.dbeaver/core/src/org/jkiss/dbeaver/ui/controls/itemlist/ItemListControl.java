@@ -367,7 +367,7 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
         {
             try {
                 List<DBMNode> items = new ArrayList<DBMNode>();
-                List<? extends DBMNode> children = node.getChildren(this);
+                List<? extends DBMNode> children = node.getChildren(getProgressMonitor());
                 if (CommonUtils.isEmpty(children)) {
                     return items;
                 }

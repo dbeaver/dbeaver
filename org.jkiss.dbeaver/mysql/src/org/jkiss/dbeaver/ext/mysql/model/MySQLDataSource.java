@@ -131,19 +131,19 @@ public class MySQLDataSource extends AbstractDataSource implements DBSStructureA
         return catalog.getTable(tableName);
     }
 
-    public Collection<? extends DBSObject> getChildren()
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         return getCatalogs();
     }
 
-    public DBSObject getChild(String childName)
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         return getCatalog(childName);
     }
 
-    public void cacheStructure()
+    public void cacheStructure(DBRProgressMonitor monitor)
         throws DBException
     {
         
@@ -154,7 +154,7 @@ public class MySQLDataSource extends AbstractDataSource implements DBSStructureA
         return true;
     }
 
-    public DBSObject getActiveChild()
+    public DBSObject getActiveChild(DBRProgressMonitor monitor)
         throws DBException
     {
         if (this.activeCatalog == null) {
@@ -181,7 +181,7 @@ public class MySQLDataSource extends AbstractDataSource implements DBSStructureA
         return this.activeCatalog;
     }
 
-    public void setActiveChild(DBSObject child)
+    public void setActiveChild(DBRProgressMonitor monitor, DBSObject child)
         throws DBException
     {
         if (child == activeCatalog) {

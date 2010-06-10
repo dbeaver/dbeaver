@@ -18,6 +18,8 @@ import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IObjectEditor;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -25,11 +27,11 @@ import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
-import org.jkiss.dbeaver.runtime.load.ILoadService;
-import org.jkiss.dbeaver.runtime.load.NullLoadService;
 import org.jkiss.dbeaver.ui.editors.splitted.SplitterEditorPart;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * EntityEditor
@@ -87,7 +89,6 @@ public class EntityEditor extends SplitterEditorPart implements IDBMListener, IM
 
     protected void createPages()
     {
-        ILoadService loadService = new NullLoadService();
         // Add object editor page
         EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
         EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(entityInput.getDatabaseObject().getClass());
@@ -112,14 +113,53 @@ public class EntityEditor extends SplitterEditorPart implements IDBMListener, IM
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_START);
 
+        final List<TabInfo> tabs = new ArrayList<TabInfo>();
+        DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
+            public void run(DBRProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException
+            {
+                tabs.addAll(collectTabs(monitor));
+            }
+        });
+
+        for (TabInfo tab : tabs) {
+            if (tab.meta == null) {
+                addNodeTab(tab.node);
+            } else {
+                addNodeTab(tab.node, tab.meta);
+            }
+        }
+
+        // Add contributed pages
+        addContributions(EntityEditorDescriptor.POSITION_END);
+    }
+
+    private static class TabInfo {
+        DBMNode node;
+        DBXTreeNode meta;
+        private TabInfo(DBMNode node)
+        {
+            this.node = node;
+        }
+        private TabInfo(DBMNode node, DBXTreeNode meta)
+        {
+            this.node = node;
+            this.meta = meta;
+        }
+    }
+
+    private List<TabInfo> collectTabs(DBRProgressMonitor monitor)
+    {
+        List<TabInfo> tabs = new ArrayList<TabInfo>();
+
         // Add all nested folders as tabs
         DBMNode node = entityInput.getNode();
         try {
-            List<? extends DBMNode> children = node.getChildren(loadService);
+            List<? extends DBMNode> children = node.getChildren(monitor);
             if (children != null) {
                 for (DBMNode child : children) {
                     if (child instanceof DBMTreeFolder) {
-                        addNodeTab(child);
+                        tabs.add(new TabInfo(child));
                     }
                 }
             }
@@ -134,8 +174,8 @@ public class EntityEditor extends SplitterEditorPart implements IDBMListener, IM
                 for (DBXTreeNode child : subNodes) {
                     if (child instanceof DBXTreeItem) {
                         try {
-                            if (!((DBXTreeItem)child).isOptional() || treeNode.hasChildren(child, loadService)) {
-                                addNodeTab(node, child);
+                            if (!((DBXTreeItem)child).isOptional() || treeNode.hasChildren(monitor, child)) {
+                                tabs.add(new TabInfo(node, child));
                             }
                         } catch (DBException e) {
                             log.error("Can't add child items tab", e);
@@ -144,10 +184,7 @@ public class EntityEditor extends SplitterEditorPart implements IDBMListener, IM
                 }
             }
         }
-
-        // Add contributed pages
-        addContributions(EntityEditorDescriptor.POSITION_END);
-
+        return tabs;
     }
 
     private void addContributions(String position)

@@ -93,15 +93,7 @@ public abstract class AbstractDataSource
     }
 
     public DBPDataSourceInfo getInfo()
-         throws DBException
     {
-        if (info == null) {
-            try {
-                info = new JDBCDataSourceInfo(connection.getMetaData());
-            } catch (SQLException e) {
-                throw new DBException(e);
-            }
-        }
         return info;
     }
 
@@ -193,24 +185,6 @@ public abstract class AbstractDataSource
     public AbstractDataSource getDataSource()
     {
         return this;
-    }
-
-    public String getFullTableName(String catalogName, String tableName)
-    {
-        return getFullTableName(catalogName,  null, tableName);
-    }
-
-    public String getFullTableName(String catalogName, String schemaName, String tableName)
-    {
-        StringBuilder name=  new StringBuilder();
-        if (catalogName != null) {
-            name.append(DBSUtils.getQuotedIdentifier(this, catalogName)).append(info.getCatalogSeparator());
-        }
-        if (schemaName != null) {
-            name.append(DBSUtils.getQuotedIdentifier(this, schemaName)).append(info.getCatalogSeparator());
-        }
-        name.append(DBSUtils.getQuotedIdentifier(this, tableName));
-        return name.toString();
     }
 
 }

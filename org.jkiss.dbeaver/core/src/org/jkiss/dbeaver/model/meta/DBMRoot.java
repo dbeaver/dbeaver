@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.runtime.load.ILoadService;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -67,7 +66,7 @@ public class DBMRoot extends DBMNode implements DBSObject
         return !dataSources.isEmpty();
     }
 
-    public List<? extends DBMNode> getChildren(ILoadService loadService)
+    public List<? extends DBMNode> getChildren(DBRProgressMonitor monitor)
     {
         return dataSources;
     }

@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -119,7 +120,7 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
         }
     }
 
-    public Collection<? extends DBSObject> getChildren()
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getSchemas())) {
@@ -129,13 +130,13 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
         }
     }
 
-    public DBSObject getChild(String childName)
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getSchemas())) {
             return getSchema(childName);
         } else {
-            return super.getChild(childName);
+            return super.getChild(monitor, childName);
         }
     }
 }

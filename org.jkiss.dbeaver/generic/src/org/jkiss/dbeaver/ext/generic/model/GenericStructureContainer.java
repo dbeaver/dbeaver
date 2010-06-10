@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -72,7 +73,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         return indexList;
     }
 
-    public void cacheStructure()
+    public void cacheStructure(DBRProgressMonitor monitor)
     {
         System.out.println("CACHE STRUCTURE!");
     }
@@ -239,16 +240,16 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         }
     }
 
-    public Collection<? extends DBSObject> getChildren()
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         return getTables();
     }
 
-    public DBSObject getChild(String childName)
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
-        return DBSUtils.findObject(getTables(), childName);
+        return DBSUtils.findObject(getChildren(monitor), childName);
     }
 
     public String toString()

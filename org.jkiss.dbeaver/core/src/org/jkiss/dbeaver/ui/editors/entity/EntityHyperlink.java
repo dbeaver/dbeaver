@@ -10,19 +10,25 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.meta.DBMDataSource;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
+import org.jkiss.dbeaver.core.DBeaverCore;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * EntityHyperlink
  */
 public class EntityHyperlink implements IHyperlink
 {
-    private DBMNode node;
+    private DBSObject object;
     private IRegion region;
 
-    public EntityHyperlink(DBMNode node, IRegion region)
+    public EntityHyperlink(DBSObject object, IRegion region)
     {
-        this.node = node;
+        this.object = object;
         this.region = region;
     }
 
@@ -39,23 +45,36 @@ public class EntityHyperlink implements IHyperlink
     public String getHyperlinkText()
     {
         StringBuilder nodeFullName = new StringBuilder();
-        for (DBMNode t = node; t != null; t = t.getParentNode()) {
+        for (DBSObject t = object; t != null; t = t.getParentObject()) {
             if (t instanceof DBMTreeFolder) {
                 continue;
             }
             if (t instanceof DBMDataSource) {
                 break;
             }
-            if (node.getParentNode() != null) {
+            if (object.getParentObject() != null) {
                 nodeFullName.insert(0, '.');
             }
-            nodeFullName.insert(0, t.getNodeName());
+            nodeFullName.insert(0, t.getName());
         }
         return nodeFullName.toString();
     }
 
     public void open()
     {
-        OpenObjectEditorAction.openEntityEditor(node, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+        DBeaverCore.runUIJob("Open hyperlink", new DBRRunnableWithProgress() {
+            public void run(DBRProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException
+            {
+                DBMNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject(
+                    monitor,
+                    object,
+                    true
+                );
+                if (node != null) {
+                    OpenObjectEditorAction.openEntityEditor(node, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                }
+            }
+        });
     }
 }

@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,13 +53,13 @@ public class JDBCTableMetaData implements DBCTableMetaData {
         return resultSetMetaData;
     }
 
-    public DBSTable getTable()
+    public DBSTable getTable(DBRProgressMonitor monitor)
         throws DBException
     {
         if (table == null) {
             DBPDataSource dataSource = resultSetMetaData.getResultSet().getStatement().getSession().getDataSource();
             if (dataSource instanceof DBSStructureContainer) {
-                DBSObject tableObject = DBSUtils.getObjectByPath((DBSStructureContainer) dataSource, catalogName, schemaName, tableName);
+                DBSObject tableObject = DBSUtils.getObjectByPath(monitor, (DBSStructureContainer) dataSource, catalogName, schemaName, tableName);
                 if (tableObject == null) {
                     throw new DBException("Table '" + tableName + "' not found in metadata catalog");
                 } else if (tableObject instanceof DBSTable) {
@@ -91,26 +92,35 @@ public class JDBCTableMetaData implements DBCTableMetaData {
         return alias;
     }
 
-    public boolean isIdentitied()
-        throws DBException
+    public String getFullQualifiedName()
     {
-        return getBestIdentifier() != null;
+        return DBSUtils.getFullTableName(
+            resultSetMetaData.getResultSet().getStatement().getSession().getDataSource(),
+            catalogName,
+            schemaName,
+            tableName);
     }
 
-    public DBCTableIdentifier getBestIdentifier()
+    public boolean isIdentitied(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return getBestIdentifier(monitor) != null;
+    }
+
+    public DBCTableIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException
     {
         if (identifiers == null) {
             // Load identifiers
             identifiers = new ArrayList<JDBCTableIdentifier>();
             // Check constraints
-            for (DBSConstraint constraint : getTable().getConstraints()) {
+            for (DBSConstraint constraint : getTable(monitor).getConstraints()) {
                 if (constraint.getConstraintType().isUnique()) {
                     // We need ALL columns from this constraint
                     List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
                     Collection<? extends DBSConstraintColumn> constrColumns = constraint.getColumns();
                     for (DBSConstraintColumn constrColumn : constrColumns) {
-                        JDBCColumnMetaData rsColumn = getColumnMetaData(constrColumn.getTableColumn());
+                        JDBCColumnMetaData rsColumn = getColumnMetaData(monitor, constrColumn.getTableColumn());
                         if (rsColumn == null) {
                             break;
                         }
@@ -126,13 +136,13 @@ public class JDBCTableMetaData implements DBCTableMetaData {
             }
             if (identifiers.isEmpty()) {
                 // Check indexes only if no unique constraints found
-                for (DBSIndex index : getTable().getIndexes()) {
+                for (DBSIndex index : getTable(monitor).getIndexes()) {
                     if (index.isUnique()) {
                         // We need ALL columns from this constraint
                         List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
                         Collection<? extends DBSIndexColumn> constrColumns = index.getColumns();
                         for (DBSIndexColumn indexColumn : constrColumns) {
-                            JDBCColumnMetaData rsColumn = getColumnMetaData(indexColumn.getTableColumn());
+                            JDBCColumnMetaData rsColumn = getColumnMetaData(monitor, indexColumn.getTableColumn());
                             if (rsColumn == null) {
                                 break;
                             }
@@ -165,11 +175,11 @@ public class JDBCTableMetaData implements DBCTableMetaData {
         return uniqueId != null ? uniqueId : uniqueIndex;
     }
 
-    private JDBCColumnMetaData getColumnMetaData(DBSTableColumn column)
+    private JDBCColumnMetaData getColumnMetaData(DBRProgressMonitor monitor, DBSTableColumn column)
         throws DBException
     {
         for (JDBCColumnMetaData meta : columns) {
-            if (meta.getTableColumn() == column) {
+            if (meta.getTableColumn(monitor) == column) {
                 return meta;
             }
         }

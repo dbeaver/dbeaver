@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 
@@ -40,26 +41,28 @@ public interface DBCColumnMetaData extends DBSTypedObject
 
 
     /**
-     * Owner table metadata
-     * @return table metadata
+     * Column metadata
+     * @return column metadata
      * @throws DBCException on any DB error
+     * @param monitor
      */
-    DBSTableColumn getTableColumn() throws DBException;
+    DBSTableColumn getTableColumn(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Owner table metadata
      * @return table metadata
      * @throws DBCException on any DB error
      */
-    DBCTableMetaData getTable() throws DBException;
+    DBCTableMetaData getTable();
 
     /**
      * Check this column is a reference.
      * Reference columns are included in one or more foreign keys. 
      * @return true or false.
      * @throws DBCException on any DB error
+     * @param monitor
      */
-    boolean isReference() throws DBException;
+    boolean isReference(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets list of foreign keys in which this column is contained.

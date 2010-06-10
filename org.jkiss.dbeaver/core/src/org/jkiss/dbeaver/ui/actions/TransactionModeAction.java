@@ -59,12 +59,7 @@ public class TransactionModeAction extends SessionAction implements IWorkbenchWi
             return;
         }
         final DBPDataSourceInfo dsInfo;
-        try {
-            dsInfo = dataSource.getInfo();
-        } catch (DBException ex) {
-            log.error("Can't obtain datasource info", ex);
-            return;
-        }
+        dsInfo = dataSource.getInfo();
         final DBCSession session;
         try {
             session = getSession();

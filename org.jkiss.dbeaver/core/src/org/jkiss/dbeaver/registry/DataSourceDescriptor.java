@@ -286,37 +286,32 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
             return;
         }
 */
-        try {
-            DBeaverCore.getInstance().run(true, true, new DBRRunnableWithProgress()
+        DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress()
+        {
+            public void run(DBRProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException
             {
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        Job.getJobManager().join(dataSource, monitor.getNestedMonitor());
-                    } catch (Exception e) {
-                        log.error(e);
-                        return;
-                    }
-
-                    DisconnectJob disconnectJob = new DisconnectJob(dataSource);
-                    disconnectJob.addJobChangeListener(new JobChangeAdapter() {
-                        public void done(IJobChangeEvent event)
-                        {
-                            dataSource = null;
-                            getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
-                                DataSourceEvent.Action.DISCONNECT,
-                                DataSourceDescriptor.this,
-                                source);
-                        }
-                    });
-                    disconnectJob.schedule();
+                try {
+                    Job.getJobManager().join(dataSource, monitor.getNestedMonitor());
+                } catch (Exception e) {
+                    log.error(e);
+                    return;
                 }
-            });
-        } catch (Exception e) {
-            // do nothing
-            log.error(e);
-        }
+
+                DisconnectJob disconnectJob = new DisconnectJob(dataSource);
+                disconnectJob.addJobChangeListener(new JobChangeAdapter() {
+                    public void done(IJobChangeEvent event)
+                    {
+                        dataSource = null;
+                        getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
+                            DataSourceEvent.Action.DISCONNECT,
+                            DataSourceDescriptor.this,
+                            source);
+                    }
+                });
+                disconnectJob.schedule();
+            }
+        });
     }
 
     public void invalidate()
@@ -392,11 +387,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
         } else if (adapter == IPropertySource.class) {
             DBPDataSourceInfo info = null;
             if (this.isConnected()) {
-                try {
-                    info = this.getDataSource().getInfo();
-                } catch (DBException e) {
-                    log.warn(e);
-                }
+                info = this.getDataSource().getInfo();
             }
             StringBuilder addr = new StringBuilder();
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {

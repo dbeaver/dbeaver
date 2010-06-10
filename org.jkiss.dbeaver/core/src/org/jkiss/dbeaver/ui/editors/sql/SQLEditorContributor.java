@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -23,8 +25,12 @@ import org.eclipse.ui.editors.text.TextEditorActionContributor;
 import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.StatusLineContributionItem;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.meta.DBMEvent;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
@@ -42,6 +48,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor;
 
 import java.util.*;
 import java.util.List;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * SQL Editor contributor
@@ -432,8 +439,6 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         {
             protected Control createControl(Composite parent)
             {
-                SQLEditor editor = getEditor();
-
                 Composite comboGroup = new Composite(parent, SWT.NONE);
                 GridLayout gl = new GridLayout(1, true);
                 gl.marginWidth = 5;
@@ -457,7 +462,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                         widgetSelected(e);
                     }
                 });
-                fillDatabaseCombo(editor);
+                //fillDatabaseCombo(monitor, editor);
                 return comboGroup;
             }
         });
@@ -501,7 +506,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
 
     private void updateControls()
     {
-        SQLEditor editor = getEditor();
+        final SQLEditor editor = getEditor();
 
         // Update resultset max size
         if (resultSetSize != null && !resultSetSize.isDisposed()) {
@@ -518,7 +523,14 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         updateDataSourceList(editor);
 
         // Update databases combo
-        fillDatabaseCombo(editor);
+        DBeaverCore.runUIJob("Populate current database list", new DBRRunnableWithProgress() {
+            public void run(DBRProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException
+            {
+                fillDatabaseCombo(monitor, editor);
+            }
+        });
+
 
         updateActions(editor);
     }
@@ -573,7 +585,12 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         }
     }
 
-    private void fillDatabaseCombo(SQLEditor editor)
+    private class CurrentDatabasesInfo {
+        Collection<? extends DBSObject> list;
+        DBSObject active;
+    }
+
+    private void fillDatabaseCombo(DBRProgressMonitor monitor, SQLEditor editor)
     {
         if (databaseCombo != null && !databaseCombo.isDisposed()) {
             databaseCombo.removeAll();
@@ -581,37 +598,43 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
             if (editor != null) {
                 DBSDataSourceContainer dsContainer = editor.getDataSourceContainer();
                 if (dsContainer != null && dsContainer.isConnected()) {
-                    DBPDataSource dataSource = dsContainer.getDataSource();
-                    try {
-                        if (dataSource instanceof DBSStructureContainer &&
-                            dataSource instanceof DBSStructureContainerActive &&
-                            ((DBSStructureContainerActive)dataSource).supportsActiveChildChange())
-                        {
-                            isEnabled = true;
-                            Collection<? extends DBSObject> databases = ((DBSStructureContainer) dataSource).getChildren();
-                            if (databases != null && !databases.isEmpty()) {
-                                for (DBSObject database : databases) {
-                                    databaseCombo.add(database.getName());
-                                    databaseCombo.setData(database.getName(), database);
-                                }
-                            }
-                            DBSObject activeDatabase = ((DBSStructureContainerActive)dataSource).getActiveChild();
-                            if (activeDatabase != null) {
-                                int dbCount = databaseCombo.getItemCount();
-                                for (int i = 0; i < dbCount; i++) {
-                                    String dbName = databaseCombo.getItem(i);
-                                    if (dbName.equals(activeDatabase.getName())) {
-                                        databaseCombo.select(i);
-                                        break;
-                                    }
-                                }
-                            }
-                        } else {
-                            databaseCombo.add(dsContainer.getConnectionInfo().getDatabaseName());
-                            databaseCombo.select(0);
+                    final DBPDataSource dataSource = dsContainer.getDataSource();
+
+                    if (dataSource instanceof DBSStructureContainer &&
+                        dataSource instanceof DBSStructureContainerActive &&
+                        ((DBSStructureContainerActive)dataSource).supportsActiveChildChange())
+                    {
+                        final CurrentDatabasesInfo databasesInfo = new CurrentDatabasesInfo();
+
+                        try {
+                            databasesInfo.list = ((DBSStructureContainer) dataSource).getChildren(
+                                monitor);
+                            databasesInfo.active = ((DBSStructureContainerActive)dataSource).getActiveChild(monitor);
                         }
-                    } catch (DBException e) {
-                        log.error("Error getting database list: " + e.getMessage());
+                        catch (DBException e) {
+                            log.error(e);
+                        }
+
+                        isEnabled = true;
+                        if (databasesInfo.list != null && !databasesInfo.list.isEmpty()) {
+                            for (DBSObject database : databasesInfo.list) {
+                                databaseCombo.add(database.getName());
+                                databaseCombo.setData(database.getName(), database);
+                            }
+                        }
+                        if (databasesInfo.active != null) {
+                            int dbCount = databaseCombo.getItemCount();
+                            for (int i = 0; i < dbCount; i++) {
+                                String dbName = databaseCombo.getItem(i);
+                                if (dbName.equals(databasesInfo.active.getName())) {
+                                    databaseCombo.select(i);
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        databaseCombo.add(dsContainer.getConnectionInfo().getDatabaseName());
+                        databaseCombo.select(0);
                     }
                 }
             }
@@ -661,21 +684,32 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         if (editor == null) {
             return;
         }
-        String newName = databaseCombo.getItem(databaseCombo.getSelectionIndex());
+        final String newName = databaseCombo.getItem(databaseCombo.getSelectionIndex());
         DBSDataSourceContainer dsContainer = editor.getDataSourceContainer();
         if (dsContainer != null && dsContainer.isConnected()) {
-            DBPDataSource dataSource = dsContainer.getDataSource();
+            final DBPDataSource dataSource = dsContainer.getDataSource();
             try {
                 if (dataSource instanceof DBSStructureContainer &&
                     dataSource instanceof DBSStructureContainerActive &&
                     ((DBSStructureContainerActive)dataSource).supportsActiveChildChange())
                 {
-                    DBSObject newChild = ((DBSStructureContainer) dataSource).getChild(newName);
-                    if (newChild != null) {
-                        ((DBSStructureContainerActive)dataSource).setActiveChild(newChild);
-                    } else {
-                        throw new DBException("Can't find database '" + newName + "'");
-                    }
+                    DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
+                        public void run(DBRProgressMonitor monitor)
+                            throws InvocationTargetException, InterruptedException
+                        {
+                            try {
+                                DBSObject newChild = ((DBSStructureContainer) dataSource).getChild(monitor, newName);
+                                if (newChild != null) {
+                                    ((DBSStructureContainerActive)dataSource).setActiveChild(monitor, newChild);
+                                } else {
+                                    throw new DBException("Can't find database '" + newName + "'");
+                                }
+                            }
+                            catch (DBException e) {
+                                throw new InvocationTargetException(e);
+                            }
+                        }
+                    });
                 } else {
                     throw new DBException("Active database change is not supported");
                 }

@@ -6,6 +6,7 @@ import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.impl.meta.AbstractCatalog;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -195,19 +196,19 @@ public class MySQLCatalog
         return getDataSource().findTableNames(tableMask, maxResults);
     }
 
-    public Collection<MySQLTable> getChildren()
+    public Collection<MySQLTable> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         return getTables();
     }
 
-    public MySQLTable getChild(String childName)
+    public MySQLTable getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         return getTable(childName);
     }
 
-    public void cacheStructure()
+    public void cacheStructure(DBRProgressMonitor monitor)
         throws DBException
     {
 

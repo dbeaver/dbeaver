@@ -19,7 +19,10 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -29,12 +32,15 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.meta.DBMModel;
+import org.jkiss.dbeaver.model.meta.DBMEvent;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
+import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -234,10 +240,61 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return propertiesAdapter;
     }
 
-    public void run(boolean fork, boolean cancelable, final DBRRunnableWithProgress runnable)
-        throws InvocationTargetException, InterruptedException
+    public void runAndWait(boolean fork, boolean cancelable, final DBRRunnableWithProgress runnable)
     {
-        DBeaverUtils.run(this.getWorkbench().getProgressService(), fork, cancelable, runnable);
+        try {
+            this.getWorkbench().getProgressService().run(fork, cancelable, new IRunnableWithProgress() {
+                public void run(IProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException
+                {
+                    runnable.run(DBeaverUtils.makeMonitor(monitor));
+                }
+            });
+        }
+        catch (InvocationTargetException e) {
+            log.error(e.getTargetException());
+        }
+        catch (InterruptedException e) {
+            // do nothing
+        }
+    }
+
+    public static void runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)
+    {
+        new AbstractUIJob(jobName) {
+            public IStatus runInUIThread(DBRProgressMonitor monitor)
+            {
+                try {
+                    runnableWithProgress.run(monitor);
+                }
+                catch (InvocationTargetException e) {
+                    return DBeaverUtils.makeExceptionStatus(e);
+                }
+                catch (InterruptedException e) {
+                    return Status.CANCEL_STATUS;
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
+    }
+
+    public void runInUI(IRunnableContext context, final DBRRunnableWithProgress runnable)
+    {
+        try {
+            this.getWorkbench().getProgressService().runInUI(context, new IRunnableWithProgress() {
+                public void run(IProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException
+                {
+                    runnable.run(DBeaverUtils.makeMonitor(monitor));
+                }
+            }, DBeaverActivator.getWorkspace().getRoot());
+        }
+        catch (InvocationTargetException e) {
+            log.error(e.getTargetException());
+        }
+        catch (InterruptedException e) {
+            // do nothing
+        }
     }
 
     public void run(boolean fork, boolean cancelable, final IRunnableWithProgress runnable)

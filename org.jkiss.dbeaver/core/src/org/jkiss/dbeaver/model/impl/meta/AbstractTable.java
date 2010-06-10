@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.meta;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
@@ -87,13 +88,13 @@ public abstract class AbstractTable<
         return container;
     }
 
-    public Collection<? extends DBSObject> getChildren()
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         return getColumns();
     }
 
-    public DBSObject getChild(String childName)
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         return getColumn(childName);

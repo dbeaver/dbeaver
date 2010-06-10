@@ -334,7 +334,7 @@ public class SQLQueryJob extends DataSourceJob
             if (resultSet != null) {
                 int rowCount = 0;
 
-                dataPump.fetchStart(resultSet);
+                dataPump.fetchStart(resultSet, monitor);
 
                 try {
 
@@ -345,7 +345,7 @@ public class SQLQueryJob extends DataSourceJob
                             monitor.subTask(rowCount + " rows fetched");
                         }
 
-                        dataPump.fetchRow(resultSet);
+                        dataPump.fetchRow(resultSet, monitor);
                     }
                 }
                 finally {
@@ -353,7 +353,7 @@ public class SQLQueryJob extends DataSourceJob
                 }
 
                 try {
-                    dataPump.fetchEnd();
+                    dataPump.fetchEnd(monitor);
                 } catch (DBCException e) {
                     log.error("Error while handling end of result set fetch");
                 }

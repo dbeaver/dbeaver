@@ -11,17 +11,19 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.struct.DBSListener;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectAction;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
-import org.jkiss.dbeaver.runtime.NullProgressMonitor;
-import org.jkiss.dbeaver.runtime.load.ILoadService;
+import org.eclipse.swt.widgets.Display;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * DBMModel
@@ -100,7 +102,8 @@ public class DBMModel implements IDataSourceListener, DBSListener {
 */
     }
 
-    public DBMNode getNodeByObject(DBSObject object, boolean load, ILoadService loadService)
+    public DBMNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean load
+    )
     {
         DBMNode node = getNodeByObject(object);
         if (node != null || !load) {
@@ -119,12 +122,12 @@ public class DBMModel implements IDataSourceListener, DBSListener {
                 return null;
             }
             try {
-                List<? extends DBMNode> children = node.getChildren(loadService);
+                List<? extends DBMNode> children = node.getChildren(monitor);
                 for (DBMNode child : children) {
                     if (child instanceof DBMTreeFolder) {
                         Class<?> itemsClass = ((DBMTreeFolder) child).getItemsClass();
                         if (itemsClass != null && itemsClass.isAssignableFrom(nextItem.getClass())) {
-                            child.getChildren(loadService);
+                            child.getChildren(monitor);
                         }
                     }
                 }
@@ -194,14 +197,25 @@ public class DBMModel implements IDataSourceListener, DBSListener {
                 break;
             case DISCONNECT:
             {
-                DBMNode dbmNode = getNodeByObject(event.getDataSource());
-                if (dbmNode != null) {
-                    try {
-                        dbmNode.refreshNode(NullProgressMonitor.INSTANCE);
-                    }
-                    catch (DBException e) {
-                        log.error("Error refreshing datasource tree node");
-                    }
+                final DBMNode dbmNode = getNodeByObject(event.getDataSource());
+                if (dbmNode != null && Display.getCurrent() != null) {
+                    Display.getCurrent().asyncExec(new Runnable() {
+                        public void run()
+                        {
+                            DBeaverCore.getInstance().runAndWait(false, false, new DBRRunnableWithProgress() {
+                                public void run(DBRProgressMonitor monitor)
+                                    throws InvocationTargetException, InterruptedException
+                                {
+                                    try {
+                                        dbmNode.refreshNode(monitor);
+                                    }
+                                    catch (DBException e) {
+                                        throw new InvocationTargetException(e);
+                                    }
+                                }
+                            });
+                        }
+                    });
                     fireNodeRefresh(event.getSource(), dbmNode, DBMEvent.NodeChange.UNLOADED);
                 }
                 event.getDataSource().removeListener(this);

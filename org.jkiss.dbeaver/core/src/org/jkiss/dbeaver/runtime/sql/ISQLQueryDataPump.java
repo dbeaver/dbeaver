@@ -6,23 +6,25 @@ package org.jkiss.dbeaver.runtime.sql;
 
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * SQLQueryListener
  */
 public interface ISQLQueryDataPump {
 
-    void fetchStart(DBCResultSet resultSet)
+    void fetchStart(DBCResultSet resultSet, DBRProgressMonitor monitor)
         throws DBCException;
 
-    void fetchRow(DBCResultSet resultSet)
+    void fetchRow(DBCResultSet resultSet, DBRProgressMonitor monitor)
         throws DBCException;
 
     /**
      * Called after entire result set is fetched and closed
      * @throws DBCException on error
+     * @param monitor
      */
-    void fetchEnd()
+    void fetchEnd(DBRProgressMonitor monitor)
         throws DBCException;
 
 }

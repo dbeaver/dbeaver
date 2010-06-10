@@ -34,7 +34,7 @@ public class TreeLoadService extends AbstractLoadService<Object[]> {
     {
         try {
             return DBMNode.convertNodesToObjects(
-                parentNode.getChildren(this));
+                parentNode.getChildren(getProgressMonitor()));
         } catch (Throwable ex) {
             if (ex instanceof InvocationTargetException) {
                 throw (InvocationTargetException)ex;

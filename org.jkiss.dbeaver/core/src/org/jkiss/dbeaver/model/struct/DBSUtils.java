@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.struct;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
 import java.util.List;
@@ -20,17 +21,9 @@ public final class DBSUtils
     public static String getQuotedIdentifier(DBPDataSource dataSource, String str)
     {
         String quoteString;
-        try {
-            quoteString = dataSource.getInfo().getIdentifierQuoteString();
-        } catch (DBException e) {
-            quoteString = " ";
-        }
+        quoteString = dataSource.getInfo().getIdentifierQuoteString();
         String delimString;
-        try {
-            delimString = dataSource.getInfo().getCatalogSeparator();
-        } catch (DBException e) {
-            delimString = ".";
-        }
+        delimString = dataSource.getInfo().getCatalogSeparator();
 
         boolean hasBadChars = false;
         for (int i = 0; i < str.length(); i++) {
@@ -49,38 +42,55 @@ public final class DBSUtils
         return str;
     }
 
-    public static DBSObject getTableByPath(DBSStructureContainer rootSC, DBSTablePath path)
-        throws DBException
+    public static String getFullTableName(DBPDataSource dataSource, String catalogName, String schemaName, String tableName)
     {
-        return getObjectByPath(rootSC, path.getCatalogName(), path.getSchemaName(), path.getTableName());
+        String catalogSeparator = dataSource.getInfo().getCatalogSeparator();
+        StringBuilder name=  new StringBuilder();
+        if (catalogName != null) {
+            name.append(DBSUtils.getQuotedIdentifier(dataSource, catalogName)).append(catalogSeparator);
+        }
+        if (schemaName != null) {
+            name.append(DBSUtils.getQuotedIdentifier(dataSource, schemaName)).append(catalogSeparator);
+        }
+        name.append(DBSUtils.getQuotedIdentifier(dataSource, tableName));
+        return name.toString();
     }
 
-    public static DBSObject getObjectByPath(DBSStructureContainer rootSC, String catalogName, String schemaName, String tableName)
+    public static DBSObject getTableByPath(DBRProgressMonitor monitor, DBSStructureContainer rootSC, DBSTablePath path)
+        throws DBException
+    {
+        return getObjectByPath(monitor, rootSC, path.getCatalogName(), path.getSchemaName(), path.getTableName());
+    }
+
+    public static DBSObject getObjectByPath(DBRProgressMonitor monitor, DBSStructureContainer rootSC,
+                                            String catalogName, String schemaName, String tableName)
         throws DBException
     {
         if (!CommonUtils.isEmpty(catalogName)) {
-            DBSObject catalog = rootSC.getChild(catalogName);
+            DBSObject catalog = rootSC.getChild(monitor, catalogName);
             if (!(catalog instanceof DBSStructureContainer)) {
                 return null;
             }
             rootSC = (DBSStructureContainer) catalog;
         }
         if (!CommonUtils.isEmpty(schemaName)) {
-            DBSObject schema = rootSC.getChild(schemaName);
+            DBSObject schema = rootSC.getChild(monitor, schemaName);
             if (!(schema instanceof DBSStructureContainer)) {
                 return null;
             }
             rootSC = (DBSStructureContainer) schema;
         }
-        return rootSC.getChild(tableName);
+        return rootSC.getChild(monitor, tableName);
     }
 
-    public static DBSObject findNestedObject(DBSStructureContainer parent, List<String> names)
+    public static DBSObject findNestedObject(DBRProgressMonitor monitor, DBSStructureContainer parent,
+                                             List<String> names
+    )
         throws DBException
     {
         for (int i = 0; i < names.size(); i++) {
             String childName = names.get(i);
-            DBSObject child = parent.getChild(childName);
+            DBSObject child = parent.getChild(monitor, childName);
             if (child == null) {
                 break;
             }

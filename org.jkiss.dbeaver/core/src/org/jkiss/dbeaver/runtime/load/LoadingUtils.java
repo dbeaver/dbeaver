@@ -22,7 +22,8 @@ public class LoadingUtils {
 
     static Log log = LogFactory.getLog(LoadingUtils.class);
 
-    public static Object extractPropertyValue(Object object, String propertyName, ILoadService loadService)
+    public static Object extractPropertyValue(DBRProgressMonitor monitor, Object object, String propertyName
+    )
         throws DBException
     {
         // Read property using reflection
@@ -41,7 +42,7 @@ public class LoadingUtils {
                 return getter.invoke(object);
             } else if (paramTypes.length == 1 && paramTypes[0] == DBRProgressMonitor.class) {
                 // Read with progress monitor
-                return getter.invoke(object, loadService.getProgressMonitor());
+                return getter.invoke(object, monitor);
             } else {
                 log.warn("Could not read property '" + propertyName + "' - bad method signature: " + getter.toString());
                 return null;

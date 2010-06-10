@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.dbc.*;
@@ -44,7 +45,7 @@ class ResultSetDataPump implements ISQLQueryDataPump {
         this.display = resultSetViewer.getControl().getShell().getDisplay();
     }
 
-    public void fetchStart(DBCResultSet resultSet)
+    public void fetchStart(DBCResultSet resultSet, DBRProgressMonitor monitor)
         throws DBCException
     {
         rows.clear();
@@ -75,7 +76,7 @@ class ResultSetDataPump implements ISQLQueryDataPump {
         resultSetViewer.setColumnsInfo(metaColumns);
     }
 
-    public void fetchRow(DBCResultSet resultSet)
+    public void fetchRow(DBCResultSet resultSet, DBRProgressMonitor monitor)
         throws DBCException
     {
         Object[] row = new Object[columnsCount];
@@ -88,10 +89,10 @@ class ResultSetDataPump implements ISQLQueryDataPump {
         rows.add(row);
     }
 
-    public void fetchEnd()
+    public void fetchEnd(DBRProgressMonitor monitor)
         throws DBCException
     {
-        extractRowIdentifiers();
+        extractRowIdentifiers(monitor);
 
         display.asyncExec(new Runnable() {
             public void run()
@@ -102,27 +103,27 @@ class ResultSetDataPump implements ISQLQueryDataPump {
     }
 
     // Find value locators for columns
-    private void extractRowIdentifiers() {
+    private void extractRowIdentifiers(DBRProgressMonitor monitor) {
         Map<DBSTable, DBDValueLocator> locatorMap = new HashMap<DBSTable, DBDValueLocator>();
         try {
             for (ResultSetColumn column : metaColumns) {
                 DBCColumnMetaData meta = column.metaData;
-                if (meta.getTable() == null || !meta.getTable().isIdentitied()) {
+                if (meta.getTable() == null || !meta.getTable().isIdentitied(monitor)) {
                     continue;
                 }
                 // We got table name and column name
                 // To be editable we need this result set contain set of columns from the same table
                 // which construct any unique key
-                column.valueLocator = locatorMap.get(meta.getTable().getTable());
+                column.valueLocator = locatorMap.get(meta.getTable().getTable(monitor));
                 if (column.valueLocator == null) {
-                    DBCTableIdentifier tableIdentifier = meta.getTable().getBestIdentifier();
+                    DBCTableIdentifier tableIdentifier = meta.getTable().getBestIdentifier(monitor);
                     if (tableIdentifier == null) {
                         continue;
                     }
                     DBDValueLocator valueLocator = new DBDValueLocator(
-                        meta.getTable().getTable(),
+                        meta.getTable().getTable(monitor),
                         tableIdentifier);
-                    locatorMap.put(meta.getTable().getTable(), valueLocator);
+                    locatorMap.put(meta.getTable().getTable(monitor), valueLocator);
                     column.valueLocator = valueLocator;
                 }
                 column.editable = true;

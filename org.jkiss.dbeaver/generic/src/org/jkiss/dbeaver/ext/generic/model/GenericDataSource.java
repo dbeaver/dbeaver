@@ -48,6 +48,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     private List<GenericCatalog> catalogs;
     private List<GenericSchema> schemas;
     private DBSObject activeChild;
+    private boolean activeChildRead;
 
     private DBPDataSourceInfo info;
     private String queryGetActiveDB;
@@ -112,15 +113,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     }
 
     public DBPDataSourceInfo getInfo()
-         throws DBException
     {
-        if (info == null) {
-            try {
-                info = new JDBCDataSourceInfo(connection.getMetaData());
-            } catch (SQLException e) {
-                throw new DBException(e);
-            }
-        }
         return info;
     }
 
@@ -279,6 +272,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         throws DBException
     {
         this.activeChild = null;
+        this.activeChildRead = false;
         this.tableTypes = null;
         this.catalogs = null;
         this.schemas = null;
@@ -383,20 +377,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         return container.getTable(tableName);
     }
 
-    String getFullTableName(String catalogName, String schemaName, String tableName)
-    {
-        StringBuilder name=  new StringBuilder();
-        if (catalogName != null) {
-            name.append(DBSUtils.getQuotedIdentifier(this, catalogName)).append(info.getCatalogSeparator());
-        }
-        if (schemaName != null) {
-            name.append(DBSUtils.getQuotedIdentifier(this, schemaName)).append(info.getCatalogSeparator());
-        }
-        name.append(DBSUtils.getQuotedIdentifier(this, tableName));
-        return name.toString();
-    }
-
-    public Collection<? extends DBSObject> getChildren()
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getCatalogs())) {
@@ -408,7 +389,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         }
     }
 
-    public DBSObject getChild(String childName)
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getCatalogs())) {
@@ -416,11 +397,11 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         } else if (!CommonUtils.isEmpty(getSchemas())) {
             return getSchema(childName);
         } else {
-            return super.getChild(childName);
+            return super.getChild(monitor, childName);
         }
     }
 
-    public boolean isChild(DBSObject object)
+    public boolean isChild(DBRProgressMonitor monitor, DBSObject object)
         throws DBException
     {
         if (object instanceof GenericCatalog) {
@@ -431,10 +412,14 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         return false;
     }
 
-    public DBSObject getActiveChild()
+    public DBSObject getActiveChild(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (activeChild == null) {
+        if (activeChildRead) {
+            return activeChild;
+        }
+        synchronized (this) {
+            activeChildRead = true;
             if (CommonUtils.isEmpty(queryGetActiveDB)) {
                 return null;
             }
@@ -456,9 +441,10 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                 log.error(e);
                 return null;
             }
-            activeChild = getChild(activeDbName);
+            activeChild = getChild(monitor, activeDbName);
+
+            return activeChild;
         }
-        return activeChild;
     }
 
     public boolean supportsActiveChildChange()
@@ -466,7 +452,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         return !CommonUtils.isEmpty(querySetActiveDB);
     }
 
-    public void setActiveChild(DBSObject child)
+    public void setActiveChild(DBRProgressMonitor monitor, DBSObject child)
         throws DBException
     {
         if (child == activeChild) {
@@ -475,9 +461,10 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         if (CommonUtils.isEmpty(querySetActiveDB) || !(child instanceof GenericStructureContainer)) {
             throw new DBException("Active database can't be changed for this kind of datasource!");
         }
-        if (!isChild(child)) {
+        if (!isChild(monitor, child)) {
             throw new DBException("Bad child object specified as active: " + child);
         }
+
         String changeQuery = querySetActiveDB.replaceFirst("\\?", child.getName());
         try {
             PreparedStatement dbStat = getConnection().prepareStatement(changeQuery);
@@ -489,10 +476,19 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         } catch (SQLException e) {
             throw new DBException(e);
         }
+
+        DBSObject oldChild;
+        synchronized (this) {
+            oldChild = this.activeChild;
+            this.activeChild = child;
+        }
+
+        if (oldChild != null) {
+            getContainer().fireEvent(DBSObjectAction.CHANGED, this.activeChild);
+        }
         if (this.activeChild != null) {
             getContainer().fireEvent(DBSObjectAction.CHANGED, this.activeChild);
         }
-        this.activeChild = child;
-        getContainer().fireEvent(DBSObjectAction.CHANGED, this.activeChild);
     }
+
 }

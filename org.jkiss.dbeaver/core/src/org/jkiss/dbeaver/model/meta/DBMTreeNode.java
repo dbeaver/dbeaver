@@ -16,7 +16,6 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeIcon;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
-import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 
 import java.util.*;
@@ -99,10 +98,10 @@ public abstract class DBMTreeNode extends DBMNode {
         return this.getMeta().hasChildren();
     }
 
-    public boolean hasChildren(DBXTreeNode childType, ILoadService loadService)
+    public boolean hasChildren(DBRProgressMonitor monitor, DBXTreeNode childType)
         throws DBException
     {
-        for (DBMTreeNode child : getChildren(loadService)) {
+        for (DBMTreeNode child : getChildren(monitor)) {
             if (child.getMeta() == childType) {
                 return true;
             }
@@ -110,12 +109,12 @@ public abstract class DBMTreeNode extends DBMNode {
         return false;
     }
 
-    public List<DBMTreeNode> getChildren(ILoadService loadService)
+    public List<DBMTreeNode> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         if (this.hasChildren() && childNodes == null) {
-            if (this.initializeNode(loadService.getProgressMonitor())) {
-                this.childNodes = loadChildren(getMeta(), loadService);
+            if (this.initializeNode(monitor)) {
+                this.childNodes = loadChildren(monitor, getMeta());
             }
         }
         return childNodes;
@@ -143,24 +142,24 @@ public abstract class DBMTreeNode extends DBMNode {
         }
     }
 
-    private List<DBMTreeNode> loadChildren(final DBXTreeNode meta, ILoadService loadService)
+    private List<DBMTreeNode> loadChildren(DBRProgressMonitor monitor, final DBXTreeNode meta
+    )
         throws DBException
     {
         final List<DBMTreeNode> tmpList = new ArrayList<DBMTreeNode>();
-        loadChildren(meta, tmpList, loadService);
+        loadChildren(monitor, meta, tmpList);
         return tmpList;
     }
 
     private void loadChildren(
+        DBRProgressMonitor monitor,
         final DBXTreeNode meta,
-        final List<DBMTreeNode> toList,
-        ILoadService loadService)
+        final List<DBMTreeNode> toList)
         throws DBException
     {
         if (!meta.hasChildren()) {
             return;
         }
-        DBRProgressMonitor monitor = loadService.getProgressMonitor();
         List<DBXTreeNode> childMetas = meta.getChildren();
         monitor.beginTask("Load items ...", childMetas.size());
 
@@ -171,9 +170,9 @@ public abstract class DBMTreeNode extends DBMNode {
             monitor.subTask("Load " + child.getLabel());
             if (child instanceof DBXTreeItem) {
                 final DBXTreeItem item = (DBXTreeItem) child;
-                boolean isLoaded = loadTreeItems(item, toList, loadService);
+                boolean isLoaded = loadTreeItems(monitor, item, toList);
                 if (!isLoaded && item.isOptional()) {
-                    loadChildren(item, toList, loadService);
+                    loadChildren(monitor, item, toList);
                 }
             } else {
                 toList.add(
@@ -186,13 +185,13 @@ public abstract class DBMTreeNode extends DBMNode {
 
     /**
      * Extract items using reflect api
-     * @param meta items meta info
-     * @param toList list ot add new items
-     * @param loadService load service
-     * @return true on success
+     * @param monitor
+     *@param meta items meta info
+     * @param toList list ot add new items   @return true on success
      * @throws DBException on any DB error
      */
-    private boolean loadTreeItems(DBXTreeItem meta, List<DBMTreeNode> toList, ILoadService loadService)
+    private boolean loadTreeItems(DBRProgressMonitor monitor, DBXTreeItem meta, List<DBMTreeNode> toList
+    )
         throws DBException
     {
         // Read property using reflection
@@ -201,7 +200,7 @@ public abstract class DBMTreeNode extends DBMNode {
             return false;
         }
         String propertyName = meta.getPropertyName();
-        Object propertyValue = LoadingUtils.extractPropertyValue(object, propertyName, loadService);
+        Object propertyValue = LoadingUtils.extractPropertyValue(monitor, object, propertyName);
         if (propertyValue == null) {
             return false;
         }

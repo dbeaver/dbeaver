@@ -90,7 +90,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
 
     public String getFullQualifiedName()
     {
-        return getDataSource().getFullTableName(
+        return DBSUtils.getFullTableName(getDataSource(),
             getCatalog() == null ? null : getCatalog().getName(),
             getSchema() == null ? null : getSchema().getName(),
             getName());
@@ -467,13 +467,13 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                         default: defferability = DBSConstraintDefferability.UNKNOWN; break;
                     }
 
-                    String pkTableFullName = getDataSource().getFullTableName(pkTableCatalog, pkTableSchema, pkTableName);
+                    String pkTableFullName = DBSUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
                     GenericTable pkTable = getDataSource().findTable(pkTableCatalog, pkTableSchema, pkTableName);
                     if (pkTable == null) {
                         log.warn("Can't find PK table " + pkTableFullName);
                         continue;
                     }
-                    String fkTableFullName = getDataSource().getFullTableName(fkTableCatalog, fkTableSchema, fkTableName);
+                    String fkTableFullName = DBSUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName);
                     GenericTable fkTable = getDataSource().findTable(fkTableCatalog, fkTableSchema, fkTableName);
                     if (fkTable == null) {
                         log.warn("Can't find FK table " + fkTableFullName);
@@ -481,12 +481,12 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                     }
                     GenericTableColumn pkColumn = pkTable.getColumn(pkColumnName);
                     if (pkColumn == null) {
-                        log.warn("Can't find PK table " + getDataSource().getFullTableName(pkTableCatalog, pkTableSchema, pkTableName) + " column " + pkColumnName);
+                        log.warn("Can't find PK table " + DBSUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName) + " column " + pkColumnName);
                         continue;
                     }
                     GenericTableColumn fkColumn = fkTable.getColumn(fkColumnName);
                     if (fkColumn == null) {
-                        log.warn("Can't find FK table " + getDataSource().getFullTableName(fkTableCatalog, fkTableSchema, fkTableName) + " column " + fkColumnName);
+                        log.warn("Can't find FK table " + DBSUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName) + " column " + fkColumnName);
                         continue;
                     }
 
@@ -527,7 +527,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         }
     }
 
-    public void cacheStructure()
+    public void cacheStructure(DBRProgressMonitor monitor)
         throws DBException
     {
         getColumns();

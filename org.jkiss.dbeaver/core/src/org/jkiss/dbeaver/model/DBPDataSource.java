@@ -20,7 +20,7 @@ public interface DBPDataSource extends DBPObject
      */
     DBSDataSourceContainer getContainer();
 
-    DBPDataSourceInfo getInfo() throws DBException;
+    DBPDataSourceInfo getInfo();
 
     /**
      * Acquires new database session

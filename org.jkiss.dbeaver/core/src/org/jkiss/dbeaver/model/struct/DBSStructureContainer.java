@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
 
@@ -18,17 +19,18 @@ public interface DBSStructureContainer extends DBSObject
      * @return collection of child objects (not null).
      *  Objects type depends on implementor (catalogs, schemas, tables, etc)
      * @throws DBException on any DB error
+     * @param monitor
      */
-    Collection<? extends DBSObject> getChildren() throws DBException;
+    Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets child object by its name.
      * In most cases object name have to be case insensitive.
-     * @param childName name of child object
-     * @return child object or null
+     * @param monitor
+     *@param childName name of child object  @return child object or null
      * @throws DBException on any DB error
      */
-    DBSObject getChild(String childName) throws DBException;
+    DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException;
 
     /**
      * Retrieve list of underlying tables
@@ -43,7 +45,8 @@ public interface DBSStructureContainer extends DBSObject
      * This method is invoked when view want to draw something like ER diagramm which
      * includes all container entities.
      * @throws DBException on any DB error
+     * @param monitor
      */
-    void cacheStructure() throws DBException;
+    void cacheStructure(DBRProgressMonitor monitor) throws DBException;
 
 }

@@ -22,6 +22,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyDialogAction;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshableView;
 import org.jkiss.dbeaver.model.meta.DBMNode;
@@ -29,11 +30,14 @@ import org.jkiss.dbeaver.model.meta.DBMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.actions.SetActiveObjectAction;
 
 import java.util.Iterator;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * NavigatorUtils
@@ -131,14 +135,14 @@ public class ViewUtils
         });
         menuMgr.addMenuListener(new IMenuListener()
         {
-            public void menuAboutToShow(IMenuManager manager)
+            public void menuAboutToShow(final IMenuManager manager)
             {
                 // Fill context menu
                 Viewer viewer = metaModelView.getViewer();
                 if (viewer == null) {
                     return;
                 }
-                IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+                final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
 /*
                 if (selection.isEmpty()) {
                     manager.add(new NewConnectionAction(
@@ -148,26 +152,36 @@ public class ViewUtils
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
                 // Add "Set active object" menu
-                DBMNode dbmNode = ViewUtils.getSelectedNode(metaModelView);
+                final DBMNode dbmNode = ViewUtils.getSelectedNode(metaModelView);
                 if (dbmNode instanceof DBMTreeNode && dbmNode.getObject() != null) {
-                    DBSStructureContainerActive activeContainer = DBSUtils.queryParentInterface(
+                    final DBSStructureContainerActive activeContainer = DBSUtils.queryParentInterface(
                         DBSStructureContainerActive.class, dbmNode.getObject());
-                    try {
-                        if (activeContainer != null && activeContainer.getActiveChild() != dbmNode.getObject()) {
-                            DBMTreeNode treeNode = (DBMTreeNode)dbmNode;
-                            DBXTreeNode nodeMeta = treeNode.getMeta();
-                            String text = "Set active";
-                            if (nodeMeta instanceof DBXTreeItem) {
-                                DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
-                                text += " " + itemMeta.getPath();
-                            }
-                            IAction action = makeAction(new SetActiveObjectAction(), metaModelView.getWorkbenchPart(), selection, text);
+                    if (activeContainer != null) {
+                        DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
+                            public void run(DBRProgressMonitor monitor)
+                                throws InvocationTargetException, InterruptedException
+                            {
+                                DBSObject activeChild;
+                                try {
+                                    activeChild = activeContainer.getActiveChild(monitor);
+                                }
+                                catch (DBException e) {
+                                    throw new InvocationTargetException(e);
+                                }
+                                if (activeChild != dbmNode.getObject()) {
+                                    DBMTreeNode treeNode = (DBMTreeNode)dbmNode;
+                                    DBXTreeNode nodeMeta = treeNode.getMeta();
+                                    String text = "Set active";
+                                    if (nodeMeta instanceof DBXTreeItem) {
+                                        DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
+                                        text += " " + itemMeta.getPath();
+                                    }
+                                    IAction action = makeAction(new SetActiveObjectAction(), metaModelView.getWorkbenchPart(), selection, text);
 
-                            manager.add(action);
-                        }
-                    }
-                    catch (DBException e) {
-                        log.error(e);
+                                    manager.add(action);
+                                }
+                            }
+                        });
                     }
                 }
 

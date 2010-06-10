@@ -6,19 +6,27 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.meta.DBMNode;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.load.ILoadService;
-import org.jkiss.dbeaver.runtime.load.NullLoadService;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
+import org.jkiss.dbeaver.model.struct.DBSTablePath;
+import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.runtime.NullProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +45,6 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
         this.editor = editor;
     }
 
-    // TODO: implement load service
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks)
     {
         if (region == null || textViewer == null || !editor.getDataSourceContainer().isConnected()) {
@@ -49,7 +56,6 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        ILoadService loadService = new NullLoadService();
         int offset = region.getOffset();
 
         SQLIdentifierDetector wordDetector = new SQLIdentifierDetector(editor.getSyntaxManager());
@@ -98,29 +104,50 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
         if (word.length() == 0) {
             return null;
         }
+
         // Detect what all this means
-        DBPDataSource dataSource = editor.getDataSource();
+        final DBPDataSource dataSource = editor.getDataSource();
         if (dataSource instanceof DBSStructureContainer && dataSource instanceof DBSStructureAssistant) {
             try {
-                List<DBSTablePath> pathList = ((DBSStructureAssistant) editor.getDataSource()).findTableNames(word, 2);
+                final List<DBSTablePath> pathList = ((DBSStructureAssistant) editor.getDataSource()).findTableNames(word, 2);
                 if (pathList.isEmpty()) {
                     return null;
                 }
-                IRegion wordRegion = new Region(wordStart, wordEnd - wordStart);
-                List<IHyperlink> links = new ArrayList<IHyperlink>();
-                for (DBSTablePath path : pathList) {
-                    DBMNode node = null;
-                    DBSObject object = DBSUtils.getTableByPath((DBSStructureContainer) dataSource, path);
-                    if (object != null) {
-                        node = DBeaverCore.getInstance().getMetaModel().getNodeByObject(
-                            object,
-                            true,
-                            loadService);
-                    }
-                    if (node != null) {
-                        links.add(new EntityHyperlink(node, wordRegion));
-                    }
+                final IRegion wordRegion = new Region(wordStart, wordEnd - wordStart);
+                final List<IHyperlink> links = new ArrayList<IHyperlink>();
+
+                try {
+                    DBRRunnableWithProgress objLoader = new DBRRunnableWithProgress() {
+                        public void run(DBRProgressMonitor monitor)
+                            throws InvocationTargetException, InterruptedException
+                        {
+                            monitor.beginTask("check tables", pathList.size());
+                            for (DBSTablePath path : pathList) {
+                                DBSObject object;
+                                try {
+                                    object = DBSUtils.getTableByPath(monitor, (DBSStructureContainer) dataSource, path);
+                                }
+                                catch (DBException e) {
+                                    throw new InvocationTargetException(e);
+                                }
+                                if (object != null) {
+                                    links.add(new EntityHyperlink(object, wordRegion));
+                                }
+                            }
+                        }
+                    };
+                    // Run it with dummy monitor
+                    // Using detached thread (job) or running with progress service breaks hyperlinks
+                    // TODO: investigate the reason and fix it
+                    objLoader.run(NullProgressMonitor.INSTANCE);
                 }
+                catch (InvocationTargetException e) {
+                    log.error(e.getTargetException());
+                }
+                catch (InterruptedException e) {
+                    // do nothing
+                }
+
                 if (links.isEmpty()) {
                     return null;
                 }
