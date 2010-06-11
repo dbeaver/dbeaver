@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
-import org.jkiss.dbeaver.runtime.NullProgressMonitor;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
@@ -140,7 +140,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                 // Run it with dummy monitor
                 // Using detached thread (job) or running with progress service breaks hyperlinks
                 // TODO: investigate the reason and fix it
-                objLoader.run(NullProgressMonitor.INSTANCE);
+                objLoader.run(VoidProgressMonitor.INSTANCE);
             }
             catch (InvocationTargetException e) {
                 log.error(e.getTargetException());

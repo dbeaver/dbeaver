@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DataSourceJob;
+import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.DBIcon;
 

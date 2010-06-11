@@ -11,9 +11,12 @@ import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 /**
  * Progress monitor null implementation
  */
-public class NullProgressMonitor implements DBRProgressMonitor {
+public class VoidProgressMonitor implements DBRProgressMonitor {
 
-    public static final NullProgressMonitor INSTANCE = new NullProgressMonitor();
+    public static final VoidProgressMonitor INSTANCE = new VoidProgressMonitor();
+
+    private VoidProgressMonitor() {
+    }
 
     public IProgressMonitor getNestedMonitor()
     {

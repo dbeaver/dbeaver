@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.runtime;
+package org.jkiss.dbeaver.runtime.jobs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.AbstractJob;
 
 /**
  * ConnectJob

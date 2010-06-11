@@ -16,7 +16,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.NullProgressMonitor;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
@@ -109,7 +109,7 @@ class NavigatorTreeLabelProvider extends LabelProvider implements IFontProvider,
                     // Check child with null monitor
                     // Actually this child is already read (it is the object we checking) so there is a
                     // big chance that no additional database roundtrips are needed
-                    return activeContainer.getActiveChild(NullProgressMonitor.INSTANCE) == object;
+                    return activeContainer.getActiveChild(VoidProgressMonitor.INSTANCE) == object;
                 } catch (DBException e) {
                     log.error("Can't check active object", e);
                 }

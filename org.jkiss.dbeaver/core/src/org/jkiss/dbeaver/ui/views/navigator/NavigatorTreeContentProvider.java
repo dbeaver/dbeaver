@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.load.tree.TreeLoadService;
 import org.jkiss.dbeaver.runtime.load.tree.TreeLoadVisualizer;
-import org.jkiss.dbeaver.runtime.NullProgressMonitor;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -77,7 +77,7 @@ class NavigatorTreeContentProvider implements IStructuredContentProvider, ITreeC
                 // Read children with null monitor cos' it's not a lazy node
                 // and no blocking prooccess will occure
                 return DBMNode.convertNodesToObjects(
-                    parentNode.getChildren(NullProgressMonitor.INSTANCE));
+                    parentNode.getChildren(VoidProgressMonitor.INSTANCE));
             }
             catch (Throwable ex) {
                 if (ex instanceof InvocationTargetException) {

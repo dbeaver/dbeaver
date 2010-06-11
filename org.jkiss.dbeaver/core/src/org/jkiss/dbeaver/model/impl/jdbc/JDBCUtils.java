@@ -164,6 +164,13 @@ public class JDBCUtils
         }
     }
 
+/*
+    public static DBRBlockingObject makeBlockingObject(Statement statement)
+    {
+        return new StatementBlockingObject(statement);
+    }
+*/
+
     public static DBRBlockingObject makeBlockingObject(Statement statement)
     {
         return new StatementBlockingObject(statement);
