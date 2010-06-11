@@ -537,7 +537,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         }
     }
 
-    public void cacheStructure(DBRProgressMonitor monitor)
+    public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {
         getColumns(monitor);

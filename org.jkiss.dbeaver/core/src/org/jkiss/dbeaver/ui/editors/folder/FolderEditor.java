@@ -10,10 +10,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.*;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -93,7 +90,10 @@ public class FolderEditor extends EditorPart implements IDBMListener, IMetaModel
         if (event.getNode() == folderInput.getFolder()) {
             if (event.getAction() == DBMEvent.Action.REMOVE) {
                 getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
-                    getSite().getWorkbenchWindow().getActivePage().closeEditor(FolderEditor.this, false);
+                    IWorkbenchPage activePage = getSite().getWorkbenchWindow().getActivePage();
+                    if (activePage != null) {
+                        activePage.closeEditor(FolderEditor.this, false);
+                    }
                 }});
             }
         }

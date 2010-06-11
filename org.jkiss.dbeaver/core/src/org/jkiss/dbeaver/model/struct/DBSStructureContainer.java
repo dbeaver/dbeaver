@@ -15,6 +15,19 @@ import java.util.Collection;
 public interface DBSStructureContainer extends DBSObject
 {
     /**
+     * Cache underlying entities
+     */
+    public static final int STRUCT_ENTITIES = 1;
+    /**
+     * Cache underlying relations
+     */
+    public static final int STRUCT_RELATIONS = 2;
+    /**
+     * Cache attributes of underlying entities/relations
+     */
+    public static final int STRUCT_ATTRIBUTES = 2;
+    
+    /**
      * Retrieve list of immediate child objects (not recursive)
      * @return collection of child objects (not null).
      *  Objects type depends on implementor (catalogs, schemas, tables, etc)
@@ -33,20 +46,13 @@ public interface DBSStructureContainer extends DBSObject
     DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException;
 
     /**
-     * Retrieve list of underlying tables
-     * @return table collection (not null)
-     * @throws DBException on any DB error
-     */
-    //Collection<? extends DBSTable> getTables() throws DBException;
-
-    /**
      * Caches all underlying structure contents.
      * Reads tables, columns, foreign keys and other RDB information.
      * This method is invoked when view want to draw something like ER diagramm which
      * includes all container entities.
-     * @throws DBException on any DB error
-     * @param monitor
+     * @throws DBException on any DB error  @param monitor
+     * @param scope
      */
-    void cacheStructure(DBRProgressMonitor monitor) throws DBException;
+    void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException;
 
 }

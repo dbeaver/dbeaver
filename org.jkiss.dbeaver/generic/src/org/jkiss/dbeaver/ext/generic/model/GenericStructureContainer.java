@@ -73,7 +73,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         return indexList;
     }
 
-    public void cacheStructure(DBRProgressMonitor monitor)
+    public void cacheStructure(DBRProgressMonitor monitor, int scope)
     {
         System.out.println("CACHE STRUCTURE!");
     }

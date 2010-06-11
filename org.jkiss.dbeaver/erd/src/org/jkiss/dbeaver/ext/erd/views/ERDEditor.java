@@ -292,7 +292,9 @@ public class ERDEditor extends EditorPart implements IObjectEditor
 
         List<ERDTable> tables = new ArrayList<ERDTable>();
         List<ERDLink> links = new ArrayList<ERDLink>();
-        container.cacheStructure(monitor);
+        container.cacheStructure(
+            monitor,
+            DBSStructureContainer.STRUCT_ENTITIES | DBSStructureContainer.STRUCT_RELATIONS | DBSStructureContainer.STRUCT_ATTRIBUTES);
         if (container instanceof DBSTable) {
             tables.add(new ERDTable((DBSTable)container));
         } else {

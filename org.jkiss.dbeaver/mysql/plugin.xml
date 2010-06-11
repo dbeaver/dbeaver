@@ -123,7 +123,6 @@
                     </propertyGroup>
                     <query label="GET_ACTIVE_DB">select database()</query>
                     <query label="SET_ACTIVE_DB">use ?</query>
-                    <library path="drivers/mysql-connector-java-5.1.5-bin.jar"/>
                 </driver>
             </drivers>
             <views>

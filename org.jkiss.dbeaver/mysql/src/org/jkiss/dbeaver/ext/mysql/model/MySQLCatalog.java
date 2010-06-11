@@ -216,7 +216,7 @@ public class MySQLCatalog
         return getTable(monitor, childName);
     }
 
-    public void cacheStructure(DBRProgressMonitor monitor)
+    public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {
 

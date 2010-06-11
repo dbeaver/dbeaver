@@ -338,18 +338,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
         isLoaded = false;
 
-        //if (isManagable()) {
+        if (isManagable()) {
             loadLibraries();
-        //}
+        }
 
         try {
-            //if (!isManagable()) {
+            if (!isManagable()) {
                 // Use plugin's classloader to load driver
-                //driverClass = getProviderDescriptor().getContributorBundle().loadClass(driverClassName);
-            //} else {
+                driverClass = getProviderDescriptor().getContributorBundle().loadClass(driverClassName);
+            } else {
                 // Load driver classes into core module using plugin class loader
                 driverClass = Class.forName(driverClassName, true, classLoader);
-            //}
+            }
         }
         catch (ClassNotFoundException ex) {
             throw new DBException("Can't load driver class '" + driverClassName + "'", ex);

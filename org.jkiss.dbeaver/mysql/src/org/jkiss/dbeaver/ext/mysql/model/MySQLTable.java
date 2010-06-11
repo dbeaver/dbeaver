@@ -466,7 +466,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
-    public void cacheStructure(DBRProgressMonitor monitor)
+    public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {
         getColumns(monitor);

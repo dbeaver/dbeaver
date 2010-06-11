@@ -64,12 +64,12 @@ public class DBMTreeFolder extends DBMTreeNode implements DBSFolder
 
     public DBSObject getParentObject()
     {
-        return getParentNode().getObject();
+        return getParentNode() == null ? null : getParentNode().getObject();
     }
 
     public DBPDataSource getDataSource()
     {
-        return getParentObject().getDataSource();
+        return getParentObject() == null ? null : getParentObject().getDataSource();
     }
 
     public boolean refreshObject(DBRProgressMonitor monitor)
@@ -81,6 +81,9 @@ public class DBMTreeFolder extends DBMTreeNode implements DBSFolder
     public DBMNode refreshNode(DBRProgressMonitor monitor)
         throws DBException
     {
+        if (this.getParentNode() == null) {
+            return this;
+        }
         return this.getParentNode().refreshNode(monitor);
     }
 

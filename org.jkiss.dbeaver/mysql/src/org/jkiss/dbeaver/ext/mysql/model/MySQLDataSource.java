@@ -143,7 +143,7 @@ public class MySQLDataSource extends AbstractDataSource implements DBSStructureA
         return getCatalog(childName);
     }
 
-    public void cacheStructure(DBRProgressMonitor monitor)
+    public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {
         
