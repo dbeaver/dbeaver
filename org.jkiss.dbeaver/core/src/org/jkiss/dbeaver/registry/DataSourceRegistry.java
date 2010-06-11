@@ -188,7 +188,13 @@ public class DataSourceRegistry implements DBPRegistry
 
     public List<DataSourceDescriptor> getDataSources()
     {
-        return dataSources;
+        List<DataSourceDescriptor> dsCopy = new ArrayList<DataSourceDescriptor>(dataSources);
+        Collections.sort(dsCopy, new Comparator<DataSourceDescriptor>() {
+            public int compare(DataSourceDescriptor o1, DataSourceDescriptor o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        return dsCopy;
     }
 
     public void addDataSource(DataSourceDescriptor dataSource)
