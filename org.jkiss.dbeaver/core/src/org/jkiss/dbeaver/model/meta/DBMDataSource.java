@@ -27,12 +27,12 @@ public class DBMDataSource extends DBMTreeNode
         super(parentNode);
         this.dataSource = dataSource;
         this.treeRoot = dataSource.getDriver().getProviderDescriptor().getTreeDescriptor();
-        this.getModel().addNode(this.dataSource, this);
+        this.getModel().addNode(this);
     }
 
     protected void dispose()
     {
-        this.getModel().removeNode(this.dataSource);
+        this.getModel().removeNode(this);
         if (this.dataSource.isConnected()) {
             try {
                 this.dataSource.disconnect(this);

@@ -7,24 +7,18 @@ package org.jkiss.dbeaver.model.meta;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSListener;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectAction;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
-import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 
 /**
  * DBMModel
@@ -35,7 +29,7 @@ public class DBMModel implements IDataSourceListener, DBSListener {
     private DataSourceRegistry registry;
     private DBMRoot root;
     private List<IDBMListener> listeners = new ArrayList<IDBMListener>();
-    private Map<DBSObject, DBMNode> nodeMap = new HashMap<DBSObject, DBMNode>();
+    private Map<DBSObject, Object> nodeMap = new HashMap<DBSObject, Object>();
 
     //private static Map<DataSourceRegistry, DBMModel> modelMap = new HashMap<DataSourceRegistry, DBMModel>();
 
@@ -94,7 +88,30 @@ public class DBMModel implements IDataSourceListener, DBSListener {
         if (object instanceof DBMNode) {
             return (DBMNode)object;
         }
-        return nodeMap.get(object);
+        Object obj = nodeMap.get(object);
+        if (obj == null) {
+            return null;
+        } else if (obj instanceof DBMNode) {
+            return (DBMNode)obj;
+        } else if (obj instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<DBMNode> nodeList = (List<DBMNode>) obj;
+            if (nodeList.isEmpty()) {
+                return null;
+            }
+            if (nodeList.size() > 1) {
+                for (DBMNode node : nodeList) {
+                    if (node instanceof DBMTreeItem && !((DBMTreeItem)node).getMeta().isVirtual()) {
+                        return node;
+                    }
+                }
+            }
+            // Get just first one
+            return nodeList.get(0);
+        } else {
+            // Never be here
+           throw new IllegalStateException();
+        }
 /*
         if (node == null) {
             log.warn("Can't find tree node for object " + object.getName() + " (" + object.getClass().getName() + ")");
@@ -103,8 +120,7 @@ public class DBMModel implements IDataSourceListener, DBSListener {
 */
     }
 
-    public DBMNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean load
-    )
+    public DBMNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean load)
     {
         DBMNode node = getNodeByObject(object);
         if (node != null || !load) {
@@ -117,7 +133,7 @@ public class DBMModel implements IDataSourceListener, DBSListener {
         for (int i = 0; i < path.size() - 1; i++) {
             DBSObject item = path.get(i);
             DBSObject nextItem = path.get(i + 1);
-            node = nodeMap.get(item);
+            node = getNodeByObject(item);
             if (node == null) {
                 log.warn("Can't find tree node for object " + item.getName() + " (" + item.getClass().getName() + ")");
                 return null;
@@ -140,22 +156,53 @@ public class DBMModel implements IDataSourceListener, DBSListener {
         return getNodeByObject(object);
     }
 
-    void addNode(DBSObject object, DBMNode node)
+    void addNode(DBMNode node)
     {
-        DBMNode oldNode = nodeMap.put(object, node);
-        if (oldNode != null) {
-            log.warn("Overwrite meta node object " + object.getName() + " (" + object.getClass().getName() + ")");
+        Object obj = nodeMap.get(node.getObject());
+        if (obj == null) {
+            // New node
+            nodeMap.put(node.getObject(), node);
+        } else if (obj instanceof DBMNode) {
+            // Second node - make a list
+            List<DBMNode> nodeList = new ArrayList<DBMNode>(2);
+            nodeList.add((DBMNode)obj);
+            nodeList.add(node);
+        } else if (obj instanceof List) {
+            // Multiple nodes
+            @SuppressWarnings("unchecked")
+            List<DBMNode> nodeList = (List<DBMNode>) obj;
+            nodeList.add(node);
         }
         this.fireNodeEvent(new DBMEvent(this, DBMEvent.Action.ADD, node));
     }
 
-    void removeNode(DBSObject object)
+    void removeNode(DBMNode node)
     {
-        DBMNode removed = nodeMap.remove(object);
-        if (removed == null) {
-            log.warn("Remove unregistered meta node object " + object.getName() + " (" + object.getClass().getName() + ")");
+        Object obj = nodeMap.get(node.getObject());
+        boolean badNode = false;
+        if (obj == null) {
+            // No found
+            badNode = true;
+        } else if (obj instanceof DBMNode) {
+            // Just remove it
+            if (nodeMap.remove(node.getObject()) != node) {
+                badNode = true;
+            }
+        } else if (obj instanceof List) {
+            // Multiple nodes
+            @SuppressWarnings("unchecked")
+            List<DBMNode> nodeList = (List<DBMNode>) obj;
+            if (!nodeList.remove(node)) {
+                badNode = true;
+            }
+            if (nodeList.isEmpty()) {
+                nodeMap.remove(node.getObject());
+            }
+        }
+        if (badNode) {
+            log.warn("Remove unregistered meta node object " + node.getObject().getName() + " (" + node.getObject().getClass().getName() + ")");
         } else {
-            this.fireNodeEvent(new DBMEvent(this, DBMEvent.Action.REMOVE, removed));
+            this.fireNodeEvent(new DBMEvent(this, DBMEvent.Action.REMOVE, node));
         }
     }
 

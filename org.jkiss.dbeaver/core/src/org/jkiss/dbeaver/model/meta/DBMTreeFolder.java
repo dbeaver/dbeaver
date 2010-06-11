@@ -24,7 +24,7 @@ public class DBMTreeFolder extends DBMTreeNode implements DBSFolder
         super(parent);
         this.meta = meta;
         if (this.getModel() != null) {
-            this.getModel().addNode(this, this);
+            this.getModel().addNode(this);
         }
     }
 

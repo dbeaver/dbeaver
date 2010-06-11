@@ -13,14 +13,22 @@ public class DBXTreeItem extends DBXTreeNode
     private String path;
     private String propertyName;
     private boolean optional;
+    private boolean virtual;
 
-    public DBXTreeItem(DBXTreeNode parent, String label, String path, String propertyName, boolean optional)
+    public DBXTreeItem(
+        DBXTreeNode parent,
+        String label,
+        String path,
+        String propertyName,
+        boolean optional,
+        boolean virtual)
     {
         super(parent);
         this.label = label;
         this.path = path;
         this.propertyName = propertyName;
         this.optional = optional;
+        this.virtual = virtual;
     }
 
     public String getPath()
@@ -36,6 +44,16 @@ public class DBXTreeItem extends DBXTreeNode
     public boolean isOptional()
     {
         return optional;
+    }
+
+    /**
+     * Virtual items. Such items are not added to global meta model and couldn't
+     * be found in tree by object
+     * @return true or false
+     */
+    public boolean isVirtual()
+    {
+        return virtual;
     }
 
     public String getLabel()

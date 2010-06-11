@@ -755,8 +755,7 @@
        <propertyContributor
              contributorId="org.jkiss.dbeaver.core.propertyViewContributor"
              tabDescriptorProvider="org.jkiss.dbeaver.ui.views.properties.PropertyTabDescriptorProvider">
-          <propertyCategory
-                category="core-properties"></propertyCategory>
+          <propertyCategory category="core-properties"/>
        </propertyContributor>
     </extension>
 

@@ -253,6 +253,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             "Data Source",
             config.getAttribute("path"),
             null,
+            false,
             false);
         loadTreeChildren(config, treeRoot);
         loadTreeIcon(treeRoot, config);
@@ -287,7 +288,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 config.getAttribute("label"),
                 config.getAttribute("path"),
                 config.getAttribute("property"),
-                "true".equals(config.getAttribute("optional")));
+                "true".equals(config.getAttribute("optional")),
+                "true".equals(config.getAttribute("virtual")));
             loadTreeIcon(child, config);
         } else {
             // Unknown node type

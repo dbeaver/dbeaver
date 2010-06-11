@@ -62,13 +62,9 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        // Copy indexes from tables because we do not want
-        // to place the same objects in different places of the tree model
         List<GenericIndex> indexList = new ArrayList<GenericIndex>();
         for (GenericTable table : getTables(monitor)) {
-            for (GenericIndex index : table.getIndexes(monitor)) {
-                indexList.add(new GenericIndex(index));
-            }
+            indexList.addAll(table.getIndexes(monitor));
         }
         return indexList;
     }
