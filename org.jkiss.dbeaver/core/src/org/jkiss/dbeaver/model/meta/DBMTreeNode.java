@@ -122,7 +122,7 @@ public abstract class DBMTreeNode extends DBMNode {
 
     public boolean isLazyNode()
     {
-        return true;
+        return childNodes == null;
     }
 
     protected boolean initializeNode(DBRProgressMonitor monitor)

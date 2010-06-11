@@ -25,7 +25,7 @@ public class TreeLoadService extends AbstractLoadService<Object[]> {
         this.parentNode = parentNode;
     }
 
-    public Object getParent()
+    public DBSObject getParent()
     {
         return parent;
     }
