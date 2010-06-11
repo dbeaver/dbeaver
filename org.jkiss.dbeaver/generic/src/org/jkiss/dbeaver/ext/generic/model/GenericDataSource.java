@@ -278,13 +278,6 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         refreshObject(monitor);
     }
 
-    private void reconnect()
-        throws DBException
-    {
-        close();
-        this.connection = openConnection();
-    }
-
     public void close()
     {
         if (connection != null) {
