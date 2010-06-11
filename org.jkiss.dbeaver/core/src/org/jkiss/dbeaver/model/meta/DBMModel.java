@@ -167,6 +167,7 @@ public class DBMModel implements IDataSourceListener, DBSListener {
             List<DBMNode> nodeList = new ArrayList<DBMNode>(2);
             nodeList.add((DBMNode)obj);
             nodeList.add(node);
+            nodeMap.put(node.getObject(), nodeList);
         } else if (obj instanceof List) {
             // Multiple nodes
             @SuppressWarnings("unchecked")

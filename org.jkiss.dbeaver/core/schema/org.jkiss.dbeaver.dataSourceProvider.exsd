@@ -210,6 +210,13 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="virtual" type="boolean">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 

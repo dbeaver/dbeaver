@@ -34,7 +34,6 @@ public class DBMTreeItem extends DBMTreeNode
         if (this.getModel() != null) {
             this.getModel().removeNode(this);
         }
-        this.meta = null;
         this.object = null;
         super.dispose();
     }

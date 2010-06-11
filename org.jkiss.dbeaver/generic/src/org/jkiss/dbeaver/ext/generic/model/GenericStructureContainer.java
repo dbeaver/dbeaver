@@ -69,6 +69,16 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         return indexList;
     }
 
+    public List<GenericConstraint> getConstraints(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        List<GenericConstraint> constrList = new ArrayList<GenericConstraint>();
+        for (GenericTable table : getTables(monitor)) {
+            constrList.addAll(table.getConstraints(monitor));
+        }
+        return constrList;
+    }
+
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
     {
         System.out.println("CACHE STRUCTURE!");

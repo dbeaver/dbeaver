@@ -33,7 +33,6 @@ public class DBMTreeFolder extends DBMTreeNode implements DBSFolder
         if (this.getModel() != null) {
             this.getModel().removeNode(this);
         }
-        this.meta = null;
         super.dispose();
     }
 
