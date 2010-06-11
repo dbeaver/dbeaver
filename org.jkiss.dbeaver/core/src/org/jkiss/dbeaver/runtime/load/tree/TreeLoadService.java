@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.runtime.load.tree;
 
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -14,10 +15,10 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class TreeLoadService extends AbstractLoadService<Object[]> {
 
-    private Object parent;
+    private DBSObject parent;
     private DBMNode parentNode;
 
-    public TreeLoadService(String serviceName, Object parent, DBMNode parentNode)
+    public TreeLoadService(String serviceName, DBSObject parent, DBMNode parentNode)
     {
         super(serviceName);
         this.parent = parent;

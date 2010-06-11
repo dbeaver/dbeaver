@@ -71,7 +71,9 @@ class NavigatorTreeContentProvider implements IStructuredContentProvider, ITreeC
             return EMPTY_CHILDREN;
         }
         if (parentNode.isLazyNode()) {
-            return TreeLoadVisualizer.expandChildren(view.getViewer(), new TreeLoadService("Loading", parent, parentNode));
+            return TreeLoadVisualizer.expandChildren(
+                view.getViewer(),
+                new TreeLoadService("Loading", (DBSObject) parent, parentNode));
         } else {
             try {
                 // Read children with null monitor cos' it's not a lazy node

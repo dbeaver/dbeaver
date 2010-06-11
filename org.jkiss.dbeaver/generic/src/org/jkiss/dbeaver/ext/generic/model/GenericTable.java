@@ -122,7 +122,8 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         throws DBException
     {
         if (columns == null) {
-            this.columns = loadColumns(monitor);
+            // Read columns using container
+            this.getContainer().cacheColumns(monitor, this);
         }
         return columns;
     }
@@ -133,19 +134,22 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         return DBSUtils.findObject(getColumns(monitor), columnName);
     }
 
+    boolean isColumnsCached()
+    {
+        return this.columns != null;
+    }
+
+    void setColumns(List<GenericTableColumn> columns)
+    {
+        this.columns = columns;
+    }
+
     public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-/*
-        try {
-            Thread.sleep(1000 * 1000);
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-*/
         if (indexes == null) {
-            indexes = loadIndexes(monitor);
+            // Read indexes using container
+            this.getContainer().cacheIndexes(monitor, this);
         }
         return indexes;
     }
@@ -154,6 +158,16 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         throws DBException
     {
         return DBSUtils.findObject(getIndexes(monitor), indexName);
+    }
+
+    void setIndexes(List<GenericIndex> indexes)
+    {
+        this.indexes = indexes;
+    }
+
+    boolean isIndexesCached()
+    {
+        return this.indexes != null;
     }
 
     public List<? extends GenericConstraint> getConstraints(DBRProgressMonitor monitor)
@@ -237,141 +251,6 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         }
 
         return rowCount;
-    }
-
-    private List<GenericTableColumn> loadColumns(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        monitor.beginTask("Loading table columns", 1);
-        try {
-            List<GenericTableColumn> tmpColumns = new ArrayList<GenericTableColumn>();
-
-            DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
-            String catalogName = getCatalog() == null ? null : getCatalog().getName();
-            String schemaName = getSchema() == null ? null : getSchema().getName();
-
-            // Load columns
-            ResultSet dbResult = metaData.getColumns(
-                catalogName,
-                schemaName,
-                getName(),
-                null);
-            try {
-                while (dbResult.next()) {
-                    String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-                    int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
-                    int sourceType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SOURCE_DATA_TYPE);
-                    String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
-                    int columnSize = JDBCUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_SIZE);
-                    boolean isNullable = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) != DatabaseMetaData.columnNoNulls;
-                    int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DECIMAL_DIGITS);
-                    int precision = 0;//GenericUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_);
-                    int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NUM_PREC_RADIX);
-                    String defaultValue = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_DEF);
-                    String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-                    int charLength = JDBCUtils.safeGetInt(dbResult, JDBCConstants.CHAR_OCTET_LENGTH);
-                    int ordinalPos = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-
-                    //DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName);
-                    GenericTableColumn tableColumn = new GenericTableColumn(
-                        this,
-                        columnName,
-                        typeName, valueType, sourceType, ordinalPos,
-                        columnSize,
-                        charLength, scale, precision, radix, isNullable,
-                        remarks, defaultValue
-                    );
-                    tmpColumns.add(tableColumn);
-                }
-            }
-            finally {
-                dbResult.close();
-            }
-
-            return tmpColumns;
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            monitor.done();
-        }
-    }
-
-    private List<GenericIndex> loadIndexes(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        // Load columns first
-        getColumns(monitor);
-        // Load index columns
-        try {
-            List<GenericIndex> tmpIndexList = new ArrayList<GenericIndex>();
-            Map<String, GenericIndex> tmpIndexMap = new HashMap<String, GenericIndex>();
-            DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
-            // Load indexes
-            ResultSet dbResult = metaData.getIndexInfo(
-                getCatalog() == null ? null : getCatalog().getName(),
-                getSchema() == null ? null : getSchema().getName(),
-                //DBSUtils.getQuotedIdentifier(getDataSource(), getName()),
-                getName(),  // oracle fails if unquoted complex identifier specified
-                            // but other DBs (and logically it's correct) do not want quote chars in this query
-                            // so let's fix it in oracle plugin
-                false,
-                false);
-            try {
-                while (dbResult.next()) {
-                    String indexName = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_NAME);
-                    boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
-                    String indexQualifier = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_QUALIFIER);
-                    int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);
-
-                    int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-                    String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-                    String ascOrDesc = JDBCUtils.safeGetString(dbResult, JDBCConstants.ASC_OR_DESC);
-
-                    if (CommonUtils.isEmpty(indexName)) {
-                        // Bad index - can't evaluate it
-                        continue;
-                    }
-                    DBSIndexType indexType;
-                    switch (indexTypeNum) {
-                        case DatabaseMetaData.tableIndexStatistic: indexType = DBSIndexType.STATISTIC; break;
-                        case DatabaseMetaData.tableIndexClustered: indexType = DBSIndexType.CLUSTERED; break;
-                        case DatabaseMetaData.tableIndexHashed: indexType = DBSIndexType.HASHED; break;
-                        case DatabaseMetaData.tableIndexOther: indexType = DBSIndexType.OTHER; break;
-                        default: indexType = DBSIndexType.UNKNOWN; break;
-                    }
-                    GenericIndex index = tmpIndexMap.get(indexName);
-                    if (index == null) {
-                        index = new GenericIndex(
-                            this,
-                            isNonUnique,
-                            indexQualifier,
-                            indexName,
-                            indexType);
-                        tmpIndexList.add(index);
-                        tmpIndexMap.put(indexName, index);
-                    }
-                    GenericTableColumn tableColumn = this.getColumn(monitor, columnName);
-                    if (tableColumn == null) {
-                        log.warn("Column '" + columnName + "' not found in table '" + this.getName() + "'");
-                        continue;
-                    }
-                    index.addColumn(
-                        new GenericIndexColumn(
-                            index,
-                            tableColumn,
-                            ordinalPosition,
-                            !"D".equalsIgnoreCase(ascOrDesc)));
-                }
-            }
-            finally {
-                dbResult.close();
-            }
-            return tmpIndexList;
-        } catch (SQLException ex) {
-            throw new DBException(ex);
-        }
     }
 
     private List<GenericConstraint> loadConstraints(DBRProgressMonitor monitor)
@@ -542,4 +421,5 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
     {
         getColumns(monitor);
     }
+
 }
