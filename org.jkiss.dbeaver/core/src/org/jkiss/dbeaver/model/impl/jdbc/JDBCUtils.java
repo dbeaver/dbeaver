@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCConnector;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -173,7 +173,7 @@ public class JDBCUtils
 
     public static void startBlockingOperation(
         DBRProgressMonitor monitor,
-        DBCConnector connector,
+        JDBCConnector connector,
         String taskName)
     {
         startBlockingOperation(monitor, makeBlockingObject(connector.getConnection()), taskName, 1);
@@ -181,7 +181,7 @@ public class JDBCUtils
 
     public static void startBlockingOperation(
         DBRProgressMonitor monitor,
-        DBCConnector connector,
+        JDBCConnector connector,
         String taskName,
         int subTasks)
     {

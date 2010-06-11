@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.impl.meta;
+package org.jkiss.dbeaver.model.impl.jdbc;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.dbc.DBCConnector;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSession;
@@ -26,21 +26,21 @@ import java.util.Properties;
 /**
  * GenericDataSource
  */
-public abstract class AbstractDataSource
+public abstract class JDBCDataSource
     implements
         DBPDataSource,
-        DBCConnector,
+        JDBCConnector,
         DBSStructureContainer,
         DBSObject
 {
-    static Log log = LogFactory.getLog(AbstractDataSource.class);
+    static Log log = LogFactory.getLog(JDBCDataSource.class);
 
     private DBSDataSourceContainer container;
     private Connection connection;
 
     private DBPDataSourceInfo info;
 
-    public AbstractDataSource(DBSDataSourceContainer container)
+    public JDBCDataSource(DBSDataSourceContainer container)
         throws DBException
     {
         this.container = container;
@@ -50,7 +50,8 @@ public abstract class AbstractDataSource
     protected Connection openConnection()
         throws DBException
     {
-        Driver driverInstance = container.getDriver().getDriverInstance();
+        // It MUST be a JDBC driver
+        Driver driverInstance = Driver.class.cast(container.getDriver().getDriverInstance());
 
         // Set properties
         Properties driverProps = new Properties();
@@ -172,7 +173,7 @@ public abstract class AbstractDataSource
         return container;
     }
 
-    public AbstractDataSource getDataSource()
+    public JDBCDataSource getDataSource()
     {
         return this;
     }

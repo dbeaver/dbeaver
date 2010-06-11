@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.dbc.DBCConnector;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
@@ -22,7 +22,7 @@ public class JDBCSession implements DBCSession
 {
     private DBPDataSource dataSource;
     private Connection connection;
-    private DBCConnector conector;
+    private JDBCConnector conector;
 
     public JDBCSession(DBPDataSource dataSource, Connection connection)
     {
@@ -30,7 +30,7 @@ public class JDBCSession implements DBCSession
         this.connection = connection;
     }
 
-    public JDBCSession(DBPDataSource dataSource, DBCConnector conector)
+    public JDBCSession(DBPDataSource dataSource, JDBCConnector conector)
     {
         this.dataSource = dataSource;
         this.conector = conector;

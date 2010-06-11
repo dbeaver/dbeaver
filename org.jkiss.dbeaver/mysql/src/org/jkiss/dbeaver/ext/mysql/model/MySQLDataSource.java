@@ -7,7 +7,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.meta.AbstractDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * GenericDataSource
  */
-public class MySQLDataSource extends AbstractDataSource implements DBSStructureAssistant,DBSStructureContainerActive
+public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssistant,DBSStructureContainerActive
 {
     static Log log = LogFactory.getLog(MySQLDataSource.class);
 

@@ -8,7 +8,7 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.dbc.DBCConnector;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
@@ -34,7 +34,7 @@ import java.util.Properties;
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends GenericStructureContainer implements DBPDataSource, DBCConnector, DBSStructureContainerActive
+public class GenericDataSource extends GenericStructureContainer implements DBPDataSource, JDBCConnector, DBSStructureContainerActive
 {
     static Log log = LogFactory.getLog(GenericDataSource.class);
 
@@ -66,7 +66,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     private Connection openConnection()
         throws DBException
     {
-        Driver driverInstance = container.getDriver().getDriverInstance();
+        Driver driverInstance = Driver.class.cast(container.getDriver().getDriverInstance());
 
         // Set properties
         Properties driverProps = new Properties();

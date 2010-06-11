@@ -16,7 +16,6 @@ import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPDriverCustomQuery;
 
 import java.net.URL;
-import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +45,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     private Class driverClass;
     private boolean isLoaded;
-    private Driver driverInstance;
+    private Object driverInstance;
     private DriverClassLoader classLoader;
 
     DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, String id)
@@ -196,7 +195,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.driverClassName = driverClassName;
     }
 
-    public Driver getDriverInstance()
+    public Object getDriverInstance()
         throws DBException
     {
         if (driverInstance == null) {
@@ -205,11 +204,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return driverInstance;
     }
 
-    Driver createDriverInstance()
+    Object createDriverInstance()
         throws DBException
     {
         try {
-            return Driver.class.cast(driverClass.newInstance());
+            return driverClass.newInstance();
         }
         catch (InstantiationException ex) {
             throw new DBException("Can't instantiate driver class", ex);

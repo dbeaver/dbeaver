@@ -302,11 +302,14 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
             try {
                 Properties properties = new Properties();
                 properties.putAll(info.getProperties());
-                final DriverPropertyInfo[] propInfos = site.getDriver().getDriverInstance().getPropertyInfo(
-                    info.getJdbcURL(),
-                    properties);
-                if (!CommonUtils.isEmpty(propInfos)) {
-                    driverProvidedProperties = new DriverProvidedPropertyGroup(propInfos);
+                Object driverInstance = site.getDriver().getDriverInstance();
+                if (driverInstance instanceof java.sql.Driver) {
+                    final DriverPropertyInfo[] propInfos = ((java.sql.Driver)driverInstance).getPropertyInfo(
+                        info.getJdbcURL(),
+                        properties);
+                    if (!CommonUtils.isEmpty(propInfos)) {
+                        driverProvidedProperties = new DriverProvidedPropertyGroup(propInfos);
+                    }
                 }
 
             } catch (SQLException ex) {

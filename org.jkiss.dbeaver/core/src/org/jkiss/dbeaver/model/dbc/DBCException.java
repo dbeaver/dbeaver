@@ -6,8 +6,6 @@ package org.jkiss.dbeaver.model.dbc;
 
 import org.jkiss.dbeaver.DBException;
 
-import java.sql.SQLException;
-
 /**
  * DBCException
  */
@@ -30,11 +28,6 @@ public class DBCException extends DBException
     public DBCException(Throwable cause)
     {
         super(cause);
-    }
-
-    public DBCException(SQLException ex)
-    {
-        super(ex);
     }
 
 }

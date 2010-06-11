@@ -23,7 +23,7 @@ public interface DBPDriver extends DBPObject
 
     String getDriverClassName();
 
-    Driver getDriverInstance() throws DBException;
+    Object getDriverInstance() throws DBException;
 
     Integer getDefaultPort();
 
