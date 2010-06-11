@@ -17,4 +17,5 @@ public enum DBSDataKind
     LOB,
     STRUCT,
     ARRAY,
+    UNKNOWN,
 }

@@ -312,7 +312,10 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
             ResultSet dbResult = metaData.getIndexInfo(
                 getCatalog() == null ? null : getCatalog().getName(),
                 getSchema() == null ? null : getSchema().getName(),
-                getName(),
+                //DBSUtils.getQuotedIdentifier(getDataSource(), getName()),
+                getName(),  // oracle fails if unquoted complex identifier specified
+                            // but other DBs (and logically it's correct) do not want quote chars in this query
+                            // so let's fix it in oracle plugin
                 false,
                 false);
             try {

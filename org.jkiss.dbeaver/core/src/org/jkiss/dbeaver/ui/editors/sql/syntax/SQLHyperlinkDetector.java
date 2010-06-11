@@ -139,7 +139,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                 };
                 // Run it with dummy monitor
                 // Using detached thread (job) or running with progress service breaks hyperlinks
-                // TODO: investigate the reason and fix it
+                // TODO: use real progress monitor
                 objLoader.run(VoidProgressMonitor.INSTANCE);
             }
             catch (InvocationTargetException e) {

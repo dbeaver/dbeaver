@@ -22,7 +22,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyDialogAction;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshableView;
 import org.jkiss.dbeaver.model.meta.DBMNode;
@@ -157,31 +157,38 @@ public class ViewUtils
                     final DBSStructureContainerActive activeContainer = DBSUtils.queryParentInterface(
                         DBSStructureContainerActive.class, dbmNode.getObject());
                     if (activeContainer != null) {
-                        DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
-                            public void run(DBRProgressMonitor monitor)
-                                throws InvocationTargetException, InterruptedException
-                            {
-                                DBSObject activeChild;
-                                try {
-                                    activeChild = activeContainer.getActiveChild(monitor);
-                                }
-                                catch (DBException e) {
-                                    throw new InvocationTargetException(e);
-                                }
-                                if (activeChild != dbmNode.getObject()) {
-                                    DBMTreeNode treeNode = (DBMTreeNode)dbmNode;
-                                    DBXTreeNode nodeMeta = treeNode.getMeta();
-                                    String text = "Set active";
-                                    if (nodeMeta instanceof DBXTreeItem) {
-                                        DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
-                                        text += " " + itemMeta.getPath();
+                        try {
+                            // Extract active child with void monitor
+                            // Otherwise context menu will be broken by GUI used by progress service
+                            // TODO: do something with that and use real progress monitor
+                            new DBRRunnableWithProgress() {
+                                public void run(DBRProgressMonitor monitor)
+                                    throws InvocationTargetException
+                                {
+                                    DBSObject activeChild;
+                                    try {
+                                        activeChild = activeContainer.getActiveChild(monitor);
                                     }
-                                    IAction action = makeAction(new SetActiveObjectAction(), metaModelView.getWorkbenchPart(), selection, text);
+                                    catch (DBException e) {
+                                        throw new InvocationTargetException(e);
+                                    }
+                                    if (activeChild != dbmNode.getObject()) {
+                                        DBMTreeNode treeNode = (DBMTreeNode)dbmNode;
+                                        DBXTreeNode nodeMeta = treeNode.getMeta();
+                                        String text = "Set active";
+                                        if (nodeMeta instanceof DBXTreeItem) {
+                                            DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
+                                            text += " " + itemMeta.getPath();
+                                        }
+                                        IAction action = makeAction(new SetActiveObjectAction(), metaModelView.getWorkbenchPart(), selection, text);
 
-                                    manager.add(action);
+                                        manager.add(action);
+                                    }
                                 }
-                            }
-                        });
+                            }.run(VoidProgressMonitor.INSTANCE);
+                        } catch (InvocationTargetException e) {
+                            log.warn(e.getTargetException());
+                        }
                     }
                 }
 

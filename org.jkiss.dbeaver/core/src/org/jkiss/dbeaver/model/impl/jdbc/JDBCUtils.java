@@ -93,8 +93,11 @@ public class JDBCUtils
                 return DBSDataKind.STRUCT;
             case java.sql.Types.ARRAY:
                 return DBSDataKind.ARRAY;
+            case java.sql.Types.ROWID:
+                // thread ROWID as string
+                return DBSDataKind.STRING;
         }
-        return null;
+        return DBSDataKind.UNKNOWN;
     }
 
     public static Object getParameter(ResultSet dbResult, int columnIndex, int columnType)

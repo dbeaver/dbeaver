@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.meta;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.struct.DBSListener;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -198,24 +199,14 @@ public class DBMModel implements IDataSourceListener, DBSListener {
             case DISCONNECT:
             {
                 final DBMNode dbmNode = getNodeByObject(event.getDataSource());
-                if (dbmNode != null && Display.getCurrent() != null) {
-                    Display.getCurrent().asyncExec(new Runnable() {
-                        public void run()
-                        {
-                            DBeaverCore.getInstance().runAndWait(false, false, new DBRRunnableWithProgress() {
-                                public void run(DBRProgressMonitor monitor)
-                                    throws InvocationTargetException, InterruptedException
-                                {
-                                    try {
-                                        dbmNode.refreshNode(monitor);
-                                    }
-                                    catch (DBException e) {
-                                        throw new InvocationTargetException(e);
-                                    }
-                                }
-                            });
-                        }
-                    });
+                if (dbmNode != null) {
+                    try {
+                        // Refresh with void monitor - this is disconnect event so
+                        // no database reoundtrips will occure, just UI refresh
+                        dbmNode.refreshNode(VoidProgressMonitor.INSTANCE);
+                    } catch (DBException e) {
+                        log.error(e);
+                    }
                     fireNodeRefresh(event.getSource(), dbmNode, DBMEvent.NodeChange.UNLOADED);
                 }
                 event.getDataSource().removeListener(this);
