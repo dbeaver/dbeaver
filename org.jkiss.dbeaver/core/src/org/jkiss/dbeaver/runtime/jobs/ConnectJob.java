@@ -43,15 +43,13 @@ public class ConnectJob extends AbstractJob
     @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
-        monitor.beginTask("Open Datasource ...", 2);
         try {
-            monitor.subTask("Connecting to Remote Database");
+            monitor.beginTask("Open Datasource ...", 1);
             dataSource = container.getDriver().getDataSourceProvider().openDataSource(container);
             monitor.worked(1);
-            monitor.beginTask("Initializing Datasource", 10);
+            monitor.done();
             dataSource.initialize(monitor);
             // Change connection properties
-            monitor.done();
 
             return new Status(
                 Status.OK,

@@ -62,6 +62,9 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
+        // Load indexes for all tables
+        List<GenericTable> tables = getTables(monitor);
+
         List<GenericIndex> indexList = new ArrayList<GenericIndex>();
         for (GenericTable table : getTables(monitor)) {
             indexList.addAll(table.getIndexes(monitor));

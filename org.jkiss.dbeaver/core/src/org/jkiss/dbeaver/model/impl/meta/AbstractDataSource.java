@@ -19,7 +19,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
 
 import java.sql.*;
 import java.util.Properties;
@@ -155,15 +154,6 @@ public abstract class AbstractDataSource
                 log.error(ex);
             }
             connection = null;
-        }
-    }
-
-    public void cancelCurrentOperation()
-    {
-        try {
-            reconnect();
-        } catch (Exception ex) {
-            log.error(ex);
         }
     }
 

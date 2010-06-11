@@ -170,6 +170,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
+        JDBCUtils.startBlockingOperation(monitor, this, "Initializing data source '" + getName() + "'", 5);
         try {
             monitor.subTask("Getting connection metdata");
             monitor.worked(1);
@@ -266,6 +267,9 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex);
         }
+        finally {
+            JDBCUtils.endBlockingOperation(monitor);
+        }
     }
 
     public void refreshDataSource(DBRProgressMonitor monitor)
@@ -302,15 +306,6 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         }
     }
 
-    public void cancelCurrentOperation()
-    {
-        try {
-            reconnect();
-        } catch (Exception ex) {
-            log.error(ex);
-        }
-    }
-
     public String getName()
     {
         return container.getName();
@@ -334,7 +329,8 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
-        return false;
+        refreshDataSource(monitor);
+        return true;
     }
 
     public GenericCatalog getCatalog()

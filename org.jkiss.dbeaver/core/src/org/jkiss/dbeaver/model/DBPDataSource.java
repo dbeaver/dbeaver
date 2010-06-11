@@ -55,8 +55,4 @@ public interface DBPDataSource extends DBPObject
      */
     void close();
 
-    /**
-     * Cancels current operation
-     */
-    void cancelCurrentOperation();
 }

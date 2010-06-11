@@ -176,7 +176,16 @@ public class JDBCUtils
         DBCConnector connector,
         String taskName)
     {
-        startBlockingOperation(monitor, makeBlockingObject(connector.getConnection()), taskName);
+        startBlockingOperation(monitor, makeBlockingObject(connector.getConnection()), taskName, 1);
+    }
+
+    public static void startBlockingOperation(
+        DBRProgressMonitor monitor,
+        DBCConnector connector,
+        String taskName,
+        int subTasks)
+    {
+        startBlockingOperation(monitor, makeBlockingObject(connector.getConnection()), taskName, subTasks);
     }
 
     public static void startBlockingOperation(
@@ -184,7 +193,7 @@ public class JDBCUtils
         Connection connection,
         String taskName)
     {
-        startBlockingOperation(monitor, makeBlockingObject(connection), taskName);
+        startBlockingOperation(monitor, makeBlockingObject(connection), taskName, 1);
     }
 
     public static void startBlockingOperation(
@@ -192,19 +201,29 @@ public class JDBCUtils
         Statement statement,
         String taskName)
     {
-        startBlockingOperation(monitor, makeBlockingObject(statement), taskName);
+        startBlockingOperation(monitor, makeBlockingObject(statement), taskName, 1);
+    }
+
+    public static void startBlockingOperation(
+        DBRProgressMonitor monitor,
+        Statement statement,
+        String taskName,
+        int subTasks)
+    {
+        startBlockingOperation(monitor, makeBlockingObject(statement), taskName, subTasks);
     }
 
     private static void startBlockingOperation(
         DBRProgressMonitor monitor,
         DBRBlockingObject operation,
-        String taskName)
+        String taskName,
+        int subTasks)
     {
         monitor.startBlock(operation);
         if (monitor.getBlockCount() > 1) {
             monitor.subTask(taskName);
         } else {
-            monitor.beginTask(taskName, 1);
+            monitor.beginTask(taskName, subTasks);
         }
     }
 
