@@ -469,14 +469,11 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
             throw new DBException(e);
         }
 
-        DBSObject oldChild;
-        synchronized (this) {
-            oldChild = this.activeChild;
-            this.activeChild = child;
-        }
+        DBSObject oldChild = this.activeChild;
+        this.activeChild = child;
 
         if (oldChild != null) {
-            getContainer().fireEvent(DBSObjectAction.CHANGED, this.activeChild);
+            getContainer().fireEvent(DBSObjectAction.CHANGED, oldChild);
         }
         if (this.activeChild != null) {
             getContainer().fireEvent(DBSObjectAction.CHANGED, this.activeChild);
