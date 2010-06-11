@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -79,7 +80,15 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData
         throws DBException
     {
         DBSObject schema = table.getParentObject();
+        if (schema instanceof DBSDataSourceContainer) {
+            // It's not a schema
+            schema = null;
+        }
         DBSObject catalog = schema == null ? null : schema.getParentObject();
+        if (catalog instanceof DBSDataSourceContainer) {
+            // It's not a catalog
+            catalog = null;
+        }
 
         StringBuilder fullName = new StringBuilder();
         if (catalog != null) fullName.append(catalog.getName()).append("|");
