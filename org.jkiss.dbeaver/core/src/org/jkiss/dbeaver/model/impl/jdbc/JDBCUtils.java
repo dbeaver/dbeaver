@@ -5,13 +5,16 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCConnector;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Connection;
 
 /**
  * JDBCUtils
@@ -167,16 +170,61 @@ public class JDBCUtils
         }
     }
 
-/*
-    public static DBRBlockingObject makeBlockingObject(Statement statement)
+
+    public static void startBlockingOperation(
+        DBRProgressMonitor monitor,
+        DBCConnector connector,
+        String taskName)
     {
-        return new StatementBlockingObject(statement);
+        startBlockingOperation(monitor, makeBlockingObject(connector.getConnection()), taskName);
     }
-*/
+
+    public static void startBlockingOperation(
+        DBRProgressMonitor monitor,
+        Connection connection,
+        String taskName)
+    {
+        startBlockingOperation(monitor, makeBlockingObject(connection), taskName);
+    }
+
+    public static void startBlockingOperation(
+        DBRProgressMonitor monitor,
+        Statement statement,
+        String taskName)
+    {
+        startBlockingOperation(monitor, makeBlockingObject(statement), taskName);
+    }
+
+    private static void startBlockingOperation(
+        DBRProgressMonitor monitor,
+        DBRBlockingObject operation,
+        String taskName)
+    {
+        monitor.startBlock(operation);
+        if (monitor.getBlockCount() > 1) {
+            monitor.subTask(taskName);
+        } else {
+            monitor.beginTask(taskName, 1);
+        }
+    }
+
+    public static void endBlockingOperation(
+        DBRProgressMonitor monitor)
+    {
+        if (monitor.getBlockCount() == 1) {
+            monitor.done();
+        }
+        monitor.endBlock();
+    }
 
     public static DBRBlockingObject makeBlockingObject(Statement statement)
     {
         return new StatementBlockingObject(statement);
+    }
+
+    public static DBRBlockingObject makeBlockingObject(Connection connection)
+    {
+        return new ConnectionBlockingObject(connection);
     }
 
     private static class StatementBlockingObject implements DBRBlockingObject {
@@ -198,4 +246,25 @@ public class JDBCUtils
             }
         }
     }
+
+    private static class ConnectionBlockingObject implements DBRBlockingObject {
+        private final Connection connection;
+
+        public ConnectionBlockingObject(Connection connection)
+        {
+            this.connection = connection;
+        }
+
+        public void cancelBlock()
+            throws DBException
+        {
+            try {
+                connection.close();
+            }
+            catch (SQLException e) {
+                throw new DBCException("Coud not close connection", e);
+            }
+        }
+    }
+
 }

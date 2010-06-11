@@ -86,7 +86,7 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="Constraints" iconId="#constraints" description="Constraints">
                             <items label="Constraint" path="constraint" property="constraints" virtual="true" iconId="#constraint">
-                                <items label="Constraint columns" path="column" property="columns" iconId="#column">
+                                <items label="Constraint columns" path="column" property="columns" virtual="true" iconId="#column">
                                 </items>
                             </items>
                         </folder>

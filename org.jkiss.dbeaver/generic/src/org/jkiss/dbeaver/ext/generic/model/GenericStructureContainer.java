@@ -84,11 +84,11 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         System.out.println("CACHE STRUCTURE!");
     }
 
-    public List<GenericProcedure> getProcedures()
+    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         if (procedures == null) {
-            loadProcedures();
+            loadProcedures(monitor);
         }
         return procedures;
     }
@@ -96,7 +96,8 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     private void loadTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        monitor.beginTask("Load tables", 1);
+        JDBCUtils.startBlockingOperation(monitor, getDataSource(), "Loading '" + getName() + "' tables");
+
         List<GenericTable> tmpTableList = new ArrayList<GenericTable>();
         Map<String, GenericTable> tmpTableMap = new HashMap<String, GenericTable>();
         try {
@@ -144,6 +145,9 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                     tmpTableMap.put(tableName, table);
 
                     monitor.subTask(tableName);
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                 }
             }
             finally {
@@ -154,15 +158,17 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
             throw new DBException(ex);
         }
         finally {
-            monitor.done();
+            JDBCUtils.endBlockingOperation(monitor);
         }
+
         this.tableList = tmpTableList;
         this.tableMap = tmpTableMap;
     }
 
-    private void loadProcedures()
+    private void loadProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
+        JDBCUtils.startBlockingOperation(monitor, getDataSource(), "Loading '" + getName() + "' procedures");
         List<GenericProcedure> tmpProcedureList = new ArrayList<GenericProcedure>();
 
         try {
@@ -203,11 +209,16 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         catch (SQLException ex) {
             throw new DBException(ex);
         }
+        finally {
+            JDBCUtils.endBlockingOperation(monitor);
+        }
         this.procedures = tmpProcedureList;
     }
 
     public List<DBSTablePath> findTableNames(DBRProgressMonitor monitor, String tableMask, int maxResults) throws DBException
     {
+        JDBCUtils.startBlockingOperation(monitor, getDataSource(), "Looking for tables in '" + getName() + "'");
+
         List<DBSTablePath> pathList = new ArrayList<DBSTablePath>();
         try {
             DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
@@ -249,6 +260,9 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         }
         catch (SQLException ex) {
             throw new DBException(ex);
+        }
+        finally {
+            JDBCUtils.endBlockingOperation(monitor);
         }
     }
 

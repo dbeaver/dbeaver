@@ -35,4 +35,5 @@ public interface DBRProgressMonitor {
 
     public DBRBlockingObject getActiveBlock();
 
+    public int getBlockCount();
 }

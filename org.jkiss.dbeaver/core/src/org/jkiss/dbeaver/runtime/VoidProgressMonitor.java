@@ -59,4 +59,8 @@ public class VoidProgressMonitor implements DBRProgressMonitor {
         return null;
     }
 
+    public int getBlockCount() {
+        return 0;
+    }
+
 }

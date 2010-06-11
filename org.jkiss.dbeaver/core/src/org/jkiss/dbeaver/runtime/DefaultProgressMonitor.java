@@ -78,4 +78,8 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
         return blocks == null || blocks.isEmpty() ? null : blocks.get(blocks.size() - 1);
     }
 
+    public int getBlockCount() {
+        return blocks == null ? 0 : blocks.size();
+    }
+
 }
