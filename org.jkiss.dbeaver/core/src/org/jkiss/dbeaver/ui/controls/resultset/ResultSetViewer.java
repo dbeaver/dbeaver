@@ -544,6 +544,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     public void fillContextMenu(GridPos cell, IMenuManager manager) {
         final int columnIndex = (mode == ResultSetMode.GRID ? cell.col : cell.row);
         final int rowIndex = (mode == ResultSetMode.GRID ? cell.row : curRowNum);
+        if (rowIndex < 0 || curRows.size() <= rowIndex) {
+            return;
+        }
         ResultSetValueController valueController = new ResultSetValueController(
             curRows.get(rowIndex),
             columnIndex,
