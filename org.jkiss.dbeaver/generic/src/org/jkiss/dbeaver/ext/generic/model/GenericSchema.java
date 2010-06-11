@@ -66,10 +66,4 @@ public class GenericSchema extends GenericStructureContainer implements DBSSchem
         return catalog != null ? catalog : getDataSource().getContainer();
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
-
 }

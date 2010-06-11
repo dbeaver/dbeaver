@@ -23,6 +23,13 @@ public class GenericConstraintColumn implements DBSConstraintColumn
         this.ordinalPosition = ordinalPosition;
     }
 
+    public GenericConstraintColumn(GenericConstraint constraint, GenericConstraintColumn column)
+    {
+        this.constraint = constraint;
+        this.tableColumn = column.tableColumn;
+        this.ordinalPosition = column.ordinalPosition;
+    }
+
     public DBSConstraint getConstraint()
     {
         return constraint;

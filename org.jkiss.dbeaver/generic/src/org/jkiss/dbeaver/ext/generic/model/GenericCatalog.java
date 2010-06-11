@@ -82,12 +82,6 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
         return getDataSource().getContainer();
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
-
     private List<GenericSchema> loadSchemas()
         throws DBException
     {

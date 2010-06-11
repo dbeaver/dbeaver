@@ -21,7 +21,13 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import java.util.*;
 
 /**
- * DBMModel
+ * DBMModel.
+ * Contains all objects which are shown in navigator tree.
+ * Also ties DBSObjects to thee model (DBMNode).
+ *
+ * It's strongly recommended to not put the same DBSObject in tree model multiple times.
+ * It will work but some actions will not work well
+ * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
 public class DBMModel implements IDataSourceListener, DBSListener {
     static Log log = LogFactory.getLog(DBMModel.class);

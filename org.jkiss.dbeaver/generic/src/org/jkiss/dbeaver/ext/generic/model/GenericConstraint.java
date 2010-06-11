@@ -31,6 +31,24 @@ public class GenericConstraint implements DBSConstraint
         this.remarks = remarks;
     }
 
+    /**
+     * Copy constructor
+     * @param constraint
+     */
+    GenericConstraint(GenericConstraint constraint)
+    {
+        this.constraintType = constraint.constraintType;
+        this.table = constraint.table;
+        this.name = constraint.name;
+        this.remarks = constraint.remarks;
+        if (constraint.columns != null) {
+            this.columns = new ArrayList<GenericConstraintColumn>(constraint.columns.size());
+            for (GenericConstraintColumn sourceColumn : constraint.columns) {
+                this.columns.add(new GenericConstraintColumn(this, sourceColumn));
+            }
+        }
+    }
+
     public DBSConstraintType getConstraintType()
     {
         return constraintType;

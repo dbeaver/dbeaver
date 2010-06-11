@@ -275,15 +275,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     public void refreshDataSource(DBRProgressMonitor monitor)
         throws DBException
     {
-        this.activeChild = null;
-        this.activeChildRead = false;
-        this.tableTypes = null;
-        this.catalogs = null;
-        this.schemas = null;
-
-        this.info = null;
-
-        this.initialize(monitor);
+        refreshObject(monitor);
     }
 
     private void reconnect()
@@ -329,7 +321,18 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
-        refreshDataSource(monitor);
+        super.refreshObject(monitor);
+
+        this.activeChild = null;
+        this.activeChildRead = false;
+        this.tableTypes = null;
+        this.catalogs = null;
+        this.schemas = null;
+
+        this.info = null;
+
+        this.initialize(monitor);
+
         return true;
     }
 

@@ -28,6 +28,8 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
 
     private List<GenericTable> tableList;
     private Map<String, GenericTable> tableMap;
+    private List<GenericIndex> indexList;
+    private List<GenericConstraint> constraintList;
     private List<GenericProcedure> procedures;
     private boolean columnsCached = false;
     private boolean indexesCached = false;
@@ -65,11 +67,16 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         // This doesn't work for generic datasource because metadata facilities
         // allows index query only by certain table name
         //cacheIndexes(monitor, null);
-        
-        // Load indexes for all tables
-        List<GenericIndex> indexList = new ArrayList<GenericIndex>();
-        for (GenericTable table : getTables(monitor)) {
-            indexList.addAll(table.getIndexes(monitor));
+
+        if (indexList == null) {
+            // Load indexes for all tables and return copy of them
+            List<GenericIndex> tmpIndexList = new ArrayList<GenericIndex>();
+            for (GenericTable table : getTables(monitor)) {
+                for (GenericIndex index : table.getIndexes(monitor)) {
+                    tmpIndexList.add(new GenericIndex(index));
+                }
+            }
+            indexList = tmpIndexList;
         }
         return indexList;
     }
@@ -77,11 +84,16 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     public List<GenericConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
-        List<GenericConstraint> constrList = new ArrayList<GenericConstraint>();
-        for (GenericTable table : getTables(monitor)) {
-            constrList.addAll(table.getConstraints(monitor));
+        if (constraintList == null) {
+            List<GenericConstraint> tmpConstrList = new ArrayList<GenericConstraint>();
+            for (GenericTable table : getTables(monitor)) {
+                for (GenericConstraint constraint : table.getConstraints(monitor)) {
+                    tmpConstrList.add(new GenericConstraint(constraint));
+                }
+            }
+            constraintList = tmpConstrList;
         }
-        return constrList;
+        return constraintList;
     }
 
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
@@ -515,6 +527,19 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         throws DBException
     {
         return DBSUtils.findObject(getChildren(monitor), childName);
+    }
+
+    public boolean refreshObject(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        this.tableList = null;
+        this.tableMap = null;
+        this.indexList = null;
+        this.constraintList = null;
+        this.procedures = null;
+        this.columnsCached = false;
+        this.indexesCached = false;
+        return true;
     }
 
     public String toString()
