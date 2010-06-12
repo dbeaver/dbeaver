@@ -46,10 +46,10 @@ public final class DBSUtils
     {
         String catalogSeparator = dataSource.getInfo().getCatalogSeparator();
         StringBuilder name=  new StringBuilder();
-        if (catalogName != null) {
+        if (!CommonUtils.isEmpty(catalogName)) {
             name.append(DBSUtils.getQuotedIdentifier(dataSource, catalogName)).append(catalogSeparator);
         }
-        if (schemaName != null) {
+        if (!CommonUtils.isEmpty(schemaName)) {
             name.append(DBSUtils.getQuotedIdentifier(dataSource, schemaName)).append(catalogSeparator);
         }
         name.append(DBSUtils.getQuotedIdentifier(dataSource, tableName));
