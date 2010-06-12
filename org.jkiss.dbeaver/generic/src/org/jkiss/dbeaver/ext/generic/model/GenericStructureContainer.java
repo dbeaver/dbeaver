@@ -169,7 +169,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 }
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
         }
         catch (SQLException ex) {
@@ -223,7 +223,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 }
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
         }
         catch (SQLException ex) {
@@ -274,7 +274,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 }
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
             return pathList;
         }
@@ -385,7 +385,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 }
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
         }
         catch (SQLException ex) {
@@ -510,7 +510,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 }
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
         } catch (SQLException ex) {
             throw new DBException(ex);
@@ -537,8 +537,8 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         this.indexList = null;
         this.constraintList = null;
         this.procedures = null;
-        this.columnsCached = false;
-        this.indexesCached = false;
+        columnsCached = false;
+        indexesCached = false;
         return true;
     }
 

@@ -23,7 +23,7 @@ public interface DBCSession extends DBRBlockingObject
 
     void setAutoCommit(boolean autoCommit) throws DBCException;
 
-    DBCStatement makeStatement(String sqlQuery) throws DBCException;
+    DBCStatement prepareStatement(String sqlQuery, boolean scrollable, boolean updatable) throws DBCException;
 
     void commit() throws DBCException;
 

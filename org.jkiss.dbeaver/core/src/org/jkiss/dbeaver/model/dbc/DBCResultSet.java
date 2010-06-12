@@ -27,5 +27,5 @@ public interface DBCResultSet
 
     DBCResultSetMetaData getMetaData() throws DBCException;
 
-    void close() throws DBCException;
+    void close();
 }

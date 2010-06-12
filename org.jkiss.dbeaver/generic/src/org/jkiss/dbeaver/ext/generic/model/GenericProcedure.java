@@ -125,7 +125,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                 }
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
             this.columns = columnList;
         }

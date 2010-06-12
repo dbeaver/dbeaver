@@ -13,7 +13,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
 
@@ -229,9 +228,11 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         }
 
         try {
-            PreparedStatement statement = getDataSource().getConnection().prepareStatement(
-                "SELECT COUNT(*) FROM " + getFullQualifiedName());
-            monitor.startBlock(JDBCUtils.makeBlockingObject(statement));
+            PreparedStatement statement = JDBCUtils.prepareStatement(
+                monitor,
+                getDataSource(),
+                "SELECT COUNT(*) FROM " + getFullQualifiedName(),
+                "Select table '" + getName() + "' row count");
             try {
                 ResultSet resultSet = statement.executeQuery();
                 try {
@@ -239,11 +240,11 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                     rowCount = resultSet.getLong(1);
                 }
                 finally {
-                    resultSet.close();
+                    JDBCUtils.safeClose(resultSet);
                 }
             }
             finally {
-                monitor.endBlock();
+                JDBCUtils.safeClose(monitor, statement);
             }
         }
         catch (SQLException e) {
@@ -298,7 +299,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                 }
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
             return pkList;
         } catch (SQLException ex) {
@@ -396,7 +397,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                 }
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
             return fkList;
         } catch (SQLException ex) {

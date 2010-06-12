@@ -198,7 +198,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
                     addDataType(dataType);
                 }
             } finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
         }
         catch (SQLException ex) {

@@ -56,7 +56,7 @@ class ResultSetDataPump implements ISQLQueryDataPump {
 
         // Determine type handlers for all columns
         DataSourceRegistry dsRegistry = DataSourceRegistry.getDefault();
-        DBPDataSource dataSource = resultSet.getStatement().getSession().getDataSource();
+        DBPDataSource dataSource = resultSet.getStatement().getDataSource();
 
         // Extrat column info
         metaColumns = new ResultSetColumn[columnsCount];

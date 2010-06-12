@@ -104,15 +104,10 @@ public class JDBCResultSet implements DBCResultSet
     }
 
     public void close()
-        throws DBCException
     {
-        try {
-            if (resultSet != null) {
-                resultSet.close();
-                resultSet = null;
-            }
-        } catch (SQLException e) {
-            throw new JDBCException(e);
+        if (resultSet != null) {
+            JDBCUtils.safeClose(resultSet);
+            resultSet = null;
         }
     }
 }

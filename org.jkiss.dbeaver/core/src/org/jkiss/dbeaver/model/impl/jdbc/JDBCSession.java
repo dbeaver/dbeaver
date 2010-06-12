@@ -4,16 +4,17 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
-import org.jkiss.dbeaver.DBException;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.ResultSet;
+import java.sql.PreparedStatement;
 
 /**
  * JDBCSession
@@ -30,9 +31,9 @@ public class JDBCSession implements DBCSession
         this.connection = connection;
     }
 
-    public JDBCSession(DBPDataSource dataSource, JDBCConnector conector)
+    public JDBCSession(JDBCConnector conector)
     {
-        this.dataSource = dataSource;
+        this.dataSource = conector.getDataSource();
         this.conector = conector;
     }
 
@@ -89,14 +90,19 @@ public class JDBCSession implements DBCSession
         }
     }
 
-    public DBCStatement makeStatement(String sqlQuery)
+    public DBCStatement prepareStatement(String sqlQuery, boolean scrollable, boolean updatable)
         throws DBCException
     {
+        PreparedStatement dbStat;
         try {
-            return new JDBCStatement(this, getConnection(), sqlQuery);
+            dbStat = getConnection().prepareStatement(
+                sqlQuery,
+                scrollable ? ResultSet.TYPE_SCROLL_SENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
+                updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
         } catch (SQLException e) {
             throw new JDBCException(e);
         }
+        return new JDBCStatement(dataSource, dbStat);
     }
 
     public void commit()

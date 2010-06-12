@@ -11,16 +11,17 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.Driver;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -103,7 +104,7 @@ public abstract class JDBCDataSource
         if (forceNew) {
             return new JDBCSession(this, this.openConnection());
         } else {
-            return new JDBCSession(this, this);
+            return new JDBCSession(this);
         }
     }
 
@@ -119,7 +120,7 @@ public abstract class JDBCDataSource
                 dbResult.next();
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
         }
         catch (SQLException ex) {

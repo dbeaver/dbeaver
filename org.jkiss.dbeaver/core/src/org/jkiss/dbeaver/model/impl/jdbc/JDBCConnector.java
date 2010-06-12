@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
+
 import java.sql.Connection;
 
 /**
@@ -11,5 +13,7 @@ import java.sql.Connection;
  */
 public interface JDBCConnector
 {
+    DBPDataSource getDataSource();
+
     Connection getConnection();
 }

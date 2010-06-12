@@ -6,13 +6,15 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * JDBCStatement
@@ -21,26 +23,25 @@ public class JDBCStatement implements DBCStatement
 {
     static Log log = LogFactory.getLog(JDBCStatement.class);
 
-    private DBCSession session;
+    private DBPDataSource dataSource;
     private PreparedStatement statement;
     private boolean hasResultSet;
     private JDBCResultSet resultSet;
     private DBSObject dataContainer;
 
-    public JDBCStatement(DBCSession session, Connection connection, String sqlQuery)
-        throws SQLException
+    public JDBCStatement(DBPDataSource dataSource, PreparedStatement statement)
     {
-        this.session = session;
-        this.statement = connection.prepareStatement(sqlQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        this.dataSource = dataSource;
+        this.statement = statement;
     }
 
     public Object getNestedStatement() {
         return statement;
     }
 
-    public DBCSession getSession()
+    public DBPDataSource getDataSource()
     {
-        return session;
+        return dataSource;
     }
 
     public Statement getStatement()
@@ -53,15 +54,6 @@ public class JDBCStatement implements DBCStatement
         throws DBCException
     {
         try {
-// Dirty hacks
-/*
-            // Patch MySQL resultsets
-            if (statement.getClass().getName().indexOf("mysql") != -1) {
-                statement.setFetchSize(Integer.MIN_VALUE);
-                statement.setMaxRows(10000);
-            }
-*/
-
             this.hasResultSet = statement.execute();
             if (this.hasResultSet) {
                 this.getResultSet();
@@ -92,13 +84,8 @@ public class JDBCStatement implements DBCStatement
     public void closeResultSet()
     {
         if (resultSet != null) {
-            try {
-                resultSet.close();
-            } catch (DBCException e) {
-                log.error("Could not close result set", e);
-            } finally {
-                resultSet = null;
-            }
+            resultSet.close();
+            resultSet = null;
         }
     }
 
@@ -128,11 +115,7 @@ public class JDBCStatement implements DBCStatement
     {
         closeResultSet();
         if (statement != null) {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                log.error("Could not close statement", e);
-            }
+            JDBCUtils.safeClose(statement);
             statement = null;
         }
     }

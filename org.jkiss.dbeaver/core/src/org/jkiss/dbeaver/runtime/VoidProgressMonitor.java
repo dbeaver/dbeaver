@@ -44,7 +44,7 @@ public class VoidProgressMonitor implements DBRProgressMonitor {
         return false;
     }
 
-    public void startBlock(DBRBlockingObject object)
+    public void startBlock(DBRBlockingObject object, String taskName)
     {
         // do nothing
     }

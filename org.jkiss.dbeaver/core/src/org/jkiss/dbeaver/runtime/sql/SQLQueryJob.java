@@ -249,7 +249,7 @@ public class SQLQueryJob extends DataSourceJob
         try {
             // Prepare statement
             monitor.subTask(sqlQuery);
-            curStatement = session.makeStatement(sqlQuery);
+            curStatement = session.prepareStatement(sqlQuery, false, false);
             if (dataContainer != null) {
                 curStatement.setDataContainer(dataContainer);
             }

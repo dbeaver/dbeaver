@@ -4,23 +4,26 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConnector;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Connection;
+import java.sql.PreparedStatement;
 
 /**
  * JDBCUtils
  */
 public class JDBCUtils
 {
+    static Log log = LogFactory.getLog(JDBCUtils.class);
 
     public static String safeGetString(ResultSet dbResult, String columnName)
     {
@@ -170,22 +173,59 @@ public class JDBCUtils
         }
     }
 
+    public static PreparedStatement prepareStatement(
+        DBRProgressMonitor monitor,
+        JDBCConnector connector,
+        String query,
+        String taskName)
+        throws SQLException
+    {
+        PreparedStatement dbStat = connector.getConnection().prepareStatement(query);
+        startBlockingOperation(monitor, makeBlockingObject(dbStat), taskName);
+        return dbStat;
+    }
+
+    /**
+     * Closes specified statement.
+     * This statement MUST be prepared with {@link #prepareStatement} method.
+     * @param monitor progress monitor (the same as in prepareStatement)
+     * @param statement statement
+     */
+    public static void safeClose(
+        DBRProgressMonitor monitor,
+        PreparedStatement statement)
+    {
+        safeClose(statement);
+        endBlockingOperation(monitor);
+    }
+
+    public static void safeClose(PreparedStatement statement)
+    {
+        try {
+            statement.close();
+        }
+        catch (SQLException e) {
+            log.error("Could not close statement", e);
+        }
+    }
+
+    public static void safeClose(
+        ResultSet resultSet)
+    {
+        try {
+            resultSet.close();
+        }
+        catch (SQLException e) {
+            log.error("Could not close result set", e);
+        }
+    }
 
     public static void startBlockingOperation(
         DBRProgressMonitor monitor,
         JDBCConnector connector,
         String taskName)
     {
-        startBlockingOperation(monitor, makeBlockingObject(connector.getConnection()), taskName, 1);
-    }
-
-    public static void startBlockingOperation(
-        DBRProgressMonitor monitor,
-        JDBCConnector connector,
-        String taskName,
-        int subTasks)
-    {
-        startBlockingOperation(monitor, makeBlockingObject(connector.getConnection()), taskName, subTasks);
+        startBlockingOperation(monitor, makeBlockingObject(connector.getConnection()), taskName);
     }
 
     public static void startBlockingOperation(
@@ -193,46 +233,20 @@ public class JDBCUtils
         Connection connection,
         String taskName)
     {
-        startBlockingOperation(monitor, makeBlockingObject(connection), taskName, 1);
-    }
-
-    public static void startBlockingOperation(
-        DBRProgressMonitor monitor,
-        Statement statement,
-        String taskName)
-    {
-        startBlockingOperation(monitor, makeBlockingObject(statement), taskName, 1);
-    }
-
-    public static void startBlockingOperation(
-        DBRProgressMonitor monitor,
-        Statement statement,
-        String taskName,
-        int subTasks)
-    {
-        startBlockingOperation(monitor, makeBlockingObject(statement), taskName, subTasks);
+        startBlockingOperation(monitor, makeBlockingObject(connection), taskName);
     }
 
     private static void startBlockingOperation(
         DBRProgressMonitor monitor,
         DBRBlockingObject operation,
-        String taskName,
-        int subTasks)
+        String taskName)
     {
-        monitor.startBlock(operation);
-        if (monitor.getBlockCount() > 1) {
-            monitor.subTask(taskName);
-        } else {
-            monitor.beginTask(taskName, subTasks);
-        }
+        monitor.startBlock(operation, taskName);
     }
 
     public static void endBlockingOperation(
         DBRProgressMonitor monitor)
     {
-        if (monitor.getBlockCount() == 1) {
-            monitor.done();
-        }
         monitor.endBlock();
     }
 

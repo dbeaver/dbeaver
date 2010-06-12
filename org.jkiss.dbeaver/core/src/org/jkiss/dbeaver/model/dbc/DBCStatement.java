@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.dbc;
 
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
+import org.jkiss.dbeaver.model.DBPDataSource;
 
 /**
  * DBCStatement
@@ -14,7 +15,7 @@ public interface DBCStatement extends DBRBlockingObject
 {
     Object getNestedStatement();
 
-    DBCSession getSession();
+    DBPDataSource getDataSource();
 
     void execute() throws DBCException;
 

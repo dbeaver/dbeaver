@@ -128,7 +128,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         if (forceNew) {
             return new JDBCSession(this, this.openConnection());
         } else {
-            return new JDBCSession(this, this);
+            return new JDBCSession(this);
         }
     }
 
@@ -159,7 +159,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                 dbResult.next();
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
         }
         catch (SQLException ex) {
@@ -170,7 +170,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCUtils.startBlockingOperation(monitor, this, "Initializing data source '" + getName() + "'", 5);
+        JDBCUtils.startBlockingOperation(monitor, this, "Initializing data source '" + getName() + "'");
         try {
             monitor.subTask("Getting connection metdata");
             monitor.worked(1);
@@ -192,7 +192,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                         }
                     }
                 } finally {
-                    dbResult.close();
+                    JDBCUtils.safeClose(dbResult);
                 }
             }
             {
@@ -214,7 +214,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                             }
                         }
                     } finally {
-                        dbResult.close();
+                        JDBCUtils.safeClose(dbResult);
                     }
                 } catch (SQLException e) {
                     // Error reading catalogs - just skip em
@@ -251,7 +251,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                             }
                         }
                     } finally {
-                        dbResult.close();
+                        JDBCUtils.safeClose(dbResult);
                     }
                 } catch (SQLException e) {
                     // Error reading schemas - just skip em
@@ -417,17 +417,21 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
             }
             String activeDbName;
             try {
-                PreparedStatement dbStat = getConnection().prepareStatement(queryGetActiveDB);
+                PreparedStatement dbStat = JDBCUtils.prepareStatement(
+                    monitor,
+                    this,
+                    queryGetActiveDB,
+                    "Reading active database");
                 try {
                     ResultSet resultSet = dbStat.executeQuery();
                     try {
                         resultSet.next();
                         activeDbName = resultSet.getString(1);
                     } finally {
-                        resultSet.close();
+                        JDBCUtils.safeClose(resultSet);
                     }
                 } finally {
-                    dbStat.close();
+                    JDBCUtils.safeClose(monitor, dbStat);
                 }
             } catch (SQLException e) {
                 log.error(e);
@@ -459,11 +463,11 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
 
         String changeQuery = querySetActiveDB.replaceFirst("\\?", child.getName());
         try {
-            PreparedStatement dbStat = getConnection().prepareStatement(changeQuery);
+            PreparedStatement dbStat = JDBCUtils.prepareStatement(monitor, this, changeQuery, "Change active database");
             try {
                 dbStat.execute();
             } finally {
-                dbStat.close();
+                JDBCUtils.safeClose(monitor, dbStat);
             }
         } catch (SQLException e) {
             throw new DBException(e);

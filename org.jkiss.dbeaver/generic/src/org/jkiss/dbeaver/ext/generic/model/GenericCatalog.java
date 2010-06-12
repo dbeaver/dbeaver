@@ -105,7 +105,7 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
                     }
                 }
             } finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
             return tmpSchemas;
         } catch (SQLException ex) {
