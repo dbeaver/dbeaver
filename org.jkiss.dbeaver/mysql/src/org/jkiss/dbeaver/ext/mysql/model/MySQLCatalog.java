@@ -4,6 +4,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.impl.meta.AbstractCatalog;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -136,7 +137,7 @@ public class MySQLCatalog
         List<MySQLTable> tmpTableList = new ArrayList<MySQLTable>();
         Map<String, MySQLTable> tmpTableMap = new HashMap<String, MySQLTable>();
         try {
-            PreparedStatement dbStat = getDataSource().getConnection().prepareStatement(MySQLConstants.QUERY_SELECT_TABLES);
+            PreparedStatement dbStat = JDBCUtils.prepareStatement(monitor, getDataSource(), MySQLConstants.QUERY_SELECT_TABLES, "Read tables");
             try {
                 dbStat.setString(1, getName());
                 ResultSet dbResult = dbStat.executeQuery();
@@ -148,11 +149,11 @@ public class MySQLCatalog
                     }
                 }
                 finally {
-                    dbResult.close();
+                    JDBCUtils.safeClose(dbResult);
                 }
             }
             finally {
-                dbStat.close();
+                JDBCUtils.closeStatement(monitor, dbStat);
             }
         }
         catch (SQLException ex) {
@@ -172,7 +173,7 @@ public class MySQLCatalog
         List<MySQLProcedure> tmpProcedureList = new ArrayList<MySQLProcedure>();
 
         try {
-            PreparedStatement dbStat = getDataSource().getConnection().prepareStatement(MySQLConstants.QUERY_SELECT_ROUTINES);
+            PreparedStatement dbStat = JDBCUtils.prepareStatement(monitor, getDataSource(), MySQLConstants.QUERY_SELECT_ROUTINES, "Read procedures");
             try {
                 dbStat.setString(1, getName());
                 ResultSet dbResult = dbStat.executeQuery();
@@ -183,11 +184,11 @@ public class MySQLCatalog
                     }
                 }
                 finally {
-                    dbResult.close();
+                    JDBCUtils.safeClose(dbResult);
                 }
             }
             finally {
-                dbStat.close();
+                JDBCUtils.closeStatement(monitor, dbStat);
             }
         }
         catch (SQLException ex) {

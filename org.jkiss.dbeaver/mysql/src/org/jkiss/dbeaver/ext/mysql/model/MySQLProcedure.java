@@ -144,7 +144,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
                 }
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
             this.columns = columnList;
         }

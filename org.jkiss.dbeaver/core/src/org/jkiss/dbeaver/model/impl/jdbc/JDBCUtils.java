@@ -173,6 +173,18 @@ public class JDBCUtils
         }
     }
 
+    /**
+     * Preapres jdbc statement using specified connector.
+     * Adds blocking object to monitor.
+     * Begins task in monitor.
+     * Adds record to Query console.
+     * @param monitor progress monitor (can not be null)
+     * @param connector connection provider
+     * @param query SQL query
+     * @param taskName task name
+     * @return prepared statement
+     * @throws SQLException may be throws by underslying JDBC driver
+     */
     public static PreparedStatement prepareStatement(
         DBRProgressMonitor monitor,
         JDBCConnector connector,
@@ -181,7 +193,7 @@ public class JDBCUtils
         throws SQLException
     {
         PreparedStatement dbStat = connector.getConnection().prepareStatement(query);
-        startBlockingOperation(monitor, makeBlockingObject(dbStat), taskName);
+        monitor.startBlock(makeBlockingObject(dbStat), taskName);
         return dbStat;
     }
 
@@ -191,12 +203,12 @@ public class JDBCUtils
      * @param monitor progress monitor (the same as in prepareStatement)
      * @param statement statement
      */
-    public static void safeClose(
+    public static void closeStatement(
         DBRProgressMonitor monitor,
         PreparedStatement statement)
     {
         safeClose(statement);
-        endBlockingOperation(monitor);
+        monitor.endBlock();
     }
 
     public static void safeClose(PreparedStatement statement)
@@ -220,84 +232,50 @@ public class JDBCUtils
         }
     }
 
-    public static void startBlockingOperation(
+    public static void startConnectionBlock(
         DBRProgressMonitor monitor,
         JDBCConnector connector,
         String taskName)
     {
-        startBlockingOperation(monitor, makeBlockingObject(connector.getConnection()), taskName);
+        monitor.startBlock(makeBlockingObject(connector.getConnection()), taskName);
     }
 
-    public static void startBlockingOperation(
-        DBRProgressMonitor monitor,
-        Connection connection,
-        String taskName)
-    {
-        startBlockingOperation(monitor, makeBlockingObject(connection), taskName);
-    }
-
-    private static void startBlockingOperation(
-        DBRProgressMonitor monitor,
-        DBRBlockingObject operation,
-        String taskName)
-    {
-        monitor.startBlock(operation, taskName);
-    }
-
-    public static void endBlockingOperation(
+    public static void endConnectionBlock(
         DBRProgressMonitor monitor)
     {
         monitor.endBlock();
     }
 
-    public static DBRBlockingObject makeBlockingObject(Statement statement)
+    private static DBRBlockingObject makeBlockingObject(final Statement statement)
     {
-        return new StatementBlockingObject(statement);
+        return new DBRBlockingObject() {
+            public void cancelBlock()
+                throws DBException
+            {
+                try {
+                    statement.cancel();
+                }
+                catch (SQLException e) {
+                    throw new DBCException("Coud not cancel statement", e);
+                }
+            }
+        };
     }
 
-    public static DBRBlockingObject makeBlockingObject(Connection connection)
+    private static DBRBlockingObject makeBlockingObject(final Connection connection)
     {
-        return new ConnectionBlockingObject(connection);
-    }
-
-    private static class StatementBlockingObject implements DBRBlockingObject {
-        private final Statement statement;
-
-        public StatementBlockingObject(Statement statement)
-        {
-            this.statement = statement;
-        }
-
-        public void cancelBlock()
-            throws DBException
-        {
-            try {
-                statement.cancel();
+        return new DBRBlockingObject() {
+            public void cancelBlock()
+                throws DBException
+            {
+                try {
+                    connection.close();
+                }
+                catch (SQLException e) {
+                    throw new DBCException("Coud not close connection", e);
+                }
             }
-            catch (SQLException e) {
-                throw new DBCException("Coud not cancel statement", e);
-            }
-        }
-    }
-
-    private static class ConnectionBlockingObject implements DBRBlockingObject {
-        private final Connection connection;
-
-        public ConnectionBlockingObject(Connection connection)
-        {
-            this.connection = connection;
-        }
-
-        public void cancelBlock()
-            throws DBException
-        {
-            try {
-                connection.close();
-            }
-            catch (SQLException e) {
-                throw new DBCException("Coud not close connection", e);
-            }
-        }
+        };
     }
 
 }

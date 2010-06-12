@@ -171,7 +171,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                     }
                 }
                 finally {
-                    dbResult.close();
+                    JDBCUtils.safeClose(dbResult);
                 }
             }
             finally {
@@ -219,7 +219,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                     }
                 }
                 finally {
-                    dbResult.close();
+                    JDBCUtils.safeClose(dbResult);
                 }
             }
             finally {
@@ -298,7 +298,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                 }
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
             return tmpIndexList;
         } catch (SQLException ex) {
@@ -350,7 +350,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                 }
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
             return pkList;
         } catch (SQLException ex) {
@@ -446,7 +446,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                 }
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
             return fkList;
         } catch (SQLException ex) {

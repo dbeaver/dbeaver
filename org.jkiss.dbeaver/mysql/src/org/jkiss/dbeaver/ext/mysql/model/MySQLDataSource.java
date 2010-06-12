@@ -58,7 +58,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         // Read catalogs
         List<MySQLCatalog> tmpCatalogs = new ArrayList<MySQLCatalog>();
         try {
-            PreparedStatement dbStat = getConnection().prepareStatement("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
+            PreparedStatement dbStat = JDBCUtils.prepareStatement(monitor, this, "SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA, "Select schemas");
             try {
                 ResultSet dbResult = dbStat.executeQuery();
                 try {
@@ -76,11 +76,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
                         }
                     }
                 } finally {
-                    dbResult.close();
+                    JDBCUtils.safeClose(dbResult);
                 }
             }
             finally {
-                dbStat.close();
+                JDBCUtils.closeStatement(monitor, dbStat);
             }
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex);
@@ -160,17 +160,17 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         if (this.activeCatalog == null) {
             String activeDbName;
             try {
-                PreparedStatement dbStat = getConnection().prepareStatement("select database()");
+                PreparedStatement dbStat = JDBCUtils.prepareStatement(monitor, this, "select database()", "Select active database");
                 try {
                     ResultSet resultSet = dbStat.executeQuery();
                     try {
                         resultSet.next();
                         activeDbName = resultSet.getString(1);
                     } finally {
-                        resultSet.close();
+                        JDBCUtils.safeClose(resultSet);
                     }
                 } finally {
-                    dbStat.close();
+                    JDBCUtils.closeStatement(monitor, dbStat);
                 }
             } catch (SQLException e) {
                 log.error(e);
@@ -191,22 +191,33 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
             throw new IllegalArgumentException("child");
         }
         try {
-            PreparedStatement dbStat = getConnection().prepareStatement("use " + child.getName());
+            PreparedStatement dbStat = JDBCUtils.prepareStatement(monitor, this, "use " + child.getName(), "Change active database");
             try {
                 dbStat.execute();
             } finally {
-                dbStat.close();
+                JDBCUtils.closeStatement(monitor, dbStat);
             }
         } catch (SQLException e) {
             throw new DBException(e);
         }
+        
+        // Send notifications
+        DBSObject oldChild = this.activeCatalog;
         this.activeCatalog = (MySQLCatalog) child;
+
+        if (oldChild != null) {
+            getContainer().fireEvent(DBSObjectAction.CHANGED, oldChild);
+        }
+        if (this.activeCatalog != null) {
+            getContainer().fireEvent(DBSObjectAction.CHANGED, this.activeCatalog);
+        }
     }
 
     public List<DBSTablePath> findTableNames(DBRProgressMonitor monitor, String tableMask, int maxResults)
         throws DBException
     {
         List<DBSTablePath> pathList = new ArrayList<DBSTablePath>();
+        JDBCUtils.startConnectionBlock(monitor, this, "Find table names");
         try {
             DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
 
@@ -238,12 +249,15 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
                 }
             }
             finally {
-                dbResult.close();
+                JDBCUtils.safeClose(dbResult);
             }
             return pathList;
         }
         catch (SQLException ex) {
             throw new DBException(ex);
+        }
+        finally {
+            JDBCUtils.endConnectionBlock(monitor);
         }
     }
 }
