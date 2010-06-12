@@ -156,7 +156,7 @@ public class ViewUtils
                 if (dbmNode instanceof DBMTreeNode && dbmNode.getObject() != null) {
                     final DBSStructureContainerActive activeContainer = DBSUtils.queryParentInterface(
                         DBSStructureContainerActive.class, dbmNode.getObject());
-                    if (activeContainer != null) {
+                    if (activeContainer != null && activeContainer.supportsActiveChildChange()) {
                         try {
                             // Extract active child with void monitor
                             // Otherwise context menu will be broken by GUI used by progress service
