@@ -11,6 +11,9 @@ import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
+import org.jkiss.dbeaver.model.struct.DBSUtils;
+
+import java.util.Collection;
 
 /**
  * AbstractProcedure
@@ -71,6 +74,23 @@ public abstract class AbstractProcedure<
     public DBSObject getParentObject()
     {
         return container;
+    }
+
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return getColumns(monitor);
+    }
+
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
+        throws DBException
+    {
+        return DBSUtils.findObject(getChildren(monitor), childName);
+    }
+
+    public void cacheStructure(DBRProgressMonitor monitor, int scope)
+        throws DBException
+    {
     }
 
     public boolean refreshObject(DBRProgressMonitor monitor)

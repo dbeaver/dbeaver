@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.meta.AbstractProcedure;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -81,7 +82,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return charset;
     }
 
-    public List<MySQLProcedureColumn> getColumns()
+    public List<MySQLProcedureColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {

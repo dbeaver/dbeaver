@@ -14,6 +14,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Various objects cache
@@ -21,6 +23,7 @@ import java.util.List;
 public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
 
     private List<OBJECT> objectList;
+    private Map<String, OBJECT> objectMap;
     private final String objectListName;
 
     protected JDBCObjectCache(String objectListName)
@@ -43,34 +46,49 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
         return objectList;
     }
 
+    public OBJECT getObject(DBRProgressMonitor monitor, String name)
+        throws DBException
+    {
+        if (objectMap == null) {
+            this.cacheObjects(monitor);
+        }
+        return objectMap.get(name);
+    }
+
     public void clearCache()
     {
         this.objectList = null;
+        this.objectMap = null;
     }
 
-    private void cacheObjects(DBRProgressMonitor monitor)
+    protected synchronized void cacheObjects(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (objectList != null) {
+        if (this.objectList != null) {
             return;
         }
 
-        List<OBJECT> tmpProcedureList = new ArrayList<OBJECT>();
-
+        List<OBJECT> tmpTableList = new ArrayList<OBJECT>();
+        Map<String, OBJECT> tmpTableMap = new HashMap<String, OBJECT>();
         try {
             PreparedStatement dbStat = prepareObjectsStatement(monitor);
-            monitor.startBlock(JDBCUtils.makeBlockingObject(dbStat), "Load " + this.objectListName);
+            monitor.startBlock(JDBCUtils.makeBlockingObject(dbStat), "Load " + objectListName);
             try {
-
-                // Load objectList
                 ResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {
-                        OBJECT object = fetchObject(monitor, dbResult);
-                        if (object == null) {
+
+                        OBJECT table = fetchObject(monitor, dbResult);
+                        if (table == null) {
                             continue;
                         }
-                        tmpProcedureList.add(object);
+                        tmpTableList.add(table);
+                        tmpTableMap.put(table.getName(), table);
+
+                        monitor.subTask(table.getName());
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
                     }
                 }
                 finally {
@@ -84,7 +102,9 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
         catch (SQLException ex) {
             throw new DBException(ex);
         }
-        this.objectList = tmpProcedureList;
+
+        this.objectList = tmpTableList;
+        this.objectMap = tmpTableMap;
     }
 
 }

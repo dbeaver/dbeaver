@@ -4,23 +4,29 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCTableCache;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
+import org.jkiss.dbeaver.model.struct.DBSProcedureType;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
+import org.jkiss.dbeaver.model.struct.DBSTablePath;
+import org.jkiss.dbeaver.model.struct.DBSUtils;
 
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.PreparedStatement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Collection;
 import java.util.TreeMap;
 
 /**
@@ -47,6 +53,11 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         return tableCache;
     }
 
+    final ProceduresCache getProcedureCache()
+    {
+        return procedureCache;
+    }
+
     public abstract GenericDataSource getDataSource();
 
     public abstract GenericCatalog getCatalog();
@@ -58,13 +69,13 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     public List<GenericTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getTables(monitor);
+        return tableCache.getObjects(monitor);
     }
 
     public GenericTable getTable(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return tableCache.getTable(monitor, name);
+        return tableCache.getObject(monitor, name);
     }
 
     public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
@@ -106,11 +117,11 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {
-        tableCache.getTables(monitor);
+        tableCache.getObjects(monitor);
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             // Do not use columns cache
             // Cannot be sure that all jdbc drivers support reading of all catalog columns
-            //tableCache.cacheColumns(monitor, null);
+            //tableCache.cacheChildren(monitor, null);
         }
     }
 
@@ -179,7 +190,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         }
 
         // Load tables and columns first
-        tableCache.cacheColumns(monitor, forTable);
+        tableCache.loadChildren(monitor, forTable);
         if (forTable != null && forTable.isIndexesCached()) {
             return;
         }
@@ -225,7 +236,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                     }
                     GenericTable table = forTable;
                     if (table == null) {
-                        table = tableCache.getTable(monitor, tableName);
+                        table = tableCache.getObject(monitor, tableName);
                         if (table == null) {
                             log.warn("Index '" + indexName + "' owner table '" + tableName + "' not found");
                             continue;
@@ -271,7 +282,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 }
                 // Now set empty index list for other tables
                 if (forTable == null) {
-                    for (GenericTable tmpTable : tableCache.getTables(monitor)) {
+                    for (GenericTable tmpTable : tableCache.getObjects(monitor)) {
                         if (!tableIndexMap.containsKey(tmpTable)) {
                             tmpTable.setIndexes(new ArrayList<GenericIndex>());
                         }
@@ -319,15 +330,18 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     {
         return getName() == null ? "<NONE>" : getName();
     }
-    
-    class TableCache extends JDBCTableCache<GenericTable, GenericTableColumn> {
+
+    /**
+     * Tables cache implementation
+     */
+    class TableCache extends JDBCStructCache<GenericTable, GenericTableColumn> {
         
         protected TableCache()
         {
-            super(JDBCConstants.TABLE_NAME);
+            super("tables", "columns", JDBCConstants.TABLE_NAME);
         }
 
-        protected PreparedStatement prepareTablesStatement(DBRProgressMonitor monitor)
+        protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)
             throws SQLException, DBException
         {
             return new ResultSetStatement(
@@ -338,7 +352,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                     null));
         }
 
-        protected GenericTable fetchTable(DBRProgressMonitor monitor, ResultSet dbResult)
+        protected GenericTable fetchObject(DBRProgressMonitor monitor, ResultSet dbResult)
             throws SQLException, DBException
         {
             String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
@@ -370,17 +384,17 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 typeSchema);
         }
 
-        protected boolean isTableColumnsCached(GenericTable table)
+        protected boolean isChildrenCached(GenericTable table)
         {
             return table.isColumnsCached();
         }
 
-        protected void cacheTableColumns(GenericTable table, List<GenericTableColumn> columns)
+        protected void cacheChildren(GenericTable table, List<GenericTableColumn> columns)
         {
             table.setColumns(columns);
         }
 
-        protected PreparedStatement prepareColumnsStatement(DBRProgressMonitor monitor, GenericTable forTable)
+        protected PreparedStatement prepareChildrenStatement(DBRProgressMonitor monitor, GenericTable forTable)
             throws SQLException, DBException
         {
             return new ResultSetStatement(
@@ -391,7 +405,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                     null));
         }
 
-        protected GenericTableColumn fetchColumn(DBRProgressMonitor monitor, GenericTable table, ResultSet dbResult)
+        protected GenericTableColumn fetchChild(DBRProgressMonitor monitor, GenericTable table, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
@@ -419,11 +433,14 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         }
     }
 
-    class ProceduresCache extends JDBCObjectCache<GenericProcedure> {
+    /**
+     * Procedures cache implementation
+     */
+    class ProceduresCache extends JDBCStructCache<GenericProcedure, GenericProcedureColumn> {
 
         ProceduresCache()
         {
-            super("procedures");
+            super("procedures", "procedue columns", JDBCConstants.PROCEDURE_NAME);
         }
 
         protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)
@@ -454,6 +471,66 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 procedureName,
                 remarks, procedureType
             );
+        }
+
+        protected boolean isChildrenCached(GenericProcedure parent)
+        {
+            return parent.isColumnsCached();
+        }
+
+        protected void cacheChildren(GenericProcedure parent, List<GenericProcedureColumn> columns)
+        {
+            parent.cacheColumns(columns);
+        }
+
+        protected PreparedStatement prepareChildrenStatement(DBRProgressMonitor monitor, GenericProcedure forObject)
+            throws SQLException, DBException
+        {
+            return new ResultSetStatement(
+                getDataSource().getConnection().getMetaData().getProcedureColumns(
+                    getCatalog() == null ? null : getCatalog().getName(),
+                    getSchema() == null ? null : getSchema().getName(),
+                    forObject == null ? null : forObject.getName(),
+                    null));
+        }
+
+        protected GenericProcedureColumn fetchChild(DBRProgressMonitor monitor, GenericProcedure parent, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
+            int columnTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_TYPE);
+            int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
+            String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
+            int columnSize = JDBCUtils.safeGetInt(dbResult, JDBCConstants.LENGTH);
+            boolean isNullable = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) != DatabaseMetaData.procedureNoNulls;
+            int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SCALE);
+            int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
+            int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
+            String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
+            int position = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
+            //DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName);
+            DBSProcedureColumnType columnType;
+            switch (columnTypeNum) {
+                case DatabaseMetaData.procedureColumnIn: columnType = DBSProcedureColumnType.IN; break;
+                case DatabaseMetaData.procedureColumnInOut: columnType = DBSProcedureColumnType.INOUT; break;
+                case DatabaseMetaData.procedureColumnOut: columnType = DBSProcedureColumnType.OUT; break;
+                case DatabaseMetaData.procedureColumnReturn: columnType = DBSProcedureColumnType.RETURN; break;
+                case DatabaseMetaData.procedureColumnResult: columnType = DBSProcedureColumnType.RESULTSET; break;
+                default: columnType = DBSProcedureColumnType.UNKNOWN; break;
+            }
+            if (CommonUtils.isEmpty(columnName) && columnType == DBSProcedureColumnType.RETURN) {
+                columnName = "RETURN";
+            }
+            return new GenericProcedureColumn(
+                parent,
+                columnName,
+                typeName,
+                valueType,
+                position,
+                columnSize,
+                scale, precision, radix, isNullable,
+                remarks,
+                columnType);
         }
     }
 }
