@@ -10,7 +10,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,7 +23,7 @@ import java.util.Map;
  * JDBC structured objects cache
  */
 public abstract class JDBCStructCache<
-    OBJECT extends DBSStructureContainer,
+    OBJECT extends DBSObject,
     CHILD extends DBSObject>
     extends JDBCObjectCache<OBJECT>
 {
@@ -66,7 +65,7 @@ public abstract class JDBCStructCache<
             return;
         }
         if (forObject == null) {
-            super.cacheObjects(monitor);
+            super.loadObjects(monitor);
         } else if (isChildrenCached(forObject)) {
             return;
         }

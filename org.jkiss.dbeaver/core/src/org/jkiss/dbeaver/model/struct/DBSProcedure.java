@@ -12,7 +12,7 @@ import java.util.Collection;
 /**
  * DBSIndex
  */
-public interface DBSProcedure extends DBSStructureContainer, DBSStructureObject
+public interface DBSProcedure extends DBSStructureObject
 {
     DBSStructureContainer getContainer();
 

@@ -76,23 +76,6 @@ public abstract class AbstractProcedure<
         return container;
     }
 
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return getColumns(monitor);
-    }
-
-    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
-        throws DBException
-    {
-        return DBSUtils.findObject(getChildren(monitor), childName);
-    }
-
-    public void cacheStructure(DBRProgressMonitor monitor, int scope)
-        throws DBException
-    {
-    }
-
     public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {

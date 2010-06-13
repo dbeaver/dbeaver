@@ -41,7 +41,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
         throws DBException
     {
         if (objectList == null) {
-            cacheObjects(monitor);
+            loadObjects(monitor);
         }
         return objectList;
     }
@@ -50,7 +50,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
         throws DBException
     {
         if (objectMap == null) {
-            this.cacheObjects(monitor);
+            this.loadObjects(monitor);
         }
         return objectMap.get(name);
     }
@@ -61,7 +61,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
         this.objectMap = null;
     }
 
-    protected synchronized void cacheObjects(DBRProgressMonitor monitor)
+    protected synchronized void loadObjects(DBRProgressMonitor monitor)
         throws DBException
     {
         if (this.objectList != null) {

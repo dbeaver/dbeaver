@@ -102,7 +102,7 @@ public class MySQLIndex extends AbstractIndex
         return qualifier;
     }
 
-    public List<MySQLIndexColumn> getColumns()
+    public List<MySQLIndexColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }

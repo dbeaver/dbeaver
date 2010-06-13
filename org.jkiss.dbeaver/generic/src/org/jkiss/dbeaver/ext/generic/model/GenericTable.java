@@ -147,8 +147,8 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         throws DBException
     {
         if (indexes == null) {
-            // Read indexes using container
-            this.getContainer().cacheIndexes(monitor, this);
+            // Read indexes using cache
+            this.getContainer().getIndexCache().getObjects(monitor, this);
         }
         return indexes;
     }

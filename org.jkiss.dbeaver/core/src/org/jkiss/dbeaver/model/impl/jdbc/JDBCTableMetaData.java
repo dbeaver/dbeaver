@@ -140,7 +140,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
                     if (index.isUnique()) {
                         // We need ALL columns from this constraint
                         List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
-                        Collection<? extends DBSIndexColumn> constrColumns = index.getColumns();
+                        Collection<? extends DBSIndexColumn> constrColumns = index.getColumns(monitor);
                         for (DBSIndexColumn indexColumn : constrColumns) {
                             JDBCColumnMetaData rsColumn = getColumnMetaData(monitor, indexColumn.getTableColumn());
                             if (rsColumn == null) {

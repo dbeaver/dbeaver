@@ -102,7 +102,7 @@ public class GenericIndex extends AbstractIndex
         return qualifier;
     }
 
-    public List<GenericIndexColumn> getColumns()
+    public List<GenericIndexColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }
@@ -110,6 +110,11 @@ public class GenericIndex extends AbstractIndex
     public GenericIndexColumn getColumn(String columnName)
     {
         return DBSUtils.findObject(columns, columnName);
+    }
+
+    void setColumns(List<GenericIndexColumn> columns)
+    {
+        this.columns = columns;
     }
 
     void addColumn(GenericIndexColumn column)

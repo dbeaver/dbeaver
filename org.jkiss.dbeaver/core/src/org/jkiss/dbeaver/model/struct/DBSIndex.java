@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
 import java.util.Collection;
 
 /**
@@ -17,6 +19,6 @@ public interface DBSIndex extends DBSStructureObject
 
     DBSIndexType getIndexType();
 
-    Collection<? extends DBSIndexColumn> getColumns();
+    Collection<? extends DBSIndexColumn> getColumns(DBRProgressMonitor monitor);
 
 }

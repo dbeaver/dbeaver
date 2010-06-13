@@ -4,11 +4,22 @@
 
 package org.jkiss.dbeaver.model.impl.meta;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSIndex;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.Collection;
 
 /**
  * AbstractIndex
  */
 public abstract class AbstractIndex implements DBSIndex
 {
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return getColumns(monitor);
+    }
+
 }

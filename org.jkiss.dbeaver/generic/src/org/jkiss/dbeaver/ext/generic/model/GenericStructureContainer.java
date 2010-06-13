@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
@@ -24,10 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * GenericStructureContainer
@@ -37,20 +35,24 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     static Log log = LogFactory.getLog(GenericStructureContainer.class);
 
     private TableCache tableCache;
-    private List<GenericIndex> indexList;
-    private List<GenericConstraint> constraintList;
+    private IndexCache indexCache;
     private ProceduresCache procedureCache;
-    private boolean indexesCached = false;
 
     protected GenericStructureContainer()
     {
         this.tableCache = new TableCache();
+        this.indexCache = new IndexCache();
         this.procedureCache = new ProceduresCache();
     }
 
     final TableCache getTableCache()
     {
         return tableCache;
+    }
+
+    final IndexCache getIndexCache()
+    {
+        return indexCache;
     }
 
     final ProceduresCache getProcedureCache()
@@ -86,7 +88,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         // allows index query only by certain table name
         //cacheIndexes(monitor, null);
 
-        if (indexList == null) {
+        if (!indexCache.isCached()) {
             // Load indexes for all tables and return copy of them
             List<GenericIndex> tmpIndexList = new ArrayList<GenericIndex>();
             for (GenericTable table : getTables(monitor)) {
@@ -94,24 +96,9 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                     tmpIndexList.add(new GenericIndex(index));
                 }
             }
-            indexList = tmpIndexList;
+            indexCache.setCache(tmpIndexList);
         }
-        return indexList;
-    }
-
-    public List<GenericConstraint> getConstraints(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (constraintList == null) {
-            List<GenericConstraint> tmpConstrList = new ArrayList<GenericConstraint>();
-            for (GenericTable table : getTables(monitor)) {
-                for (GenericConstraint constraint : table.getConstraints(monitor)) {
-                    tmpConstrList.add(new GenericConstraint(constraint));
-                }
-            }
-            constraintList = tmpConstrList;
-        }
-        return constraintList;
+        return indexCache.getObjects(monitor, null);
     }
 
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
@@ -182,127 +169,6 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         }
     }
 
-    void cacheIndexes(DBRProgressMonitor monitor, GenericTable forTable)
-        throws DBException
-    {
-        if (this.indexesCached) {
-            return;
-        }
-
-        // Load tables and columns first
-        tableCache.loadChildren(monitor, forTable);
-        if (forTable != null && forTable.isIndexesCached()) {
-            return;
-        }
-
-        // Load index columns
-        try {
-            Map<GenericTable, Map<String, GenericIndex>> tableIndexMap = new HashMap<GenericTable, Map<String, GenericIndex>>();
-
-            DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
-            // Load indexes
-            ResultSet dbResult = metaData.getIndexInfo(
-                getCatalog() == null ? null : getCatalog().getName(),
-                getSchema() == null ? null : getSchema().getName(),
-                // oracle fails if unquoted complex identifier specified
-                // but other DBs (and logically it's correct) do not want quote chars in this query
-                // so let's fix it in oracle plugin
-                forTable == null ? null : forTable.getName(), //DBSUtils.getQuotedIdentifier(getDataSource(), forTable.getName()),
-                false,
-                false);
-            try {
-                while (dbResult.next()) {
-                    String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
-                    String indexName = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_NAME);
-                    boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
-                    String indexQualifier = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_QUALIFIER);
-                    int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);
-
-                    int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-                    String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-                    String ascOrDesc = JDBCUtils.safeGetString(dbResult, JDBCConstants.ASC_OR_DESC);
-
-                    if (CommonUtils.isEmpty(indexName) || CommonUtils.isEmpty(tableName)) {
-                        // Bad index - can't evaluate it
-                        continue;
-                    }
-                    DBSIndexType indexType;
-                    switch (indexTypeNum) {
-                        case DatabaseMetaData.tableIndexStatistic: indexType = DBSIndexType.STATISTIC; break;
-                        case DatabaseMetaData.tableIndexClustered: indexType = DBSIndexType.CLUSTERED; break;
-                        case DatabaseMetaData.tableIndexHashed: indexType = DBSIndexType.HASHED; break;
-                        case DatabaseMetaData.tableIndexOther: indexType = DBSIndexType.OTHER; break;
-                        default: indexType = DBSIndexType.UNKNOWN; break;
-                    }
-                    GenericTable table = forTable;
-                    if (table == null) {
-                        table = tableCache.getObject(monitor, tableName);
-                        if (table == null) {
-                            log.warn("Index '" + indexName + "' owner table '" + tableName + "' not found");
-                            continue;
-                        }
-                    }
-                    if (table.isIndexesCached()) {
-                        // Already read
-                        continue;
-                    }
-                    // Add to map
-                    Map<String, GenericIndex> indexMap = tableIndexMap.get(table);
-                    if (indexMap == null) {
-                        indexMap = new TreeMap<String, GenericIndex>();
-                        tableIndexMap.put(table, indexMap);
-                    }
-
-                    GenericIndex index = indexMap.get(indexName);
-                    if (index == null) {
-                        index = new GenericIndex(
-                            table,
-                            isNonUnique,
-                            indexQualifier,
-                            indexName,
-                            indexType);
-                        indexMap.put(indexName, index);
-                    }
-                    GenericTableColumn tableColumn = table.getColumn(monitor, columnName);
-                    if (tableColumn == null) {
-                        log.warn("Column '" + columnName + "' not found in table '" + this.getName() + "'");
-                        continue;
-                    }
-                    index.addColumn(
-                        new GenericIndexColumn(
-                            index,
-                            tableColumn,
-                            ordinalPosition,
-                            !"D".equalsIgnoreCase(ascOrDesc)));
-                }
-
-                // All indexes are read. Now assign them to tables
-                for (Map.Entry<GenericTable,Map<String,GenericIndex>> colEntry : tableIndexMap.entrySet()) {
-                    colEntry.getKey().setIndexes(new ArrayList<GenericIndex>(colEntry.getValue().values()));
-                }
-                // Now set empty index list for other tables
-                if (forTable == null) {
-                    for (GenericTable tmpTable : tableCache.getObjects(monitor)) {
-                        if (!tableIndexMap.containsKey(tmpTable)) {
-                            tmpTable.setIndexes(new ArrayList<GenericIndex>());
-                        }
-                    }
-                } else if (!tableIndexMap.containsKey(forTable)) {
-                    forTable.setIndexes(new ArrayList<GenericIndex>());
-                }
-
-                if (forTable == null) {
-                    this.indexesCached = true;
-                }
-            }
-            finally {
-                JDBCUtils.safeClose(dbResult);
-            }
-        } catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-    }
-
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -319,10 +185,8 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         throws DBException
     {
         this.tableCache.clearCache();
-        this.indexList = null;
-        this.constraintList = null;
+        this.indexCache.clearCache();
         this.procedureCache.clearCache();
-        this.indexesCached = false;
         return true;
     }
 
@@ -434,13 +298,224 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     }
 
     /**
+     * Index cache implementation
+     */
+
+    class IndexCache extends JDBCCompositeCache<GenericTable, GenericIndex, GenericIndexColumn> {
+        protected IndexCache()
+        {
+            super(tableCache, "indexes", JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
+        }
+
+/*
+        void cacheIndexes(DBRProgressMonitor monitor, GenericTable forTable)
+            throws DBException
+        {
+            if (this.indexesCached) {
+                return;
+            }
+
+            // Load tables and columns first
+            tableCache.loadChildren(monitor, forTable);
+            if (forTable != null && forTable.isIndexesCached()) {
+                return;
+            }
+
+            // Load index columns
+            try {
+                Map<GenericTable, Map<String, GenericIndex>> tableIndexMap = new HashMap<GenericTable, Map<String, GenericIndex>>();
+
+                DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
+                // Load indexes
+                ResultSet dbResult = metaData.getIndexInfo(
+                    getCatalog() == null ? null : getCatalog().getName(),
+                    getSchema() == null ? null : getSchema().getName(),
+                    // oracle fails if unquoted complex identifier specified
+                    // but other DBs (and logically it's correct) do not want quote chars in this query
+                    // so let's fix it in oracle plugin
+                    forTable == null ? null : forTable.getName(), //DBSUtils.getQuotedIdentifier(getDataSource(), forTable.getName()),
+                    false,
+                    false);
+                try {
+                    while (dbResult.next()) {
+                        String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
+                        String indexName = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_NAME);
+                        boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
+                        String indexQualifier = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_QUALIFIER);
+                        int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);
+
+                        int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
+                        String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
+                        String ascOrDesc = JDBCUtils.safeGetString(dbResult, JDBCConstants.ASC_OR_DESC);
+
+                        if (CommonUtils.isEmpty(indexName) || CommonUtils.isEmpty(tableName)) {
+                            // Bad index - can't evaluate it
+                            continue;
+                        }
+                        DBSIndexType indexType;
+                        switch (indexTypeNum) {
+                            case DatabaseMetaData.tableIndexStatistic: indexType = DBSIndexType.STATISTIC; break;
+                            case DatabaseMetaData.tableIndexClustered: indexType = DBSIndexType.CLUSTERED; break;
+                            case DatabaseMetaData.tableIndexHashed: indexType = DBSIndexType.HASHED; break;
+                            case DatabaseMetaData.tableIndexOther: indexType = DBSIndexType.OTHER; break;
+                            default: indexType = DBSIndexType.UNKNOWN; break;
+                        }
+                        GenericTable table = forTable;
+                        if (table == null) {
+                            table = tableCache.getObject(monitor, tableName);
+                            if (table == null) {
+                                log.warn("Index '" + indexName + "' owner table '" + tableName + "' not found");
+                                continue;
+                            }
+                        }
+                        if (table.isIndexesCached()) {
+                            // Already read
+                            continue;
+                        }
+                        // Add to map
+                        Map<String, GenericIndex> indexMap = tableIndexMap.get(table);
+                        if (indexMap == null) {
+                            indexMap = new TreeMap<String, GenericIndex>();
+                            tableIndexMap.put(table, indexMap);
+                        }
+
+                        GenericIndex index = indexMap.get(indexName);
+                        if (index == null) {
+                            index = new GenericIndex(
+                                table,
+                                isNonUnique,
+                                indexQualifier,
+                                indexName,
+                                indexType);
+                            indexMap.put(indexName, index);
+                        }
+                        GenericTableColumn tableColumn = table.getColumn(monitor, columnName);
+                        if (tableColumn == null) {
+                            log.warn("Column '" + columnName + "' not found in table '" + this.getName() + "'");
+                            continue;
+                        }
+                        index.addColumn(
+                            new GenericIndexColumn(
+                                index,
+                                tableColumn,
+                                ordinalPosition,
+                                !"D".equalsIgnoreCase(ascOrDesc)));
+                    }
+
+                    // All indexes are read. Now assign them to tables
+                    for (Map.Entry<GenericTable,Map<String,GenericIndex>> colEntry : tableIndexMap.entrySet()) {
+                        colEntry.getKey().setIndexes(new ArrayList<GenericIndex>(colEntry.getValue().values()));
+                    }
+                    // Now set empty index list for other tables
+                    if (forTable == null) {
+                        for (GenericTable tmpTable : tableCache.getObjects(monitor)) {
+                            if (!tableIndexMap.containsKey(tmpTable)) {
+                                tmpTable.setIndexes(new ArrayList<GenericIndex>());
+                            }
+                        }
+                    } else if (!tableIndexMap.containsKey(forTable)) {
+                        forTable.setIndexes(new ArrayList<GenericIndex>());
+                    }
+
+                    if (forTable == null) {
+                        this.indexesCached = true;
+                    }
+                }
+                finally {
+                    JDBCUtils.safeClose(dbResult);
+                }
+            } catch (SQLException ex) {
+                throw new DBException(ex);
+            }
+        }
+*/
+
+        protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor, GenericTable forParent)
+            throws SQLException, DBException
+        {
+            return new ResultSetStatement(
+                getDataSource().getConnection().getMetaData().getIndexInfo(
+                    getCatalog() == null ? null : getCatalog().getName(),
+                    getSchema() == null ? null : getSchema().getName(),
+                    // oracle fails if unquoted complex identifier specified
+                    // but other DBs (and logically it's correct) do not want quote chars in this query
+                    // so let's fix it in oracle plugin
+                    forParent == null ? null : forParent.getName(), //DBSUtils.getQuotedIdentifier(getDataSource(), forTable.getName()),
+                    false,
+                    false));
+        }
+
+        protected GenericIndex fetchObject(DBRProgressMonitor monitor, ResultSet dbResult, GenericTable parent)
+            throws SQLException, DBException
+        {
+            String indexName = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_NAME);
+            boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
+            String indexQualifier = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_QUALIFIER);
+            int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);
+
+            DBSIndexType indexType;
+            switch (indexTypeNum) {
+                case DatabaseMetaData.tableIndexStatistic: indexType = DBSIndexType.STATISTIC; break;
+                case DatabaseMetaData.tableIndexClustered: indexType = DBSIndexType.CLUSTERED; break;
+                case DatabaseMetaData.tableIndexHashed: indexType = DBSIndexType.HASHED; break;
+                case DatabaseMetaData.tableIndexOther: indexType = DBSIndexType.OTHER; break;
+                default: indexType = DBSIndexType.UNKNOWN; break;
+            }
+
+            return new GenericIndex(
+                parent,
+                isNonUnique,
+                indexQualifier,
+                indexName,
+                indexType);
+        }
+
+        protected GenericIndexColumn fetchObjectRow(
+            DBRProgressMonitor monitor, ResultSet dbResult,
+            GenericTable parent, GenericIndex object)
+            throws SQLException, DBException
+        {
+            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
+            String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
+            String ascOrDesc = JDBCUtils.safeGetString(dbResult, JDBCConstants.ASC_OR_DESC);
+
+            GenericTableColumn tableColumn = parent.getColumn(monitor, columnName);
+            if (tableColumn == null) {
+                log.warn("Column '" + columnName + "' not found in table '" + parent.getName() + "'");
+                return null;
+            }
+
+            return new GenericIndexColumn(
+                object,
+                tableColumn,
+                ordinalPosition,
+                !"D".equalsIgnoreCase(ascOrDesc));
+        }
+
+        protected boolean isObjectsCached(GenericTable parent)
+        {
+            return parent.isIndexesCached();
+        }
+
+        protected void cacheObjects(GenericTable parent, List<GenericIndex> indexes)
+        {
+            parent.setIndexes(indexes);
+        }
+
+        protected void cacheRows(GenericIndex index, List<GenericIndexColumn> rows)
+        {
+            index.setColumns(rows);
+        }
+    }
+
+    /**
      * Procedures cache implementation
      */
     class ProceduresCache extends JDBCStructCache<GenericProcedure, GenericProcedureColumn> {
 
         ProceduresCache()
         {
-            super("procedures", "procedue columns", JDBCConstants.PROCEDURE_NAME);
+            super("procedures", "procedure columns", JDBCConstants.PROCEDURE_NAME);
         }
 
         protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)

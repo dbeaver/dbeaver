@@ -1,10 +1,8 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSSchema;
-import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * GenericSchema
