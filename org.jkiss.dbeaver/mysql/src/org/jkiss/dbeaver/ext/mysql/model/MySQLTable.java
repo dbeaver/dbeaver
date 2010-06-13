@@ -155,12 +155,15 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         this.autoIncrement = autoIncrement;
     }
 
-    public String getDDL()
+    public String getDDL(DBRProgressMonitor monitor)
         throws DBException
     {
         try {
-            PreparedStatement dbStat = getDataSource().getConnection().prepareStatement(
-                "SHOW CREATE TABLE " + getFullQualifiedName());
+            PreparedStatement dbStat = JDBCUtils.prepareStatement(
+                monitor,
+                getDataSource(),
+                "SHOW CREATE TABLE " + getFullQualifiedName(),
+                "Extract table's DDL");
             try {
                 ResultSet dbResult = dbStat.executeQuery();
                 try {

@@ -32,7 +32,6 @@ public abstract class JDBCStructCache<
     private boolean childrenCached = false;
 
     private final String objectNameColumn;
-    private final String childListName;
 
     abstract protected boolean isChildrenCached(OBJECT parent);
 
@@ -44,12 +43,9 @@ public abstract class JDBCStructCache<
     abstract protected CHILD fetchChild(DBRProgressMonitor monitor, OBJECT parent, ResultSet dbResult)
         throws SQLException, DBException;
 
-    protected JDBCStructCache(String objectListName, String childListName, String objectNameColumn
-    )
+    protected JDBCStructCache(String objectNameColumn)
     {
-        super(objectListName);
         this.objectNameColumn = objectNameColumn;
-        this.childListName = childListName;
     }
 
     /**
@@ -75,7 +71,6 @@ public abstract class JDBCStructCache<
 
             // Load columns
             PreparedStatement dbStat = prepareChildrenStatement(monitor, forObject);
-            monitor.startBlock(JDBCUtils.makeBlockingObject(dbStat), "Load " + childListName);
             try {
                 ResultSet dbResult = dbStat.executeQuery();
                 try {

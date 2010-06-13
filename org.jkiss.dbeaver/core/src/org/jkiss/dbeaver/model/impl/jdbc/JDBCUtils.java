@@ -9,6 +9,7 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetStatement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -193,6 +194,17 @@ public class JDBCUtils
         throws SQLException
     {
         PreparedStatement dbStat = connector.getConnection().prepareStatement(query);
+        monitor.startBlock(makeBlockingObject(dbStat), taskName);
+        return dbStat;
+    }
+
+    public static PreparedStatement prepareResultsStatement(
+        DBRProgressMonitor monitor,
+        ResultSet resultSet,
+        String taskName)
+        throws SQLException
+    {
+        PreparedStatement dbStat = new ResultSetStatement(resultSet);
         monitor.startBlock(makeBlockingObject(dbStat), taskName);
         return dbStat;
     }

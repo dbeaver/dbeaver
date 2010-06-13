@@ -41,18 +41,15 @@ public abstract class JDBCCompositeCache<
 
     private JDBCObjectCache<PARENT> parentCache;
     private List<OBJECT> objectList;
-    private final String objectListName;
     private final String parentColumnName;
     private final String objectColumnName;
 
     protected JDBCCompositeCache(
         JDBCObjectCache<PARENT> parentCache,
-        String objectListName,
         String parentColumnName,
         String objectColumnName)
     {
         this.parentCache = parentCache;
-        this.objectListName = objectListName;
         this.parentColumnName = parentColumnName;
         this.objectColumnName = objectColumnName;
     }
@@ -124,7 +121,6 @@ public abstract class JDBCCompositeCache<
             Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new HashMap<PARENT, Map<String, ObjectInfo>>();
 
             PreparedStatement dbStat = prepareObjectsStatement(monitor, forParent);
-            monitor.startBlock(JDBCUtils.makeBlockingObject(dbStat), "Load " + objectListName);
             try {
                 ResultSet dbResult = dbStat.executeQuery();
                 try {

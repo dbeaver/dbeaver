@@ -6,7 +6,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -202,18 +201,20 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         
         protected TableCache()
         {
-            super("tables", "columns", JDBCConstants.TABLE_NAME);
+            super(JDBCConstants.TABLE_NAME);
         }
 
         protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)
             throws SQLException, DBException
         {
-            return new ResultSetStatement(
+            return JDBCUtils.prepareResultsStatement(
+                monitor,
                 getDataSource().getConnection().getMetaData().getTables(
                     getCatalog() == null ? null : getCatalog().getName(),
                     getSchema() == null ? null : getSchema().getName(),
                     null,
-                    null));
+                    null),
+                "Load tables");
         }
 
         protected GenericTable fetchObject(DBRProgressMonitor monitor, ResultSet dbResult)
@@ -261,12 +262,14 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         protected PreparedStatement prepareChildrenStatement(DBRProgressMonitor monitor, GenericTable forTable)
             throws SQLException, DBException
         {
-            return new ResultSetStatement(
+            return JDBCUtils.prepareResultsStatement(
+                monitor,
                 getDataSource().getConnection().getMetaData().getColumns(
                     getCatalog() == null ? null : getCatalog().getName(),
                     getSchema() == null ? null : getSchema().getName(),
                     forTable == null ? null : forTable.getName(),
-                    null));
+                    null),
+                "Load table columns");
         }
 
         protected GenericTableColumn fetchChild(DBRProgressMonitor monitor, GenericTable table, ResultSet dbResult)
@@ -304,136 +307,14 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     class IndexCache extends JDBCCompositeCache<GenericTable, GenericIndex, GenericIndexColumn> {
         protected IndexCache()
         {
-            super(tableCache, "indexes", JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
+            super(tableCache, JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
         }
-
-/*
-        void cacheIndexes(DBRProgressMonitor monitor, GenericTable forTable)
-            throws DBException
-        {
-            if (this.indexesCached) {
-                return;
-            }
-
-            // Load tables and columns first
-            tableCache.loadChildren(monitor, forTable);
-            if (forTable != null && forTable.isIndexesCached()) {
-                return;
-            }
-
-            // Load index columns
-            try {
-                Map<GenericTable, Map<String, GenericIndex>> tableIndexMap = new HashMap<GenericTable, Map<String, GenericIndex>>();
-
-                DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
-                // Load indexes
-                ResultSet dbResult = metaData.getIndexInfo(
-                    getCatalog() == null ? null : getCatalog().getName(),
-                    getSchema() == null ? null : getSchema().getName(),
-                    // oracle fails if unquoted complex identifier specified
-                    // but other DBs (and logically it's correct) do not want quote chars in this query
-                    // so let's fix it in oracle plugin
-                    forTable == null ? null : forTable.getName(), //DBSUtils.getQuotedIdentifier(getDataSource(), forTable.getName()),
-                    false,
-                    false);
-                try {
-                    while (dbResult.next()) {
-                        String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
-                        String indexName = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_NAME);
-                        boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
-                        String indexQualifier = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_QUALIFIER);
-                        int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);
-
-                        int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-                        String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-                        String ascOrDesc = JDBCUtils.safeGetString(dbResult, JDBCConstants.ASC_OR_DESC);
-
-                        if (CommonUtils.isEmpty(indexName) || CommonUtils.isEmpty(tableName)) {
-                            // Bad index - can't evaluate it
-                            continue;
-                        }
-                        DBSIndexType indexType;
-                        switch (indexTypeNum) {
-                            case DatabaseMetaData.tableIndexStatistic: indexType = DBSIndexType.STATISTIC; break;
-                            case DatabaseMetaData.tableIndexClustered: indexType = DBSIndexType.CLUSTERED; break;
-                            case DatabaseMetaData.tableIndexHashed: indexType = DBSIndexType.HASHED; break;
-                            case DatabaseMetaData.tableIndexOther: indexType = DBSIndexType.OTHER; break;
-                            default: indexType = DBSIndexType.UNKNOWN; break;
-                        }
-                        GenericTable table = forTable;
-                        if (table == null) {
-                            table = tableCache.getObject(monitor, tableName);
-                            if (table == null) {
-                                log.warn("Index '" + indexName + "' owner table '" + tableName + "' not found");
-                                continue;
-                            }
-                        }
-                        if (table.isIndexesCached()) {
-                            // Already read
-                            continue;
-                        }
-                        // Add to map
-                        Map<String, GenericIndex> indexMap = tableIndexMap.get(table);
-                        if (indexMap == null) {
-                            indexMap = new TreeMap<String, GenericIndex>();
-                            tableIndexMap.put(table, indexMap);
-                        }
-
-                        GenericIndex index = indexMap.get(indexName);
-                        if (index == null) {
-                            index = new GenericIndex(
-                                table,
-                                isNonUnique,
-                                indexQualifier,
-                                indexName,
-                                indexType);
-                            indexMap.put(indexName, index);
-                        }
-                        GenericTableColumn tableColumn = table.getColumn(monitor, columnName);
-                        if (tableColumn == null) {
-                            log.warn("Column '" + columnName + "' not found in table '" + this.getName() + "'");
-                            continue;
-                        }
-                        index.addColumn(
-                            new GenericIndexColumn(
-                                index,
-                                tableColumn,
-                                ordinalPosition,
-                                !"D".equalsIgnoreCase(ascOrDesc)));
-                    }
-
-                    // All indexes are read. Now assign them to tables
-                    for (Map.Entry<GenericTable,Map<String,GenericIndex>> colEntry : tableIndexMap.entrySet()) {
-                        colEntry.getKey().setIndexes(new ArrayList<GenericIndex>(colEntry.getValue().values()));
-                    }
-                    // Now set empty index list for other tables
-                    if (forTable == null) {
-                        for (GenericTable tmpTable : tableCache.getObjects(monitor)) {
-                            if (!tableIndexMap.containsKey(tmpTable)) {
-                                tmpTable.setIndexes(new ArrayList<GenericIndex>());
-                            }
-                        }
-                    } else if (!tableIndexMap.containsKey(forTable)) {
-                        forTable.setIndexes(new ArrayList<GenericIndex>());
-                    }
-
-                    if (forTable == null) {
-                        this.indexesCached = true;
-                    }
-                }
-                finally {
-                    JDBCUtils.safeClose(dbResult);
-                }
-            } catch (SQLException ex) {
-                throw new DBException(ex);
-            }
-        }
-*/
 
         protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor, GenericTable forParent)
             throws SQLException, DBException
         {
-            return new ResultSetStatement(
+            return JDBCUtils.prepareResultsStatement(
+                monitor,
                 getDataSource().getConnection().getMetaData().getIndexInfo(
                     getCatalog() == null ? null : getCatalog().getName(),
                     getSchema() == null ? null : getSchema().getName(),
@@ -442,7 +323,8 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                     // so let's fix it in oracle plugin
                     forParent == null ? null : forParent.getName(), //DBSUtils.getQuotedIdentifier(getDataSource(), forTable.getName()),
                     false,
-                    false));
+                    false),
+                "Load indexes");
         }
 
         protected GenericIndex fetchObject(DBRProgressMonitor monitor, ResultSet dbResult, GenericTable parent)
@@ -515,17 +397,19 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
 
         ProceduresCache()
         {
-            super("procedures", "procedure columns", JDBCConstants.PROCEDURE_NAME);
+            super(JDBCConstants.PROCEDURE_NAME);
         }
 
         protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)
             throws SQLException, DBException
         {
-            return new ResultSetStatement(
+            return JDBCUtils.prepareResultsStatement(
+                monitor,
                 getDataSource().getConnection().getMetaData().getProcedures(
                     getCatalog() == null ? null : getCatalog().getName(),
                     getSchema() == null ? null : getSchema().getName(),
-                    null));
+                    null),
+                "Load procedures");
         }
 
         protected GenericProcedure fetchObject(DBRProgressMonitor monitor, ResultSet dbResult)
@@ -561,12 +445,14 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         protected PreparedStatement prepareChildrenStatement(DBRProgressMonitor monitor, GenericProcedure forObject)
             throws SQLException, DBException
         {
-            return new ResultSetStatement(
+            return JDBCUtils.prepareResultsStatement(
+                monitor,
                 getDataSource().getConnection().getMetaData().getProcedureColumns(
                     getCatalog() == null ? null : getCatalog().getName(),
                     getSchema() == null ? null : getSchema().getName(),
                     forObject == null ? null : forObject.getName(),
-                    null));
+                    null),
+                "Load procedure columns");
         }
 
         protected GenericProcedureColumn fetchChild(DBRProgressMonitor monitor, GenericProcedure parent, ResultSet dbResult)

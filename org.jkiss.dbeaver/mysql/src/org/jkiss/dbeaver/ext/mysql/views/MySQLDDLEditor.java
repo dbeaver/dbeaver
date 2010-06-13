@@ -13,6 +13,12 @@ import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.ui.IObjectEditor;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.DBException;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * SQLTableData
@@ -66,12 +72,20 @@ public class MySQLDDLEditor extends EditorPart implements IObjectEditor
 
     public void activatePart()
     {
-        try {
-            ddlText.setText(table.getDDL());
-        }
-        catch (Exception ex) {
-            log.error("Can't obtain table DDL", ex);
-        }
+        final StringBuilder ddl = new StringBuilder();
+        DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
+            public void run(DBRProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException
+            {
+                try {
+                    ddl.append(table.getDDL(monitor));
+                }
+                catch (DBException e) {
+                    log.error("Can't obtain table DDL", e);
+                }
+            }
+        });
+        ddlText.setText(ddl.toString());
     }
 
     public void deactivatePart()

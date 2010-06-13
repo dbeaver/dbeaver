@@ -13,9 +13,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * Various objects cache
@@ -24,11 +24,9 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
 
     private List<OBJECT> objectList;
     private Map<String, OBJECT> objectMap;
-    private final String objectListName;
 
-    protected JDBCObjectCache(String objectListName)
+    protected JDBCObjectCache()
     {
-        this.objectListName = objectListName;
     }
 
     abstract protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)
@@ -72,7 +70,6 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
         Map<String, OBJECT> tmpTableMap = new HashMap<String, OBJECT>();
         try {
             PreparedStatement dbStat = prepareObjectsStatement(monitor);
-            monitor.startBlock(JDBCUtils.makeBlockingObject(dbStat), "Load " + objectListName);
             try {
                 ResultSet dbResult = dbStat.executeQuery();
                 try {

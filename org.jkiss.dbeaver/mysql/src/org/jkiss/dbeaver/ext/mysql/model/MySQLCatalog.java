@@ -161,14 +161,17 @@ public class MySQLCatalog
         
         protected TableCache()
         {
-            super("tables", "columns", JDBCConstants.TABLE_NAME);
+            super(JDBCConstants.TABLE_NAME);
         }
 
         protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)
             throws SQLException, DBException
         {
-            PreparedStatement dbStat = getDataSource().getConnection().prepareStatement(
-                MySQLConstants.QUERY_SELECT_TABLES);
+            PreparedStatement dbStat = JDBCUtils.prepareStatement(
+                monitor,
+                getDataSource(),
+                MySQLConstants.QUERY_SELECT_TABLES,
+                "Load tables");
             dbStat.setString(1, getName());
             return dbStat;
         }
@@ -201,7 +204,11 @@ public class MySQLCatalog
             }
             sql.append(" ORDER BY ").append(MySQLConstants.COL_ORDINAL_POSITION);
 
-            PreparedStatement dbStat = getDataSource().getConnection().prepareStatement(sql.toString());
+            PreparedStatement dbStat = JDBCUtils.prepareStatement(
+                monitor,
+                getDataSource(),
+                sql.toString(),
+                "Load table columns");
             dbStat.setString(1, MySQLCatalog.this.getName());
             if (forTable != null) {
                 dbStat.setString(2, forTable.getName());
@@ -223,14 +230,17 @@ public class MySQLCatalog
 
         ProceduresCache()
         {
-            super("procedures", "procedure columns", JDBCConstants.PROCEDURE_NAME);
+            super(JDBCConstants.PROCEDURE_NAME);
         }
 
         protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)
             throws SQLException, DBException
         {
-            PreparedStatement dbStat = getDataSource().getConnection().prepareStatement(
-                MySQLConstants.QUERY_SELECT_ROUTINES);
+            PreparedStatement dbStat = JDBCUtils.prepareStatement(
+                monitor,
+                getDataSource(),
+                MySQLConstants.QUERY_SELECT_ROUTINES,
+                "Load procedures");
             dbStat.setString(1, getName());
             return dbStat;
         }
@@ -258,12 +268,14 @@ public class MySQLCatalog
             // There is no metadata table about proc/func columns -
             // it should be parsed from SHOW CREATE PROCEDURE/FUNCTION query
             // Lets driver do it instead of me
-            return new ResultSetStatement(
+            return JDBCUtils.prepareResultsStatement(
+                monitor,
                 getDataSource().getConnection().getMetaData().getProcedureColumns(
                     getName(),
                     null,
                     procedure.getName(),
-                    null));
+                    null),
+                "load procedure columns");
         }
 
         protected MySQLProcedureColumn fetchChild(DBRProgressMonitor monitor, MySQLProcedure parent, ResultSet dbResult)
