@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.load.tree.TreeLoadService;
 import org.jkiss.dbeaver.runtime.load.tree.TreeLoadVisualizer;
+import org.jkiss.dbeaver.runtime.load.tree.TreeLoadNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
@@ -58,6 +59,9 @@ class NavigatorTreeContentProvider implements IStructuredContentProvider, ITreeC
 
     public Object[] getChildren(final Object parent)
     {
+        if (parent instanceof TreeLoadNode) {
+            return null;
+        }
         if (!(parent instanceof DBSObject)) {
             log.error("Bad parent type: " + parent);
             return null;

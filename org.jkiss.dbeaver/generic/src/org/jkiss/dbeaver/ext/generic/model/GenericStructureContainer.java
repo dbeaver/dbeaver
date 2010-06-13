@@ -7,11 +7,15 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCTableCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,16 +30,21 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
 {
     static Log log = LogFactory.getLog(GenericStructureContainer.class);
 
-    private List<GenericTable> tableList;
-    private Map<String, GenericTable> tableMap;
+    private TableCache tableCache;
     private List<GenericIndex> indexList;
     private List<GenericConstraint> constraintList;
-    private List<GenericProcedure> procedures;
-    private boolean columnsCached = false;
+    private ProceduresCache procedureCache;
     private boolean indexesCached = false;
 
     protected GenericStructureContainer()
     {
+        this.tableCache = new TableCache();
+        this.procedureCache = new ProceduresCache();
+    }
+
+    final TableCache getTableCache()
+    {
+        return tableCache;
     }
 
     public abstract GenericDataSource getDataSource();
@@ -49,15 +58,13 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     public List<GenericTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        this.cacheTables(monitor);
-        return tableList;
+        return tableCache.getTables(monitor);
     }
 
     public GenericTable getTable(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        this.cacheTables(monitor);
-        return tableMap.get(name);
+        return tableCache.getTable(monitor, name);
     }
 
     public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
@@ -99,146 +106,18 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {
-/*
-        cacheTables(monitor);
+        tableCache.getTables(monitor);
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
-            cacheColumns(monitor, null);
+            // Do not use columns cache
+            // Cannot be sure that all jdbc drivers support reading of all catalog columns
+            //tableCache.cacheColumns(monitor, null);
         }
-*/
     }
 
     public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
-        cacheProcedures(monitor);
-        return procedures;
-    }
-
-    private void cacheTables(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (this.tableList != null) {
-            return;
-        }
-        JDBCUtils.startConnectionBlock(monitor, getDataSource(), "Loading '" + getName() + "' tables");
-
-        List<GenericTable> tmpTableList = new ArrayList<GenericTable>();
-        Map<String, GenericTable> tmpTableMap = new HashMap<String, GenericTable>();
-        try {
-            DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
-            String catalogName = getCatalog() == null ? null : getCatalog().getName();
-            String schemaName = getSchema() == null ? null : getSchema().getName();
-
-            // Load tables
-            ResultSet dbResult = metaData.getTables(
-                catalogName,
-                schemaName,
-                null,
-                null);//getDataSource().getTableTypes());
-            try {
-                while (dbResult.next()) {
-
-                    String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
-                    String tableType = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_TYPE);
-                    String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-
-                    boolean isSystemTable = tableType != null && tableType.toUpperCase().indexOf("SYSTEM") != -1;
-                    if (isSystemTable && !getDataSource().getContainer().isShowSystemObjects()) {
-                        continue;
-                    }
-                    String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
-                    String typeCatalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_CAT);
-                    String typeSchemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_SCHEM);
-                    GenericCatalog typeCatalog = CommonUtils.isEmpty(typeCatalogName) ?
-                        null :
-                        getDataSource().getCatalog(monitor, typeCatalogName);
-                    GenericSchema typeSchema = CommonUtils.isEmpty(typeSchemaName) ?
-                        null :
-                        typeCatalog == null ?
-                            getDataSource().getSchema(monitor, typeSchemaName) :
-                            typeCatalog.getSchema(typeSchemaName);
-                    GenericTable table = new GenericTable(
-                        this,
-                        tableName,
-                        tableType,
-                        remarks,
-                        typeName,
-                        typeCatalog,
-                        typeSchema);
-                    tmpTableList.add(table);
-                    tmpTableMap.put(tableName, table);
-
-                    monitor.subTask(tableName);
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
-                }
-            }
-            finally {
-                JDBCUtils.safeClose(dbResult);
-            }
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            JDBCUtils.endConnectionBlock(monitor);
-        }
-
-        this.tableList = tmpTableList;
-        this.tableMap = tmpTableMap;
-    }
-
-    private void cacheProcedures(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (procedures != null) {
-            return;
-        }
-        JDBCUtils.startConnectionBlock(monitor, getDataSource(), "Loading '" + getName() + "' procedures");
-        List<GenericProcedure> tmpProcedureList = new ArrayList<GenericProcedure>();
-
-        try {
-            DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
-            String catalogName = getCatalog() == null ? null : getCatalog().getName();
-            String schemaName = getSchema() == null ? null : getSchema().getName();
-
-            // Load procedures
-            ResultSet dbResult = metaData.getProcedures(
-                catalogName,
-                schemaName,
-                null);
-            try {
-                while (dbResult.next()) {
-                    String procedureName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PROCEDURE_NAME);
-                    int procTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PROCEDURE_TYPE);
-                    String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-                    DBSProcedureType procedureType;
-                    switch (procTypeNum) {
-                        case DatabaseMetaData.procedureNoResult: procedureType = DBSProcedureType.PROCEDURE; break;
-                        case DatabaseMetaData.procedureReturnsResult: procedureType = DBSProcedureType.FUNCTION; break;
-                        case DatabaseMetaData.procedureResultUnknown: procedureType = DBSProcedureType.PROCEDURE; break;
-                        default: procedureType = DBSProcedureType.UNKNOWN; break;
-                    }
-                    GenericProcedure procedure = new GenericProcedure(
-                        this,
-                        procedureName,
-                        remarks, procedureType
-                    );
-                    tmpProcedureList.add(procedure);
-                }
-            }
-            finally {
-                JDBCUtils.safeClose(dbResult);
-            }
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            JDBCUtils.endConnectionBlock(monitor);
-        }
-        this.procedures = tmpProcedureList;
+        return procedureCache.getObjects(monitor);
     }
 
     public List<DBSTablePath> findTableNames(DBRProgressMonitor monitor, String tableMask, int maxResults) throws DBException
@@ -292,116 +171,6 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         }
     }
 
-    /**
-     * Reads table columns from database
-     * @param monitor monitor
-     * @param forTable table for which to read columns. If null then reads columns for all tables in this container.
-     * @throws DBException on error
-     */
-    void cacheColumns(DBRProgressMonitor monitor, final GenericTable forTable)
-        throws DBException
-    {
-        if (this.columnsCached) {
-            return;
-        }
-        if (forTable == null) {
-            cacheTables(monitor);
-        } else if (forTable.isColumnsCached()) {
-            return;
-        }
-
-        monitor.beginTask("Loading table columns", 1);
-        try {
-            Map<GenericTable, List<GenericTableColumn>> columnMap = new HashMap<GenericTable, List<GenericTableColumn>>();
-
-            DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
-            String catalogName = getCatalog() == null ? null : getCatalog().getName();
-            String schemaName = getSchema() == null ? null : getSchema().getName();
-
-            // Load columns
-            ResultSet dbResult = metaData.getColumns(
-                catalogName,
-                schemaName,
-                forTable == null ? null : forTable.getName(),
-                null);
-            try {
-                while (dbResult.next()) {
-                    String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
-                    String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-                    int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
-                    int sourceType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SOURCE_DATA_TYPE);
-                    String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
-                    int columnSize = JDBCUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_SIZE);
-                    boolean isNullable = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) != DatabaseMetaData.columnNoNulls;
-                    int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DECIMAL_DIGITS);
-                    int precision = 0;//GenericUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_);
-                    int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NUM_PREC_RADIX);
-                    String defaultValue = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_DEF);
-                    String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-                    int charLength = JDBCUtils.safeGetInt(dbResult, JDBCConstants.CHAR_OCTET_LENGTH);
-                    int ordinalPos = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-
-                    GenericTable table = forTable;
-                    if (table == null) {
-                        table = tableMap.get(tableName);
-                        if (table == null) {
-                            log.warn("Column '" + columnName + "' owner table '" + tableName + "' not found");
-                            continue;
-                        }
-                    }
-                    if (table.isColumnsCached()) {
-                        // Already read
-                        continue;
-                    }
-                    GenericTableColumn tableColumn = new GenericTableColumn(
-                        table,
-                        columnName,
-                        typeName, valueType, sourceType, ordinalPos,
-                        columnSize,
-                        charLength, scale, precision, radix, isNullable,
-                        remarks, defaultValue
-                    );
-
-                    // Add to map
-                    List<GenericTableColumn> columns = columnMap.get(table);
-                    if (columns == null) {
-                        columns = new ArrayList<GenericTableColumn>();
-                        columnMap.put(table, columns);
-                    }
-                    columns.add(tableColumn);
-                }
-
-                // All columns are read. Now assign them to tables
-                for (Map.Entry<GenericTable, List<GenericTableColumn>> colEntry : columnMap.entrySet()) {
-                    colEntry.getKey().setColumns(colEntry.getValue());
-                }
-                // Now set empty column list for other tables
-                if (forTable == null) {
-                    for (GenericTable tmpTable : tableList) {
-                        if (!columnMap.containsKey(tmpTable)) {
-                            tmpTable.setColumns(new ArrayList<GenericTableColumn>());
-                        }
-                    }
-                } else if (!columnMap.containsKey(forTable)) {
-                    forTable.setColumns(new ArrayList<GenericTableColumn>());
-                }
-
-                if (forTable == null) {
-                    this.columnsCached = true;
-                }
-            }
-            finally {
-                JDBCUtils.safeClose(dbResult);
-            }
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            monitor.done();
-        }
-    }
-
     void cacheIndexes(DBRProgressMonitor monitor, GenericTable forTable)
         throws DBException
     {
@@ -410,7 +179,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         }
 
         // Load tables and columns first
-        cacheColumns(monitor, forTable);
+        tableCache.cacheColumns(monitor, forTable);
         if (forTable != null && forTable.isIndexesCached()) {
             return;
         }
@@ -456,7 +225,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                     }
                     GenericTable table = forTable;
                     if (table == null) {
-                        table = tableMap.get(tableName);
+                        table = tableCache.getTable(monitor, tableName);
                         if (table == null) {
                             log.warn("Index '" + indexName + "' owner table '" + tableName + "' not found");
                             continue;
@@ -502,7 +271,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 }
                 // Now set empty index list for other tables
                 if (forTable == null) {
-                    for (GenericTable tmpTable : tableList) {
+                    for (GenericTable tmpTable : tableCache.getTables(monitor)) {
                         if (!tableIndexMap.containsKey(tmpTable)) {
                             tmpTable.setIndexes(new ArrayList<GenericIndex>());
                         }
@@ -538,18 +307,153 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
-        this.tableList = null;
-        this.tableMap = null;
+        this.tableCache.clearCache();
         this.indexList = null;
         this.constraintList = null;
-        this.procedures = null;
-        columnsCached = false;
-        indexesCached = false;
+        this.procedureCache.clearCache();
+        this.indexesCached = false;
         return true;
     }
 
     public String toString()
     {
         return getName() == null ? "<NONE>" : getName();
+    }
+    
+    class TableCache extends JDBCTableCache<GenericTable, GenericTableColumn> {
+        
+        protected TableCache()
+        {
+            super(JDBCConstants.TABLE_NAME);
+        }
+
+        protected PreparedStatement prepareTablesStatement(DBRProgressMonitor monitor)
+            throws SQLException, DBException
+        {
+            return new ResultSetStatement(
+                getDataSource().getConnection().getMetaData().getTables(
+                    getCatalog() == null ? null : getCatalog().getName(),
+                    getSchema() == null ? null : getSchema().getName(),
+                    null,
+                    null));
+        }
+
+        protected GenericTable fetchTable(DBRProgressMonitor monitor, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
+            String tableType = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_TYPE);
+            String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
+
+            boolean isSystemTable = tableType != null && tableType.toUpperCase().indexOf("SYSTEM") != -1;
+            if (isSystemTable && !getDataSource().getContainer().isShowSystemObjects()) {
+                return null;
+            }
+            String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
+            String typeCatalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_CAT);
+            String typeSchemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_SCHEM);
+            GenericCatalog typeCatalog = CommonUtils.isEmpty(typeCatalogName) ?
+                null :
+                getDataSource().getCatalog(monitor, typeCatalogName);
+            GenericSchema typeSchema = CommonUtils.isEmpty(typeSchemaName) ?
+                null :
+                typeCatalog == null ?
+                    getDataSource().getSchema(monitor, typeSchemaName) :
+                    typeCatalog.getSchema(typeSchemaName);
+            return new GenericTable(
+                GenericStructureContainer.this,
+                tableName,
+                tableType,
+                remarks,
+                typeName,
+                typeCatalog,
+                typeSchema);
+        }
+
+        protected boolean isTableColumnsCached(GenericTable table)
+        {
+            return table.isColumnsCached();
+        }
+
+        protected void cacheTableColumns(GenericTable table, List<GenericTableColumn> columns)
+        {
+            table.setColumns(columns);
+        }
+
+        protected PreparedStatement prepareColumnsStatement(DBRProgressMonitor monitor, GenericTable forTable)
+            throws SQLException, DBException
+        {
+            return new ResultSetStatement(
+                getDataSource().getConnection().getMetaData().getColumns(
+                    getCatalog() == null ? null : getCatalog().getName(),
+                    getSchema() == null ? null : getSchema().getName(),
+                    forTable == null ? null : forTable.getName(),
+                    null));
+        }
+
+        protected GenericTableColumn fetchColumn(DBRProgressMonitor monitor, GenericTable table, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
+            int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
+            int sourceType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SOURCE_DATA_TYPE);
+            String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
+            int columnSize = JDBCUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_SIZE);
+            boolean isNullable = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) != DatabaseMetaData.columnNoNulls;
+            int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DECIMAL_DIGITS);
+            int precision = 0;//GenericUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_);
+            int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NUM_PREC_RADIX);
+            String defaultValue = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_DEF);
+            String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
+            int charLength = JDBCUtils.safeGetInt(dbResult, JDBCConstants.CHAR_OCTET_LENGTH);
+            int ordinalPos = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
+
+            return new GenericTableColumn(
+                table,
+                columnName,
+                typeName, valueType, sourceType, ordinalPos,
+                columnSize,
+                charLength, scale, precision, radix, isNullable,
+                remarks, defaultValue
+            );
+        }
+    }
+
+    class ProceduresCache extends JDBCObjectCache<GenericProcedure> {
+
+        ProceduresCache()
+        {
+            super("procedures");
+        }
+
+        protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)
+            throws SQLException, DBException
+        {
+            return new ResultSetStatement(
+                getDataSource().getConnection().getMetaData().getProcedures(
+                    getCatalog() == null ? null : getCatalog().getName(),
+                    getSchema() == null ? null : getSchema().getName(),
+                    null));
+        }
+
+        protected GenericProcedure fetchObject(DBRProgressMonitor monitor, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            String procedureName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PROCEDURE_NAME);
+            int procTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PROCEDURE_TYPE);
+            String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
+            DBSProcedureType procedureType;
+            switch (procTypeNum) {
+                case DatabaseMetaData.procedureNoResult: procedureType = DBSProcedureType.PROCEDURE; break;
+                case DatabaseMetaData.procedureReturnsResult: procedureType = DBSProcedureType.FUNCTION; break;
+                case DatabaseMetaData.procedureResultUnknown: procedureType = DBSProcedureType.PROCEDURE; break;
+                default: procedureType = DBSProcedureType.UNKNOWN; break;
+            }
+            return new GenericProcedure(
+                GenericStructureContainer.this,
+                procedureName,
+                remarks, procedureType
+            );
+        }
     }
 }

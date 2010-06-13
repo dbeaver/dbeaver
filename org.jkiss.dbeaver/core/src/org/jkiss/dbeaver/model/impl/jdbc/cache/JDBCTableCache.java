@@ -34,7 +34,6 @@ public abstract class JDBCTableCache<
     private boolean columnsCached = false;
 
     private final String tableNameColumn;
-    private final String columnNameColumn;
 
     abstract protected PreparedStatement prepareTablesStatement(DBRProgressMonitor monitor)
         throws SQLException, DBException;
@@ -42,9 +41,9 @@ public abstract class JDBCTableCache<
     abstract protected TABLE fetchTable(DBRProgressMonitor monitor, ResultSet resultSet)
         throws SQLException, DBException;
 
-    abstract boolean isTableColumnsCached(TABLE table);
+    abstract protected boolean isTableColumnsCached(TABLE table);
 
-    abstract void cacheTableColumns(TABLE table, List<COLUMN> columns);
+    abstract protected void cacheTableColumns(TABLE table, List<COLUMN> columns);
 
     abstract protected PreparedStatement prepareColumnsStatement(DBRProgressMonitor monitor, TABLE forTable)
         throws SQLException, DBException;
@@ -52,10 +51,9 @@ public abstract class JDBCTableCache<
     abstract protected COLUMN fetchColumn(DBRProgressMonitor monitor, TABLE table, ResultSet resultSet)
         throws SQLException, DBException;
 
-    protected JDBCTableCache(String tableNameColumn, String columnNameColumn)
+    protected JDBCTableCache(String tableNameColumn)
     {
         this.tableNameColumn = tableNameColumn;
-        this.columnNameColumn = columnNameColumn;
     }
 
     public List<TABLE> getTables(DBRProgressMonitor monitor)
@@ -83,6 +81,7 @@ public abstract class JDBCTableCache<
         Map<String, TABLE> tmpTableMap = new HashMap<String, TABLE>();
         try {
             PreparedStatement dbStat = prepareTablesStatement(monitor);
+            monitor.startBlock(JDBCUtils.makeBlockingObject(dbStat), "Load tables");
             try {
                 ResultSet dbResult = dbStat.executeQuery();
                 try {
@@ -112,9 +111,6 @@ public abstract class JDBCTableCache<
         catch (SQLException ex) {
             throw new DBException(ex);
         }
-        finally {
-            JDBCUtils.endConnectionBlock(monitor);
-        }
 
         this.tableList = tmpTableList;
         this.tableMap = tmpTableMap;
@@ -126,7 +122,7 @@ public abstract class JDBCTableCache<
      * @param forTable table for which to read columns. If null then reads columns for all tables in this container.
      * @throws org.jkiss.dbeaver.DBException on error
      */
-    void cacheColumns(DBRProgressMonitor monitor, final TABLE forTable)
+    public void cacheColumns(DBRProgressMonitor monitor, final TABLE forTable)
         throws DBException
     {
         if (this.columnsCached) {
@@ -138,24 +134,23 @@ public abstract class JDBCTableCache<
             return;
         }
 
-        monitor.beginTask("Loading table columns", 1);
         try {
             Map<TABLE, List<COLUMN>> columnMap = new HashMap<TABLE, List<COLUMN>>();
 
             // Load columns
             PreparedStatement dbStat = prepareColumnsStatement(monitor, forTable);
+            monitor.startBlock(JDBCUtils.makeBlockingObject(dbStat), "Load columns");
             try {
                 ResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {
                         String tableName = JDBCUtils.safeGetString(dbResult, tableNameColumn);
-                        String columnName = JDBCUtils.safeGetString(dbResult, columnNameColumn);
 
                         TABLE table = forTable;
                         if (table == null) {
                             table = tableMap.get(tableName);
                             if (table == null) {
-                                log.warn("Column '" + columnName + "' owner table '" + tableName + "' not found");
+                                log.warn("Column owner table '" + tableName + "' not found");
                                 continue;
                             }
                         }
@@ -214,9 +209,6 @@ public abstract class JDBCTableCache<
         }
         catch (SQLException ex) {
             throw new DBException(ex);
-        }
-        finally {
-            monitor.done();
         }
     }
 

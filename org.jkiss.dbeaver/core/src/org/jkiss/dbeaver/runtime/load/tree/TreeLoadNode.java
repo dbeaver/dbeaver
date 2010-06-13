@@ -9,18 +9,20 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.DBeaverIcons;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.HashMap;
 import java.util.Map;
 
 
-class TreeLoadNode implements ILabelProvider {
+public class TreeLoadNode implements ILabelProvider {
 
     private static final Map<Object, Object> loadingFiles = new HashMap<Object, Object>();
     private static final Map<Object, Object> placeHolders = new HashMap<Object, Object>();
 
     public static final Object LOADING_FAMILY = new Object();
 
+    private DBSObject object;
     private String text;
     private String text1;
     private String text2;
@@ -29,17 +31,18 @@ class TreeLoadNode implements ILabelProvider {
     private boolean disposed = false;
     private Image imgLoading1, imgLoading2, imgLoading3, imgLoading4;
 
-    public static synchronized TreeLoadNode createPlaceHolder(Object parent)
+    public static synchronized TreeLoadNode createPlaceHolder(DBSObject parent)
     {
         TreeLoadNode node = null;
         if (!placeHolders.containsKey(parent)) {
-            placeHolders.put(parent, node = new TreeLoadNode());
+            placeHolders.put(parent, node = new TreeLoadNode(parent));
         }
         return node;
     }
 
-    private TreeLoadNode()
+    private TreeLoadNode(DBSObject object)
     {
+        this.object = object;
         text = "Loading";
         text1 = text + "."; //$NON-NLS-1$
         text2 = text + ".."; //$NON-NLS-1$
@@ -48,6 +51,11 @@ class TreeLoadNode implements ILabelProvider {
         imgLoading2 = DBeaverIcons.getImage(DBIcon.LOADING2);
         imgLoading3 = DBeaverIcons.getImage(DBIcon.LOADING3);
         imgLoading4 = DBeaverIcons.getImage(DBIcon.LOADING4);
+    }
+
+    public DBSObject getObject()
+    {
+        return object;
     }
 
     public String getText(Object element)

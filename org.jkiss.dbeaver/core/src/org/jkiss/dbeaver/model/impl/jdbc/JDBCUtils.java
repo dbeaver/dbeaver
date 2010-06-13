@@ -246,7 +246,7 @@ public class JDBCUtils
         monitor.endBlock();
     }
 
-    private static DBRBlockingObject makeBlockingObject(final Statement statement)
+    public static DBRBlockingObject makeBlockingObject(final Statement statement)
     {
         return new DBRBlockingObject() {
             public void cancelBlock()

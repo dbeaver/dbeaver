@@ -122,7 +122,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
     {
         if (columns == null) {
             // Read columns using container
-            this.getContainer().cacheColumns(monitor, this);
+            this.getContainer().getTableCache().cacheColumns(monitor, this);
         }
         return columns;
     }
