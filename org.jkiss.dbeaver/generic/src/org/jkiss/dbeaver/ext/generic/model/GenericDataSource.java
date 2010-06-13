@@ -431,7 +431,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                         JDBCUtils.safeClose(resultSet);
                     }
                 } finally {
-                    JDBCUtils.closeStatement(monitor, dbStat);
+                    JDBCUtils.safeClose(dbStat);
                 }
             } catch (SQLException e) {
                 log.error(e);
@@ -467,7 +467,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
             try {
                 dbStat.execute();
             } finally {
-                JDBCUtils.closeStatement(monitor, dbStat);
+                JDBCUtils.safeClose(dbStat);
             }
         } catch (SQLException e) {
             throw new DBException(e);

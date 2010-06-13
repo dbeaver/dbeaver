@@ -135,7 +135,7 @@ public abstract class JDBCStructCache<
                 }
             }
             finally {
-                JDBCUtils.closeStatement(monitor, dbStat);
+                JDBCUtils.safeClose(dbStat);
             }
         }
         catch (SQLException ex) {

@@ -4,20 +4,21 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCQueryPurpose;
+import org.jkiss.dbeaver.model.impl.jdbc.api.PreparedStatementManagable;
+import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetStatement;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
-import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetStatement;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.PreparedStatement;
 
 /**
  * JDBCUtils
@@ -193,9 +194,12 @@ public class JDBCUtils
         String taskName)
         throws SQLException
     {
-        PreparedStatement dbStat = connector.getConnection().prepareStatement(query);
-        monitor.startBlock(makeBlockingObject(dbStat), taskName);
-        return dbStat;
+        return new PreparedStatementManagable(
+            connector.getConnection().prepareStatement(query),
+            monitor,
+            taskName,
+            query,
+            DBCQueryPurpose.META);
     }
 
     public static PreparedStatement prepareResultsStatement(
@@ -204,23 +208,12 @@ public class JDBCUtils
         String taskName)
         throws SQLException
     {
-        PreparedStatement dbStat = new ResultSetStatement(resultSet);
-        monitor.startBlock(makeBlockingObject(dbStat), taskName);
-        return dbStat;
-    }
-
-    /**
-     * Closes specified statement.
-     * This statement MUST be prepared with {@link #prepareStatement} method.
-     * @param monitor progress monitor (the same as in prepareStatement)
-     * @param statement statement
-     */
-    public static void closeStatement(
-        DBRProgressMonitor monitor,
-        PreparedStatement statement)
-    {
-        safeClose(statement);
-        monitor.endBlock();
+        return new ResultSetStatement(
+            monitor,
+            taskName,
+            "?",
+            DBCQueryPurpose.META,
+            resultSet);
     }
 
     public static void safeClose(PreparedStatement statement)
@@ -256,22 +249,6 @@ public class JDBCUtils
         DBRProgressMonitor monitor)
     {
         monitor.endBlock();
-    }
-
-    public static DBRBlockingObject makeBlockingObject(final Statement statement)
-    {
-        return new DBRBlockingObject() {
-            public void cancelBlock()
-                throws DBException
-            {
-                try {
-                    statement.cancel();
-                }
-                catch (SQLException e) {
-                    throw new DBCException("Coud not cancel statement", e);
-                }
-            }
-        };
     }
 
     private static DBRBlockingObject makeBlockingObject(final Connection connection)

@@ -244,7 +244,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                 }
             }
             finally {
-                JDBCUtils.closeStatement(monitor, statement);
+                JDBCUtils.safeClose(statement);
             }
         }
         catch (SQLException e) {

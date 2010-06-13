@@ -93,7 +93,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
                 }
             }
             finally {
-                JDBCUtils.closeStatement(monitor, dbStat);
+                JDBCUtils.safeClose(dbStat);
             }
         }
         catch (SQLException ex) {

@@ -80,7 +80,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
                 }
             }
             finally {
-                JDBCUtils.closeStatement(monitor, dbStat);
+                JDBCUtils.safeClose(dbStat);
             }
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex);
@@ -170,7 +170,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
                         JDBCUtils.safeClose(resultSet);
                     }
                 } finally {
-                    JDBCUtils.closeStatement(monitor, dbStat);
+                    JDBCUtils.safeClose(dbStat);
                 }
             } catch (SQLException e) {
                 log.error(e);
@@ -195,7 +195,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
             try {
                 dbStat.execute();
             } finally {
-                JDBCUtils.closeStatement(monitor, dbStat);
+                JDBCUtils.safeClose(dbStat);
             }
         } catch (SQLException e) {
             throw new DBException(e);

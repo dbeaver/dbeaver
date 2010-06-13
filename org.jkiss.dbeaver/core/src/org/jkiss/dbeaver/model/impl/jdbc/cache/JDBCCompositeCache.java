@@ -204,7 +204,7 @@ public abstract class JDBCCompositeCache<
                 }
             }
             finally {
-                JDBCUtils.closeStatement(monitor, dbStat);
+                JDBCUtils.safeClose(dbStat);
             }
         } catch (SQLException ex) {
             throw new DBException(ex);
