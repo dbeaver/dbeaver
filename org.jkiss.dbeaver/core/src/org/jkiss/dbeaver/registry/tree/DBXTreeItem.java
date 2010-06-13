@@ -14,6 +14,7 @@ public class DBXTreeItem extends DBXTreeNode
     private String propertyName;
     private boolean optional;
     private boolean virtual;
+    private boolean navigable;
 
     public DBXTreeItem(
         DBXTreeNode parent,
@@ -21,7 +22,8 @@ public class DBXTreeItem extends DBXTreeNode
         String path,
         String propertyName,
         boolean optional,
-        boolean virtual)
+        boolean virtual,
+        boolean navigable)
     {
         super(parent);
         this.label = label;
@@ -29,6 +31,7 @@ public class DBXTreeItem extends DBXTreeNode
         this.propertyName = propertyName;
         this.optional = optional;
         this.virtual = virtual;
+        this.navigable = navigable;
     }
 
     public String getPath()
@@ -59,5 +62,11 @@ public class DBXTreeItem extends DBXTreeNode
     public String getLabel()
     {
         return label;
+    }
+
+    @Override
+    public boolean isNavigable()
+    {
+        return navigable;
     }
 }

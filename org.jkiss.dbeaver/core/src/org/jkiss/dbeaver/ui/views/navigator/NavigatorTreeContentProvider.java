@@ -71,7 +71,7 @@ class NavigatorTreeContentProvider implements IStructuredContentProvider, ITreeC
             log.error("Can't find parent node in model");
             return EMPTY_CHILDREN;
         }
-        if (!parentNode.hasChildren()) {
+        if (!parentNode.hasNavigableChildren()) {
             return EMPTY_CHILDREN;
         }
         if (parentNode.isLazyNode()) {
@@ -110,7 +110,7 @@ class NavigatorTreeContentProvider implements IStructuredContentProvider, ITreeC
     public boolean hasChildren(Object parent)
     {
         DBMNode node = view.getMetaModel().findNode(parent);
-        return node != null && node.hasChildren();
+        return node != null && node.hasNavigableChildren();
     }
 
 /*

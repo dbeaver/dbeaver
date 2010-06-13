@@ -98,6 +98,20 @@ public abstract class DBMTreeNode extends DBMNode {
         return this.getMeta().hasChildren();
     }
 
+    public boolean hasNavigableChildren()
+    {
+        if (!this.getMeta().hasChildren()) {
+            return false;
+        } else {
+            for (DBXTreeNode child : this.getMeta().getChildren()) {
+                if (child.isNavigable()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
     public boolean hasChildren(DBRProgressMonitor monitor, DBXTreeNode childType)
         throws DBException
     {

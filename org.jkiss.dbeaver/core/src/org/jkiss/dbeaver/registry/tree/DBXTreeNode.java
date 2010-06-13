@@ -31,6 +31,8 @@ public abstract class DBXTreeNode
 
     public abstract String getLabel();
 
+    public abstract boolean isNavigable(); 
+
     public DBXTreeNode getParent()
     {
         return parent;

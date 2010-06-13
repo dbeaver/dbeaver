@@ -66,6 +66,12 @@ public class DBMRoot extends DBMNode implements DBSObject
         return !dataSources.isEmpty();
     }
 
+    @Override
+    public boolean hasNavigableChildren()
+    {
+        return hasChildren();
+    }
+
     public List<? extends DBMNode> getChildren(DBRProgressMonitor monitor)
     {
         return dataSources;

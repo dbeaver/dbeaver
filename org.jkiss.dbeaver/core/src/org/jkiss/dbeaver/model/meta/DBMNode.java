@@ -85,6 +85,8 @@ public abstract class DBMNode
     }
 
     public abstract boolean hasChildren();
+
+    public abstract boolean hasNavigableChildren();
     
     public abstract List<? extends DBMNode> getChildren(DBRProgressMonitor monitor)  throws DBException;
 

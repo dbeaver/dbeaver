@@ -254,7 +254,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             config.getAttribute("path"),
             null,
             false,
-            false);
+            false,
+            true);
         loadTreeChildren(config, treeRoot);
         loadTreeIcon(treeRoot, config);
         return treeRoot;
@@ -278,7 +279,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             DBXTreeFolder folder = new DBXTreeFolder(
                 parent,
                 config.getAttribute("type"),
-                config.getAttribute("label"));
+                config.getAttribute("label"),
+                !"false".equals(config.getAttribute("navigable")));
             loadTreeIcon(folder, config);
             folder.setDescription(config.getAttribute("description"));
             child = folder;
@@ -289,7 +291,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 config.getAttribute("path"),
                 config.getAttribute("property"),
                 "true".equals(config.getAttribute("optional")),
-                "true".equals(config.getAttribute("virtual")));
+                "true".equals(config.getAttribute("virtual")),
+                !"false".equals(config.getAttribute("navigable")));
             loadTreeIcon(child, config);
         } else {
             // Unknown node type
