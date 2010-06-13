@@ -97,8 +97,14 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     }
 
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
+        throws DBException
     {
-        System.out.println("CACHE STRUCTURE!");
+/*
+        cacheTables(monitor);
+        if ((scope & STRUCT_ATTRIBUTES) != 0) {
+            cacheColumns(monitor, null);
+        }
+*/
     }
 
     public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)

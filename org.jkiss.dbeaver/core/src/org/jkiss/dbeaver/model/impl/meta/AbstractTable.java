@@ -78,6 +78,7 @@ public abstract class AbstractTable<
         this.description = description;
     }
 
+    @SuppressWarnings("unchecked")
     public DATASOURCE getDataSource()
     {
         return (DATASOURCE) container.getDataSource();
