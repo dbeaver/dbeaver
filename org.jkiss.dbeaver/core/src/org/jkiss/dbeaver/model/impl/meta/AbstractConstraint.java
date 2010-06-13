@@ -37,9 +37,9 @@ public abstract class AbstractConstraint<
         return table;
     }
 
-    public DBSConstraintColumn getColumn(DBSTableColumn tableColumn)
+    public DBSConstraintColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
     {
-        Collection<? extends DBSConstraintColumn> columns = getColumns();
+        Collection<? extends DBSConstraintColumn> columns = getColumns(monitor);
         for (DBSConstraintColumn constraintColumn : columns) {
             if (constraintColumn.getTableColumn() == tableColumn) {
                 return constraintColumn;

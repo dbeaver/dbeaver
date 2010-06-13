@@ -77,7 +77,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         throws DBException
     {
         if (columns == null) {
-            this.columns = loadColumns();
+            getContainer().getTableCache().loadChildren(monitor, this);
         }
         return columns;
     }
@@ -197,40 +197,6 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
             this.isSystem = (this.getTableType().toUpperCase().indexOf("SYSTEM") != -1);
         }
         this.columns = null;
-    }
-
-    private List<MySQLTableColumn> loadColumns()
-        throws DBException
-    {
-        try {
-            String catalogName = getContainer().getName();
-            List<MySQLTableColumn> tmpColumns = new ArrayList<MySQLTableColumn>();
-
-            PreparedStatement dbStat = getDataSource().getConnection().prepareStatement(
-                MySQLConstants.QUERY_SELECT_TABLE_COLUMNS);
-            try {
-                dbStat.setString(1, catalogName);
-                dbStat.setString(2, getName());
-                ResultSet dbResult = dbStat.executeQuery();
-                try {
-                    while (dbResult.next()) {
-                        MySQLTableColumn tableColumn = new MySQLTableColumn(this, dbResult);
-                        tmpColumns.add(tableColumn);
-                    }
-                }
-                finally {
-                    JDBCUtils.safeClose(dbResult);
-                }
-            }
-            finally {
-                dbStat.close();
-            }
-
-            return tmpColumns;
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
     }
 
     private List<MySQLIndex> loadIndexes(DBRProgressMonitor monitor)
@@ -472,4 +438,13 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         getColumns(monitor);
     }
 
+    public boolean isColumnsCached()
+    {
+        return columns != null;
+    }
+
+    public void setColumns(List<MySQLTableColumn> columns)
+    {
+        this.columns = columns;
+    }
 }

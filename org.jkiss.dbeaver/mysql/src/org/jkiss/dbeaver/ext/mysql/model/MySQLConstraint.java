@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.dbeaver.model.impl.meta.AbstractConstraint;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,7 @@ public class MySQLConstraint extends AbstractConstraint<MySQLDataSource,MySQLTab
         return constraintType;
     }
 
-    public List<MySQLConstraintColumn> getColumns()
+    public List<MySQLConstraintColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }

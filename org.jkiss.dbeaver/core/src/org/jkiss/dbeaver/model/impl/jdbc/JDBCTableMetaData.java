@@ -118,7 +118,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
                 if (constraint.getConstraintType().isUnique()) {
                     // We need ALL columns from this constraint
                     List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
-                    Collection<? extends DBSConstraintColumn> constrColumns = constraint.getColumns();
+                    Collection<? extends DBSConstraintColumn> constrColumns = constraint.getColumns(monitor);
                     for (DBSConstraintColumn constrColumn : constrColumns) {
                         JDBCColumnMetaData rsColumn = getColumnMetaData(monitor, constrColumn.getTableColumn());
                         if (rsColumn == null) {

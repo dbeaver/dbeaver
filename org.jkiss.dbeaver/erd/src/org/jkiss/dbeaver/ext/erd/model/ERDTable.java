@@ -74,7 +74,7 @@ public class ERDTable extends ERDNode {
         Collection<? extends DBSForeignKey> constraints = getTable().getImportedKeys(monitor);
         if (constraints != null) {
             for (DBSConstraint constraint : constraints) {
-                if (constraint.getColumn(tableColumn) != null) {
+                if (constraint.getColumn(monitor, tableColumn) != null) {
                     return true;
                 }
             }
@@ -130,8 +130,8 @@ public class ERDTable extends ERDNode {
         // check independence
         independent = true;
         DBSConstraint primaryKey = getPrimaryKey(monitor);
-        if (primaryKey != null) {
-            for (DBSConstraintColumn constrCol : primaryKey.getColumns()) {
+        if (primaryKey != null && primaryKey.getColumns(monitor) != null) {
+            for (DBSConstraintColumn constrCol : primaryKey.getColumns(monitor)) {
                 if (isInForeignKey(monitor, constrCol.getTableColumn())) {
                     independent = false;
                 }

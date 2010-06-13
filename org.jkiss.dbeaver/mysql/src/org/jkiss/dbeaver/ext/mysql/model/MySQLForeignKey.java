@@ -4,6 +4,7 @@ import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.impl.meta.AbstractForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,7 @@ public class MySQLForeignKey extends AbstractForeignKey<MySQLDataSource, MySQLTa
         return defferability;
     }
 
-    public List<MySQLForeignKeyColumn> getColumns()
+    public List<MySQLForeignKeyColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }

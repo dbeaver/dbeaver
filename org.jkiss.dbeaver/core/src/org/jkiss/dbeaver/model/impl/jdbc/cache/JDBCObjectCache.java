@@ -61,7 +61,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
         this.objectMap = null;
     }
 
-    protected synchronized void loadObjects(DBRProgressMonitor monitor)
+    public synchronized void loadObjects(DBRProgressMonitor monitor)
         throws DBException
     {
         if (this.objectList != null) {

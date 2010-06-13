@@ -93,9 +93,9 @@ public class GenericConstraint implements DBSConstraint
         return getName() == null ? "<NONE>" : getName();
     }
 
-    public DBSConstraintColumn getColumn(DBSTableColumn tableColumn)
+    public DBSConstraintColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
     {
-        Collection<? extends DBSConstraintColumn> columns = getColumns();
+        Collection<? extends DBSConstraintColumn> columns = getColumns(monitor);
         for (DBSConstraintColumn constraintColumn : columns) {
             if (constraintColumn.getTableColumn() == tableColumn) {
                 return constraintColumn;
@@ -104,7 +104,7 @@ public class GenericConstraint implements DBSConstraint
         return null;
     }
 
-    public List<GenericConstraintColumn> getColumns()
+    public List<GenericConstraintColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }

@@ -209,7 +209,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
         }
         Collection<? extends DBSForeignKey> foreignKeys = getTable().getTable(monitor).getImportedKeys(monitor);
         for (DBSForeignKey fk : foreignKeys) {
-            if (fk.getColumn(tableColumn) != null) {
+            if (fk.getColumn(monitor, tableColumn) != null) {
                 return true;
             }
         }

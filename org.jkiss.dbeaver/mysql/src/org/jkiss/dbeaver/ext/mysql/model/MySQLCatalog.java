@@ -3,16 +3,20 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.model.impl.meta.AbstractCatalog;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.impl.meta.AbstractCatalog;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * GenericCatalog
@@ -24,13 +28,17 @@ public class MySQLCatalog
     private String defaultCharset;
     private String defaultCollation;
     private String sqlPath;
-    private List<MySQLTable> tableList;
-    private Map<String, MySQLTable> tableMap;
+    private TableCache tableCache = new TableCache();
     private List<MySQLProcedure> procedures;
 
     public MySQLCatalog(MySQLDataSource dataSource, String catalogName)
     {
         super(dataSource, catalogName);
+    }
+
+    TableCache getTableCache()
+    {
+        return tableCache;
     }
 
     public String getDescription()
@@ -69,26 +77,6 @@ public class MySQLCatalog
         this.sqlPath = sqlPath;
     }
 
-    public List<MySQLTable> getTableList()
-    {
-        return tableList;
-    }
-
-    public void setTableList(List<MySQLTable> tableList)
-    {
-        this.tableList = tableList;
-    }
-
-    public Map<String, MySQLTable> getTableMap()
-    {
-        return tableMap;
-    }
-
-    public void setTableMap(Map<String, MySQLTable> tableMap)
-    {
-        this.tableMap = tableMap;
-    }
-
     public List<MySQLIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -106,19 +94,13 @@ public class MySQLCatalog
     public List<MySQLTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (tableList == null) {
-            loadTables(monitor);
-        }
-        return tableList;
+        return tableCache.getObjects(monitor);
     }
 
     public MySQLTable getTable(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        if (tableMap == null) {
-            loadTables(monitor);
-        }
-        return tableMap.get(name);
+        return tableCache.getObject(monitor, name);
     }
 
     public List<MySQLProcedure> getProcedures(DBRProgressMonitor monitor)
@@ -128,42 +110,6 @@ public class MySQLCatalog
             loadProcedures(monitor);
         }
         return procedures;
-    }
-
-    private void loadTables(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        monitor.beginTask("Loading table", 1);
-        List<MySQLTable> tmpTableList = new ArrayList<MySQLTable>();
-        Map<String, MySQLTable> tmpTableMap = new HashMap<String, MySQLTable>();
-        try {
-            PreparedStatement dbStat = JDBCUtils.prepareStatement(monitor, getDataSource(), MySQLConstants.QUERY_SELECT_TABLES, "Read tables");
-            try {
-                dbStat.setString(1, getName());
-                ResultSet dbResult = dbStat.executeQuery();
-                try {
-                    while (dbResult.next()) {
-                        MySQLTable table = new MySQLTable(this, dbResult);
-                        tmpTableList.add(table);
-                        tmpTableMap.put(table.getName(), table);
-                    }
-                }
-                finally {
-                    JDBCUtils.safeClose(dbResult);
-                }
-            }
-            finally {
-                JDBCUtils.closeStatement(monitor, dbStat);
-            }
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            monitor.done();
-        }
-        this.tableList = tmpTableList;
-        this.tableMap = tmpTableMap;
     }
 
     private void loadProcedures(DBRProgressMonitor monitor)
@@ -220,7 +166,79 @@ public class MySQLCatalog
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {
+        tableCache.loadObjects(monitor);
+        if ((scope & STRUCT_ATTRIBUTES) != 0) {
+            tableCache.loadChildren(monitor, null);
+        }
+    }
 
+    @Override
+    public boolean refreshObject(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        super.refreshObject(monitor);
+        tableCache.clearCache();
+        procedures = null;
+        return true;
+    }
+
+    class TableCache extends JDBCStructCache<MySQLTable, MySQLTableColumn> {
+        
+        protected TableCache()
+        {
+            super("tables", "columns", JDBCConstants.TABLE_NAME);
+        }
+
+        protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)
+            throws SQLException, DBException
+        {
+            PreparedStatement dbStat = getDataSource().getConnection().prepareStatement(
+                MySQLConstants.QUERY_SELECT_TABLES);
+            dbStat.setString(1, getName());
+            return dbStat;
+        }
+
+        protected MySQLTable fetchObject(DBRProgressMonitor monitor, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new MySQLTable(MySQLCatalog.this, dbResult);
+        }
+
+        protected boolean isChildrenCached(MySQLTable table)
+        {
+            return table.isColumnsCached();
+        }
+
+        protected void cacheChildren(MySQLTable table, List<MySQLTableColumn> columns)
+        {
+            table.setColumns(columns);
+        }
+
+        protected PreparedStatement prepareChildrenStatement(DBRProgressMonitor monitor, MySQLTable forTable)
+            throws SQLException, DBException
+        {
+            StringBuilder sql = new StringBuilder();
+            sql
+                .append("SELECT * FROM ").append(MySQLConstants.META_TABLE_COLUMNS)
+                .append(" WHERE ").append(MySQLConstants.COL_TABLE_SCHEMA).append("=?");
+            if (forTable != null) {
+                sql.append(" AND ").append(MySQLConstants.COL_TABLE_NAME).append("=?");
+            }
+            sql.append(" ORDER BY ").append(MySQLConstants.COL_ORDINAL_POSITION);
+
+            PreparedStatement dbStat = getDataSource().getConnection().prepareStatement(sql.toString());
+            dbStat.setString(1, MySQLCatalog.this.getName());
+            if (forTable != null) {
+                dbStat.setString(2, forTable.getName());
+            }
+            return dbStat;
+        }
+
+        protected MySQLTableColumn fetchChild(DBRProgressMonitor monitor, MySQLTable table, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new MySQLTableColumn(table, dbResult);
+        }
     }
 
 }

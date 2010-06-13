@@ -26,7 +26,7 @@ public class ERDTableColumn implements Comparable<ERDTableColumn> {
         // Try to get key number from primary key constraint metaColumn
         DBSConstraint primaryKey = table.getPrimaryKey(monitor);
         if (primaryKey != null) {
-            for (DBSConstraintColumn constrCol : primaryKey.getColumns()) {
+            for (DBSConstraintColumn constrCol : primaryKey.getColumns(monitor)) {
                 if (constrCol.getTableColumn().equals(metaColumn)) {
                     keyNumber = constrCol.getOrdinalPosition();
                     break;
