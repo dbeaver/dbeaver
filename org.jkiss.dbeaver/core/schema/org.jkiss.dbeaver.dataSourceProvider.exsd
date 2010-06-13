@@ -217,6 +217,13 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="navigable" type="boolean">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
@@ -265,6 +272,13 @@
             </annotation>
          </attribute>
          <attribute name="iconId" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="navigable" type="boolean">
             <annotation>
                <documentation>
                   
