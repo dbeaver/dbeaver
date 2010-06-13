@@ -122,9 +122,9 @@ public abstract class JDBCStructCache<
                     }
                     // Now set empty column list for other tables
                     if (forObject == null) {
-                        for (OBJECT tmpTable : getObjects(monitor)) {
-                            if (!columnMap.containsKey(tmpTable)) {
-                                cacheChildren(tmpTable, new ArrayList<CHILD>());
+                        for (OBJECT tmpObject : getObjects(monitor)) {
+                            if (!isChildrenCached(tmpObject) && !columnMap.containsKey(tmpObject)) {
+                                cacheChildren(tmpObject, new ArrayList<CHILD>());
                             }
                         }
                     } else if (!columnMap.containsKey(forObject)) {
