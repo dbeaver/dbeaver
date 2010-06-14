@@ -20,6 +20,7 @@ import java.sql.DatabaseMetaData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * GenericDataSource
@@ -28,6 +29,16 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
 {
     static Log log = LogFactory.getLog(MySQLDataSource.class);
 
+    private static Properties connectionsProps;
+
+    static {
+        connectionsProps = new Properties();
+
+        // Prevent stupid errors "Cannot convert value '0000-00-00 00:00:00' from column X to TIMESTAMP"
+        // Widely appears in MyISAM tables (joomla, etc)
+        connectionsProps.setProperty("zeroDateTimeBehavior", "convertToNull");
+    }
+
     private List<MySQLCatalog> catalogs;
     private MySQLCatalog activeCatalog;
 
@@ -35,6 +46,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         throws DBException
     {
         super(container);
+    }
+
+    protected Properties getInternalConnectionProperties()
+    {
+        return connectionsProps;
     }
 
     public String[] getTableTypes()

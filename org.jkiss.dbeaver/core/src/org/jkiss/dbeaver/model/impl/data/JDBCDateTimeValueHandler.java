@@ -8,7 +8,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;

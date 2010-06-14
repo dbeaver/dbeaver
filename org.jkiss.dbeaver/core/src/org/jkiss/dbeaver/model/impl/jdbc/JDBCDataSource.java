@@ -59,6 +59,12 @@ public abstract class JDBCDataSource
 
         // Set properties
         Properties driverProps = new Properties();
+
+        Properties internalProps = getInternalConnectionProperties();
+        if (internalProps != null) {
+            driverProps.putAll(internalProps);
+        }
+
         DBPConnectionInfo connectionInfo = container.getConnectionInfo();
         if (connectionInfo.getProperties() != null) {
             driverProps.putAll(connectionInfo.getProperties());
@@ -84,6 +90,16 @@ public abstract class JDBCDataSource
         catch (SQLException ex) {
             throw new DBException(ex);
         }
+    }
+
+    /**
+     * Could be overrided by extenders. May contain any additional connection properties.
+     * Note: these properties may be overwrited by connection advanced properties.
+     * @return
+     */
+    protected Properties getInternalConnectionProperties()
+    {
+        return null;
     }
 
     public Connection getConnection()
