@@ -9,12 +9,6 @@ package org.jkiss.dbeaver.model.dbc;
  */
 public interface DBCResultSet
 {
-    /**
-     * ResultSet implementation object (usualy java.sql.ResultSet)
-     * @return implementation
-     */
-    Object getNestedResultSet();
-
     DBCStatement getSource();
 
     Object getColumnValue(int index) throws DBCException;

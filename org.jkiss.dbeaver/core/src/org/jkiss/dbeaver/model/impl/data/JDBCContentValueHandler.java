@@ -43,7 +43,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
     private static final int MAX_STRING_LENGTH = 0xfffff;
 
-    protected DBDContent getValueObject(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+    protected DBDContent getColumnValue(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException, SQLException
     {
         Object value = resultSet.getObject(columnIndex);

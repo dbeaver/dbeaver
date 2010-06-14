@@ -9,6 +9,7 @@ import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.apache.commons.logging.Log;
@@ -126,10 +127,10 @@ public class ConnectionManagable implements JDBCExecutionContext {
         return false;
     }
 
-    public DatabaseMetaData getMetaData()
+    public JDBCDatabaseMetaData getMetaData()
         throws SQLException
     {
-        return original.getMetaData();
+        return new DatabaseMetaDataManagable(this, original.getMetaData());
     }
 
     public void setReadOnly(boolean readOnly)

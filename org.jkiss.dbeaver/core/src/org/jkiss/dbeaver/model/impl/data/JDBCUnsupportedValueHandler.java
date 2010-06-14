@@ -20,7 +20,7 @@ public class JDBCUnsupportedValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCUnsupportedValueHandler INSTANCE = new JDBCUnsupportedValueHandler();
 
-    protected Object getValueObject(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+    protected Object getColumnValue(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException, SQLException
     {
         return resultSet.getObject(columnIndex);

@@ -26,7 +26,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
 
     static Log log = LogFactory.getLog(JDBCBooleanValueHandler.class);
 
-    protected Object getValueObject(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+    protected Object getColumnValue(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException, SQLException
     {
         return resultSet.getBoolean(columnIndex);

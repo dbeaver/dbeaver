@@ -37,10 +37,10 @@ import java.util.Map;
  */
 public class ResultSetManagable implements JDBCResultSet {
 
-    private StatementManagable statement;
+    private PreparedStatementManagable statement;
     private ResultSet original;
 
-    public ResultSetManagable(StatementManagable statement, ResultSet original)
+    public ResultSetManagable(PreparedStatementManagable statement, ResultSet original)
     {
         this.statement = statement;
         this.original = original;
@@ -51,17 +51,12 @@ public class ResultSetManagable implements JDBCResultSet {
         return original;
     }
 
-    public Object getNestedResultSet()
-    {
-        return this;
-    }
-
     public DBCStatement getSource()
     {
         return statement;
     }
 
-    public StatementManagable getStatement()
+    public PreparedStatementManagable getStatement()
     {
         return statement;
     }

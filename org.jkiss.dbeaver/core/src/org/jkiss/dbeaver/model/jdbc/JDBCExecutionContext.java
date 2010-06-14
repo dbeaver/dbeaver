@@ -8,11 +8,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.CallableStatement;
-import java.sql.Statement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * JDBC connection
@@ -24,6 +21,9 @@ public interface JDBCExecutionContext extends Connection {
     DBRProgressMonitor getProgressMonitor();
 
     JDBCPreparedStatement makeResultsStatement(ResultSet resultSet, String description);
+
+    JDBCDatabaseMetaData getMetaData()
+        throws SQLException;
 
     JDBCStatement createStatement()
         throws SQLException;

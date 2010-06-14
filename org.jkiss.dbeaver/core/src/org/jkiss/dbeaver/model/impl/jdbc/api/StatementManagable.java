@@ -19,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.sql.SQLFeatureNotSupportedException;
 
 /**
  * Managable statement.
@@ -179,9 +180,13 @@ public abstract class StatementManagable implements JDBCStatement {
     public JDBCResultSet executeQuery(String sql)
         throws SQLException
     {
-        setQuery(sql);
-        this.startBlock();
-        return new ResultSetManagable(this, getOriginal().executeQuery(sql));
+        if (this instanceof PreparedStatementManagable) {
+            setQuery(sql);
+            this.startBlock();
+            return new ResultSetManagable((PreparedStatementManagable) this, getOriginal().executeQuery(sql));
+        } else {
+            throw new SQLFeatureNotSupportedException();
+        }
     }
 
     public int executeUpdate(String sql)
@@ -337,7 +342,11 @@ public abstract class StatementManagable implements JDBCStatement {
     public JDBCResultSet getResultSet()
         throws SQLException
     {
-        return new ResultSetManagable(this, getOriginal().getResultSet());
+        if (this instanceof PreparedStatementManagable) {
+            return new ResultSetManagable((PreparedStatementManagable) this, getOriginal().getResultSet());
+        } else {
+            throw new SQLFeatureNotSupportedException();
+        }
     }
 
     public int getUpdateCount()

@@ -33,7 +33,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
     private static final int MAX_NUMBER_LENGTH = 100;
 
-    protected Object getValueObject(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+    protected Object getColumnValue(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException, SQLException
     {
         switch (columnType.getValueType()) {

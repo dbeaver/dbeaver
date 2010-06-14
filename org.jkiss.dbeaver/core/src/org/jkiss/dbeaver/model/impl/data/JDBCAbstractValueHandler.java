@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
 import java.sql.PreparedStatement;
@@ -36,7 +37,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         throws DBCException
     {
         try {
-            return getValueObject((ResultSet) resultSet.getNestedResultSet(), columnType, columnIndex + 1);
+            return getColumnValue((JDBCResultSet) resultSet, columnType, columnIndex + 1);
         }
         catch (SQLException e) {
             throw new DBCException("Could not get result set value", e);
@@ -113,7 +114,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         });
     }
 
-    protected abstract Object getValueObject(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+    protected abstract Object getColumnValue(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException, SQLException;
 
     protected abstract void bindParameter(PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
