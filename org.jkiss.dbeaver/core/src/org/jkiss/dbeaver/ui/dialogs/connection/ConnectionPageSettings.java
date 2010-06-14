@@ -66,7 +66,7 @@ class ConnectionPageSettings extends WizardPage implements IDataSourceEditorSite
 
     public void setVisible(boolean visible)
     {
-        if (visible) {
+        if (visible && this.editor != null) {
             this.editor.loadSettings();
         }
         super.setVisible(visible);
@@ -80,7 +80,9 @@ class ConnectionPageSettings extends WizardPage implements IDataSourceEditorSite
 
     void deactivate()
     {
-        this.editor.saveSettings();
+        if (this.editor != null) {
+            this.editor.saveSettings();
+        }
     }
 
     void saveSettings()

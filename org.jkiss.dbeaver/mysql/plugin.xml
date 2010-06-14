@@ -102,6 +102,7 @@
                     sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                     webURL="http://mysql.com"
                     description="MySQL standard driver">
+                    <!--
                     <propertyGroup label="Connection/Authentication">
                         <property label="connectTimeout" description="Timeout for socket connect (in milliseconds), with 0 being no timeout. Only works on JDK-1.4 or newer. Defaults to '0'."/>
                         <property label="socketTimeout" description="Timeout on network socket operations (0, the default means no timeout)."/>
@@ -121,6 +122,7 @@
                         <property label="logSlowQueries" description="Should queries that take longer than 'slowQueryThresholdMillis' be logged?"/>
                         <property label="traceProtocol" description="Should trace-level network protocol be logged?"/>
                     </propertyGroup>
+                    -->
                     <query label="GET_ACTIVE_DB">select database()</query>
                     <query label="SET_ACTIVE_DB">use ?</query>
                 </driver>

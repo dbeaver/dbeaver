@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -70,10 +69,10 @@ public abstract class JDBCDataSource
             driverProps.putAll(connectionInfo.getProperties());
         }
         if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-            driverProps.put("user", connectionInfo.getUserName());
+            driverProps.put(JDBCConstants.PROPERTY_USER, connectionInfo.getUserName());
         }
         if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-            driverProps.put("password", connectionInfo.getUserPassword());
+            driverProps.put(JDBCConstants.PROPERTY_PASSWORD, connectionInfo.getUserPassword());
         }
 
         // Obtain connection

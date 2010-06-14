@@ -4,41 +4,26 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.DialogPage;
-import org.eclipse.jface.viewers.CellLabelProvider;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.TreeViewerColumn;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerCell;
-import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
-import org.jkiss.dbeaver.model.DBPDriverProperty;
 import org.jkiss.dbeaver.model.DBPDriverPropertyGroup;
+import org.jkiss.dbeaver.ui.controls.proptree.DriverPropertiesControl;
 
-import java.sql.DriverPropertyInfo;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -68,11 +53,13 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
     private Text passwordText;
     private Text urlText;
     private Button testButton;
-    private TreeViewer propsTree;
+
     private boolean isCustom;
     private List<String> urlComponents = new ArrayList<String>();
     private Set<String> requiredProperties = new HashSet<String>();
+
     private DBPDriverPropertyGroup driverProvidedProperties;
+    private DriverPropertiesControl propsControl;
 
     public void createControl(Composite composite)
     {
@@ -99,7 +86,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
                 public void widgetSelected(SelectionEvent e)
                 {
                     if (e.item == propsTab) {
-                        loadDriverProperties();
+                        refreshDriverProperties();
                     }
                 }
 
@@ -248,8 +235,10 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
         return addrGroup;
     }
 
-    private Control createPropertiesTab(Composite parent)
+    private DriverPropertiesControl createPropertiesTab(Composite parent)
     {
+        propsControl = new DriverPropertiesControl(parent, SWT.NONE);
+/*
         Composite propsGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         gl.marginHeight = 10;
@@ -287,40 +276,9 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
                 return "";
             }
         });
+*/
 
-        return propsGroup;
-    }
-
-    private void loadDriverProperties()
-    {
-        if (driverProvidedProperties != null) {
-            return;
-        }
-        if (site.getDriver().supportsDriverProperties()) {
-            DBPConnectionInfo info = new DBPConnectionInfo();
-            saveSettings(info);
-            try {
-                Properties properties = new Properties();
-                properties.putAll(info.getProperties());
-                Object driverInstance = site.getDriver().getDriverInstance();
-                if (driverInstance instanceof java.sql.Driver) {
-                    final DriverPropertyInfo[] propInfos = ((java.sql.Driver)driverInstance).getPropertyInfo(
-                        info.getJdbcURL(),
-                        properties);
-                    if (!CommonUtils.isEmpty(propInfos)) {
-                        driverProvidedProperties = new DriverProvidedPropertyGroup(propInfos);
-                    }
-                }
-
-            } catch (SQLException ex) {
-                //log.warn("Can't read driver properties", ex);
-
-            } catch (DBException e) {
-                log.warn("Can't obtain driver instance", e);
-            }
-        } else {
-            driverProvidedProperties = new DriverProvidedPropertyGroup(new DriverPropertyInfo[0]);
-        }
+        return propsControl;
     }
 
     public void setSite(IDataSourceEditorSite site)
@@ -393,13 +351,20 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
                 }
             }
         }
-        // Reset driver provided props
-        this.driverProvidedProperties = null;
-        this.loadDriverProperties();
+
         // Set props model
-        if (propsTree != null) {
-            propsTree.setInput(getPropertiesModel());
+        if (propsControl != null) {
+            refreshDriverProperties();
         }
+    }
+
+    private void refreshDriverProperties()
+    {
+        DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
+        saveSettings(tmpConnectionInfo);
+        Properties props = new Properties();
+        props.putAll(tmpConnectionInfo.getProperties());
+        propsControl.loadProperties(site.getDriver(), tmpConnectionInfo.getJdbcURL(), props);
     }
 
     public void saveSettings()
@@ -514,161 +479,4 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
         testButton.setEnabled(this.isComplete());
     }
 
-    private Object getPropertiesModel()
-    {
-        return this.site.getDriver();
-    }
-
-    class PropsContentProvider implements IStructuredContentProvider,
-        ITreeContentProvider
-    {
-
-        public void inputChanged(Viewer v, Object oldInput, Object newInput)
-        {
-        }
-
-        public void dispose()
-        {
-        }
-
-        public Object[] getElements(Object parent)
-        {
-            return getChildren(parent);
-        }
-
-        public Object getParent(Object child)
-        {
-            if (child instanceof DBPDriverPropertyGroup) {
-                return ((DBPDriverPropertyGroup) child).getDriver();
-            } else if (child instanceof DBPDriverProperty) {
-                return ((DBPDriverProperty) child).getGroup();
-            } else {
-                return null;
-            }
-        }
-
-        public Object[] getChildren(Object parent)
-        {
-            if (parent instanceof DBPDriver) {
-                List<DBPDriverPropertyGroup> groups = new ArrayList<DBPDriverPropertyGroup>();
-                if (driverProvidedProperties != null) {
-                    groups.add(driverProvidedProperties);
-                }
-                groups.addAll(((DBPDriver)parent).getPropertyGroups());
-                return groups.toArray();
-            } else if (parent instanceof DBPDriverPropertyGroup) {
-                return ((DBPDriverPropertyGroup) parent).getProperties().toArray();
-            } else {
-                return new Object[0];
-            }
-        }
-
-        public boolean hasChildren(Object parent)
-        {
-            return getChildren(parent).length > 0;
-        }
-    }
-
-    private static class PropsLabelProvider extends CellLabelProvider
-    {
-        public String getText(Object obj)
-        {
-            if (obj instanceof DBPDriverPropertyGroup) {
-                return ((DBPDriverPropertyGroup) obj).getName();
-            } else if (obj instanceof DBPDriverProperty) {
-                return ((DBPDriverProperty) obj).getName();
-            } else {
-                return obj.toString();
-            }
-        }
-
-        public String getToolTipText(Object obj)
-        {
-            if (obj instanceof DBPDriverPropertyGroup) {
-                return ((DBPDriverPropertyGroup) obj).getDescription();
-            } else if (obj instanceof DBPDriverProperty) {
-                return ((DBPDriverProperty) obj).getDescription();
-            } else {
-                return obj.toString();
-            }
-        }
-
-        public Point getToolTipShift(Object object)
-        {
-            return new Point(5, 5);
-        }
-
-        public void update(ViewerCell cell)
-        {
-            cell.setText(getText(cell.getElement()));
-        }
-    }
-
-    private class DriverProvidedPropertyGroup implements DBPDriverPropertyGroup
-    {
-        private final DriverPropertyInfo[] propInfos;
-        private List<DBPDriverProperty> propList;
-
-        public DriverProvidedPropertyGroup(DriverPropertyInfo[] propInfos)
-        {
-            this.propInfos = propInfos;
-            this.propList = null;
-        }
-
-        public DBPDriver getDriver()
-        {
-            return site.getDriver();
-        }
-
-        public String getName()
-        {
-            return "Driver Properties";
-        }
-
-        public String getDescription()
-        {
-            return "Driver Properties";
-        }
-
-        public List<? extends DBPDriverProperty> getProperties()
-        {
-            if (propList == null) {
-                propList = new ArrayList<DBPDriverProperty>();
-                for (final DriverPropertyInfo propInfo : propInfos) {
-                    if ("user".equals(propInfo.name) || "password".equals(propInfo.name)) {
-                        continue;
-                    }
-                    DBPDriverProperty prop = new DBPDriverProperty()
-                    {
-                        public DBPDriverPropertyGroup getGroup()
-                        {
-                            return DriverProvidedPropertyGroup.this;
-                        }
-
-                        public String getName()
-                        {
-                            return propInfo.name;
-                        }
-
-                        public String getDescription()
-                        {
-                            return propInfo.description;
-                        }
-
-                        public String getDefaultValue()
-                        {
-                            return propInfo.value;
-                        }
-
-                        public PropertyType getType()
-                        {
-                            return PropertyType.STRING;
-                        }
-                    };
-                    propList.add(prop);
-                }
-            }
-            return propList;
-        }
-    }
 }
