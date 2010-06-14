@@ -20,8 +20,6 @@ public interface JDBCExecutionContext extends Connection {
     
     DBRProgressMonitor getProgressMonitor();
 
-    JDBCPreparedStatement makeResultsStatement(ResultSet resultSet, String description);
-
     JDBCDatabaseMetaData getMetaData()
         throws SQLException;
 

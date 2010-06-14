@@ -8,12 +8,18 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.dbc.DBCStateType;
+import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * JDBCDataSourceInfo
@@ -44,7 +50,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private List<DBSDataType> dataTypeList;
     private Map<String, DBSDataType> dataTypeMap;
 
-    public JDBCDataSourceInfo(DatabaseMetaData metaData)
+    public JDBCDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
         try {
             this.readOnly = metaData.isReadOnly();
@@ -175,7 +181,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         this.dataTypeMap = new HashMap<String, DBSDataType>();
         try {
             // Read data types
-            ResultSet dbResult = metaData.getTypeInfo();
+            JDBCResultSet dbResult = metaData.getTypeInfo();
             try {
                 while (dbResult.next()) {
                     String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
@@ -198,7 +204,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
                     addDataType(dataType);
                 }
             } finally {
-                JDBCUtils.safeClose(dbResult);
+                dbResult.close();
             }
         }
         catch (SQLException ex) {

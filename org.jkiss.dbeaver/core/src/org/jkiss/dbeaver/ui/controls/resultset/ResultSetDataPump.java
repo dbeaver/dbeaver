@@ -39,6 +39,8 @@ class ResultSetDataPump implements ISQLQueryDataPump {
     private ResultSetColumn[] metaColumns;
     private List<Object[]> rows = new ArrayList<Object[]>();
 
+    Map<DBCColumnMetaData, List<DBCException>> errors = new HashMap<DBCColumnMetaData, List<DBCException>>();
+
     ResultSetDataPump(ResultSetViewer resultSetViewer)
     {
         this.resultSetViewer = resultSetViewer;
@@ -81,10 +83,26 @@ class ResultSetDataPump implements ISQLQueryDataPump {
     {
         Object[] row = new Object[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
-            row[i] = metaColumns[i].valueHandler.getValueObject(
-                resultSet,
-                metaColumns[i].metaData,
-                i);
+            try {
+                row[i] = metaColumns[i].valueHandler.getValueObject(
+                    resultSet,
+                    metaColumns[i].metaData,
+                    i);
+            }
+            catch (DBCException e) {
+                // Do not reports the same error multiple times
+                // There are a lot of error could occur during result set fetch
+                // We report certain error only once
+                List<DBCException> errorList = errors.get(metaColumns[i].metaData);
+                if (errorList == null) {
+                    errorList = new ArrayList<DBCException>();
+                    errors.put(metaColumns[i].metaData, errorList);
+                }
+                if (!errorList.contains(e)) {
+                    log.warn("Could not read column '" + metaColumns[i].metaData.getColumnName() + "' value", e);
+                    errorList.add(e);
+                }
+            }
         }
         rows.add(row);
     }
@@ -100,6 +118,7 @@ class ResultSetDataPump implements ISQLQueryDataPump {
                 resultSetViewer.setData(rows);
             }
         });
+        errors.clear();
     }
 
     // Find value locators for columns

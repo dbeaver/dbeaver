@@ -7,26 +7,26 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
-import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.api.ConnectionManagable;
+import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
+import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectAction;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
-import org.jkiss.dbeaver.model.struct.DBSObjectAction;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.Driver;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -156,19 +156,19 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         return DBSUtils.findObject(getSchemas(monitor), name);
     }
 
-    public void checkConnection()
+    public void checkConnection(DBRProgressMonitor monitor)
         throws DBException
     {
         if (connection == null) {
             throw new DBException("Not connected");
         }
         try {
-            ResultSet dbResult = connection.getMetaData().getTables("noname", "noname", "noname", null);
+            JDBCResultSet dbResult = getExecutionContext(monitor).getMetaData().getTables("noname", "noname", "noname", null);
             try {
                 dbResult.next();
             }
             finally {
-                JDBCUtils.safeClose(dbResult);
+                dbResult.close();
             }
         }
         catch (SQLException ex) {
@@ -183,14 +183,14 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         try {
             monitor.subTask("Getting connection metdata");
             monitor.worked(1);
-            DatabaseMetaData metaData = getConnection().getMetaData();
+            JDBCDatabaseMetaData metaData = getExecutionContext(monitor).getMetaData();
             info = new JDBCDataSourceInfo(metaData);
             {
                 // Read table types
                 monitor.subTask("Extract table types");
                 monitor.worked(1);
                 this.tableTypes = new ArrayList<String>();
-                ResultSet dbResult = metaData.getTableTypes();
+                JDBCResultSet dbResult = metaData.getTableTypes();
                 try {
                     while (dbResult.next()) {
                         String tableType = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_TYPE);
@@ -201,7 +201,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                         }
                     }
                 } finally {
-                    JDBCUtils.safeClose(dbResult);
+                    dbResult.close();
                 }
             }
             {
@@ -210,7 +210,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                 monitor.worked(1);
                 List<String> catalogNames = new ArrayList<String>();
                 try {
-                    ResultSet dbResult = metaData.getCatalogs();
+                    JDBCResultSet dbResult = metaData.getCatalogs();
                     try {
                         while (dbResult.next()) {
                             String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
@@ -223,7 +223,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                             }
                         }
                     } finally {
-                        JDBCUtils.safeClose(dbResult);
+                        dbResult.close();
                     }
                 } catch (SQLException e) {
                     // Error reading catalogs - just skip em
@@ -243,7 +243,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                 monitor.worked(1);
                 List<String> schemaNames = new ArrayList<String>();
                 try {
-                    ResultSet dbResult = metaData.getSchemas();
+                    JDBCResultSet dbResult = metaData.getSchemas();
                     try {
                         while (dbResult.next()) {
                             String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CATALOG);
@@ -260,7 +260,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                             }
                         }
                     } finally {
-                        JDBCUtils.safeClose(dbResult);
+                        dbResult.close();
                     }
                 } catch (SQLException e) {
                     // Error reading schemas - just skip em
@@ -429,7 +429,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                 JDBCPreparedStatement dbStat = getExecutionContext(monitor).prepareStatement(queryGetActiveDB);
                 dbStat.setDescription("Reading active database");
                 try {
-                    ResultSet resultSet = dbStat.executeQuery();
+                    JDBCResultSet resultSet = dbStat.executeQuery();
                     try {
                         resultSet.next();
                         activeDbName = resultSet.getString(1);

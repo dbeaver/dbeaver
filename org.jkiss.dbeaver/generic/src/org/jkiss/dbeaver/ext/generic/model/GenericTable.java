@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.meta.AbstractTable;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
@@ -260,9 +261,9 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         try {
             List<GenericConstraint> pkList = new ArrayList<GenericConstraint>();
             Map<String, GenericConstraint> pkMap = new HashMap<String, GenericConstraint>();
-            DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
+            JDBCDatabaseMetaData metaData = getDataSource().getExecutionContext(monitor).getMetaData();
             // Load indexes
-            ResultSet dbResult = metaData.getPrimaryKeys(
+            JDBCResultSet dbResult = metaData.getPrimaryKeys(
                 getCatalog() == null ? null : getCatalog().getName(),
                 getSchema() == null ? null : getSchema().getName(),
                 getName());
@@ -298,7 +299,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                 }
             }
             finally {
-                JDBCUtils.safeClose(dbResult);
+                dbResult.close();
             }
             return pkList;
         } catch (SQLException ex) {
@@ -315,9 +316,9 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
             List<GenericForeignKey> fkList = new ArrayList<GenericForeignKey>();
             Map<String, GenericForeignKey> fkMap = new HashMap<String, GenericForeignKey>();
             Map<String, GenericConstraint> pkMap = new HashMap<String, GenericConstraint>();
-            DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
+            JDBCDatabaseMetaData metaData = getDataSource().getExecutionContext(monitor).getMetaData();
             // Load indexes
-            ResultSet dbResult;
+            JDBCResultSet dbResult;
             if (exported) {
                 dbResult = metaData.getExportedKeys(
                     getCatalog() == null ? null : getCatalog().getName(),
@@ -396,7 +397,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                 }
             }
             finally {
-                JDBCUtils.safeClose(dbResult);
+                dbResult.close();
             }
             return fkList;
         } catch (SQLException ex) {

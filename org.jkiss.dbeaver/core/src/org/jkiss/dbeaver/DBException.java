@@ -46,6 +46,31 @@ public class DBException extends Exception
         }
     }
 
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof DBException) {
+            if (obj == this) {
+                return true;
+            }
+            Throwable ex1 = (Throwable)obj;
+            Throwable ex2 = this;
+            while (ex1 != null) {
+                if (!CommonUtils.equalObjects(ex1.getMessage(), ex2.getMessage())) {
+                    return false;
+                }
+                ex1 = ex1.getCause();
+                ex2 = ex2.getCause();
+                if ((ex1 == null && ex2 != null) || (ex2 == null && ex1 != null)) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private static String makeMessage(SQLException ex)
     {
         StringBuilder msg = new StringBuilder("SQL Error");
@@ -63,4 +88,5 @@ public class DBException extends Exception
         }
         return msg.toString();
     }
+
 }

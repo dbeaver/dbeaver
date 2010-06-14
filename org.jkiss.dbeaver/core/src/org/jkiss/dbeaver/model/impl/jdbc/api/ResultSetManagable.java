@@ -4,11 +4,12 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCResultSetMetaData;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 
 import java.io.InputStream;
@@ -36,6 +37,8 @@ import java.util.Map;
  * Managable result set
  */
 public class ResultSetManagable implements JDBCResultSet {
+
+    static Log log = LogFactory.getLog(ResultSetManagable.class);
 
     private PreparedStatementManagable statement;
     private ResultSet original;
@@ -97,7 +100,12 @@ public class ResultSetManagable implements JDBCResultSet {
 
     public void close()
     {
-        JDBCUtils.safeClose(original);
+        try {
+            original.close();
+        }
+        catch (SQLException e) {
+            log.error("Could not close result set", e);
+        }
     }
 
     public boolean wasNull()

@@ -8,6 +8,8 @@ import org.jkiss.dbeaver.model.struct.DBSUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -57,7 +59,7 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
         throws DBException
     {
         if (schemas == null && !isInitialized) {
-            this.schemas = this.loadSchemas();
+            this.schemas = this.loadSchemas(monitor);
             this.isInitialized = true;
         }
         return schemas;
@@ -83,13 +85,13 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
         return getDataSource().getContainer();
     }
 
-    private List<GenericSchema> loadSchemas()
+    private List<GenericSchema> loadSchemas(DBRProgressMonitor monitor)
         throws DBException
     {
         try {
-            DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
+            JDBCExecutionContext context = getDataSource().getExecutionContext(monitor);
             List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
-            ResultSet dbResult = metaData.getSchemas();
+            JDBCResultSet dbResult = context.getMetaData().getSchemas();
             try {
                 while (dbResult.next()) {
                     String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CATALOG);
@@ -106,7 +108,7 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
                     }
                 }
             } finally {
-                JDBCUtils.safeClose(dbResult);
+                dbResult.close();
             }
             return tmpSchemas;
         } catch (SQLException ex) {

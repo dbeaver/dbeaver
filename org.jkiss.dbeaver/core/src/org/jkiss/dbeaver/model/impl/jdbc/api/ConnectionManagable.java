@@ -18,7 +18,6 @@ import org.apache.commons.logging.LogFactory;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.SQLException;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLWarning;
 import java.sql.Savepoint;
 import java.sql.Clob;
@@ -28,7 +27,6 @@ import java.sql.SQLXML;
 import java.sql.SQLClientInfoException;
 import java.sql.Array;
 import java.sql.Struct;
-import java.sql.ResultSet;
 import java.util.Map;
 import java.util.Properties;
 
@@ -58,11 +56,6 @@ public class ConnectionManagable implements JDBCExecutionContext {
     public DBRProgressMonitor getProgressMonitor()
     {
         return monitor;
-    }
-
-    public JDBCPreparedStatement makeResultsStatement(ResultSet resultSet, String description)
-    {
-        return new ResultSetStatement(this, resultSet, description);
     }
 
     public JDBCStatement createStatement()

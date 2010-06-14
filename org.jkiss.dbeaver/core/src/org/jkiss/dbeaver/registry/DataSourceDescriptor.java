@@ -321,7 +321,19 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
             log.error("Datasource is not connected");
             return;
         }
-        dataSource.checkConnection();
+        DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress()
+        {
+            public void run(DBRProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException
+            {
+                try {
+                    dataSource.checkConnection(monitor);
+                }
+                catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            }
+        });
     }
 
     public void acquire(DBPDataSourceUser user)

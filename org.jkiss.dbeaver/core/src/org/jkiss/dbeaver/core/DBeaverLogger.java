@@ -6,6 +6,9 @@ package org.jkiss.dbeaver.core;
 
 import org.apache.commons.logging.Log;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.IStatus;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.Serializable;
 
@@ -96,11 +99,7 @@ public class DBeaverLogger implements Log, Serializable
 
     public void info(Object message, Throwable t)
     {
-        DBeaverCore.getInstance().getPluginLog().log(new Status(
-            Status.INFO,
-            DBeaverCore.getInstance().getPluginID(),
-            message == null ? null : message.toString(),
-            t));
+        writeExceptionStatus(Status.INFO, message, t);
     }
 
     public void warn(Object message)
@@ -117,11 +116,7 @@ public class DBeaverLogger implements Log, Serializable
 
     public void warn(Object message, Throwable t)
     {
-        DBeaverCore.getInstance().getPluginLog().log(new Status(
-            Status.WARNING,
-            DBeaverCore.getInstance().getPluginID(),
-            message == null ? null : message.toString(),
-            t));
+        writeExceptionStatus(Status.WARNING, message, t);
     }
 
     public void error(Object message)
@@ -138,11 +133,7 @@ public class DBeaverLogger implements Log, Serializable
 
     public void error(Object message, Throwable t)
     {
-        DBeaverCore.getInstance().getPluginLog().log(new Status(
-            Status.ERROR,
-            DBeaverCore.getInstance().getPluginID(),
-            message == null ? null : message.toString(),
-            t));
+        writeExceptionStatus(Status.ERROR, message, t);
     }
 
     public void fatal(Object message)
@@ -154,4 +145,21 @@ public class DBeaverLogger implements Log, Serializable
     {
         error(message, t);
     }
+
+    private static void writeExceptionStatus(int severity, Object message, Throwable t)
+    {
+        if (t == null) {
+            DBeaverCore.getInstance().getPluginLog().log(new Status(
+                severity,
+                DBeaverCore.getInstance().getPluginID(),
+                message == null ? null : message.toString()));
+        }
+        DBeaverCore.getInstance().getPluginLog().log(new MultiStatus(
+            DBeaverCore.getInstance().getPluginID(),
+            0,
+            new IStatus[]{ DBeaverUtils.makeExceptionStatus(severity, t) },
+            message == null ? null : message.toString(),
+            t));
+    }
+
 }

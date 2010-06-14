@@ -11,10 +11,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.api.ConnectionManagable;
 import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -23,7 +24,6 @@ import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Driver;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -116,19 +116,19 @@ public abstract class JDBCDataSource
         }
     }
 
-    public void checkConnection()
+    public void checkConnection(DBRProgressMonitor monitor)
         throws DBException
     {
         if (connection == null) {
             throw new DBException("Not connected");
         }
         try {
-            ResultSet dbResult = connection.getMetaData().getTables(null, null, null, null);
+            JDBCResultSet dbResult = getExecutionContext(monitor).getMetaData().getTables(null, null, null, null);
             try {
                 dbResult.next();
             }
             finally {
-                JDBCUtils.safeClose(dbResult);
+                dbResult.close();
             }
         }
         catch (SQLException ex) {
@@ -140,8 +140,8 @@ public abstract class JDBCDataSource
         throws DBException
     {
         try {
-            DatabaseMetaData metaData = getConnection().getMetaData();
-            info = new JDBCDataSourceInfo(metaData);
+            info = new JDBCDataSourceInfo(
+                getExecutionContext(monitor).getMetaData());
         } catch (SQLException ex) {
             throw new DBException("Error getting JDBC metadata", ex);
         }

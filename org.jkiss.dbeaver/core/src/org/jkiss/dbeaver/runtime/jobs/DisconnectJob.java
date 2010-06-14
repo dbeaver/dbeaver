@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**
  * DisconnectJob
@@ -36,10 +37,9 @@ public class DisconnectJob extends DataSourceJob
                 "Disconnected");
         }
         catch (Exception ex) {
-            return new Status(
-                Status.ERROR,
-                DBeaverCore.getInstance().getPluginID(),
-                "Error disconnecting from datasource '" + getDataSource().getContainer().getName() + "': " + ex.getMessage());
+            return DBeaverUtils.makeExceptionStatus(
+                "Error disconnecting from datasource '" + getDataSource().getContainer().getName() + "'",
+                ex);
         }
     }
 

@@ -256,13 +256,11 @@ public class MySQLCatalog
             // There is no metadata table about proc/func columns -
             // it should be parsed from SHOW CREATE PROCEDURE/FUNCTION query
             // Lets driver do it instead of me
-            return context.makeResultsStatement(
-                getDataSource().getConnection().getMetaData().getProcedureColumns(
-                    getName(),
-                    null,
-                    procedure.getName(),
-                    null),
-                "load procedure columns");
+            return context.getMetaData().getProcedureColumns(
+                getName(),
+                null,
+                procedure.getName(),
+                null).getStatement();
         }
 
         protected MySQLProcedureColumn fetchChild(JDBCExecutionContext context, MySQLProcedure parent, ResultSet dbResult)

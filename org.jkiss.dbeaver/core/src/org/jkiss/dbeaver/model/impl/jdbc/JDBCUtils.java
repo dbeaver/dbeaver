@@ -177,17 +177,6 @@ public class JDBCUtils
         }
     }
 
-    public static void safeClose(
-        ResultSet resultSet)
-    {
-        try {
-            resultSet.close();
-        }
-        catch (SQLException e) {
-            log.error("Could not close result set", e);
-        }
-    }
-
     public static void startConnectionBlock(
         DBRProgressMonitor monitor,
         JDBCConnector connector,

@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -220,13 +221,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         List<DBSTablePath> pathList = new ArrayList<DBSTablePath>();
         JDBCUtils.startConnectionBlock(monitor, this, "Find table names");
         try {
-            DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
+            JDBCDatabaseMetaData metaData = getDataSource().getExecutionContext(monitor).getMetaData();
 
             // Make table mask uppercase
             tableMask = tableMask.toUpperCase();
 
             // Load tables
-            ResultSet dbResult = metaData.getTables(
+            JDBCResultSet dbResult = metaData.getTables(
                 null,
                 null,
                 tableMask,
@@ -250,7 +251,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
                 }
             }
             finally {
-                JDBCUtils.safeClose(dbResult);
+                dbResult.close();
             }
             return pathList;
         }

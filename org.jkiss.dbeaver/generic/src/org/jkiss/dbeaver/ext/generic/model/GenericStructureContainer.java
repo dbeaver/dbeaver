@@ -10,6 +10,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -129,7 +131,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
 
         List<DBSTablePath> pathList = new ArrayList<DBSTablePath>();
         try {
-            DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
+            JDBCDatabaseMetaData metaData = getDataSource().getExecutionContext(monitor).getMetaData();
             String catalogName = getCatalog() == null ? null : getCatalog().getName();
             String schemaName = getSchema() == null ? null : getSchema().getName();
 
@@ -137,7 +139,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
             tableMask = tableMask.toUpperCase();
 
             // Load tables
-            ResultSet dbResult = metaData.getTables(
+            JDBCResultSet dbResult = metaData.getTables(
                 catalogName,
                 schemaName,
                 tableMask,
@@ -162,7 +164,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 }
             }
             finally {
-                JDBCUtils.safeClose(dbResult);
+                dbResult.close();
             }
             return pathList;
         }
@@ -213,13 +215,11 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
             throws SQLException, DBException
         {
-            return context.makeResultsStatement(
-                context.getMetaData().getTables(
-                    getCatalog() == null ? null : getCatalog().getName(),
-                    getSchema() == null ? null : getSchema().getName(),
-                    null,
-                    null),
-                "Load tables");
+            return context.getMetaData().getTables(
+                getCatalog() == null ? null : getCatalog().getName(),
+                getSchema() == null ? null : getSchema().getName(),
+                null,
+                null).getStatement();
         }
 
         protected GenericTable fetchObject(JDBCExecutionContext context, ResultSet dbResult)
@@ -267,13 +267,11 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, GenericTable forTable)
             throws SQLException, DBException
         {
-            return context.makeResultsStatement(
-                context.getMetaData().getColumns(
-                    getCatalog() == null ? null : getCatalog().getName(),
-                    getSchema() == null ? null : getSchema().getName(),
-                    forTable == null ? null : forTable.getName(),
-                    null),
-                "Load table columns");
+            return context.getMetaData().getColumns(
+                getCatalog() == null ? null : getCatalog().getName(),
+                getSchema() == null ? null : getSchema().getName(),
+                forTable == null ? null : forTable.getName(),
+                null).getStatement();
         }
 
         protected GenericTableColumn fetchChild(JDBCExecutionContext context, GenericTable table, ResultSet dbResult)
@@ -317,8 +315,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericTable forParent)
             throws SQLException, DBException
         {
-            return context.makeResultsStatement(
-                context.getMetaData().getIndexInfo(
+            return context.getMetaData().getIndexInfo(
                     getCatalog() == null ? null : getCatalog().getName(),
                     getSchema() == null ? null : getSchema().getName(),
                     // oracle fails if unquoted complex identifier specified
@@ -326,8 +323,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                     // so let's fix it in oracle plugin
                     forParent == null ? null : forParent.getName(), //DBSUtils.getQuotedIdentifier(getDataSource(), forTable.getName()),
                     false,
-                    false),
-                "Load indexes");
+                    false).getStatement();
         }
 
         protected GenericIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, GenericTable parent)
@@ -406,12 +402,10 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
             throws SQLException, DBException
         {
-            return context.makeResultsStatement(
-                context.getMetaData().getProcedures(
-                    getCatalog() == null ? null : getCatalog().getName(),
-                    getSchema() == null ? null : getSchema().getName(),
-                    null),
-                "Load procedures");
+            return context.getMetaData().getProcedures(
+                getCatalog() == null ? null : getCatalog().getName(),
+                getSchema() == null ? null : getSchema().getName(),
+                null).getStatement();
         }
 
         protected GenericProcedure fetchObject(JDBCExecutionContext context, ResultSet dbResult)
@@ -447,13 +441,11 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, GenericProcedure forObject)
             throws SQLException, DBException
         {
-            return context.makeResultsStatement(
-                context.getMetaData().getProcedureColumns(
-                    getCatalog() == null ? null : getCatalog().getName(),
-                    getSchema() == null ? null : getSchema().getName(),
-                    forObject == null ? null : forObject.getName(),
-                    null),
-                "Load procedure columns");
+            return context.getMetaData().getProcedureColumns(
+                getCatalog() == null ? null : getCatalog().getName(),
+                getSchema() == null ? null : getSchema().getName(),
+                forObject == null ? null : forObject.getName(),
+                null).getStatement();
         }
 
         protected GenericProcedureColumn fetchChild(JDBCExecutionContext context, GenericProcedure parent, ResultSet dbResult)

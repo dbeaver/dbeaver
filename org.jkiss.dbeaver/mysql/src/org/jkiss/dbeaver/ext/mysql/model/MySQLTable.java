@@ -12,6 +12,8 @@ import org.jkiss.dbeaver.model.impl.meta.AbstractTable;
 import org.jkiss.dbeaver.model.impl.meta.AbstractConstraint;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -208,9 +210,9 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         try {
             List<MySQLIndex> tmpIndexList = new ArrayList<MySQLIndex>();
             Map<String, MySQLIndex> tmpIndexMap = new HashMap<String, MySQLIndex>();
-            DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
+            JDBCDatabaseMetaData metaData = getDataSource().getExecutionContext(monitor).getMetaData();
             // Load indexes
-            ResultSet dbResult = metaData.getIndexInfo(
+            JDBCResultSet dbResult = metaData.getIndexInfo(
                 getContainer().getName(),
                 null,
                 getName(),
@@ -264,7 +266,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                 }
             }
             finally {
-                JDBCUtils.safeClose(dbResult);
+                dbResult.close();
             }
             return tmpIndexList;
         } catch (SQLException ex) {
@@ -278,9 +280,9 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         try {
             List<MySQLConstraint> pkList = new ArrayList<MySQLConstraint>();
             Map<String, MySQLConstraint> pkMap = new HashMap<String, MySQLConstraint>();
-            DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
+            JDBCDatabaseMetaData metaData = getDataSource().getExecutionContext(monitor).getMetaData();
             // Load indexes
-            ResultSet dbResult = metaData.getPrimaryKeys(
+            JDBCResultSet dbResult = metaData.getPrimaryKeys(
                 getContainer().getName(),
                 null,
                 getName());
@@ -316,7 +318,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                 }
             }
             finally {
-                JDBCUtils.safeClose(dbResult);
+                dbResult.close();
             }
             return pkList;
         } catch (SQLException ex) {
@@ -331,9 +333,9 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
             List<MySQLForeignKey> fkList = new ArrayList<MySQLForeignKey>();
             Map<String, MySQLForeignKey> fkMap = new HashMap<String, MySQLForeignKey>();
             Map<String, MySQLConstraint> pkMap = new HashMap<String, MySQLConstraint>();
-            DatabaseMetaData metaData = getDataSource().getConnection().getMetaData();
+            JDBCDatabaseMetaData metaData = getDataSource().getExecutionContext(monitor).getMetaData();
             // Load indexes
-            ResultSet dbResult;
+            JDBCResultSet dbResult;
             if (exported) {
                 dbResult = metaData.getExportedKeys(
                     getContainer().getName(),
@@ -412,7 +414,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                 }
             }
             finally {
-                JDBCUtils.safeClose(dbResult);
+                dbResult.close();
             }
             return fkList;
         } catch (SQLException ex) {

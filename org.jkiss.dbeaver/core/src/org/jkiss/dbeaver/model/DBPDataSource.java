@@ -34,8 +34,9 @@ public interface DBPDataSource extends DBPObject
      * Executes test query agains connected database.
      *
      * @throws org.jkiss.dbeaver.DBException on any error
+     * @param monitor
      */
-    void checkConnection() throws DBException;
+    void checkConnection(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Reads base metadata from remote database or do any neccessary initialization routines.

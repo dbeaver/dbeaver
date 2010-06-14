@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**
  * ConnectJob
@@ -57,10 +58,9 @@ public class ConnectJob extends AbstractJob
                 "Connected");
         }
         catch (Throwable ex) {
-            return new Status(
-                Status.ERROR,
-                DBeaverCore.getInstance().getPluginID(),
-                "Error connecting to datasource '" + container.getName() + "': " + ex.getMessage());
+            return DBeaverUtils.makeExceptionStatus(
+                "Error connecting to datasource '" + container.getName() + "'",
+                ex);
         }
     }
 

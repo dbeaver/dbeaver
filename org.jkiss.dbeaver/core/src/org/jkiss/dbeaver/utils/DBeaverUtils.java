@@ -60,13 +60,17 @@ public class DBeaverUtils
     }
 
 
-
     public static IStatus makeExceptionStatus(Throwable ex)
+    {
+        return makeExceptionStatus(IStatus.ERROR, ex);
+    }
+
+    public static IStatus makeExceptionStatus(int severity, Throwable ex)
     {
         Throwable cause = ex.getCause();
         if (cause == null) {
             return new Status(
-                IStatus.ERROR,
+                severity,
                 DBeaverCore.getInstance().getPluginID(),
                 getExceptionMessage(ex),
                 null);
@@ -74,7 +78,7 @@ public class DBeaverUtils
             return new MultiStatus(
                 DBeaverCore.getInstance().getPluginID(),
                 0,
-                new IStatus[]{makeExceptionStatus(cause)},
+                new IStatus[]{makeExceptionStatus(severity, cause)},
                 getExceptionMessage(ex),
                 null);
         }
@@ -86,7 +90,7 @@ public class DBeaverUtils
             DBeaverCore.getInstance().getPluginID(),
             0,
             new IStatus[]{makeExceptionStatus(ex)},
-            message + " - " + getExceptionMessage(CommonUtils.getRootCause(ex)),
+            message,
             null);
     }
 
