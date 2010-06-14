@@ -26,4 +26,6 @@ public interface DBPDriverProperty
     String getDefaultValue();
 
     PropertyType getType();
+
+    String[] getValidValues();
 }

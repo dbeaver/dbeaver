@@ -67,4 +67,9 @@ public class DriverPropertyDescriptor implements DBPDriverProperty
     {
         return type;
     }
+
+    public String[] getValidValues()
+    {
+        return null;
+    }
 }

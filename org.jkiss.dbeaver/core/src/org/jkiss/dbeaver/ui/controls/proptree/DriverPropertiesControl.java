@@ -15,13 +15,27 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.viewers.IColorProvider;
+import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPDriverProperty;
@@ -35,6 +49,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Driver properties control
@@ -47,6 +63,9 @@ public class DriverPropertiesControl extends Composite {
     private List<DBPDriverPropertyGroup> propertyGroups = null;
     private DBPDriverPropertyGroup driverProvidedProperties;
     private boolean showDriverProperties = true;
+
+    private Map<String, String> originalValues = new HashMap<String, String>();
+    private Map<String, String> propValues = new HashMap<String, String>();
 
     public DriverPropertiesControl(Composite parent, int style)
     {
@@ -86,16 +105,18 @@ public class DriverPropertiesControl extends Composite {
     {
         propsTree = new TreeViewer(this, SWT.BORDER | SWT.FULL_SELECTION);
         propsTree.setContentProvider(new PropsContentProvider());
-        //propsTree.setLabelProvider(new PropsLabelProvider());
+        propsTree.setLabelProvider(new PropsLabelProvider());
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.grabExcessHorizontalSpace = true;
         gd.grabExcessVerticalSpace = true;
         gd.minimumHeight = 120;
         gd.heightHint = 120;
         gd.widthHint = 300;
-        propsTree.getTree().setLayoutData(gd);
-        propsTree.getTree().setHeaderVisible(true);
-        propsTree.getTree().setLinesVisible(true);
+
+        final Tree treeControl = propsTree.getTree();
+        treeControl.setLayoutData(gd);
+        treeControl.setHeaderVisible(true);
+        treeControl.setLinesVisible(true);
 
         ColumnViewerToolTipSupport.enableFor(propsTree, ToolTip.NO_RECREATE);
 
@@ -110,6 +131,77 @@ public class DriverPropertiesControl extends Composite {
         column.getColumn().setMoveable(true);
         column.getColumn().setText("Value");
         column.setLabelProvider(new PropsValueProvider());
+
+        // Make an editor
+        final TreeEditor editor = new TreeEditor(treeControl);
+        editor.horizontalAlignment = SWT.LEFT;
+        editor.verticalAlignment = SWT.TOP;
+        editor.grabHorizontal = true;
+        editor.minimumWidth = 50;
+
+        treeControl.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                // Clean up any previous editor control
+                Control oldEditor = editor.getEditor();
+                if (oldEditor != null) oldEditor.dispose();
+
+                // Identify the selected row
+                TreeItem item = (TreeItem)e.item;
+                if (item == null) {
+                    return;
+                }
+                if (item.getData() instanceof DBPDriverProperty) {
+                    final DBPDriverProperty prop = (DBPDriverProperty)item.getData();
+                    String[] validValues = prop.getValidValues();
+                    Control newEditor;
+                    if (validValues == null) {
+                        Text text = new Text(treeControl, SWT.BORDER);
+                        text.setText(item.getText(1));
+                        text.addModifyListener(new ModifyListener() {
+                            public void modifyText(ModifyEvent e) {
+                                Text text = (Text)editor.getEditor();
+                                changeProperty(prop, text.getText());
+                                editor.getItem().setText(1, text.getText());
+                            }
+                        });
+                        text.selectAll();
+                        newEditor = text;
+                    } else {
+                        Combo control = new Combo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
+                        int selIndex = -1;
+                        for (int i = 0; i < validValues.length; i++) {
+                            String value =  validValues[i];
+                            control.add(value);
+                            if (value.equals(item.getText(1))) {
+                                selIndex = i;
+                            }
+                        }
+                        if (selIndex >= 0) {
+                            control.select(selIndex);
+                        }
+                        control.addModifyListener(new ModifyListener() {
+                            public void modifyText(ModifyEvent e) {
+                                Combo combo = (Combo)editor.getEditor();
+                                changeProperty(prop, combo.getText());
+                                editor.getItem().setText(1, combo.getText());
+                            }
+                        });
+                        newEditor = control;
+                    }
+                    editor.setEditor(newEditor, item, 1);
+                    propsTree.update(prop, null);
+                }
+            }
+        });
+    }
+
+    private void changeProperty(DBPDriverProperty prop, String text)
+    {
+        String propName = prop.getName();
+        if (!originalValues.containsKey(propName)) {
+            originalValues.put(propName, propValues.get(propName));
+        }
+        propValues.put(propName, text);
     }
 
     public void loadProperties(DBPDriver driver, String url, Properties connectionProps)
@@ -246,9 +338,10 @@ public class DriverPropertiesControl extends Composite {
         {
             cell.setText(getText(cell.getElement()));
         }
+
     }
 
-    private static class PropsValueProvider extends CellLabelProvider
+    private class PropsValueProvider extends CellLabelProvider
     {
         public String getText(Object obj)
         {
@@ -271,8 +364,13 @@ public class DriverPropertiesControl extends Composite {
 
         public void update(ViewerCell cell)
         {
-            cell.setText(getText(cell.getElement()));
+            Object element = cell.getElement();
+            cell.setText(getText(element));
+            if (element instanceof DBPDriverProperty && originalValues.containsKey(((DBPDriverProperty)element).getName())) {
+                cell.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+            }
         }
+
     }
 
     private class DriverProvidedPropertyGroup implements DBPDriverPropertyGroup
@@ -336,6 +434,11 @@ public class DriverPropertiesControl extends Composite {
                         public PropertyType getType()
                         {
                             return PropertyType.STRING;
+                        }
+
+                        public String[] getValidValues()
+                        {
+                            return propInfo.choices;
                         }
                     };
                     propList.add(prop);
