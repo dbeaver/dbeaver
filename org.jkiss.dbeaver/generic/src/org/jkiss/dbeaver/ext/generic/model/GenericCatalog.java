@@ -30,6 +30,7 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
     {
         this.dataSource = dataSource;
         this.catalogName = catalogName;
+        this.initCache();
     }
 
     public GenericDataSource getDataSource()

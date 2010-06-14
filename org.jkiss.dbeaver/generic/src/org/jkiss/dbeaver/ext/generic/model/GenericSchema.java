@@ -17,6 +17,7 @@ public class GenericSchema extends GenericStructureContainer implements DBSSchem
     {
         this.dataSource = dataSource;
         this.schemaName = schemaName;
+        this.initCache();
     }
 
     public GenericSchema(GenericCatalog catalog, String schemaName)

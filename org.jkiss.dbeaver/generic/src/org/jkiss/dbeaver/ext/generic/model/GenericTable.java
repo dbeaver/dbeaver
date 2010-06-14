@@ -9,6 +9,8 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.meta.AbstractTable;
+import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
@@ -17,7 +19,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
 
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -228,23 +229,21 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         }
 
         try {
-            PreparedStatement statement = JDBCUtils.prepareStatement(
-                monitor,
-                getDataSource(),
-                "SELECT COUNT(*) FROM " + getFullQualifiedName(),
-                "Select table '" + getName() + "' row count");
+            JDBCPreparedStatement dbStat = getDataSource().getExecutionContext(monitor).prepareStatement(
+                "SELECT COUNT(*) FROM " + getFullQualifiedName());
+            dbStat.setDescription("Select table '" + getName() + "' row count");
             try {
-                ResultSet resultSet = statement.executeQuery();
+                JDBCResultSet resultSet = dbStat.executeQuery();
                 try {
                     resultSet.next();
                     rowCount = resultSet.getLong(1);
                 }
                 finally {
-                    JDBCUtils.safeClose(resultSet);
+                    resultSet.close();
                 }
             }
             finally {
-                JDBCUtils.safeClose(statement);
+                dbStat.close();
             }
         }
         catch (SQLException e) {

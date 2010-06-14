@@ -10,8 +10,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
@@ -58,9 +59,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         // Read catalogs
         List<MySQLCatalog> tmpCatalogs = new ArrayList<MySQLCatalog>();
         try {
-            PreparedStatement dbStat = JDBCUtils.prepareStatement(monitor, this, "SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA, "Select schemas");
+            JDBCPreparedStatement dbStat = getExecutionContext(monitor).prepareStatement("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
             try {
-                ResultSet dbResult = dbStat.executeQuery();
+                JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {
                         String schemaName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SCHEMA_NAME);
@@ -76,11 +77,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
                         }
                     }
                 } finally {
-                    JDBCUtils.safeClose(dbResult);
+                    dbResult.close();
                 }
             }
             finally {
-                JDBCUtils.safeClose(dbStat);
+                dbStat.close();
             }
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex);
@@ -160,17 +161,17 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         if (this.activeCatalog == null) {
             String activeDbName;
             try {
-                PreparedStatement dbStat = JDBCUtils.prepareStatement(monitor, this, "select database()", "Select active database");
+                JDBCPreparedStatement dbStat = getExecutionContext(monitor).prepareStatement("select database()");
                 try {
-                    ResultSet resultSet = dbStat.executeQuery();
+                    JDBCResultSet resultSet = dbStat.executeQuery();
                     try {
                         resultSet.next();
                         activeDbName = resultSet.getString(1);
                     } finally {
-                        JDBCUtils.safeClose(resultSet);
+                        resultSet.close();
                     }
                 } finally {
-                    JDBCUtils.safeClose(dbStat);
+                    dbStat.close();
                 }
             } catch (SQLException e) {
                 log.error(e);
@@ -191,11 +192,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
             throw new IllegalArgumentException("child");
         }
         try {
-            PreparedStatement dbStat = JDBCUtils.prepareStatement(monitor, this, "use " + child.getName(), "Change active database");
+            JDBCPreparedStatement dbStat = getExecutionContext(monitor).prepareStatement("use " + child.getName());
             try {
                 dbStat.execute();
             } finally {
-                JDBCUtils.safeClose(dbStat);
+                dbStat.close();
             }
         } catch (SQLException e) {
             throw new DBException(e);

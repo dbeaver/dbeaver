@@ -15,17 +15,13 @@ public interface DBCResultSet
      */
     Object getNestedResultSet();
 
-    DBCStatement getStatement();
+    DBCStatement getSource();
 
-    Object getObject(int index) throws DBCException;
+    Object getColumnValue(int index) throws DBCException;
 
-    boolean wasNull() throws DBCException;
+    boolean nextRow() throws DBCException;
 
-    boolean next() throws DBCException;
-
-    String getCursorName() throws DBCException;
-
-    DBCResultSetMetaData getMetaData() throws DBCException;
+    DBCResultSetMetaData getResultSetMetaData() throws DBCException;
 
     void close();
 }

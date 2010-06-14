@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.DBException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -249,11 +250,11 @@ public class SQLQueryJob extends DataSourceJob
         try {
             // Prepare statement
             monitor.subTask(sqlQuery);
-            curStatement = session.prepareStatement(sqlQuery, false, false);
+            curStatement = session.prepareStatement(monitor, sqlQuery, false, false);
             if (dataContainer != null) {
                 curStatement.setDataContainer(dataContainer);
             }
-            curStatement.setMaxResults(maxResults);
+            curStatement.setLimit(0, maxResults);
             monitor.worked(1);
             subTasksPerformed++;
 
@@ -269,14 +270,14 @@ public class SQLQueryJob extends DataSourceJob
             // Execute statement
             try {
                 //monitor.subTask("Execute query");
-                curStatement.execute();
+                boolean hasResultSet = curStatement.executeStatement();
                 monitor.worked(1);
                 subTasksPerformed++;
                 // Show results only if we are not in the script execution
-                if (fetchResultSets) {
+                if (hasResultSet && fetchResultSets) {
                     fetchQueryData(result, monitor);
                 }
-                int updateCount = curStatement.getUpdateCount();
+                int updateCount = curStatement.getUpdateRowCount();
                 if (updateCount >= 0) {
                     result.setUpdateCount(updateCount);
                 }
@@ -329,38 +330,36 @@ public class SQLQueryJob extends DataSourceJob
             return;
         }
         monitor.subTask("Fetch result set");
-        if (curStatement.hasResultSet()) {
-            DBCResultSet resultSet = curStatement.getResultSet();
-            if (resultSet != null) {
-                int rowCount = 0;
+        DBCResultSet resultSet = curStatement.openResultSet();
+        if (resultSet != null) {
+            int rowCount = 0;
 
-                dataPump.fetchStart(resultSet, monitor);
+            dataPump.fetchStart(resultSet, monitor);
 
-                try {
+            try {
 
-                    while (rowCount < maxResults && resultSet.next()) {
-                        rowCount++;
-                        
-                        if (rowCount % 10 == 0) {
-                            monitor.subTask(rowCount + " rows fetched");
-                        }
+                while (rowCount < maxResults && resultSet.nextRow()) {
+                    rowCount++;
 
-                        dataPump.fetchRow(resultSet, monitor);
+                    if (rowCount % 10 == 0) {
+                        monitor.subTask(rowCount + " rows fetched");
                     }
-                }
-                finally {
-                    curStatement.closeResultSet();
-                }
 
-                try {
-                    dataPump.fetchEnd(monitor);
-                } catch (DBCException e) {
-                    log.error("Error while handling end of result set fetch");
+                    dataPump.fetchRow(resultSet, monitor);
                 }
-
-                result.setRowCount(rowCount);
-                monitor.subTask(rowCount + " rows fetched");
             }
+            finally {
+                resultSet.close();
+            }
+
+            try {
+                dataPump.fetchEnd(monitor);
+            } catch (DBCException e) {
+                log.error("Error while handling end of result set fetch");
+            }
+
+            result.setRowCount(rowCount);
+            monitor.subTask(rowCount + " rows fetched");
         }
     }
 
@@ -373,8 +372,8 @@ public class SQLQueryJob extends DataSourceJob
         {
             if (!statementCanceled && curStatement != null) {
                 try {
-                    curStatement.cancel();
-                } catch (DBCException e) {
+                    curStatement.cancelBlock();
+                } catch (DBException e) {
                     log.error("Can't cancel execution: " + e.getMessage());
                 }
                 statementCanceled = true;

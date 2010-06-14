@@ -89,7 +89,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
                     tableMetaData.addColumn(this);
                 }
             } else {
-                DBSObject dataContainer = getResultSetMeta().getResultSet().getStatement().getDataContainer();
+                DBSObject dataContainer = getResultSetMeta().getResultSet().getSource().getDataContainer();
                 if (dataContainer instanceof DBSTable) {
                     tableMetaData = resultSetMeta.getTableMetaData((DBSTable)dataContainer);
                     if (tableMetaData != null) {

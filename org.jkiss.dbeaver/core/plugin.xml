@@ -272,12 +272,6 @@
             name="SQL"
             priority="normal">
         </content-type>
-        <content-type
-              file-extensions="bin"
-              id="org.jkiss.dbeaver.core.content-type-binary"
-              name="Binary File (Hex)"
-              priority="normal">
-        </content-type>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
@@ -308,7 +302,7 @@
               category="org.eclipse.ui.preferencePages.Editors"
               class="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
               id="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
-              name="Hex Editor">
+              name="Binary Editor">
         </page>
     </extension>
 

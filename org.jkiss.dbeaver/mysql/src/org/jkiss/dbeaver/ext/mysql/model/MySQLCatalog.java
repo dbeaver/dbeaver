@@ -6,16 +6,16 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.meta.AbstractCatalog;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
 
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -161,22 +161,18 @@ public class MySQLCatalog
         
         protected TableCache()
         {
-            super(JDBCConstants.TABLE_NAME);
+            super(getDataSource(), JDBCConstants.TABLE_NAME);
         }
 
-        protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
             throws SQLException, DBException
         {
-            PreparedStatement dbStat = JDBCUtils.prepareStatement(
-                monitor,
-                getDataSource(),
-                MySQLConstants.QUERY_SELECT_TABLES,
-                "Load tables");
+            JDBCPreparedStatement dbStat = context.prepareStatement(MySQLConstants.QUERY_SELECT_TABLES);
             dbStat.setString(1, getName());
             return dbStat;
         }
 
-        protected MySQLTable fetchObject(DBRProgressMonitor monitor, ResultSet dbResult)
+        protected MySQLTable fetchObject(JDBCExecutionContext context, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new MySQLTable(MySQLCatalog.this, dbResult);
@@ -192,7 +188,7 @@ public class MySQLCatalog
             table.setColumns(columns);
         }
 
-        protected PreparedStatement prepareChildrenStatement(DBRProgressMonitor monitor, MySQLTable forTable)
+        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLTable forTable)
             throws SQLException, DBException
         {
             StringBuilder sql = new StringBuilder();
@@ -204,11 +200,7 @@ public class MySQLCatalog
             }
             sql.append(" ORDER BY ").append(MySQLConstants.COL_ORDINAL_POSITION);
 
-            PreparedStatement dbStat = JDBCUtils.prepareStatement(
-                monitor,
-                getDataSource(),
-                sql.toString(),
-                "Load table columns");
+            JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
             dbStat.setString(1, MySQLCatalog.this.getName());
             if (forTable != null) {
                 dbStat.setString(2, forTable.getName());
@@ -216,7 +208,7 @@ public class MySQLCatalog
             return dbStat;
         }
 
-        protected MySQLTableColumn fetchChild(DBRProgressMonitor monitor, MySQLTable table, ResultSet dbResult)
+        protected MySQLTableColumn fetchChild(JDBCExecutionContext context, MySQLTable table, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new MySQLTableColumn(table, dbResult);
@@ -230,22 +222,18 @@ public class MySQLCatalog
 
         ProceduresCache()
         {
-            super(JDBCConstants.PROCEDURE_NAME);
+            super(getDataSource(), JDBCConstants.PROCEDURE_NAME);
         }
 
-        protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
             throws SQLException, DBException
         {
-            PreparedStatement dbStat = JDBCUtils.prepareStatement(
-                monitor,
-                getDataSource(),
-                MySQLConstants.QUERY_SELECT_ROUTINES,
-                "Load procedures");
+            JDBCPreparedStatement dbStat = context.prepareStatement(MySQLConstants.QUERY_SELECT_ROUTINES);
             dbStat.setString(1, getName());
             return dbStat;
         }
 
-        protected MySQLProcedure fetchObject(DBRProgressMonitor monitor, ResultSet dbResult)
+        protected MySQLProcedure fetchObject(JDBCExecutionContext context, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new MySQLProcedure(MySQLCatalog.this, dbResult);
@@ -261,15 +249,14 @@ public class MySQLCatalog
             parent.cacheColumns(columns);
         }
 
-        protected PreparedStatement prepareChildrenStatement(DBRProgressMonitor monitor, MySQLProcedure procedure)
+        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLProcedure procedure)
             throws SQLException, DBException
         {
             // Load procedure columns thru MySQL metadata
             // There is no metadata table about proc/func columns -
             // it should be parsed from SHOW CREATE PROCEDURE/FUNCTION query
             // Lets driver do it instead of me
-            return JDBCUtils.prepareResultsStatement(
-                monitor,
+            return context.makeResultsStatement(
                 getDataSource().getConnection().getMetaData().getProcedureColumns(
                     getName(),
                     null,
@@ -278,7 +265,7 @@ public class MySQLCatalog
                 "load procedure columns");
         }
 
-        protected MySQLProcedureColumn fetchChild(DBRProgressMonitor monitor, MySQLProcedure parent, ResultSet dbResult)
+        protected MySQLProcedureColumn fetchChild(JDBCExecutionContext context, MySQLProcedure parent, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);

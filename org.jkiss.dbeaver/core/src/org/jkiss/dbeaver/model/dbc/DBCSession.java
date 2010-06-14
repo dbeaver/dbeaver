@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.dbc;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * DBCSession
@@ -23,7 +24,7 @@ public interface DBCSession extends DBRBlockingObject
 
     void setAutoCommit(boolean autoCommit) throws DBCException;
 
-    DBCStatement prepareStatement(String sqlQuery, boolean scrollable, boolean updatable) throws DBCException;
+    DBCStatement prepareStatement(DBRProgressMonitor monitor, String sqlQuery, boolean scrollable, boolean updatable) throws DBCException;
 
     void commit() throws DBCException;
 

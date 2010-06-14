@@ -5,11 +5,13 @@
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -22,17 +24,24 @@ import java.util.Map;
  */
 public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
 
+    protected final JDBCConnector connector;
     private List<OBJECT> objectList;
     private Map<String, OBJECT> objectMap;
 
-    protected JDBCObjectCache()
+    protected JDBCObjectCache(JDBCConnector connector)
     {
+        this.connector = connector;
     }
 
-    abstract protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)
+    JDBCConnector getConnector()
+    {
+        return connector;
+    }
+
+    abstract protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
         throws SQLException, DBException;
 
-    abstract protected OBJECT fetchObject(DBRProgressMonitor monitor, ResultSet resultSet)
+    abstract protected OBJECT fetchObject(JDBCExecutionContext context, ResultSet resultSet)
         throws SQLException, DBException;
 
     public List<OBJECT> getObjects(DBRProgressMonitor monitor)
@@ -65,17 +74,18 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
         if (this.objectList != null) {
             return;
         }
+        JDBCExecutionContext context = connector.getExecutionContext(monitor);
 
         List<OBJECT> tmpTableList = new ArrayList<OBJECT>();
         Map<String, OBJECT> tmpTableMap = new HashMap<String, OBJECT>();
         try {
-            PreparedStatement dbStat = prepareObjectsStatement(monitor);
+            JDBCPreparedStatement dbStat = prepareObjectsStatement(context);
             try {
-                ResultSet dbResult = dbStat.executeQuery();
+                JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {
 
-                        OBJECT table = fetchObject(monitor, dbResult);
+                        OBJECT table = fetchObject(context, dbResult);
                         if (table == null) {
                             continue;
                         }
@@ -89,11 +99,11 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
                     }
                 }
                 finally {
-                    JDBCUtils.safeClose(dbResult);
+                    dbResult.close();
                 }
             }
             finally {
-                JDBCUtils.safeClose(dbStat);
+                dbStat.close();
             }
         }
         catch (SQLException ex) {

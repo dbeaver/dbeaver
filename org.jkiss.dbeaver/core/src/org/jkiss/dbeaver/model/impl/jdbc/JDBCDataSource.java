@@ -11,6 +11,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.impl.jdbc.api.ConnectionManagable;
+import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -86,6 +89,11 @@ public abstract class JDBCDataSource
     public Connection getConnection()
     {
         return connection;
+    }
+
+    public JDBCExecutionContext getExecutionContext(DBRProgressMonitor monitor)
+    {
+        return new ConnectionManagable(this, monitor);
     }
 
     public DBSDataSourceContainer getContainer()

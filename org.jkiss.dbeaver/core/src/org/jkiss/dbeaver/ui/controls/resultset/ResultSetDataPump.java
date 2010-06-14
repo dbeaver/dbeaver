@@ -49,14 +49,14 @@ class ResultSetDataPump implements ISQLQueryDataPump {
         throws DBCException
     {
         rows.clear();
-        DBCResultSetMetaData metaData = resultSet.getMetaData();
+        DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
 
         List<DBCColumnMetaData> rsColumns = metaData.getColumns();
         columnsCount = rsColumns.size();
 
         // Determine type handlers for all columns
         DataSourceRegistry dsRegistry = DataSourceRegistry.getDefault();
-        DBPDataSource dataSource = resultSet.getStatement().getDataSource();
+        DBPDataSource dataSource = resultSet.getSource().getDataSource();
 
         // Extrat column info
         metaColumns = new ResultSetColumn[columnsCount];

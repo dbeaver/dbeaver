@@ -10,7 +10,6 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -19,9 +18,8 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
-import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
-import org.jkiss.dbeaver.DBException;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -47,7 +45,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
 
     public final void bindValueObject(DBCStatement statement, DBSTypedObject columnMetaData, int paramIndex, Object value) throws DBCException {
         try {
-            this.bindParameter((PreparedStatement) statement.getNestedStatement(), columnMetaData, paramIndex + 1, value);
+            this.bindParameter((JDBCPreparedStatement) statement, columnMetaData, paramIndex + 1, value);
         }
         catch (SQLException e) {
             throw new DBCException("Could not bind statement parameter", e);

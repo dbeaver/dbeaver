@@ -8,9 +8,12 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetManagable;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -24,23 +27,28 @@ import java.util.Map;
  */
 public class JDBCResultSetMetaData implements DBCResultSetMetaData
 {
-    private JDBCResultSet resultSet;
+    private ResultSetManagable resultSet;
     private ResultSetMetaData jdbcMetaData;
     private List<DBCColumnMetaData> columns = new ArrayList<DBCColumnMetaData>();
     private Map<String, JDBCTableMetaData> tables = new HashMap<String, JDBCTableMetaData>();
 
-    JDBCResultSetMetaData(JDBCResultSet resultSet)
-        throws SQLException
+    public JDBCResultSetMetaData(ResultSetManagable resultSet)
+        throws DBCException
     {
         this.resultSet = resultSet;
-        this.jdbcMetaData = resultSet.getResultSet().getMetaData();
-        int count = jdbcMetaData.getColumnCount();
-        for (int i = 1; i <= count; i++) {
-            columns.add(new JDBCColumnMetaData(this, i));
+        try {
+            this.jdbcMetaData = resultSet.getMetaData();
+            int count = jdbcMetaData.getColumnCount();
+            for (int i = 1; i <= count; i++) {
+                columns.add(new JDBCColumnMetaData(this, i));
+            }
+        }
+        catch (SQLException e) {
+            throw new DBCException(e);
         }
     }
 
-    public JDBCResultSet getResultSet()
+    public DBCResultSet getResultSet()
     {
         return resultSet;
     }

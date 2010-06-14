@@ -7,13 +7,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.api.ConnectionManagable;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
@@ -23,7 +26,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectAction;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Driver;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -61,6 +63,8 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         this.queryGetActiveDB = container.getDriver().getCustomQuery(QUERY_GET_ACTIVE_DB);
         this.querySetActiveDB = container.getDriver().getCustomQuery(QUERY_SET_ACTIVE_DB);
         this.connection = openConnection();
+
+        this.initCache();
     }
 
     private Connection openConnection()
@@ -100,6 +104,11 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     public Connection getConnection()
     {
         return connection;
+    }
+
+    public JDBCExecutionContext getExecutionContext(DBRProgressMonitor monitor)
+    {
+        return new ConnectionManagable(this, monitor);
     }
 
     public String[] getTableTypes()
@@ -417,21 +426,18 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
             }
             String activeDbName;
             try {
-                PreparedStatement dbStat = JDBCUtils.prepareStatement(
-                    monitor,
-                    this,
-                    queryGetActiveDB,
-                    "Reading active database");
+                JDBCPreparedStatement dbStat = getExecutionContext(monitor).prepareStatement(queryGetActiveDB);
+                dbStat.setDescription("Reading active database");
                 try {
                     ResultSet resultSet = dbStat.executeQuery();
                     try {
                         resultSet.next();
                         activeDbName = resultSet.getString(1);
                     } finally {
-                        JDBCUtils.safeClose(resultSet);
+                        resultSet.close();
                     }
                 } finally {
-                    JDBCUtils.safeClose(dbStat);
+                    dbStat.close();
                 }
             } catch (SQLException e) {
                 log.error(e);
@@ -463,11 +469,12 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
 
         String changeQuery = querySetActiveDB.replaceFirst("\\?", child.getName());
         try {
-            PreparedStatement dbStat = JDBCUtils.prepareStatement(monitor, this, changeQuery, "Change active database");
+            JDBCPreparedStatement dbStat = getExecutionContext(monitor).prepareStatement(changeQuery);
+            dbStat.setDescription("Change active database");
             try {
                 dbStat.execute();
             } finally {
-                JDBCUtils.safeClose(dbStat);
+                dbStat.close();
             }
         } catch (SQLException e) {
             throw new DBException(e);

@@ -8,10 +8,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -37,14 +40,15 @@ public abstract class JDBCStructCache<
 
     abstract protected void cacheChildren(OBJECT parent, List<CHILD> children);
 
-    abstract protected PreparedStatement prepareChildrenStatement(DBRProgressMonitor monitor, OBJECT forObject)
+    abstract protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, OBJECT forObject)
         throws SQLException, DBException;
 
-    abstract protected CHILD fetchChild(DBRProgressMonitor monitor, OBJECT parent, ResultSet dbResult)
+    abstract protected CHILD fetchChild(JDBCExecutionContext context, OBJECT parent, ResultSet dbResult)
         throws SQLException, DBException;
 
-    protected JDBCStructCache(String objectNameColumn)
+    protected JDBCStructCache(JDBCConnector connector, String objectNameColumn)
     {
+        super(connector);
         this.objectNameColumn = objectNameColumn;
     }
 
@@ -67,12 +71,13 @@ public abstract class JDBCStructCache<
         }
 
         try {
+            JDBCExecutionContext context = connector.getExecutionContext(monitor);
             Map<OBJECT, List<CHILD>> columnMap = new HashMap<OBJECT, List<CHILD>>();
 
             // Load columns
-            PreparedStatement dbStat = prepareChildrenStatement(monitor, forObject);
+            JDBCPreparedStatement dbStat = prepareChildrenStatement(context, forObject);
             try {
-                ResultSet dbResult = dbStat.executeQuery();
+                JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {
                         String tableName = JDBCUtils.safeGetString(dbResult, objectNameColumn);
@@ -89,7 +94,7 @@ public abstract class JDBCStructCache<
                             // Already read
                             continue;
                         }
-                        CHILD tableColumn = fetchChild(monitor, table, dbResult);
+                        CHILD tableColumn = fetchChild(context, table, dbResult);
                         if (tableColumn == null) {
                             continue;
                         }
@@ -131,11 +136,11 @@ public abstract class JDBCStructCache<
                     }
                 }
                 finally {
-                    JDBCUtils.safeClose(dbResult);
+                    dbResult.close();
                 }
             }
             finally {
-                JDBCUtils.safeClose(dbStat);
+                dbStat.close();
             }
         }
         catch (SQLException ex) {

@@ -159,11 +159,8 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         throws DBException
     {
         try {
-            PreparedStatement dbStat = JDBCUtils.prepareStatement(
-                monitor,
-                getDataSource(),
-                "SHOW CREATE TABLE " + getFullQualifiedName(),
-                "Extract table's DDL");
+            PreparedStatement dbStat = getDataSource().getExecutionContext(monitor).prepareStatement(
+                "SHOW CREATE TABLE " + getFullQualifiedName());
             try {
                 ResultSet dbResult = dbStat.executeQuery();
                 try {
@@ -174,7 +171,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                     }
                 }
                 finally {
-                    JDBCUtils.safeClose(dbResult);
+                    dbResult.close();
                 }
             }
             finally {

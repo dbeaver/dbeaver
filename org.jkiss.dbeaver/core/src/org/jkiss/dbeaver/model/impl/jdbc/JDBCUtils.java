@@ -14,11 +14,13 @@ import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetStatement;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * JDBCUtils
@@ -172,57 +174,6 @@ public class JDBCUtils
             return dbResult.getObject(columnIndex);
         } catch (SQLException ex) {
             throw new DBCException(ex);
-        }
-    }
-
-    /**
-     * Preapres jdbc statement using specified connector.
-     * Adds blocking object to monitor.
-     * Begins task in monitor.
-     * Adds record to Query console.
-     * @param monitor progress monitor (can not be null)
-     * @param connector connection provider
-     * @param query SQL query
-     * @param taskName task name
-     * @return prepared statement
-     * @throws SQLException may be throws by underslying JDBC driver
-     */
-    public static PreparedStatement prepareStatement(
-        DBRProgressMonitor monitor,
-        JDBCConnector connector,
-        String query,
-        String taskName)
-        throws SQLException
-    {
-        return new PreparedStatementManagable(
-            connector.getConnection().prepareStatement(query),
-            monitor,
-            taskName,
-            query,
-            DBCQueryPurpose.META);
-    }
-
-    public static PreparedStatement prepareResultsStatement(
-        DBRProgressMonitor monitor,
-        ResultSet resultSet,
-        String taskName)
-        throws SQLException
-    {
-        return new ResultSetStatement(
-            monitor,
-            taskName,
-            "?",
-            DBCQueryPurpose.META,
-            resultSet);
-    }
-
-    public static void safeClose(PreparedStatement statement)
-    {
-        try {
-            statement.close();
-        }
-        catch (SQLException e) {
-            log.error("Could not close statement", e);
         }
     }
 

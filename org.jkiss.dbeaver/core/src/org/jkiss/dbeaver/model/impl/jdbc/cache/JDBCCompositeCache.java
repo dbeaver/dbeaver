@@ -4,24 +4,25 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.TreeMap;
-import java.util.Collection;
-
-import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * Composite objects cache.
@@ -54,13 +55,13 @@ public abstract class JDBCCompositeCache<
         this.objectColumnName = objectColumnName;
     }
 
-    abstract protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor, PARENT forParent)
+    abstract protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, PARENT forParent)
         throws SQLException, DBException;
 
-    abstract protected OBJECT fetchObject(DBRProgressMonitor monitor, ResultSet resultSet, PARENT parent)
+    abstract protected OBJECT fetchObject(JDBCExecutionContext context, ResultSet resultSet, PARENT parent)
         throws SQLException, DBException;
 
-    abstract protected ROW_REF fetchObjectRow(DBRProgressMonitor monitor, ResultSet resultSet, PARENT parent, OBJECT forObject)
+    abstract protected ROW_REF fetchObjectRow(JDBCExecutionContext context, ResultSet resultSet, PARENT parent, OBJECT forObject)
         throws SQLException, DBException;
 
     abstract protected boolean isObjectsCached(PARENT parent);
@@ -118,11 +119,12 @@ public abstract class JDBCCompositeCache<
 
         // Load index columns
         try {
+            JDBCExecutionContext context = parentCache.getConnector().getExecutionContext(monitor);
             Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new HashMap<PARENT, Map<String, ObjectInfo>>();
 
-            PreparedStatement dbStat = prepareObjectsStatement(monitor, forParent);
+            JDBCPreparedStatement dbStat = prepareObjectsStatement(context, forParent);
             try {
-                ResultSet dbResult = dbStat.executeQuery();
+                JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {
                         String parentName = JDBCUtils.safeGetString(dbResult, parentColumnName);
@@ -153,7 +155,7 @@ public abstract class JDBCCompositeCache<
 
                         ObjectInfo objectInfo = objectMap.get(objectName);
                         if (objectInfo == null) {
-                            OBJECT object = fetchObject(monitor, dbResult, parent);
+                            OBJECT object = fetchObject(context, dbResult, parent);
                             if (object == null) {
                                 // Could not fetch object
                                 continue;
@@ -161,7 +163,7 @@ public abstract class JDBCCompositeCache<
                             objectInfo = new ObjectInfo(object);
                             objectMap.put(objectName, objectInfo);
                         }
-                        ROW_REF rowRef = fetchObjectRow(monitor, dbResult, parent, objectInfo.object);
+                        ROW_REF rowRef = fetchObjectRow(context, dbResult, parent, objectInfo.object);
                         if (rowRef == null) {
                             continue;
                         }
@@ -200,11 +202,11 @@ public abstract class JDBCCompositeCache<
                     }
                 }
                 finally {
-                    JDBCUtils.safeClose(dbResult);
+                    dbResult.close();
                 }
             }
             finally {
-                JDBCUtils.safeClose(dbStat);
+                dbStat.close();
             }
         } catch (SQLException ex) {
             throw new DBException(ex);

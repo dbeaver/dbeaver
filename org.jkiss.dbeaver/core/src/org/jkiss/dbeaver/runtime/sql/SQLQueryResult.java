@@ -27,7 +27,7 @@ public class SQLQueryResult
     }
 
 /*
-    public DBCResultSetMetaData getMetaData()
+    public DBCResultSetMetaData getResultSetMetaData()
     {
         return metaData;
     }

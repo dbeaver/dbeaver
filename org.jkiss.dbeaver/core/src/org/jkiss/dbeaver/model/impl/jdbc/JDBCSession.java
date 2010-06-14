@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
@@ -14,7 +16,6 @@ import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.ResultSet;
-import java.sql.PreparedStatement;
 
 /**
  * JDBCSession
@@ -25,9 +26,10 @@ public class JDBCSession implements DBCSession
     private Connection connection;
     private JDBCConnector conector;
 
-    public JDBCSession(DBPDataSource dataSource, Connection connection)
+    public JDBCSession(JDBCConnector conector, Connection connection)
     {
-        this.dataSource = dataSource;
+        this.dataSource = conector.getDataSource();
+        this.conector = conector;
         this.connection = connection;
     }
 
@@ -90,19 +92,22 @@ public class JDBCSession implements DBCSession
         }
     }
 
-    public DBCStatement prepareStatement(String sqlQuery, boolean scrollable, boolean updatable)
+    public DBCStatement prepareStatement(
+        DBRProgressMonitor monitor,
+        String sqlQuery,
+        boolean scrollable,
+        boolean updatable)
         throws DBCException
     {
-        PreparedStatement dbStat;
         try {
-            dbStat = getConnection().prepareStatement(
+            return conector.getExecutionContext(monitor).prepareStatement(
                 sqlQuery,
                 scrollable ? ResultSet.TYPE_SCROLL_SENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
                 updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
-        } catch (SQLException e) {
-            throw new JDBCException(e);
         }
-        return new JDBCStatement(dataSource, dbStat);
+        catch (SQLException e) {
+            throw new DBCException(e);
+        }
     }
 
     public void commit()

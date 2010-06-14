@@ -13,27 +13,18 @@ import org.jkiss.dbeaver.model.DBPDataSource;
  */
 public interface DBCStatement extends DBRBlockingObject
 {
-    Object getNestedStatement();
 
     DBPDataSource getDataSource();
 
-    void execute() throws DBCException;
+    boolean executeStatement() throws DBCException;
 
-    boolean hasResultSet() throws DBCException;
+    DBCResultSet openResultSet() throws DBCException;
 
-    DBCResultSet getResultSet() throws DBCException;
-
-    void closeResultSet();
-
-    int getUpdateCount() throws DBCException;
-
-    void cancel() throws DBCException;
+    int getUpdateRowCount() throws DBCException;
 
     void close();
 
-    void setFirstResult(int offset) throws DBCException;
-
-    void setMaxResults(int limit) throws DBCException;
+    void setLimit(int offset, int limit) throws DBCException;
 
     /**
      * Statement data container.

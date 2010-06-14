@@ -8,6 +8,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -19,7 +21,6 @@ import org.jkiss.dbeaver.model.struct.DBSTablePath;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
 
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -38,6 +39,11 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     private ProceduresCache procedureCache;
 
     protected GenericStructureContainer()
+    {
+
+    }
+
+    protected void initCache()
     {
         this.tableCache = new TableCache();
         this.indexCache = new IndexCache();
@@ -201,15 +207,14 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         
         protected TableCache()
         {
-            super(JDBCConstants.TABLE_NAME);
+            super(getDataSource(), JDBCConstants.TABLE_NAME);
         }
 
-        protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
             throws SQLException, DBException
         {
-            return JDBCUtils.prepareResultsStatement(
-                monitor,
-                getDataSource().getConnection().getMetaData().getTables(
+            return context.makeResultsStatement(
+                context.getMetaData().getTables(
                     getCatalog() == null ? null : getCatalog().getName(),
                     getSchema() == null ? null : getSchema().getName(),
                     null,
@@ -217,7 +222,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 "Load tables");
         }
 
-        protected GenericTable fetchObject(DBRProgressMonitor monitor, ResultSet dbResult)
+        protected GenericTable fetchObject(JDBCExecutionContext context, ResultSet dbResult)
             throws SQLException, DBException
         {
             String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
@@ -233,11 +238,11 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
             String typeSchemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_SCHEM);
             GenericCatalog typeCatalog = CommonUtils.isEmpty(typeCatalogName) ?
                 null :
-                getDataSource().getCatalog(monitor, typeCatalogName);
+                getDataSource().getCatalog(context.getProgressMonitor(), typeCatalogName);
             GenericSchema typeSchema = CommonUtils.isEmpty(typeSchemaName) ?
                 null :
                 typeCatalog == null ?
-                    getDataSource().getSchema(monitor, typeSchemaName) :
+                    getDataSource().getSchema(context.getProgressMonitor(), typeSchemaName) :
                     typeCatalog.getSchema(typeSchemaName);
             return new GenericTable(
                 GenericStructureContainer.this,
@@ -259,12 +264,11 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
             table.setColumns(columns);
         }
 
-        protected PreparedStatement prepareChildrenStatement(DBRProgressMonitor monitor, GenericTable forTable)
+        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, GenericTable forTable)
             throws SQLException, DBException
         {
-            return JDBCUtils.prepareResultsStatement(
-                monitor,
-                getDataSource().getConnection().getMetaData().getColumns(
+            return context.makeResultsStatement(
+                context.getMetaData().getColumns(
                     getCatalog() == null ? null : getCatalog().getName(),
                     getSchema() == null ? null : getSchema().getName(),
                     forTable == null ? null : forTable.getName(),
@@ -272,7 +276,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 "Load table columns");
         }
 
-        protected GenericTableColumn fetchChild(DBRProgressMonitor monitor, GenericTable table, ResultSet dbResult)
+        protected GenericTableColumn fetchChild(JDBCExecutionContext context, GenericTable table, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
@@ -310,12 +314,11 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
             super(tableCache, JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
         }
 
-        protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor, GenericTable forParent)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, GenericTable forParent)
             throws SQLException, DBException
         {
-            return JDBCUtils.prepareResultsStatement(
-                monitor,
-                getDataSource().getConnection().getMetaData().getIndexInfo(
+            return context.makeResultsStatement(
+                context.getMetaData().getIndexInfo(
                     getCatalog() == null ? null : getCatalog().getName(),
                     getSchema() == null ? null : getSchema().getName(),
                     // oracle fails if unquoted complex identifier specified
@@ -327,7 +330,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 "Load indexes");
         }
 
-        protected GenericIndex fetchObject(DBRProgressMonitor monitor, ResultSet dbResult, GenericTable parent)
+        protected GenericIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, GenericTable parent)
             throws SQLException, DBException
         {
             String indexName = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_NAME);
@@ -353,7 +356,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         }
 
         protected GenericIndexColumn fetchObjectRow(
-            DBRProgressMonitor monitor, ResultSet dbResult,
+            JDBCExecutionContext context, ResultSet dbResult,
             GenericTable parent, GenericIndex object)
             throws SQLException, DBException
         {
@@ -361,7 +364,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
             String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
             String ascOrDesc = JDBCUtils.safeGetString(dbResult, JDBCConstants.ASC_OR_DESC);
 
-            GenericTableColumn tableColumn = parent.getColumn(monitor, columnName);
+            GenericTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
             if (tableColumn == null) {
                 log.warn("Column '" + columnName + "' not found in table '" + parent.getName() + "'");
                 return null;
@@ -397,22 +400,21 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
 
         ProceduresCache()
         {
-            super(JDBCConstants.PROCEDURE_NAME);
+            super(getDataSource(), JDBCConstants.PROCEDURE_NAME);
         }
 
-        protected PreparedStatement prepareObjectsStatement(DBRProgressMonitor monitor)
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
             throws SQLException, DBException
         {
-            return JDBCUtils.prepareResultsStatement(
-                monitor,
-                getDataSource().getConnection().getMetaData().getProcedures(
+            return context.makeResultsStatement(
+                context.getMetaData().getProcedures(
                     getCatalog() == null ? null : getCatalog().getName(),
                     getSchema() == null ? null : getSchema().getName(),
                     null),
                 "Load procedures");
         }
 
-        protected GenericProcedure fetchObject(DBRProgressMonitor monitor, ResultSet dbResult)
+        protected GenericProcedure fetchObject(JDBCExecutionContext context, ResultSet dbResult)
             throws SQLException, DBException
         {
             String procedureName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PROCEDURE_NAME);
@@ -442,12 +444,11 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
             parent.cacheColumns(columns);
         }
 
-        protected PreparedStatement prepareChildrenStatement(DBRProgressMonitor monitor, GenericProcedure forObject)
+        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, GenericProcedure forObject)
             throws SQLException, DBException
         {
-            return JDBCUtils.prepareResultsStatement(
-                monitor,
-                getDataSource().getConnection().getMetaData().getProcedureColumns(
+            return context.makeResultsStatement(
+                context.getMetaData().getProcedureColumns(
                     getCatalog() == null ? null : getCatalog().getName(),
                     getSchema() == null ? null : getSchema().getName(),
                     forObject == null ? null : forObject.getName(),
@@ -455,7 +456,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 "Load procedure columns");
         }
 
-        protected GenericProcedureColumn fetchChild(DBRProgressMonitor monitor, GenericProcedure parent, ResultSet dbResult)
+        protected GenericProcedureColumn fetchChild(JDBCExecutionContext context, GenericProcedure parent, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
