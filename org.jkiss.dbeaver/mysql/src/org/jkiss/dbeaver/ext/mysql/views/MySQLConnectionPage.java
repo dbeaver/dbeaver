@@ -11,19 +11,12 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.controls.proptree.DriverPropertiesControl;
-
-import java.util.Properties;
 
 /**
  * ConnectionEditorPage
@@ -67,7 +60,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
                 public void widgetSelected(SelectionEvent e)
                 {
                     if (e.item == propsTab) {
-                        refreshDriverProperties();
+                        //refreshDriverProperties();
                     }
                 }
 
@@ -222,9 +215,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
     {
         DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
         saveSettings(tmpConnectionInfo);
-        Properties props = new Properties();
-        props.putAll(tmpConnectionInfo.getProperties());
-        driverProps.loadProperties(site.getDriver(), tmpConnectionInfo.getJdbcURL(), props);
+        driverProps.loadProperties(site.getDriver(), tmpConnectionInfo.getJdbcURL(), site.getConnectionInfo().getProperties());
     }
 
     public void saveSettings()
@@ -250,6 +241,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
             if (passwordText != null) {
                 connectionInfo.setUserPassword(passwordText.getText());
             }
+            connectionInfo.setProperties(driverProps.getProperties());
             connectionInfo.setJdbcURL(
                 "jdbc:mysql://" + connectionInfo.getHostName() +
                     ":" + connectionInfo.getHostPort() +

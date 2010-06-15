@@ -100,6 +100,7 @@ public class DBPConnectionInfo implements DBPObject
 
     public void setProperties(Map<String, String> properties)
     {
-        this.properties = properties;
+        this.properties = new HashMap<String, String>();
+        this.properties.putAll(properties);
     }
 }

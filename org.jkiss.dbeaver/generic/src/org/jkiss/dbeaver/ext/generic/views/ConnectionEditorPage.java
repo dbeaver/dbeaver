@@ -11,12 +11,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -27,7 +22,6 @@ import org.jkiss.dbeaver.ui.controls.proptree.DriverPropertiesControl;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -58,7 +52,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
     private List<String> urlComponents = new ArrayList<String>();
     private Set<String> requiredProperties = new HashSet<String>();
 
-    private DBPDriverPropertyGroup driverProvidedProperties;
+    private boolean driverPropsLoaded;
     private DriverPropertiesControl propsControl;
 
     public void createControl(Composite composite)
@@ -306,6 +300,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
     public void loadSettings()
     {
         // Load values from new connection info
+        driverPropsLoaded = false;
         DBPConnectionInfo connectionInfo = site.getConnectionInfo();
         if (connectionInfo != null) {
             this.parseSampleURL(site.getDriver());
@@ -360,11 +355,12 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
 
     private void refreshDriverProperties()
     {
-        DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
-        saveSettings(tmpConnectionInfo);
-        Properties props = new Properties();
-        props.putAll(tmpConnectionInfo.getProperties());
-        propsControl.loadProperties(site.getDriver(), tmpConnectionInfo.getJdbcURL(), props);
+        if (!driverPropsLoaded) {
+            DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
+            saveSettings(tmpConnectionInfo);
+            propsControl.loadProperties(site.getDriver(), tmpConnectionInfo.getJdbcURL(), site.getConnectionInfo().getProperties());
+            driverPropsLoaded = true;
+        }
     }
 
     public void saveSettings()
@@ -393,6 +389,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
             if (urlText != null) {
                 connectionInfo.setJdbcURL(urlText.getText());
             }
+            connectionInfo.setProperties(propsControl.getProperties());
         }
     }
 
