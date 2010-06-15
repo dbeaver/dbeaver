@@ -100,8 +100,8 @@ public class ERDTable extends ERDNode {
     public void calculateContent(DBRProgressMonitor monitor, Graphics graphics)
         throws DBException
     {
-        FontMetrics titleMetrics = graphics.getFontMetrics(ERDConstants.ENTITY_NAME_FONT);
-        FontMetrics attrMetrics = graphics.getFontMetrics(ERDConstants.ENTITY_ATTR_FONT);
+        FontMetrics titleMetrics = graphics.getFontMetrics();
+        FontMetrics attrMetrics = graphics.getFontMetrics();
 
         // Get all columns
         Collection<? extends DBSTableColumn> dbsTableColumns = getTable().getColumns(monitor);

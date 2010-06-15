@@ -83,10 +83,10 @@ public class ERDEntityView extends VertexView {
             Graphics2D g2 = (Graphics2D) g;
             Dimension d = getSize();
             int roundRectArc = 20 - bw;
-            int framePos = g.getFontMetrics(ERDConstants.ENTITY_NAME_FONT).getHeight();
+            int framePos = g.getFontMetrics().getHeight();
             int boxWidth = d.width - 1;
             int boxHeight = d.height - framePos - 1;
-            int attrHeight = g.getFontMetrics(ERDConstants.ENTITY_ATTR_FONT).getHeight();
+            int attrHeight = g.getFontMetrics().getHeight();
             ERDTable erdTable = getView().getTable();
 
             boolean isRect = erdTable.isIndependent();
@@ -129,11 +129,11 @@ public class ERDEntityView extends VertexView {
 
             // Print entity name
             g.setColor(Color.BLACK);
-            g.setFont(ERDConstants.ENTITY_NAME_FONT);
+            //g.setFont(ERDConstants.ENTITY_NAME_FONT);
             g.drawString(erdTable.getName(), 4, framePos - 4);
 
             // Print attributes and divider
-            g.setFont(ERDConstants.ENTITY_ATTR_FONT);
+            //g.setFont(ERDConstants.ENTITY_ATTR_FONT);
             List<ERDTableColumn> tableColumns = erdTable.getColumns();
             int attrPos = framePos + framePos - 4;
             boolean lastKey = true;
