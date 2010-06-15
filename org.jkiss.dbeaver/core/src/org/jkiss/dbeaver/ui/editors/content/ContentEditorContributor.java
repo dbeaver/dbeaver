@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.editors.content;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.CoreException;
@@ -23,8 +22,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -32,6 +29,7 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.actions.SimpleAction;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.File;
@@ -213,26 +211,9 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         public void run()
         {
             Shell shell = getEditor().getSite().getShell();
-            FileDialog fileDialog = new FileDialog(shell, SWT.SAVE);
-            fileDialog.setText("Save Content As");
-            String fileName = fileDialog.open();
-            if (CommonUtils.isEmpty(fileName)) {
+            final File saveFile = ContentUtils.selectFileForSave(shell);
+            if (saveFile == null) {
                 return;
-            }
-            final File saveFile = new File(fileName);
-            File saveDir = saveFile.getParentFile();
-            if (!saveDir.exists()) {
-                DBeaverUtils.showErrorDialog(shell, "Bad file name", "Directory '" + saveDir.getAbsolutePath() + "' does not exists");
-                return;
-            }
-            if (saveFile.exists()) {
-                MessageBox aMessageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
-                aMessageBox.setText("File already exists");
-                aMessageBox.setMessage("The file "+ saveFile.getAbsolutePath() + " already exists.\nOverwrite file?");
-
-                if (aMessageBox.open() != SWT.YES) {
-                    return;
-                }
             }
             try {
                 getEditor().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
@@ -272,17 +253,8 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         public void run()
         {
             Shell shell = getEditor().getSite().getShell();
-            FileDialog fileDialog = new FileDialog(shell, SWT.OPEN);
-            String fileName = fileDialog.open();
-            if (CommonUtils.isEmpty(fileName)) {
-                return;
-            }
-            final File loadFile = new File(fileName);
-            if (!loadFile.exists()) {
-                MessageBox aMessageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.OK);
-                aMessageBox.setText("File doesn't exists");
-                aMessageBox.setMessage("The file "+ loadFile.getAbsolutePath() + " doesn't exists.");
-                aMessageBox.open();
+            final File loadFile = ContentUtils.openFile(shell);
+            if (loadFile == null) {
                 return;
             }
             try {

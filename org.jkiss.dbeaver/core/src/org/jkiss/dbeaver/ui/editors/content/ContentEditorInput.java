@@ -50,8 +50,6 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
 {
     static Log log = LogFactory.getLog(ContentEditorInput.class);
 
-    public static final String DEFAULT_FILE_CHARSET = "UTF-8";
-
     private DBDValueController valueController;
     private IContentEditorPart[] editorParts;
     private IFile contentFile;
@@ -220,26 +218,10 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
         throws CoreException
     {
         try {
-            InputStream contents = contentFile.getContents(true);
-            try {
-                OutputStream os = new FileOutputStream(file);
-                try {
-                    ContentUtils.copyStreams(contents, file.length(), os, DBeaverUtils.makeMonitor(monitor));
-                }
-                finally {
-                    os.close();
-                }
-                // Check for cancel
-                if (monitor.isCanceled()) {
-                    // Delete output file
-                    if (!file.delete()) {
-                        log.warn("Could not delete incomplete file '" + file.getAbsolutePath() + "'");
-                    }
-                }
-            }
-            finally {
-                contents.close();
-            }
+            ContentUtils.saveContentToFile(
+                contentFile.getContents(true),
+                file,
+                DBeaverUtils.makeMonitor(monitor));
         }
         catch (IOException e) {
             throw new CoreException(DBeaverUtils.makeExceptionStatus(e));
@@ -302,7 +284,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
                 try {
                     String charset = ((DBDContentCharacter)contents).getCharset();
                     if (charset == null) {
-                        charset = DEFAULT_FILE_CHARSET;
+                        charset = ContentUtils.DEFAULT_FILE_CHARSET;
                     }
                     Writer writer = new OutputStreamWriter(outputStream, charset);
                     ContentUtils.copyStreams(reader, contentLength, writer, DBeaverUtils.makeMonitor(monitor));
@@ -353,7 +335,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
                 }
                 catch (CoreException e) {
                     log.warn(e);
-                    charset = DEFAULT_FILE_CHARSET;
+                    charset = ContentUtils.DEFAULT_FILE_CHARSET;
                 }
 
                 long contentLength = ContentUtils.calculateContentLength(

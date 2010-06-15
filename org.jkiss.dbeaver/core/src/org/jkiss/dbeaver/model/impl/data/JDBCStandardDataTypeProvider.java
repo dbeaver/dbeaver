@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * standard JDBC data types provider
@@ -19,7 +20,7 @@ public class JDBCStandardDataTypeProvider implements DBDDataTypeProvider {
 
     public Image getTypeImage(DBSTypedObject type)
     {
-        return null;
+        return DBIcon.TREE_COLUMN.getImage();
     }
 
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBSTypedObject type)

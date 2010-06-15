@@ -4,16 +4,24 @@
 
 package org.jkiss.dbeaver.utils;
 
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.io.Closeable;
 
 /**
  * Content manipulation utilities
@@ -23,6 +31,102 @@ public class ContentUtils {
     static final int STREAM_COPY_BUFFER_SIZE = 10000;
 
     static Log log = LogFactory.getLog(ContentUtils.class);
+    public static final String DEFAULT_FILE_CHARSET = "UTF-8";
+
+    public static File selectFileForSave(Shell parentShell)
+    {
+        FileDialog fileDialog = new FileDialog(parentShell, SWT.SAVE);
+        fileDialog.setText("Save Content As");
+        String fileName = fileDialog.open();
+        if (CommonUtils.isEmpty(fileName)) {
+            return null;
+        }
+        final File saveFile = new File(fileName);
+        File saveDir = saveFile.getParentFile();
+        if (!saveDir.exists()) {
+            DBeaverUtils.showErrorDialog(parentShell, "Bad file name", "Directory '" + saveDir.getAbsolutePath() + "' does not exists");
+            return null;
+        }
+        if (saveFile.exists()) {
+            MessageBox aMessageBox = new MessageBox(parentShell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+            aMessageBox.setText("File already exists");
+            aMessageBox.setMessage("The file "+ saveFile.getAbsolutePath() + " already exists.\nOverwrite file?");
+
+            if (aMessageBox.open() != SWT.YES) {
+                return null;
+            }
+        }
+        return saveFile;
+    }
+
+    public static File openFile(Shell parentShell)
+    {
+        FileDialog fileDialog = new FileDialog(parentShell, SWT.OPEN);
+        String fileName = fileDialog.open();
+        if (CommonUtils.isEmpty(fileName)) {
+            return null;
+        }
+        final File loadFile = new File(fileName);
+        if (!loadFile.exists()) {
+            MessageBox aMessageBox = new MessageBox(parentShell, SWT.ICON_WARNING | SWT.OK);
+            aMessageBox.setText("File doesn't exists");
+            aMessageBox.setMessage("The file "+ loadFile.getAbsolutePath() + " doesn't exists.");
+            aMessageBox.open();
+            return null;
+        }
+        return loadFile;
+    }
+
+    public static void saveContentToFile(InputStream contentStream, File file, DBRProgressMonitor monitor)
+        throws IOException
+    {
+        try {
+            OutputStream os = new FileOutputStream(file);
+            try {
+                copyStreams(contentStream, file.length(), os, monitor);
+            }
+            finally {
+                os.close();
+            }
+            // Check for cancel
+            if (monitor.isCanceled()) {
+                // Delete output file
+                if (!file.delete()) {
+                    log.warn("Could not delete incomplete file '" + file.getAbsolutePath() + "'");
+                }
+            }
+        }
+        finally {
+            contentStream.close();
+        }
+    }
+
+    public static void saveContentToFile(Reader contentReader, File file, DBRProgressMonitor monitor)
+        throws IOException
+    {
+        try {
+            Writer writer = new OutputStreamWriter(
+                new FileOutputStream(file),
+                DEFAULT_FILE_CHARSET);
+
+            try {
+                copyStreams(contentReader, file.length(), writer, monitor);
+            }
+            finally {
+                writer.close();
+            }
+            // Check for cancel
+            if (monitor.isCanceled()) {
+                // Delete output file
+                if (!file.delete()) {
+                    log.warn("Could not delete incomplete file '" + file.getAbsolutePath() + "'");
+                }
+            }
+        }
+        finally {
+            contentReader.close();
+        }
+    }
 
     public static void copyStreams(
         InputStream inputStream,

@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.IColorProvider;
@@ -552,6 +553,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             columnIndex,
             null);
         try {
+            manager.add(new Separator());
             metaColumns[columnIndex].valueHandler.fillContextMenu(manager, valueController);
         }
         catch (Exception e) {

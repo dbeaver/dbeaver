@@ -116,13 +116,16 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     public void fillContextMenu(IMenuManager menuManager, DBDValueController controller)
         throws DBCException
     {
-        Action saveAction = new Action() {
+        menuManager.add(new Action("Save to file ...") {
             @Override
             public void run() {
             }
-        };
-        saveAction.setText("Save to file ...");
-        menuManager.add(saveAction);
+        });
+        menuManager.add(new Action("Load from file ...") {
+            @Override
+            public void run() {
+            }
+        });
     }
 
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
