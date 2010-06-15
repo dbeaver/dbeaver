@@ -259,6 +259,18 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         }
     }
 
+    public void runAndWait2(boolean fork, boolean cancelable, final DBRRunnableWithProgress runnable)
+        throws InvocationTargetException, InterruptedException
+    {
+        this.getWorkbench().getProgressService().run(fork, cancelable, new IRunnableWithProgress() {
+            public void run(IProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException
+            {
+                runnable.run(DBeaverUtils.makeMonitor(monitor));
+            }
+        });
+    }
+
     public static void runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)
     {
         new AbstractUIJob(jobName) {

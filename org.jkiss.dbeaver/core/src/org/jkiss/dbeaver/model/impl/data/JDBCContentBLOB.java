@@ -96,7 +96,7 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
                     ContentUtils.copyStreams(stream, contentLength, blobStream, monitor);
                 }
                 finally {
-                    blobStream.close();
+                    ContentUtils.close(blobStream);
                 }
             } catch (SQLException e) {
                 throw new DBCException("JDBC error", e);

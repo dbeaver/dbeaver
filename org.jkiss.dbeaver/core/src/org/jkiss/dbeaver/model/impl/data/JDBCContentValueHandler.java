@@ -8,28 +8,43 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
+import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
+import java.io.File;
+import java.io.Reader;
+import java.io.InputStreamReader;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * JDBC Content value handler.
@@ -113,17 +128,21 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         return super.getValueDisplayString(value);
     }
 
-    public void fillContextMenu(IMenuManager menuManager, DBDValueController controller)
+    public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
         throws DBCException
     {
-        menuManager.add(new Action("Save to file ...") {
+        if (controller.getValue() instanceof DBDContent && !((DBDContent)controller.getValue()).isNull()) {
+            menuManager.add(new Action("Save to file ...", DBIcon.SAVE.getImageDescriptor()) {
+                @Override
+                public void run() {
+                    saveToFile(controller);
+                }
+            });
+        }
+        menuManager.add(new Action("Load from file ...", DBIcon.LOAD.getImageDescriptor()) {
             @Override
             public void run() {
-            }
-        });
-        menuManager.add(new Action("Load from file ...") {
-            @Override
-            public void run() {
+                loadFromFile(controller);
             }
         });
     }
@@ -204,6 +223,133 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         return ContentEditor.openEditor(
             controller,
             parts.toArray(new IContentEditorPart[parts.size()]) );
+    }
+
+    private void loadFromFile(final DBDValueController controller)
+    {
+        if (!(controller.getValue() instanceof DBDContent)) {
+            log.error("Bad content value: " + controller.getValue());
+            return;
+        }
+
+        Shell shell = controller.getValueSite().getShell();
+        final File openFile = ContentUtils.openFile(shell);
+        if (openFile == null) {
+            return;
+        }
+        final DBDContent value = (DBDContent)controller.getValue();
+        try {
+            DBeaverCore.getInstance().runAndWait2(true, true, new DBRRunnableWithProgress() {
+                public void run(DBRProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        DefaultQueryListener queryListener = new DefaultQueryListener() {};
+
+                        if (value instanceof DBDContentCharacter) {
+                            long contentLength = ContentUtils.calculateContentLength(openFile, ContentUtils.DEFAULT_FILE_CHARSET);
+                            Reader reader = new InputStreamReader(
+                                new FileInputStream(openFile),
+                                ContentUtils.DEFAULT_FILE_CHARSET
+                            );
+                            try {
+                                ((DBDContentCharacter)value).updateContents(
+                                controller,
+                                    reader,
+                                    contentLength,
+                                    monitor,
+                                    queryListener);
+                            }
+                            finally {
+                                ContentUtils.close(reader);
+                            }
+                        } else if (value instanceof DBDContentBinary) {
+                            InputStream stream = new FileInputStream(openFile);
+                            try {
+                                ((DBDContentBinary)value).updateContents(
+                                controller,
+                                    stream,
+                                    openFile.length(),
+                                    monitor,
+                                    queryListener);
+                            }
+                            finally {
+                                ContentUtils.close(stream);
+                            }
+                        } else {
+                            log.error("Unsupported content type: " + value);
+                        }
+                    }
+                    catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
+        }
+        catch (InvocationTargetException e) {
+            DBeaverUtils.showErrorDialog(
+                shell,
+                "Could not load content",
+                "Could not load content from file '" + openFile.getAbsolutePath() + "'",
+                e.getTargetException());
+        }
+        catch (InterruptedException e) {
+            // do nothing
+        }
+    }
+
+    private void saveToFile(DBDValueController controller)
+    {
+        if (!(controller.getValue() instanceof DBDContent)) {
+            log.error("Bad content value: " + controller.getValue());
+            return;
+        }
+
+        Shell shell = controller.getValueSite().getShell();
+        final File saveFile = ContentUtils.selectFileForSave(shell);
+        if (saveFile == null) {
+            return;
+        }
+        final DBDContent value = (DBDContent)controller.getValue();
+        try {
+            DBeaverCore.getInstance().runAndWait2(true, true, new DBRRunnableWithProgress() {
+                public void run(DBRProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        if (value instanceof DBDContentCharacter) {
+                            ContentUtils.saveContentToFile(
+                                ((DBDContentCharacter)value).getContents(),
+                                saveFile,
+                                ContentUtils.DEFAULT_FILE_CHARSET,
+                                monitor
+                            );
+                        } else if (value instanceof DBDContentBinary) {
+                            ContentUtils.saveContentToFile(
+                                ((DBDContentBinary)value).getContents(),
+                                saveFile,
+                                monitor
+                            );
+                        } else {
+                            log.error("Unsupported content type: " + value);
+                        }
+                    }
+                    catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
+        }
+        catch (InvocationTargetException e) {
+            DBeaverUtils.showErrorDialog(
+                shell,
+                "Could not save content",
+                "Could not save content to file '" + saveFile.getAbsolutePath() + "'",
+                e.getTargetException());
+        }
+        catch (InterruptedException e) {
+            // do nothing
+        }
     }
 
 }

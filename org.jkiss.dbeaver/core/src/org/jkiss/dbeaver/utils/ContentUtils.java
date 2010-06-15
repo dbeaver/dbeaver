@@ -22,6 +22,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.io.InputStreamReader;
+import java.io.FileInputStream;
 
 /**
  * Content manipulation utilities
@@ -101,13 +103,13 @@ public class ContentUtils {
         }
     }
 
-    public static void saveContentToFile(Reader contentReader, File file, DBRProgressMonitor monitor)
+    public static void saveContentToFile(Reader contentReader, File file, String charset, DBRProgressMonitor monitor)
         throws IOException
     {
         try {
             Writer writer = new OutputStreamWriter(
                 new FileOutputStream(file),
-                DEFAULT_FILE_CHARSET);
+                charset);
 
             try {
                 copyStreams(contentReader, file.length(), writer, monitor);
@@ -184,6 +186,17 @@ public class ContentUtils {
         finally {
             monitor.done();
         }
+    }
+
+    public static long calculateContentLength(
+        File file,
+        String charset)
+        throws IOException
+    {
+        return calculateContentLength(
+            new InputStreamReader(
+                new FileInputStream(file),
+                charset));
     }
 
     public static long calculateContentLength(

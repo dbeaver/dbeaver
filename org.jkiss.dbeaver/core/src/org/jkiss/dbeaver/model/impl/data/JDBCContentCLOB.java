@@ -98,7 +98,7 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
                 ContentUtils.copyStreams(stream, contentLength, clobWriter, monitor);
             }
             finally {
-                clobWriter.close();
+                ContentUtils.close(clobWriter);
             }
         } catch (SQLException e) {
             throw new DBCException("JDBC error", e);

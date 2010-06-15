@@ -338,10 +338,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
                     charset = ContentUtils.DEFAULT_FILE_CHARSET;
                 }
 
-                long contentLength = ContentUtils.calculateContentLength(
-                    new InputStreamReader(
-                        new FileInputStream(file),
-                        charset));
+                long contentLength = ContentUtils.calculateContentLength(file, charset);
                 Reader reader = new InputStreamReader(inputStream, charset);
                 ((DBDContentCharacter)content).updateContents(
                     valueController,
