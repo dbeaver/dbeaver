@@ -134,14 +134,9 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
         return clob == null && reader == null;
     }
 
-    public void setNull()
+    public JDBCContentCLOB makeNull()
     {
-        this.clob = null;
-        if (this.reader != null) {
-            log.warn("Set to NULL while temporary content set");
-            this.release();
-        }
-        this.reader = null;
+        return new JDBCContentCLOB(null);
     }
 
     @Override

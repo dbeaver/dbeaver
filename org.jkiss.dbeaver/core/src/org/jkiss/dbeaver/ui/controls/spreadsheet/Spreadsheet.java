@@ -503,14 +503,16 @@ public class Spreadsheet extends Composite implements Listener {
                     }
                 };
                 copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
-                copyAction.setId(IWorkbenchCommandConstants.EDIT_COPY);
+
                 IAction selectAllAction = new Action("Select All") {
                     public void run()
                     {
                         grid.selectAll();
                     }
                 };
-                copyAction.setEnabled(grid.getCellSelectionCount() > 0);
+                selectAllAction.setEnabled(grid.getCellSelectionCount() > 0);
+                selectAllAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_SELECT_ALL);
+
                 manager.add(copyAction);
                 manager.add(selectAllAction);
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));

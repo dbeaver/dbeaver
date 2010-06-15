@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.IColorProvider;
@@ -542,16 +543,39 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
-    public void fillContextMenu(GridPos cell, IMenuManager manager) {
+    public void fillContextMenu(final GridPos cell, IMenuManager manager) {
+
+        // Custom value items
         final int columnIndex = (mode == ResultSetMode.GRID ? cell.col : cell.row);
         final int rowIndex = (mode == ResultSetMode.GRID ? cell.row : curRowNum);
         if (rowIndex < 0 || curRows.size() <= rowIndex) {
             return;
         }
-        ResultSetValueController valueController = new ResultSetValueController(
+        final ResultSetValueController valueController = new ResultSetValueController(
             curRows.get(rowIndex),
             columnIndex,
             null);
+        final Object value = valueController.getValue();
+
+        // Standard items
+        manager.add(new Separator());
+        manager.add(new Action("Edit ...") {
+            @Override
+            public void run()
+            {
+                showCellEditor(cell, false, null);
+            }
+        });
+        if (!isNullValue(value)) {
+            manager.add(new Action("Set to NULL") {
+                @Override
+                public void run()
+                {
+                    valueController.updateValue(makeNullValue(value));
+                }
+            });
+        }
+
         try {
             manager.add(new Separator());
             metaColumns[columnIndex].valueHandler.fillContextMenu(manager, valueController);
@@ -621,6 +645,20 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private void rejectChanges()
     {
         new CellDataSaver(editedValues).rejectChanges();
+    }
+
+    private static boolean isNullValue(Object value)
+    {
+        return (value == null || (value instanceof DBDValue && ((DBDValue)value).isNull()));
+    }
+
+    private static Object makeNullValue(Object value)
+    {
+        if (value instanceof DBDValue) {
+            return ((DBDValue)value).makeNull();
+        } else {
+            return null;
+        }
     }
 
     private class ResultSetValueController implements DBDValueController, DBDRowController {
@@ -1112,9 +1150,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         public Color getForeground(Object element)
         {
             Object value = getValue(element, false);
-            if (value == null) {
-                return foregroundNull;
-            } else if (value instanceof DBDValue && ((DBDValue)value).isNull()) {
+            if (isNullValue(value)) {
                 return foregroundNull;
             } else {
                 return null;

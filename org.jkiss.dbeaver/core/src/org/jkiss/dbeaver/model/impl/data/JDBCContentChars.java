@@ -115,9 +115,9 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentC
         return data == null;
     }
 
-    public void setNull()
+    public JDBCContentChars makeNull()
     {
-        this.data = null;
+        return new JDBCContentChars(null);
     }
 
     @Override

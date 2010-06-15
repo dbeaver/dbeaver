@@ -133,13 +133,9 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
         return blob == null && stream == null;
     }
 
-    public void setNull()
+    public JDBCContentBLOB makeNull()
     {
-        this.blob = null;
-        if (this.stream != null) {
-            log.warn("Set to NULL while temporary content set");
-            this.release();
-        }
+        return new JDBCContentBLOB(null);
     }
 
     @Override

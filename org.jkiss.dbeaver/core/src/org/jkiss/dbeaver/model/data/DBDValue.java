@@ -11,6 +11,6 @@ public interface DBDValue {
 
     boolean isNull();
 
-    void setNull();
+    DBDValue makeNull();
 
 }

@@ -102,9 +102,9 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentB
         return data == null;
     }
 
-    public void setNull()
+    public JDBCContentBytes makeNull()
     {
-        this.data = null;
+        return new JDBCContentBytes(null);
     }
 
     @Override
