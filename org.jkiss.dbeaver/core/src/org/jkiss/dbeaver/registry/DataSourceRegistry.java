@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.dbeaver.utils.StringEncrypter;
 import org.xml.sax.Attributes;
 
 import java.io.*;
@@ -45,10 +46,20 @@ public class DataSourceRegistry implements DBPRegistry
     private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private final List<IDataSourceListener> dataSourceListeners = new ArrayList<IDataSourceListener>();
 
+    private StringEncrypter encrypter;
+    private static final String PASSWORD_ENCRYPTION_KEY = "sdf@!#$verf^wv%6Fwe%$$#FFGwfsdefwfe135s$^H)dg";
+
     public DataSourceRegistry(DBeaverCore core, IExtensionRegistry registry)
     {
         this.core = core;
         this.workspaceRoot = core.getRootPath().toFile();
+        try {
+            this.encrypter = new StringEncrypter(StringEncrypter.SCHEME_DES, PASSWORD_ENCRYPTION_KEY);
+        }
+        catch (StringEncrypter.EncryptionException e) {
+            // never be here
+            log.error(e);
+        }
 
         // Load datasource providers from external plugins
         {
@@ -479,7 +490,16 @@ public class DataSourceRegistry implements DBPRegistry
             xml.addAttribute("url", CommonUtils.getString(connectionInfo.getJdbcURL()));
             xml.addAttribute("user", CommonUtils.getString(connectionInfo.getUserName()));
             if (dataSource.isSavePassword() && !CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-                xml.addAttribute("password", connectionInfo.getUserPassword());
+                String encPassword = connectionInfo.getUserPassword();
+                if (!CommonUtils.isEmpty(encPassword)) {
+                    try {
+                        encPassword = encrypter.encrypt(encPassword);
+                    }
+                    catch (StringEncrypter.EncryptionException e) {
+                        log.error("Could not encrypt password. Save it as is", e);
+                    }
+                }
+                xml.addAttribute("password", encPassword);
             }
             if (connectionInfo.getProperties() != null) {
                 for (Map.Entry<String, String> entry : connectionInfo.getProperties().entrySet()) {
@@ -640,7 +660,16 @@ public class DataSourceRegistry implements DBPRegistry
                     curDataSource.getConnectionInfo().setDatabaseName(atts.getValue("database"));
                     curDataSource.getConnectionInfo().setJdbcURL(atts.getValue("url"));
                     curDataSource.getConnectionInfo().setUserName(atts.getValue("user"));
-                    curDataSource.getConnectionInfo().setUserPassword(atts.getValue("password"));
+                    String encPassword = atts.getValue("password");
+                    if (!CommonUtils.isEmpty(encPassword)) {
+                        try {
+                            encPassword = encrypter.decrypt(encPassword);
+                        }
+                        catch (Throwable e) {
+                            // coould not decrypt - use as is
+                        }
+                    }
+                    curDataSource.getConnectionInfo().setUserPassword(encPassword);
                 }
             } else if (localName.equals("property")) {
                 if (curDataSource != null) {
