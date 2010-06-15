@@ -566,12 +566,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 showCellEditor(cell, false, null);
             }
         });
-        if (!isNullValue(value)) {
+        if (!DBSUtils.isNullValue(value)) {
             manager.add(new Action("Set to NULL") {
                 @Override
                 public void run()
                 {
-                    valueController.updateValue(makeNullValue(value));
+                    valueController.updateValue(DBSUtils.makeNullValue(value));
                 }
             });
         }
@@ -645,20 +645,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private void rejectChanges()
     {
         new CellDataSaver(editedValues).rejectChanges();
-    }
-
-    private static boolean isNullValue(Object value)
-    {
-        return (value == null || (value instanceof DBDValue && ((DBDValue)value).isNull()));
-    }
-
-    private static Object makeNullValue(Object value)
-    {
-        if (value instanceof DBDValue) {
-            return ((DBDValue)value).makeNull();
-        } else {
-            return null;
-        }
     }
 
     private class ResultSetValueController implements DBDValueController, DBDRowController {
@@ -1129,7 +1115,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 valueHandler = metaColumns[cell.col].valueHandler;
             }
             if (formatString) {
-                return valueHandler.getValueDisplayString(value);
+                return valueHandler.getValueDisplayString(metaColumns[cell.col].metaData, value);
             } else {
                 return value;
             }
@@ -1150,7 +1136,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         public Color getForeground(Object element)
         {
             Object value = getValue(element, false);
-            if (isNullValue(value)) {
+            if (DBSUtils.isNullValue(value)) {
                 return foregroundNull;
             } else {
                 return null;

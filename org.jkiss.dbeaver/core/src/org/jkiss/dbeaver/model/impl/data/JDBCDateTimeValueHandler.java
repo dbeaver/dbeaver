@@ -7,10 +7,13 @@ package org.jkiss.dbeaver.model.impl.data;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.PreparedStatement;
@@ -19,6 +22,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 
 /**
  * JDBC string value handler
@@ -26,6 +31,9 @@ import java.util.Date;
 public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCDateTimeValueHandler INSTANCE = new JDBCDateTimeValueHandler();
+    public static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MMM-dd");
+    public static final DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+    public static final DateFormat timeStampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     protected Object getColumnValue(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException, SQLException
@@ -107,6 +115,35 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
             dialog.open();
             return true;
         }
+    }
+
+    @Override
+    public String getValueDisplayString(DBCColumnMetaData column, Object value)
+    {
+        if (value == null) {
+            return super.getValueDisplayString(column, value);
+        }
+        switch (column.getValueType()) {
+        case java.sql.Types.TIME:
+            return timeFormat.format(value);
+        case java.sql.Types.DATE:
+            return dateFormat.format(value);
+        default:
+            return timeStampFormat.format(value);
+        }
+
+    }
+
+    @Override
+    public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
+        throws DBCException
+    {
+        menuManager.add(new Action("Set to current time") {
+            @Override
+            public void run() {
+                controller.updateValue(new Date());
+            }
+        });
     }
 
     public static Date getDate(DateTime dateEditor, DateTime timeEditor)

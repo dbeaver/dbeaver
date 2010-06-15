@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.struct;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
@@ -149,4 +150,17 @@ public final class DBSUtils
         return (Collection<T>)theList;
     }
 */
+public static boolean isNullValue(Object value)
+{
+    return (value == null || (value instanceof DBDValue && ((DBDValue)value).isNull()));
+}
+
+    public static Object makeNullValue(Object value)
+    {
+        if (value instanceof DBDValue) {
+            return ((DBDValue)value).makeNull();
+        } else {
+            return null;
+        }
+    }
 }

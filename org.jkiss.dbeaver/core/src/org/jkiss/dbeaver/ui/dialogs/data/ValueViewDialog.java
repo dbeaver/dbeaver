@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.struct.DBSUtils;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
@@ -73,7 +74,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     protected void createButtonsForButtonBar(Composite parent) {
         // create OK and Cancel buttons by default
         createButton(parent, IDialogConstants.OK_ID, "&Save", true).setEnabled(!valueController.isReadOnly());
-        createButton(parent, IDialogConstants.IGNORE_ID, "Set &NULL", false).setEnabled(!valueController.isReadOnly());
+        createButton(parent, IDialogConstants.IGNORE_ID, "Set &NULL", false).setEnabled(!valueController.isReadOnly() && !DBSUtils.isNullValue(valueController.getValue()));
         createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", false);
     }
 

@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -115,17 +116,17 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         super.releaseValueObject(value);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
-    public String getValueDisplayString(Object value)
+    public String getValueDisplayString(DBCColumnMetaData column, Object value)
     {
         if (value instanceof DBDContent) {
             String result = value.toString();
             if (result != null) {
                 return result;
             } else {
-                return super.getValueDisplayString(null);
+                return super.getValueDisplayString(column, null);
             }
         }
-        return super.getValueDisplayString(value);
+        return super.getValueDisplayString(column, value);
     }
 
     public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
