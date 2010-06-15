@@ -102,6 +102,11 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentB
         return data == null;
     }
 
+    public void setNull()
+    {
+        this.data = null;
+    }
+
     @Override
     public String toString() {
         if (data == null) {

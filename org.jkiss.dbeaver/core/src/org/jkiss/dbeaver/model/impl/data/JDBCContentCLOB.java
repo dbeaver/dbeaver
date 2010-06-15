@@ -13,6 +13,8 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -28,6 +30,8 @@ import java.sql.SQLException;
  * @author Serge Rider
  */
 public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCharacter {
+
+    static Log log = LogFactory.getLog(JDBCContentCLOB.class);
 
     private Clob clob;
     private Reader reader;
@@ -128,6 +132,16 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
     public boolean isNull()
     {
         return clob == null && reader == null;
+    }
+
+    public void setNull()
+    {
+        this.clob = null;
+        if (this.reader != null) {
+            log.warn("Set to NULL while temporary content set");
+            this.release();
+        }
+        this.reader = null;
     }
 
     @Override

@@ -12,6 +12,8 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,6 +31,8 @@ import net.sf.jkiss.utils.streams.MimeTypes;
  * @author Serge Rider
  */
 public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBinary {
+
+    static Log log = LogFactory.getLog(JDBCContentBLOB.class);
 
     private Blob blob;
     private InputStream stream;
@@ -127,6 +131,15 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
     public boolean isNull()
     {
         return blob == null && stream == null;
+    }
+
+    public void setNull()
+    {
+        this.blob = null;
+        if (this.stream != null) {
+            log.warn("Set to NULL while temporary content set");
+            this.release();
+        }
     }
 
     @Override
