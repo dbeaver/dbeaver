@@ -160,7 +160,13 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
 
     private void setPageToolTip(int index, String toolTip)
     {
-
+        Composite pageContainer = getContainer();
+        if (pageContainer instanceof CTabFolder) {
+            CTabFolder tabFolder = (CTabFolder)pageContainer;
+            if (index > 0 && index < tabFolder.getItemCount()) {
+                tabFolder.getItem(index).setToolTipText(toolTip);
+            }
+        }
     }
 
     protected void pageChange(int newPageIndex)
