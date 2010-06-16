@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
@@ -54,41 +55,15 @@ public abstract class DBMTreeNode extends DBMNode {
 
     public Image getNodeIcon()
     {
+        if (getObject() instanceof IObjectImageProvider) {
+            Image image = ((IObjectImageProvider) getObject()).getObjectImage();
+            if (image != null) {
+                return image;
+            }
+        }
         DBXTreeNode meta = getMeta();
         if (meta != null) {
-            List<DBXTreeIcon> extIcons = meta.getIcons();
-            if (!CommonUtils.isEmpty(extIcons)) {
-                final Map<String, Object> vars = new HashMap<String, Object>();
-                JexlContext exprContext = new JexlContext() {
-                    public Object get(String s) {
-                        return vars.get(s);
-                    }
-
-                    public void set(String s, Object o) {
-                        vars.put(s, o);
-                    }
-
-                    public boolean has(String s) {
-                        return vars.containsKey(s);
-                    }
-                };
-                vars.put("object", getObject());
-                // Try to get some icon depending on it's condition
-                for (DBXTreeIcon icon : extIcons) {
-                    if (icon.getExpr() == null) {
-                        continue;
-                    }
-                    try {
-                        Object result = icon.getExpr().evaluate(exprContext);
-                        if (Boolean.TRUE.equals(result)) {
-                            return icon.getIcon();
-                        }
-                    } catch (Exception e) {
-                        // do nothing
-                    }
-                }
-            }
-            return meta.getDefaultIcon();
+            return meta.getIcon(getObject());
         }
         return null;
     }
