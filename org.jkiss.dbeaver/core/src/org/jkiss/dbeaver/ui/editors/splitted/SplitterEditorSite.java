@@ -11,6 +11,9 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
+import org.eclipse.ui.internal.WorkbenchPlugin;
+import org.eclipse.ui.internal.PopupMenuExtender;
+import org.eclipse.ui.internal.KeyBindingService;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
 
 public class SplitterEditorSite implements IEditorSite
@@ -21,6 +24,13 @@ public class SplitterEditorSite implements IEditorSite
 
     private ISelectionChangedListener selectionChangedListener = null;
     private ISelectionProvider selectionProvider = null;
+
+    /**
+     * The cached copy of the key binding service specific to this multi-page
+     * editor site. This value is <code>null</code> if it is not yet
+     * initialized.
+     */
+    private IKeyBindingService service = null;
 
     public SplitterEditorSite(
         SplitterEditorPart splitterEditorPart,
@@ -35,6 +45,22 @@ public class SplitterEditorSite implements IEditorSite
     private IEditorSite getParentSite()
     {
         return splitterEditor.getEditorSite();
+    }
+
+    public void dispose() {
+        // Remove myself from the list of nested key binding services.
+        if (service != null) {
+            IKeyBindingService parentService = getSplitterEditor().getEditorSite()
+                    .getKeyBindingService();
+            if (parentService instanceof INestableKeyBindingService) {
+                INestableKeyBindingService nestableParent = (INestableKeyBindingService) parentService;
+                nestableParent.removeKeyBindingService(this);
+            }
+            if (service instanceof KeyBindingService) {
+                ((KeyBindingService) service).dispose();
+            }
+            service = null;
+        }
     }
 
     public IEditorActionBarContributor getActionBarContributor()
@@ -63,7 +89,24 @@ public class SplitterEditorSite implements IEditorSite
     @Deprecated
     public IKeyBindingService getKeyBindingService()
     {
-        return getParentSite().getKeyBindingService();
+        if (service == null) {
+            service = getSplitterEditor().getEditorSite()
+                    .getKeyBindingService();
+            if (service instanceof INestableKeyBindingService) {
+                INestableKeyBindingService nestableService = (INestableKeyBindingService) service;
+                service = nestableService.getKeyBindingService(this);
+
+            } else {
+                /*
+                 * This is an internal reference, and should not be copied by
+                 * client code. If you are thinking of copying this, DON'T DO
+                 * IT.
+                 */
+                WorkbenchPlugin
+                        .log("MultiPageEditorSite.getKeyBindingService()   Parent key binding service was not an instance of INestableKeyBindingService.  It was an instance of " + service.getClass().getName() + " instead."); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+        }
+        return service;
     }
 
     public SplitterEditorPart getSplitterEditor()
