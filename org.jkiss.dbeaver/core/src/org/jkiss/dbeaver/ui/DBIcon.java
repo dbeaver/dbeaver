@@ -30,6 +30,7 @@ public enum DBIcon
     TREE_UNIQUE_CONSTRAINT("unique-constraint", "icons/tree/unique_constraint.png"),
     TREE_FOREIGN_KEY("foreign-key", "icons/tree/foreign_key.png"),
     TREE_REFERENCE("reference", "icons/tree/reference.png"),
+    TREE_TRIGGER("trigger", "icons/tree/trigger.png"),
 
     LOADING1("loading1", "icons/tree/load/loading1.gif"),
     LOADING2("loading2", "icons/tree/load/loading2.gif"),
