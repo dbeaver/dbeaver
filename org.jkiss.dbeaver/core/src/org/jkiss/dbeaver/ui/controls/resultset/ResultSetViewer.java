@@ -548,7 +548,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         // Custom value items
         final int columnIndex = (mode == ResultSetMode.GRID ? cell.col : cell.row);
         final int rowIndex = (mode == ResultSetMode.GRID ? cell.row : curRowNum);
-        if (rowIndex < 0 || curRows.size() <= rowIndex) {
+        if (rowIndex < 0 || curRows.size() <= rowIndex || columnIndex < 0 || columnIndex >= metaColumns.length) {
             return;
         }
         final ResultSetValueController valueController = new ResultSetValueController(

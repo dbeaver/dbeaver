@@ -502,6 +502,7 @@ public class Spreadsheet extends Composite implements Listener {
                         copySelectionToClipboard();
                     }
                 };
+                copyAction.setEnabled(grid.getCellSelectionCount() > 0);
                 copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
 
                 IAction selectAllAction = new Action("Select All") {
