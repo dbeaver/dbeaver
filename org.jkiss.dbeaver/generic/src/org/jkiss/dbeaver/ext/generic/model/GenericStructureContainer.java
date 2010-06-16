@@ -42,6 +42,8 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     static {
         INVALID_TABLE_TYPES.add("INDEX");
         INVALID_TABLE_TYPES.add("SEQUENCE");
+        INVALID_TABLE_TYPES.add("SYSTEM INDEX");
+        INVALID_TABLE_TYPES.add("SYSTEM SEQUENCE");
     }
 
     private TableCache tableCache;
