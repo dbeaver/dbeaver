@@ -67,14 +67,14 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="Foreign Keys" iconId="#fks" description="Table foreign keys">
-                                    <items label="Foreign Keys" path="foreignKey" property="importedKeys" iconId="#fk">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="Foreign Keys" iconId="#foreign-keys" description="Table foreign keys">
+                                    <items label="Foreign Keys" path="foreignKey" property="importedKeys" iconId="#foreign-key">
                                         <items label="Foreign key columns" path="column" property="columns" navigable="false" iconId="#column">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="References" iconId="#refs" description="Table references">
-                                    <items label="References" path="reference" property="exportedKeys" iconId="#ref">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="References" iconId="#references" description="Table references">
+                                    <items label="References" path="reference" property="exportedKeys" iconId="#reference">
                                         <items label="Reference columns" path="column" property="columns" navigable="false" iconId="#column">
                                         </items>
                                     </items>
