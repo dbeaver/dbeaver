@@ -25,9 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSUtils;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * GenericStructureContainer
@@ -35,6 +33,16 @@ import java.util.List;
 public abstract class GenericStructureContainer implements DBSStructureContainer, DBSStructureAssistant
 {
     static Log log = LogFactory.getLog(GenericStructureContainer.class);
+
+    // Tables types which are not actually a table
+    // This is needed for some strange JDBC drivers which returns not a table objects
+    // in DatabaseMetaData.getTables method (PostgreSQL especially)
+    private static final Set<String> INVALID_TABLE_TYPES = new HashSet<String>();
+
+    static {
+        INVALID_TABLE_TYPES.add("INDEX");
+        INVALID_TABLE_TYPES.add("SEQUENCE");
+    }
 
     private TableCache tableCache;
     private IndexCache indexCache;
@@ -228,6 +236,11 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
             String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
             String tableType = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_TYPE);
             String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
+
+            if (tableType != null && INVALID_TABLE_TYPES.contains(tableType)) {
+                // Bad table type. Just skip it
+                return null;
+            }
 
             boolean isSystemTable = tableType != null && tableType.toUpperCase().indexOf("SYSTEM") != -1;
             if (isSystemTable && !getDataSource().getContainer().isShowSystemObjects()) {

@@ -25,7 +25,7 @@ public class JDBCStandardDataTypeProvider implements DBDDataTypeProvider {
 
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBSTypedObject type)
     {
-        DBSDataKind dataKind = JDBCUtils.getDataKind(type.getValueType());
+        DBSDataKind dataKind = JDBCUtils.getDataKind(type);
         switch (dataKind) {
             case BOOLEAN:
                 return JDBCBooleanValueHandler.INSTANCE;

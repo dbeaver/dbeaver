@@ -134,6 +134,16 @@
                     <library path="drivers/mysql-connector-java-5.1.5-bin.jar"/>
                 </driver>
                 <driver
+                    id="postgresql"
+                    label="PostgreSQL"
+                    icon="icons/database.gif"
+                    class="org.postgresql.Driver"
+                    sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                    webURL="http://postgresql.org"
+                    description="PostgreSQL standard driver">
+                    <library path="drivers/postgresql.jar"/>
+                </driver>
+                <driver
                     id="oracle"
                     label="Oracle"
                     icon="icons/database.gif"

@@ -8,19 +8,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCQueryPurpose;
-import org.jkiss.dbeaver.model.impl.jdbc.api.PreparedStatementManagable;
-import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetStatement;
+import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
-import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
  * JDBCUtils
@@ -65,9 +61,9 @@ public class JDBCUtils
         }
     }
 
-    public static DBSDataKind getDataKind(int type)
+    public static DBSDataKind getDataKind(DBSTypedObject type)
     {
-        switch (type) {
+        switch (type.getValueType()) {
             case java.sql.Types.BOOLEAN:
                 return DBSDataKind.BOOLEAN;
             case java.sql.Types.CHAR:
@@ -77,7 +73,6 @@ public class JDBCUtils
             case java.sql.Types.LONGNVARCHAR:
                 return DBSDataKind.STRING;
             case java.sql.Types.BIGINT:
-            case java.sql.Types.BIT:
             case java.sql.Types.DECIMAL:
             case java.sql.Types.DOUBLE:
             case java.sql.Types.FLOAT:
@@ -85,8 +80,15 @@ public class JDBCUtils
             case java.sql.Types.NUMERIC:
             case java.sql.Types.REAL:
             case java.sql.Types.SMALLINT:
-            case java.sql.Types.TINYINT:
                 return DBSDataKind.NUMERIC;
+            case java.sql.Types.BIT:
+            case java.sql.Types.TINYINT:
+                if (type.getTypeName().toLowerCase().contains("bool")) {
+                    // Declared as numeric but actually it's a boolean
+                    return DBSDataKind.BOOLEAN;
+                } else {
+                    return DBSDataKind.NUMERIC;
+                }
             case java.sql.Types.DATE:
             case java.sql.Types.TIME:
             case java.sql.Types.TIMESTAMP:

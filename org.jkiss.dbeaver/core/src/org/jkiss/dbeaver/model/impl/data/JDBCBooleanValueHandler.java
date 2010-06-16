@@ -35,9 +35,9 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
     protected void bindParameter(PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws SQLException
     {
         if (value == null) {
-            statement.setNull(paramIndex + 1, paramType.getValueType());
+            statement.setNull(paramIndex, paramType.getValueType());
         } else {
-            statement.setBoolean(paramIndex + 1, (Boolean)value);
+            statement.setBoolean(paramIndex, (Boolean)value);
         }
     }
 

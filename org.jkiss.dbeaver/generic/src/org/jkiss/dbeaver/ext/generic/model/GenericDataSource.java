@@ -363,6 +363,10 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                 log.error("Catalog " + catalogName + " not found");
                 return null;
             }
+        } else if (catalogs != null && catalogs.size() == 1) {
+            // Catalog name is not specified but we have only one catalog - let's use it
+            // It can happen in some drivers (PostgreSQL at least)
+            container = catalogs.get(0);
         }
         if (!CommonUtils.isEmpty(schemaName)) {
             if (container instanceof GenericCatalog) {
