@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.DBException;
 
 /**
  * ConnectJob
@@ -54,22 +55,11 @@ public class ConnectJob extends AbstractJob
             );
             monitor.worked(1);
             monitor.done();
+
             dataSource.initialize(monitor);
             // Change connection properties
 
-            DBCSession session = getDataSource().getSession(monitor, false);
-
-            // Change autocommit state
-            try {
-                boolean autoCommit = session.isAutoCommit();
-                boolean newAutoCommit = container.getPreferenceStore().getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
-                if (autoCommit != newAutoCommit) {
-                    session.setAutoCommit(newAutoCommit);
-                }
-            }
-            catch (DBCException e) {
-                log.error("Can't set session autocommit state", e);
-            }
+            setDataSourceSettings(monitor, dataSource);
 
             return new Status(
                 Status.OK,
@@ -91,6 +81,27 @@ public class ConnectJob extends AbstractJob
     protected void canceling()
     {
         getThread().interrupt();
+    }
+
+    private void setDataSourceSettings(DBRProgressMonitor monitor, DBPDataSource dataSource)
+        throws DBException
+    {
+        monitor.beginTask("Set session defaults ...", 1);
+
+        DBCSession session = dataSource.getSession(monitor, false);
+
+        // Change autocommit state
+        try {
+            boolean autoCommit = session.isAutoCommit();
+            boolean newAutoCommit = container.getPreferenceStore().getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
+            if (autoCommit != newAutoCommit) {
+                session.setAutoCommit(newAutoCommit);
+            }
+        }
+        catch (DBCException e) {
+            log.error("Can't set session autocommit state", e);
+        }
+        monitor.done();
     }
 
 }

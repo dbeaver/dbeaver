@@ -53,8 +53,22 @@ public interface DBSDataSourceContainer extends DBSObject
 
     boolean isConnected();
 
+    /**
+     * Connects to datasource.
+     * This is async method and returns immediately.
+     * Connection will be opened in separate job, so no progress monitor is required.
+     * @param source
+     * @throws DBException
+     */
     void connect(Object source) throws DBException;
 
+    /**
+     * Disconnects from datasource.
+     * This is async method and returns immediately.
+     * Connection will be closed in separate job, so no progress monitor is required.
+     * @param source
+     * @throws DBException
+     */
     void disconnect(Object source) throws DBException;
 
     void invalidate() throws DBException;
