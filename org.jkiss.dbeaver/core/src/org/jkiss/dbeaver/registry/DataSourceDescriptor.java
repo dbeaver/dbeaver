@@ -426,6 +426,19 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                 //props.addProperty("databaseType", "Database Type", info.getDatabaseProductName() + " " + info.getDatabaseProductVersion());
             }
             props.addProperty("url", "URL", connectionInfo.getJdbcURL());
+            if (isConnected()) {
+                String serverName = dataSource.getInfo().getDatabaseProductName();
+                String serverVersion = dataSource.getInfo().getDatabaseProductVersion();
+                if (serverName != null) {
+                    props.addProperty("server-name", "Server", serverName + (serverVersion == null ? "" : " [" + serverVersion + "]"));
+                }
+
+                String driverName = dataSource.getInfo().getDriverName();
+                String driverVersion = dataSource.getInfo().getDriverVersion();
+                if (driverName != null) {
+                    props.addProperty("driver-name", "Driver", driverName + (driverVersion == null ? "" : " [" + driverVersion + "]"));
+                }
+            }
             return props;
         }/* else if (adapter == IWorkbenchAdapter.class) {
             return new IWorkbenchAdapter() {
