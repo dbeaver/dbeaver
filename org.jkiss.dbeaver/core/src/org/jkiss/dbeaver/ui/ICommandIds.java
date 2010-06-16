@@ -29,5 +29,6 @@ public final class ICommandIds
     public static final String CMD_EXECUTE_SCRIPT = "org.jkiss.dbeaver.ui.editors.sql.run.script";
     public static final String CMD_COMMIT = "org.jkiss.dbeaver.ui.editors.sql.commit";
     public static final String CMD_ROLLBACK = "org.jkiss.dbeaver.ui.editors.sql.rollback";
+    public static final String CMD_OPEN_FILE = "org.jkiss.dbeaver.ui.editors.sql.open.file";
 
 }

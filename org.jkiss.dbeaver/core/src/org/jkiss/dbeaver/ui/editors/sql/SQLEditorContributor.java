@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
@@ -90,6 +91,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
     private RetargetTextEditorAction editorActionIncrementalFindReverse;
     private RetargetTextEditorAction editorActionGotoLine;
 
+    private OpenSQLFileAction openFileAction;
     private ExecuteStatementAction executeStatementAction;
     private ExecuteScriptAction executeScriptAction;
     private ValidateStatementAction validateStatementAction;
@@ -149,6 +151,13 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         contentFormatProposal = new RetargetTextEditorAction(bundle, "ContentFormatProposal.");
         contentAssistTip = new RetargetTextEditorAction(bundle, "ContentAssistTip.");
 
+        // open SQL file
+        openFileAction = new OpenSQLFileAction() {
+            protected SQLEditor getEditor()
+            {
+                return SQLEditorContributor.this.getEditor();
+            }
+        };
         // Execute statement
         executeStatementAction = new ExecuteStatementAction()
         {
@@ -235,8 +244,8 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         editorActionIncrementalFindReverse.setAction(getAction(editor, ITextEditorActionConstants.FIND_INCREMENTAL_REVERSE));
         editorActionGotoLine.setAction(getAction(editor, ITextEditorActionConstants.GOTO_LINE));
 
-        contentAssistProposal.setAction(getAction(editor, "ContentAssistProposal")); //$NON-NLS-1$
-        contentAssistTip.setAction(getAction(editor, "ContentAssistTip")); //$NON-NLS-1$
+        contentAssistProposal.setAction(getAction(editor, SQLEditor.ACTION_CONTENT_ASSIST_PROPOSAL)); //$NON-NLS-1$
+        contentAssistTip.setAction(getAction(editor, SQLEditor.ACTION_CONTENT_ASSIST_TIP)); //$NON-NLS-1$
 
         // Update status line
         if (activeEditorPart instanceof ITextEditorExtension) {
@@ -318,6 +327,8 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
 
         IMenuManager menu = new MenuManager("S&QL Editor");
         manager.prependToGroup(IWorkbenchActionConstants.MB_ADDITIONS, menu);
+        menu.add(openFileAction);
+        menu.add(new Separator());
         menu.add(executeStatementAction);
         menu.add(executeScriptAction);
         menu.add(validateStatementAction);
@@ -729,12 +740,15 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
             public void widgetSelected(SelectionEvent e)
             {
                 String pageId = PrefPageSQLEditor.PAGE_ID;
-                PreferencesUtil.createPropertyDialogOn(
+                PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
                     shell,
                     (DataSourceDescriptor) editor.getDataSourceContainer(),
                     pageId,
                     null,//new String[]{pageId},
-                    null).open();
+                    null);
+                if (propDialog != null) {
+                    propDialog.open();
+                }
             }
         });
         return menu;
@@ -746,5 +760,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
             resultSetSize.setText(event.getNewValue().toString());
         }
     }
+
+
 
 }

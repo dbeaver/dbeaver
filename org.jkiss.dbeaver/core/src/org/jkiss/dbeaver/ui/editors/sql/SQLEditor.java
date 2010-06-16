@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 
 import net.sf.jkiss.utils.CommonUtils;
+import net.sf.jkiss.utils.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -39,6 +40,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
@@ -46,6 +48,7 @@ import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.jkiss.dbeaver.DBException;
@@ -58,14 +61,15 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementAction;
+import org.jkiss.dbeaver.ui.actions.sql.OpenSQLFileAction;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogViewer;
@@ -77,7 +81,14 @@ import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.views.console.ConsoleManager;
 import org.jkiss.dbeaver.ui.views.console.ConsoleMessageType;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
+import java.io.File;
+import java.io.StringWriter;
+import java.io.Reader;
+import java.io.InputStreamReader;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -94,9 +105,9 @@ public class SQLEditor extends BaseTextEditor
 {
     static Log log = LogFactory.getLog(SQLEditor.class);
 
-    private static final String ACTION_CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal";
-    private static final String ACTION_CONTENT_ASSIST_TIP = "ContentAssistTip";
-    private static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal";
+    static final String ACTION_CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal";
+    static final String ACTION_CONTENT_ASSIST_TIP = "ContentAssistTip";
+    static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal";
     //private static final String ACTION_DEFINE_FOLDING_REGION = "DefineFoldingRegion";
 
     private SashForm sashForm;
@@ -109,6 +120,7 @@ public class SQLEditor extends BaseTextEditor
 
     private ExecuteStatementAction execStatementAction;
     private ExecuteScriptAction execScriptAction;
+    private OpenSQLFileAction openFileAction;
 
     private ProjectionSupport projectionSupport;
 
@@ -342,11 +354,17 @@ public class SQLEditor extends BaseTextEditor
         execScriptAction = new ExecuteScriptAction();
         setAction(ICommandIds.CMD_EXECUTE_SCRIPT, execScriptAction);
         execScriptAction.setProcessor(this);
+
+        openFileAction = new OpenSQLFileAction();
+        setAction(ICommandIds.CMD_OPEN_FILE, openFileAction);
+        openFileAction.setProcessor(this);
     }
 
     public void editorContextMenuAboutToShow(IMenuManager menu)
     {
         super.editorContextMenuAboutToShow(menu);
+
+        menu.appendToGroup(ITextEditorActionConstants.GROUP_SAVE, openFileAction);
 
         boolean connected = getDataSourceContainer().isConnected();
         execStatementAction.setEnabled(connected);
@@ -923,4 +941,45 @@ public class SQLEditor extends BaseTextEditor
         return ISaveablePart2.YES;
     }
 
+    public void loadFromExternalFile()
+    {
+        FileDialog fileDialog = new FileDialog(getSite().getShell(), SWT.OPEN);
+        fileDialog.setFilterExtensions(new String[] { "*.sql", "*.txt", "*.*"});
+        String fileName = fileDialog.open();
+        if (CommonUtils.isEmpty(fileName)) {
+            return;
+        }
+        final File loadFile = new File(fileName);
+        if (!loadFile.exists()) {
+            MessageBox aMessageBox = new MessageBox(getSite().getShell(), SWT.ICON_WARNING | SWT.OK);
+            aMessageBox.setText("File doesn't exists");
+            aMessageBox.setMessage("The file "+ loadFile.getAbsolutePath() + " doesn't exists.");
+            aMessageBox.open();
+            return;
+        }
+
+        String newContent = null;
+        try {
+            Reader reader = new InputStreamReader(
+                new FileInputStream(loadFile),
+                ContentUtils.DEFAULT_FILE_CHARSET);
+            try {
+                StringWriter buffer = new StringWriter();
+                IOUtils.copyText(reader, buffer, 10000);
+                newContent = buffer.toString();
+            }
+            finally {
+                reader.close();
+            }
+        }
+        catch (IOException e) {
+            DBeaverUtils.showErrorDialog(
+                getSite().getShell(),
+                "Can't load file",
+                "Can't load file '" + loadFile.getAbsolutePath() + "' - " + e.getMessage());
+        }
+        if (newContent != null) {
+            getDocument().set(newContent);
+        }
+    }
 }

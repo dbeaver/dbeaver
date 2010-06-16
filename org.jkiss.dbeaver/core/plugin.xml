@@ -130,6 +130,11 @@
             id="org.jkiss.dbeaver.ui.editors.sql.rollback"
             name="Rollback changes in SQL Session">
         </command>
+        <command
+            description="Load from file"
+            id="org.jkiss.dbeaver.ui.editors.sql.open.file"
+            name="Load SQL script">
+        </command>
     </extension>
     <extension
         point="org.eclipse.ui.bindings">
@@ -147,6 +152,11 @@
               commandId="org.jkiss.dbeaver.core.openSQLEditor"
               schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
               sequence="CTRL+ALT+E">
+        </key>
+        <key
+              commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"
+              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+              sequence="CTRL+O">
         </key>
     </extension>
 

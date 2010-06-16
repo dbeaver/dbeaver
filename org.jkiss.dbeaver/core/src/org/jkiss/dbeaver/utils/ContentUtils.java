@@ -39,6 +39,7 @@ public class ContentUtils {
     {
         FileDialog fileDialog = new FileDialog(parentShell, SWT.SAVE);
         fileDialog.setText("Save Content As");
+        fileDialog.setOverwrite(true); 
         String fileName = fileDialog.open();
         if (CommonUtils.isEmpty(fileName)) {
             return null;
@@ -48,15 +49,6 @@ public class ContentUtils {
         if (!saveDir.exists()) {
             DBeaverUtils.showErrorDialog(parentShell, "Bad file name", "Directory '" + saveDir.getAbsolutePath() + "' does not exists");
             return null;
-        }
-        if (saveFile.exists()) {
-            MessageBox aMessageBox = new MessageBox(parentShell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
-            aMessageBox.setText("File already exists");
-            aMessageBox.setMessage("The file "+ saveFile.getAbsolutePath() + " already exists.\nOverwrite file?");
-
-            if (aMessageBox.open() != SWT.YES) {
-                return null;
-            }
         }
         return saveFile;
     }
