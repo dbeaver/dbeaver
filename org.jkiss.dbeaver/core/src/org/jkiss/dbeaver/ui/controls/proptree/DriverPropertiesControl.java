@@ -108,7 +108,7 @@ public class DriverPropertiesControl extends Composite {
         driverProvidedProperties = null;
         customProperties = null;
 
-        loadDriverProperties(driver, url, connectionProps);
+        loadDriverProperties(driver, url);
         loadCustomProperties(driver);
         if (propsTree != null) {
             propsTree.setInput(driver);
@@ -400,7 +400,7 @@ public class DriverPropertiesControl extends Composite {
         propsTree.update(prop, null);
     }
 
-    private void loadDriverProperties(DBPDriver driver, String url, Map<String, String> connectionProps)
+    private void loadDriverProperties(DBPDriver driver, String url)
     {
         if (driver.supportsDriverProperties()) {
             try {
@@ -680,12 +680,12 @@ public class DriverPropertiesControl extends Composite {
 
         public String getName()
         {
-            return "Custom Properties";
+            return "User Properties";
         }
 
         public String getDescription()
         {
-            return "Custom Properties";
+            return "User Properties";
         }
 
         public List<? extends DBPDriverProperty> getProperties()
