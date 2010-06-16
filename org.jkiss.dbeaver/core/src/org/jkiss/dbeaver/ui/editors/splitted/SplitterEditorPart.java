@@ -221,11 +221,11 @@ public abstract class SplitterEditorPart extends EditorPart {
         super.dispose();
     }
 
-    protected IWorkbenchPart getActivePart()
+    protected IWorkbenchPart getActiveEditor()
     {
         int index = getActivePage();
         if (index != -1) {
-            return getPart(index);
+            return getEditor(index);
         }
         return null;
     }
@@ -249,7 +249,7 @@ public abstract class SplitterEditorPart extends EditorPart {
         return getItem(pageIndex).getControl();
     }
 
-    protected IWorkbenchPart getPart(int pageIndex)
+    protected IWorkbenchPart getEditor(int pageIndex)
     {
         Item item = getItem(pageIndex);
         if (item != null) {
@@ -325,7 +325,7 @@ public abstract class SplitterEditorPart extends EditorPart {
             setFocus();
         }
 
-        IWorkbenchPart activePart = getPart(newPageIndex);
+        IWorkbenchPart activePart = getEditor(newPageIndex);
 
         IEditorActionBarContributor contributor = getEditorSite().getActionBarContributor();
         if (contributor != null && contributor instanceof SplitterEditorActionBarContributor) {
@@ -354,7 +354,7 @@ public abstract class SplitterEditorPart extends EditorPart {
     {
         // Deactivate the nested services from the last active service locator.
         final int pageIndex = getActivePage();
-        final IWorkbenchPart part = getPart(pageIndex);
+        final IWorkbenchPart part = getEditor(pageIndex);
         if (part instanceof IEmbeddedWorkbenchPart) {
             ((IEmbeddedWorkbenchPart) part).deactivatePart();
         }
@@ -363,7 +363,7 @@ public abstract class SplitterEditorPart extends EditorPart {
     protected final void activateSite()
     {
         final int pageIndex = getActivePage();
-        final IWorkbenchPart part = getPart(pageIndex);
+        final IWorkbenchPart part = getEditor(pageIndex);
 
         if (part instanceof IEmbeddedWorkbenchPart) {
             ((IEmbeddedWorkbenchPart) part).activatePart();
@@ -389,7 +389,7 @@ public abstract class SplitterEditorPart extends EditorPart {
     {
         assert(pageIndex >= 0 && pageIndex < getPageCount());
         // get editor (if any) before disposing item
-        IWorkbenchPart part = getPart(pageIndex);
+        IWorkbenchPart part = getEditor(pageIndex);
 
         // get control for the item if it's not an editor
         CTabItem item = getItem(pageIndex);
@@ -442,7 +442,7 @@ public abstract class SplitterEditorPart extends EditorPart {
             // page index out of bounds, don't set focus.
             return;
         }
-        final IWorkbenchPart part = getPart(pageIndex);
+        final IWorkbenchPart part = getEditor(pageIndex);
         if (part != null) {
             part.setFocus();
         } else {
@@ -474,7 +474,7 @@ public abstract class SplitterEditorPart extends EditorPart {
         Object result = super.getAdapter(adapter);
         // restrict delegating to the UI thread for bug 144851
         if (result == null && Display.getCurrent() != null) {
-            IWorkbenchPart innerEditor = getActivePart();
+            IWorkbenchPart innerEditor = getActiveEditor();
             // see bug 138823 - prevent some subclasses from causing
             // an infinite loop
             if (innerEditor != null && innerEditor != this) {
@@ -491,7 +491,7 @@ public abstract class SplitterEditorPart extends EditorPart {
     {
         int count = getPageCount();
         for (int i = 0; i < count; i++) {
-            IWorkbenchPart pagePart = getPart(i);
+            IWorkbenchPart pagePart = getEditor(i);
             if (pagePart == part) {
                 setActivePage(i);
                 break;

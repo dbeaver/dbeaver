@@ -62,7 +62,7 @@ public class SplitterSelectionProvider implements IPostSelectionProvider {
      * Method declared on <code>ISelectionProvider</code>.
      */
     public ISelection getSelection() {
-        IWorkbenchPart activePart = splitterEditor.getActivePart();
+        IWorkbenchPart activePart = splitterEditor.getActiveEditor();
         if (activePart != null) {
             ISelectionProvider selectionProvider = activePart.getSite().getSelectionProvider();
             if (selectionProvider != null) {
@@ -88,7 +88,7 @@ public class SplitterSelectionProvider implements IPostSelectionProvider {
      * Method declared on <code>ISelectionProvider</code>.
      */
     public void setSelection(ISelection selection) {
-        IWorkbenchPart activeEditor = splitterEditor.getActivePart();
+        IWorkbenchPart activeEditor = splitterEditor.getActiveEditor();
         if (activeEditor != null) {
             ISelectionProvider selectionProvider = activeEditor.getSite().getSelectionProvider();
             if (selectionProvider != null) {

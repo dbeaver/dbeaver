@@ -17,7 +17,7 @@ public abstract class SplitterEditorActionBarContributor extends
     public void setActiveEditor(IEditorPart part) {
         IWorkbenchPart activeNestedEditor = null;
         if (part instanceof SplitterEditorPart) {
-            activeNestedEditor = ((SplitterEditorPart) part).getActivePart();
+            activeNestedEditor = ((SplitterEditorPart) part).getActiveEditor();
         }
         setActivePage(activeNestedEditor);
     }

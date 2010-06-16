@@ -257,7 +257,7 @@ public class EntityEditor extends SplitterEditorPart implements IDBMListener, IM
     {
         int pageCount = getPageCount();
         for (int i = 0; i < pageCount; i++) {
-            IWorkbenchPart part = getPart(i);
+            IWorkbenchPart part = getEditor(i);
             if (part instanceof IRefreshablePart) {
                 ((IRefreshablePart)part).refreshPart(event);
             }
@@ -290,7 +290,7 @@ public class EntityEditor extends SplitterEditorPart implements IDBMListener, IM
 
     public Viewer getViewer()
     {
-        IWorkbenchPart activePart = getActivePart();
+        IWorkbenchPart activePart = getActiveEditor();
         if (activePart instanceof IMetaModelView) {
             return ((IMetaModelView)activePart).getViewer();
         }
