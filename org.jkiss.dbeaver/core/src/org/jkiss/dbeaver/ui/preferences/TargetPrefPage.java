@@ -12,6 +12,7 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -232,23 +233,29 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     private void doLinkActivated(Link link)
     {
+        PreferenceDialog prefDialog = null;
         if (isDataSourcePreferencePage()) {
-            PreferencesUtil.createPreferenceDialogOn(
+            // Show global settings
+            prefDialog = PreferencesUtil.createPreferenceDialogOn(
                 getShell(),
                 getPropertyPageID(),
                 null,//new String[]{getPropertyPageID()},
-                null).open();
+                null);
         } else if (supportsDataSourceSpecificOptions()) {
             // Select datasource
             DataSourceDescriptor dataSource = SelectDataSourceDialog.selectDataSource(getShell());
             if (dataSource != null) {
-                PreferencesUtil.createPropertyDialogOn(
+                prefDialog = PreferencesUtil.createPropertyDialogOn(
                     getShell(),
                     dataSource,
                     getPropertyPageID(),
                     null,//new String[]{getPropertyPageID()},
-                    null).open();
+                    null);
             }
+        }
+        if (prefDialog != null) {
+
+            prefDialog.open();
         }
     }
 

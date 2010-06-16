@@ -307,13 +307,27 @@
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
+        <page
+              adaptable="true"
+              class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon"
+              id="org.jkiss.dbeaver.preferences.main.common"
+              name="Common Settings"
+              objectClass="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+        </page>
        <page
              adaptable="true"
              class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor"
-             id="org.jkiss.dbeaver.preferences.main.scripts"
-             name="Script Settings"
+             id="org.jkiss.dbeaver.preferences.main.sqleditor"
+             name="SQL Editor"
              objectClass="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
        </page>
+        <page
+              adaptable="true"
+              class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor"
+              id="org.jkiss.dbeaver.preferences.main.contenteditor"
+              name="Content Editor"
+              objectClass="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+        </page>
     </extension>
 
     <extension point="org.eclipse.ui.elementFactories">
