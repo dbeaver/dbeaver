@@ -54,6 +54,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.providerDescriptor = providerDescriptor;
         this.id = id;
         this.custom = true;
+        this.icon = DBIcon.GEN_DATABASE.getImage();
     }
 
     DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, IConfigurationElement config)

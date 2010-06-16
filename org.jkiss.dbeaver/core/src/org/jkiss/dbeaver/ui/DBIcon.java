@@ -79,6 +79,11 @@ public enum DBIcon
     SQL_ANALYSE("sql_analyse", "/icons/sql/sql_analyse.png"),
     SQL_EXPLAIN_PLAN("sql_explain", "/icons/sql/sql_plan.png"),
     SQL_VALIDATE("sql_validate", "/icons/sql/sql_validate.png"),
+
+
+    OVER_SUCCESS("over_success", "/icons/over/success_ovr.png"),
+    OVER_FAILED("over_failed", "/icons/over/failed_ovr.png"),
+    OVER_ERROR("over_failed", "/icons/over/error_ovr.png"),
     ;
 
     private final String token;

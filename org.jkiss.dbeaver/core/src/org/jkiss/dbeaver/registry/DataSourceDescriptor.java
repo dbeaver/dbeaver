@@ -12,11 +12,14 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -31,6 +34,8 @@ import org.jkiss.dbeaver.model.struct.DBSObjectAction;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionAuthDialog;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
@@ -43,7 +48,7 @@ import java.util.List;
 /**
  * DataSourceDescriptor
  */
-public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable, IActionFilter
+public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImageProvider, IAdaptable, IActionFilter
 {
     static Log log = LogFactory.getLog(DataSourceDescriptor.class);
 
@@ -62,7 +67,12 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
     private final List<DBSListener> listeners = new ArrayList<DBSListener>();
     private DBPDataSource dataSource;
 
-    private List<DBPDataSourceUser> users = new ArrayList<DBPDataSourceUser>();
+    private transient List<DBPDataSourceUser> users = new ArrayList<DBPDataSourceUser>();
+    private transient Image iconNormal;
+    private transient Image iconConnected;
+    private transient Image iconError;
+    private transient boolean connectFailed = false;
+
 
     public DataSourceDescriptor(
         DriverDescriptor driver,
@@ -228,6 +238,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
             public void done(IJobChangeEvent event)
             {
                 if (event.getResult().isOK()) {
+                    connectFailed = false;
                     DataSourceDescriptor.this.dataSource = ((ConnectJob)event.getJob()).getDataSource();
                     if (DataSourceDescriptor.this.dataSource == null) {
                         log.error("Null datasource returned from connector");
@@ -242,6 +253,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
                         DataSourceDescriptor.this,
                         source);
                 } else {
+                    connectFailed = true;
                     getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
                         DataSourceEvent.Action.CONNECT_FAIL,
                         DataSourceDescriptor.this,
@@ -456,6 +468,32 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IAdaptable,
             return String.valueOf(this.isSavePassword()).equals(value);
         }
         return false;
+    }
+
+    public Image getObjectImage()
+    {
+        if (iconNormal == null) {
+            iconNormal = driver.getIcon();
+
+            // Create overlay image for ocnnected icon
+            {
+                OverlayImageDescriptor connectedDescriptor = new OverlayImageDescriptor(iconNormal.getImageData());
+                connectedDescriptor.setBottomRight(new ImageDescriptor[] {DBIcon.OVER_SUCCESS.getImageDescriptor()} );
+                iconConnected = new Image(iconNormal.getDevice(), connectedDescriptor.getImageData());
+            }
+            {
+                OverlayImageDescriptor failedDescriptor = new OverlayImageDescriptor(iconNormal.getImageData());
+                failedDescriptor.setBottomRight(new ImageDescriptor[] {DBIcon.OVER_ERROR.getImageDescriptor()} );
+                iconError = new Image(iconNormal.getDevice(), failedDescriptor.getImageData());
+            }
+        }
+        if (isConnected()) {
+            return iconConnected;
+        } else if (connectFailed) {
+            return iconError;
+        } else {
+            return iconNormal;
+        }
     }
 
 }
