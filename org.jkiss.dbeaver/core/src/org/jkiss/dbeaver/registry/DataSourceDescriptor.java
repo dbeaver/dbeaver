@@ -90,6 +90,16 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             log.warn("Data source container '" + this.getName() + "' listeners still registered [" + listeners.size() + "]");
             listeners.clear();
         }
+        users.clear();
+        iconNormal = null;
+        if (iconConnected != null) {
+            iconConnected.dispose();
+            iconConnected = null;
+        }
+        if (iconError != null) {
+            iconError.dispose();
+            iconError = null;
+        }
     }
 
     public DriverDescriptor getDriver()
