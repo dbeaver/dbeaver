@@ -11,10 +11,13 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.progress.IProgressConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.dbc.DBCSession;
+import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 /**
  * ConnectJob
@@ -46,11 +49,27 @@ public class ConnectJob extends AbstractJob
     {
         try {
             monitor.beginTask("Open Datasource ...", 1);
-            dataSource = container.getDriver().getDataSourceProvider().openDataSource(container);
+            dataSource = container.getDriver().getDataSourceProvider().openDataSource(
+                monitor, container
+            );
             monitor.worked(1);
             monitor.done();
             dataSource.initialize(monitor);
             // Change connection properties
+
+            DBCSession session = getDataSource().getSession(monitor, false);
+
+            // Change autocommit state
+            try {
+                boolean autoCommit = session.isAutoCommit();
+                boolean newAutoCommit = container.getPreferenceStore().getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
+                if (autoCommit != newAutoCommit) {
+                    session.setAutoCommit(newAutoCommit);
+                }
+            }
+            catch (DBCException e) {
+                log.error("Can't set session autocommit state", e);
+            }
 
             return new Status(
                 Status.OK,

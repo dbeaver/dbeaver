@@ -43,14 +43,14 @@ public abstract class JDBCDataSource
 
     private DBPDataSourceInfo info;
 
-    public JDBCDataSource(DBSDataSourceContainer container)
+    public JDBCDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
         this.container = container;
-        this.connection = openConnection();
+        this.connection = openConnection(monitor);
     }
 
-    protected Connection openConnection()
+    protected Connection openConnection(DBRProgressMonitor monitor)
         throws DBException
     {
         // It MUST be a JDBC driver
@@ -121,11 +121,11 @@ public abstract class JDBCDataSource
         return info;
     }
 
-    public DBCSession getSession(boolean forceNew)
+    public DBCSession getSession(DBRProgressMonitor monitor, boolean forceNew)
         throws DBException
     {
         if (forceNew) {
-            return new JDBCSession(this, this.openConnection());
+            return new JDBCSession(this, this.openConnection(monitor));
         } else {
             return new JDBCSession(this);
         }
@@ -162,11 +162,11 @@ public abstract class JDBCDataSource
         }
     }
 
-    protected void reconnect()
+    protected void reconnect(DBRProgressMonitor monitor)
         throws DBException
     {
         close();
-        this.connection = openConnection();
+        this.connection = openConnection(monitor);
     }
 
     public void close()

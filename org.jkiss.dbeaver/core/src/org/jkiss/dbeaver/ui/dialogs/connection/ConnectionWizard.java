@@ -60,7 +60,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                 DataSourceDescriptor container = new DataSourceDescriptor(driver, connectionInfo);
                 try {
                     monitor.worked(1);
-                    DBPDataSource dataSource = provider.openDataSource(container);
+                    DBPDataSource dataSource = provider.openDataSource(monitor, container);
                     monitor.worked(1);
                     if (dataSource == null) {
                         throw new InvocationTargetException(

@@ -10,6 +10,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
@@ -169,7 +170,7 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
         if (session == null) {
             DBPDataSource dataSource = getDataSource();
             if (dataSource != null) {
-                session = dataSource.getSession(false);
+                session = dataSource.getSession(VoidProgressMonitor.INSTANCE, false);
             }
         }
         return session;

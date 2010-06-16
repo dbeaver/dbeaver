@@ -24,11 +24,11 @@ public interface DBPDataSource extends DBPObject
 
     /**
      * Acquires new database session
-     * @param forceNew if true opens new physical session, otherwise uses datasourse internal session
-     * @return new session
+     * @param monitor
+     *@param forceNew if true opens new physical session, otherwise uses datasourse internal session  @return new session
      * @throws DBException on any DB error
      */
-    DBCSession getSession(boolean forceNew) throws DBException;
+    DBCSession getSession(DBRProgressMonitor monitor, boolean forceNew) throws DBException;
 
     /**
      * Executes test query agains connected database.

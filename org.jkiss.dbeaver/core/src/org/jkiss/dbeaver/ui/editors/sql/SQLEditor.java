@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementAction;
@@ -761,7 +762,8 @@ public class SQLEditor extends BaseTextEditor
             if (getDataSourceContainer() == null || !getDataSourceContainer().isConnected()) {
                 throw new DBException("Not connected to database");
             }
-            curSession = getDataSourceContainer().getSession(false);
+            // Get session with void monitor cos' we don't want to open new one
+            curSession = getDataSourceContainer().getSession(VoidProgressMonitor.INSTANCE, false);
         }
     }
 

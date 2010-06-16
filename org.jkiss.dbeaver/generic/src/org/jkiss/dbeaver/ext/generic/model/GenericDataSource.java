@@ -56,18 +56,18 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     private String queryGetActiveDB;
     private String querySetActiveDB;
 
-    public GenericDataSource(DBSDataSourceContainer container)
+    public GenericDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
         this.container = container;
         this.queryGetActiveDB = container.getDriver().getCustomQuery(QUERY_GET_ACTIVE_DB);
         this.querySetActiveDB = container.getDriver().getCustomQuery(QUERY_SET_ACTIVE_DB);
-        this.connection = openConnection();
+        this.connection = openConnection(monitor);
 
         this.initCache();
     }
 
-    private Connection openConnection()
+    private Connection openConnection(DBRProgressMonitor monitor)
         throws DBException
     {
         Driver driverInstance = Driver.class.cast(container.getDriver().getDriverInstance());
@@ -131,11 +131,11 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         return catalogs;
     }
 
-    public DBCSession getSession(boolean forceNew)
+    public DBCSession getSession(DBRProgressMonitor monitor, boolean forceNew)
         throws DBException
     {
         if (forceNew) {
-            return new JDBCSession(this, this.openConnection());
+            return new JDBCSession(this, this.openConnection(monitor));
         } else {
             return new JDBCSession(this);
         }

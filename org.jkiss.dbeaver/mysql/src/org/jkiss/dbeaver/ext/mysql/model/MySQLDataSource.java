@@ -46,10 +46,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
     private List<MySQLCatalog> catalogs;
     private MySQLCatalog activeCatalog;
 
-    public MySQLDataSource(DBSDataSourceContainer container)
+    public MySQLDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
-        super(container);
+        super(monitor, container);
     }
 
     protected Properties getInternalConnectionProperties()
@@ -122,15 +122,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
     public void close()
     {
         super.close();
-    }
-
-    public void cancelCurrentOperation()
-    {
-        try {
-            reconnect();
-        } catch (Exception ex) {
-            log.error(ex);
-        }
     }
 
     public boolean refreshObject(DBRProgressMonitor monitor)

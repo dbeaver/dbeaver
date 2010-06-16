@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * DBPDataSourceProvider
@@ -17,7 +18,8 @@ public interface DBPDataSourceProvider
     void close();
 
     DBPDataSource openDataSource(
-        DBSDataSourceContainer container)
+        DBRProgressMonitor monitor, DBSDataSourceContainer container
+    )
         throws DBException;
 
 }

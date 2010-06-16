@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -101,7 +102,8 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
             }
             table = (DBSTable)dbmObject;
             try {
-                curSession = table.getDataSource().getContainer().getSession(false);
+                // Get session with void monitor cos' we don't want to open new one
+                curSession = table.getDataSource().getContainer().getSession(VoidProgressMonitor.INSTANCE, false);
             } catch (DBException ex) {
                 log.error("Error obtaining database session", ex);
                 return;
