@@ -13,6 +13,7 @@ import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.eclipse.ui.views.properties.PropertySheet;
 import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
@@ -165,6 +166,10 @@ public class PropertySourceAbstract implements IPropertySource
         {
             this.propertyId = propertyId;
             this.loadText = loadText;
+        }
+
+        public Shell getShell() {
+            return DBeaverCore.getActiveWorkbenchWindow().getShell();
         }
 
         public boolean isCompleted()

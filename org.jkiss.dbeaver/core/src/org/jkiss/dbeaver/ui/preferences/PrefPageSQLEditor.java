@@ -24,7 +24,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqleditor";
 
     private Spinner resultSetSize;
-    private Button autoCommitCheck;
     private Spinner executeTimeoutText;
 
     private Combo commitTypeCombo;
@@ -42,7 +41,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(PrefConstants.RESULT_SET_MAX_ROWS) ||
-            store.contains(PrefConstants.DEFAULT_AUTO_COMMIT) ||
                 store.contains(PrefConstants.STATEMENT_TIMEOUT) ||
 
                 store.contains(PrefConstants.SCRIPT_COMMIT_TYPE) ||
@@ -77,14 +75,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
                 resultSetSize.setIncrement(1);
                 resultSetSize.setMinimum(1);
                 resultSetSize.setMaximum(1024 * 1024);
-            }
-
-            {
-                Label acEnabledLabel = new Label(commonGroup, SWT.NONE);
-                acEnabledLabel.setText("Auto-commit by default:");
-
-                autoCommitCheck = new Button(commonGroup, SWT.CHECK);
-                autoCommitCheck.setText("Enabled");
             }
 
             {
@@ -153,7 +143,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
     {
         try {
             resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
-            autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
             executeTimeoutText.setSelection(store.getInt(PrefConstants.STATEMENT_TIMEOUT));
 
             commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(PrefConstants.SCRIPT_COMMIT_TYPE)).ordinal());
@@ -169,7 +158,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
     {
         try {
             store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
-            store.setValue(PrefConstants.DEFAULT_AUTO_COMMIT, autoCommitCheck.getSelection());
             store.setValue(PrefConstants.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
 
             store.setValue(PrefConstants.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.fromOrdinal(commitTypeCombo.getSelectionIndex()).name());
@@ -191,7 +179,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void clearPreferences(IPreferenceStore store)
     {
         store.setToDefault(PrefConstants.RESULT_SET_MAX_ROWS);
-        store.setToDefault(PrefConstants.DEFAULT_AUTO_COMMIT);
         store.setToDefault(PrefConstants.STATEMENT_TIMEOUT);
 
         store.setToDefault(PrefConstants.SCRIPT_COMMIT_TYPE);

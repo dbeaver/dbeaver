@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.runtime.load.jobs;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -11,11 +13,12 @@ import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
 public class LoadingJob<RESULT>  extends AbstractJob {
+
+    static Log log = LogFactory.getLog(LoadingJob.class);
 
     public static final Object LOADING_FAMILY = new Object();
 
@@ -47,17 +50,19 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         updateUIJob.schedule();
         this.loadingService.setProgressMonitor(monitor);
         RESULT result = null;
+        Throwable error = null;
         try {
             result = this.loadingService.evaluate();
         }
         catch (InvocationTargetException e) {
-            return DBeaverUtils.makeExceptionStatus("Loading error", e.getTargetException());
+            error = e.getTargetException();
+            log.error("Loading error", e.getTargetException());
         }
         catch (InterruptedException e) {
             return new Status(Status.CANCEL, DBeaverConstants.PLUGIN_ID, "Loading interrupted");
         }
         finally {
-            new LoadingFinishJob<RESULT>(visualizer, result).schedule();
+            new LoadingFinishJob<RESULT>(visualizer, result, error).schedule();
         }
         return Status.OK_STATUS;
     }

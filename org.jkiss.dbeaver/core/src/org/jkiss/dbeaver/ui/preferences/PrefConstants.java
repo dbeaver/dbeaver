@@ -9,13 +9,15 @@ package org.jkiss.dbeaver.ui.preferences;
  */
 public final class PrefConstants
 {
+    public static final String DEFAULT_AUTO_COMMIT = "default.autocommit";
+    public static final String QUERY_ROLLBACK_ON_ERROR = "query.rollback-on-error";
+
     public static final String SCRIPT_COMMIT_TYPE = "script.commit.type";
     public static final String SCRIPT_COMMIT_LINES = "script.commit.lines";
     public static final String SCRIPT_ERROR_HANDLING = "script.error.handling";
     public static final String SCRIPT_FETCH_RESULT_SETS = "script.fetch.resultset";
 
     public static final String RESULT_SET_MAX_ROWS = "resultset.maxrows";
-    public static final String DEFAULT_AUTO_COMMIT = "default.autocommit";
     public static final String STATEMENT_TIMEOUT = "statement.timeout";
 
     public static final String RS_EDIT_MAX_TEXT_SIZE = "resultset.edit.maxtextsize";

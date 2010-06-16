@@ -354,6 +354,10 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     {
         IPreferenceStore store = getGlobalPreferenceStore();
 
+        // Common
+        setDefaultPreferenceValue(store, PrefConstants.DEFAULT_AUTO_COMMIT, true);
+        setDefaultPreferenceValue(store, PrefConstants.QUERY_ROLLBACK_ON_ERROR, true);
+
         // SQL execution
         setDefaultPreferenceValue(store, PrefConstants.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.NO_COMMIT.name());
         setDefaultPreferenceValue(store, PrefConstants.SCRIPT_COMMIT_LINES, 1000);
@@ -361,7 +365,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         setDefaultPreferenceValue(store, PrefConstants.SCRIPT_FETCH_RESULT_SETS, false);
 
         setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_MAX_ROWS, 1000);
-        setDefaultPreferenceValue(store, PrefConstants.DEFAULT_AUTO_COMMIT, true);
         setDefaultPreferenceValue(store, PrefConstants.STATEMENT_TIMEOUT, 10 * 1000);
 
         setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);

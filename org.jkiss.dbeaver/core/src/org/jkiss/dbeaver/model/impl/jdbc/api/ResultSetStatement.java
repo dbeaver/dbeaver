@@ -28,14 +28,12 @@ public class ResultSetStatement extends PreparedStatementManagable {
     }
 
     public JDBCResultSet executeQuery()
-        throws SQLException
     {
         return new ResultSetManagable(this, resultSet);
     }
 
     @Override
     public JDBCResultSet getResultSet()
-        throws SQLException
     {
         return new ResultSetManagable(this, resultSet);
     }

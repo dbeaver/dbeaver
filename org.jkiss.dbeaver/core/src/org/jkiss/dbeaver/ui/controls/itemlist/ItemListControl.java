@@ -23,13 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.ProgressBar;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
@@ -401,6 +395,10 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
         private boolean completed = false;
         private List<ItemCell> lazyItems = new ArrayList<ItemCell>();
 
+        public Shell getShell() {
+            return workbenchPart.getSite().getShell();
+        }
+
         public boolean isCompleted()
         {
             return completed;
@@ -571,6 +569,10 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
     private class ValuesLoadVisualizer implements ILoadVisualizer<Object> {
 
         private boolean completed = false;
+
+        public Shell getShell() {
+            return workbenchPart.getSite().getShell();
+        }
 
         public boolean isCompleted()
         {

@@ -74,21 +74,36 @@ public class PreparedStatementManagable extends StatementManagable implements JD
         throws SQLException
     {
         super.startBlock();
-        return new ResultSetManagable(this, getOriginal().executeQuery());
+        try {
+            return new ResultSetManagable(this, getOriginal().executeQuery());
+        } catch (SQLException e) {
+            super.handleExecuteError(e);
+            throw e;
+        }
     }
 
     public int executeUpdate()
         throws SQLException
     {
         super.startBlock();
-        return getOriginal().executeUpdate();
+        try {
+            return getOriginal().executeUpdate();
+        } catch (SQLException e) {
+            super.handleExecuteError(e);
+            throw e;
+        }
     }
 
     public boolean execute()
         throws SQLException
     {
         super.startBlock();
-        return getOriginal().execute();
+        try {
+            return getOriginal().execute();
+        } catch (SQLException e) {
+            super.handleExecuteError(e);
+            throw e;
+        }
     }
 
     public void setNull(int parameterIndex, int sqlType)

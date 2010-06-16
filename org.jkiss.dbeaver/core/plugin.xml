@@ -282,7 +282,7 @@
         </page>
         <page
             id="org.jkiss.dbeaver.preferences.main.common"
-            class="org.jkiss.dbeaver.ui.preferences.PrefPageSQL"
+            class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon"
             name="Common"
             category="org.jkiss.dbeaver.preferences.main">
         </page>

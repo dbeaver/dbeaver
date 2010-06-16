@@ -9,23 +9,33 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 class LoadingFinishJob<RESULT> extends AbstractUIJob {
 
     private ILoadVisualizer<RESULT> visualizer;
     private RESULT result;
+    private Throwable error;
 
-    public LoadingFinishJob(ILoadVisualizer<RESULT> visualizer, RESULT result)
+    public LoadingFinishJob(ILoadVisualizer<RESULT> visualizer, RESULT result, Throwable error)
     {
         super("Remove load load placeholder");
         this.visualizer = visualizer;
         this.result = result;
+        this.error = error;
         setRule(new NonConflictingRule());
     }
 
     public IStatus runInUIThread(DBRProgressMonitor monitor)
     {
         visualizer.completeLoading(result);
+        if (error != null) {
+            DBeaverUtils.showErrorDialog(
+                visualizer.getShell(),
+                "Error loading items",
+                "Could not load child items",
+                error);
+        }
         return Status.OK_STATUS;
     }
 

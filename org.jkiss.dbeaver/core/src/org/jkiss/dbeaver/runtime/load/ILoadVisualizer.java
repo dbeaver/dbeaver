@@ -4,10 +4,12 @@
 
 package org.jkiss.dbeaver.runtime.load;
 
+import org.eclipse.jface.window.IShellProvider;
+
 /**
  * Lazy loading visualizer
  */
-public interface ILoadVisualizer<RESULT> {
+public interface ILoadVisualizer<RESULT> extends IShellProvider {
 
     boolean isCompleted();
 

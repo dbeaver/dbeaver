@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -28,6 +29,10 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
         this.viewer = viewer;
         this.placeHolder = placeHolder;
         this.parent = parent;
+    }
+
+    public Shell getShell() {
+        return viewer.getControl().getShell();
     }
 
     public boolean isCompleted()
