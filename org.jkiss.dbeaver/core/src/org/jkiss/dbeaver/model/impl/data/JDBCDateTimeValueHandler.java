@@ -31,9 +31,9 @@ import java.text.DateFormat;
 public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCDateTimeValueHandler INSTANCE = new JDBCDateTimeValueHandler();
-    public static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MMM-dd");
-    public static final DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-    public static final DateFormat timeStampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static final DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG);//new SimpleDateFormat("yyyy-MMM-dd");
+    public static final DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.LONG);//new SimpleDateFormat("HH:mm:ss");
+    public static final DateFormat timeStampFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);//new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     protected Object getColumnValue(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException, SQLException
