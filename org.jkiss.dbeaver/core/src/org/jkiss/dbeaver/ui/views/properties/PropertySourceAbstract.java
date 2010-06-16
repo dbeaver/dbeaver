@@ -100,6 +100,7 @@ public class PropertySourceAbstract implements IPropertySource
                             new PropertySheetLoadService(annoDescriptor),
                             new PropertySheetLoadVisualizer(id, loadText));
                         // Return dummy string for now
+                        propValues.put(id, loadText);
                         return loadText;
                     }
                 } else {

@@ -72,12 +72,12 @@ public class DataSourceRegistry implements DBPRegistry
                 public int compare(DataSourceProviderDescriptor o1, DataSourceProviderDescriptor o2)
                 {
                     if (o1.isDriversManagable() && !o2.isDriversManagable()) {
-                        return -1;
-                    }
-                    if (o2.isDriversManagable() && !o1.isDriversManagable()) {
                         return 1;
                     }
-                    return o1.getName().compareTo(o2.getName());
+                    if (o2.isDriversManagable() && !o1.isDriversManagable()) {
+                        return -1;
+                    }
+                    return o1.getName().compareToIgnoreCase(o2.getName());
                 }
             });
         }
@@ -202,7 +202,7 @@ public class DataSourceRegistry implements DBPRegistry
         List<DataSourceDescriptor> dsCopy = new ArrayList<DataSourceDescriptor>(dataSources);
         Collections.sort(dsCopy, new Comparator<DataSourceDescriptor>() {
             public int compare(DataSourceDescriptor o1, DataSourceDescriptor o2) {
-                return o1.getName().compareTo(o2.getName());
+                return o1.getName().compareToIgnoreCase(o2.getName());
             }
         });
         return dsCopy;

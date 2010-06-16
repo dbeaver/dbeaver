@@ -48,9 +48,11 @@ public class PropertySectionStandard extends AbstractPropertySection {
 		});
 	}
 
-	public void setInput(IWorkbenchPart part, ISelection selection) {
-		super.setInput(part, selection);
-		pageStandard.selectionChanged(part, selection);
+	public void setInput(IWorkbenchPart part, ISelection newSelection) {
+        if (getSelection() == null || newSelection == null || !getSelection().equals(newSelection)) {
+		    super.setInput(part, newSelection);
+		    pageStandard.selectionChanged(part, newSelection);
+        }
 	}
 
 	public void dispose() {
@@ -63,7 +65,7 @@ public class PropertySectionStandard extends AbstractPropertySection {
 	}
 
 	public void refresh() {
-		pageStandard.refresh();
+		//pageStandard.refresh();
 	}
 
 	public boolean shouldUseExtraSpace()
