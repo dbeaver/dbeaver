@@ -10,10 +10,16 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.*;
-import org.eclipse.ui.internal.WorkbenchPlugin;
-import org.eclipse.ui.internal.PopupMenuExtender;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IEditorActionBarContributor;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IKeyBindingService;
+import org.eclipse.ui.INestableKeyBindingService;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.internal.KeyBindingService;
+import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
 
 public class SplitterEditorSite implements IEditorSite

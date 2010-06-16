@@ -10,13 +10,20 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.*;
+import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IObjectEditor;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -27,7 +34,6 @@ import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
-import org.jkiss.dbeaver.ui.editors.splitted.SplitterEditorPart;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -36,7 +42,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * EntityEditor
  */
-public class EntityEditor extends SplitterEditorPart implements IDBMListener, IMetaModelView, IDataSourceUser
+public class EntityEditor extends MultiPageEditorPart implements IDBMListener, IMetaModelView, IDataSourceUser
 {
     static Log log = LogFactory.getLog(EntityEditor.class);
 
@@ -89,6 +95,8 @@ public class EntityEditor extends SplitterEditorPart implements IDBMListener, IM
 
     protected void createPages()
     {
+        setContainerStyles();
+
         // Add object editor page
         EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
         EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(entityInput.getDatabaseObject().getClass());
@@ -132,6 +140,54 @@ public class EntityEditor extends SplitterEditorPart implements IDBMListener, IM
 
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_END);
+    }
+
+    private void setContainerStyles()
+    {
+        Composite pageContainer = getContainer();
+        if (pageContainer instanceof CTabFolder) {
+            CTabFolder tabFolder = (CTabFolder)pageContainer;
+            tabFolder.setSimple(false);
+            tabFolder.setTabPosition(SWT.TOP);
+            tabFolder.setBorderVisible(true);
+            Layout parentLayout = tabFolder.getParent().getLayout();
+            if (parentLayout instanceof FillLayout) {
+                ((FillLayout)parentLayout).marginHeight = 5;
+                ((FillLayout)parentLayout).marginWidth = 5;
+            }
+        }
+    }
+
+    private void setPageToolTip(int index, String toolTip)
+    {
+
+    }
+
+    protected void pageChange(int newPageIndex)
+    {
+        deactivateEditor();
+        super.pageChange(newPageIndex);
+        activateEditor();
+    }
+
+    protected final void deactivateEditor()
+    {
+        // Deactivate the nested services from the last active service locator.
+        final int pageIndex = getActivePage();
+        final IWorkbenchPart part = getEditor(pageIndex);
+        if (part instanceof IEmbeddedWorkbenchPart) {
+            ((IEmbeddedWorkbenchPart) part).deactivatePart();
+        }
+    }
+
+    protected final void activateEditor()
+    {
+        final int pageIndex = getActivePage();
+        final IWorkbenchPart part = getEditor(pageIndex);
+
+        if (part instanceof IEmbeddedWorkbenchPart) {
+            ((IEmbeddedWorkbenchPart) part).activatePart();
+        }
     }
 
     private static class TabInfo {
