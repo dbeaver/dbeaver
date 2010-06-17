@@ -215,7 +215,9 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                         while (dbResult.next()) {
                             String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
                             if (CommonUtils.isEmpty(catalogName)) {
-                                catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_QUALIFIER);
+                                // Use first column as catalog name (some drivers use different column name to store catalog name (ODBC bridge))
+                                catalogName = JDBCUtils.safeGetString(dbResult, 1);
+                                //catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_QUALIFIER);
                             }
                             if (!CommonUtils.isEmpty(catalogName)) {
                                 catalogNames.add(catalogName);

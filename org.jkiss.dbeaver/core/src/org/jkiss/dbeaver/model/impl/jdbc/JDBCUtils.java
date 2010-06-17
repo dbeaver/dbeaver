@@ -34,6 +34,15 @@ public class JDBCUtils
         }
     }
 
+    public static String safeGetString(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            return dbResult.getString(columnIndex);
+        } catch (SQLException e) {
+            return null;
+        }
+    }
+
     public static int safeGetInt(ResultSet dbResult, String columnName)
     {
         try {
