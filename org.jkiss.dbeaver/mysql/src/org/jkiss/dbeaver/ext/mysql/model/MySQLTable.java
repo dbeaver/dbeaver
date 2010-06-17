@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -160,8 +161,9 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
     public String getDDL(DBRProgressMonitor monitor)
         throws DBException
     {
+        JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
-            PreparedStatement dbStat = getDataSource().getExecutionContext(monitor).prepareStatement(
+            PreparedStatement dbStat = context.prepareStatement(
                 "SHOW CREATE TABLE " + getFullQualifiedName());
             try {
                 ResultSet dbResult = dbStat.executeQuery();
@@ -182,6 +184,9 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         }
         catch (SQLException ex) {
             throw new DBException(ex);
+        }
+        finally {
+            context.close();
         }
     }
 
@@ -207,10 +212,11 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         // Load columns first
         getColumns(monitor);
         // Load index columns
+        JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
             List<MySQLIndex> tmpIndexList = new ArrayList<MySQLIndex>();
             Map<String, MySQLIndex> tmpIndexMap = new HashMap<String, MySQLIndex>();
-            JDBCDatabaseMetaData metaData = getDataSource().getExecutionContext(monitor).getMetaData();
+            JDBCDatabaseMetaData metaData = context.getMetaData();
             // Load indexes
             JDBCResultSet dbResult = metaData.getIndexInfo(
                 getContainer().getName(),
@@ -272,15 +278,19 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         } catch (SQLException ex) {
             throw new DBException(ex);
         }
+        finally {
+            context.close();
+        }
     }
 
     private List<MySQLConstraint> loadConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
+        JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
             List<MySQLConstraint> pkList = new ArrayList<MySQLConstraint>();
             Map<String, MySQLConstraint> pkMap = new HashMap<String, MySQLConstraint>();
-            JDBCDatabaseMetaData metaData = getDataSource().getExecutionContext(monitor).getMetaData();
+            JDBCDatabaseMetaData metaData = context.getMetaData();
             // Load indexes
             JDBCResultSet dbResult = metaData.getPrimaryKeys(
                 getContainer().getName(),
@@ -324,16 +334,20 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         } catch (SQLException ex) {
             throw new DBException(ex);
         }
+        finally {
+            context.close();
+        }
     }
 
     private List<MySQLForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean exported)
         throws DBException
     {
+        JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
             List<MySQLForeignKey> fkList = new ArrayList<MySQLForeignKey>();
             Map<String, MySQLForeignKey> fkMap = new HashMap<String, MySQLForeignKey>();
             Map<String, MySQLConstraint> pkMap = new HashMap<String, MySQLConstraint>();
-            JDBCDatabaseMetaData metaData = getDataSource().getExecutionContext(monitor).getMetaData();
+            JDBCDatabaseMetaData metaData = context.getMetaData();
             // Load indexes
             JDBCResultSet dbResult;
             if (exported) {
@@ -419,6 +433,9 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
             return fkList;
         } catch (SQLException ex) {
             throw new DBException(ex);
+        }
+        finally {
+            context.close();
         }
     }
 

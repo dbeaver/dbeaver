@@ -106,7 +106,7 @@ public abstract class JDBCDataSource
         return connection;
     }
 
-    public JDBCExecutionContext getExecutionContext(DBRProgressMonitor monitor)
+    public JDBCExecutionContext openContext(DBRProgressMonitor monitor)
     {
         return new ConnectionManagable(this, monitor);
     }
@@ -137,8 +137,9 @@ public abstract class JDBCDataSource
         if (connection == null) {
             throw new DBException("Not connected");
         }
+        JDBCExecutionContext context = openContext(monitor);
         try {
-            JDBCResultSet dbResult = getExecutionContext(monitor).getMetaData().getTables(null, null, null, null);
+            JDBCResultSet dbResult = context.getMetaData().getTables(null, null, null, null);
             try {
                 dbResult.next();
             }
@@ -149,16 +150,23 @@ public abstract class JDBCDataSource
         catch (SQLException ex) {
             throw new DBException(ex);
         }
+        finally {
+            context.close();
+        }
     }
 
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
+        JDBCExecutionContext context = openContext(monitor);
         try {
             info = new JDBCDataSourceInfo(
-                getExecutionContext(monitor).getMetaData());
+                context.getMetaData());
         } catch (SQLException ex) {
             throw new DBException("Error getting JDBC metadata", ex);
+        }
+        finally {
+            context.close();
         }
     }
 

@@ -106,7 +106,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         return connection;
     }
 
-    public JDBCExecutionContext getExecutionContext(DBRProgressMonitor monitor)
+    public JDBCExecutionContext openContext(DBRProgressMonitor monitor)
     {
         return new ConnectionManagable(this, monitor);
     }
@@ -162,8 +162,9 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         if (connection == null) {
             throw new DBException("Not connected");
         }
+        JDBCExecutionContext context = openContext(monitor);
         try {
-            JDBCResultSet dbResult = getExecutionContext(monitor).getMetaData().getTables("noname", "noname", "noname", null);
+            JDBCResultSet dbResult = context.getMetaData().getTables("noname", "noname", "noname", null);
             try {
                 dbResult.next();
             }
@@ -174,16 +175,22 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         catch (SQLException ex) {
             throw new DBException(ex);
         }
+        finally {
+            context.close();
+        }
     }
 
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
         JDBCUtils.startConnectionBlock(monitor, this, "Initializing data source '" + getName() + "'");
+
+        JDBCExecutionContext context = openContext(monitor);
         try {
             monitor.subTask("Getting connection metdata");
             monitor.worked(1);
-            JDBCDatabaseMetaData metaData = getExecutionContext(monitor).getMetaData();
+
+            JDBCDatabaseMetaData metaData = context.getMetaData();
             info = new JDBCDataSourceInfo(metaData);
             {
                 // Read table types
@@ -282,6 +289,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
             throw new DBException("Error reading metadata", ex);
         }
         finally {
+            context.close();
             JDBCUtils.endConnectionBlock(monitor);
         }
     }
@@ -434,8 +442,9 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                 return null;
             }
             String activeDbName;
+            JDBCExecutionContext context = openContext(monitor);
             try {
-                JDBCPreparedStatement dbStat = getExecutionContext(monitor).prepareStatement(queryGetActiveDB);
+                JDBCPreparedStatement dbStat = context.prepareStatement(queryGetActiveDB);
                 dbStat.setDescription("Reading active database");
                 try {
                     JDBCResultSet resultSet = dbStat.executeQuery();
@@ -451,6 +460,9 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
             } catch (SQLException e) {
                 log.error(e);
                 return null;
+            }
+            finally {
+                context.close();
             }
             activeChild = getChild(monitor, activeDbName);
 
@@ -477,8 +489,9 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         }
 
         String changeQuery = querySetActiveDB.replaceFirst("\\?", child.getName());
+        JDBCExecutionContext context = openContext(monitor);
         try {
-            JDBCPreparedStatement dbStat = getExecutionContext(monitor).prepareStatement(changeQuery);
+            JDBCPreparedStatement dbStat = context.prepareStatement(changeQuery);
             dbStat.setDescription("Change active database");
             try {
                 dbStat.execute();
@@ -487,6 +500,9 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
             }
         } catch (SQLException e) {
             throw new DBException(e);
+        }
+        finally {
+            context.close();
         }
 
         DBSObject oldChild = this.activeChild;

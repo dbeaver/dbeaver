@@ -100,7 +100,8 @@ public class JDBCSession implements DBCSession
         throws DBCException
     {
         try {
-            return conector.getExecutionContext(monitor).prepareStatement(
+            // TODO: refactor it. session IS an execution context
+            return conector.openContext(monitor).prepareStatement(
                 sqlQuery,
                 scrollable ? ResultSet.TYPE_SCROLL_SENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
                 updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);

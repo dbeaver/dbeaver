@@ -11,8 +11,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -89,28 +87,33 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
         throws DBException
     {
         try {
-            JDBCExecutionContext context = getDataSource().getExecutionContext(monitor);
-            List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
-            JDBCResultSet dbResult = context.getMetaData().getSchemas();
+            JDBCExecutionContext context = getDataSource().openContext(monitor);
             try {
-                while (dbResult.next()) {
-                    String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CATALOG);
-/*
-                    if (CommonUtils.isEmpty(catalogName) || !catalogName.equals(catalogName)) {
-                        // Invalid schema's catalog or schema without catalog (then do not use schemas as structure) 
-                        continue;
+                List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
+                JDBCResultSet dbResult = context.getMetaData().getSchemas();
+                try {
+                    while (dbResult.next()) {
+                        String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CATALOG);
+    /*
+                        if (CommonUtils.isEmpty(catalogName) || !catalogName.equals(catalogName)) {
+                            // Invalid schema's catalog or schema without catalog (then do not use schemas as structure)
+                            continue;
+                        }
+    */
+                        String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
+                        if (!CommonUtils.isEmpty(schemaName)) {
+                            GenericSchema schema = new GenericSchema(this, schemaName);
+                            tmpSchemas.add(schema);
+                        }
                     }
-*/
-                    String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
-                    if (!CommonUtils.isEmpty(schemaName)) {
-                        GenericSchema schema = new GenericSchema(this, schemaName);
-                        tmpSchemas.add(schema);
-                    }
+                } finally {
+                    dbResult.close();
                 }
-            } finally {
-                dbResult.close();
+                return tmpSchemas;
             }
-            return tmpSchemas;
+            finally {
+                context.close();
+            }
         } catch (SQLException ex) {
             // Schemas do not supported - jsut ignore this error
             return null;

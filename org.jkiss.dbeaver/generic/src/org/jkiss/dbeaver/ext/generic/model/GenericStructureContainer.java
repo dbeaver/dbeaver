@@ -140,8 +140,9 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         JDBCUtils.startConnectionBlock(monitor, getDataSource(), "Looking for tables in '" + getName() + "'");
 
         List<DBSTablePath> pathList = new ArrayList<DBSTablePath>();
+        JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
-            JDBCDatabaseMetaData metaData = getDataSource().getExecutionContext(monitor).getMetaData();
+            JDBCDatabaseMetaData metaData = context.getMetaData();
             String catalogName = getCatalog() == null ? null : getCatalog().getName();
             String schemaName = getSchema() == null ? null : getSchema().getName();
 
@@ -182,6 +183,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
             throw new DBException(ex);
         }
         finally {
+            context.close();
             JDBCUtils.endConnectionBlock(monitor);
         }
     }

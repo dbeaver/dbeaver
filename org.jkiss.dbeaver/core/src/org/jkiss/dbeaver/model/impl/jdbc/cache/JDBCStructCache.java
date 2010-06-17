@@ -70,8 +70,8 @@ public abstract class JDBCStructCache<
             return;
         }
 
+        JDBCExecutionContext context = connector.openContext(monitor);
         try {
-            JDBCExecutionContext context = connector.getExecutionContext(monitor);
             Map<OBJECT, List<CHILD>> columnMap = new HashMap<OBJECT, List<CHILD>>();
 
             // Load columns
@@ -145,6 +145,9 @@ public abstract class JDBCStructCache<
         }
         catch (SQLException ex) {
             throw new DBException(ex);
+        }
+        finally {
+            context.close();
         }
     }
 

@@ -18,6 +18,6 @@ public interface JDBCConnector
 
     Connection getConnection();
 
-    JDBCExecutionContext getExecutionContext(DBRProgressMonitor monitor);
+    JDBCExecutionContext openContext(DBRProgressMonitor monitor);
 
 }

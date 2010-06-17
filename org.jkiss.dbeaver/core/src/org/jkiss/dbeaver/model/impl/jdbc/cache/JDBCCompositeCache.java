@@ -118,8 +118,8 @@ public abstract class JDBCCompositeCache<
         }
 
         // Load index columns
+        JDBCExecutionContext context = parentCache.getConnector().openContext(monitor);
         try {
-            JDBCExecutionContext context = parentCache.getConnector().getExecutionContext(monitor);
             Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new HashMap<PARENT, Map<String, ObjectInfo>>();
 
             JDBCPreparedStatement dbStat = prepareObjectsStatement(context, forParent);
@@ -208,8 +208,12 @@ public abstract class JDBCCompositeCache<
             finally {
                 dbStat.close();
             }
-        } catch (SQLException ex) {
+        }
+        catch (SQLException ex) {
             throw new DBException(ex);
+        }
+        finally {
+            context.close();
         }
     }
 

@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.impl.meta.AbstractTable;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
@@ -20,7 +21,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
 
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -229,8 +229,9 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
             return rowCount;
         }
 
+        JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
-            JDBCPreparedStatement dbStat = getDataSource().getExecutionContext(monitor).prepareStatement(
+            JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT COUNT(*) FROM " + getFullQualifiedName());
             dbStat.setDescription("Select table '" + getName() + "' row count");
             try {
@@ -250,6 +251,9 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         catch (SQLException e) {
             throw new DBCException(e);
         }
+        finally {
+            context.close();
+        }
 
         return rowCount;
     }
@@ -258,10 +262,11 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         throws DBException
     {
         monitor.beginTask("Loading contraints", 1);
+        JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
             List<GenericConstraint> pkList = new ArrayList<GenericConstraint>();
             Map<String, GenericConstraint> pkMap = new HashMap<String, GenericConstraint>();
-            JDBCDatabaseMetaData metaData = getDataSource().getExecutionContext(monitor).getMetaData();
+            JDBCDatabaseMetaData metaData = context.getMetaData();
             // Load indexes
             JDBCResultSet dbResult = metaData.getPrimaryKeys(
                 getCatalog() == null ? null : getCatalog().getName(),
@@ -305,6 +310,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         } catch (SQLException ex) {
             throw new DBException(ex);
         } finally {
+            context.close();
             monitor.done();
         }
     }
@@ -312,11 +318,12 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
     private List<GenericForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean exported)
         throws DBException
     {
+        JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
             List<GenericForeignKey> fkList = new ArrayList<GenericForeignKey>();
             Map<String, GenericForeignKey> fkMap = new HashMap<String, GenericForeignKey>();
             Map<String, GenericConstraint> pkMap = new HashMap<String, GenericConstraint>();
-            JDBCDatabaseMetaData metaData = getDataSource().getExecutionContext(monitor).getMetaData();
+            JDBCDatabaseMetaData metaData = context.getMetaData();
             // Load indexes
             JDBCResultSet dbResult;
             if (exported) {
@@ -402,6 +409,9 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
             return fkList;
         } catch (SQLException ex) {
             throw new DBException(ex);
+        }
+        finally {
+            context.close();
         }
     }
 

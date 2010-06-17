@@ -74,10 +74,11 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
         if (this.objectList != null) {
             return;
         }
-        JDBCExecutionContext context = connector.getExecutionContext(monitor);
 
         List<OBJECT> tmpTableList = new ArrayList<OBJECT>();
         Map<String, OBJECT> tmpTableMap = new HashMap<String, OBJECT>();
+
+        JDBCExecutionContext context = connector.openContext(monitor);
         try {
             JDBCPreparedStatement dbStat = prepareObjectsStatement(context);
             try {
@@ -108,6 +109,9 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
         }
         catch (SQLException ex) {
             throw new DBException(ex);
+        }
+        finally {
+            context.close();
         }
 
         this.objectList = tmpTableList;

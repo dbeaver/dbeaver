@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -79,8 +80,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
 
         // Read catalogs
         List<MySQLCatalog> tmpCatalogs = new ArrayList<MySQLCatalog>();
+        JDBCExecutionContext context = openContext(monitor);
         try {
-            JDBCPreparedStatement dbStat = getExecutionContext(monitor).prepareStatement("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
+            JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
@@ -106,6 +108,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
             }
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex);
+        }
+        finally {
+            context.close();
         }
         this.catalogs = tmpCatalogs;
     }
@@ -172,8 +177,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
     {
         if (this.activeCatalog == null) {
             String activeDbName;
+            JDBCExecutionContext context = openContext(monitor);
             try {
-                JDBCPreparedStatement dbStat = getExecutionContext(monitor).prepareStatement("select database()");
+                JDBCPreparedStatement dbStat = context.prepareStatement("select database()");
                 try {
                     JDBCResultSet resultSet = dbStat.executeQuery();
                     try {
@@ -189,6 +195,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
                 log.error(e);
                 return null;
             }
+            finally {
+                context.close();
+            }
             this.activeCatalog = getCatalog(activeDbName);
         }
         return this.activeCatalog;
@@ -203,8 +212,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         if (!(child instanceof MySQLCatalog)) {
             throw new IllegalArgumentException("child");
         }
+        JDBCExecutionContext context = openContext(monitor);
         try {
-            JDBCPreparedStatement dbStat = getExecutionContext(monitor).prepareStatement("use " + child.getName());
+            JDBCPreparedStatement dbStat = context.prepareStatement("use " + child.getName());
             try {
                 dbStat.execute();
             } finally {
@@ -212,6 +222,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
             }
         } catch (SQLException e) {
             throw new DBException(e);
+        }
+        finally {
+            context.close();
         }
         
         // Send notifications
@@ -231,8 +244,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
     {
         List<DBSTablePath> pathList = new ArrayList<DBSTablePath>();
         JDBCUtils.startConnectionBlock(monitor, this, "Find table names");
+        JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
-            JDBCDatabaseMetaData metaData = getDataSource().getExecutionContext(monitor).getMetaData();
+            JDBCDatabaseMetaData metaData = context.getMetaData();
 
             // Make table mask uppercase
             tableMask = tableMask.toUpperCase();
@@ -270,6 +284,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
             throw new DBException(ex);
         }
         finally {
+            context.close();
             JDBCUtils.endConnectionBlock(monitor);
         }
     }
