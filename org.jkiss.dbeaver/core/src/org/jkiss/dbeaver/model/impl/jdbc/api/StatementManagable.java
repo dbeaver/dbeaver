@@ -4,23 +4,23 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCQueryPurpose;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
-import java.sql.SQLFeatureNotSupportedException;
 
 /**
  * Managable statement.
@@ -129,9 +129,14 @@ public abstract class StatementManagable implements JDBCStatement {
     // DBC Statement overrides
     ////////////////////////////////////////////////////////////////////
 
-    public DBPDataSource getDataSource()
+    public DBCExecutionContext getContext()
     {
-        return connection.getDataSource();
+        return connection;
+    }
+
+    public String getQueryString()
+    {
+        return query;
     }
 
     public DBCResultSet openResultSet() throws DBCException

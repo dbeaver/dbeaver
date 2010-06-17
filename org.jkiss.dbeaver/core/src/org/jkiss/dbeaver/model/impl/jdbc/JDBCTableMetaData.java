@@ -57,7 +57,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
         throws DBException
     {
         if (table == null) {
-            DBPDataSource dataSource = resultSetMetaData.getResultSet().getSource().getDataSource();
+            DBPDataSource dataSource = resultSetMetaData.getResultSet().getContext().getDataSource();
             if (dataSource instanceof DBSStructureContainer) {
                 DBSObject tableObject = DBSUtils.getObjectByPath(monitor, (DBSStructureContainer) dataSource, catalogName, schemaName, tableName);
                 if (tableObject == null) {
@@ -95,7 +95,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
     public String getFullQualifiedName()
     {
         return DBSUtils.getFullTableName(
-            resultSetMetaData.getResultSet().getSource().getDataSource(),
+            resultSetMetaData.getResultSet().getContext().getDataSource(),
             catalogName,
             schemaName,
             tableName);

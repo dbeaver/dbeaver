@@ -9,6 +9,8 @@ package org.jkiss.dbeaver.model.dbc;
  */
 public interface DBCResultSet
 {
+    DBCExecutionContext getContext();
+
     DBCStatement getSource();
 
     Object getColumnValue(int index) throws DBCException;

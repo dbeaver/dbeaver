@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 
@@ -52,6 +53,11 @@ public class ResultSetManagable implements JDBCResultSet {
     public ResultSet getOriginal()
     {
         return original;
+    }
+
+    public DBCExecutionContext getContext()
+    {
+        return statement.getContext();
     }
 
     public DBCStatement getSource()

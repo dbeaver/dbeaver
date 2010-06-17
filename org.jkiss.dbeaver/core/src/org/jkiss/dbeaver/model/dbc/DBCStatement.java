@@ -14,12 +14,37 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 public interface DBCStatement extends DBRBlockingObject
 {
 
-    DBPDataSource getDataSource();
+    /**
+     * Statement's context
+     * @return context
+     */
+    DBCExecutionContext getContext();
 
+    /**
+     * Statement's query string.
+     * @return query string
+     */
+    String getQueryString();
+
+    /**
+     * Executes statement
+     * @return true if statement returned result set, false otherwise
+     * @throws DBCException on error
+     */
     boolean executeStatement() throws DBCException;
 
+    /**
+     * Returns result set. Valid only on after {@link #executeStatement} invocation.
+     * @return result set or null
+     * @throws DBCException on error
+     */
     DBCResultSet openResultSet() throws DBCException;
 
+    /**
+     * Returns number of rows updated by this statement executed.
+     * @return number of row updated
+     * @throws DBCException on error
+     */
     int getUpdateRowCount() throws DBCException;
 
     void close();
