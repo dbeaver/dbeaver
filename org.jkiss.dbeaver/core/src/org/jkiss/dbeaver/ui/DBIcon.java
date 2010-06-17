@@ -22,7 +22,7 @@ public enum DBIcon
     TREE_TABLES("tables", "icons/tree/tables.png"),
     TREE_TABLE("table", "icons/tree/table.png"),
     TREE_VIEW("view", "icons/tree/view.png"),
-    TREE_PROCEDURE("view", "icons/tree/procedure.png"),
+    TREE_PROCEDURE("procedure", "icons/tree/procedure.png"),
     TREE_COLUMNS("columns", "icons/tree/columns.png"),
     TREE_COLUMN("column", "icons/tree/column.png"),
     TREE_INDEX("index", "icons/tree/index.png"),
