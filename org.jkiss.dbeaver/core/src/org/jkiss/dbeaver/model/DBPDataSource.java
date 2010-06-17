@@ -6,11 +6,14 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
- * DBPDataSource
+ * Data Source.
+ * Root object of all database structure and data objects.
  */
 public interface DBPDataSource extends DBPObject
 {

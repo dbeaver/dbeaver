@@ -9,9 +9,9 @@ package org.jkiss.dbeaver.model.dbc;
  */
 public interface DBCSavepoint {
 
-    int getSavepointId();
+    int getId();
 
-    String getSavepointName();
+    String getName();
 
     DBCExecutionContext getContext();
 

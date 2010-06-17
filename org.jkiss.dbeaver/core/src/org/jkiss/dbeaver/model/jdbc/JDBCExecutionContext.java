@@ -16,10 +16,6 @@ import java.sql.SQLException;
  */
 public interface JDBCExecutionContext extends DBCExecutionContext, Connection {
 
-    DBPDataSource getDataSource();
-    
-    DBRProgressMonitor getProgressMonitor();
-
     JDBCDatabaseMetaData getMetaData()
         throws SQLException;
 

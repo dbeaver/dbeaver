@@ -16,6 +16,8 @@ public interface DBCSession extends DBRBlockingObject
 {
     DBPDataSource getDataSource();
 
+    DBCStatement prepareStatement(DBRProgressMonitor monitor, String sqlQuery, boolean scrollable, boolean updatable) throws DBCException;
+
     DBPTransactionIsolation getTransactionIsolation() throws DBCException;
 
     void setTransactionIsolation(DBPTransactionIsolation transactionIsolation) throws DBCException;
@@ -23,8 +25,6 @@ public interface DBCSession extends DBRBlockingObject
     boolean isAutoCommit() throws DBCException;
 
     void setAutoCommit(boolean autoCommit) throws DBCException;
-
-    DBCStatement prepareStatement(DBRProgressMonitor monitor, String sqlQuery, boolean scrollable, boolean updatable) throws DBCException;
 
     void commit() throws DBCException;
 

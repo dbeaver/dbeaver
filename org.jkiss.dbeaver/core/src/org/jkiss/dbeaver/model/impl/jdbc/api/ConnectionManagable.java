@@ -11,6 +11,13 @@ import org.jkiss.dbeaver.model.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPTransactionManager;
+import org.jkiss.dbeaver.model.DBPTransactionIsolation;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
+import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,6 +34,7 @@ import java.sql.SQLXML;
 import java.sql.SQLClientInfoException;
 import java.sql.Array;
 import java.sql.Struct;
+import java.sql.ResultSet;
 import java.util.Map;
 import java.util.Properties;
 
@@ -51,6 +59,25 @@ public class ConnectionManagable implements JDBCExecutionContext {
     public DBPDataSource getDataSource()
     {
         return dataSource;
+    }
+
+    public DBPTransactionManager getTransactionManager()
+    {
+        return new TransactionManager();
+    }
+
+    public DBCStatement prepareStatement(String sqlQuery, boolean scrollable, boolean updatable)
+        throws DBCException
+    {
+        try {
+            return prepareStatement(
+                sqlQuery,
+                scrollable ? ResultSet.TYPE_SCROLL_SENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
+                updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+        }
+        catch (SQLException e) {
+            throw new JDBCException(e);
+        }
     }
 
     public DBRProgressMonitor getProgressMonitor()
@@ -362,4 +389,83 @@ public class ConnectionManagable implements JDBCExecutionContext {
     {
         return original.isWrapperFor(iface);
     }
+    
+    private class TransactionManager implements DBPTransactionManager {
+
+        public DBPDataSource getDataSource()
+        {
+            return ConnectionManagable.this.getDataSource();
+        }
+
+        public DBPTransactionIsolation getTransactionIsolation()
+            throws DBCException
+        {
+            try {
+                return JDBCTransactionIsolation.getByCode(ConnectionManagable.this.getTransactionIsolation());
+            } catch (SQLException e) {
+                throw new JDBCException(e);
+            }
+        }
+
+        public void setTransactionIsolation(DBPTransactionIsolation transactionIsolation)
+            throws DBCException
+        {
+            if (!(transactionIsolation instanceof JDBCTransactionIsolation)) {
+                throw new JDBCException("Invalid transaction isolation parameter");
+            }
+            try {
+                ConnectionManagable.this.setTransactionIsolation(((JDBCTransactionIsolation)transactionIsolation).getCode());
+            } catch (SQLException e) {
+                throw new JDBCException(e);
+            }
+        }
+
+        public boolean isAutoCommit()
+            throws DBCException
+        {
+            try {
+                return ConnectionManagable.this.getAutoCommit();
+            }
+            catch (SQLException e) {
+                throw new JDBCException(e);
+            }
+        }
+
+        public void setAutoCommit(boolean autoCommit)
+            throws DBCException
+        {
+            try {
+                ConnectionManagable.this.setAutoCommit(autoCommit);
+            }
+            catch (SQLException e) {
+                throw new JDBCException(e);
+            }
+        }
+
+        public void commit()
+            throws DBCException
+        {
+            try {
+                ConnectionManagable.this.commit();
+            }
+            catch (SQLException e) {
+                throw new JDBCException(e);
+            }
+        }
+
+        public void rollback(DBCSavepoint savepoint)
+            throws DBCException
+        {
+            try {
+                if (savepoint != null) {
+                    ConnectionManagable.this.rollback((Savepoint)savepoint);
+                }
+                ConnectionManagable.this.rollback();
+            }
+            catch (SQLException e) {
+                throw new JDBCException(e);
+            }
+        }
+    }
+
 }
