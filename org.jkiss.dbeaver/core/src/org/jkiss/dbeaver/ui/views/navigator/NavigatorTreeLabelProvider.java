@@ -56,14 +56,20 @@ class NavigatorTreeLabelProvider extends LabelProvider implements IFontProvider,
 
     public String getText(Object obj)
     {
+        String text = null;
         if (obj instanceof ILabelProvider) {
-            return ((ILabelProvider)obj).getText(obj);
+            text = ((ILabelProvider)obj).getText(obj);
         } else if (obj instanceof DBSObject) {
-            return ((DBSObject) obj).getName();
+            text = ((DBSObject) obj).getName();
         } else if (obj instanceof DBMNode) {
-            return ((DBMNode) obj).getNodeName();
+            text = ((DBMNode) obj).getNodeName();
+        } else {
+            text = obj.toString();
         }
-        return obj.toString();
+        if (text == null) {
+            text = "?";
+        }
+        return text;
     }
 
     public Image getImage(Object obj)

@@ -45,7 +45,11 @@ public abstract class DBMTreeNode extends DBMNode {
 
     public String getNodeName()
     {
-        return getObject().getName();
+        String objectName = getObject().getName();
+        if (objectName == null) {
+            objectName = "?";
+        }
+        return objectName;
     }
 
     public String getNodeDescription()

@@ -44,6 +44,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.text.DateFormat;
 
 /**
  * DataSourceDescriptor
@@ -72,6 +73,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     private transient Image iconConnected;
     private transient Image iconError;
     private transient boolean connectFailed = false;
+    private transient Date connectTime = null;
 
 
     public DataSourceDescriptor(
@@ -249,6 +251,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             {
                 if (event.getResult().isOK()) {
                     connectFailed = false;
+                    connectTime = new Date();
                     DataSourceDescriptor.this.dataSource = ((ConnectJob)event.getJob()).getDataSource();
                     if (DataSourceDescriptor.this.dataSource == null) {
                         log.error("Null datasource returned from connector");
@@ -309,6 +312,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                     public void done(IJobChangeEvent event)
                     {
                         dataSource = null;
+                        connectTime = null;
                         getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
                             DataSourceEvent.Action.DISCONNECT,
                             DataSourceDescriptor.this,
@@ -437,6 +441,9 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                 String driverVersion = dataSource.getInfo().getDriverVersion();
                 if (driverName != null) {
                     props.addProperty("driver-name", "Driver", driverName + (driverVersion == null ? "" : " [" + driverVersion + "]"));
+                }
+                if (connectTime != null) {
+                    props.addProperty("connect-time", "Connect Time", DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(connectTime));
                 }
             }
             return props;

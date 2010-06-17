@@ -341,10 +341,9 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                     false).getStatement();
         }
 
-        protected GenericIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, GenericTable parent)
+        protected GenericIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, GenericTable parent, String indexName)
             throws SQLException, DBException
         {
-            String indexName = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_NAME);
             boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
             String indexQualifier = JDBCUtils.safeGetString(dbResult, JDBCConstants.INDEX_QUALIFIER);
             int indexTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.TYPE);

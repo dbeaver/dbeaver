@@ -15,6 +15,7 @@ public class JDBCConstants
     public static final String TABLE_CAT = "TABLE_CAT";
     public static final String TABLE_SCHEM = "TABLE_SCHEM";
     public static final String TABLE_CATALOG = "TABLE_CATALOG"; 
+    public static final String TABLE_QUALIFIER = "TABLE_QUALIFIER"; // ODBC column for catalog names
 
     public static final String TABLE_NAME = "TABLE_NAME";
     public static final String TABLE_TYPE = "TABLE_TYPE";

@@ -58,7 +58,7 @@ public abstract class JDBCCompositeCache<
     abstract protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context, PARENT forParent)
         throws SQLException, DBException;
 
-    abstract protected OBJECT fetchObject(JDBCExecutionContext context, ResultSet resultSet, PARENT parent)
+    abstract protected OBJECT fetchObject(JDBCExecutionContext context, ResultSet resultSet, PARENT parent, String childName)
         throws SQLException, DBException;
 
     abstract protected ROW_REF fetchObjectRow(JDBCExecutionContext context, ResultSet resultSet, PARENT parent, OBJECT forObject)
@@ -155,7 +155,7 @@ public abstract class JDBCCompositeCache<
 
                         ObjectInfo objectInfo = objectMap.get(objectName);
                         if (objectInfo == null) {
-                            OBJECT object = fetchObject(context, dbResult, parent);
+                            OBJECT object = fetchObject(context, dbResult, parent, objectName);
                             if (object == null) {
                                 // Could not fetch object
                                 continue;
