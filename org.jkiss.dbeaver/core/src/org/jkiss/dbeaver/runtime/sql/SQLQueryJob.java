@@ -108,10 +108,10 @@ public class SQLQueryJob extends DataSourceJob
     {
         startJob();
         try {
-            // Set transction settings
+            // Set transction settings (only if autocommit is off)
             boolean oldAutoCommit = session.isAutoCommit();
             boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
-            if (newAutoCommit != oldAutoCommit) {
+            if (!oldAutoCommit && newAutoCommit != oldAutoCommit) {
                 session.setAutoCommit(newAutoCommit);
             }
 
@@ -175,7 +175,7 @@ public class SQLQueryJob extends DataSourceJob
             monitor.done();
 
             // Commit data
-            if (commitType != SQLScriptCommitType.AUTOCOMMIT) {
+            if (!oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
                 if (lastError == null || errorHandling == SQLScriptErrorHandling.STOP_COMMIT) {
                     if (commitType != SQLScriptCommitType.NO_COMMIT) {
                         monitor.beginTask("Commit data", 1);
@@ -190,7 +190,7 @@ public class SQLQueryJob extends DataSourceJob
             }
 
             // Restore transactions settings
-            if (newAutoCommit != oldAutoCommit) {
+            if (!oldAutoCommit && newAutoCommit) {
                 session.setAutoCommit(oldAutoCommit);
             }
 

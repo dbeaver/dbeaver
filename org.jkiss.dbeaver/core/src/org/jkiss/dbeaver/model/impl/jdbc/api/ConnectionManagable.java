@@ -139,7 +139,7 @@ public class ConnectionManagable implements JDBCExecutionContext {
         // do nothing
         // closing of context doesn't close real connection
         //original.close();
-        log.warn("Close of execution context is obsolete");
+        //log.warn("Close of execution context is obsolete");
     }
 
     public boolean isClosed()

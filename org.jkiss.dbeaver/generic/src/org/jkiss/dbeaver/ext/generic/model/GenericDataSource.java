@@ -222,14 +222,12 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                         while (dbResult.next()) {
                             String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
                             if (CommonUtils.isEmpty(catalogName)) {
-                                // Use first column as catalog name (some drivers use different column name to store catalog name (ODBC bridge))
-                                catalogName = JDBCUtils.safeGetString(dbResult, 1);
-                                //catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_QUALIFIER);
+                                catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_QUALIFIER);
                             }
                             if (!CommonUtils.isEmpty(catalogName)) {
                                 catalogNames.add(catalogName);
+                                monitor.subTask("Extract catalogs - " + catalogName);
                             }
-                            monitor.subTask("Extract catalogs - " + catalogName);
                             if (monitor.isCanceled()) {
                                 break;
                             }
@@ -253,36 +251,9 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                 // Catalogs not supported - try to read root schemas
                 monitor.subTask("Extract schemas");
                 monitor.worked(1);
-                List<String> schemaNames = new ArrayList<String>();
-                try {
-                    JDBCResultSet dbResult = metaData.getSchemas();
-                    try {
-                        while (dbResult.next()) {
-                            String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CATALOG);
-                            String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
-                            if (!CommonUtils.isEmpty(schemaName)) {
-                                schemaNames.add(schemaName);
-                            }
-                            if (!CommonUtils.isEmpty(catalogName)) {
-                                log.debug("No catalogs was read but catalog name returned with schema");
-                            }
-                            monitor.subTask("Extract schemas - " + schemaName);
-                            if (monitor.isCanceled()) {
-                                break;
-                            }
-                        }
-                    } finally {
-                        dbResult.close();
-                    }
-                } catch (SQLException e) {
-                    // Error reading schemas - just skip em
-                }
-                if (!schemaNames.isEmpty()) {
-                    this.schemas = new ArrayList<GenericSchema>();
-                    for (String schemaName : schemaNames) {
-                        GenericSchema schema = new GenericSchema(this, schemaName);
-                        this.schemas.add(schema);
-                    }
+                List<GenericSchema> tmpSchemas = loadSchemas(context, null);
+                if (!tmpSchemas.isEmpty()) {
+                    this.schemas = tmpSchemas;
                 }
             }
         } catch (SQLException ex) {
@@ -291,6 +262,63 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         finally {
             context.close();
             JDBCUtils.endConnectionBlock(monitor);
+        }
+    }
+
+    List<GenericSchema> loadSchemas(JDBCExecutionContext context, GenericCatalog catalog)
+        throws DBException
+    {
+        try {
+            List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
+            JDBCResultSet dbResult;
+            if (catalog == null) {
+                dbResult = context.getMetaData().getSchemas();
+            } else {
+                try {
+                    dbResult = context.getMetaData().getSchemas(catalog.getName(), null);
+                } catch (Throwable e) {
+                    // This method not supported (may be old driver version)
+                    // Use general schema reading method
+                    dbResult = context.getMetaData().getSchemas();
+                }
+            }
+
+            try {
+                while (dbResult.next()) {
+                    String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
+                    if (CommonUtils.isEmpty(schemaName)) {
+                        schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_OWNER);
+                    }
+                    if (CommonUtils.isEmpty(schemaName)) {
+                        continue;
+                    }
+
+                    String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CATALOG);
+
+                    if (!CommonUtils.isEmpty(catalogName)) {
+                        if (catalog == null) {
+                            // Invalid schema's catalog or schema without catalog (then do not use schemas as structure)
+                            log.warn("Catalog name (" + catalogName + ") found for schema '" + schemaName + "' while no parent catalog specified");
+                        } else if (!catalog.getName().equals(catalogName)) {
+                            log.warn("Catalog name '" + catalogName + "' differs from schema's catalog '" + catalog.getName() + "'");
+                        }
+                    }
+
+                    GenericSchema schema;
+                    if (catalog == null) {
+                        schema = new GenericSchema(this, schemaName);
+                    } else {
+                        schema = new GenericSchema(catalog, schemaName);
+                    }
+                    tmpSchemas.add(schema);
+                }
+            } finally {
+                dbResult.close();
+            }
+            return tmpSchemas;
+        } catch (SQLException ex) {
+            // Schemas do not supported - jsut ignore this error
+            return null;
         }
     }
 

@@ -2,19 +2,14 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * GenericCatalog
@@ -57,8 +52,14 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
         throws DBException
     {
         if (schemas == null && !isInitialized) {
-            this.schemas = this.loadSchemas(monitor);
-            this.isInitialized = true;
+            JDBCExecutionContext context = this.getDataSource().openContext(monitor);
+            try {
+                this.schemas = this.getDataSource().loadSchemas(context, this);
+                this.isInitialized = true;
+            }
+            finally {
+                context.close();
+            }
         }
         return schemas;
     }
@@ -81,43 +82,6 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
     public DBSObject getParentObject()
     {
         return getDataSource().getContainer();
-    }
-
-    private List<GenericSchema> loadSchemas(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        try {
-            JDBCExecutionContext context = getDataSource().openContext(monitor);
-            try {
-                List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
-                JDBCResultSet dbResult = context.getMetaData().getSchemas();
-                try {
-                    while (dbResult.next()) {
-                        String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CATALOG);
-    /*
-                        if (CommonUtils.isEmpty(catalogName) || !catalogName.equals(catalogName)) {
-                            // Invalid schema's catalog or schema without catalog (then do not use schemas as structure)
-                            continue;
-                        }
-    */
-                        String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
-                        if (!CommonUtils.isEmpty(schemaName)) {
-                            GenericSchema schema = new GenericSchema(this, schemaName);
-                            tmpSchemas.add(schema);
-                        }
-                    }
-                } finally {
-                    dbResult.close();
-                }
-                return tmpSchemas;
-            }
-            finally {
-                context.close();
-            }
-        } catch (SQLException ex) {
-            // Schemas do not supported - jsut ignore this error
-            return null;
-        }
     }
 
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
