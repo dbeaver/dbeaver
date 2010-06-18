@@ -171,7 +171,7 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
         SQLStatementInfo statementInfo = new SQLStatementInfo(query.toString());
         final SQLQueryJob job = new SQLQueryJob(
             "Table " + tableName,
-            curSession,
+            curSession.getDataSource(),
             Collections.singletonList(statementInfo),
             resultSetView.getDataPump());
         job.setDataContainer(table);

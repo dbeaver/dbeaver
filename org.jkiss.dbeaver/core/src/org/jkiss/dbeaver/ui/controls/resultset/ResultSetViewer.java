@@ -1003,7 +1003,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             // Execute statements
             SQLQueryJob executor = new SQLQueryJob(
                 "Update ResultSet",
-                resultSetProvider.getSession(),
+                resultSetProvider.getDataSource(),
                 statements,
                 null);
             executor.addQueryListener(new DefaultQueryListener() {

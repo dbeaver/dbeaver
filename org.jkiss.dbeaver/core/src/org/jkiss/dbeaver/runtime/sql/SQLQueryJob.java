@@ -13,10 +13,12 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPTransactionManager;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -35,7 +37,6 @@ public class SQLQueryJob extends DataSourceJob
     private static final int SUBTASK_COUNT = 5;
     //private static final int DEFAULT_MAX_ROWS = 500;
 
-    private DBCSession session;
     private List<SQLStatementInfo> queries;
     private ISQLQueryDataPump dataPump;
     private DBSObject dataContainer;
@@ -54,21 +55,20 @@ public class SQLQueryJob extends DataSourceJob
 
     public SQLQueryJob(
         String name,
-        DBCSession session,
+        DBPDataSource dataSource,
         List<SQLStatementInfo> queries,
         ISQLQueryDataPump dataPump)
     {
         super(
             name,
             DBIcon.SQL_SCRIPT_EXECUTE.getImageDescriptor(),
-            session.getDataSource());
-        this.session = session;
+            dataSource);
         this.queries = queries;
         this.dataPump = dataPump;
 
         {
             // Read config form preference store
-            IPreferenceStore preferenceStore = session.getDataSource().getContainer().getPreferenceStore();
+            IPreferenceStore preferenceStore = getDataSource().getContainer().getPreferenceStore();
             this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_COMMIT_TYPE));
             this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_ERROR_HANDLING));
             this.fetchResultSets = (queries.size() == 1);
@@ -108,91 +108,94 @@ public class SQLQueryJob extends DataSourceJob
     {
         startJob();
         try {
-            // Set transction settings (only if autocommit is off)
-            boolean oldAutoCommit = session.isAutoCommit();
-            boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
-            if (!oldAutoCommit && newAutoCommit != oldAutoCommit) {
-                session.setAutoCommit(newAutoCommit);
-            }
+            DBCExecutionContext context = getDataSource().openContext(monitor, "SQL Query");
+            try {
+// Set transction settings (only if autocommit is off)
+                DBPTransactionManager txnManager = context.getTransactionManager();
+                boolean oldAutoCommit = txnManager.isAutoCommit();
+                boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
+                if (!oldAutoCommit && newAutoCommit != oldAutoCommit) {
+                    txnManager.setAutoCommit(newAutoCommit);
+                }
 
-            monitor.beginTask(this.getName(), queries.size() * SUBTASK_COUNT);
+                monitor.beginTask(this.getName(), queries.size() * SUBTASK_COUNT);
 
-            // Notify job start
-            for (ISQLQueryListener listener : queryListeners) {
-                listener.onStartJob();
-            }
+                // Notify job start
+                for (ISQLQueryListener listener : queryListeners) {
+                    listener.onStartJob();
+                }
 
-            for (int queryNum = 0; queryNum < queries.size(); ) {
-                // Execute query
-                SQLStatementInfo query = queries.get(queryNum);
+                for (int queryNum = 0; queryNum < queries.size(); ) {
+                    // Execute query
+                    SQLStatementInfo query = queries.get(queryNum);
 
-                boolean runNext = executeSingleQuery(monitor, query);
-                if (!runNext) {
-                    // Ask to continue
-                    if (lastError != null) {
-                        log.error(lastError);
-                    }
-                    SQLQueryErrorJob errorJob = new SQLQueryErrorJob(
-                        lastError,
-                        queryNum < queries.size() - 1);
-                    errorJob.schedule();
-                    try {
-                        errorJob.join();
-                    }
-                    catch (InterruptedException e) {
-                        log.error(e);
-                    }
+                    boolean runNext = executeSingleQuery(context, query);
+                    if (!runNext) {
+                        // Ask to continue
+                        if (lastError != null) {
+                            log.error(lastError);
+                        }
+                        SQLQueryErrorJob errorJob = new SQLQueryErrorJob(
+                            lastError,
+                            queryNum < queries.size() - 1);
+                        errorJob.schedule();
+                        try {
+                            errorJob.join();
+                        }
+                        catch (InterruptedException e) {
+                            log.error(e);
+                        }
 
-                    boolean stopScript = false;
-                    switch (errorJob.getResponse()) {
-                        case STOP:
-                            // just stop execution
-                            stopScript = true;
+                        boolean stopScript = false;
+                        switch (errorJob.getResponse()) {
+                            case STOP:
+                                // just stop execution
+                                stopScript = true;
+                                break;
+                            case RETRY:
+                                // just make it again
+                                continue;
+                            case IGNORE:
+                                // Just do nothing
+                                break;
+                            case IGNORE_ALL:
+                                errorHandling = SQLScriptErrorHandling.IGNORE;
+                                break;
+                        }
+
+                        if (stopScript) {
                             break;
-                        case RETRY:
-                            // just make it again
-                            continue;
-                        case IGNORE:
-                            // Just do nothing
-                            break;
-                        case IGNORE_ALL:
-                            errorHandling = SQLScriptErrorHandling.IGNORE;
-                            break;
+                        }
                     }
 
-                    if (stopScript) {
+                    // Check monitor
+                    if (monitor.isCanceled()) {
                         break;
                     }
+
+                    queryNum++;
                 }
+                monitor.done();
 
-                // Check monitor
-                if (monitor.isCanceled()) {
-                    break;
-                }
-
-                queryNum++;
-            }
-            monitor.done();
-
-            // Commit data
-            if (!oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
-                if (lastError == null || errorHandling == SQLScriptErrorHandling.STOP_COMMIT) {
-                    if (commitType != SQLScriptCommitType.NO_COMMIT) {
-                        monitor.beginTask("Commit data", 1);
-                        session.commit();
+                // Commit data
+                if (!oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
+                    if (lastError == null || errorHandling == SQLScriptErrorHandling.STOP_COMMIT) {
+                        if (commitType != SQLScriptCommitType.NO_COMMIT) {
+                            monitor.beginTask("Commit data", 1);
+                            txnManager.commit();
+                            monitor.done();
+                        }
+                    } else {
+                        monitor.beginTask("Rollback data", 1);
+                        txnManager.rollback(null);
                         monitor.done();
                     }
-                } else {
-                    monitor.beginTask("Rollback data", 1);
-                    session.rollback();
-                    monitor.done();
                 }
-            }
 
-            // Restore transactions settings
-            if (!oldAutoCommit && newAutoCommit) {
-                session.setAutoCommit(oldAutoCommit);
-            }
+                // Restore transactions settings
+                if (!oldAutoCommit && newAutoCommit) {
+                    txnManager.setAutoCommit(oldAutoCommit);
+                }
 
 /*
             if (lastError != null) {
@@ -212,11 +215,15 @@ public class SQLQueryJob extends DataSourceJob
                     "SQL job completed");
             }
 */
-            // Return success
-            return new Status(
-                Status.OK,
-                DBeaverCore.getInstance().getPluginID(),
-                "SQL job completed");
+                // Return success
+                return new Status(
+                    Status.OK,
+                    DBeaverCore.getInstance().getPluginID(),
+                    "SQL job completed");
+            }
+            finally {
+                context.close();
+            }
         }
         catch (Throwable ex) {
             return new Status(
@@ -234,7 +241,7 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeSingleQuery(DBRProgressMonitor monitor, SQLStatementInfo query)
+    private boolean executeSingleQuery(DBCExecutionContext context, SQLStatementInfo query)
     {
         lastError = null;
 
@@ -243,20 +250,16 @@ public class SQLQueryJob extends DataSourceJob
             listener.onStartQuery(query);
         }
 
-        int subTasksPerformed = 0;
         long startTime = System.currentTimeMillis();
         String sqlQuery = query.getQuery();
         SQLQueryResult result = new SQLQueryResult(query);
         try {
             // Prepare statement
-            monitor.subTask(sqlQuery);
-            curStatement = session.prepareStatement(monitor, sqlQuery, false, false);
+            curStatement = context.prepareStatement(sqlQuery, false, false);
             if (dataContainer != null) {
                 curStatement.setDataContainer(dataContainer);
             }
             curStatement.setLimit(0, maxResults);
-            monitor.worked(1);
-            subTasksPerformed++;
 
             // Bind parameters
             if (!CommonUtils.isEmpty(query.getParameters())) {
@@ -264,25 +267,19 @@ public class SQLQueryJob extends DataSourceJob
                     param.getValueHandler().bindValueObject(curStatement, param.getParamType(), param.getIndex(), param.getValue());
                 }
             }
-            monitor.worked(1);
-            subTasksPerformed++;
 
             // Execute statement
             try {
                 //monitor.subTask("Execute query");
                 boolean hasResultSet = curStatement.executeStatement();
-                monitor.worked(1);
-                subTasksPerformed++;
                 // Show results only if we are not in the script execution
                 if (hasResultSet && fetchResultSets) {
-                    fetchQueryData(result, monitor);
+                    fetchQueryData(result, context);
                 }
                 int updateCount = curStatement.getUpdateRowCount();
                 if (updateCount >= 0) {
                     result.setUpdateCount(updateCount);
                 }
-                monitor.worked(1);
-                subTasksPerformed++;
             }
             finally {
                 //monitor.subTask("Close query");
@@ -297,9 +294,6 @@ public class SQLQueryJob extends DataSourceJob
                         param.getValueHandler().releaseValueObject(param.getValue());
                     }
                 }
-
-                monitor.worked(1);
-                subTasksPerformed++;
             }
         }
         catch (Throwable ex) {
@@ -311,9 +305,6 @@ public class SQLQueryJob extends DataSourceJob
         for (ISQLQueryListener listener : queryListeners) {
             listener.onEndQuery(result);
         }
-        if (subTasksPerformed < SUBTASK_COUNT) {
-            monitor.worked(SUBTASK_COUNT - subTasksPerformed);
-        }
 
         if (result.getError() != null && errorHandling != SQLScriptErrorHandling.IGNORE) {
             return false;
@@ -322,19 +313,20 @@ public class SQLQueryJob extends DataSourceJob
         return true;
     }
 
-    private void fetchQueryData(SQLQueryResult result, DBRProgressMonitor monitor)
+    private void fetchQueryData(SQLQueryResult result, DBCExecutionContext context)
         throws DBCException
     {
         if (dataPump == null) {
             // No data pump - skip fetching stage
             return;
         }
+        DBRProgressMonitor monitor = context.getProgressMonitor();
         monitor.subTask("Fetch result set");
         DBCResultSet resultSet = curStatement.openResultSet();
         if (resultSet != null) {
             int rowCount = 0;
 
-            dataPump.fetchStart(resultSet, monitor);
+            dataPump.fetchStart(resultSet, context.getProgressMonitor());
 
             try {
 
