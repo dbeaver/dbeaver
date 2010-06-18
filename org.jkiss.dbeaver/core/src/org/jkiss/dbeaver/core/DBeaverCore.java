@@ -31,6 +31,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.meta.DBMEvent;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
+import org.jkiss.dbeaver.runtime.qm.QMExecutionHandlerImpl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -71,6 +73,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private DataSourceRegistry dataSourceRegistry;
     private EntityEditorsRegistry editorsRegistry;
     private DBMModel metaModel;
+    private QMExecutionHandlerImpl queryManager;
     private JexlEngine jexlEngine;
 
     public static DBeaverCore getInstance()
@@ -107,6 +110,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.dataSourceRegistry = new DataSourceRegistry(this, Platform.getExtensionRegistry());
         this.editorsRegistry = new EntityEditorsRegistry(this, Platform.getExtensionRegistry());
         this.metaModel = new DBMModel(dataSourceRegistry);
+        this.queryManager = new QMExecutionHandlerImpl(dataSourceRegistry);
         // Make default project
         defaultProject = this.workspace.getRoot().getProject(DEFAULT_PROJECT_NAME);
 
@@ -158,6 +162,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                 log.error("Can't save workspace", ex);
             }
         }
+        if (queryManager != null) {
+            queryManager.dispose();
+        }
         if (metaModel != null) {
             metaModel.dispose();
         }
@@ -204,6 +211,11 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public DBMModel getMetaModel()
     {
         return metaModel;
+    }
+
+    public QMExecutionHandler getQMHandler()
+    {
+        return queryManager;
     }
 
     public DataSourceRegistry getDataSourceRegistry()

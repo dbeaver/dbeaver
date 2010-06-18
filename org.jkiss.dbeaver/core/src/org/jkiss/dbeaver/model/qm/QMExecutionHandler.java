@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.qm;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
@@ -15,15 +14,11 @@ import org.jkiss.dbeaver.model.dbc.DBCStatement;
  */
 public interface QMExecutionHandler {
 
-    void handleDataSourceConnect(DBPDataSource dataSource);
-
-    void handleDataSourceDisconnect(DBPDataSource dataSource);
-
-    void handleTransactionCommit(DBCExecutionContext session);
+    void handleTransactionCommit(DBCExecutionContext context);
 
     void handleTransactionSavepoint(DBCSavepoint savepoint);
 
-    void handleTransactionRollback(DBCExecutionContext session, DBCSavepoint savepoint);
+    void handleTransactionRollback(DBCExecutionContext context, DBCSavepoint savepoint);
 
     void handleStatementOpen(DBCStatement statement);
 
