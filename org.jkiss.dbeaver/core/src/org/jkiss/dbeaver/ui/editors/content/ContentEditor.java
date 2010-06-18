@@ -24,7 +24,6 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorPart;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -32,7 +31,6 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
@@ -454,21 +452,11 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
     }
 
     public DBPDataSource getDataSource() {
-        try {
-            return getSession().getDataSource();
-        }
-        catch (DBException e) {
-            log.error("Could not obtain session reference", e);
-            return null;
-        }
-    }
-
-    public DBCSession getSession() throws DBException {
         DBDValueController valueController = getValueController();
         if (valueController == null) {
-            throw new DBException("No value controller");
+            return null;
         }
-        return valueController.getSession();
+        return valueController.getDataSource();
     }
 
     public void resourceChanged(IResourceChangeEvent event)

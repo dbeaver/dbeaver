@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
@@ -23,14 +22,6 @@ public interface DBPDataSource extends DBPObject
     DBSDataSourceContainer getContainer();
 
     DBPDataSourceInfo getInfo();
-
-    /**
-     * Acquires new database session
-     * @param monitor
-     *@param forceNew if true opens new physical session, otherwise uses datasourse internal session  @return new session
-     * @throws DBException on any DB error
-     */
-    DBCSession getSession(DBRProgressMonitor monitor, boolean forceNew) throws DBException;
 
     /**
      * Opens new execution context

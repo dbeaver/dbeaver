@@ -12,12 +12,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.EditorPart;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.meta.DBMEvent;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.meta.IDBMListener;
@@ -121,10 +119,6 @@ public class FolderEditor extends EditorPart implements IDBMListener, IMetaModel
 
     public DBPDataSource getDataSource() {
         return folderInput == null || folderInput.getDatabaseObject() == null ? null : folderInput.getDatabaseObject().getDataSource();
-    }
-
-    public DBCSession getSession() throws DBException {
-        return null;
     }
 
 }

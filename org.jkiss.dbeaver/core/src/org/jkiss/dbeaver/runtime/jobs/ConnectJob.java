@@ -9,16 +9,17 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.progress.IProgressConstants;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
+import org.jkiss.dbeaver.model.DBPTransactionManager;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**
  * ConnectJob
@@ -86,22 +87,22 @@ public class ConnectJob extends AbstractJob
     private void setDataSourceSettings(DBRProgressMonitor monitor, DBPDataSource dataSource)
         throws DBException
     {
-        monitor.beginTask("Set session defaults ...", 1);
-
-        DBCSession session = dataSource.getSession(monitor, false);
-
-        // Change autocommit state
+        DBCExecutionContext context = dataSource.openContext(monitor, "Set session defaults ...");
         try {
-            boolean autoCommit = session.isAutoCommit();
+            DBPTransactionManager txnManager = context.getTransactionManager();
+            boolean autoCommit = txnManager.isAutoCommit();
             boolean newAutoCommit = container.getPreferenceStore().getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
             if (autoCommit != newAutoCommit) {
-                session.setAutoCommit(newAutoCommit);
+                // Change autocommit state
+                txnManager.setAutoCommit(newAutoCommit);
             }
         }
         catch (DBCException e) {
             log.error("Can't set session autocommit state", e);
         }
-        monitor.done();
+        finally {
+            context.close();
+        }
     }
 
 }

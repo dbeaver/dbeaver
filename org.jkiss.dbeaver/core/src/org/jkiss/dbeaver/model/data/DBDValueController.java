@@ -7,22 +7,21 @@ package org.jkiss.dbeaver.model.data;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 
 /**
  * DBD Value Controller
  */
 public interface DBDValueController
 {
+
     /**
-     * Controller's session
-     * @return session
-     * @throws DBException
+     * Controller's data source
+     * @return data source
      */
-    DBCSession getSession() throws DBException;
+    DBPDataSource getDataSource();
 
     /**
      * Row controller

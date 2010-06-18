@@ -55,13 +55,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
@@ -80,15 +77,15 @@ import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.views.console.ConsoleManager;
 import org.jkiss.dbeaver.ui.views.console.ConsoleMessageType;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.File;
-import java.io.StringWriter;
-import java.io.Reader;
-import java.io.InputStreamReader;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -129,7 +126,6 @@ public class SQLEditor extends BaseTextEditor
 
     private SQLSymbolInserter symbolInserter = null;
 
-    private DBCSession curSession;
     private SQLQueryJob curJob;
     private boolean curJobRunning;
 
@@ -149,13 +145,6 @@ public class SQLEditor extends BaseTextEditor
         setDocumentProvider(new SQLDocumentProvider());
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
         DataSourceRegistry.getDefault().addDataSourceListener(this);
-    }
-
-    public DBCSession getSession()
-        throws DBException
-    {
-        checkSession();
-        return curSession;
     }
 
     public DBPDataSource getDataSource()
@@ -686,7 +675,7 @@ public class SQLEditor extends BaseTextEditor
             final boolean isSingleQuery = (queries.size() == 1);
             final SQLQueryJob job = new SQLQueryJob(
                 isSingleQuery ? "Execute query" : "Execute script",
-                curSession.getDataSource(),
+                getDataSource(),
                 queries,
                 resultsView.getDataPump());
             job.addQueryListener(new ISQLQueryListener() {
@@ -776,25 +765,13 @@ public class SQLEditor extends BaseTextEditor
     private void checkSession()
         throws DBException
     {
-        if (curSession == null) {
-            if (getDataSourceContainer() == null || !getDataSourceContainer().isConnected()) {
-                throw new DBException("Not connected to database");
-            }
-            // Get session with void monitor cos' we don't want to open new one
-            curSession = getDataSourceContainer().getSession(VoidProgressMonitor.INSTANCE, false);
+        if (getDataSourceContainer() == null || !getDataSourceContainer().isConnected()) {
+            throw new DBException("Not connected to database");
         }
     }
 
     private void closeSession()
     {
-        if (curSession != null) {
-            try {
-                curSession.close();
-            } catch (DBCException e) {
-                log.error(e);
-            }
-            curSession = null;
-        }
         if (curJob != null) {
             curJob = null;
         }

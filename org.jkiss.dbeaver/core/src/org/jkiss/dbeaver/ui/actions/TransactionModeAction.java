@@ -13,15 +13,21 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IWorkbenchWindowPulldownDelegate;
 import org.eclipse.ui.IWorkbenchWindowPulldownDelegate2;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
+import org.jkiss.dbeaver.model.DBPTransactionManager;
 import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
+
+import java.lang.reflect.InvocationTargetException;
 
 
 public class TransactionModeAction extends SessionAction implements IWorkbenchWindowPulldownDelegate, IWorkbenchWindowPulldownDelegate2
@@ -30,14 +36,36 @@ public class TransactionModeAction extends SessionAction implements IWorkbenchWi
     public void run(IAction action)
     {
         try {
-            // Toggle autocommit flag
-            DBCSession session = isConnected() ? getSession() : null;
-            if (session != null) {
-                session.setAutoCommit(!session.isAutoCommit());
-                DataSourceRegistry.getDefault().fireDataSourceEvent(DataSourceEvent.Action.CHANGE, getDataSource(), this);
+            final DBPDataSource dataSource = getDataSource();
+            if (dataSource != null) {
+                DBeaverCore.getInstance().runAndWait2(true, true, new DBRRunnableWithProgress() {
+                    public void run(DBRProgressMonitor monitor)
+                        throws InvocationTargetException, InterruptedException
+                    {
+                        DBCExecutionContext context = dataSource.openContext(monitor, "Change auto-commit flag");
+                        try {
+                            DBPTransactionManager txnManager = context.getTransactionManager();
+                            txnManager.setAutoCommit(!txnManager.isAutoCommit());
+                        }
+                        catch (DBCException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                        finally {
+                            context.close();
+                        }
+                    }
+                });
+                DataSourceRegistry.getDefault().fireDataSourceEvent(
+                    DataSourceEvent.Action.CHANGE,
+                    dataSource,
+                    this);
+            } else {
+                DBeaverUtils.showErrorDialog(getWindow().getShell(), "Auto-Commit", "No active database");
             }
-        } catch (DBException e) {
+        } catch (InvocationTargetException e) {
             DBeaverUtils.showErrorDialog(getWindow().getShell(), "Auto-Commit", "Error while toggle auto-commit", e);
+        } catch (InterruptedException e) {
+            // do nothing
         }
     }
 
@@ -58,70 +86,62 @@ public class TransactionModeAction extends SessionAction implements IWorkbenchWi
         if (dataSource == null) {
             return;
         }
-        final DBPDataSourceInfo dsInfo;
-        dsInfo = dataSource.getInfo();
-        final DBCSession session;
-        try {
-            session = getSession();
-        } catch (DBException e) {
-            log.error("Can't obtain database session", e);
-            return;
-        }
-        if (session == null) {
-            return;
-        }
-        // Auto-commit
-        MenuItem autoCommit = new MenuItem(menu, SWT.CHECK);
-        autoCommit.setText("Auto-commit");
-        try {
-            autoCommit.setSelection(session.isAutoCommit());
-        } catch (DBCException ex) {
-            log.warn("Can't check auto-commit status", ex);
-        }
-        autoCommit.addSelectionListener(new SelectionAdapter()
-        {
-            public void widgetSelected(SelectionEvent e)
-            {
-                try {
-                    session.setAutoCommit(!session.isAutoCommit());
-                    DataSourceRegistry.getDefault().fireDataSourceEvent(DataSourceEvent.Action.CHANGE, getDataSource(), this);
-                } catch (DBCException ex) {
-                    log.error("Can't change auto-commit status", ex);
-                }
-            }
-        });
+        final DBPDataSourceInfo dsInfo = dataSource.getInfo();
 
-        new MenuItem(menu, SWT.SEPARATOR);
-
-        // Transactions
-        DBPTransactionIsolation curTxi = null;
+        DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE);
         try {
-            curTxi = session.getTransactionIsolation();
-        } catch (DBCException ex) {
-            log.warn("Can't determine current transaction isolation level", ex);
-        }
-        for (DBPTransactionIsolation txi : dsInfo.getSupportedTransactionIsolations()) {
-            if (!txi.isEnabled()) {
-                continue;
+            final DBPTransactionManager txnManager = context.getTransactionManager();
+            // Auto-commit
+            MenuItem autoCommit = new MenuItem(menu, SWT.CHECK);
+            autoCommit.setText("Auto-commit");
+            try {
+                autoCommit.setSelection(txnManager.isAutoCommit());
+            } catch (DBCException ex) {
+                log.warn("Can't check auto-commit status", ex);
             }
-            MenuItem txnItem = new MenuItem(menu, SWT.RADIO);
-            txnItem.setText(txi.getName());
-            txnItem.setSelection(txi == curTxi);
-            txnItem.setData(txi);
-            txnItem.addSelectionListener(new SelectionAdapter()
+            autoCommit.addSelectionListener(new SelectionAdapter()
             {
                 public void widgetSelected(SelectionEvent e)
                 {
-                    try {
-                        DBPTransactionIsolation newTxi = (DBPTransactionIsolation) e.widget.getData();
-                        if (!session.getTransactionIsolation().equals(newTxi)) {
-                            session.setTransactionIsolation(newTxi);
-                        }
-                    } catch (DBCException ex) {
-                        log.warn("Can't change current transaction isolation level", ex);
-                    }
+                    TransactionModeAction.this.run(null);
                 }
             });
+
+            new MenuItem(menu, SWT.SEPARATOR);
+
+            // Transactions
+            DBPTransactionIsolation curTxi = null;
+            try {
+                curTxi = txnManager.getTransactionIsolation();
+            } catch (DBCException ex) {
+                log.warn("Can't determine current transaction isolation level", ex);
+            }
+            for (DBPTransactionIsolation txi : dsInfo.getSupportedTransactionIsolations()) {
+                if (!txi.isEnabled()) {
+                    continue;
+                }
+                MenuItem txnItem = new MenuItem(menu, SWT.RADIO);
+                txnItem.setText(txi.getName());
+                txnItem.setSelection(txi == curTxi);
+                txnItem.setData(txi);
+                txnItem.addSelectionListener(new SelectionAdapter()
+                {
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        try {
+                            DBPTransactionIsolation newTxi = (DBPTransactionIsolation) e.widget.getData();
+                            if (!txnManager.getTransactionIsolation().equals(newTxi)) {
+                                txnManager.setTransactionIsolation(newTxi);
+                            }
+                        } catch (DBCException ex) {
+                            log.warn("Can't change current transaction isolation level", ex);
+                        }
+                    }
+                });
+            }
+        }
+        finally {
+            context.close();
         }
     }
 

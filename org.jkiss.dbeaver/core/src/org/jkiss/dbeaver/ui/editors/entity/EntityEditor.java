@@ -12,7 +12,6 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.*;
@@ -27,7 +26,6 @@ import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
@@ -371,10 +369,6 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
 
     public DBPDataSource getDataSource() {
         return entityInput == null || entityInput.getDatabaseObject() == null ? null : entityInput.getDatabaseObject().getDataSource();
-    }
-
-    public DBCSession getSession() throws DBException {
-        return null;
     }
 
 }

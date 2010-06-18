@@ -8,12 +8,13 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.ui.*;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.eclipse.ui.IActionDelegate2;
+import org.eclipse.ui.IObjectActionDelegate;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -159,21 +160,6 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
             }
         }
         return null;
-    }
-
-    protected DBCSession getSession() throws DBException
-    {
-        DBCSession session = null;
-        if (activePart instanceof IDataSourceUser) {
-            session = ((IDataSourceUser)activePart).getSession();
-        }
-        if (session == null) {
-            DBPDataSource dataSource = getDataSource();
-            if (dataSource != null) {
-                session = dataSource.getSession(VoidProgressMonitor.INSTANCE, false);
-            }
-        }
-        return session;
     }
 
 }

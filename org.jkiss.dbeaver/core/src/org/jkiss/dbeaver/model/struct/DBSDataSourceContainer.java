@@ -10,9 +10,7 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDriver;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * DBSDataSourceContainer
@@ -36,16 +34,6 @@ public interface DBSDataSourceContainer extends DBSObject
      * @return datasource or null (if not connected)
      */
     DBPDataSource getDataSource();
-
-    /**
-     * Opens connection (if needed) and acquires session from underlying data source.
-     * Additionally sets custom properties on new obtained session.
-     * @param monitor
-     *@param forceNew force opening of new physical session  @return new session
-     * @throws DBException on any DB error
-     * @see org.jkiss.dbeaver.model.DBPDataSource#getSession(org.jkiss.dbeaver.model.runtime.DBRProgressMonitor,boolean)
-     */
-    DBCSession getSession(DBRProgressMonitor monitor, boolean forceNew) throws DBException;
 
     DBRRunnableContext getViewCallback();
 

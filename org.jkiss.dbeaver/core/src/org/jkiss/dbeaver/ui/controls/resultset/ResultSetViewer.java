@@ -49,10 +49,10 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
@@ -659,10 +659,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             this.inlinePlaceholder = inlinePlaceholder;
         }
 
-        public DBCSession getSession()
-            throws DBException
+        public DBPDataSource getDataSource()
         {
-            return resultSetProvider.getSession();
+            return resultSetProvider.getDataSource();
         }
 
         public DBDRowController getRow() {
@@ -675,13 +674,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
 
         public String getColumnId() {
-            String dsName;
-            try {
-                dsName = getSession().getDataSource().getContainer().getName();
-            } catch (DBException e) {
-                dsName = "datasource";
-                log.warn(e);
-            }
+            String dsName = getDataSource().getContainer().getName();
             String catalogName = getColumnMetaData().getCatalogName();
             String schemaName = getColumnMetaData().getSchemaName();
             String tableName = getColumnMetaData().getTableName();

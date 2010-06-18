@@ -7,10 +7,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.api.ConnectionManagable;
 import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
@@ -134,16 +132,6 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     public List<GenericCatalog> getCatalogs(DBRProgressMonitor monitor)
     {
         return catalogs;
-    }
-
-    public DBCSession getSession(DBRProgressMonitor monitor, boolean forceNew)
-        throws DBException
-    {
-        if (forceNew) {
-            return new JDBCSession(this, this.openConnection(monitor));
-        } else {
-            return new JDBCSession(this);
-        }
     }
 
     public GenericCatalog getCatalog(DBRProgressMonitor monitor, String name)

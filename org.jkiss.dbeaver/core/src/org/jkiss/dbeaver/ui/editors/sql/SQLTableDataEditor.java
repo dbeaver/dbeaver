@@ -14,12 +14,10 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -28,7 +26,6 @@ import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -45,7 +42,6 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
     private ResultSetViewer resultSetView;
     private DBMModel model;
     private DBSTable table;
-    private DBCSession curSession;
 
     public void doSave(IProgressMonitor monitor)
     {
@@ -101,13 +97,7 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
                 return;
             }
             table = (DBSTable)dbmObject;
-            try {
-                // Get session with void monitor cos' we don't want to open new one
-                curSession = table.getDataSource().getContainer().getSession(VoidProgressMonitor.INSTANCE, false);
-            } catch (DBException ex) {
-                log.error("Error obtaining database session", ex);
-                return;
-            }
+
             resultSetView.refresh();
         }
     }
@@ -141,10 +131,6 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
         return this;
     }
 
-    public DBCSession getSession() throws DBException {
-        return curSession;
-    }
-
     public DBSDataSourceContainer getDataSourceContainer() {
         return table.getDataSource().getContainer();
     }
@@ -160,8 +146,8 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
 
     public void extractResultSetData(int offset)
     {
-        if (curSession == null) {
-            DBeaverUtils.showErrorDialog(getSite().getShell(), "No Session", "No session");
+        if (!isConnected()) {
+            DBeaverUtils.showErrorDialog(getSite().getShell(), "Not Connected", "Not Connected");
             return;
         }
         log.debug("Extract table data");
@@ -171,7 +157,7 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
         SQLStatementInfo statementInfo = new SQLStatementInfo(query.toString());
         final SQLQueryJob job = new SQLQueryJob(
             "Table " + tableName,
-            curSession.getDataSource(),
+            getDataSource(),
             Collections.singletonList(statementInfo),
             resultSetView.getDataPump());
         job.setDataContainer(table);

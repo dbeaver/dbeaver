@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.api.ConnectionManagable;
 import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
@@ -124,16 +123,6 @@ public abstract class JDBCDataSource
     public DBPDataSourceInfo getInfo()
     {
         return info;
-    }
-
-    public DBCSession getSession(DBRProgressMonitor monitor, boolean forceNew)
-        throws DBException
-    {
-        if (forceNew) {
-            return new JDBCSession(this, this.openConnection(monitor));
-        } else {
-            return new JDBCSession(this);
-        }
     }
 
     public void checkConnection(DBRProgressMonitor monitor)

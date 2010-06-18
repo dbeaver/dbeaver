@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
-import org.jkiss.dbeaver.model.dbc.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -206,14 +205,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     public DBPDataSource getDataSource()
     {
         return dataSource;
-    }
-
-    public DBCSession getSession(DBRProgressMonitor monitor, boolean forceNew) throws DBException
-    {
-        if (!isConnected()) {
-            connect(this);
-        }
-        return getDataSource().getSession(monitor, forceNew);
     }
 
     public DBeaverCore getViewCallback()
