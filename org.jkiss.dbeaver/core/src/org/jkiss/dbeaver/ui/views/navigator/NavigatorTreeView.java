@@ -154,21 +154,26 @@ public class NavigatorTreeView extends ViewPart
             case REFRESH:
                 asyncExec(new Runnable() { public void run() {
                     if (!viewer.getControl().isDisposed()) {
-                        switch (event.getNodeChange()) {
-                            case LOADED:
-                                viewer.expandToLevel(event.getNode().getObject(), 1);
-                                viewer.refresh(event.getNode().getObject());
-                                break;
-                            case UNLOADED:
-                                viewer.collapseToLevel(event.getNode().getObject(), -1);
-                                viewer.refresh(event.getNode().getObject());
-                                break;
-                            case CHANGED:
-                                getViewer().update(event.getNode().getObject(), null);
-                                break;
-                            case REFRESH:
-                                viewer.refresh(event.getNode().getObject());
-                                break;
+                        DBSObject nodeObject = event.getNode().getObject();
+                        if (nodeObject != null) {
+                            switch (event.getNodeChange()) {
+                                case LOADED:
+                                    viewer.expandToLevel(nodeObject, 1);
+                                    viewer.refresh(nodeObject);
+                                    break;
+                                case UNLOADED:
+                                    viewer.collapseToLevel(nodeObject, -1);
+                                    viewer.refresh(nodeObject);
+                                    break;
+                                case CHANGED:
+                                    getViewer().update(nodeObject, null);
+                                    break;
+                                case REFRESH:
+                                    viewer.refresh(nodeObject);
+                                    break;
+                            }
+                        } else {
+                            log.warn("Null node object");
                         }
                     }
                 }});
