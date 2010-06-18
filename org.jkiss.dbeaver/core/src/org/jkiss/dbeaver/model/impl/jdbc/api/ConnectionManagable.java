@@ -19,6 +19,8 @@ import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
+import org.jkiss.dbeaver.DBException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -41,7 +43,7 @@ import java.util.Properties;
 /**
  * Managable connection
  */
-public class ConnectionManagable implements JDBCExecutionContext {
+public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObject {
 
     static Log log = LogFactory.getLog(ConnectionManagable.class);
 
@@ -56,6 +58,9 @@ public class ConnectionManagable implements JDBCExecutionContext {
         this.original = connector.getConnection();
         this.monitor = monitor;
         this.taskTitle = taskTitle;
+        if (taskTitle != null) {
+            monitor.startBlock(this, taskTitle);
+        }
     }
 
     public String getTaskTitle()
@@ -143,6 +148,9 @@ public class ConnectionManagable implements JDBCExecutionContext {
     public void close()
         //throws SQLException
     {
+        if (taskTitle != null) {
+            monitor.endBlock();
+        }
         // do nothing
         // closing of context doesn't close real connection
         //original.close();
@@ -396,7 +404,18 @@ public class ConnectionManagable implements JDBCExecutionContext {
     {
         return original.isWrapperFor(iface);
     }
-    
+
+    public void cancelBlock()
+        throws DBException
+    {
+        try {
+            original.close();
+        }
+        catch (SQLException e) {
+            throw new DBCException("Could not close connection", e);
+        }
+    }
+
     private class TransactionManager implements DBPTransactionManager {
 
         public DBPDataSource getDataSource()
