@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.DBPTransactionManager;
+import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -44,7 +44,7 @@ public class TransactionModeAction extends SessionAction implements IWorkbenchWi
                     {
                         DBCExecutionContext context = dataSource.openContext(monitor, "Change auto-commit flag");
                         try {
-                            DBPTransactionManager txnManager = context.getTransactionManager();
+                            DBCTransactionManager txnManager = context.getTransactionManager();
                             txnManager.setAutoCommit(!txnManager.isAutoCommit());
                         }
                         catch (DBCException e) {
@@ -90,7 +90,7 @@ public class TransactionModeAction extends SessionAction implements IWorkbenchWi
 
         DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE);
         try {
-            final DBPTransactionManager txnManager = context.getTransactionManager();
+            final DBCTransactionManager txnManager = context.getTransactionManager();
             // Auto-commit
             MenuItem autoCommit = new MenuItem(menu, SWT.CHECK);
             autoCommit.setText("Auto-commit");

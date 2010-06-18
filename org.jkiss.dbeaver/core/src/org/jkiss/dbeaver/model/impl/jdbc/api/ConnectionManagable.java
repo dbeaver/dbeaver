@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.model.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPTransactionManager;
+import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
@@ -78,7 +78,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         return monitor;
     }
 
-    public DBPTransactionManager getTransactionManager()
+    public DBCTransactionManager getTransactionManager()
     {
         return new TransactionManager();
     }
@@ -416,7 +416,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         }
     }
 
-    private class TransactionManager implements DBPTransactionManager {
+    private class TransactionManager implements DBCTransactionManager {
 
         public DBPDataSource getDataSource()
         {
@@ -466,6 +466,23 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
             catch (SQLException e) {
                 throw new JDBCException(e);
             }
+        }
+
+        public DBCSavepoint setSavepoint(String name)
+            throws DBCException
+        {
+            Savepoint savepoint;
+            try {
+                if (name == null) {
+                    savepoint = ConnectionManagable.this.setSavepoint();
+                } else {
+                    savepoint = ConnectionManagable.this.setSavepoint(name);
+                }
+            }
+            catch (SQLException e) {
+                throw new DBCException(e);
+            }
+            return new SavepointManagable(ConnectionManagable.this, savepoint);
         }
 
         public void commit()

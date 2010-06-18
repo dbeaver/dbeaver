@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.model.dbc;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPTransactionManager;
+import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -19,7 +19,7 @@ public interface DBCExecutionContext {
 
     DBRProgressMonitor getProgressMonitor();
 
-    DBPTransactionManager getTransactionManager();
+    DBCTransactionManager getTransactionManager();
 
     DBCStatement prepareStatement(
         String query,

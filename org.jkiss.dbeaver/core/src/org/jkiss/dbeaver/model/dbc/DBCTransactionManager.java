@@ -2,15 +2,17 @@
 * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
 */
 
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.dbc;
 
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 
 /**
 * DBCSession
  */
-public interface DBPTransactionManager
+public interface DBCTransactionManager
 {
     DBPDataSource getDataSource();
 
@@ -22,6 +24,9 @@ public interface DBPTransactionManager
 
     void setAutoCommit(boolean autoCommit) throws DBCException;
 
+    DBCSavepoint setSavepoint(String name)
+        throws DBCException;
+    
     void commit() throws DBCException;
 
     void rollback(DBCSavepoint savepoint) throws DBCException;

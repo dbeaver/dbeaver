@@ -12,7 +12,7 @@ import org.eclipse.ui.progress.IProgressConstants;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPTransactionManager;
+import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -89,7 +89,7 @@ public class ConnectJob extends AbstractJob
     {
         DBCExecutionContext context = dataSource.openContext(monitor, "Set session defaults ...");
         try {
-            DBPTransactionManager txnManager = context.getTransactionManager();
+            DBCTransactionManager txnManager = context.getTransactionManager();
             boolean autoCommit = txnManager.isAutoCommit();
             boolean newAutoCommit = container.getPreferenceStore().getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
             if (autoCommit != newAutoCommit) {

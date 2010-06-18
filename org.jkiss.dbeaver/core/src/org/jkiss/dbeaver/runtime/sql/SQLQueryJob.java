@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPTransactionManager;
+import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -111,7 +111,7 @@ public class SQLQueryJob extends DataSourceJob
             DBCExecutionContext context = getDataSource().openContext(monitor, "SQL Query");
             try {
 // Set transction settings (only if autocommit is off)
-                DBPTransactionManager txnManager = context.getTransactionManager();
+                DBCTransactionManager txnManager = context.getTransactionManager();
                 boolean oldAutoCommit = txnManager.isAutoCommit();
                 boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
                 if (!oldAutoCommit && newAutoCommit != oldAutoCommit) {
