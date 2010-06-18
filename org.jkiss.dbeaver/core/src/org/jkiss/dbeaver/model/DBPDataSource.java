@@ -5,9 +5,8 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCSession;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
@@ -32,6 +31,21 @@ public interface DBPDataSource extends DBPObject
      * @throws DBException on any DB error
      */
     DBCSession getSession(DBRProgressMonitor monitor, boolean forceNew) throws DBException;
+
+    /**
+     * Opens new execution context
+     * @param monitor progress monitor
+     * @return execution context
+     */
+    DBCExecutionContext openContext(DBRProgressMonitor monitor);
+
+    /**
+     * Opens new execution context
+     * @param monitor progress monitor
+     * @param task task description
+     * @return execution context
+     */
+    DBCExecutionContext openContext(DBRProgressMonitor monitor, String task);
 
     /**
      * Executes test query agains connected database.

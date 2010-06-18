@@ -108,7 +108,12 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
 
     public JDBCExecutionContext openContext(DBRProgressMonitor monitor)
     {
-        return new ConnectionManagable(this, monitor);
+        return openContext(monitor, null);
+    }
+
+    public JDBCExecutionContext openContext(DBRProgressMonitor monitor, String taskTitle)
+    {
+        return new ConnectionManagable(this, monitor, taskTitle);
     }
 
     public String[] getTableTypes()

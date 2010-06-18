@@ -48,17 +48,29 @@ public class ConnectionManagable implements JDBCExecutionContext {
     private DBPDataSource dataSource;
     private Connection original;
     private DBRProgressMonitor monitor;
+    private String taskTitle;
 
-    public ConnectionManagable(JDBCConnector connector, DBRProgressMonitor monitor)
+    public ConnectionManagable(JDBCConnector connector, DBRProgressMonitor monitor, String taskTitle)
     {
         this.dataSource = connector.getDataSource();
         this.original = connector.getConnection();
         this.monitor = monitor;
+        this.taskTitle = taskTitle;
+    }
+
+    public String getTaskTitle()
+    {
+        return taskTitle;
     }
 
     public DBPDataSource getDataSource()
     {
         return dataSource;
+    }
+
+    public DBRProgressMonitor getProgressMonitor()
+    {
+        return monitor;
     }
 
     public DBPTransactionManager getTransactionManager()
@@ -78,11 +90,6 @@ public class ConnectionManagable implements JDBCExecutionContext {
         catch (SQLException e) {
             throw new JDBCException(e);
         }
-    }
-
-    public DBRProgressMonitor getProgressMonitor()
-    {
-        return monitor;
     }
 
     public JDBCStatement createStatement()

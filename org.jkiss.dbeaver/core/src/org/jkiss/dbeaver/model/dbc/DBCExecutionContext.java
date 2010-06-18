@@ -13,8 +13,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBCExecutionContext {
 
+    String getTaskTitle();
+
     DBPDataSource getDataSource();
-    
+
     DBRProgressMonitor getProgressMonitor();
 
     DBPTransactionManager getTransactionManager();
