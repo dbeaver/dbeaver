@@ -10,14 +10,22 @@ import java.util.Map;
  * DBCStatement meta info
  */
 public class QMStatementMetaInfo {
+
+    public class QMExecuteMetaInfo {
+        private QMTransactionMetaInfo transaction;
+        private String queryString;
+        private Map<Object, Object> parameters;
+
+        private long fetchRowCount;
+        private long updateRowCount;
+
+        private Throwable executionError;
+        private long executeTime;
+        private long fetchTime;
+    }
     
-    private QMTransactionMetaInfo transaction;
-    private String queryString;
     private long openTime;
     private long closeTime;
-    private long fetchRowCount;
-    private long updateRowCount;
-    private Throwable executionError;
-    private Map<Object, Object> parameters;
+    private Object executions;
 
 }
