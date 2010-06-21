@@ -7,22 +7,10 @@ package org.jkiss.dbeaver.core;
 import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdapterManager;
-import org.eclipse.core.runtime.ILog;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.*;
 import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -31,18 +19,17 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 import org.jkiss.dbeaver.model.meta.DBMModel;
-import org.jkiss.dbeaver.model.meta.DBMEvent;
+import org.jkiss.dbeaver.model.qm.QMController;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
+import org.jkiss.dbeaver.runtime.AbstractUIJob;
+import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
-import org.jkiss.dbeaver.runtime.AbstractUIJob;
-import org.jkiss.dbeaver.runtime.qm.QMExecutionHandlerImpl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -73,7 +60,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private DataSourceRegistry dataSourceRegistry;
     private EntityEditorsRegistry editorsRegistry;
     private DBMModel metaModel;
-    private QMExecutionHandlerImpl queryManager;
+    private QMControllerImpl queryManager;
     private JexlEngine jexlEngine;
 
     public static DBeaverCore getInstance()
@@ -110,7 +97,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.dataSourceRegistry = new DataSourceRegistry(this, Platform.getExtensionRegistry());
         this.editorsRegistry = new EntityEditorsRegistry(this, Platform.getExtensionRegistry());
         this.metaModel = new DBMModel(dataSourceRegistry);
-        this.queryManager = new QMExecutionHandlerImpl(dataSourceRegistry);
+        this.queryManager = new QMControllerImpl(dataSourceRegistry);
         // Make default project
         defaultProject = this.workspace.getRoot().getProject(DEFAULT_PROJECT_NAME);
 
@@ -213,7 +200,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return metaModel;
     }
 
-    public QMExecutionHandler getQMHandler()
+    public QMController getQueryManager()
     {
         return queryManager;
     }

@@ -14,6 +14,8 @@ import org.jkiss.dbeaver.model.dbc.DBCStatement;
  */
 public interface QMExecutionHandler {
 
+    String getHandlerName();
+
     void handleTransactionCommit(DBCExecutionContext context);
 
     void handleTransactionSavepoint(DBCSavepoint savepoint);

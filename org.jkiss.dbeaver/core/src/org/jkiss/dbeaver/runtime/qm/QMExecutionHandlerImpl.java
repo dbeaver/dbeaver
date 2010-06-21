@@ -10,7 +10,6 @@ import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 
@@ -22,18 +21,24 @@ import java.util.HashMap;
  */
 public class QMExecutionHandlerImpl implements QMExecutionHandler, IDataSourceListener {
 
-    private DataSourceRegistry dataSourceRegistry;
+    private QMControllerImpl controller;
     private Map<DBPDataSource, QMDataSourceMetaInfo> dataSourcesInfo = new HashMap<DBPDataSource, QMDataSourceMetaInfo>();
 
-    public QMExecutionHandlerImpl(DataSourceRegistry dataSourceRegistry)
+    public QMExecutionHandlerImpl(QMControllerImpl controller)
     {
-        this.dataSourceRegistry = dataSourceRegistry;
-        this.dataSourceRegistry.addDataSourceListener(this);
+        controller.getDataSourceRegistry().addDataSourceListener(this);
+    }
+
+    public String getHandlerName() {
+        return "Default";
     }
 
     public void handleTransactionCommit(DBCExecutionContext context)
     {
-        
+        // Notify other handlers
+        for (QMExecutionHandler handler : controller.getHandlers()) {
+            handler.handleTransactionCommit(context);
+        }
     }
 
     public void handleTransactionSavepoint(DBCSavepoint savepoint)
@@ -98,9 +103,9 @@ public class QMExecutionHandlerImpl implements QMExecutionHandler, IDataSourceLi
 
     public void dispose()
     {
-        if (dataSourceRegistry != null) {
-            dataSourceRegistry.removeDataSourceListener(this);
-            dataSourceRegistry = null;
+        if (controller != null) {
+            controller.getDataSourceRegistry().removeDataSourceListener(this);
+            controller = null;
         }
     }
 

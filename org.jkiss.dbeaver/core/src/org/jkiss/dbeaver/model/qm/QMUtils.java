@@ -13,7 +13,17 @@ public class QMUtils {
 
     public static QMExecutionHandler getHandler()
     {
-        return DBeaverCore.getInstance().getQMHandler();
+        return DBeaverCore.getInstance().getQueryManager().getDefaultHandler();
+    }
+
+    public static void registerHandler(QMExecutionHandler handler)
+    {
+        DBeaverCore.getInstance().getQueryManager().registerHandler(handler);
+    }
+
+    public static void unregisterHandler(QMExecutionHandler handler)
+    {
+        DBeaverCore.getInstance().getQueryManager().unregisterHandler(handler);
     }
 
 }
