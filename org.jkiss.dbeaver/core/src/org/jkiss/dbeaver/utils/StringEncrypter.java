@@ -4,8 +4,7 @@
 
 package org.jkiss.dbeaver.utils;
 
-import sun.misc.BASE64Encoder;
-import sun.misc.BASE64Decoder;
+import net.sf.jkiss.utils.Base64;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.Cipher;
@@ -78,8 +77,7 @@ public class StringEncrypter {
             byte[] cleartext = unencryptedString.getBytes(CHARSET);
             byte[] ciphertext = cipher.doFinal(cleartext);
 
-            BASE64Encoder base64encoder = new BASE64Encoder();
-            return base64encoder.encode(ciphertext);
+            return Base64.encode(ciphertext);
         }catch(Exception e){
             throw new EncryptionException(e);
         }
@@ -93,8 +91,7 @@ public class StringEncrypter {
         try{
             SecretKey key = keyFactory.generateSecret(keySpec);
             cipher.init(Cipher.DECRYPT_MODE, key);
-            BASE64Decoder base64decoder = new BASE64Decoder();
-            byte[] cleartext = base64decoder.decodeBuffer(encryptedString);
+            byte[] cleartext = Base64.decode(encryptedString);
             byte[] ciphertext = cipher.doFinal(cleartext);
 
             return new String(ciphertext, CHARSET);

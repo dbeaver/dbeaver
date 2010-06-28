@@ -26,7 +26,8 @@ public class QMExecutionHandlerImpl implements QMExecutionHandler, IDataSourceLi
 
     public QMExecutionHandlerImpl(QMControllerImpl controller)
     {
-        controller.getDataSourceRegistry().addDataSourceListener(this);
+    	this.controller = controller;
+    	this.controller.getDataSourceRegistry().addDataSourceListener(this);
     }
 
     public String getHandlerName() {

@@ -31,6 +31,7 @@ public class QMControllerImpl implements QMController {
             log.warn("Some QM handlers are still registered: " + handlers);
             handlers.clear();
         }
+      	defaultHandler.dispose();
     }
 
     public QMExecutionHandler getDefaultHandler() {
