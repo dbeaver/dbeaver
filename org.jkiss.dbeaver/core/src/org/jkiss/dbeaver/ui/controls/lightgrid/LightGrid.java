@@ -629,8 +629,13 @@ public class LightGrid extends Canvas {
         if (contentProvider == null) {
             return;
         }
-        gridSize = contentProvider.getSize();
-        currentVisibleItems = gridSize.row;
+        this.gridSize = this.contentProvider.getSize();
+        this.currentVisibleItems = this.gridSize.row;
+        this.topIndex = 0;
+        this.bottomIndex = -1;
+        this.startColumnIndex = -1;
+        this.endColumnIndex = -1;
+
         // Add columns
         if (contentProvider != null) {
             int columnCount = contentProvider.getSize().col;
