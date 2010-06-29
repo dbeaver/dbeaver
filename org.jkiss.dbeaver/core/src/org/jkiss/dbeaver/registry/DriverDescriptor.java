@@ -220,6 +220,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         catch (ClassCastException ex) {
             throw new DBException("Bad driver class name specified", ex);
         }
+        catch (Throwable ex) {
+            throw new DBException("Error during driver instantiation", ex);
+        }
     }
 
     public Integer getDefaultPort()

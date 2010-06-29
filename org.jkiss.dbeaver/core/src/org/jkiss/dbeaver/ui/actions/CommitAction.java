@@ -22,7 +22,7 @@ public class CommitAction extends SessionAction
     @Override
     protected void updateAction(IAction action) {
         DBPDataSource dataSource = getDataSource();
-        if (dataSource != null) {
+        if (dataSource != null && dataSource.getContainer().isConnected()) {
             DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE, "Check auto commit state");
             try {
                 action.setEnabled(!context.getTransactionManager().isAutoCommit());

@@ -37,7 +37,7 @@ public class TransactionModeAction extends SessionAction implements IWorkbenchWi
     {
         try {
             final DBPDataSource dataSource = getDataSource();
-            if (dataSource != null) {
+            if (dataSource != null && dataSource.getContainer().isConnected()) {
                 DBeaverCore.getInstance().runAndWait2(true, true, new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
