@@ -471,24 +471,31 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         }
         synchronized (this) {
             activeChildRead = true;
-            if (CommonUtils.isEmpty(queryGetActiveDB)) {
-                return null;
-            }
             String activeDbName;
             JDBCExecutionContext context = openContext(monitor);
             try {
-                JDBCPreparedStatement dbStat = context.prepareStatement(queryGetActiveDB);
-                dbStat.setDescription("Reading active database");
-                try {
-                    JDBCResultSet resultSet = dbStat.executeQuery();
+                if (CommonUtils.isEmpty(queryGetActiveDB)) {
                     try {
-                        resultSet.next();
-                        activeDbName = resultSet.getString(1);
-                    } finally {
-                        resultSet.close();
+                        activeDbName = context.getCatalog();
                     }
-                } finally {
-                    dbStat.close();
+                    catch (SQLException e) {
+                        // Seems to be not supported
+                        return null;
+                    }
+                } else {
+                    JDBCPreparedStatement dbStat = context.prepareStatement(queryGetActiveDB);
+                    dbStat.setDescription("Reading active database");
+                    try {
+                        JDBCResultSet resultSet = dbStat.executeQuery();
+                        try {
+                            resultSet.next();
+                            activeDbName = resultSet.getString(1);
+                        } finally {
+                            resultSet.close();
+                        }
+                    } finally {
+                        dbStat.close();
+                    }
                 }
             } catch (SQLException e) {
                 log.error(e);
@@ -497,7 +504,11 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
             finally {
                 context.close();
             }
-            activeChild = getChild(monitor, activeDbName);
+            if (activeDbName != null) {
+                activeChild = getChild(monitor, activeDbName);
+            } else {
+                activeChild = null;
+            }
 
             return activeChild;
         }

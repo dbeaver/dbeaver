@@ -30,6 +30,7 @@ public class ConnectJob extends AbstractJob
 
     private DataSourceDescriptor container;
     private DBPDataSource dataSource;
+    private Thread connectThread;
 
     public ConnectJob(
         DataSourceDescriptor container)
@@ -50,6 +51,8 @@ public class ConnectJob extends AbstractJob
     protected IStatus run(DBRProgressMonitor monitor)
     {
         try {
+            connectThread = getThread();
+            connectThread.setName("Connect to datasource '" + container.getName() + "'");
             monitor.beginTask("Open Datasource ...", 1);
             dataSource = container.getDriver().getDataSourceProvider().openDataSource(
                 monitor, container
@@ -62,6 +65,7 @@ public class ConnectJob extends AbstractJob
 
             setDataSourceSettings(monitor, dataSource);
 
+            connectThread = null;
             return new Status(
                 Status.OK,
                 DBeaverCore.getInstance().getPluginID(),
@@ -81,7 +85,9 @@ public class ConnectJob extends AbstractJob
 
     protected void canceling()
     {
-        getThread().interrupt();
+        if (connectThread != null) {
+            connectThread.interrupt();
+        }
     }
 
     private void setDataSourceSettings(DBRProgressMonitor monitor, DBPDataSource dataSource)

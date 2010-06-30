@@ -48,6 +48,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                 throws InvocationTargetException, InterruptedException
             {
                 monitor.beginTask("Obtain connection", 3);
+                Thread.currentThread().setName("Test datasource connection");
 
                 DriverDescriptor driver = getSelectedDriver();
                 DBPDataSourceProvider provider;
