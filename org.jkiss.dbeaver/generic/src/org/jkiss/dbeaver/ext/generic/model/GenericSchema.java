@@ -3,6 +3,8 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSSchema;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.DBException;
 
 /**
  * GenericSchema
@@ -66,4 +68,9 @@ public class GenericSchema extends GenericStructureContainer implements DBSSchem
         return catalog != null ? catalog : getDataSource().getContainer();
     }
 
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return GenericTable.class;
+    }
 }

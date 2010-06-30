@@ -440,6 +440,18 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         }
     }
 
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        if (catalogs != null) {
+            return GenericCatalog.class;
+        } else if (schemas != null) {
+            return GenericSchema.class;
+        } else {
+            return GenericTable.class;
+        }
+    }
+
     public boolean isChild(DBRProgressMonitor monitor, DBSObject object)
         throws DBException
     {

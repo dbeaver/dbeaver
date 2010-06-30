@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * JDBCResultSetMetaData
  */
-public class JDBCResultSetMetaData implements DBCResultSetMetaData
+public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMetaData
 {
     private ResultSetManagable resultSet;
     private ResultSetMetaData jdbcMetaData;
@@ -46,6 +46,12 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData
         catch (SQLException e) {
             throw new DBCException(e);
         }
+    }
+
+    public JDBCResultSetMetaData(ResultSetManagable resultSet, ResultSetMetaData original)
+    {
+        this.resultSet = resultSet;
+        this.jdbcMetaData = original;
     }
 
     public DBCResultSet getResultSet()
@@ -116,5 +122,143 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData
             tables.put(fullQualifiedName, tableMetaData);
         }
         return tableMetaData;
+    }
+
+    public int getColumnCount()
+        throws SQLException
+    {
+        return jdbcMetaData.getColumnCount();
+    }
+
+    public boolean isAutoIncrement(int column)
+        throws SQLException
+    {
+        return jdbcMetaData.isAutoIncrement(column);
+    }
+
+    public boolean isCaseSensitive(int column)
+        throws SQLException
+    {
+        return jdbcMetaData.isCaseSensitive(column);
+    }
+
+    public boolean isSearchable(int column)
+        throws SQLException
+    {
+        return jdbcMetaData.isSearchable(column);
+    }
+
+    public boolean isCurrency(int column)
+        throws SQLException
+    {
+        return jdbcMetaData.isCurrency(column);
+    }
+
+    public int isNullable(int column)
+        throws SQLException
+    {
+        return jdbcMetaData.isNullable(column);
+    }
+
+    public boolean isSigned(int column)
+        throws SQLException
+    {
+        return jdbcMetaData.isSigned(column);
+    }
+
+    public int getColumnDisplaySize(int column)
+        throws SQLException
+    {
+        return jdbcMetaData.getColumnDisplaySize(column);
+    }
+
+    public String getColumnLabel(int column)
+        throws SQLException
+    {
+        return JDBCUtils.normalizeIdentifier(jdbcMetaData.getColumnLabel(column));
+    }
+
+    public String getColumnName(int column)
+        throws SQLException
+    {
+        return JDBCUtils.normalizeIdentifier(jdbcMetaData.getColumnName(column));
+    }
+
+    public String getSchemaName(int column)
+        throws SQLException
+    {
+        return JDBCUtils.normalizeIdentifier(jdbcMetaData.getSchemaName(column));
+    }
+
+    public int getPrecision(int column)
+        throws SQLException
+    {
+        return jdbcMetaData.getPrecision(column);
+    }
+
+    public int getScale(int column)
+        throws SQLException
+    {
+        return jdbcMetaData.getScale(column);
+    }
+
+    public String getTableName(int column)
+        throws SQLException
+    {
+        return JDBCUtils.normalizeIdentifier(jdbcMetaData.getTableName(column));
+    }
+
+    public String getCatalogName(int column)
+        throws SQLException
+    {
+        return JDBCUtils.normalizeIdentifier(jdbcMetaData.getCatalogName(column));
+    }
+
+    public int getColumnType(int column)
+        throws SQLException
+    {
+        return jdbcMetaData.getColumnType(column);
+    }
+
+    public String getColumnTypeName(int column)
+        throws SQLException
+    {
+        return JDBCUtils.normalizeIdentifier(jdbcMetaData.getColumnTypeName(column));
+    }
+
+    public boolean isReadOnly(int column)
+        throws SQLException
+    {
+        return jdbcMetaData.isReadOnly(column);
+    }
+
+    public boolean isWritable(int column)
+        throws SQLException
+    {
+        return jdbcMetaData.isWritable(column);
+    }
+
+    public boolean isDefinitelyWritable(int column)
+        throws SQLException
+    {
+        return jdbcMetaData.isDefinitelyWritable(column);
+    }
+
+    public String getColumnClassName(int column)
+        throws SQLException
+    {
+        return JDBCUtils.normalizeIdentifier(jdbcMetaData.getColumnClassName(column));
+    }
+
+    public <T> T unwrap(Class<T> iface)
+        throws SQLException
+    {
+        return jdbcMetaData.unwrap(iface);
+    }
+
+    public boolean isWrapperFor(Class<?> iface)
+        throws SQLException
+    {
+        return jdbcMetaData.isWrapperFor(iface);
     }
 }

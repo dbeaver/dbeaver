@@ -451,6 +451,12 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return MySQLTableColumn.class;
+    }
+
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {

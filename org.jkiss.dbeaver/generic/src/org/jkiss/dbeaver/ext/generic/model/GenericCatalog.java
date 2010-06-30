@@ -103,4 +103,14 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
             return super.getChild(monitor, childName);
         }
     }
+
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        if (getSchemas(monitor) != null) {
+            return GenericSchema.class;
+        } else {
+            return GenericTable.class;
+        }
+    }
 }

@@ -218,4 +218,8 @@ public class JDBCUtils
         };
     }
 
+    public static String normalizeIdentifier(String value)
+    {
+        return value == null ? null : value.trim();
+    }
 }

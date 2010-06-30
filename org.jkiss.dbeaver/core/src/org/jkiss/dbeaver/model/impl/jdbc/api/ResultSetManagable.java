@@ -337,7 +337,7 @@ public class ResultSetManagable implements JDBCResultSet {
     public ResultSetMetaData getMetaData()
         throws SQLException
     {
-        return original.getMetaData();
+        return new JDBCResultSetMetaData(this, original.getMetaData());
     }
 
     public Object getObject(int columnIndex)

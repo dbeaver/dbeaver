@@ -161,6 +161,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         return getCatalog(childName);
     }
 
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return MySQLCatalog.class;
+    }
+
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {

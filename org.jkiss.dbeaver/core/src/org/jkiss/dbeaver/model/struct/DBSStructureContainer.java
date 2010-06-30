@@ -46,6 +46,12 @@ public interface DBSStructureContainer extends DBSObject
     DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException;
 
     /**
+     * Gets type of child elements.
+     * @return class
+     */
+    Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException;
+
+    /**
      * Caches all underlying structure contents.
      * Reads tables, columns, foreign keys and other RDB information.
      * This method is invoked when view want to draw something like ER diagramm which

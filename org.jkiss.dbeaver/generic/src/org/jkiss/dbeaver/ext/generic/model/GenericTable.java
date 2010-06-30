@@ -427,6 +427,12 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         }
     }
 
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return GenericTableColumn.class;
+    }
+
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {

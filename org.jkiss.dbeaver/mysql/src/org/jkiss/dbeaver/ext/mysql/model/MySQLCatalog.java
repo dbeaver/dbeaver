@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -136,6 +137,12 @@ public class MySQLCatalog
         throws DBException
     {
         return getTable(monitor, childName);
+    }
+
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return MySQLTable.class;
     }
 
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
