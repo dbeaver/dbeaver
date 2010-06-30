@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.ResultSetMetaData;
 
 /**
  * JDBCUtils
@@ -222,4 +223,28 @@ public class JDBCUtils
     {
         return value == null ? null : value.trim();
     }
+
+    public static void dumpResultSet(ResultSet dbResult)
+    {
+        try {
+            ResultSetMetaData md = dbResult.getMetaData();
+            int count = md.getColumnCount();
+            for (int i = 1; i <= count; i++) {
+                String colName = md.getColumnName(i);
+                System.out.print(colName + "\t");
+            }
+            System.out.println();
+            while (dbResult.next()) {
+                for (int i = 1; i <= count; i++) {
+                    String colValue = dbResult.getString(i);
+                    System.out.print(colValue + "\t");
+                }
+            }
+            System.out.println();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
