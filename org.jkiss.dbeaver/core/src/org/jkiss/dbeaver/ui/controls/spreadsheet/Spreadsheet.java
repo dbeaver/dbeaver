@@ -118,6 +118,10 @@ public class Spreadsheet extends Composite implements Listener {
             new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.LINE_END)),
             new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.TEXT_START)),
             new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.TEXT_END)),
+            new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_LINE_START)),
+            new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_LINE_END)),
+            new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_TEXT_START)),
+            new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_TEXT_END)),
             new ActionInfo(new GridAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL) {
                 public void run()
                 {
@@ -668,13 +672,13 @@ public class Spreadsheet extends Composite implements Listener {
             event.doit = true;
             String actionId = getActionDefinitionId();
             boolean keepSelection = (event.stateMask & SWT.SHIFT) != 0;
-            if (actionId.equals(ITextEditorActionDefinitionIds.LINE_START)) {
+            if (actionId.equals(ITextEditorActionDefinitionIds.LINE_START) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_LINE_START)) {
                 shiftCursor(-grid.getColumnCount(), 0, keepSelection);
-            } else if (actionId.equals(ITextEditorActionDefinitionIds.LINE_END)) {
+            } else if (actionId.equals(ITextEditorActionDefinitionIds.LINE_END) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_LINE_END)) {
                 shiftCursor(grid.getColumnCount(), 0, keepSelection);
-            } else if (actionId.equals(ITextEditorActionDefinitionIds.TEXT_START)) {
+            } else if (actionId.equals(ITextEditorActionDefinitionIds.TEXT_START) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_TEXT_START)) {
                 shiftCursor(-grid.getColumnCount(), -grid.getItemCount(), keepSelection);
-            } else if (actionId.equals(ITextEditorActionDefinitionIds.TEXT_END)) {
+            } else if (actionId.equals(ITextEditorActionDefinitionIds.TEXT_END) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_TEXT_END)) {
                 shiftCursor(grid.getColumnCount(), grid.getItemCount(), keepSelection);
             }
         }
