@@ -90,4 +90,9 @@ public class GenericTableColumn extends AbstractColumn implements DBSTableColumn
         return false;
     }
 
+    @Override
+    public String toString()
+    {
+        return table.getFullQualifiedName() + "." + getName();
+    }
 }

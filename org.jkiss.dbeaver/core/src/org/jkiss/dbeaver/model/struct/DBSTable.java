@@ -48,7 +48,7 @@ public interface DBSTable extends DBSStructureObject
 
     /**
      * Constraints are: primary keys and unique keys.
-     * Foreign keys can be obtained with {@link #getExportedKeys(org.jkiss.dbeaver.model.runtime.DBRProgressMonitor)}
+     * Foreign keys can be obtained with {@link #getReferences(org.jkiss.dbeaver.model.runtime.DBRProgressMonitor)}
      * @return list of constraints
      * @throws DBException on any DB error
      * @param monitor
@@ -61,14 +61,14 @@ public interface DBSTable extends DBSStructureObject
      * @throws DBException on any DB error
      * @param monitor
      */
-    Collection<? extends DBSForeignKey> getExportedKeys(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException;
 
     /**
-     * Gets this foreign keys which refers this table
+     * Gets foreign keys which refers this table
      * @return foreign keys list
      * @throws DBException on any DB error
      * @param monitor
      */
-    Collection<? extends DBSForeignKey> getImportedKeys(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException;
 
 }

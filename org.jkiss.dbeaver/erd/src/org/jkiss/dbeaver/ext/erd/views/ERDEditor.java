@@ -307,7 +307,7 @@ public class ERDEditor extends EditorPart implements IObjectEditor
 
         // Add links
         for (ERDTable table : tables) {
-            for (DBSForeignKey foreignKey : table.getTable().getImportedKeys(monitor)) {
+            for (DBSForeignKey foreignKey : table.getTable().getForeignKeys(monitor)) {
                 DBSTable refTable = foreignKey.getReferencedKey().getTable();
 
                 ERDTable refTableNode = null;

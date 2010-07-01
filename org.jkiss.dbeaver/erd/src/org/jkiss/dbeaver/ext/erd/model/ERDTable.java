@@ -1,7 +1,6 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
@@ -71,7 +70,7 @@ public class ERDTable extends ERDNode {
     private boolean isInForeignKey(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
         throws DBException
     {
-        Collection<? extends DBSForeignKey> constraints = getTable().getImportedKeys(monitor);
+        Collection<? extends DBSForeignKey> constraints = getTable().getForeignKeys(monitor);
         if (constraints != null) {
             for (DBSConstraint constraint : constraints) {
                 if (constraint.getColumn(monitor, tableColumn) != null) {

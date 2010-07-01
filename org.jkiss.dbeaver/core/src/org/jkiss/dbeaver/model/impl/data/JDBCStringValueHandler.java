@@ -7,14 +7,26 @@ package org.jkiss.dbeaver.model.impl.data;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSForeignKey;
+import org.jkiss.dbeaver.model.struct.DBSConstraint;
+import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Collection;
 
 /**
  * JDBC string value handler
@@ -46,8 +58,15 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         throws DBException
     {
         if (controller.isInlineEdit()) {
-            Object value = controller.getValue();
 
+            // Get references
+            DBSTableColumn refTableColumn = DBSUtils.getUniqueReferenceColumn(controller.getColumnMetaData());
+            if (refTableColumn != null) {
+                System.out.println("HEY");
+            }
+
+            Object value = controller.getValue();
+            //if (controller.getColumnMetaData().isReference(co))
             Text editor = new Text(controller.getInlinePlaceholder(), SWT.NONE);
             editor.setText(value == null ? "" : value.toString());
             editor.setEditable(!controller.isReadOnly());

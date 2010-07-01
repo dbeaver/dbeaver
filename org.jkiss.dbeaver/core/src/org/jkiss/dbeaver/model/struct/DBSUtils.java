@@ -6,18 +6,21 @@ package org.jkiss.dbeaver.model.struct;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 
 import java.util.Collection;
 import java.util.List;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * DBSUtils
  */
-public final class DBSUtils
-{
+public final class DBSUtils {
 
     public static String getQuotedIdentifier(DBPDataSource dataSource, String str)
     {
@@ -32,7 +35,7 @@ public final class DBSUtils
                 hasBadChars = true;
                 break;
             }
-        } 
+        }
 
         if (!hasBadChars) {
             return str;
@@ -43,10 +46,11 @@ public final class DBSUtils
         return str;
     }
 
-    public static String getFullTableName(DBPDataSource dataSource, String catalogName, String schemaName, String tableName)
+    public static String getFullTableName(DBPDataSource dataSource, String catalogName, String schemaName,
+                                          String tableName)
     {
         String catalogSeparator = dataSource.getInfo().getCatalogSeparator();
-        StringBuilder name=  new StringBuilder();
+        StringBuilder name = new StringBuilder();
         if (!CommonUtils.isEmpty(catalogName)) {
             name.append(DBSUtils.getQuotedIdentifier(dataSource, catalogName)).append(catalogSeparator);
         }
@@ -109,7 +113,8 @@ public final class DBSUtils
 
     /**
      * Finds object by its name (case insensitive)
-     * @param theList object list
+     *
+     * @param theList    object list
      * @param objectName object name
      * @return object or null
      */
@@ -133,7 +138,8 @@ public final class DBSUtils
         DBSObject parent = object.getParentObject();
         if (i.isAssignableFrom(parent.getClass())) {
             return i.cast(object.getParentObject());
-        } else if (parent instanceof DBSDataSourceContainer && object.getDataSource() != null && i.isAssignableFrom(object.getDataSource().getClass())) {
+        } else if (parent instanceof DBSDataSourceContainer && object.getDataSource() != null && i.isAssignableFrom(
+            object.getDataSource().getClass())) {
             // Root object's parent is data source container (not datasource)
             // So try to extract this info from real datasource object
             return i.cast(object.getDataSource());
@@ -141,26 +147,81 @@ public final class DBSUtils
             return null;
         }
     }
-/*
-    public static <T> Collection<T> getSafeCollection(Class<T> theClass, Collection theList)
+
+    public static boolean isNullValue(Object value)
     {
-        if (theList == null) {
-            return Collections.emptyList();
-        }
-        return (Collection<T>)theList;
+        return (value == null || (value instanceof DBDValue && ((DBDValue) value).isNull()));
     }
-*/
-public static boolean isNullValue(Object value)
-{
-    return (value == null || (value instanceof DBDValue && ((DBDValue)value).isNull()));
-}
 
     public static Object makeNullValue(Object value)
     {
         if (value instanceof DBDValue) {
-            return ((DBDValue)value).makeNull();
+            return ((DBDValue) value).makeNull();
         } else {
             return null;
+        }
+    }
+
+    public static DBSTableColumn getUniqueReferenceColumn(DBCColumnMetaData column)
+    {
+        return getUniqueReferenceColumn(null, column);
+    }
+
+    public static DBSTableColumn getUniqueReferenceColumn(DBRProgressMonitor monitor, DBCColumnMetaData column)
+    {
+        RefColumnFinder finder = new RefColumnFinder(column);
+        try {
+            if (monitor != null) {
+                finder.run(monitor);
+            } else {
+                DBeaverCore.getInstance().runAndWait2(true, true, finder);
+            }
+        }
+        catch (InvocationTargetException e) {
+            // ignore
+        }
+        catch (InterruptedException e) {
+            // do nothing
+        }
+        return finder.refTableColumn;
+    }
+
+    private static class RefColumnFinder implements DBRRunnableWithProgress {
+        private DBCColumnMetaData column;
+        private DBSTableColumn refTableColumn;
+
+        private RefColumnFinder(DBCColumnMetaData column)
+        {
+            this.column = column;
+        }
+
+        public void run(DBRProgressMonitor monitor)
+            throws InvocationTargetException, InterruptedException
+        {
+            try {
+                List<DBSForeignKey> refs = column.getReferences(monitor, true);
+                if (refs != null && !refs.isEmpty()) {
+                    DBSForeignKey fk = refs.get(0);
+                    DBSConstraint refKey = fk.getReferencedKey();
+                    if (refKey != null) {
+                        DBSTable refTable = refKey.getTable();
+                        if (refTable != null) {
+                            Collection<? extends DBSConstraintColumn> refColumns = refKey.getColumns(monitor);
+                            if (refColumns != null && refColumns.size() == 1) {
+                                DBSConstraintColumn refColumn = refColumns.iterator().next();
+                                DBSTableColumn refTableColumn = refColumn.getTableColumn();
+                                if (refTableColumn != null) {
+                                    this.refTableColumn = refTableColumn;
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+            catch (DBException e) {
+                throw new InvocationTargetException(e);
+            }
         }
     }
 }

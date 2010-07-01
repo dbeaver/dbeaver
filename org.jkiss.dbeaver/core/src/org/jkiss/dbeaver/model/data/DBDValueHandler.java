@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
 /**
@@ -89,8 +90,7 @@ public interface DBDValueHandler
      * Modeless dialogs and editors must implement DBDValueEditor and
      * must register themselves within value controller. On close they must unregister themselves within
      * value controller.
-     * @param controller value controller
-     * @return true if editor was successfully opened.
+     * @param controller value controller  @return true if editor was successfully opened.
      * makes sence only for inline editors, otherwise return value is ignored.
      * @throws org.jkiss.dbeaver.DBException on error
      */

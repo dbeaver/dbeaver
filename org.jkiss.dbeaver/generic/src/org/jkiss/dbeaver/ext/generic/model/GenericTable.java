@@ -180,13 +180,13 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         return constraints;
     }
 
-    public List<GenericForeignKey> getExportedKeys(DBRProgressMonitor monitor)
+    public List<GenericForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
         return loadForeignKeys(monitor, true);
     }
 
-    public List<GenericForeignKey> getImportedKeys(DBRProgressMonitor monitor)
+    public List<GenericForeignKey> getForeignKeys(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null) {
@@ -315,7 +315,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         }
     }
 
-    private List<GenericForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean exported)
+    private List<GenericForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)
         throws DBException
     {
         JDBCExecutionContext context = getDataSource().openContext(monitor);
@@ -326,7 +326,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
             JDBCDatabaseMetaData metaData = context.getMetaData();
             // Load indexes
             JDBCResultSet dbResult;
-            if (exported) {
+            if (references) {
                 dbResult = metaData.getExportedKeys(
                     getCatalog() == null ? null : getCatalog().getName(),
                     getSchema() == null ? null : getSchema().getName(),
@@ -387,20 +387,60 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                         continue;
                     }
 
-                    String pkFullName = pkTableFullName + "." + pkName;
-                    GenericConstraint pk = pkMap.get(pkFullName);
+                    // Find PK
+                    GenericConstraint pk = null;
+                    if (pkName != null) {
+                        pk = DBSUtils.findObject(pkTable.getConstraints(monitor), pkName);
+                        if (pk == null) {
+                            log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
+                        }
+                    }
                     if (pk == null) {
-                        pk = new GenericConstraint(DBSConstraintType.PRIMARY_KEY, pkTable, pkName, null);
-                        pkMap.put(pkFullName, pk);
+                        for (GenericConstraint pkConstraint : pkTable.getConstraints(monitor)) {
+                            if ((pkConstraint.getConstraintType() == DBSConstraintType.PRIMARY_KEY || pkConstraint.getConstraintType() == DBSConstraintType.UNIQUE_KEY)
+                                && pkConstraint.getColumn(monitor, pkColumn) != null)
+                            {
+                                pk = pkConstraint;
+                                break;
+                            }
+                        }
                     }
-                    GenericForeignKey fk = fkMap.get(fkName);
+                    if (pk == null) {
+                        log.warn("Could not find primary key for table " + pkTable.getFullQualifiedName());
+                        // Too bad. But we have to create new fake PK for this FK
+                        String pkFullName = pkTableFullName + "." + pkName;
+                        pk = pkMap.get(pkFullName);
+                        if (pk == null) {
+                            pk = new GenericConstraint(DBSConstraintType.PRIMARY_KEY, pkTable, pkName, null);
+                            pk.addColumn(new GenericConstraintColumn(pk, pkColumn, keySeq));
+                            pkMap.put(pkFullName, pk);
+                        }
+                    }
+
+                    // Find (or create) FK
+                    GenericForeignKey fk = null;
+                    if (references) {
+                        fk = DBSUtils.findObject(fkTable.getForeignKeys(monitor), fkName);
+                        if (fk == null) {
+                            log.warn("Could not find foreign key '" + fkName + "' for table " + fkTable.getFullQualifiedName());
+                            // No choice, we have to create fake foreign key :(
+                        } else {
+                            if (!fkList.contains(fk)) {
+                                fkList.add(fk);
+                            }
+                        }
+                    }
+
                     if (fk == null) {
-                        fk = new GenericForeignKey(fkTable, fkName, null, pk, deleteRule, updateRule, defferability);
-                        fkMap.put(fkName, fk);
-                        fkList.add(fk);
+                        fk = fkMap.get(fkName);
+                        if (fk == null) {
+                            fk = new GenericForeignKey(fkTable, fkName, null, pk, deleteRule, updateRule, defferability);
+                            fkMap.put(fkName, fk);
+                            fkList.add(fk);
+                        }
+                        GenericForeignKeyColumn fkColumnInfo = new GenericForeignKeyColumn(fk, fkColumn, keySeq, pkColumn);
+                        fk.addColumn(fkColumnInfo);
                     }
-                    GenericForeignKeyColumn fkColumnInfo = new GenericForeignKeyColumn(fk, fkColumn, keySeq, pkColumn);
-                    fk.addColumn(fkColumnInfo);
                 }
             }
             finally {

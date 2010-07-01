@@ -6,7 +6,12 @@ package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
@@ -21,7 +26,11 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -531,13 +540,13 @@ public class Spreadsheet extends Composite implements Listener {
         site.registerContextMenu(menuMgr, selectionProvider);
     }
 
-    public void openCellViewer(boolean inline)
+    public void openCellViewer(final boolean inline)
     {
         if (spreadsheetController == null) {
             return;
         }
         // The control that will be the editor must be a child of the Table
-        GridPos focusCell = grid.getFocusCell();
+        final GridPos focusCell = grid.getFocusCell();
         //GridPos pos = getPosFromPoint(event.x, event.y);
         if (focusCell == null || focusCell.row < 0 || focusCell.col < 0) {
             return;

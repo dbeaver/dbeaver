@@ -13,13 +13,14 @@ import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * JDBCColumnMetaData
@@ -205,22 +206,51 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
     public boolean isReference(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (getTableColumn(monitor) == null) {
+        DBSTableColumn tableColumn = getTableColumn(monitor);
+        if (tableColumn == null) {
             return false;
         }
-        Collection<? extends DBSForeignKey> foreignKeys = getTable().getTable(monitor).getImportedKeys(monitor);
-        for (DBSForeignKey fk : foreignKeys) {
-            if (fk.getColumn(monitor, tableColumn) != null) {
-                return true;
+        DBSTable table = tableMetaData.getTable(monitor);
+        if (table == null) {
+            return false;
+        }
+        Collection<? extends DBSForeignKey> foreignKeys = table.getForeignKeys(monitor);
+        if (foreignKeys != null) {
+            for (DBSForeignKey fk : foreignKeys) {
+                if (fk.getColumn(monitor, tableColumn) != null) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    public List<DBSForeignKey> getReferences()
+    public List<DBSForeignKey> getReferences(DBRProgressMonitor monitor, boolean unique)
         throws DBException
     {
-        return null;
+        List<DBSForeignKey> refs = new ArrayList<DBSForeignKey>();
+        DBSTableColumn tableColumn = getTableColumn(monitor);
+        if (tableColumn == null) {
+            return refs;
+        }
+        DBSTable table = tableMetaData.getTable(monitor);
+        if (table == null) {
+            return refs;
+        }
+        Collection<? extends DBSForeignKey> foreignKeys = table.getForeignKeys(monitor);
+        if (foreignKeys != null) {
+            for (DBSForeignKey fk : foreignKeys) {
+                if (unique) {
+                    Collection<? extends DBSConstraintColumn> fkColumns = fk.getColumns(monitor);
+                    if (fkColumns.size() == 1 && fkColumns.iterator().next().getTableColumn().equals(tableColumn)) {
+                        refs.add(fk);
+                    }
+                } else if (fk.getColumn(monitor, tableColumn) != null) {
+                    refs.add(fk);
+                }
+            }
+        }
+        return refs;
     }
 
     @Override
