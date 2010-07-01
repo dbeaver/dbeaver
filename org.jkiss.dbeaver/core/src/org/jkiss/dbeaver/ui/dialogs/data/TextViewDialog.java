@@ -6,8 +6,12 @@ package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.struct.DBSUtils;
 
 /**
  * TextViewDialog
@@ -23,9 +27,10 @@ public class TextViewDialog extends ValueViewDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        Object value = getValueController().getValue();
-
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
+
+        Object value = getValueController().getValue();
+        boolean isForeignKey = DBSUtils.getUniqueReferenceColumn(getValueController().getColumnMetaData()) != null;
 
         Label label = new Label(dialogGroup, SWT.NONE);
         label.setText("Value: ");
@@ -42,13 +47,20 @@ public class TextViewDialog extends ValueViewDialog {
             textEdit.setTextLimit(maxSize);
         }
         textEdit.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 200;
+        GridData gd = new GridData(isForeignKey ? GridData.FILL_HORIZONTAL : GridData.FILL_BOTH);
         gd.widthHint = 300;
-        gd.grabExcessVerticalSpace = true;
+        if (!isForeignKey) {
+            gd.heightHint = 200;
+            gd.grabExcessVerticalSpace = true;
+        }
         textEdit.setLayoutData(gd);
         textEdit.setFocus();
         textEdit.setEditable(!getValueController().isReadOnly());
+
+        if (isForeignKey) {
+            super.createEditorSelector(dialogGroup, textEdit);
+        }
+
         return dialogGroup;
     }
 

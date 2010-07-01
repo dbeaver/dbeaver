@@ -6,18 +6,42 @@ package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+
+import java.util.Map;
+import java.util.TreeMap;
+
+import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * ValueViewDialog
@@ -29,6 +53,10 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     private static int dialogCount = 0;
 
     private DBDValueController valueController;
+    private DBSTableColumn refTableColumn;
+    private Text editor;
+    private org.eclipse.swt.widgets.List editorSelector;
+    private boolean handleEditorChange;
 
     protected ValueViewDialog(DBDValueController valueController) {
         super(valueController.getValueSite().getShell());
@@ -126,4 +154,134 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     }
 
     protected abstract void applyChanges();
+
+    protected void createEditorSelector(Composite parent, Text control)
+    {
+        if (getValueController().isReadOnly()) {
+            return;
+        }
+        refTableColumn = DBSUtils.getUniqueReferenceColumn(valueController.getColumnMetaData());
+        if (refTableColumn == null) {
+            return;
+        }
+
+        this.editor = control;
+
+        Label label = new Label(parent, SWT.NONE);
+        label.setText("Dictionary: ");
+
+        editorSelector = new org.eclipse.swt.widgets.List(parent, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 150;
+        gd.widthHint = 300;
+        gd.grabExcessVerticalSpace = true;
+        editorSelector.setLayoutData(gd);
+
+        editorSelector.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                String[] selection = editorSelector.getSelection();
+                if (selection.length == 1) {
+                    handleEditorChange = false;
+                    editor.setText(selection[0]);
+                    handleEditorChange = true;
+                }
+            }
+        });
+        editor.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e)
+            {
+                if (handleEditorChange) {
+                    new SelectorLoaderJob(editor.getText()).schedule();
+                }
+            }
+        });
+        handleEditorChange = true;
+
+        new SelectorLoaderJob().schedule();
+    }
+
+    private class SelectorLoaderJob extends DataSourceJob {
+
+        private String autoComplete;
+
+        private SelectorLoaderJob(String autoComplete)
+        {
+            this();
+            this.autoComplete = autoComplete.trim();
+        }
+
+        private SelectorLoaderJob()
+        {
+            super(
+                "Select " + valueController.getColumnMetaData().getColumnName() + " possible values",
+                DBIcon.SQL_EXECUTE.getImageDescriptor(),
+                valueController.getDataSource());
+            setUser(false);
+        }
+
+        protected IStatus run(DBRProgressMonitor monitor)
+        {
+            final Map<String, Object> keyValues = new TreeMap<String, Object>();
+            DBCExecutionContext context = valueController.getDataSource().openContext(monitor, getName());
+            try {
+                String query = "SELECT " + refTableColumn.getName() + " FROM " + refTableColumn.getTable().getFullQualifiedName();
+                if (!CommonUtils.isEmpty(autoComplete)) {
+                    autoComplete = autoComplete.replace('\'', '"');
+                    query += " WHERE " + refTableColumn.getName() + " LIKE '" + autoComplete + "%'";
+                }
+                DBCStatement dbStat = context.prepareStatement(
+                    query,
+                    false,
+                    false);
+                try {
+                    dbStat.setLimit(0, 100);
+                    if (dbStat.executeStatement()) {
+                        DBCResultSet dbResult = dbStat.openResultSet();
+                        try {
+                            while (dbResult.nextRow()) {
+                                Object keyValue = dbResult.getColumnValue(1);
+                                if (keyValue != null) {
+                                    keyValues.put(keyValue.toString(), keyValue);
+                                }
+                            }
+                        }
+                        finally {
+                            dbResult.close();
+                        }
+                    }
+                }
+                finally {
+                    dbStat.close();
+                }
+            }
+            catch (DBCException e) {
+                // do nothing
+            }
+            finally {
+                context.close();
+            }
+            valueController.getValueSite().getShell().getDisplay().syncExec(new Runnable() {
+                public void run()
+                {
+                    if (editorSelector != null && !editorSelector.isDisposed()) {
+                        editorSelector.removeAll();
+                        for (String key : keyValues.keySet()) {
+                            editorSelector.add(key);
+                        }
+
+                        if (editor != null && !editor.isDisposed()) {
+                            String curValue = editor.getText();
+                            int selIndex = editorSelector.indexOf(curValue);
+                            if (selIndex >= 0) {
+                                editorSelector.select(selIndex);
+                            }
+                        }
+                    }
+                }
+            });
+            return Status.OK_STATUS;
+        }
+    }
 }
