@@ -56,13 +56,13 @@ public interface DBCColumnMetaData extends DBSTypedObject
     DBCTableMetaData getTable();
 
     /**
-     * Check this column is a reference.
+     * Check this column is a foreign key.
      * Reference columns are included in one or more foreign keys. 
      * @return true or false.
      * @throws DBCException on any DB error
      * @param monitor
      */
-    boolean isReference(DBRProgressMonitor monitor) throws DBException;
+    boolean isForeignKey(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets list of foreign keys in which this column is contained.
@@ -71,6 +71,6 @@ public interface DBCColumnMetaData extends DBSTypedObject
      * @throws DBCException on any DB error  @param monitor
      * @param unique
      */
-    List<DBSForeignKey> getReferences(DBRProgressMonitor monitor, boolean unique) throws DBException;
+    List<DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor, boolean unique) throws DBException;
 
 }

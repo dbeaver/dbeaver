@@ -203,7 +203,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
         return tableColumn;
     }
 
-    public boolean isReference(DBRProgressMonitor monitor)
+    public boolean isForeignKey(DBRProgressMonitor monitor)
         throws DBException
     {
         DBSTableColumn tableColumn = getTableColumn(monitor);
@@ -225,7 +225,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
         return false;
     }
 
-    public List<DBSForeignKey> getReferences(DBRProgressMonitor monitor, boolean unique)
+    public List<DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor, boolean unique)
         throws DBException
     {
         List<DBSForeignKey> refs = new ArrayList<DBSForeignKey>();

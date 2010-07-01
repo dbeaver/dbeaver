@@ -1008,6 +1008,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
                 @Override
                 public void onEndQuery(SQLQueryResult result) {
+/*
                     if (result.getError() == null) {
                         // Remove edited values
                         TableRowInfo rowInfo = (TableRowInfo)result.getStatement().getData();
@@ -1017,11 +1018,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             }
                         }
                     }
+*/
                     if (listener != null) listener.onEndQuery(result);
                 }
 
                 @Override
                 public void onEndJob(final boolean hasErrors) {
+                    cells.clear();
                     site.getShell().getDisplay().asyncExec(new Runnable() {
                         public void run()
                         {

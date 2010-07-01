@@ -199,7 +199,7 @@ public final class DBSUtils {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                List<DBSForeignKey> refs = column.getReferences(monitor, true);
+                List<DBSForeignKey> refs = column.getForeignKeys(monitor, true);
                 if (refs != null && !refs.isEmpty()) {
                     DBSForeignKey fk = refs.get(0);
                     DBSConstraint refKey = fk.getReferencedKey();
