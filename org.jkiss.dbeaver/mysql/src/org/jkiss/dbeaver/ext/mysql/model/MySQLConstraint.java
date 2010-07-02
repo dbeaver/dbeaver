@@ -1,9 +1,8 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.model.impl.meta.AbstractConstraint;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.List;
 /**
  * GenericPrimaryKey
  */
-public class MySQLConstraint extends AbstractConstraint<MySQLDataSource,MySQLTable> implements DBSConstraint {
+public class MySQLConstraint extends AbstractConstraint<MySQLDataSource,MySQLTable> {
     private DBSConstraintType constraintType;
     private List<MySQLConstraintColumn> columns;
 
