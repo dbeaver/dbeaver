@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 public class FolderEditorInput implements IDatabaseEditorInput
 {
     private DBMTreeFolder folder;
+    private String defaultPageId;
 
     public FolderEditorInput(DBMTreeFolder folder)
     {
@@ -66,6 +67,16 @@ public class FolderEditorInput implements IDatabaseEditorInput
     public DBSObject getDatabaseObject()
     {
         return folder.getObject();
+    }
+
+    public String getDefaultPageId()
+    {
+        return defaultPageId;
+    }
+
+    public void setDefaultPageId(String defaultPageId)
+    {
+        this.defaultPageId = defaultPageId;
     }
 
 }

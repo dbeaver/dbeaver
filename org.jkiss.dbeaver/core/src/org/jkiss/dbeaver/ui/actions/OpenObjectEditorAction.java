@@ -24,11 +24,11 @@ public class OpenObjectEditorAction extends NavigatorAction
     {
         DBMNode selectedNode = getSelectedNode();
         if (selectedNode != null) {
-            openEntityEditor(selectedNode, getWindow());
+            openEntityEditor(selectedNode, null, getWindow());
         }
     }
 
-    public static void openEntityEditor(DBMNode selectedNode, IWorkbenchWindow workbenchWindow)
+    public static void openEntityEditor(DBMNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
     {
         try {
             for (IEditorReference ref : workbenchWindow.getActivePage().getEditorReferences()) {
@@ -39,11 +39,13 @@ public class OpenObjectEditorAction extends NavigatorAction
             }
             if (selectedNode instanceof DBMTreeFolder) {
                 FolderEditorInput folderInput = new FolderEditorInput((DBMTreeFolder)selectedNode);
+                folderInput.setDefaultPageId(defaultPageId);
                 workbenchWindow.getActivePage().openEditor(
                     folderInput,
                     FolderEditor.class.getName());
             } else {
                 EntityEditorInput editorInput = new EntityEditorInput(selectedNode);
+                editorInput.setDefaultPageId(defaultPageId);
                 workbenchWindow.getActivePage().openEditor(
                     editorInput,
                     EntityEditor.class.getName());

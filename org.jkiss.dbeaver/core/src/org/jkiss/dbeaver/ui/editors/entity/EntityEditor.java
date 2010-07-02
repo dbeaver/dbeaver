@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -45,6 +47,7 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
     static Log log = LogFactory.getLog(EntityEditor.class);
 
     private EntityEditorInput entityInput;
+    private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
 
     public void doSave(IProgressMonitor monitor)
     {
@@ -138,6 +141,14 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
 
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_END);
+
+        String defPageId = entityInput.getDefaultPageId();
+        if (defPageId != null) {
+            IEditorPart defEditorPage = editorMap.get(defPageId);
+            if (defEditorPage != null) {
+                setActiveEditor(defEditorPage);
+            }
+        }
     }
 
     private void setContainerStyles()
@@ -274,6 +285,7 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
             if (!CommonUtils.isEmpty(descriptor.getDescription())) {
                 setPageToolTip(index, descriptor.getDescription());
             }
+            editorMap.put(descriptor.getId(), editor);
             return true;
         } catch (PartInitException ex) {
             log.error("Error adding nested editor", ex);
@@ -291,6 +303,7 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
             if (entityInput.getNode() instanceof DBMTreeNode) {
                 setPageToolTip(index, ((DBMTreeNode)entityInput.getNode()).getMeta().getLabel() + " " + node.getNodeName());
             }
+            editorMap.put("node." + node.getNodeName(), nodeEditor);
         } catch (PartInitException ex) {
             log.error("Error adding nested editor", ex);
         }
@@ -308,6 +321,7 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
                 setPageImage(index, PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER));
             }
             setPageToolTip(index, metaItem.getLabel());
+            editorMap.put("node." + node.getNodeName(), nodeEditor);
         } catch (PartInitException ex) {
             log.error("Error adding nested editor", ex);
         }

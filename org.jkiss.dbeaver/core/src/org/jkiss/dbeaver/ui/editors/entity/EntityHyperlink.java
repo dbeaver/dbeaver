@@ -72,7 +72,7 @@ public class EntityHyperlink implements IHyperlink
                     true
                 );
                 if (node != null) {
-                    OpenObjectEditorAction.openEntityEditor(node, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                    OpenObjectEditorAction.openEntityEditor(node, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                 }
             }
         });

@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 public class EntityEditorInput implements IDatabaseEditorInput
 {
     private DBMNode node;
+    private String defaultPageId;
 
     public EntityEditorInput(DBMNode node)
     {
@@ -77,5 +78,15 @@ public class EntityEditorInput implements IDatabaseEditorInput
     public DBSObject getDatabaseObject()
     {
         return node.getObject();
+    }
+
+    public String getDefaultPageId()
+    {
+        return defaultPageId;
+    }
+
+    public void setDefaultPageId(String defaultPageId)
+    {
+        this.defaultPageId = defaultPageId;
     }
 }

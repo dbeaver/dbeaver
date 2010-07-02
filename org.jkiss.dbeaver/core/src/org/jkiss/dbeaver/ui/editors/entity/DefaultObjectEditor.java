@@ -84,7 +84,7 @@ class DefaultObjectEditor extends EditorPart
                     {
                         public void widgetSelected(SelectionEvent e)
                         {
-                            OpenObjectEditorAction.openEntityEditor(treeNode, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                            OpenObjectEditorAction.openEntityEditor(treeNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                         }
                     });
                     objectLink.setToolTipText("Open '" + treeNode.getNodeName() + "' viewer");

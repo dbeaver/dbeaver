@@ -16,4 +16,6 @@ public interface IDatabaseEditorInput extends IEditorInput {
     DBMModel getModel();
 
     DBSObject getDatabaseObject();
+
+    String getDefaultPageId();
 }

@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.editors.sql.SQLTableDataEditor;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -192,7 +193,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                     {
                         DBMNode tableNode = DBeaverCore.getInstance().getMetaModel().getNodeByObject(monitor, refTableColumn.getTable(), true);
                         if (tableNode != null) {
-                            OpenObjectEditorAction.openEntityEditor(tableNode, window);
+                            OpenObjectEditorAction.openEntityEditor(tableNode, SQLTableDataEditor.class.getName(), window);
                         }
                     }
                 });
