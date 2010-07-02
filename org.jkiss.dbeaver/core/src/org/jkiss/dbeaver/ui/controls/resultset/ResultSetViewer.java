@@ -41,12 +41,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDRowController;
-import org.jkiss.dbeaver.model.data.DBDValue;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditor;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.data.DBDValueLocator;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
@@ -93,7 +88,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private IThemeManager themeManager;
 
     // columns
-    private ResultSetColumn[] metaColumns;
+    private DBDColumnBinding[] metaColumns;
     // Data
     private final List<Object[]> curRows = new ArrayList<Object[]>();
     // Current row number (for record mode)
@@ -318,8 +313,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             if (metaColumns != null) {
                 GC gc = new GC(spreadsheet);
                 gc.setFont(spreadsheet.getFont());
-                for (ResultSetColumn column : metaColumns) {
-                    Point ext = gc.stringExtent(column.metaData.getColumnName());
+                for (DBDColumnBinding column : metaColumns) {
+                    Point ext = gc.stringExtent(column.getMetaData().getColumnName());
                     if (ext.x > defaultWidth) {
                         defaultWidth = ext.x;
                     }
@@ -432,7 +427,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         statusLabel.setText(status);
     }
 
-    public void setColumnsInfo(ResultSetColumn[] metaColumns)
+    public void setColumnsInfo(DBDColumnBinding[] metaColumns)
     {
         this.metaColumns = metaColumns;
     }
@@ -524,8 +519,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 }
             }
         }
-        ResultSetColumn metaColumn = metaColumns[columnIndex];
-        boolean readOnly = !metaColumn.editable;
+        DBDColumnBinding metaColumn = metaColumns[columnIndex];
+        boolean readOnly = metaColumn.getValueLocator() == null;
         if (readOnly && inline) {
             // No inline editors for readonly columns
             return false;
@@ -535,7 +530,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             columnIndex,
             inline ? inlinePlaceholder : null);
         try {
-            return metaColumn.valueHandler.editValue(valueController);
+            return metaColumn.getValueHandler().editValue(valueController);
         }
         catch (Exception e) {
             log.error(e);
@@ -578,7 +573,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         try {
             manager.add(new Separator());
-            metaColumns[columnIndex].valueHandler.fillContextMenu(manager, valueController);
+            metaColumns[columnIndex].getValueHandler().fillContextMenu(manager, valueController);
         }
         catch (Exception e) {
             log.error(e);
@@ -670,7 +665,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public DBCColumnMetaData getColumnMetaData()
         {
-            return metaColumns[columnIndex].metaData;
+            return metaColumns[columnIndex].getMetaData();
         }
 
         public String getColumnId() {
@@ -746,12 +741,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public DBDValueLocator getValueLocator()
         {
-            return metaColumns[columnIndex].valueLocator;
+            return metaColumns[columnIndex].getValueLocator();
         }
 
         public DBDValueHandler getValueHandler()
         {
-            return metaColumns[columnIndex].valueHandler;
+            return metaColumns[columnIndex].getValueHandler();
         }
 
         public boolean isInlineEdit()
@@ -761,7 +756,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public boolean isReadOnly()
         {
-            return !metaColumns[columnIndex].editable;
+            return metaColumns[columnIndex].getValueLocator() == null;
         }
 
         public IWorkbenchPartSite getValueSite()
@@ -800,8 +795,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public Collection<DBCColumnMetaData> getColumnsMetaData() {
             List<DBCColumnMetaData> columns = new ArrayList<DBCColumnMetaData>();
-            for (ResultSetColumn column : metaColumns) {
-                columns.add(column.metaData);
+            for (DBDColumnBinding column : metaColumns) {
+                columns.add(column.getMetaData());
             }
             return columns;
         }
@@ -809,8 +804,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         public Object getColumnValue(DBCColumnMetaData column)
         {
             for (int i = 0; i < metaColumns.length; i++) {
-                ResultSetColumn metaColumn = metaColumns[i];
-                if (metaColumn.metaData == column) {
+                DBDColumnBinding metaColumn = metaColumns[i];
+                if (metaColumn.getMetaData() == column) {
                     return curRow[i];
                 }
             }
@@ -904,11 +899,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     updatedRows.put(cell.row, tableMap);
                 }
 
-                ResultSetColumn metaColumn = metaColumns[cell.col];
-                DBCTableMetaData metaTable = metaColumn.metaData.getTable();
+                DBDColumnBinding metaColumn = metaColumns[cell.col];
+                DBCTableMetaData metaTable = metaColumn.getMetaData().getTable();
                 TableRowInfo tableRowInfo = tableMap.get(metaTable);
                 if (tableRowInfo == null) {
-                    tableRowInfo = new TableRowInfo(metaTable, metaColumn.valueLocator.getTableIdentifier());
+                    tableRowInfo = new TableRowInfo(metaTable, metaColumn.getValueLocator().getTableIdentifier());
                     tableMap.put(metaTable, tableRowInfo);
                 }
                 tableRowInfo.tableCells.add(cell);
@@ -933,12 +928,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         if (i > 0) {
                             query.append(",");
                         }
-                        ResultSetColumn metaColumn = metaColumns[cell.col];
-                        String columnName = DBSUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), metaColumn.metaData.getColumnName());
+                        DBDColumnBinding metaColumn = metaColumns[cell.col];
+                        String columnName = DBSUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), metaColumn.getMetaData().getColumnName());
                         query.append(columnName).append("=?");
                         parameters.add(new SQLStatementParameter(
-                            metaColumn.valueHandler,
-                            metaColumn.metaData,
+                            metaColumn.getValueHandler(),
+                            metaColumn.getMetaData(),
                             parameters.size(),
                             curRows.get(rowNum)[cell.col]));
                     }
@@ -954,11 +949,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         firstCol = false;
 
                         // Find meta column and add statement parameter
-                        ResultSetColumn metaColumn = null;
+                        DBDColumnBinding metaColumn = null;
                         int columnIndex = -1;
                         for (int i = 0; i < metaColumns.length; i++) {
-                            ResultSetColumn tmpColumn = metaColumns[i];
-                            if (idColumn == tmpColumn.metaData) {
+                            DBDColumnBinding tmpColumn = metaColumns[i];
+                            if (idColumn == tmpColumn.getMetaData()) {
                                 metaColumn = tmpColumn;
                                 columnIndex = i;
                                 break;
@@ -976,8 +971,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         }
                         // Add key parameter
                         parameters.add(new SQLStatementParameter(
-                            metaColumn.valueHandler,
-                            metaColumn.metaData,
+                            metaColumn.getValueHandler(),
+                            metaColumn.getMetaData(),
                             parameters.size(),
                             keyValue));
                     }
@@ -1097,7 +1092,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     return null;
                 }
                 value = values[cell.row];
-                valueHandler = metaColumns[cell.row].valueHandler;
+                valueHandler = metaColumns[cell.row].getValueHandler();
             } else {
                 if (cell.row >= curRows.size()) {
                     log.warn("Bad grid row number: " + cell.row);
@@ -1108,10 +1103,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     return null;
                 }
                 value = curRows.get(cell.row)[cell.col];
-                valueHandler = metaColumns[cell.col].valueHandler;
+                valueHandler = metaColumns[cell.col].getValueHandler();
             }
             if (formatString) {
-                return valueHandler.getValueDisplayString(metaColumns[cell.col].metaData, value);
+                return valueHandler.getValueDisplayString(metaColumns[cell.col].getMetaData(), value);
             } else {
                 return value;
             }
@@ -1161,8 +1156,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         {
             if (mode == ResultSetMode.GRID) {
                 int colNumber = ((Number)element).intValue();
-                ResultSetColumn metaColumn = metaColumns[colNumber];
-                if (metaColumn.editable) {
+                DBDColumnBinding metaColumn = metaColumns[colNumber];
+                if (metaColumn.getValueLocator() != null) {
                     return DBIcon.EDIT_COLUMN.getImage();
                 }
             }
@@ -1181,12 +1176,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     return null;
                 }
             } else {
-                ResultSetColumn metaColumn = metaColumns[colNumber];
-                return metaColumn.metaData.getLabel();
+                DBDColumnBinding metaColumn = metaColumns[colNumber];
+                return metaColumn.getMetaData().getLabel();
 /*
-                return CommonUtils.isEmpty(metaColumn.metaData.getTableName()) ?
-                    metaColumn.metaData.getColumnName() :
-                    metaColumn.metaData.getTableName() + "." + metaColumn.metaData.getColumnName();
+                return CommonUtils.isEmpty(metaColumn.getMetaData().getTableName()) ?
+                    metaColumn.getMetaData().getColumnName() :
+                    metaColumn.getMetaData().getTableName() + "." + metaColumn.getMetaData().getColumnName();
 */
             }
         }
@@ -1198,7 +1193,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         {
             if (mode == ResultSetMode.RECORD) {
                 int rowNumber = ((Number) element).intValue();
-                if (metaColumns[rowNumber].editable) {
+                if (metaColumns[rowNumber].getValueLocator() != null) {
                     return DBIcon.EDIT_COLUMN.getImage();
                 }
             }
@@ -1210,7 +1205,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         {
             int rowNumber = ((Number) element).intValue();
             if (mode == ResultSetMode.RECORD) {
-                return metaColumns[rowNumber].metaData.getColumnName();
+                return metaColumns[rowNumber].getMetaData().getColumnName();
             } else {
                 return String.valueOf(rowNumber + 1);
             }

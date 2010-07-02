@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
+import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 import org.jkiss.dbeaver.model.dbc.*;
 import org.jkiss.dbeaver.model.impl.data.JDBCUnsupportedValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTable;
@@ -36,7 +37,7 @@ class ResultSetDataPump implements ISQLQueryDataPump {
     private ResultSetViewer resultSetViewer;
     private Display display;
     private int columnsCount;
-    private ResultSetColumn[] metaColumns;
+    private DBDColumnBinding[] metaColumns;
     private List<Object[]> rows = new ArrayList<Object[]>();
 
     Map<DBCColumnMetaData, List<DBCException>> errors = new HashMap<DBCColumnMetaData, List<DBCException>>();
@@ -61,7 +62,7 @@ class ResultSetDataPump implements ISQLQueryDataPump {
         DBPDataSource dataSource = resultSet.getContext().getDataSource();
 
         // Extrat column info
-        metaColumns = new ResultSetColumn[columnsCount];
+        metaColumns = new DBDColumnBinding[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
             DBCColumnMetaData columnMeta = rsColumns.get(i);
             DBDValueHandler typeHandler = null;
@@ -72,7 +73,7 @@ class ResultSetDataPump implements ISQLQueryDataPump {
             if (typeHandler == null) {
                 typeHandler = DEFAULT_VALUE_HANDLER;
             }
-            metaColumns[i] = new ResultSetColumn(columnMeta, typeHandler);
+            metaColumns[i] = new DBDColumnBinding(columnMeta, typeHandler);
         }
 
         resultSetViewer.setColumnsInfo(metaColumns);
@@ -84,22 +85,22 @@ class ResultSetDataPump implements ISQLQueryDataPump {
         Object[] row = new Object[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
             try {
-                row[i] = metaColumns[i].valueHandler.getValueObject(
+                row[i] = metaColumns[i].getValueHandler().getValueObject(
                     resultSet,
-                    metaColumns[i].metaData,
+                    metaColumns[i].getMetaData(),
                     i);
             }
             catch (DBCException e) {
                 // Do not reports the same error multiple times
                 // There are a lot of error could occur during result set fetch
                 // We report certain error only once
-                List<DBCException> errorList = errors.get(metaColumns[i].metaData);
+                List<DBCException> errorList = errors.get(metaColumns[i].getMetaData());
                 if (errorList == null) {
                     errorList = new ArrayList<DBCException>();
-                    errors.put(metaColumns[i].metaData, errorList);
+                    errors.put(metaColumns[i].getMetaData(), errorList);
                 }
                 if (!errorList.contains(e)) {
-                    log.warn("Could not read column '" + metaColumns[i].metaData.getColumnName() + "' value", e);
+                    log.warn("Could not read column '" + metaColumns[i].getMetaData().getColumnName() + "' value", e);
                     errorList.add(e);
                 }
             }
@@ -125,27 +126,26 @@ class ResultSetDataPump implements ISQLQueryDataPump {
     private void extractRowIdentifiers(DBRProgressMonitor monitor) {
         Map<DBSTable, DBDValueLocator> locatorMap = new HashMap<DBSTable, DBDValueLocator>();
         try {
-            for (ResultSetColumn column : metaColumns) {
-                DBCColumnMetaData meta = column.metaData;
+            for (DBDColumnBinding column : metaColumns) {
+                DBCColumnMetaData meta = column.getMetaData();
                 if (meta.getTable() == null || !meta.getTable().isIdentitied(monitor)) {
                     continue;
                 }
                 // We got table name and column name
                 // To be editable we need this result set contain set of columns from the same table
                 // which construct any unique key
-                column.valueLocator = locatorMap.get(meta.getTable().getTable(monitor));
-                if (column.valueLocator == null) {
+                DBDValueLocator valueLocator = locatorMap.get(meta.getTable().getTable(monitor));
+                if (valueLocator == null) {
                     DBCTableIdentifier tableIdentifier = meta.getTable().getBestIdentifier(monitor);
                     if (tableIdentifier == null) {
                         continue;
                     }
-                    DBDValueLocator valueLocator = new DBDValueLocator(
+                    valueLocator = new DBDValueLocator(
                         meta.getTable().getTable(monitor),
                         tableIdentifier);
                     locatorMap.put(meta.getTable().getTable(monitor), valueLocator);
-                    column.valueLocator = valueLocator;
                 }
-                column.editable = true;
+                column.setValueLocator(valueLocator);
             }
         }
         catch (DBException e) {
