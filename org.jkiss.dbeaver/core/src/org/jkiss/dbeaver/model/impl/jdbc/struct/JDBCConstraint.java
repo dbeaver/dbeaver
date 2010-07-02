@@ -85,6 +85,9 @@ public abstract class JDBCConstraint<DATASOURCE extends DBPDataSource, TABLE ext
                         List<DBDLabelValuePair> values = new ArrayList<DBDLabelValuePair>();
                         while (dbResult.nextRow()) {
                             Object keyValue = valueHandler.getValueObject(dbResult, keyColumn, 0);
+                            if (keyValue == null) {
+                                continue;
+                            }
                             String keyLabel = valueHandler.getValueDisplayString(keyColumn, keyValue);
                             values.add(new DBDLabelValuePair(keyLabel, keyValue));
                         }

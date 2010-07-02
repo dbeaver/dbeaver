@@ -1,10 +1,11 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
-import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * GenericForeignKey
@@ -15,6 +16,7 @@ public class GenericForeignKey extends GenericConstraint implements DBSForeignKe
     private DBSConstraintCascade deleteRule;
     private DBSConstraintCascade updateRule;
     private DBSConstraintDefferability defferability;
+    private List<GenericForeignKeyColumn> columns;
 
     public GenericForeignKey(GenericTable table,
         String name,
@@ -59,6 +61,24 @@ public class GenericForeignKey extends GenericConstraint implements DBSForeignKe
     public DBSConstraintDefferability getDefferability()
     {
         return defferability;
+    }
+
+    public GenericForeignKeyColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
+    {
+        return (GenericForeignKeyColumn)super.getColumn(monitor, tableColumn);
+    }
+
+    public List<GenericForeignKeyColumn> getColumns(DBRProgressMonitor monitor)
+    {
+        return columns;
+    }
+
+    void addColumn(GenericForeignKeyColumn column)
+    {
+        if (columns == null) {
+            columns = new ArrayList<GenericForeignKeyColumn>();
+        }
+        this.columns.add(column);
     }
 
 }

@@ -43,7 +43,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
 
     private List<GenericTableColumn> columns;
     private List<GenericIndex> indexes;
-    private List<GenericConstraint> constraints;
+    private List<GenericPrimaryKey> constraints;
     private List<GenericForeignKey> foreignKeys;
     private Long rowCount;
 
@@ -171,7 +171,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         return this.indexes != null;
     }
 
-    public List<? extends GenericConstraint> getConstraints(DBRProgressMonitor monitor)
+    public List<GenericPrimaryKey> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
         if (constraints == null) {
@@ -180,7 +180,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         return constraints;
     }
 
-    private void addConstraint(GenericConstraint constraint) {
+    private void addConstraint(GenericPrimaryKey constraint) {
         if (constraints != null) {
             constraints.add(constraint);
         }
@@ -264,14 +264,14 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         return rowCount;
     }
 
-    private List<GenericConstraint> loadConstraints(DBRProgressMonitor monitor)
+    private List<GenericPrimaryKey> loadConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
         monitor.beginTask("Loading contraints", 1);
         JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
-            List<GenericConstraint> pkList = new ArrayList<GenericConstraint>();
-            Map<String, GenericConstraint> pkMap = new HashMap<String, GenericConstraint>();
+            List<GenericPrimaryKey> pkList = new ArrayList<GenericPrimaryKey>();
+            Map<String, GenericPrimaryKey> pkMap = new HashMap<String, GenericPrimaryKey>();
             JDBCDatabaseMetaData metaData = context.getMetaData();
             // Load indexes
             JDBCResultSet dbResult = metaData.getPrimaryKeys(
@@ -283,9 +283,9 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                     String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
                     int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
                     String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
-                    GenericConstraint pk = pkMap.get(pkName);
+                    GenericPrimaryKey pk = pkMap.get(pkName);
                     if (pk == null) {
-                        pk = new GenericConstraint(
+                        pk = new GenericPrimaryKey(
                             this,
                             pkName,
                             null,
@@ -328,7 +328,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         try {
             List<GenericForeignKey> fkList = new ArrayList<GenericForeignKey>();
             Map<String, GenericForeignKey> fkMap = new HashMap<String, GenericForeignKey>();
-            Map<String, GenericConstraint> pkMap = new HashMap<String, GenericConstraint>();
+            Map<String, GenericPrimaryKey> pkMap = new HashMap<String, GenericPrimaryKey>();
             JDBCDatabaseMetaData metaData = context.getMetaData();
             // Load indexes
             JDBCResultSet dbResult;
@@ -394,7 +394,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                     }
 
                     // Find PK
-                    GenericConstraint pk = null;
+                    GenericPrimaryKey pk = null;
                     if (pkName != null) {
                         pk = DBSUtils.findObject(pkTable.getConstraints(monitor), pkName);
                         if (pk == null) {
@@ -402,7 +402,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                         }
                     }
                     if (pk == null) {
-                        for (GenericConstraint pkConstraint : pkTable.getConstraints(monitor)) {
+                        for (GenericPrimaryKey pkConstraint : pkTable.getConstraints(monitor)) {
                             if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
                                 pk = pkConstraint;
                                 break;
@@ -415,7 +415,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                         String pkFullName = pkTableFullName + "." + pkName;
                         pk = pkMap.get(pkFullName);
                         if (pk == null) {
-                            pk = new GenericConstraint(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY);
+                            pk = new GenericPrimaryKey(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY);
                             pkMap.put(pkFullName, pk);
                             // Add this fake constraint to it's owner
                             pk.getTable().addConstraint(pk);

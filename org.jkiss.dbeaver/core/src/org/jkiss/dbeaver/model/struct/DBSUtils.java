@@ -228,12 +228,12 @@ public final class DBSUtils {
         }
     }
 
-    public static DBSTableColumn getUniqueForeignColumn(DBCColumnMetaData column)
+    public static DBSForeignKey getUniqueForeignConstraint(DBCColumnMetaData column)
     {
-        return getUniqueForeignColumn(null, column);
+        return getUniqueForeignConstraint(null, column);
     }
 
-    public static DBSTableColumn getUniqueForeignColumn(DBRProgressMonitor monitor, DBCColumnMetaData column)
+    public static DBSForeignKey getUniqueForeignConstraint(DBRProgressMonitor monitor, DBCColumnMetaData column)
     {
         RefColumnFinder finder = new RefColumnFinder(column);
         try {
@@ -249,12 +249,12 @@ public final class DBSUtils {
         catch (InterruptedException e) {
             // do nothing
         }
-        return finder.refTableColumn;
+        return finder.refConstraint;
     }
 
     private static class RefColumnFinder implements DBRRunnableWithProgress {
         private DBCColumnMetaData column;
-        private DBSTableColumn refTableColumn;
+        private DBSForeignKey refConstraint;
 
         private RefColumnFinder(DBCColumnMetaData column)
         {
@@ -267,22 +267,7 @@ public final class DBSUtils {
             try {
                 List<DBSForeignKey> refs = column.getForeignKeys(monitor, true);
                 if (refs != null && !refs.isEmpty()) {
-                    DBSForeignKey fk = refs.get(0);
-                    DBSConstraint refKey = fk.getReferencedKey();
-                    if (refKey != null) {
-                        DBSTable refTable = refKey.getTable();
-                        if (refTable != null) {
-                            Collection<? extends DBSConstraintColumn> refColumns = refKey.getColumns(monitor);
-                            if (refColumns != null && refColumns.size() == 1) {
-                                DBSConstraintColumn refColumn = refColumns.iterator().next();
-                                DBSTableColumn refTableColumn = refColumn.getTableColumn();
-                                if (refTableColumn != null) {
-                                    this.refTableColumn = refTableColumn;
-                                }
-                            }
-                        }
-                    }
-
+                    refConstraint = refs.get(0);
                 }
             }
             catch (DBException e) {

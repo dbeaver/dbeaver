@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.dialogs.data;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.Dialog;
@@ -16,26 +15,18 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Monitor;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
@@ -44,6 +35,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLTableDataEditor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -57,7 +49,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     private static int dialogCount = 0;
 
     private DBDValueController valueController;
-    private DBSTableColumn refTableColumn;
+    private DBSForeignKey refConstraint;
     private Text editor;
     private org.eclipse.swt.widgets.List editorSelector;
     private boolean handleEditorChange;
@@ -72,7 +64,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
     protected boolean isForeignKey()
     {
-        return DBSUtils.getUniqueForeignColumn(getValueController().getColumnMetaData()) != null;
+        return getEnumerableConstraint() != null;
     }
 
     public DBDValueController getValueController() {
@@ -164,20 +156,33 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
     protected abstract void applyChanges();
 
+    private DBSForeignKey getEnumerableConstraint()
+    {
+        DBSForeignKey constraint = DBSUtils.getUniqueForeignConstraint(valueController.getColumnMetaData());
+        if (constraint != null &&
+            constraint.getReferencedKey() instanceof DBSConstraintEnumerable &&
+            ((DBSConstraintEnumerable)constraint.getReferencedKey()).supportsEnumeration())
+        {
+            return constraint;
+        } else {
+            return null;
+        }
+    }
+
     protected void createEditorSelector(Composite parent, Text control)
     {
         if (getValueController().isReadOnly()) {
             return;
         }
-        refTableColumn = DBSUtils.getUniqueForeignColumn(valueController.getColumnMetaData());
-        if (refTableColumn == null) {
+        refConstraint = getEnumerableConstraint();
+        if (refConstraint == null) {
             return;
         }
 
         this.editor = control;
 
         Link label = new Link(parent, SWT.NONE);
-        label.setText("Dictionary  (<a>" + refTableColumn.getTable().getName() + "</a>): ");
+        label.setText("Dictionary  (<a>" + refConstraint.getReferencedKey().getTable().getName() + "</a>): ");
         label.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -188,7 +193,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
-                        DBMNode tableNode = DBeaverCore.getInstance().getMetaModel().getNodeByObject(monitor, refTableColumn.getTable(), true);
+                        DBMNode tableNode = DBeaverCore.getInstance().getMetaModel().getNodeByObject(monitor, refConstraint.getReferencedKey().getTable(), true);
                         if (tableNode != null) {
                             OpenObjectEditorAction.openEntityEditor(tableNode, SQLTableDataEditor.class.getName(), window);
                         }
@@ -252,43 +257,24 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         protected IStatus run(DBRProgressMonitor monitor)
         {
             final Map<String, Object> keyValues = new TreeMap<String, Object>();
-            DBCExecutionContext context = valueController.getDataSource().openContext(monitor, getName());
             try {
-                String query = "SELECT " + refTableColumn.getName() + " FROM " + refTableColumn.getTable().getFullQualifiedName();
-                if (!CommonUtils.isEmpty(autoComplete)) {
-                    autoComplete = autoComplete.replace('\'', '"');
-                    query += " WHERE " + refTableColumn.getName() + " LIKE '" + autoComplete + "%'";
+                DBSForeignKeyColumn fkColumn = refConstraint.getColumn(monitor, valueController.getColumnMetaData().getTableColumn(monitor));
+                if (fkColumn == null) {
+                    return Status.OK_STATUS;
                 }
-                DBCStatement dbStat = context.prepareStatement(
-                    query,
-                    false,
-                    false);
-                try {
-                    dbStat.setLimit(0, 100);
-                    if (dbStat.executeStatement()) {
-                        DBCResultSet dbResult = dbStat.openResultSet();
-                        try {
-                            while (dbResult.nextRow()) {
-                                Object keyValue = dbResult.getColumnValue(1);
-                                if (keyValue != null) {
-                                    keyValues.put(keyValue.toString(), keyValue);
-                                }
-                            }
-                        }
-                        finally {
-                            dbResult.close();
-                        }
-                    }
+                DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable)refConstraint.getReferencedKey();
+                Collection<DBDLabelValuePair> enumValues = enumConstraint.getKeyEnumeration(
+                    monitor,
+                    fkColumn.getReferencedColumn(),
+                    autoComplete,
+                    null,
+                    100);
+                for (DBDLabelValuePair pair : enumValues) {
+                    keyValues.put(pair.getLabel(), pair.getValue());
                 }
-                finally {
-                    dbStat.close();
-                }
-            }
-            catch (DBCException e) {
-                // do nothing
-            }
-            finally {
-                context.close();
+            } catch (DBException e) {
+                // error
+                // just ignore
             }
             valueController.getValueSite().getShell().getDisplay().syncExec(new Runnable() {
                 public void run()
@@ -304,6 +290,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                             int selIndex = editorSelector.indexOf(curValue);
                             if (selIndex >= 0) {
                                 editorSelector.select(selIndex);
+                                editorSelector.showSelection();
                             }
                         }
                     }

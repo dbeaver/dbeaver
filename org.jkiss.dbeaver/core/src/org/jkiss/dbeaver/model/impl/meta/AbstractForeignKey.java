@@ -5,11 +5,9 @@
 package org.jkiss.dbeaver.model.impl.meta;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
-import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.*;
 
 /**
  * AbstractForeignKey
@@ -61,6 +59,11 @@ public abstract class AbstractForeignKey<
     public DBSConstraintCascade getUpdateRule()
     {
         return updateRule;
+    }
+
+    public DBSForeignKeyColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn)
+    {
+        return (DBSForeignKeyColumn)super.getColumn(monitor, tableColumn);
     }
 
 }

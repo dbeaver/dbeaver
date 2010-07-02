@@ -4,6 +4,10 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.Collection;
+
 /**
  * DBSForeignKey
  */
@@ -17,4 +21,7 @@ public interface DBSForeignKey extends DBSConstraint
 
     DBSConstraintDefferability getDefferability();
 
+    Collection<? extends DBSForeignKeyColumn> getColumns(DBRProgressMonitor monitor);
+
+    DBSForeignKeyColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn);
 }

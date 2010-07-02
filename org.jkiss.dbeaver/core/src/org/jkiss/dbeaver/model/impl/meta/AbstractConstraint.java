@@ -64,7 +64,7 @@ public abstract class AbstractConstraint<DATASOURCE extends DBPDataSource, TABLE
         this.description = description;
     }
 
-    @Property(name = "Type", viewable = false, order = 3)
+
     public DBSConstraintType getConstraintType()
     {
         return constraintType;
