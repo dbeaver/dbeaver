@@ -6,9 +6,10 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -26,15 +27,17 @@ public interface DBSConstraintEnumerable extends DBSConstraint
 
     /**
      * Gets enumeration values
-     * @param sampleValue enumeration column. Value of this column is a pattern for enumeration values.
-     *  If sample column value is null or empty then returns full enumration set
-     * @param otherKeys other constrain key values. May be null.
+     * @param keyColumn enumeration column.
+     * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
+     * @param preceedingKeys other constrain key values. May be null.
+     * @param maxResults maximum enumeration values in result set
      * @return statement with result set which contains valid enumeration values.
      */
-    DBCStatement getKeyEnumeration(
+    Collection<DBDLabelValuePair> getKeyEnumeration(
         DBRProgressMonitor monitor,
-        DBDColumnValue sampleValue,
-        List<DBDColumnValue> otherKeys,
+        DBSTableColumn keyColumn,
+        Object keyPattern,
+        List<DBDColumnValue> preceedingKeys,
         int maxResults)
         throws DBException;
 

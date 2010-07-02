@@ -58,7 +58,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         // do nothing by defaulr
     }
 
-    public String getValueDisplayString(DBCColumnMetaData column, Object value) {
+    public String getValueDisplayString(DBSTypedObject column, Object value) {
         return value == null ? NULL_VALUE_LABEL : value.toString();
     }
 

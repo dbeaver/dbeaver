@@ -36,7 +36,7 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
 
     }
 
-    public String getValueDisplayString(DBCColumnMetaData column, Object value) {
+    public String getValueDisplayString(DBSTypedObject column, Object value) {
         return null;
     }
 

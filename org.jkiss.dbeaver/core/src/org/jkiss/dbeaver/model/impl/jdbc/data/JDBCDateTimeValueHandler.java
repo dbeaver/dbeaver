@@ -11,7 +11,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
@@ -117,7 +116,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public String getValueDisplayString(DBCColumnMetaData column, Object value)
+    public String getValueDisplayString(DBSTypedObject column, Object value)
     {
         if (value == null) {
             return super.getValueDisplayString(column, value);

@@ -177,15 +177,22 @@ public final class DBSUtils {
 
     public static DBDColumnBinding getColumnBinding(DBPDataSource dataSource, DBCColumnMetaData columnMeta)
     {
+        return new DBDColumnBinding(
+            columnMeta,
+            getColumnValueHandler(dataSource, columnMeta));
+    }
+
+    public static DBDValueHandler getColumnValueHandler(DBPDataSource dataSource, DBSTypedObject column)
+    {
         DBDValueHandler typeHandler = null;
-        DataTypeProviderDescriptor typeProvider = DataSourceRegistry.getDefault().getDataTypeProvider(dataSource, columnMeta);
+        DataTypeProviderDescriptor typeProvider = DataSourceRegistry.getDefault().getDataTypeProvider(dataSource, column);
         if (typeProvider != null) {
-            typeHandler = typeProvider.getInstance().getHandler(dataSource, columnMeta);
+            typeHandler = typeProvider.getInstance().getHandler(dataSource, column);
         }
         if (typeHandler == null) {
             typeHandler = DBCDefaultValueHandler.INSTANCE;
         }
-        return new DBDColumnBinding(columnMeta, typeHandler);
+        return typeHandler;
     }
 
     public static void findValueLocators(

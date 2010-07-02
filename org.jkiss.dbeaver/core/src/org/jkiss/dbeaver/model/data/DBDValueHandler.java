@@ -53,9 +53,9 @@ public interface DBDValueHandler
     /**
      * Converts value to human readable format
      * @param column
-     *@param value value  @return string representation
+     * @param value value  @return string representation
      */
-    String getValueDisplayString(DBCColumnMetaData column, Object value);
+    String getValueDisplayString(DBSTypedObject column, Object value);
 
     /**
      * Returns any additional annotations of value
