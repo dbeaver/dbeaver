@@ -180,6 +180,12 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
         return constraints;
     }
 
+    private void addConstraint(GenericConstraint constraint) {
+        if (constraints != null) {
+            constraints.add(constraint);
+        }
+    }
+
     public List<GenericForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -406,15 +412,17 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                         }
                     }
                     if (pk == null) {
-                        log.warn("Could not find primary key for table " + pkTable.getFullQualifiedName());
+                        log.warn("Could not find unique key for table " + pkTable.getFullQualifiedName() + " column " + pkColumn.getName());
                         // Too bad. But we have to create new fake PK for this FK
                         String pkFullName = pkTableFullName + "." + pkName;
                         pk = pkMap.get(pkFullName);
                         if (pk == null) {
                             pk = new GenericConstraint(DBSConstraintType.PRIMARY_KEY, pkTable, pkName, null);
-                            pk.addColumn(new GenericConstraintColumn(pk, pkColumn, keySeq));
                             pkMap.put(pkFullName, pk);
+                            // Add this fake constraint to it's owner
+                            pk.getTable().addConstraint(pk);
                         }
+                        pk.addColumn(new GenericConstraintColumn(pk, pkColumn, keySeq));
                     }
 
                     // Find (or create) FK
@@ -446,6 +454,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
             finally {
                 dbResult.close();
             }
+
             return fkList;
         } catch (SQLException ex) {
             throw new DBException(ex);
