@@ -11,7 +11,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
 
 /**
  * TextViewDialog
@@ -30,7 +29,7 @@ public class TextViewDialog extends ValueViewDialog {
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
         Object value = getValueController().getValue();
-        boolean isForeignKey = DBSUtils.getUniqueReferenceColumn(getValueController().getColumnMetaData()) != null;
+        boolean isForeignKey = super.isForeignKey();
 
         Label label = new Label(dialogGroup, SWT.NONE);
         label.setText("Value: ");

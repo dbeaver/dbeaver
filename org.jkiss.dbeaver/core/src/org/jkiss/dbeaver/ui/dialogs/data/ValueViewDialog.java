@@ -22,6 +22,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.ui.forms.widgets.Hyperlink;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
@@ -30,15 +33,21 @@ import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * ValueViewDialog
@@ -61,6 +70,11 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         this.valueController = valueController;
         this.valueController.registerEditor(this);
         dialogCount++;
+    }
+
+    protected boolean isForeignKey()
+    {
+        return DBSUtils.getUniqueReferenceColumn(getValueController().getColumnMetaData()) != null;
     }
 
     public DBDValueController getValueController() {
@@ -164,8 +178,27 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
         this.editor = control;
 
-        Label label = new Label(parent, SWT.NONE);
-        label.setText("Dictionary: ");
+        Link label = new Link(parent, SWT.NONE);
+        label.setText("<a>Dictionary:</a> ");
+        label.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                // Open
+                final IWorkbenchWindow window = valueController.getValueSite().getWorkbenchWindow();
+                DBeaverCore.getInstance().runInUI(window, new DBRRunnableWithProgress() {
+                    public void run(DBRProgressMonitor monitor)
+                        throws InvocationTargetException, InterruptedException
+                    {
+                        DBMNode tableNode = DBeaverCore.getInstance().getMetaModel().getNodeByObject(monitor, refTableColumn.getTable(), true);
+                        if (tableNode != null) {
+                            OpenObjectEditorAction.openEntityEditor(tableNode, window);
+                        }
+                    }
+                });
+            }
+        });
+        
 
         editorSelector = new org.eclipse.swt.widgets.List(parent, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
         GridData gd = new GridData(GridData.FILL_BOTH);
