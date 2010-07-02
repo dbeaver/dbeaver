@@ -81,7 +81,7 @@ public class DBDValueLocator implements DBPObject {
     public String getKeyType()
     {
         if (tableIdentifier.getConstraint() != null) {
-            return tableIdentifier.getConstraint().getConstraintType().name();
+            return tableIdentifier.getConstraint().getConstraintType().getName();
         } else {
             return tableIdentifier.getIndex().getIndexType().name();
         }

@@ -24,7 +24,7 @@ public class GenericForeignKey extends GenericConstraint implements DBSForeignKe
         DBSConstraintCascade updateRule,
         DBSConstraintDefferability defferability)
     {
-        super(DBSConstraintType.FOREIGN_KEY, table, name, remarks);
+        super(table, name, remarks, DBSConstraintType.FOREIGN_KEY);
         this.referencedKey = referencedKey;
         this.deleteRule = deleteRule;
         this.updateRule = updateRule;

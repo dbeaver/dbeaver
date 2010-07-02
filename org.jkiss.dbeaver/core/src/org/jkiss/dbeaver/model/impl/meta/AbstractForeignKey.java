@@ -33,15 +33,10 @@ public abstract class AbstractForeignKey<
         DBSConstraintCascade deleteRule,
         DBSConstraintCascade updateRule)
     {
-        super(table, name, description);
+        super(table, name, description, DBSConstraintType.FOREIGN_KEY);
         this.referencedKey = referencedKey;
         this.deleteRule = deleteRule;
         this.updateRule = updateRule;
-    }
-
-    public DBSConstraintType getConstraintType()
-    {
-        return DBSConstraintType.FOREIGN_KEY;
     }
 
     @Property(name = "Ref Table", viewable = true, order = 3)

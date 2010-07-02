@@ -1,16 +1,10 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.struct.DBSConstraint;
-import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
-import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
 
-import java.awt.FontMetrics;
-import java.awt.Graphics;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -88,7 +82,7 @@ public class ERDTable extends ERDNode {
         Collection<? extends DBSConstraint> constraints = getTable().getConstraints(monitor);
         if (constraints != null) {
             for (DBSConstraint constraint : constraints) {
-                if (constraint.getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
+                if (constraint.getConstraintType().isUnique()) {
                     return constraint;
                 }
             }

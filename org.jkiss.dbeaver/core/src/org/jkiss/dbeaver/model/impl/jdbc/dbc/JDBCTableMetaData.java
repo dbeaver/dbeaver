@@ -175,7 +175,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
             if (id.getConstraint() != null) {
                 if (id.getConstraint().getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
                     return id;
-                } else if (id.getConstraint().getConstraintType() == DBSConstraintType.UNIQUE_KEY) {
+                } else if (id.getConstraint().getConstraintType().isUnique()) {
                     uniqueId = id;
                 }
             } else {

@@ -308,10 +308,10 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                     MySQLConstraint pk = pkMap.get(pkName);
                     if (pk == null) {
                         pk = new MySQLConstraint(
-                            DBSConstraintType.PRIMARY_KEY,
                             this,
                             pkName,
-                            null);
+                            null,
+                            DBSConstraintType.PRIMARY_KEY);
                         pkList.add(pk);
                         pkMap.put(pkName, pk);
                     }
@@ -423,9 +423,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                     }
                     if (pk == null) {
                         for (MySQLConstraint pkConstraint : pkTable.getConstraints(monitor)) {
-                            if ((pkConstraint.getConstraintType() == DBSConstraintType.PRIMARY_KEY || pkConstraint.getConstraintType() == DBSConstraintType.UNIQUE_KEY)
-                                && pkConstraint.getColumn(monitor, pkColumn) != null)
-                            {
+                            if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
                                 pk = pkConstraint;
                                 break;
                             }
@@ -437,7 +435,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                         String pkFullName = pkTableFullName + "." + pkName;
                         pk = pkMap.get(pkFullName);
                         if (pk == null) {
-                            pk = new MySQLConstraint(DBSConstraintType.PRIMARY_KEY, pkTable, pkName, null);
+                            pk = new MySQLConstraint(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY);
                             pk.addColumn(new MySQLConstraintColumn(pk, pkColumn, keySeq));
                             pkMap.put(pkFullName, pk);
                         }

@@ -12,13 +12,11 @@ import java.util.List;
  */
 public class GenericConstraint extends JDBCConstraint<GenericDataSource, GenericTable>
 {
-    private DBSConstraintType constraintType;
     private List<GenericConstraintColumn> columns;
 
-    protected GenericConstraint(DBSConstraintType constraintType, GenericTable table, String name, String remarks)
+    protected GenericConstraint(GenericTable table, String name, String remarks, DBSConstraintType constraintType)
     {
-        super(table, name, remarks);
-        this.constraintType = constraintType;
+        super(table, name, remarks, constraintType);
     }
 
     /**
@@ -27,19 +25,13 @@ public class GenericConstraint extends JDBCConstraint<GenericDataSource, Generic
      */
     GenericConstraint(GenericConstraint constraint)
     {
-        super(constraint.getTable(), constraint.getName(), constraint.getDescription());
-        this.constraintType = constraint.constraintType;
+        super(constraint.getTable(), constraint.getName(), constraint.getDescription(), constraint.getConstraintType());
         if (constraint.columns != null) {
             this.columns = new ArrayList<GenericConstraintColumn>(constraint.columns.size());
             for (GenericConstraintColumn sourceColumn : constraint.columns) {
                 this.columns.add(new GenericConstraintColumn(this, sourceColumn));
             }
         }
-    }
-
-    public DBSConstraintType getConstraintType()
-    {
-        return constraintType;
     }
 
     public List<GenericConstraintColumn> getColumns(DBRProgressMonitor monitor)

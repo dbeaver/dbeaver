@@ -7,23 +7,34 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSConstraintType
  */
-public enum DBSConstraintType
+public class DBSConstraintType
 {
-    FOREIGN_KEY(false),
-    PRIMARY_KEY(true),
-    UNIQUE_KEY(true),
-    CHECK(false),
-    NOT_NULL(false);
+    public static final DBSConstraintType FOREIGN_KEY = new DBSConstraintType("Foreign Key", false);
+    public static final DBSConstraintType PRIMARY_KEY = new DBSConstraintType("Primary Key", true);
+    public static final DBSConstraintType UNIQUE_KEY = new DBSConstraintType("Unique Key", true);
+    public static final DBSConstraintType CHECK = new DBSConstraintType("Check", false);
+    public static final DBSConstraintType NOT_NULL = new DBSConstraintType("Not NULL", false);
 
+    private final String name;
     private final boolean unique;
 
-    DBSConstraintType(boolean unique)
+    DBSConstraintType(String name, boolean unique)
     {
+        this.name = name;
         this.unique = unique;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public boolean isUnique()
     {
         return unique;
+    }
+
+    public String toString()
+    {
+        return getName();
     }
 }

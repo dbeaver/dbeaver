@@ -20,12 +20,14 @@ public abstract class AbstractConstraint<DATASOURCE extends DBPDataSource, TABLE
     private TABLE table;
     private String name;
     protected String description;
+    protected DBSConstraintType constraintType;
 
-    protected AbstractConstraint(TABLE table, String name, String description)
+    protected AbstractConstraint(TABLE table, String name, String description, DBSConstraintType constraintType)
     {
         this.table = table;
         this.name = name;
         this.description = description;
+        this.constraintType = constraintType;
     }
 
     @Property(name = "Owner", viewable = true, order = 2)
@@ -60,6 +62,12 @@ public abstract class AbstractConstraint<DATASOURCE extends DBPDataSource, TABLE
     protected void setDescription(String description)
     {
         this.description = description;
+    }
+
+    @Property(name = "Type", viewable = false, order = 3)
+    public DBSConstraintType getConstraintType()
+    {
+        return constraintType;
     }
 
     public DBSObject getParentObject()

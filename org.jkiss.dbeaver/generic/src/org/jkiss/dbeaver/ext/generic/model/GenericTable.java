@@ -286,10 +286,10 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                     GenericConstraint pk = pkMap.get(pkName);
                     if (pk == null) {
                         pk = new GenericConstraint(
-                            DBSConstraintType.PRIMARY_KEY,
                             this,
                             pkName,
-                            null);
+                            null,
+                            DBSConstraintType.PRIMARY_KEY);
                         pkList.add(pk);
                         pkMap.put(pkName, pk);
                     }
@@ -403,9 +403,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                     }
                     if (pk == null) {
                         for (GenericConstraint pkConstraint : pkTable.getConstraints(monitor)) {
-                            if ((pkConstraint.getConstraintType() == DBSConstraintType.PRIMARY_KEY || pkConstraint.getConstraintType() == DBSConstraintType.UNIQUE_KEY)
-                                && pkConstraint.getColumn(monitor, pkColumn) != null)
-                            {
+                            if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
                                 pk = pkConstraint;
                                 break;
                             }
@@ -417,7 +415,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                         String pkFullName = pkTableFullName + "." + pkName;
                         pk = pkMap.get(pkFullName);
                         if (pk == null) {
-                            pk = new GenericConstraint(DBSConstraintType.PRIMARY_KEY, pkTable, pkName, null);
+                            pk = new GenericConstraint(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY);
                             pkMap.put(pkFullName, pk);
                             // Add this fake constraint to it's owner
                             pk.getTable().addConstraint(pk);
