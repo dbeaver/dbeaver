@@ -6,21 +6,34 @@ package org.jkiss.dbeaver.model.struct;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.data.DBDColumnBinding;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.lang.reflect.InvocationTargetException;
 
 /**
  * DBSUtils
  */
 public final class DBSUtils {
+
+    static Log log = LogFactory.getLog(DBSUtils.class);
 
     public static String getQuotedIdentifier(DBPDataSource dataSource, String str)
     {
@@ -162,12 +175,58 @@ public final class DBSUtils {
         }
     }
 
-    public static DBSTableColumn getUniqueReferenceColumn(DBCColumnMetaData column)
+    public static DBDColumnBinding getColumnBinding(DBPDataSource dataSource, DBCColumnMetaData columnMeta)
     {
-        return getUniqueReferenceColumn(null, column);
+        DBDValueHandler typeHandler = null;
+        DataTypeProviderDescriptor typeProvider = DataSourceRegistry.getDefault().getDataTypeProvider(dataSource, columnMeta);
+        if (typeProvider != null) {
+            typeHandler = typeProvider.getInstance().getHandler(dataSource, columnMeta);
+        }
+        if (typeHandler == null) {
+            typeHandler = DBCDefaultValueHandler.INSTANCE;
+        }
+        return new DBDColumnBinding(columnMeta, typeHandler);
     }
 
-    public static DBSTableColumn getUniqueReferenceColumn(DBRProgressMonitor monitor, DBCColumnMetaData column)
+    public static void findValueLocators(
+        DBRProgressMonitor monitor,
+        DBDColumnBinding[] bindings)
+    {
+        Map<DBSTable, DBDValueLocator> locatorMap = new HashMap<DBSTable, DBDValueLocator>();
+        try {
+            for (DBDColumnBinding column : bindings) {
+                DBCColumnMetaData meta = column.getMetaData();
+                if (meta.getTable() == null || !meta.getTable().isIdentitied(monitor)) {
+                    continue;
+                }
+                // We got table name and column name
+                // To be editable we need this result set contain set of columns from the same table
+                // which construct any unique key
+                DBDValueLocator valueLocator = locatorMap.get(meta.getTable().getTable(monitor));
+                if (valueLocator == null) {
+                    DBCTableIdentifier tableIdentifier = meta.getTable().getBestIdentifier(monitor);
+                    if (tableIdentifier == null) {
+                        continue;
+                    }
+                    valueLocator = new DBDValueLocator(
+                        meta.getTable().getTable(monitor),
+                        tableIdentifier);
+                    locatorMap.put(meta.getTable().getTable(monitor), valueLocator);
+                }
+                column.setValueLocator(valueLocator);
+            }
+        }
+        catch (DBException e) {
+            log.error("Can't extract column identifier info", e);
+        }
+    }
+
+    public static DBSTableColumn getUniqueForeignColumn(DBCColumnMetaData column)
+    {
+        return getUniqueForeignColumn(null, column);
+    }
+
+    public static DBSTableColumn getUniqueForeignColumn(DBRProgressMonitor monitor, DBCColumnMetaData column)
     {
         RefColumnFinder finder = new RefColumnFinder(column);
         try {

@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.impl.data;
+package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import net.sf.jkiss.utils.streams.MimeTypes;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;

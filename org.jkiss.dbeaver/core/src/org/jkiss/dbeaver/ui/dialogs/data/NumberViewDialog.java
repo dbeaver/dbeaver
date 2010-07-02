@@ -8,7 +8,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.impl.data.JDBCNumberValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCNumberValueHandler;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.sql.Types;

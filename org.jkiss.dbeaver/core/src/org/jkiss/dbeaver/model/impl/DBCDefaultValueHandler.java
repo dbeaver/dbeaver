@@ -1,0 +1,56 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
+package org.jkiss.dbeaver.model.impl;
+
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
+import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.dbc.DBCResultSet;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
+import org.jkiss.dbeaver.DBException;
+import org.eclipse.jface.action.IMenuManager;
+
+/**
+ * Default value handler
+ */
+public class DBCDefaultValueHandler implements DBDValueHandler {
+
+    public static final DBCDefaultValueHandler INSTANCE = new DBCDefaultValueHandler();
+
+
+    public Object getValueObject(DBCResultSet resultSet, DBSTypedObject columnType, int columnIndex) throws DBCException {
+        return null;
+    }
+
+    public void bindValueObject(DBCStatement statement, DBSTypedObject columnType, int paramIndex, Object value) throws DBCException {
+
+    }
+
+    public void releaseValueObject(Object value) {
+
+    }
+
+    public String getValueDisplayString(DBCColumnMetaData column, Object value) {
+        return null;
+    }
+
+    public DBDValueAnnotation[] getValueAnnotations(DBCColumnMetaData column) throws DBCException {
+        return null;
+    }
+
+    public void fillContextMenu(IMenuManager menuManager, DBDValueController controller) throws DBCException {
+    }
+
+    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller) {
+    }
+
+    public boolean editValue(DBDValueController controller) throws DBException {
+        return false;
+    }
+}

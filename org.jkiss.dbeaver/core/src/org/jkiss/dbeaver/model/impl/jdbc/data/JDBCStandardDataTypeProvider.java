@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.impl.data;
+package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.model.DBPDataSource;

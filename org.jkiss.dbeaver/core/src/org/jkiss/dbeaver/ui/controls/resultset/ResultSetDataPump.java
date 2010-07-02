@@ -9,13 +9,14 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 import org.jkiss.dbeaver.model.dbc.*;
-import org.jkiss.dbeaver.model.impl.data.JDBCUnsupportedValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSUtils;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryDataPump;
@@ -29,8 +30,6 @@ import java.util.Map;
  * Data pump for SQL queries
  */
 class ResultSetDataPump implements ISQLQueryDataPump {
-
-    private static DBDValueHandler DEFAULT_VALUE_HANDLER = JDBCUnsupportedValueHandler.INSTANCE;
 
     static Log log = LogFactory.getLog(ResultSetDataPump.class);
 
@@ -64,16 +63,7 @@ class ResultSetDataPump implements ISQLQueryDataPump {
         // Extrat column info
         metaColumns = new DBDColumnBinding[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
-            DBCColumnMetaData columnMeta = rsColumns.get(i);
-            DBDValueHandler typeHandler = null;
-            DataTypeProviderDescriptor typeProvider = dsRegistry.getDataTypeProvider(dataSource, columnMeta);
-            if (typeProvider != null) {
-                typeHandler = typeProvider.getInstance().getHandler(dataSource, columnMeta);
-            }
-            if (typeHandler == null) {
-                typeHandler = DEFAULT_VALUE_HANDLER;
-            }
-            metaColumns[i] = new DBDColumnBinding(columnMeta, typeHandler);
+            metaColumns[i] = DBSUtils.getColumnBinding(dataSource, rsColumns.get(i));
         }
 
         resultSetViewer.setColumnsInfo(metaColumns);
@@ -111,7 +101,7 @@ class ResultSetDataPump implements ISQLQueryDataPump {
     public void fetchEnd(DBRProgressMonitor monitor)
         throws DBCException
     {
-        extractRowIdentifiers(monitor);
+        DBSUtils.findValueLocators(monitor, metaColumns);
 
         display.asyncExec(new Runnable() {
             public void run()
@@ -122,34 +112,4 @@ class ResultSetDataPump implements ISQLQueryDataPump {
         errors.clear();
     }
 
-    // Find value locators for columns
-    private void extractRowIdentifiers(DBRProgressMonitor monitor) {
-        Map<DBSTable, DBDValueLocator> locatorMap = new HashMap<DBSTable, DBDValueLocator>();
-        try {
-            for (DBDColumnBinding column : metaColumns) {
-                DBCColumnMetaData meta = column.getMetaData();
-                if (meta.getTable() == null || !meta.getTable().isIdentitied(monitor)) {
-                    continue;
-                }
-                // We got table name and column name
-                // To be editable we need this result set contain set of columns from the same table
-                // which construct any unique key
-                DBDValueLocator valueLocator = locatorMap.get(meta.getTable().getTable(monitor));
-                if (valueLocator == null) {
-                    DBCTableIdentifier tableIdentifier = meta.getTable().getBestIdentifier(monitor);
-                    if (tableIdentifier == null) {
-                        continue;
-                    }
-                    valueLocator = new DBDValueLocator(
-                        meta.getTable().getTable(monitor),
-                        tableIdentifier);
-                    locatorMap.put(meta.getTable().getTable(monitor), valueLocator);
-                }
-                column.setValueLocator(valueLocator);
-            }
-        }
-        catch (DBException e) {
-            log.error("Can't extract column identifier info", e);
-        }
-    }
 }

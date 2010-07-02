@@ -1,6 +1,6 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.dbeaver.model.impl.meta.AbstractConstraint;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 
@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * GenericConstraint
  */
-public class GenericConstraint extends AbstractConstraint<GenericDataSource, GenericTable>
+public class GenericConstraint extends JDBCConstraint<GenericDataSource, GenericTable>
 {
     private DBSConstraintType constraintType;
     private List<GenericConstraintColumn> columns;

@@ -15,10 +15,7 @@ import java.util.Collection;
 /**
  * GenericConstraint
  */
-public abstract class AbstractConstraint<
-    DATASOURCE extends DBPDataSource,
-    TABLE extends DBSTable>
-    implements DBSConstraint
+public abstract class AbstractConstraint<DATASOURCE extends DBPDataSource, TABLE extends DBSTable> implements DBSConstraint
 {
     private TABLE table;
     private String name;

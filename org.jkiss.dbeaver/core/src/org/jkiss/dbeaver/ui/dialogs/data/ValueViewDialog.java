@@ -72,7 +72,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
     protected boolean isForeignKey()
     {
-        return DBSUtils.getUniqueReferenceColumn(getValueController().getColumnMetaData()) != null;
+        return DBSUtils.getUniqueForeignColumn(getValueController().getColumnMetaData()) != null;
     }
 
     public DBDValueController getValueController() {
@@ -169,7 +169,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         if (getValueController().isReadOnly()) {
             return;
         }
-        refTableColumn = DBSUtils.getUniqueReferenceColumn(valueController.getColumnMetaData());
+        refTableColumn = DBSUtils.getUniqueForeignColumn(valueController.getColumnMetaData());
         if (refTableColumn == null) {
             return;
         }

@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.impl.jdbc;
+package org.jkiss.dbeaver.model.impl.jdbc.dbc;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;

@@ -10,7 +10,7 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCResultSetMetaData;
+import org.jkiss.dbeaver.model.impl.jdbc.dbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 
 import java.io.InputStream;

@@ -2,16 +2,13 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.impl.data;
+package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Combo;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 

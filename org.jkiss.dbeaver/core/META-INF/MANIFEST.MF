@@ -76,7 +76,7 @@ Export-Package: net.sf.jkiss.utils,
    org.jkiss.dbeaver.model.struct,
    org.jkiss.dbeaver,
    org.jkiss.dbeaver.model.runtime",
- org.jkiss.dbeaver.model.impl.data;
+ org.jkiss.dbeaver.model.impl.jdbc.data;
   uses:="org.jkiss.dbeaver.model.data,
    org.jkiss.dbeaver.model,
    org.apache.commons.logging,

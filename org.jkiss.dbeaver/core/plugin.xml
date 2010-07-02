@@ -622,7 +622,7 @@
     <extension
           point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
-            class="org.jkiss.dbeaver.model.impl.data.JDBCStandardDataTypeProvider"
+            class="org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStandardDataTypeProvider"
             description="Standard JDBC data types provider"
             id="org.jkiss.dbeaver.core.standardDataTypeProvider"
             label="Standard JDBC data types provider">

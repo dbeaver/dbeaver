@@ -12,7 +12,7 @@ import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.impl.data.JDBCDateTimeValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCDateTimeValueHandler;
 
 import java.util.Calendar;
 import java.util.Date;
