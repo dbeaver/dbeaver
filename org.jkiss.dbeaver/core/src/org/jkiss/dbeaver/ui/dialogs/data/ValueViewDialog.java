@@ -180,7 +180,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         this.editor = control;
 
         Link label = new Link(parent, SWT.NONE);
-        label.setText("<a>Dictionary:</a> ");
+        label.setText("Dictionary  (<a>" + refTableColumn.getTable().getName() + "</a>): ");
         label.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
