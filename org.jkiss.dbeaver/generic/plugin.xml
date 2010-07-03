@@ -106,27 +106,6 @@
                     sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                     webURL="http://mysql.com"
                     description="MySQL standard driver">
-                    <!--
-                    <propertyGroup label="Connection/Authentication">
-                        <property label="connectTimeout" description="Timeout for socket connect (in milliseconds), with 0 being no timeout. Only works on JDK-1.4 or newer. Defaults to '0'."/>
-                        <property label="socketTimeout" description="Timeout on network socket operations (0, the default means no timeout)."/>
-                        <property label="useCompression" description="Use zlib compression when communicating with the server (true/false)? Defaults to 'false'."/>
-                    </propertyGroup>
-                    <propertyGroup label="Debuging/Profiling">
-                        <property label="profileSQL" description="Trace queries and their execution/fetch times to the configured logger (true/false) defaults to 'false'"/>
-                        <property label="reportMetricsIntervalMillis" description="If 'gatherPerfMetrics' is enabled, how often should they be logged (in ms)?"/>
-                        <property label="maxQuerySizeToLog" description="Controls the maximum length/size of a query that will get logged when profiling or tracing"/>
-                        <property label="packetDebugBufferSize" description="The maximum number of packets to retain when 'enablePacketDebug' is true"/>
-                        <property label="slowQueryThresholdMillis" description="If 'logSlowQueries' is enabled, how long should a query (in ms) before it is logged as 'slow'?"/>
-                        <property label="useUsageAdvisor" description="Should the driver issue 'usage' warnings advising proper and efficient usage of JDBC and MySQL Connector/J to the log (true/false, defaults to 'false')?"/>
-                        <property label="autoGenerateTestcaseScript" description="Should the driver dump the SQL it is executing, including server-side prepared statements to STDERR?"/>
-                        <property label="dumpQueriesOnException" description="Should the driver dump the contents of the query sent to the server in the message for SQLExceptions?"/>
-                        <property label="enablePacketDebug" description="When enabled, a ring-buffer of 'packetDebugBufferSize' packets will be kept, and dumped when exceptions are thrown in key areas in the driver's code"/>
-                        <property label="explainSlowQueries" description="If 'logSlowQueries' is enabled, should the driver automatically issue an 'EXPLAIN' on the server and send the results to the configured log at a WARN level?"/>
-                        <property label="logSlowQueries" description="Should queries that take longer than 'slowQueryThresholdMillis' be logged?"/>
-                        <property label="traceProtocol" description="Should trace-level network protocol be logged?"/>
-                    </propertyGroup>
-                    -->
                     <query label="GET_ACTIVE_DB">select database()</query>
                     <query label="SET_ACTIVE_DB">use ?</query>
                     <library path="drivers/mysql-connector-java-5.1.5-bin.jar"/>
@@ -154,11 +133,10 @@
                 <driver
                     id="db2"
                     label="DB2"
-                    class="com.db2.jdbc.Driver"
-                    sampleURL="jdbc:db2://{host}[:{port}]/[{database}]"
-                    webURL="http://ibm.com"
-                    description="DB2 thin driver">
-                    <library path="bin/"/>
+                    class="COM.ibm.db2.jdbc.net.DB2Driver"
+                    sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                    webURL="www.ibm.com/software/data/db2/ad/java.html"
+                    description="DB2 Net driver">
                 </driver>
                 <driver
                     id="odbc"
@@ -167,7 +145,6 @@
                     sampleURL="jdbc:odbc:{database}"
                     webURL="http://sun.com"
                     description="ODBC bridge driver">
-                    <library path="bin/"/>
                 </driver>
                 <driver
                     id="mssql"
