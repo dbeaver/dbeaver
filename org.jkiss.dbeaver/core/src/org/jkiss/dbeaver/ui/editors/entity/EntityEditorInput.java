@@ -43,7 +43,7 @@ public class EntityEditorInput implements IDatabaseEditorInput
 
     public String getName()
     {
-        return node.getNodeName();
+        return node.getNodePathName();
     }
 
     public IPersistableElement getPersistable()

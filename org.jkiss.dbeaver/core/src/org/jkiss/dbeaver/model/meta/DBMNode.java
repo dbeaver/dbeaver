@@ -14,7 +14,6 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.load.ILoadService;
 
 import java.util.List;
 
@@ -82,6 +81,20 @@ public abstract class DBMNode
             image = PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
         }
         return image;
+    }
+
+    public String getNodePathName()
+    {
+        StringBuilder pathName = new StringBuilder();
+        pathName.append(getNodeName());
+        for (DBMNode parent = getParentNode(); parent != null && !(parent instanceof DBMDataSource); parent = parent.getParentNode()) {
+            if (parent instanceof DBMTreeFolder) {
+                // skip folders
+                continue;
+            }
+            pathName.insert(0, '.').insert(0, parent.getNodeName());
+        }
+        return pathName.toString();
     }
 
     public abstract boolean hasChildren();
