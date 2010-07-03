@@ -2,21 +2,21 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.runtime.sql;
+package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * SQLQueryListener
+ * Data reciever
  */
-public interface ISQLQueryDataPump {
+public interface DBDDataReciever {
 
-    void fetchStart(DBCResultSet resultSet, DBRProgressMonitor monitor)
+    void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet)
         throws DBCException;
 
-    void fetchRow(DBCResultSet resultSet, DBRProgressMonitor monitor)
+    void fetchRow(DBRProgressMonitor monitor, DBCResultSet resultSet)
         throws DBCException;
 
     /**

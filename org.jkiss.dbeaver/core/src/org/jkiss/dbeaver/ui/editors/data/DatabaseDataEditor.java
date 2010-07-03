@@ -2,11 +2,14 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql;
+package org.jkiss.dbeaver.ui.editors.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
@@ -14,34 +17,33 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.DBMModel;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
-import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
-
-import java.util.Collections;
 
 /**
  * SQLTableData
  */
-public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbenchPart, IMetaModelView, ResultSetProvider
+public class DatabaseDataEditor extends EditorPart implements IEmbeddedWorkbenchPart, IMetaModelView, ResultSetProvider
 {
-    static Log log = LogFactory.getLog(SQLTableDataEditor.class);
+    static Log log = LogFactory.getLog(DatabaseDataEditor.class);
 
     private ResultSetViewer resultSetView;
     private DBMModel model;
-    private DBSTable table;
+    private DBSDataContainer dataContainer;
 
     public void doSave(IProgressMonitor monitor)
     {
@@ -83,7 +85,7 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
 
     public void activatePart()
     {
-        if (table == null) {
+        if (dataContainer == null) {
             IEditorInput editorInput = getEditorInput();
             if (!(editorInput instanceof IDatabaseEditorInput)) {
                 log.error("Table data editor must be used only with databse editor input!");
@@ -91,12 +93,12 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
             }
             IDatabaseEditorInput dbei = (IDatabaseEditorInput)editorInput;
             model = dbei.getModel();
-            DBSObject dbmObject = dbei.getDatabaseObject();
-            if (!(dbmObject instanceof DBSTable)) {
-                log.error("Table data editor must be used only with databse editor input!");
+            DBSObject object = dbei.getDatabaseObject();
+            if (!(object instanceof DBSDataContainer)) {
+                log.error("Data editor supports only data contaner objects!");
                 return;
             }
-            table = (DBSTable)dbmObject;
+            dataContainer = (DBSDataContainer) object;
 
             resultSetView.refresh();
         }
@@ -132,16 +134,21 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
     }
 
     public DBSDataSourceContainer getDataSourceContainer() {
-        return table.getDataSource().getContainer();
+        return dataContainer.getDataSource().getContainer();
     }
 
     public DBPDataSource getDataSource() {
-        return table.getDataSource();
+        return dataContainer.getDataSource();
     }
 
     public boolean isConnected()
     {
-        return table != null && table.getDataSource().getContainer().isConnected();
+        return dataContainer != null && dataContainer.getDataSource().getContainer().isConnected();
+    }
+
+    public DBSDataContainer getDataContainer()
+    {
+        return dataContainer;
     }
 
     public void extractResultSetData(int offset)
@@ -150,38 +157,51 @@ public class SQLTableDataEditor extends EditorPart implements IEmbeddedWorkbench
             DBeaverUtils.showErrorDialog(getSite().getShell(), "Not Connected", "Not Connected");
             return;
         }
-        log.debug("Extract table data");
-        StringBuilder query = new StringBuilder();
-        String tableName = table.getFullQualifiedName();
-        query.append("SELECT * FROM ").append(tableName);
-        SQLStatementInfo statementInfo = new SQLStatementInfo(query.toString());
-        final SQLQueryJob job = new SQLQueryJob(
-            "Table " + tableName,
-            getDataSource(),
-            Collections.singletonList(statementInfo),
-            resultSetView.getDataPump());
-        job.setDataContainer(table);
 
-        job.addQueryListener(new DefaultQueryListener()
+        new DataPumpJob().schedule();
+    }
+
+    private class DataPumpJob extends DataSourceJob {
+
+        protected DataPumpJob()
         {
-            public void onEndQuery(final SQLQueryResult result)
+            super("Pump data from " + getDataContainer().getName(), DBIcon.SQL_EXECUTE.getImageDescriptor(), DatabaseDataEditor.this.getDataSource());
+        }
+
+        protected IStatus run(DBRProgressMonitor monitor)
+        {
+            IPreferenceStore preferenceStore = getDataSource().getContainer().getPreferenceStore();
+            int maxRows = preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
+
+            String statusMessage;
+            boolean hasErrors = false;
+            try {
+                int rowCount = getDataContainer().pumpAllData(monitor, resultSetView.getDataReciever(), 0, maxRows);
+                if (rowCount > 0) {
+                    statusMessage = rowCount + " row(s)";
+                } else {
+                    statusMessage = "Empty resultset";
+                }
+            }
+            catch (DBException e) {
+                statusMessage = e.getMessage();
+                hasErrors = true;
+                log.error(e);
+            }
+
             {
-                getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                // Set status
+                final String message = statusMessage;
+                final boolean isError = hasErrors;
+                getSite().getShell().getDisplay().syncExec(new Runnable() {
                     public void run()
                     {
-                        if (result.getError() != null) {
-                            resultSetView.setStatus(result.getError().getMessage(), true);
-                            log.error(result.getError().getMessage());
-                        } else if (result.getRowCount() != null) {
-                            resultSetView.setStatus(result.getRowCount() + " row(s)", false);
-                        } else {
-                            resultSetView.setStatus("Empty resultset", false);
-                        }
+                        resultSetView.setStatus(message, isError);
                     }
                 });
             }
-        });
-        job.schedule();
+            return Status.OK_STATUS;
+        }
     }
 
 }

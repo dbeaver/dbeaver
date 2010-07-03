@@ -9,11 +9,13 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
-import org.jkiss.dbeaver.model.dbc.*;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.sql.ISQLQueryDataPump;
+import org.jkiss.dbeaver.model.data.DBDDataReciever;
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCResultSet;
+import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,9 +25,9 @@ import java.util.Map;
 /**
  * Data pump for SQL queries
  */
-class ResultSetDataPump implements ISQLQueryDataPump {
+class ResultSetDataReciever implements DBDDataReciever {
 
-    static Log log = LogFactory.getLog(ResultSetDataPump.class);
+    static Log log = LogFactory.getLog(ResultSetDataReciever.class);
 
     private ResultSetViewer resultSetViewer;
     private Display display;
@@ -35,13 +37,13 @@ class ResultSetDataPump implements ISQLQueryDataPump {
 
     Map<DBCColumnMetaData, List<DBCException>> errors = new HashMap<DBCColumnMetaData, List<DBCException>>();
 
-    ResultSetDataPump(ResultSetViewer resultSetViewer)
+    ResultSetDataReciever(ResultSetViewer resultSetViewer)
     {
         this.resultSetViewer = resultSetViewer;
         this.display = resultSetViewer.getControl().getShell().getDisplay();
     }
 
-    public void fetchStart(DBCResultSet resultSet, DBRProgressMonitor monitor)
+    public void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet)
         throws DBCException
     {
         rows.clear();
@@ -51,7 +53,6 @@ class ResultSetDataPump implements ISQLQueryDataPump {
         columnsCount = rsColumns.size();
 
         // Determine type handlers for all columns
-        DataSourceRegistry dsRegistry = DataSourceRegistry.getDefault();
         DBPDataSource dataSource = resultSet.getContext().getDataSource();
 
         // Extrat column info
@@ -63,7 +64,7 @@ class ResultSetDataPump implements ISQLQueryDataPump {
         resultSetViewer.setColumnsInfo(metaColumns);
     }
 
-    public void fetchRow(DBCResultSet resultSet, DBRProgressMonitor monitor)
+    public void fetchRow(DBRProgressMonitor monitor, DBCResultSet resultSet)
         throws DBCException
     {
         Object[] row = new Object[columnsCount];

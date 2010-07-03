@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
-import org.jkiss.dbeaver.ui.editors.sql.SQLTableDataEditor;
+import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -204,7 +204,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                     {
                         DBMNode tableNode = DBeaverCore.getInstance().getMetaModel().getNodeByObject(monitor, refConstraint.getReferencedKey().getTable(), true);
                         if (tableNode != null) {
-                            OpenObjectEditorAction.openEntityEditor(tableNode, SQLTableDataEditor.class.getName(), window);
+                            OpenObjectEditorAction.openEntityEditor(tableNode, DatabaseDataEditor.class.getName(), window);
                         }
                     }
                 });

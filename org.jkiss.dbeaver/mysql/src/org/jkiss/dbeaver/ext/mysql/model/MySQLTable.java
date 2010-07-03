@@ -5,10 +5,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.meta.AbstractTable;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
@@ -18,7 +19,6 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.DBUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * GenericTable
  */
-public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
+public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 {
     static Log log = LogFactory.getLog(MySQLTable.class);
 

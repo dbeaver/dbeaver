@@ -677,7 +677,7 @@ public class SQLEditor extends BaseTextEditor
                 isSingleQuery ? "Execute query" : "Execute script",
                 getDataSource(),
                 queries,
-                resultsView.getDataPump());
+                resultsView.getDataReciever());
             job.addQueryListener(new ISQLQueryListener() {
                 public void onStartJob()
                 {

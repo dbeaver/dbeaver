@@ -347,9 +347,9 @@
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
-            id="org.jkiss.dbeaver.ui.editors.sql.SQLTableDataEditor"
-            class="org.jkiss.dbeaver.ui.editors.sql.SQLTableDataEditor"
-            objectType="org.jkiss.dbeaver.model.struct.DBSTable"
+            id="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"
+            class="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"
+            objectType="org.jkiss.dbeaver.model.struct.DBSDataContainer"
             main="false"
             label="Data"
             description="Table data"

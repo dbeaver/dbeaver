@@ -4,21 +4,21 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.meta.AbstractTable;
-import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.DBUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * GenericTable
  */
-public class GenericTable extends AbstractTable<GenericDataSource, GenericStructureContainer>
+public class GenericTable extends JDBCTable<GenericDataSource, GenericStructureContainer>
 {
     static Log log = LogFactory.getLog(GenericTable.class);
 

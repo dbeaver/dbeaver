@@ -84,7 +84,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private ResultSetMode mode;
     private Spreadsheet spreadsheet;
     private ResultSetProvider resultSetProvider;
-    private ResultSetDataPump dataPump;
+    private ResultSetDataReciever dataReciever;
     private IThemeManager themeManager;
 
     // columns
@@ -140,7 +140,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         createStatusBar(spreadsheet);
         changeMode(ResultSetMode.GRID);
         this.resultSetProvider = resultSetProvider;
-        this.dataPump = new ResultSetDataPump(this);
+        this.dataReciever = new ResultSetDataReciever(this);
 
         this.themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
         this.themeManager.addPropertyChangeListener(this);
@@ -350,9 +350,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return resultSetProvider;
     }
 
-    public ResultSetDataPump getDataPump()
+    public ResultSetDataReciever getDataReciever()
     {
-        return dataPump;
+        return dataReciever;
     }
 
     public void dispose()
