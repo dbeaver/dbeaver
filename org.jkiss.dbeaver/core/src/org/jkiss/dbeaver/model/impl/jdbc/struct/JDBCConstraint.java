@@ -169,8 +169,10 @@ public abstract class JDBCConstraint<DATASOURCE extends DBPDataSource, TABLE ext
         "title",
         "name",
         "label",
+        "display",
         "description",
-        "display"
+        "comment",
+        "remark",
     };
 
     private DBSTableColumn getKeyDescriptionColumn(DBRProgressMonitor monitor, DBSTableColumn keyColumn)
@@ -186,6 +188,9 @@ public abstract class JDBCConstraint<DATASOURCE extends DBPDataSource, TABLE ext
             if (column != keyColumn && JDBCUtils.getDataKind(column) == DBSDataKind.STRING && column.getMaxLength() < MAX_DESC_COLUMN_LENGTH) {
                 stringColumns.put(column.getName().toLowerCase(), column);
             }
+        }
+        if (stringColumns.isEmpty()) {
+            return null;
         }
         if (stringColumns.size() > 1) {
             // Make some tests
