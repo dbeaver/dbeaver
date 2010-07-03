@@ -62,34 +62,63 @@ public abstract class JDBCConstraint<DATASOURCE extends DBPDataSource, TABLE ext
         }
         DBCExecutionContext context = getDataSource().openContext(monitor, "Select '" + keyColumn.getName() + "' enumeration values");
         try {
-            DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(getDataSource(), keyColumn);
-            String query = "SELECT " + keyColumn.getName() + " FROM " + keyColumn.getTable().getFullQualifiedName();
+            DBDValueHandler keyValueHandler = DBUtils.getColumnValueHandler(getDataSource(), keyColumn);
+            StringBuilder query = new StringBuilder();
+            query.append("SELECT ").append(keyColumn.getName()).append(" FROM ").append(keyColumn.getTable().getFullQualifiedName());
+            List<String> conditions = new ArrayList<String>();
             if (keyPattern != null) {
                 if (keyPattern instanceof CharSequence) {
-                    String autoComplete = keyPattern.toString();
-                    if (!CommonUtils.isEmpty(autoComplete)) {
-                        autoComplete = autoComplete.replace('\'', '"');
-                        query += " WHERE " + keyColumn.getName() + " LIKE '" + autoComplete + "%'";
+                    if (!CommonUtils.isEmpty(keyPattern.toString())) {
+                        conditions.add(keyColumn.getName() + " LIKE ?");
                     }
                 } else if (keyPattern instanceof Number) {
-                    query += " WHERE " + keyColumn.getName() + " >= " + keyPattern;
+                    conditions.add(keyColumn.getName() + " >= ?");
                 } else {
                     // not supported
                 }
             }
-            DBCStatement dbStat = context.prepareStatement(query, false, false);
+            if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
+                for (DBDColumnValue precColumn : preceedingKeys) {
+                    conditions.add(precColumn.getColumn().getName() + " = ?");
+                }
+            }
+            if (!conditions.isEmpty()) {
+                query.append(" WHERE");
+                for (int i = 0; i < conditions.size(); i++) {
+                    if (i > 0) {
+                        query.append(" AND");
+                    }
+                    query.append(" ").append(conditions.get(i));
+                }
+            }
+            DBCStatement dbStat = context.prepareStatement(query.toString(), false, false);
             try {
+                int paramPos = 0;
+                if (keyPattern instanceof CharSequence) {
+                    // Add % for LIKE operand
+                    keyPattern = keyPattern.toString() + "%";
+                }
+                if (keyPattern != null) {
+                    keyValueHandler.bindValueObject(dbStat, keyColumn, paramPos++, keyPattern);
+                }
+
+                if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
+                    for (DBDColumnValue precColumn : preceedingKeys) {
+                        DBDValueHandler precValueHandler = DBUtils.getColumnValueHandler(keyColumn.getDataSource(), precColumn.getColumn());
+                        precValueHandler.bindValueObject(dbStat, precColumn.getColumn(), paramPos++, precColumn.getValue());
+                    }
+                }
                 dbStat.setLimit(0, 100);
                 if (dbStat.executeStatement()) {
                     DBCResultSet dbResult = dbStat.openResultSet();
                     try {
                         List<DBDLabelValuePair> values = new ArrayList<DBDLabelValuePair>();
                         while (dbResult.nextRow()) {
-                            Object keyValue = valueHandler.getValueObject(dbResult, keyColumn, 0);
+                            Object keyValue = keyValueHandler.getValueObject(dbResult, keyColumn, 0);
                             if (keyValue == null) {
                                 continue;
                             }
-                            String keyLabel = valueHandler.getValueDisplayString(keyColumn, keyValue);
+                            String keyLabel = keyValueHandler.getValueDisplayString(keyColumn, keyValue);
                             values.add(new DBDLabelValuePair(keyLabel, keyValue));
                         }
                         return values;

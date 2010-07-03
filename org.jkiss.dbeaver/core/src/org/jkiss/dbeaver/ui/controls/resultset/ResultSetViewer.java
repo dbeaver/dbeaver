@@ -801,6 +801,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return columns;
         }
 
+        public DBCColumnMetaData getColumnMetaData(DBCTableMetaData table, String columnName)
+        {
+            for (DBDColumnBinding column : metaColumns) {
+                if (column.getMetaData().getTable() == table && column.getMetaData().getColumnName().equals(columnName)) {
+                    return column.getMetaData();
+                }
+            }
+            return null;
+        }
+
         public Object getColumnValue(DBCColumnMetaData column)
         {
             for (int i = 0; i < metaColumns.length; i++) {

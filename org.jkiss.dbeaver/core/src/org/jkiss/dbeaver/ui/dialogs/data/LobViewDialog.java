@@ -99,9 +99,9 @@ public class LobViewDialog extends ValueViewDialog {
         return dialogGroup;
     }
 
-    protected void applyChanges()
+    protected Object getEditorValue()
     {
-        
+        return null;
     }
 
 }

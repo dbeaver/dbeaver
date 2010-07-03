@@ -77,10 +77,9 @@ public class DateTimeViewDialog extends ValueViewDialog {
     }
 
     @Override
-    protected void applyChanges()
+    protected Object getEditorValue()
     {
-        getValueController().updateValue(
-            JDBCDateTimeValueHandler.getDate(dateEditor, timeEditor));
+        return JDBCDateTimeValueHandler.getDate(dateEditor, timeEditor);
     }
 
 }

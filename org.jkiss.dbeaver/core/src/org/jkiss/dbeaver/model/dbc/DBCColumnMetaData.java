@@ -66,11 +66,9 @@ public interface DBCColumnMetaData extends DBSTypedObject
 
     /**
      * Gets list of foreign keys in which this column is contained.
-     * @param unique if true then returns references in which this column is the only key
      * @return list of foreign keys. List can be empty or result can be null if this column is not a reference
      * @throws DBCException on any DB error  @param monitor
-     * @param unique
      */
-    List<DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor, boolean unique) throws DBException;
+    List<DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor) throws DBException;
 
 }

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -36,9 +37,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLTableDataEditor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * ValueViewDialog
@@ -127,7 +126,8 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     protected void okPressed()
     {
         try {
-            applyChanges();
+            Object value = getEditorValue();
+            getValueController().updateValue(value);
 
             super.okPressed();
         }
@@ -155,7 +155,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         shell.setText(meta.getTableName() + "." + meta.getColumnName());
     }
 
-    protected abstract void applyChanges();
+    protected abstract Object getEditorValue();
 
     private DBSForeignKey getEnumerableConstraint()
     {
@@ -227,7 +227,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
             public void modifyText(ModifyEvent e)
             {
                 if (handleEditorChange) {
-                    new SelectorLoaderJob(editor.getText()).schedule();
+                    new SelectorLoaderJob(getEditorValue()).schedule();
                 }
             }
         });
@@ -238,12 +238,12 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
     private class SelectorLoaderJob extends DataSourceJob {
 
-        private String autoComplete;
+        private Object pattern;
 
-        private SelectorLoaderJob(String autoComplete)
+        private SelectorLoaderJob(Object pattern)
         {
             this();
-            this.autoComplete = autoComplete.trim();
+            this.pattern = pattern;
         }
 
         private SelectorLoaderJob()
@@ -257,21 +257,42 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
         protected IStatus run(DBRProgressMonitor monitor)
         {
-            final Map<String, Object> keyValues = new TreeMap<String, Object>();
+            final Map<Object, String> keyValues = new TreeMap<Object, String>();
             try {
                 DBSForeignKeyColumn fkColumn = refConstraint.getColumn(monitor, valueController.getColumnMetaData().getTableColumn(monitor));
                 if (fkColumn == null) {
                     return Status.OK_STATUS;
                 }
+                java.util.List<DBDColumnValue> preceedingKeys = null;
+                Collection<? extends DBSForeignKeyColumn> allColumns = refConstraint.getColumns(monitor);
+                if (allColumns.size() > 1) {
+                    if (allColumns.iterator().next() != fkColumn) {
+                        // Our column is not a first on in foreign key.
+                        // So, fill uo preceeding keys
+                        preceedingKeys = new ArrayList<DBDColumnValue>();
+                        for (DBSForeignKeyColumn precColumn : allColumns) {
+                            if (precColumn == fkColumn) {
+                                // Enough
+                                break;
+                            }
+                            DBCColumnMetaData precMeta = valueController.getRow().getColumnMetaData(
+                                valueController.getColumnMetaData().getTable(), precColumn.getTableColumn().getName());
+                            if (precMeta != null) {
+                                Object precValue = valueController.getRow().getColumnValue(precMeta);
+                                preceedingKeys.add(new DBDColumnValue(precColumn.getTableColumn(), precValue));
+                            }
+                        }
+                    }
+                }
                 DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable)refConstraint.getReferencedKey();
                 Collection<DBDLabelValuePair> enumValues = enumConstraint.getKeyEnumeration(
                     monitor,
                     fkColumn.getReferencedColumn(),
-                    autoComplete,
-                    null,
+                    pattern,
+                    preceedingKeys,
                     100);
                 for (DBDLabelValuePair pair : enumValues) {
-                    keyValues.put(pair.getLabel(), pair.getValue());
+                    keyValues.put(pair.getValue(), pair.getLabel());
                 }
             } catch (DBException e) {
                 // error
@@ -282,8 +303,8 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                 {
                     if (editorSelector != null && !editorSelector.isDisposed()) {
                         editorSelector.removeAll();
-                        for (String key : keyValues.keySet()) {
-                            editorSelector.add(key);
+                        for (Map.Entry<Object, String> entry : keyValues.entrySet()) {
+                            editorSelector.add(entry.getValue());
                         }
 
                         if (editor != null && !editor.isDisposed()) {

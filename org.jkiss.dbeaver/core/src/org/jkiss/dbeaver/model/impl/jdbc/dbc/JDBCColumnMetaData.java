@@ -225,7 +225,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
         return false;
     }
 
-    public List<DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor, boolean unique)
+    public List<DBSForeignKey> getForeignKeys(DBRProgressMonitor monitor)
         throws DBException
     {
         List<DBSForeignKey> refs = new ArrayList<DBSForeignKey>();
@@ -240,12 +240,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
         Collection<? extends DBSForeignKey> foreignKeys = table.getForeignKeys(monitor);
         if (foreignKeys != null) {
             for (DBSForeignKey fk : foreignKeys) {
-                if (unique) {
-                    Collection<? extends DBSConstraintColumn> fkColumns = fk.getColumns(monitor);
-                    if (fkColumns.size() == 1 && fkColumns.iterator().next().getTableColumn().equals(tableColumn)) {
-                        refs.add(fk);
-                    }
-                } else if (fk.getColumn(monitor, tableColumn) != null) {
+                if (fk.getColumn(monitor, tableColumn) != null) {
                     refs.add(fk);
                 }
             }

@@ -73,20 +73,25 @@ public class NumberViewDialog extends ValueViewDialog {
             textEdit.setLayoutData(gd);
             textEdit.setFocus();
             textEdit.setEditable(!getValueController().isReadOnly());
+
+            if (super.isForeignKey()) {
+                super.createEditorSelector(dialogGroup, textEdit);
+            }
         }
         return dialogGroup;
     }
 
     @Override
-    protected void applyChanges()
+    protected Object getEditorValue()
     {
         if (textEdit != null) {
-            getValueController().updateValue(
-                JDBCNumberValueHandler.convertStringToNumber(
-                    textEdit.getText(),
-                    getValueController().getColumnMetaData()));
+            return JDBCNumberValueHandler.convertStringToNumber(
+                textEdit.getText(),
+                getValueController().getColumnMetaData());
         } else if (bitEdit != null) {
-            getValueController().updateValue((byte)bitEdit.getSelectionIndex());
+            return (byte)bitEdit.getSelectionIndex();
+        } else {
+            return null;
         }
     }
 
