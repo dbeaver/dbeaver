@@ -334,30 +334,36 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                         DBDValueHandler colHandler = DBUtils.getColumnValueHandler(valueController.getDataSource(), fkColumn.getReferencedColumn());
 
                         if (editorSelector != null && !editorSelector.isDisposed()) {
-                            editorSelector.removeAll();
-                            for (Map.Entry<Object, String> entry : keyValues.entrySet()) {
-                                TableItem discItem = new TableItem(editorSelector, SWT.NONE);
-                                discItem.setText(0, colHandler.getValueDisplayString(fkColumn.getReferencedColumn(), entry.getKey()));
-                                discItem.setText(1, entry.getValue());
-                                discItem.setData(entry.getKey());
-                            }
+                            editorSelector.setRedraw(false);
+                            try {
+                                editorSelector.removeAll();
+                                for (Map.Entry<Object, String> entry : keyValues.entrySet()) {
+                                    TableItem discItem = new TableItem(editorSelector, SWT.NONE);
+                                    discItem.setText(0, colHandler.getValueDisplayString(fkColumn.getReferencedColumn(), entry.getKey()));
+                                    discItem.setText(1, entry.getValue());
+                                    discItem.setData(entry.getKey());
+                                }
 
-                            if (editor != null && !editor.isDisposed()) {
-                                Object curValue = getEditorValue();
-                                TableItem curItem = null;
-                                for (TableItem item : editorSelector.getItems()) {
-                                    if (item.getData() == curValue || (item.getData() != null && curValue != null && item.getData().equals(curValue))) {
-                                        curItem = item;
-                                        break;
+                                if (editor != null && !editor.isDisposed()) {
+                                    Object curValue = getEditorValue();
+                                    TableItem curItem = null;
+                                    for (TableItem item : editorSelector.getItems()) {
+                                        if (item.getData() == curValue || (item.getData() != null && curValue != null && item.getData().equals(curValue))) {
+                                            curItem = item;
+                                            break;
+                                        }
+                                    }
+                                    if (curItem != null) {
+                                        editorSelector.select(editorSelector.indexOf(curItem));
+                                        editorSelector.showSelection();
                                     }
                                 }
-                                if (curItem != null) {
-                                    editorSelector.select(editorSelector.indexOf(curItem));
-                                    editorSelector.showSelection();
-                                }
-                            }
 
-                            UIUtils.maxTableColumnsWidth(editorSelector);
+                                UIUtils.maxTableColumnsWidth(editorSelector);
+                            }
+                            finally {
+                                editorSelector.setRedraw(true);
+                            }
                         }
                     }
                 });
