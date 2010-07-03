@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
@@ -29,7 +30,22 @@ public class DisconnectJob extends DataSourceJob
     protected IStatus run(DBRProgressMonitor monitor)
     {
         try {
-            getDataSource().close();
+            // First rollback active transaction
+            DBCExecutionContext context = getDataSource().openContext(monitor);
+            try {
+                monitor.subTask("Rollback active transaction");
+                context.getTransactionManager().rollback(null);
+            }
+            catch (Throwable e) {
+                log.warn("Could not rallback active transaction before disconnect", e);
+            }
+            finally {
+                context.close();
+            }
+
+            // Close datasource
+            monitor.subTask("Disconnect datasource");
+            getDataSource().close(monitor);
 
             return new Status(
                 Status.OK,

@@ -124,11 +124,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         this.initialize(monitor);
     }
 
-    public void close()
-    {
-        super.close();
-    }
-
     public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {

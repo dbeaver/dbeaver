@@ -321,7 +321,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         refreshObject(monitor);
     }
 
-    public void close()
+    public void close(DBRProgressMonitor monitor)
     {
         if (connection != null) {
             try {

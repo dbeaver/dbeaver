@@ -75,7 +75,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                         }
                         finally {
                             monitor.subTask("Close connection");
-                            dataSource.close();
+                            dataSource.close(monitor);
                         }
                     }
                     monitor.subTask("Success");

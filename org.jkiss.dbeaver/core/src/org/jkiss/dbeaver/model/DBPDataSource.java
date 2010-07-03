@@ -61,7 +61,8 @@ public interface DBPDataSource extends DBPObject
 
     /**
      * Closes datasource
+     * @param monitor
      */
-    void close();
+    void close(DBRProgressMonitor monitor);
 
 }

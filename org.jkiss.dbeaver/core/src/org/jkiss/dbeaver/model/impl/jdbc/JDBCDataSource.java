@@ -164,14 +164,7 @@ public abstract class JDBCDataSource
         }
     }
 
-    protected void reconnect(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        close();
-        this.connection = openConnection(monitor);
-    }
-
-    public void close()
+    public void close(DBRProgressMonitor monitor)
     {
         if (connection != null) {
             try {
