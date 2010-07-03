@@ -6,20 +6,22 @@ package org.jkiss.dbeaver.model.impl.meta;
 
 import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.struct.DBSColumnDefinition;
+import org.jkiss.dbeaver.ext.IObjectImageProvider;
+import org.eclipse.swt.graphics.Image;
 
 /**
  * AbstractColumn
  */
 public abstract class AbstractColumn implements DBSColumnDefinition
 {
-    private String name;
-    private int valueType;
-    private int maxLength;
-    private boolean nullable;
-    private int scale;
-    private int precision;
-    private int radix;
-    private String description;
+    protected String name;
+    protected int valueType;
+    protected int maxLength;
+    protected boolean nullable;
+    protected int scale;
+    protected int precision;
+    protected int radix;
+    protected String description;
     protected String typeName;
     protected int ordinalPosition;
 
@@ -37,8 +39,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         int radix,
         int precision,
         boolean nullable,
-        String description
-    )
+        String description)
     {
         this.name = name;
         this.valueType = valueType;

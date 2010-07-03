@@ -75,6 +75,7 @@ public enum DBIcon
     EDIT_COLUMN("edit_column", "/icons/misc/edit_column.png"),
     LOCKED("locked", "/icons/misc/locked.png"),
 
+    TYPE_BOOLEAN("boolean", "/icons/sql/types/boolean.png"),
     TYPE_NUMBER("number", "/icons/sql/types/number.png"),
     TYPE_STRING("string", "/icons/sql/types/string.png"),
     TYPE_DATETIME("datetime", "/icons/sql/types/datetime.png"),

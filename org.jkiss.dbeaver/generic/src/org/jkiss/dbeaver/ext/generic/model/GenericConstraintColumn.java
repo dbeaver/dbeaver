@@ -6,11 +6,12 @@ import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.impl.meta.AbstractConstraintColumn;
 
 /**
  * GenericConstraintColumn
  */
-public class GenericConstraintColumn implements DBSConstraintColumn
+public class GenericConstraintColumn extends AbstractConstraintColumn
 {
     private GenericConstraint constraint;
     private GenericTableColumn tableColumn;

@@ -2,16 +2,16 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.model.impl.meta.AbstractColumn;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumn;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumn;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * GenericTable
  */
-public class MySQLProcedureColumn extends AbstractColumn implements DBSProcedureColumn
+public class MySQLProcedureColumn extends JDBCColumn implements DBSProcedureColumn
 {
     private MySQLProcedure procedure;
     private DBSProcedureColumnType columnType;
