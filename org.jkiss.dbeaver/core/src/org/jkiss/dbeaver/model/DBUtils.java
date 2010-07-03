@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.model;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
@@ -10,6 +10,13 @@ import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
+import org.jkiss.dbeaver.model.struct.DBSTablePath;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
@@ -29,11 +36,11 @@ import java.util.HashMap;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * DBSUtils
+ * DBUtils
  */
-public final class DBSUtils {
+public final class DBUtils {
 
-    static Log log = LogFactory.getLog(DBSUtils.class);
+    static Log log = LogFactory.getLog(DBUtils.class);
 
     public static String getQuotedIdentifier(DBPDataSource dataSource, String str)
     {
@@ -65,12 +72,12 @@ public final class DBSUtils {
         String catalogSeparator = dataSource.getInfo().getCatalogSeparator();
         StringBuilder name = new StringBuilder();
         if (!CommonUtils.isEmpty(catalogName)) {
-            name.append(DBSUtils.getQuotedIdentifier(dataSource, catalogName)).append(catalogSeparator);
+            name.append(DBUtils.getQuotedIdentifier(dataSource, catalogName)).append(catalogSeparator);
         }
         if (!CommonUtils.isEmpty(schemaName)) {
-            name.append(DBSUtils.getQuotedIdentifier(dataSource, schemaName)).append(catalogSeparator);
+            name.append(DBUtils.getQuotedIdentifier(dataSource, schemaName)).append(catalogSeparator);
         }
-        name.append(DBSUtils.getQuotedIdentifier(dataSource, tableName));
+        name.append(DBUtils.getQuotedIdentifier(dataSource, tableName));
         return name.toString();
     }
 

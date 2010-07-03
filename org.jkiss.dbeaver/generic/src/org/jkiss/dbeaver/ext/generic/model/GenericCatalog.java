@@ -6,7 +6,7 @@ import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -66,7 +66,7 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
 
     public GenericSchema getSchema(String name)
     {
-        return DBSUtils.findObject(schemas, name);
+        return DBUtils.findObject(schemas, name);
     }
 
     public String getName()

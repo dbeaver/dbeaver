@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -58,7 +58,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
 
     public String getFullQualifiedName()
     {
-        return DBSUtils.getFullTableName(getDataSource(),
+        return DBUtils.getFullTableName(getDataSource(),
             getContainer().getName(),
             null,
             getName());
@@ -92,7 +92,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
     public MySQLTableColumn getColumn(DBRProgressMonitor monitor, String columnName)
         throws DBException
     {
-        return DBSUtils.findObject(getColumns(monitor), columnName);
+        return DBUtils.findObject(getColumns(monitor), columnName);
     }
 
     public List<MySQLIndex> getIndexes(DBRProgressMonitor monitor)
@@ -107,7 +107,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
     public MySQLIndex getIndex(DBRProgressMonitor monitor, String indexName)
         throws DBException
     {
-        return DBSUtils.findObject(getIndexes(monitor), indexName);
+        return DBUtils.findObject(getIndexes(monitor), indexName);
     }
 
     public List<MySQLConstraint> getConstraints(DBRProgressMonitor monitor)
@@ -390,13 +390,13 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                         default: defferability = DBSConstraintDefferability.UNKNOWN; break;
                     }
 
-                    String pkTableFullName = DBSUtils.getFullTableName(getDataSource(), pkTableCatalog, null, pkTableName);
+                    String pkTableFullName = DBUtils.getFullTableName(getDataSource(), pkTableCatalog, null, pkTableName);
                     MySQLTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableName);
                     if (pkTable == null) {
                         log.warn("Can't find PK table " + pkTableFullName);
                         continue;
                     }
-                    String fkTableFullName = DBSUtils.getFullTableName(getDataSource(), fkTableCatalog, null, fkTableName);
+                    String fkTableFullName = DBUtils.getFullTableName(getDataSource(), fkTableCatalog, null, fkTableName);
                     MySQLTable fkTable = getDataSource().findTable(monitor, fkTableCatalog, fkTableName);
                     if (fkTable == null) {
                         log.warn("Can't find FK table " + fkTableFullName);
@@ -404,19 +404,19 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                     }
                     MySQLTableColumn pkColumn = pkTable.getColumn(monitor, pkColumnName);
                     if (pkColumn == null) {
-                        log.warn("Can't find PK table " + DBSUtils.getFullTableName(getDataSource(), pkTableCatalog, null, pkTableName) + " column " + pkColumnName);
+                        log.warn("Can't find PK table " + DBUtils.getFullTableName(getDataSource(), pkTableCatalog, null, pkTableName) + " column " + pkColumnName);
                         continue;
                     }
                     MySQLTableColumn fkColumn = fkTable.getColumn(monitor, fkColumnName);
                     if (fkColumn == null) {
-                        log.warn("Can't find FK table " + DBSUtils.getFullTableName(getDataSource(), fkTableCatalog, null, fkTableName) + " column " + fkColumnName);
+                        log.warn("Can't find FK table " + DBUtils.getFullTableName(getDataSource(), fkTableCatalog, null, fkTableName) + " column " + fkColumnName);
                         continue;
                     }
 
                     // Find PK
                     MySQLConstraint pk = null;
                     if (pkName != null) {
-                        pk = DBSUtils.findObject(pkTable.getConstraints(monitor), pkName);
+                        pk = DBUtils.findObject(pkTable.getConstraints(monitor), pkName);
                         if (pk == null) {
                             log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
                         }
@@ -444,7 +444,7 @@ public class MySQLTable extends AbstractTable<MySQLDataSource, MySQLCatalog>
                     // Find (or create) FK
                     MySQLForeignKey fk = null;
                     if (references) {
-                        fk = DBSUtils.findObject(fkTable.getForeignKeys(monitor), fkName);
+                        fk = DBUtils.findObject(fkTable.getForeignKeys(monitor), fkName);
                         if (fk == null) {
                             log.warn("Could not find foreign key '" + fkName + "' for table " + fkTable.getFullQualifiedName());
                             // No choice, we have to create fake foreign key :(

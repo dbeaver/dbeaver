@@ -15,6 +15,7 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.meta.DBMNode;
@@ -172,7 +173,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                                     return;
                                 }
                             } else {
-                                DBSObject table = DBSUtils.getTableByPath(monitor, sc, tableNames.get(0));
+                                DBSObject table = DBUtils.getTableByPath(monitor, sc, tableNames.get(0));
                                 if (table instanceof DBSStructureContainer) {
                                     sc = (DBSStructureContainer)table;
                                 } else {
@@ -265,13 +266,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             nameList.add(nextName);
         }
         try {
-            DBSObject childObject = DBSUtils.findNestedObject(monitor, sc, nameList);
+            DBSObject childObject = DBUtils.findNestedObject(monitor, sc, nameList);
             if (childObject == null && nameList.size() <= 1) {
                 // No such object found - may be it's start of table name
                 if (sc instanceof DBSStructureAssistant) {
                     List<DBSTablePath> tableNames = ((DBSStructureAssistant) sc).findTableNames(monitor, startName, 2);
                     if (!tableNames.isEmpty()) {
-                        return DBSUtils.getTableByPath(monitor, sc, tableNames.get(0));
+                        return DBUtils.getTableByPath(monitor, sc, tableNames.get(0));
                     }
                 }
                 return null;
@@ -312,7 +313,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         try {
             List<DBSTablePath> tableNames = assistant.findTableNames(monitor, tableName + "%", 100);
             for (DBSTablePath path : tableNames) {
-                DBSObject table = DBSUtils.getTableByPath(monitor, rootSC, path);
+                DBSObject table = DBUtils.getTableByPath(monitor, rootSC, path);
                 if (table != null) {
                     proposals.add(makeProposalsFromObject(monitor, table));
                 }
@@ -376,7 +377,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             assistLength = wordPart.length() - divPos - 1;
         }
         // Escape replace string if required
-        replaceString = DBSUtils.getQuotedIdentifier(editor.getDataSource(), replaceString);
+        replaceString = DBUtils.getQuotedIdentifier(editor.getDataSource(), replaceString);
         return new CompletionProposal(
             replaceString, //replacementString
             assistPos, //replacementOffset the offset of the text to be replaced

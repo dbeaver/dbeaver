@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -91,7 +91,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
 
     public String getFullQualifiedName()
     {
-        return DBSUtils.getFullTableName(getDataSource(),
+        return DBUtils.getFullTableName(getDataSource(),
             getCatalog() == null ? null : getCatalog().getName(),
             getSchema() == null ? null : getSchema().getName(),
             getName());
@@ -132,7 +132,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
     public GenericTableColumn getColumn(DBRProgressMonitor monitor, String columnName)
         throws DBException
     {
-        return DBSUtils.findObject(getColumns(monitor), columnName);
+        return DBUtils.findObject(getColumns(monitor), columnName);
     }
 
     boolean isColumnsCached()
@@ -158,7 +158,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
     public GenericIndex getIndex(DBRProgressMonitor monitor, String indexName)
         throws DBException
     {
-        return DBSUtils.findObject(getIndexes(monitor), indexName);
+        return DBUtils.findObject(getIndexes(monitor), indexName);
     }
 
     void setIndexes(List<GenericIndex> indexes)
@@ -370,13 +370,13 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                         default: defferability = DBSConstraintDefferability.UNKNOWN; break;
                     }
 
-                    String pkTableFullName = DBSUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
+                    String pkTableFullName = DBUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
                     GenericTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableSchema, pkTableName);
                     if (pkTable == null) {
                         log.warn("Can't find PK table " + pkTableFullName);
                         continue;
                     }
-                    String fkTableFullName = DBSUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName);
+                    String fkTableFullName = DBUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName);
                     GenericTable fkTable = getDataSource().findTable(monitor, fkTableCatalog, fkTableSchema, fkTableName);
                     if (fkTable == null) {
                         log.warn("Can't find FK table " + fkTableFullName);
@@ -384,19 +384,19 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                     }
                     GenericTableColumn pkColumn = pkTable.getColumn(monitor, pkColumnName);
                     if (pkColumn == null) {
-                        log.warn("Can't find PK table " + DBSUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName) + " column " + pkColumnName);
+                        log.warn("Can't find PK table " + DBUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName) + " column " + pkColumnName);
                         continue;
                     }
                     GenericTableColumn fkColumn = fkTable.getColumn(monitor, fkColumnName);
                     if (fkColumn == null) {
-                        log.warn("Can't find FK table " + DBSUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName) + " column " + fkColumnName);
+                        log.warn("Can't find FK table " + DBUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName) + " column " + fkColumnName);
                         continue;
                     }
 
                     // Find PK
                     GenericPrimaryKey pk = null;
                     if (pkName != null) {
-                        pk = DBSUtils.findObject(pkTable.getConstraints(monitor), pkName);
+                        pk = DBUtils.findObject(pkTable.getConstraints(monitor), pkName);
                         if (pk == null) {
                             log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
                         }
@@ -426,7 +426,7 @@ public class GenericTable extends AbstractTable<GenericDataSource, GenericStruct
                     // Find (or create) FK
                     GenericForeignKey fk = null;
                     if (references) {
-                        fk = DBSUtils.findObject(fkTable.getForeignKeys(monitor), fkName);
+                        fk = DBUtils.findObject(fkTable.getForeignKeys(monitor), fkName);
                         if (fk == null) {
                             log.warn("Could not find foreign key '" + fkName + "' for table " + fkTable.getFullQualifiedName());
                             // No choice, we have to create fake foreign key :(

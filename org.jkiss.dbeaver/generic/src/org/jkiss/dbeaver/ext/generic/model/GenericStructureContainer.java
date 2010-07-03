@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.model.struct.DBSProcedureType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -197,7 +197,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
-        return DBSUtils.findObject(getChildren(monitor), childName);
+        return DBUtils.findObject(getChildren(monitor), childName);
     }
 
     public boolean refreshObject(DBRProgressMonitor monitor)
@@ -338,7 +338,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                     // oracle fails if unquoted complex identifier specified
                     // but other DBs (and logically it's correct) do not want quote chars in this query
                     // so let's fix it in oracle plugin
-                    forParent == null ? null : forParent.getName(), //DBSUtils.getQuotedIdentifier(getDataSource(), forTable.getName()),
+                    forParent == null ? null : forParent.getName(), //DBUtils.getQuotedIdentifier(getDataSource(), forTable.getName()),
                     false,
                     false).getStatement();
         }

@@ -46,7 +46,7 @@ import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
@@ -561,12 +561,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 showCellEditor(cell, false, null);
             }
         });
-        if (!DBSUtils.isNullValue(value)) {
+        if (!DBUtils.isNullValue(value)) {
             manager.add(new Action("Set to NULL") {
                 @Override
                 public void run()
                 {
-                    valueController.updateValue(DBSUtils.makeNullValue(value));
+                    valueController.updateValue(DBUtils.makeNullValue(value));
                 }
             });
         }
@@ -929,7 +929,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             query.append(",");
                         }
                         DBDColumnBinding metaColumn = metaColumns[cell.col];
-                        String columnName = DBSUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), metaColumn.getMetaData().getColumnName());
+                        String columnName = DBUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), metaColumn.getMetaData().getColumnName());
                         query.append(columnName).append("=?");
                         parameters.add(new SQLStatementParameter(
                             metaColumn.getValueHandler(),
@@ -944,7 +944,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         if (!firstCol) {
                             query.append(" AND ");
                         }
-                        String columnName = DBSUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), idColumn.getColumnName());
+                        String columnName = DBUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), idColumn.getColumnName());
                         query.append(columnName).append("=?");
                         firstCol = false;
 
@@ -1127,7 +1127,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         public Color getForeground(Object element)
         {
             Object value = getValue(element, false);
-            if (DBSUtils.isNullValue(value)) {
+            if (DBUtils.isNullValue(value)) {
                 return foregroundNull;
             } else {
                 return null;

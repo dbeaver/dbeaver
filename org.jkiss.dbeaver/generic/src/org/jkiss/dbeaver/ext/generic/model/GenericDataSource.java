@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -21,7 +22,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectAction;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -136,7 +136,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
 
     public GenericCatalog getCatalog(DBRProgressMonitor monitor, String name)
     {
-        return DBSUtils.findObject(getCatalogs(monitor), name);
+        return DBUtils.findObject(getCatalogs(monitor), name);
     }
 
     public List<GenericSchema> getSchemas(DBRProgressMonitor monitor)
@@ -146,7 +146,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
 
     public GenericSchema getSchema(DBRProgressMonitor monitor, String name)
     {
-        return DBSUtils.findObject(getSchemas(monitor), name);
+        return DBUtils.findObject(getSchemas(monitor), name);
     }
 
     public void checkConnection(DBRProgressMonitor monitor)

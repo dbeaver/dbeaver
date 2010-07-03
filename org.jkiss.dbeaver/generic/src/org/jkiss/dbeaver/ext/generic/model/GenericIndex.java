@@ -4,7 +4,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.meta.AbstractIndex;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -109,7 +109,7 @@ public class GenericIndex extends AbstractIndex
 
     public GenericIndexColumn getColumn(String columnName)
     {
-        return DBSUtils.findObject(columns, columnName);
+        return DBUtils.findObject(columns, columnName);
     }
 
     void setColumns(List<GenericIndexColumn> columns)

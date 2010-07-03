@@ -4,26 +4,13 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSIndex;
-import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * GenericStructureContainer
@@ -64,7 +51,7 @@ public abstract class JDBCIndexCache<
                 // oracle fails if unquoted complex identifier specified
                 // but other DBs (and logically it's correct) do not want quote chars in this query
                 // so let's fix it in oracle plugin
-                forTable == null ? null : forTable.getName(), //DBSUtils.getQuotedIdentifier(getDataSource(), forTable.getName()),
+                forTable == null ? null : forTable.getName(), //DBUtils.getQuotedIdentifier(getDataSource(), forTable.getName()),
                 false,
                 false);
             try {

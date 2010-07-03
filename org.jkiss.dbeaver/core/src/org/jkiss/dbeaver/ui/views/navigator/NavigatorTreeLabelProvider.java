@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 
 /**
  * NavigatorTreeLabelProvider
@@ -108,7 +108,7 @@ class NavigatorTreeLabelProvider extends LabelProvider implements IFontProvider,
     {
         if (element instanceof DBSObject) {
             DBSObject object = (DBSObject) element;
-            DBSStructureContainerActive activeContainer = DBSUtils.queryParentInterface(
+            DBSStructureContainerActive activeContainer = DBUtils.queryParentInterface(
                 DBSStructureContainerActive.class, object);
             if (activeContainer != null) {
                 try {

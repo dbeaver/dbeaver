@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -122,7 +122,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                                 monitor, checkWord, 2);
                             if (!pathList.isEmpty()) {
                                 for (DBSTablePath path : pathList) {
-                                    DBSObject object = DBSUtils.getTableByPath(monitor, (DBSStructureContainer) dataSource, path);
+                                    DBSObject object = DBUtils.getTableByPath(monitor, (DBSStructureContainer) dataSource, path);
                                     if (object != null) {
                                         links.add(new EntityHyperlink(object, wordRegion));
                                     }

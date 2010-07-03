@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.meta.DBMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
@@ -154,7 +154,7 @@ public class ViewUtils
                 // Add "Set active object" menu
                 final DBMNode dbmNode = ViewUtils.getSelectedNode(metaModelView);
                 if (dbmNode instanceof DBMTreeNode && dbmNode.getObject() != null) {
-                    final DBSStructureContainerActive activeContainer = DBSUtils.queryParentInterface(
+                    final DBSStructureContainerActive activeContainer = DBUtils.queryParentInterface(
                         DBSStructureContainerActive.class, dbmNode.getObject());
                     if (activeContainer != null && activeContainer.supportsActiveChildChange()) {
                         try {

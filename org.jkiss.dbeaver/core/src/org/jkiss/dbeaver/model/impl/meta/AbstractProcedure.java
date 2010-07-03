@@ -11,9 +11,6 @@ import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
-
-import java.util.Collection;
 
 /**
  * AbstractProcedure

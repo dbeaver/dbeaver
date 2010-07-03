@@ -19,7 +19,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectAction;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -70,7 +70,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
 
     public MySQLCatalog getCatalog(String name)
     {
-        return DBSUtils.findObject(catalogs, name);
+        return DBUtils.findObject(catalogs, name);
     }
 
     public void initialize(DBRProgressMonitor monitor)

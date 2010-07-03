@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -25,7 +25,7 @@ public class SetActiveObjectAction extends NavigatorAction
     {
         final DBMNode selectedNode = getSelectedNode();
         if (selectedNode != null) {
-            final DBSStructureContainerActive activeContainer = DBSUtils.queryParentInterface(
+            final DBSStructureContainerActive activeContainer = DBUtils.queryParentInterface(
                 DBSStructureContainerActive.class, selectedNode.getObject());
             DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor)

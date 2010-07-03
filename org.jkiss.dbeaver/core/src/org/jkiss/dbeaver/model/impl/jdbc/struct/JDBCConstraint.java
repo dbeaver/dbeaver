@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 import org.jkiss.dbeaver.model.impl.meta.AbstractConstraint;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -61,7 +62,7 @@ public abstract class JDBCConstraint<DATASOURCE extends DBPDataSource, TABLE ext
         }
         DBCExecutionContext context = getDataSource().openContext(monitor, "Select '" + keyColumn.getName() + "' enumeration values");
         try {
-            DBDValueHandler valueHandler = DBSUtils.getColumnValueHandler(getDataSource(), keyColumn);
+            DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(getDataSource(), keyColumn);
             String query = "SELECT " + keyColumn.getName() + " FROM " + keyColumn.getTable().getFullQualifiedName();
             if (keyPattern != null) {
                 if (keyPattern instanceof CharSequence) {

@@ -7,18 +7,12 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.widgets.Display;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 import org.jkiss.dbeaver.model.dbc.*;
-import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryDataPump;
 
 import java.util.ArrayList;
@@ -63,7 +57,7 @@ class ResultSetDataPump implements ISQLQueryDataPump {
         // Extrat column info
         metaColumns = new DBDColumnBinding[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
-            metaColumns[i] = DBSUtils.getColumnBinding(dataSource, rsColumns.get(i));
+            metaColumns[i] = DBUtils.getColumnBinding(dataSource, rsColumns.get(i));
         }
 
         resultSetViewer.setColumnsInfo(metaColumns);
@@ -101,7 +95,7 @@ class ResultSetDataPump implements ISQLQueryDataPump {
     public void fetchEnd(DBRProgressMonitor monitor)
         throws DBCException
     {
-        DBSUtils.findValueLocators(monitor, metaColumns);
+        DBUtils.findValueLocators(monitor, metaColumns);
 
         display.asyncExec(new Runnable() {
             public void run()

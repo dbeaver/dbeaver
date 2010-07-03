@@ -16,7 +16,7 @@ import org.jkiss.dbeaver.model.struct.DBSIndexColumn;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSSchema;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -66,9 +66,9 @@ public class JDBCTableMetaData implements DBCTableMetaData {
                 if (catalogName != null && scChildType != null && DBSSchema.class.isAssignableFrom(scChildType)) {
                     // Do not use catalog name
                     // Some datasource do not load catalog list but result set metadata contains one (e.g. DB2)
-                    tableObject = DBSUtils.getObjectByPath(monitor, sc, null, schemaName, tableName);
+                    tableObject = DBUtils.getObjectByPath(monitor, sc, null, schemaName, tableName);
                 } else {
-                    tableObject = DBSUtils.getObjectByPath(monitor, sc, catalogName, schemaName, tableName);
+                    tableObject = DBUtils.getObjectByPath(monitor, sc, catalogName, schemaName, tableName);
                 }
                 if (tableObject == null) {
                     throw new DBException("Table '" + tableName + "' not found in metadata catalog");
@@ -104,7 +104,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
 
     public String getFullQualifiedName()
     {
-        return DBSUtils.getFullTableName(
+        return DBUtils.getFullTableName(
             resultSetMetaData.getResultSet().getContext().getDataSource(),
             catalogName,
             schemaName,

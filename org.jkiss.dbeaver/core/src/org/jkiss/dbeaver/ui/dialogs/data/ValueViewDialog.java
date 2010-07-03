@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
@@ -103,7 +104,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     protected void createButtonsForButtonBar(Composite parent) {
         // create OK and Cancel buttons by default
         createButton(parent, IDialogConstants.OK_ID, "&Save", true).setEnabled(!valueController.isReadOnly());
-        createButton(parent, IDialogConstants.IGNORE_ID, "Set &NULL", false).setEnabled(!valueController.isReadOnly() && !DBSUtils.isNullValue(valueController.getValue()));
+        createButton(parent, IDialogConstants.IGNORE_ID, "Set &NULL", false).setEnabled(!valueController.isReadOnly() && !DBUtils.isNullValue(valueController.getValue()));
         createButton(parent, IDialogConstants.CANCEL_ID, "&Cancel", false);
     }
 
@@ -158,7 +159,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
     private DBSForeignKey getEnumerableConstraint()
     {
-        DBSForeignKey constraint = DBSUtils.getUniqueForeignConstraint(valueController.getColumnMetaData());
+        DBSForeignKey constraint = DBUtils.getUniqueForeignConstraint(valueController.getColumnMetaData());
         if (constraint != null &&
             constraint.getReferencedKey() instanceof DBSConstraintEnumerable &&
             ((DBSConstraintEnumerable)constraint.getReferencedKey()).supportsEnumeration())
