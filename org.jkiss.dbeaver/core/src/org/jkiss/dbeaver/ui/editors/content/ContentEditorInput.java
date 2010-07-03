@@ -82,7 +82,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
 
     public ImageDescriptor getImageDescriptor()
     {
-        return DBIcon.LOB.getImageDescriptor();
+        return DBIcon.TYPE_LOB.getImageDescriptor();
     }
 
     public String getName()

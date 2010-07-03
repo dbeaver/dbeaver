@@ -37,7 +37,7 @@ public class ContentTextEditorPart extends BaseTextEditor implements IContentEdi
 
     public Image getContentTypeImage()
     {
-        return DBIcon.TEXT.getImage();
+        return DBIcon.TYPE_TEXT.getImage();
     }
 
     public String getPreferedMimeType()

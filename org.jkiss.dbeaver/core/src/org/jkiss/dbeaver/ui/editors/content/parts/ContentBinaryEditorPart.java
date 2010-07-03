@@ -36,7 +36,7 @@ public class ContentBinaryEditorPart extends BinaryEditor implements IContentEdi
 
     public Image getContentTypeImage()
     {
-        return DBIcon.BINARY.getImage();
+        return DBIcon.TYPE_BINARY.getImage();
     }
 
     public String getPreferedMimeType()

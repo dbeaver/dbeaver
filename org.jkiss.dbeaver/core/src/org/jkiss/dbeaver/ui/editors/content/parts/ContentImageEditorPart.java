@@ -16,7 +16,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
@@ -109,7 +108,7 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
 
     public Image getContentTypeImage()
     {
-        return DBIcon.IMAGE.getImage();
+        return DBIcon.TYPE_IMAGE.getImage();
     }
 
     public String getPreferedMimeType()

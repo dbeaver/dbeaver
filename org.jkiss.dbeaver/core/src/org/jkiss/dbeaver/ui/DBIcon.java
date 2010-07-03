@@ -70,15 +70,19 @@ public enum DBIcon
     EXPORT("export", "/icons/file/export.png"),
     REFRESH("refresh", "/icons/refresh.png"),
 
-    LOB("lob", "/icons/misc/lob.png"),
     EDIT_DATABSE("edit_database", "/icons/misc/edit_database.png"),
     EDIT_TABLE("edit_table", "/icons/misc/edit_table.png"),
     EDIT_COLUMN("edit_column", "/icons/misc/edit_column.png"),
     LOCKED("locked", "/icons/misc/locked.png"),
 
-    BINARY("binary", "/icons/misc/binary.png"),
-    TEXT("text", "/icons/misc/text.png"),
-    IMAGE("image", "/icons/misc/image.png"),
+    TYPE_NUMBER("number", "/icons/sql/types/number.png"),
+    TYPE_STRING("string", "/icons/sql/types/string.png"),
+    TYPE_DATETIME("datetime", "/icons/sql/types/datetime.png"),
+    TYPE_BINARY("binary", "/icons/sql/types/binary.png"),
+    TYPE_TEXT("text", "/icons/sql/types/text.png"),
+    TYPE_LOB("lob", "/icons/sql/types/lob.png"),
+    TYPE_IMAGE("image", "/icons/sql/types/image.png"),
+    TYPE_UNKNOWN("unknown", "/icons/sql/types/unknown.png"),
 
     SQL_EXECUTE("sql_exec", "/icons/sql/sql_exec.png"),
     SQL_SCRIPT_EXECUTE("sql_script_exec", "/icons/sql/sql_script_exec.png"),
@@ -89,8 +93,7 @@ public enum DBIcon
 
     OVER_SUCCESS("over_success", "/icons/over/success_ovr.png"),
     OVER_FAILED("over_failed", "/icons/over/failed_ovr.png"),
-    OVER_ERROR("over_failed", "/icons/over/error_ovr.png"),
-    ;
+    OVER_ERROR("over_failed", "/icons/over/error_ovr.png");
 
     private final String token;
     private final String path;
