@@ -9,6 +9,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 
 import java.text.NumberFormat;
 
@@ -83,4 +85,22 @@ public class UIUtils {
         new ToolItem(toolBar, SWT.SEPARATOR);
     }
 
+    public static void maxTableColumnsWidth(Table table)
+    {
+        int columnCount = table.getColumnCount();
+        if (columnCount > 0) {
+            int totalWidth = 0;
+            for (TableColumn tc : table.getColumns()) {
+                tc.pack();
+                totalWidth += tc.getWidth();
+            }
+            if (totalWidth < table.getClientArea().width) {
+                int extraSpace = table.getClientArea().width - totalWidth;
+                extraSpace /= columnCount;
+                for (TableColumn tc : table.getColumns()) {
+                    tc.setWidth(tc.getWidth() + extraSpace);
+                }
+            }
+        }
+    }
 }

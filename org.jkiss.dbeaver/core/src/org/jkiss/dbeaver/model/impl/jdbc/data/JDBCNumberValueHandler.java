@@ -159,6 +159,9 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
     public static Number convertStringToNumber(String text, DBSTypedObject type)
     {
+        if (text == null || text.length() == 0) {
+            return null;
+        }
         try {
             switch (type.getValueType()) {
             case java.sql.Types.BIGINT:
