@@ -43,19 +43,19 @@
                                     </folder>
                                     <folder type="org.jkiss.dbeaver.model.struct.DBSIndex" label="Indexes" iconId="#indexes" description="Table indexes">
                                         <items label="Indexes" path="index" property="indexes" iconId="#index">
-                                            <items label="Index columns" path="column" property="columns" navigable="false" iconId="#column">
+                                            <items label="Index columns" path="column" property="columns" navigable="false">
                                             </items>
                                         </items>
                                     </folder>
                                     <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="Foreign Keys" iconId="#foreign-keys" description="Table foreign keys">
                                         <items label="Foreign Key" path="foreignKey" property="foreignKeys" iconId="#foreign-key">
-                                            <items label="Foreign key columns" path="column" property="columns" navigable="false" iconId="#column">
+                                            <items label="Foreign key columns" path="column" property="columns" navigable="false">
                                             </items>
                                         </items>
                                     </folder>
                                     <folder type="org.jkiss.dbeaver.model.struct.DBSPrimaryKey" label="References" iconId="#references" description="Table references">
                                         <items label="Reference Key" path="referenceKey" property="references" iconId="#reference">
-                                            <items label="Reference key columns" path="column" property="columns" navigable="false" iconId="#column">
+                                            <items label="Reference key columns" path="column" property="columns" navigable="false">
                                             </items>
                                         </items>
                                     </folder>
@@ -63,13 +63,13 @@
                             </folder>
                             <folder type="org.jkiss.dbeaver.model.struct.DBSIndex" label="Indexes" iconId="#indexes" description="Indexes">
                                 <items label="Indexes" path="indexe" property="indexes" iconId="#index">
-                                    <items label="Index columns" path="column" property="columns" navigable="false" iconId="#column">
+                                    <items label="Index columns" path="column" property="columns" navigable="false">
                                     </items>
                                 </items>
                             </folder>
                             <folder type="org.jkiss.dbeaver.model.struct.DBSProcedure" label="Procedures" iconId="#procedures" description="Procedures">
                                 <items label="Procedures" path="procedure" property="procedures" iconId="#procedure">
-                                    <items label="Procedure columns" path="column" property="columns" navigable="false" iconId="#column">
+                                    <items label="Procedure columns" path="column" property="columns" navigable="false">
                                     </items>
                                 </items>
                             </folder>

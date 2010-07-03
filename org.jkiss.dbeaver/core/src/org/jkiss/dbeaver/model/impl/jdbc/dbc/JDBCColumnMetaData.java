@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -15,6 +16,8 @@ import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.eclipse.swt.graphics.Image;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -25,7 +28,7 @@ import java.util.ArrayList;
 /**
  * JDBCColumnMetaData
  */
-public class JDBCColumnMetaData implements DBCColumnMetaData
+public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvider
 {
     static Log log = LogFactory.getLog(JDBCColumnMetaData.class);
 
@@ -268,5 +271,10 @@ public class JDBCColumnMetaData implements DBCColumnMetaData
             db.append(" as ").append(label);
         }
         return db.toString();
+    }
+
+    public Image getObjectImage()
+    {
+        return JDBCUtils.getDataIcon(this).getImage();
     }
 }

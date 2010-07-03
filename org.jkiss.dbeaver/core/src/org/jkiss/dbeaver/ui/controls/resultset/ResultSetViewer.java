@@ -41,6 +41,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
@@ -642,6 +643,15 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         new CellDataSaver(editedValues).rejectChanges();
     }
 
+    private Image getColumnImage(DBDColumnBinding column)
+    {
+        if (column.getMetaData() instanceof IObjectImageProvider) {
+            return ((IObjectImageProvider)column.getMetaData()).getObjectImage();
+        } else {
+            return DBIcon.TREE_COLUMN.getImage();
+        }
+    }
+
     private class ResultSetValueController implements DBDValueController, DBDRowController {
 
         private Object[] curRow;
@@ -1166,10 +1176,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         {
             if (mode == ResultSetMode.GRID) {
                 int colNumber = ((Number)element).intValue();
-                DBDColumnBinding metaColumn = metaColumns[colNumber];
-                if (metaColumn.getValueLocator() != null) {
-                    return DBIcon.EDIT_COLUMN.getImage();
-                }
+                return getColumnImage(metaColumns[colNumber]);
             }
             return null;
         }
@@ -1203,9 +1210,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         {
             if (mode == ResultSetMode.RECORD) {
                 int rowNumber = ((Number) element).intValue();
-                if (metaColumns[rowNumber].getValueLocator() != null) {
-                    return DBIcon.EDIT_COLUMN.getImage();
-                }
+                return getColumnImage(metaColumns[rowNumber]);
             }
             return null;
         }

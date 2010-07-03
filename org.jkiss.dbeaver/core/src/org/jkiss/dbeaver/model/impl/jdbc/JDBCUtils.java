@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
@@ -120,6 +121,30 @@ public class JDBCUtils
                 return DBSDataKind.STRING;
         }
         return DBSDataKind.UNKNOWN;
+    }
+
+    public static DBIcon getDataIcon(DBSTypedObject type)
+    {
+        switch (JDBCUtils.getDataKind(type)) {
+            case BOOLEAN:
+                return DBIcon.TYPE_BOOLEAN;
+            case STRING:
+                return DBIcon.TYPE_STRING;
+            case NUMERIC:
+                if (type.getValueType() == java.sql.Types.BIT) {
+                    return DBIcon.TYPE_BOOLEAN;
+                } else {
+                    return DBIcon.TYPE_NUMBER;
+                }
+            case DATETIME:
+                return DBIcon.TYPE_DATETIME;
+            case BINARY:
+                return DBIcon.TYPE_BINARY;
+            case LOB:
+                return DBIcon.TYPE_LOB;
+            default:
+                return DBIcon.TYPE_UNKNOWN;
+        }
     }
 
     public static Object getParameter(ResultSet dbResult, int columnIndex, int columnType)
