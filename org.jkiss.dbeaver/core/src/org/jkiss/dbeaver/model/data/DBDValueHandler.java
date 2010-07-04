@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
 /**
@@ -42,6 +41,14 @@ public interface DBDValueHandler
      */
     void bindValueObject(DBCStatement statement, DBSTypedObject columnType, int paramIndex, Object value)
         throws DBCException;
+
+    /**
+     * Makes value copy. For Non-mutable objects (like numbers and string) may return the same value as passed in.
+     * If copy operation is not supported for some values then may return null.
+     * @param value original value
+     * @return copied value or null
+     */
+    Object copyValueObject(Object value);
 
     /**
      * Release any internal resources associated with this value.

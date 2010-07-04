@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -104,6 +105,15 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         } else {
             throw new DBCException("Unsupported value type: " + value);
         }
+    }
+
+    public Object copyValueObject(Object value)
+    {
+        if (value instanceof DBDValueClonable) {
+            return ((DBDValueClonable)value).cloneValue();
+        }
+        // Copy not supported
+        return null;
     }
 
     @Override

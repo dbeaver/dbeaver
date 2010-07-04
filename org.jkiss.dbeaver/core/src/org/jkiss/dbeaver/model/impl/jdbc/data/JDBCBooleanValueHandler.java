@@ -41,6 +41,12 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    public Object copyValueObject(Object value)
+    {
+        // Boolean is immutable
+        return value;
+    }
+
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {

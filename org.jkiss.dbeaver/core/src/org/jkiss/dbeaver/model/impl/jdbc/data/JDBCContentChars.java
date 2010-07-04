@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -27,7 +28,7 @@ import java.sql.SQLException;
  *
  * @author Serge Rider
  */
-public class JDBCContentChars extends JDBCContentAbstract implements DBDContentCharacter {
+public class JDBCContentChars extends JDBCContentAbstract implements DBDContentCharacter, DBDValueClonable {
 
     static Log log = LogFactory.getLog(JDBCContentChars.class);
 
@@ -140,6 +141,11 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentC
         } else {
             return data;
         }
+    }
+
+    public DBDValueClonable cloneValue()
+    {
+        return new JDBCContentChars(data);
     }
 
 }

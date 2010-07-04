@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -26,7 +27,7 @@ import java.sql.SQLException;
  *
  * @author Serge Rider
  */
-public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentBinary {
+public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentBinary, DBDValueClonable {
 
     static Log log = LogFactory.getLog(JDBCContentBytes.class);
 
@@ -113,6 +114,11 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentB
             return null;
         }
         return "binary [" + data.length + "]";
+    }
+
+    public DBDValueClonable cloneValue()
+    {
+        return new JDBCContentBytes(data);
     }
 
 }

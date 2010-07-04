@@ -18,4 +18,5 @@ public interface DBDContent extends DBDValue {
     String getContentType() throws DBCException;
 
     void release();
+
 }

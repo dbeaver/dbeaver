@@ -132,6 +132,24 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
 
     }
 
+    public Object copyValueObject(Object value)
+    {
+        if (value instanceof Timestamp) {
+            Timestamp copy = new Timestamp(((Timestamp)value).getTime());
+            copy.setNanos(((Timestamp)value).getNanos());
+            return copy;
+        } else if (value instanceof java.sql.Time) {
+            return new java.sql.Time(((java.sql.Time)value).getTime());
+        } else if (value instanceof java.sql.Date) {
+            return new java.sql.Date(((java.sql.Date)value).getTime());
+        } else if (value instanceof java.util.Date) {
+            return new java.util.Date(((java.util.Date)value).getTime());
+        } else {
+            // Not supported
+            return null;
+        }
+    }
+
     @Override
     public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
         throws DBCException

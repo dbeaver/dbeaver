@@ -68,6 +68,12 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    public Object copyValueObject(Object value)
+    {
+        // String are immutable
+        return value;
+    }
+
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
         propertySource.addProperty(

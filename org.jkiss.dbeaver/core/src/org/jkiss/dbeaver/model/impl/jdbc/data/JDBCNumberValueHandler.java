@@ -144,6 +144,12 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    public Object copyValueObject(Object value)
+    {
+        // Number are immutable
+        return value;
+    }
+
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
         propertySource.addProperty(

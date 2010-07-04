@@ -7,9 +7,9 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.IColorProvider;
@@ -42,13 +42,19 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDColumnBinding;
+import org.jkiss.dbeaver.model.data.DBDRowController;
+import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
@@ -73,6 +79,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Arrays;
 
 /**
  * ResultSetViewer
@@ -97,8 +104,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     // Current row number (for record mode)
     private int curRowNum = -1;
     private boolean singleSourceCells;
-    private final Set<Integer> addedRows = new TreeSet<Integer>();
-    private final Set<Integer> removedRows = new TreeSet<Integer>();
+
+    // Edited rows and cells
+    private final Set<RowInfo> addedRows = new TreeSet<RowInfo>();
+    private final Set<RowInfo> removedRows = new TreeSet<RowInfo>();
+    private Set<CellInfo> editedValues = new HashSet<CellInfo>();
 
     private Label statusLabel;
 
@@ -117,14 +127,14 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private ToolItem itemLast;
     private ToolItem itemRefresh;
 
-    // Edited cells
-    private Set<CellInfo> editedValues = new HashSet<CellInfo>();
     private Map<ResultSetValueController, DBDValueEditor> openEditors = new HashMap<ResultSetValueController, DBDValueEditor>();
     // Flag saying that edited values update is in progress
     private boolean updateInProgress = false;
 
     // UI modifiers
     private Color colorRed;
+    private Color backgroundAdded;
+    private Color backgroundDeleted;
     private Color backgroundModified;
     private Color foregroundNull;
 
@@ -135,6 +145,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.mode = ResultSetMode.GRID;
 
         this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
+        this.backgroundAdded = new Color(parent.getDisplay(), 0xE4, 0xFF, 0xB5);
+        this.backgroundDeleted = new Color(parent.getDisplay(), 0xFF, 0x63, 0x47);
         this.backgroundModified = new Color(parent.getDisplay(), 0xFF, 0xE4, 0xB5);
         this.foregroundNull = parent.getDisplay().getSystemColor(SWT.COLOR_GRAY);
 
@@ -197,8 +209,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             itemRefresh.setEnabled(resultSetProvider != null && resultSetProvider.isConnected());
         }
 
-        boolean validPosition = (col >= 0 && row >= 0);
-
+        boolean validPosition;
+        if (mode == ResultSetMode.GRID) {
+            validPosition = (col >= 0 && row >= 0);
+        } else {
+            validPosition = curRowNum >= 0;
+        }
         itemRowEdit.setEnabled(validPosition);
         itemRowAdd.setEnabled(singleSourceCells && validPosition);
         itemRowCopy.setEnabled(singleSourceCells && validPosition);
@@ -220,7 +236,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void updateEditControls()
     {
-        boolean hasChanges = !editedValues.isEmpty();
+        boolean hasChanges = !editedValues.isEmpty() || !addedRows.isEmpty() || !removedRows.isEmpty();
         itemAccept.setEnabled(hasChanges);
         itemReject.setEnabled(hasChanges);
     }
@@ -267,16 +283,19 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             itemRowAdd = UIUtils.createToolItem(toolBar, "Add row", DBIcon.ROW_ADD, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
+                    addNewRow(false);
                 }
             });
             itemRowCopy = UIUtils.createToolItem(toolBar, "Copy row", DBIcon.ROW_COPY, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
+                    addNewRow(true);
                 }
             });
             itemRowDelete = UIUtils.createToolItem(toolBar, "Delete row", DBIcon.ROW_DELETE, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
+                    deleteCurrentRow();
                 }
             });
 
@@ -481,6 +500,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void setData(List<Object[]> rows)
     {
+        this.editedValues.clear();
+        this.addedRows.clear();
+        this.removedRows.clear();
+
         this.curRows.clear();
         this.curRows.addAll(rows);
 
@@ -530,7 +553,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private void initResultSet()
     {
         closeEditors();
-        this.editedValues.clear();
 
         spreadsheet.setRedraw(false);
         spreadsheet.clearGrid();
@@ -695,7 +717,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private void applyChanges()
     {
         try {
-            new CellDataSaver(editedValues).applyChanges(null);
+            new CellDataSaver(addedRows, removedRows, editedValues).applyChanges(null);
         } catch (DBException e) {
             log.error("Could not obtain result set metdata", e);
         }
@@ -703,7 +725,76 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void rejectChanges()
     {
-        new CellDataSaver(editedValues).rejectChanges();
+        new CellDataSaver(addedRows, removedRows, editedValues).rejectChanges();
+    }
+
+    private boolean isRowAdded(int row)
+    {
+        return addedRows.contains(new RowInfo(row));
+    }
+
+    private void addNewRow(boolean copyCurrent)
+    {
+        GridPos curPos = spreadsheet.getCursorPosition();
+        int rowNum, colNum;
+        if (mode == ResultSetMode.RECORD) {
+            rowNum = this.curRowNum;
+            colNum = curPos.row;
+        } else {
+            rowNum = curPos.row;
+            colNum = curPos.col;
+        }
+
+        // Slide all existing edited rows/cells down
+        for (CellInfo cell : editedValues) {
+            if (cell.row >= rowNum) cell.row++;
+        }
+        for (RowInfo row : addedRows) {
+            if (row.row >= rowNum) row.row++;
+        }
+        for (RowInfo row : removedRows) {
+            if (row.row >= rowNum) row.row++;
+        }
+
+        // Add new row
+        Object[] cells = new Object[metaColumns.length];
+        if (copyCurrent) {
+            // Copy cell values
+            Object[] origRow = curRows.get(rowNum);
+            for (int i = 0; i < metaColumns.length; i++) {
+                cells[i] = metaColumns[i].getValueHandler().copyValueObject(origRow[i]);
+            }
+        }
+        curRows.add(rowNum, cells);
+
+        addedRows.add(new RowInfo(rowNum));
+        spreadsheet.reinitState();
+
+        // Set cursor on new row
+        if (mode == ResultSetMode.GRID) {
+            spreadsheet.setCursor(new GridPos(colNum, rowNum), false);
+        }
+
+        updateEditControls();
+    }
+
+    private boolean isRowDeleted(int row)
+    {
+        return removedRows.contains(new RowInfo(row));
+    }
+
+    private void deleteCurrentRow()
+    {
+        GridPos curPos = spreadsheet.getCursorPosition();
+        int rowNum;
+        if (mode == ResultSetMode.RECORD) {
+            rowNum = this.curRowNum;
+        } else {
+            rowNum = curPos.row;
+        }
+        removedRows.add(new RowInfo(rowNum));
+        spreadsheet.redrawGrid();
+        updateEditControls();
     }
 
     private Image getColumnImage(DBDColumnBinding column)
@@ -801,7 +892,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     Set<CellInfo> cells = new HashSet<CellInfo>();
                     cells.add(new CellInfo(columnIndex, rowIndex, oldValue));
                     try {
-                        new CellDataSaver(cells).applyChanges(listener);
+                        new CellDataSaver(null, null, cells).applyChanges(listener);
                     }
                     catch (DBException e) {
                         // Rollback value
@@ -907,6 +998,34 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
+    private static class RowInfo implements Comparable<RowInfo> {
+        int row;
+
+        RowInfo(int row)
+        {
+            this.row = row;
+        }
+        @Override
+        public int hashCode()
+        {
+            return row;
+        }
+        @Override
+        public boolean equals(Object obj)
+        {
+            return obj instanceof RowInfo && ((RowInfo)obj).row == row;
+        }
+        @Override
+        public String toString()
+        {
+            return String.valueOf(row);
+        }
+        public int compareTo(RowInfo o)
+        {
+            return row - o.row;
+        }
+    }
+
     private static class CellInfo {
         int col;
         int row;
@@ -950,12 +1069,17 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private class CellDataSaver {
 
         private Set<CellInfo> cells;
+        private Set<RowInfo> newRowSet;
+        private Set<RowInfo> removedRowSet;
         private Map<Integer, Map<DBCTableMetaData, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBCTableMetaData, TableRowInfo>>();
         private List<SQLStatementInfo> statements = new ArrayList<SQLStatementInfo>();
 
-        private CellDataSaver(Set<CellInfo> cells)
+        private CellDataSaver(Set<RowInfo> newRowSet, Set<RowInfo> removedRowSet, Set<CellInfo> cells
+        )
         {
             this.cells = cells;
+            this.newRowSet = newRowSet;
+            this.removedRowSet = removedRowSet;
         }
 
         /**
@@ -1120,10 +1244,38 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         public void rejectChanges()
         {
             for (CellInfo cell : this.cells) {
-                curRows.get(cell.row)[cell.col] = cell.value;
+                ResultSetViewer.this.curRows.get(cell.row)[cell.col] = cell.value;
             }
             this.cells.clear();
-            spreadsheet.redrawGrid();
+
+            if (this.newRowSet != null) {
+                // Remove new rows (in descending order to prevent concurrent modification errors)
+                int[] rowsToRemove = new int[this.newRowSet.size()];
+                int i = 0;
+                for (RowInfo rowNum : this.newRowSet) rowsToRemove[i++] = rowNum.row;
+                Arrays.sort(rowsToRemove);
+                for (i = rowsToRemove.length; i > 0; i--) {
+                    ResultSetViewer.this.curRows.remove(rowsToRemove[i - 1]);
+                }
+                this.newRowSet.clear();
+            }
+            // Remove deleted rows
+            if (this.removedRowSet != null) {
+                this.removedRowSet.clear();
+            }
+
+            if (mode == ResultSetMode.RECORD) {
+                if (curRowNum >= curRows.size()) {
+                    curRowNum = curRows.size() - 1;
+                }
+            } else if (mode == ResultSetMode.GRID) {
+                GridPos curPos = spreadsheet.getCursorPosition();
+                if (curPos.row >= curRows.size()) {
+                    curPos.row = curRows.size() - 1;
+                }
+            }
+
+            ResultSetViewer.this.spreadsheet.reinitState();
             updateEditControls();
         }
     }
@@ -1225,6 +1377,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             if (mode == ResultSetMode.RECORD) {
                 col = row;
                 row = curRowNum;
+            }
+            if (isRowAdded(row)) {
+                return backgroundAdded;
+            }
+            if (isRowDeleted(row)) {
+                return backgroundDeleted;
             }
             if (isCellModified(col, row)) {
                 return backgroundModified;

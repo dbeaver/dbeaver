@@ -432,6 +432,8 @@ public class Spreadsheet extends Composite implements Listener {
         cancelInlineEditor();
         // Repack columns
         grid.refreshData();
+
+        setCursor(new GridPos(-1, -1), false);
     }
 
     public int getVisibleRowsCount()
