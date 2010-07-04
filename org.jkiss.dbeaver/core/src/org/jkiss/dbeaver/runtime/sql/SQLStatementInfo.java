@@ -16,6 +16,7 @@ public class SQLStatementInfo {
     private int offset;
     private int length;
     private Object data;
+    private SQLStatementType type;
 
     public SQLStatementInfo(String query)
     {
@@ -64,5 +65,21 @@ public class SQLStatementInfo {
 
     public void setData(Object data) {
         this.data = data;
+    }
+
+    public SQLStatementType getType()
+    {
+        return type;
+    }
+
+    public void setType(SQLStatementType type)
+    {
+        this.type = type;
+    }
+
+    @Override
+    public String toString()
+    {
+        return query;
     }
 }

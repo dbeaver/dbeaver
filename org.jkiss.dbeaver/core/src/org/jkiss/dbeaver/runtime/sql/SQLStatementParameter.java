@@ -38,4 +38,10 @@ public class SQLStatementParameter {
     public Object getValue() {
         return value;
     }
+
+    @Override
+    public String toString()
+    {
+        return valueHandler.getValueDisplayString(paramType, value);
+    }
 }

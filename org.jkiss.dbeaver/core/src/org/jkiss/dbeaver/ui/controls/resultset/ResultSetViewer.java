@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementParameter;
+import org.jkiss.dbeaver.runtime.sql.SQLStatementType;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -903,8 +904,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             if (!CommonUtils.equalObjects(oldValue, value)) {
                 int rowIndex = getRowIndex(curRow);
                 if (rowIndex >= 0) {
-                    CellInfo cell = new CellInfo(columnIndex, rowIndex, oldValue);
-                    editedValues.add(cell);
+                    if (!isRowAdded(rowIndex) && !isRowDeleted(rowIndex)) {
+                        // Do not add edited cell for new/deleted rows 
+                        CellInfo cell = new CellInfo(columnIndex, rowIndex, oldValue);
+                        editedValues.add(cell);
+                    }
                     curRow[columnIndex] = value;
                     // Update controls
                     site.getShell().getDisplay().asyncExec(new Runnable() {
@@ -1112,6 +1116,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         private Map<Integer, Map<DBCTableMetaData, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBCTableMetaData, TableRowInfo>>();
         private List<SQLStatementInfo> statements = new ArrayList<SQLStatementInfo>();
 
+        private int updateCount = 0, insertCount = 0, deleteCount = 0;
+
         private CellDataSaver(Set<RowInfo> newRowSet, Set<RowInfo> removedRowSet, Set<CellInfo> cells)
         {
             this.cells = cells;
@@ -1205,6 +1211,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 SQLStatementInfo statement = new SQLStatementInfo(query.toString(), parameters);
                 statement.setOffset(rowNum.row);
                 statement.setData(rowNum);
+                statement.setType(SQLStatementType.DELETE);
                 statements.add(statement);
             }
         }
@@ -1262,6 +1269,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 SQLStatementInfo statement = new SQLStatementInfo(query.toString(), parameters);
                 statement.setOffset(rowNum.row);
                 statement.setData(rowNum);
+                statement.setType(SQLStatementType.INSERT);
                 statements.add(statement);
             }
         }
@@ -1334,6 +1342,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     SQLStatementInfo statement = new SQLStatementInfo(query.toString(), parameters);
                     statement.setOffset(rowNum);
                     statement.setData(rowInfo);
+                    statement.setType(SQLStatementType.UPDATE);
                     statements.add(statement);
                 }
             }
@@ -1357,6 +1366,15 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
                 @Override
                 public void onEndQuery(SQLQueryResult result) {
+                    Integer rowCount = result.getUpdateCount();
+                    if (rowCount != null) {
+                        switch (result.getStatement().getType()) {
+                            case INSERT: insertCount += rowCount; break;
+                            case DELETE: deleteCount += rowCount; break;
+                            case UPDATE: updateCount += rowCount; break;
+                            default: break;
+                        }
+                    }
 /*
                     if (result.getError() == null) {
                         // Remove edited values
@@ -1380,18 +1398,25 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         if (newRowSet != null) {
                             newRowSet.clear();
                         }
-                        if (removedRowSet != null) {
-                            removedRowSet.clear();
-                        }
+                        final boolean rowsChanged = deleteRows(removedRowSet);
+
+                        site.getShell().getDisplay().syncExec(new Runnable() {
+                            public void run()
+                            {
+                                refreshSpreadsheet(rowsChanged);
+                                setStatus("Instered: " + insertCount + " / Deleted: " + deleteCount + " / Updated: " + updateCount, false);
+                            }
+                        });
+                    } else {
+                        site.getShell().getDisplay().syncExec(new Runnable() {
+                            public void run()
+                            {
+                                refreshSpreadsheet(false);
+                                setStatus("Error synchronizing result set with database", true);
+                            }
+                        });
                     }
-                    site.getShell().getDisplay().asyncExec(new Runnable() {
-                        public void run()
-                        {
-                            spreadsheet.redrawGrid();
-                            updateEditControls();
-                            updateInProgress = false;
-                        }
-                    });
+                    updateInProgress = false;
                     if (listener != null) listener.onEndJob(hasErrors);
                 }
             });
@@ -1406,19 +1431,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 }
                 this.cells.clear();
             }
-            boolean rowsChanged = false;
-            if (this.newRowSet != null && !this.newRowSet.isEmpty()) {
-                // Remove new rows (in descending order to prevent concurrent modification errors)
-                int[] rowsToRemove = new int[this.newRowSet.size()];
-                int i = 0;
-                for (RowInfo rowNum : this.newRowSet) rowsToRemove[i++] = rowNum.row;
-                Arrays.sort(rowsToRemove);
-                for (i = rowsToRemove.length; i > 0; i--) {
-                    ResultSetViewer.this.curRows.remove(rowsToRemove[i - 1]);
-                }
-                this.newRowSet.clear();
-                rowsChanged = true;
-            }
+            boolean rowsChanged = deleteRows(this.newRowSet);
             // Remove deleted rows
             if (this.removedRowSet != null) {
                 this.removedRowSet.clear();
@@ -1427,6 +1440,23 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             refreshSpreadsheet(rowsChanged);
         }
 
+        private boolean deleteRows(Set<RowInfo> rows)
+        {
+            if (rows != null && !rows.isEmpty()) {
+                // Remove rows (in descending order to prevent concurrent modification errors)
+                int[] rowsToRemove = new int[rows.size()];
+                int i = 0;
+                for (RowInfo rowNum : rows) rowsToRemove[i++] = rowNum.row;
+                Arrays.sort(rowsToRemove);
+                for (i = rowsToRemove.length; i > 0; i--) {
+                    ResultSetViewer.this.curRows.remove(rowsToRemove[i - 1]);
+                }
+                rows.clear();
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     private class ContentProvider implements IGridContentProvider {
