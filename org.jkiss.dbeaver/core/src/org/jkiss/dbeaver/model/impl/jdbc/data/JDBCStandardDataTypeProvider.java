@@ -20,7 +20,7 @@ public class JDBCStandardDataTypeProvider implements DBDDataTypeProvider {
 
     public Image getTypeImage(DBSTypedObject type)
     {
-        return DBIcon.TREE_COLUMN.getImage();
+        return JDBCUtils.getDataIcon(type).getImage();
     }
 
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBSTypedObject type)
