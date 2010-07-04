@@ -189,11 +189,11 @@
             </property>
             <property
                 name="startupMessageRect"
-                value="7,252,445,20">
+                value="7,375,445,20">
             </property>
             <property
                 name="startupProgressRect"
-                value="5,275,445,15">
+                value="5,400,330,15">
             </property>
             <property
                 name="preferenceCustomization"

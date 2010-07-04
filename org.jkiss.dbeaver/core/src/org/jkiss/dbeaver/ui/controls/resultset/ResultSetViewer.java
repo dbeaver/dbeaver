@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
@@ -71,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * ResultSetViewer
@@ -94,11 +96,19 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private final List<Object[]> curRows = new ArrayList<Object[]>();
     // Current row number (for record mode)
     private int curRowNum = -1;
+    private boolean singleSourceCells;
+    private final Set<Integer> addedRows = new TreeSet<Integer>();
+    private final Set<Integer> removedRows = new TreeSet<Integer>();
 
     private Label statusLabel;
 
     private ToolItem itemAccept;
     private ToolItem itemReject;
+
+    private ToolItem itemRowEdit;
+    private ToolItem itemRowAdd;
+    private ToolItem itemRowCopy;
+    private ToolItem itemRowDelete;
 
     private ToolItem itemToggleView;
     private ToolItem itemNext;
@@ -186,6 +196,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             itemLast.setEnabled(isVisible && !isLast);
             itemRefresh.setEnabled(resultSetProvider != null && resultSetProvider.isConnected());
         }
+
+        boolean validPosition = (col >= 0 && row >= 0);
+
+        itemRowEdit.setEnabled(validPosition);
+        itemRowAdd.setEnabled(singleSourceCells && validPosition);
+        itemRowCopy.setEnabled(singleSourceCells && validPosition);
+        itemRowDelete.setEnabled(singleSourceCells && validPosition);
     }
 
     private void updateRecord()
@@ -240,6 +257,31 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 }
             });
             new ToolItem(toolBar, SWT.SEPARATOR);
+
+            itemRowEdit = UIUtils.createToolItem(toolBar, "Edit cell", DBIcon.ROW_EDIT, new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+                    showCellEditor(spreadsheet.getCursorPosition(), false, null);
+                }
+            });
+            itemRowAdd = UIUtils.createToolItem(toolBar, "Add row", DBIcon.ROW_ADD, new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+                }
+            });
+            itemRowCopy = UIUtils.createToolItem(toolBar, "Copy row", DBIcon.ROW_COPY, new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+                }
+            });
+            itemRowDelete = UIUtils.createToolItem(toolBar, "Delete row", DBIcon.ROW_DELETE, new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+                }
+            });
+
+            new ToolItem(toolBar, SWT.SEPARATOR);
+
             itemToggleView = UIUtils.createToolItem(toolBar, "Toggle View", DBIcon.RS_MODE_GRID, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
@@ -365,6 +407,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
         itemAccept.dispose();
         itemReject.dispose();
+        itemRowEdit.dispose();
+        itemRowAdd.dispose();
+        itemRowCopy.dispose();
+        itemRowDelete.dispose();
         itemToggleView.dispose();
         itemNext.dispose();
         itemPrevious.dispose();
@@ -437,6 +483,23 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     {
         this.curRows.clear();
         this.curRows.addAll(rows);
+
+        // Check single source flag
+        this.singleSourceCells = true;
+        DBSTable sourceTable = null;
+        for (DBDColumnBinding column : metaColumns) {
+            if (column.getValueLocator() == null) {
+                singleSourceCells = false;
+                break;
+            }
+            if (sourceTable == null) {
+                sourceTable = column.getValueLocator().getTable();
+            } else if (sourceTable != column.getValueLocator().getTable()) {
+                singleSourceCells = false;
+                break;
+            }
+        }
+
         this.initResultSet();
     }
 

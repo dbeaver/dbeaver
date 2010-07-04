@@ -70,6 +70,11 @@ public enum DBIcon
     EXPORT("export", "/icons/file/export.png"),
     REFRESH("refresh", "/icons/refresh.png"),
 
+    ROW_ADD("row_add", "/icons/sql/row_add.png"),
+    ROW_COPY("row_copy", "/icons/sql/row_copy.png"),
+    ROW_EDIT("row_edit", "/icons/sql/row_edit.png"),
+    ROW_DELETE("row_delete", "/icons/sql/row_delete.png"),
+
     EDIT_DATABSE("edit_database", "/icons/misc/edit_database.png"),
     EDIT_TABLE("edit_table", "/icons/misc/edit_table.png"),
     EDIT_COLUMN("edit_column", "/icons/misc/edit_column.png"),
