@@ -72,7 +72,7 @@ public abstract class StatementManagable implements JDBCStatement {
             try {
                 connection.rollback();
             } catch (SQLException e) {
-                log.error("Can't rollback connection", e);
+                log.error("Can't rollback connection after error (" + ex.getMessage() + ")", e);
             }
         }
     }
@@ -179,6 +179,15 @@ public abstract class StatementManagable implements JDBCStatement {
         this.dataContainer = container;
     }
 
+    private ResultSetManagable makeResultSet(ResultSet resultSet)
+        throws SQLFeatureNotSupportedException
+    {
+        if (this instanceof PreparedStatementManagable) {
+            return new ResultSetManagable((PreparedStatementManagable) this, resultSet);
+        } else {
+            throw new SQLFeatureNotSupportedException();
+        }
+    }
     ////////////////////////////////////////////////////////////////////
     // Statement overrides
     ////////////////////////////////////////////////////////////////////
@@ -206,7 +215,7 @@ public abstract class StatementManagable implements JDBCStatement {
             setQuery(sql);
             this.startBlock();
             try {
-                return new ResultSetManagable((PreparedStatementManagable) this, getOriginal().executeQuery(sql));
+                return makeResultSet(getOriginal().executeQuery(sql));
             } catch (SQLException e) {
                 this.handleExecuteError(e);
                 throw e;
@@ -409,11 +418,7 @@ public abstract class StatementManagable implements JDBCStatement {
     public JDBCResultSet getResultSet()
         throws SQLException
     {
-        if (this instanceof PreparedStatementManagable) {
-            return new ResultSetManagable((PreparedStatementManagable) this, getOriginal().getResultSet());
-        } else {
-            throw new SQLFeatureNotSupportedException();
-        }
+        return makeResultSet(getOriginal().getResultSet());
     }
 
     public int getUpdateCount()
@@ -485,7 +490,7 @@ public abstract class StatementManagable implements JDBCStatement {
     public ResultSet getGeneratedKeys()
         throws SQLException
     {
-        return getOriginal().getGeneratedKeys();
+        return makeResultSet(getOriginal().getGeneratedKeys());
     }
 
     public int getResultSetHoldability()

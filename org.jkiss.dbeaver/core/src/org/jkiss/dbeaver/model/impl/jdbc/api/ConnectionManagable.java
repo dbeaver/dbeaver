@@ -37,6 +37,9 @@ import java.sql.SQLClientInfoException;
 import java.sql.Array;
 import java.sql.Struct;
 import java.sql.ResultSet;
+import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Map;
 import java.util.Properties;
 
@@ -97,10 +100,22 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         }
     }
 
+    private JDBCStatement makeStatement(Statement statement)
+        throws SQLFeatureNotSupportedException
+    {
+        if (statement instanceof CallableStatement) {
+            return new CallableStatementManagable(this, (CallableStatement)statement, null);
+        } else if (statement instanceof PreparedStatement) {
+            return new PreparedStatementManagable(this, (PreparedStatement)statement, null);
+        } else {
+            throw new SQLFeatureNotSupportedException();
+        }
+    }
+
     public JDBCStatement createStatement()
         throws SQLException
     {
-        return new BaseStatementManagable(this, original.createStatement());
+        return makeStatement(original.createStatement());
     }
 
     public JDBCPreparedStatement prepareStatement(String sql)
@@ -288,7 +303,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     public JDBCStatement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability)
         throws SQLException
     {
-        return new BaseStatementManagable(this, original.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
+        return makeStatement(original.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
     }
 
     public JDBCPreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
