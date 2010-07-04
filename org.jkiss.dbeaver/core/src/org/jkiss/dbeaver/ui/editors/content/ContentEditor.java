@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.DBDValueListener;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
@@ -178,11 +179,10 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
 
                     getEditorInput().updateContentFromFile(
                         monitor,
-                        new DefaultQueryListener() {
-                            @Override
-                            public void onEndJob(boolean hasErrors)
+                        new DBDValueListener() {
+                            public void onUpdate(boolean success)
                             {
-                                ContentEditor.this.dirty = hasErrors;
+                                ContentEditor.this.dirty = !success;
                                 getSite().getShell().getDisplay().asyncExec(new Runnable() {
                                     public void run()
                                     {

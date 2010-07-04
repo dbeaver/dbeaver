@@ -85,7 +85,7 @@ class ResultSetDataReciever implements DBDDataReciever {
                     errors.put(metaColumns[i].getMetaData(), errorList);
                 }
                 if (!errorList.contains(e)) {
-                    log.warn("Could not read column '" + metaColumns[i].getMetaData().getColumnName() + "' value", e);
+                    log.warn("Could not read column '" + metaColumns[i].getMetaData().getName() + "' value", e);
                     errorList.add(e);
                 }
             }

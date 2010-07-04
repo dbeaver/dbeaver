@@ -5,17 +5,17 @@
 package org.jkiss.dbeaver.model.dbc;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 
 /**
  * DBCColumnMetaData
  */
-public interface DBCColumnMetaData extends DBSTypedObject
+public interface DBCColumnMetaData extends DBSColumnBase
 {
     int getIndex();
 
@@ -27,7 +27,7 @@ public interface DBCColumnMetaData extends DBSTypedObject
 
     String getLabel();
 
-    String getColumnName();
+    String getName();
 
     String getTableName();
 

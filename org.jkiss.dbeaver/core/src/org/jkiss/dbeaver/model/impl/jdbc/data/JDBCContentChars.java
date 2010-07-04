@@ -11,11 +11,11 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
+import org.jkiss.dbeaver.model.data.DBDValueListener;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -75,7 +75,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentC
         Reader stream,
         long contentLength,
         DBRProgressMonitor monitor,
-        ISQLQueryListener listener)
+        DBDValueListener listener)
         throws DBException
     {
         if (stream == null) {

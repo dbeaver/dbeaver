@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -45,26 +47,29 @@ import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
+import org.jkiss.dbeaver.model.data.DBDColumnValue;
+import org.jkiss.dbeaver.model.data.DBDDataReciever;
 import org.jkiss.dbeaver.model.data.DBDRowController;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.DBDValueListener;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
-import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
-import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
-import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
-import org.jkiss.dbeaver.runtime.sql.SQLStatementParameter;
-import org.jkiss.dbeaver.runtime.sql.SQLStatementType;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -72,8 +77,10 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,7 +89,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Arrays;
 
 /**
  * ResultSetViewer
@@ -406,7 +412,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 GC gc = new GC(spreadsheet);
                 gc.setFont(spreadsheet.getFont());
                 for (DBDColumnBinding column : metaColumns) {
-                    Point ext = gc.stringExtent(column.getMetaData().getColumnName());
+                    Point ext = gc.stringExtent(column.getMetaData().getName());
                     if (ext.x > defaultWidth) {
                         defaultWidth = ext.x;
                     }
@@ -501,8 +507,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     static boolean isColumnReadOnly(DBDColumnBinding column)
     {
         return
-            column.getValueLocator() != null &&
-            column.getValueLocator().getTable() instanceof DBSDataContainer;
+            column.getValueLocator() == null ||
+            !(column.getValueLocator().getTable() instanceof DBSDataContainer);
     }
 
     public int getRowsCount()
@@ -884,7 +890,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             String catalogName = getColumnMetaData().getCatalogName();
             String schemaName = getColumnMetaData().getSchemaName();
             String tableName = getColumnMetaData().getTableName();
-            String columnName = getColumnMetaData().getColumnName();
+            String columnName = getColumnMetaData().getName();
             StringBuilder columnId = new StringBuilder(CommonUtils.escapeIdentifier(dsName));
             if (!CommonUtils.isEmpty(catalogName)) {
                 columnId.append('.').append(CommonUtils.escapeIdentifier(catalogName));
@@ -928,7 +934,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
-        public void updateValueImmediately(Object value, ISQLQueryListener listener)
+        public void updateValueImmediately(Object value, DBDValueListener listener)
             throws DBException
         {
             // Update cell value
@@ -1018,7 +1024,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         public DBCColumnMetaData getColumnMetaData(DBCTableMetaData table, String columnName)
         {
             for (DBDColumnBinding column : metaColumns) {
-                if (column.getMetaData().getTable() == table && column.getMetaData().getColumnName().equals(columnName)) {
+                if (column.getMetaData().getTable() == table && column.getMetaData().getName().equals(columnName)) {
                     return column.getMetaData();
                 }
             }
@@ -1106,23 +1112,35 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     }
 
     static class TableRowInfo {
-        DBCTableMetaData table;
+        DBSTable table;
         DBCTableIdentifier id;
         List<CellInfo> tableCells = new ArrayList<CellInfo>();
 
-        TableRowInfo(DBCTableMetaData table, DBCTableIdentifier id) {
+        TableRowInfo(DBSTable table, DBCTableIdentifier id) {
             this.table = table;
             this.id = id;
         }
     }
 
     static class KeyValues {
+        int rowNum;
         DBSTable table;
-        List<DBDColumnValue> keyColumns;
+        List<DBDColumnValue> keyColumns = new ArrayList<DBDColumnValue>();
+
+        KeyValues(int rowNum, DBSTable table)
+        {
+            this.rowNum = rowNum;
+            this.table = table;
+        }
     }
 
     static class UpdateValues extends KeyValues {
-        List<DBDColumnValue> updateColumns;
+        List<DBDColumnValue> updateColumns = new ArrayList<DBDColumnValue>();
+
+        UpdateValues(int rowNum, DBSTable table)
+        {
+            super(rowNum, table);
+        }
     }
     
     private class CellDataSaver {
@@ -1130,12 +1148,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         private Set<CellInfo> cells;
         private Set<RowInfo> newRowSet;
         private Set<RowInfo> removedRowSet;
-        private Map<Integer, Map<DBCTableMetaData, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBCTableMetaData, TableRowInfo>>();
+        private Map<Integer, Map<DBSTable, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSTable, TableRowInfo>>();
         private List<SQLStatementInfo> statements = new ArrayList<SQLStatementInfo>();
 
         private List<KeyValues> insertStatements = new ArrayList<KeyValues>();
         private List<KeyValues> deleteStatements = new ArrayList<KeyValues>();
-        private List<KeyValues> updateStatements = new ArrayList<KeyValues>();
+        private List<UpdateValues> updateStatements = new ArrayList<UpdateValues>();
 
         private int updateCount = 0, insertCount = 0, deleteCount = 0;
 
@@ -1151,7 +1169,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
          * @throws DBException
          * @param listener
          */
-        void applyChanges(ISQLQueryListener listener)
+        void applyChanges(DBDValueListener listener)
             throws DBException
         {
             prepareDeleteStatements();
@@ -1170,6 +1188,17 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return -1;
         }
 
+        public int getMetaColumnIndex(DBSTable table, String columnName)
+        {
+            for (int i = 0; i < metaColumns.length; i++) {
+                DBDColumnBinding column = metaColumns[i];
+                if (column.getValueLocator().getTable() == table && column.getMetaData().getName().equals(columnName)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
         private void prepareUpdateRows()
             throws DBException
         {
@@ -1178,14 +1207,14 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
             // Prepare rows
             for (CellInfo cell : this.cells) {
-                Map<DBCTableMetaData, TableRowInfo> tableMap = updatedRows.get(cell.row);
+                Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(cell.row);
                 if (tableMap == null) {
-                    tableMap = new HashMap<DBCTableMetaData, TableRowInfo>();
+                    tableMap = new HashMap<DBSTable, TableRowInfo>();
                     updatedRows.put(cell.row, tableMap);
                 }
 
                 DBDColumnBinding metaColumn = metaColumns[cell.col];
-                DBCTableMetaData metaTable = metaColumn.getMetaData().getTable();
+                DBSTable metaTable = metaColumn.getValueLocator().getTable();
                 TableRowInfo tableRowInfo = tableMap.get(metaTable);
                 if (tableRowInfo == null) {
                     tableRowInfo = new TableRowInfo(metaTable, metaColumn.getValueLocator().getTableIdentifier());
@@ -1203,37 +1232,17 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
             // Make delete statements
             for (RowInfo rowNum : removedRowSet) {
-                DBCTableMetaData table = metaColumns[0].getMetaData().getTable();
-                String tableName = table.getFullQualifiedName();
-                List<SQLStatementParameter> parameters = new ArrayList<SQLStatementParameter>();
-                StringBuilder query = new StringBuilder();
-                query.append("DELETE FROM ").append(tableName).append(" WHERE ");
-
+                DBSTable table = metaColumns[0].getValueLocator().getTable();
+                KeyValues statement = new KeyValues(rowNum.row, table);
                 List<? extends DBCColumnMetaData> keyColumns = metaColumns[0].getValueLocator().getKeyColumns();
-                for (int i = 0; i < keyColumns.size(); i++) {
-                    DBCColumnMetaData column = keyColumns.get(i);
-                    if (i > 0) {
-                        query.append(" AND ");
-                    }
+                for (DBCColumnMetaData column : keyColumns) {
                     int colIndex = getMetaColumnIndex(column);
                     if (colIndex < 0) {
-                        throw new DBCException("Can't find meta column for ID column " + column.getColumnName());
+                        throw new DBCException("Can't find meta column for ID column " + column.getName());
                     }
-
-                    String columnName = DBUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), column.getColumnName());
-                    query.append(columnName).append("=?");
-                    parameters.add(new SQLStatementParameter(
-                        metaColumns[colIndex].getValueHandler(),
-                        column,
-                        parameters.size(),
-                        curRows.get(rowNum.row)[colIndex]));
+                    statement.keyColumns.add(new DBDColumnValue(column, curRows.get(rowNum.row)[colIndex]));
                 }
-
-                SQLStatementInfo statement = new SQLStatementInfo(query.toString(), parameters);
-                statement.setOffset(rowNum.row);
-                statement.setData(rowNum);
-                statement.setType(SQLStatementType.DELETE);
-                statements.add(statement);
+                deleteStatements.add(statement);
             }
         }
 
@@ -1246,52 +1255,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             // Make insert statements
             for (RowInfo rowNum : newRowSet) {
                 Object[] cellValues = curRows.get(rowNum.row);
-
-                DBCTableMetaData table = metaColumns[0].getMetaData().getTable();
-                String tableName = table.getFullQualifiedName();
-                List<SQLStatementParameter> parameters = new ArrayList<SQLStatementParameter>();
-                StringBuilder query = new StringBuilder();
-                query.append("INSERT INTO ").append(tableName).append(" (");
-                boolean hasKey = false;
+                DBSTable table = metaColumns[0].getValueLocator().getTable();
+                KeyValues statement = new KeyValues(rowNum.row, table);
                 for (int i = 0; i < metaColumns.length; i++) {
-                    if (DBUtils.isNullValue(cellValues[i])) {
-                        // do not use null values
-                        continue;
-                    }
                     DBDColumnBinding column = metaColumns[i];
-                    if (hasKey) query.append(",");
-                    hasKey = true;
-                    query.append(DBUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), column.getMetaData().getColumnName()));
+                    statement.keyColumns.add(new DBDColumnValue(column.getMetaData(), cellValues[i]));
                 }
-                query.append(") VALUES (");
-                hasKey = false;
-                for (int i = 0; i < metaColumns.length; i++) {
-                    if (DBUtils.isNullValue(cellValues[i])) {
-                        continue;
-                    }
-                    if (hasKey) query.append(",");
-                    hasKey = true;
-                    query.append("?");
-                }
-                query.append(")");
-
-                for (int i = 0; i < metaColumns.length; i++) {
-                    if (DBUtils.isNullValue(cellValues[i])) {
-                        continue;
-                    }
-                    DBDColumnBinding column = metaColumns[i];
-                    parameters.add(new SQLStatementParameter(
-                        column.getValueHandler(),
-                        column.getMetaData(),
-                        parameters.size(),
-                        cellValues[i]));
-                }
-
-                SQLStatementInfo statement = new SQLStatementInfo(query.toString(), parameters);
-                statement.setOffset(rowNum.row);
-                statement.setData(rowNum);
-                statement.setType(SQLStatementType.INSERT);
-                statements.add(statement);
+                insertStatements.add(statement);
             }
         }
 
@@ -1306,43 +1276,23 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
             // Make statements
             for (Integer rowNum : updatedRows.keySet()) {
-                Map<DBCTableMetaData, TableRowInfo> tableMap = updatedRows.get(rowNum);
-                for (DBCTableMetaData table : tableMap.keySet()) {
+                Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(rowNum);
+                for (DBSTable table : tableMap.keySet()) {
                     TableRowInfo rowInfo = tableMap.get(table);
-
-                    String tableName = rowInfo.table.getFullQualifiedName();
-                    List<SQLStatementParameter> parameters = new ArrayList<SQLStatementParameter>();
-                    StringBuilder query = new StringBuilder();
-                    query.append("UPDATE ").append(tableName).append(" SET ");
+                    UpdateValues statement = new UpdateValues(rowNum, table);
+                    // Updated columns
                     for (int i = 0; i < rowInfo.tableCells.size(); i++) {
                         CellInfo cell = rowInfo.tableCells.get(i);
-                        if (i > 0) {
-                            query.append(",");
-                        }
                         DBDColumnBinding metaColumn = metaColumns[cell.col];
-                        String columnName = DBUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), metaColumn.getMetaData().getColumnName());
-                        query.append(columnName).append("=?");
-                        parameters.add(new SQLStatementParameter(
-                            metaColumn.getValueHandler(),
-                            metaColumn.getMetaData(),
-                            parameters.size(),
-                            curRows.get(rowNum)[cell.col]));
+                        statement.updateColumns.add(new DBDColumnValue(metaColumn.getMetaData(), curRows.get(rowNum)[cell.col]));
                     }
-                    query.append(" WHERE ");
+                    // Key columns
                     Collection<? extends DBCColumnMetaData> idColumns = rowInfo.id.getResultSetColumns();
-                    boolean firstCol = true;
                     for (DBCColumnMetaData idColumn : idColumns) {
-                        if (!firstCol) {
-                            query.append(" AND ");
-                        }
-                        String columnName = DBUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), idColumn.getColumnName());
-                        query.append(columnName).append("=?");
-                        firstCol = false;
-
                         // Find meta column and add statement parameter
                         int columnIndex = getMetaColumnIndex(idColumn);
                         if (columnIndex < 0) {
-                            throw new DBCException("Can't find meta column for ID column " + idColumn.getColumnName());
+                            throw new DBCException("Can't find meta column for ID column " + idColumn.getName());
                         }
                         DBDColumnBinding metaColumn = metaColumns[columnIndex];
                         Object keyValue = curRows.get(rowNum)[columnIndex];
@@ -1352,26 +1302,21 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                                 keyValue = cell.value;
                             }
                         }
-                        // Add key parameter
-                        parameters.add(new SQLStatementParameter(
-                            metaColumn.getValueHandler(),
-                            metaColumn.getMetaData(),
-                            parameters.size(),
-                            keyValue));
+                        statement.keyColumns.add(new DBDColumnValue(metaColumn.getMetaData(), keyValue));
                     }
-
-                    SQLStatementInfo statement = new SQLStatementInfo(query.toString(), parameters);
-                    statement.setOffset(rowNum);
-                    statement.setData(rowInfo);
-                    statement.setType(SQLStatementType.UPDATE);
-                    statements.add(statement);
+                    updateStatements.add(statement);
                 }
             }
         }
 
-        private void execute(final ISQLQueryListener listener)
+        private void execute(final DBDValueListener listener)
             throws DBException
         {
+            DataUpdaterJob job = new DataUpdaterJob(listener);
+            job.schedule();
+            if (2+2 == 4) {
+                return;
+            }
             // Execute statements
             SQLQueryJob executor = new SQLQueryJob(
                 "Update ResultSet",
@@ -1382,7 +1327,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 @Override
                 public void onStartJob() {
                     updateInProgress = true;
-                    if (listener != null) listener.onStartJob();
                 }
 
                 @Override
@@ -1407,7 +1351,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         }
                     }
 */
-                    if (listener != null) listener.onEndQuery(result);
                 }
 
                 @Override
@@ -1438,7 +1381,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         });
                     }
                     updateInProgress = false;
-                    if (listener != null) listener.onEndJob(hasErrors);
+                    if (listener != null) listener.onUpdate(hasErrors);
                 }
             });
             executor.schedule();
@@ -1476,6 +1419,146 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 return true;
             } else {
                 return false;
+            }
+        }
+
+        private class DataUpdaterJob extends DataSourceJob {
+            DBDValueListener listener;
+            protected DataUpdaterJob(DBDValueListener listener)
+            {
+                super("Update data", DBIcon.SQL_EXECUTE.getImageDescriptor(), resultSetProvider.getDataSource());
+                this.listener = listener;
+            }
+
+            protected IStatus run(DBRProgressMonitor monitor)
+            {
+                updateInProgress = true;
+                try {
+                    monitor.beginTask("Apply resultset changes", deleteStatements.size() + insertStatements.size() + updateStatements.size());
+                    Throwable error = null;
+                    try {
+                        for (KeyValues statement : deleteStatements) {
+                            DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
+                            try {
+                                deleteCount += dataContainer.deleteData(monitor, statement.keyColumns);
+                            }
+                            catch (DBException e) {
+                                error = e;
+                                return DBeaverUtils.makeExceptionStatus(e);
+                            }
+                            monitor.worked(1);
+                        }
+                        for (KeyValues statement : insertStatements) {
+                            DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
+                            try {
+                                insertCount += dataContainer.insertData(monitor, statement.keyColumns, new KeyDataReciever(statement));
+                            }
+                            catch (DBException e) {
+                                error = e;
+                                return DBeaverUtils.makeExceptionStatus(e);
+                            }
+                            monitor.worked(1);
+                        }
+                        for (UpdateValues statement : updateStatements) {
+                            DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
+                            try {
+                                updateCount += dataContainer.updateData(monitor, statement.keyColumns, statement.updateColumns, new KeyDataReciever(statement));
+                            }
+                            catch (DBException e) {
+                                error = e;
+                                return DBeaverUtils.makeExceptionStatus(e);
+                            }
+                            monitor.worked(1);
+                        }
+                    }
+                    finally {
+                        monitor.done();
+
+                        if (listener != null) {
+                            listener.onUpdate(error == null);
+                        }
+                    }
+
+                    if (cells != null) {
+                        cells.clear();
+                    }
+                    if (newRowSet != null) {
+                        newRowSet.clear();
+                    }
+                    final boolean rowsChanged = deleteRows(removedRowSet);
+
+                    site.getShell().getDisplay().syncExec(new Runnable() {
+                        public void run()
+                        {
+                            refreshSpreadsheet(rowsChanged);
+                            setStatus("Instered: " + insertCount + " / Deleted: " + deleteCount + " / Updated: " + updateCount, false);
+                        }
+                    });
+
+                }
+                finally {
+                    updateInProgress = false;
+                }
+                return Status.OK_STATUS;
+            }
+
+            private class KeyDataReciever implements DBDDataReciever {
+                KeyValues statement;
+                public KeyDataReciever(KeyValues statement)
+                {
+                    this.statement = statement;
+                }
+
+                public void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet)
+                    throws DBCException
+                {
+
+                }
+
+                public void fetchRow(DBRProgressMonitor monitor, DBCResultSet resultSet)
+                    throws DBCException
+                {
+                    DBCResultSetMetaData rsMeta = resultSet.getResultSetMetaData();
+                    List<DBCColumnMetaData> keyColumns = rsMeta.getColumns();
+                    for (int i = 0; i < keyColumns.size(); i++) {
+                        DBCColumnMetaData keyColumn = keyColumns.get(i);
+                        DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(resultSetProvider.getDataSource(), keyColumn);
+                        Object keyValue = valueHandler.getValueObject(resultSet, keyColumn, i);
+                        boolean updated = false;
+                        if (!CommonUtils.isEmpty(keyColumn.getName())) {
+                            int colIndex = getMetaColumnIndex(statement.table, keyColumn.getName());
+                            if (colIndex >= 0) {
+                                // Got it. Just update column value
+                                curRows.get(statement.rowNum)[colIndex] = keyValue;
+                                updated = true;
+                            }
+                        }
+                        if (!updated) {
+                            // Key not found
+                            // Try to find and update auto-increment column
+                            for (int k = 0; k < metaColumns.length; k++) {
+                                DBDColumnBinding column = metaColumns[k];
+                                if (column.getMetaData().isAutoIncrement()) {
+                                    // Got it
+                                    curRows.get(statement.rowNum)[k] = keyValue;
+                                    updated = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!updated) {
+                            // Auto-generated key not found
+                            // Just skip it..
+                        }
+                    }
+                }
+
+                public void fetchEnd(DBRProgressMonitor monitor)
+                    throws DBCException
+                {
+
+                }
             }
         }
     }
@@ -1618,8 +1701,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 return metaColumn.getMetaData().getLabel();
 /*
                 return CommonUtils.isEmpty(metaColumn.getMetaData().getTableName()) ?
-                    metaColumn.getMetaData().getColumnName() :
-                    metaColumn.getMetaData().getTableName() + "." + metaColumn.getMetaData().getColumnName();
+                    metaColumn.getMetaData().getName() :
+                    metaColumn.getMetaData().getTableName() + "." + metaColumn.getMetaData().getName();
 */
             }
         }
@@ -1641,7 +1724,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         {
             int rowNumber = ((Number) element).intValue();
             if (mode == ResultSetMode.RECORD) {
-                return metaColumns[rowNumber].getMetaData().getColumnName();
+                return metaColumns[rowNumber].getMetaData().getName();
             } else {
                 return String.valueOf(rowNumber + 1);
             }

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueListener;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
@@ -89,8 +90,8 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
     {
         String tableName = valueController.getColumnMetaData().getTableName();
         String inputName = CommonUtils.isEmpty(tableName) ?
-            valueController.getColumnMetaData().getColumnName() :
-            tableName + "." + valueController.getColumnMetaData().getColumnName();
+            valueController.getColumnMetaData().getName() :
+            tableName + "." + valueController.getColumnMetaData().getName();
         if (isReadOnly()) {
             inputName += " [Read Only]";
         }
@@ -308,7 +309,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
         }
     }
 
-    void updateContentFromFile(IProgressMonitor monitor, ISQLQueryListener listener)
+    void updateContentFromFile(IProgressMonitor monitor, DBDValueListener listener)
         throws DBException, IOException
     {
         if (valueController.isReadOnly()) {

@@ -160,7 +160,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
         DBCColumnMetaData meta = valueController.getColumnMetaData();
-        shell.setText(meta.getTableName() + "." + meta.getColumnName());
+        shell.setText(meta.getTableName() + "." + meta.getName());
     }
 
     protected abstract Object getEditorValue();
@@ -275,7 +275,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         private SelectorLoaderJob()
         {
             super(
-                "Select " + valueController.getColumnMetaData().getColumnName() + " possible values",
+                "Select " + valueController.getColumnMetaData().getName() + " possible values",
                 DBIcon.SQL_EXECUTE.getImageDescriptor(),
                 valueController.getDataSource());
             setUser(false);

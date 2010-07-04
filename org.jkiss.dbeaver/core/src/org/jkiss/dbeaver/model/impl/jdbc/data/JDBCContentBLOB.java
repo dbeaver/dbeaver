@@ -8,10 +8,10 @@ import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueListener;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -83,7 +83,7 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
         InputStream stream,
         long contentLength,
         DBRProgressMonitor monitor,
-        ISQLQueryListener listener)
+        DBDValueListener listener)
         throws DBException
     {
         if (blob == null) {

@@ -103,7 +103,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         try {
             // Make query
             StringBuilder query = new StringBuilder();
-            query.append("INSERT INTO ").append(getFullQualifiedName());
+            query.append("INSERT INTO ").append(getFullQualifiedName()).append(" (");
 
             boolean hasKey = false;
             for (DBDColumnValue column : columns) {
@@ -133,13 +133,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 dbStat.setDataContainer(this);
 
                 // Set parameters
-                for (int i = 0; i < columns.size(); i++) {
-                    DBDColumnValue column = columns.get(i);
+                int paramNum = 0;
+                for (DBDColumnValue column : columns) {
                     if (DBUtils.isNullValue(column.getValue())) {
                         continue;
                     }
                     DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(getDataSource(), column.getColumn());
-                    valueHandler.bindValueObject(dbStat, column.getColumn(), i, column.getValue());
+                    valueHandler.bindValueObject(dbStat, column.getColumn(), paramNum++, column.getValue());
                 }
 
                 // Execute statement

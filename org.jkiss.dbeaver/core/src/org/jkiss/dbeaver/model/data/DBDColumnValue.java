@@ -5,25 +5,26 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 
 /**
  * Column value
  */
 public class DBDColumnValue {
 
-    private DBSTableColumn column;
+    private DBSColumnBase column;
     private Object value;
 
-    public DBDColumnValue(DBSTableColumn column, Object value) {
+    public DBDColumnValue(DBSColumnBase column, Object value) {
         this.column = column;
         this.value = value;
     }
 
-    public DBSTableColumn getColumn() {
+    public DBSColumnBase getColumn() {
         return column;
     }
 
-    public void setColumn(DBSTableColumn column) {
+    public void setColumn(DBSColumnBase column) {
         this.column = column;
     }
 

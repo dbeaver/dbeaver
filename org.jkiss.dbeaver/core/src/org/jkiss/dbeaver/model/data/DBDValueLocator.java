@@ -36,7 +36,7 @@ public class DBDValueLocator implements DBPObject {
         StringBuilder keyId = new StringBuilder();
         List<? extends DBCColumnMetaData> keyColumns = getKeyColumns();
         for (DBCColumnMetaData keyColumn : keyColumns) {
-            keyId.append('.').append(CommonUtils.escapeIdentifier(keyColumn.getColumnName()));
+            keyId.append('.').append(CommonUtils.escapeIdentifier(keyColumn.getName()));
             Object keyValue = rowController.getColumnValue(keyColumn);
             keyId.append('-');
             keyId.append(CommonUtils.escapeIdentifier(keyValue == null ? "NULL" : keyValue.toString()));

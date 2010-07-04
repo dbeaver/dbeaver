@@ -9,7 +9,6 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 
 /**
  * DBD Value Controller
@@ -56,9 +55,8 @@ public interface DBDValueController
     /**
      * Updates value immediately. Executes SQL update statement for this cell only.
      * @param value new value
-     * @param progressMonitor progress monitor
      */
-    void updateValueImmediately(Object value, ISQLQueryListener listener) throws DBException;
+    void updateValueImmediately(Object value, DBDValueListener listener) throws DBException;
 
     DBDValueLocator getValueLocator();
 

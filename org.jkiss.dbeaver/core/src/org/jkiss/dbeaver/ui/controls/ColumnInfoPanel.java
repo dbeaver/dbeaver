@@ -33,7 +33,7 @@ public class ColumnInfoPanel extends Composite {
     {
         PropertyCollector infoItem = new PropertyCollector(valueController.getColumnMetaData(), false);
         infoItem.addProperty("Table_Name", "Table Name", valueController.getColumnMetaData().getTableName());
-        infoItem.addProperty("Column_Name", "Column Name", valueController.getColumnMetaData().getColumnName() );
+        infoItem.addProperty("Column_Name", "Column Name", valueController.getColumnMetaData().getName() );
         infoItem.addProperty("Column_Type", "Column Type", valueController.getColumnMetaData().getTypeName() );
         valueController.getValueHandler().fillProperties(infoItem, valueController);
         if (valueController.getValueLocator() != null) {
@@ -66,7 +66,7 @@ public class ColumnInfoPanel extends Composite {
         }
         public String getName()
         {
-            return column.getColumnName();
+            return column.getName();
         }
         public String toString()
         {

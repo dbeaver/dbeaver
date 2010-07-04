@@ -24,6 +24,6 @@ public interface DBDContentBinary extends DBDContent {
         InputStream stream,
         long contentLength,
         DBRProgressMonitor monitor,
-        ISQLQueryListener listener) throws DBException;
+        DBDValueListener listener) throws DBException;
 
 }

@@ -12,32 +12,31 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
-import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
+import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.File;
-import java.io.Reader;
-import java.io.InputStreamReader;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -254,8 +253,6 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        DefaultQueryListener queryListener = new DefaultQueryListener() {};
-
                         if (value instanceof DBDContentCharacter) {
                             long contentLength = ContentUtils.calculateContentLength(openFile, ContentUtils.DEFAULT_FILE_CHARSET);
                             Reader reader = new InputStreamReader(
@@ -268,7 +265,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                     reader,
                                     contentLength,
                                     monitor,
-                                    queryListener);
+                                    null);
                             }
                             finally {
                                 ContentUtils.close(reader);
@@ -281,7 +278,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                     stream,
                                     openFile.length(),
                                     monitor,
-                                    queryListener);
+                                    null);
                             }
                             finally {
                                 ContentUtils.close(stream);
