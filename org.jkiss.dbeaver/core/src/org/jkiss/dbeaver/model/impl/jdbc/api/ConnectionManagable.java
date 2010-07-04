@@ -86,14 +86,24 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         return new TransactionManager();
     }
 
-    public DBCStatement prepareStatement(String sqlQuery, boolean scrollable, boolean updatable)
+    public DBCStatement prepareStatement(
+        String sqlQuery,
+        boolean scrollable,
+        boolean updatable,
+        boolean returnGeneratedKeys)
         throws DBCException
     {
         try {
-            return prepareStatement(
-                sqlQuery,
-                scrollable ? ResultSet.TYPE_SCROLL_SENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
-                updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+            if (returnGeneratedKeys) {
+                return prepareStatement(
+                    sqlQuery,
+                    Statement.RETURN_GENERATED_KEYS);
+            } else {
+                return prepareStatement(
+                    sqlQuery,
+                    scrollable ? ResultSet.TYPE_SCROLL_SENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
+                    updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+            }
         }
         catch (SQLException e) {
             throw new JDBCException(e);

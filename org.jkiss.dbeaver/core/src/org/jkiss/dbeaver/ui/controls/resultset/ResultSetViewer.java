@@ -51,11 +51,13 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
+import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
 import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
@@ -496,6 +498,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
+    static boolean isColumnReadOnly(DBDColumnBinding column)
+    {
+        return
+            column.getValueLocator() != null &&
+            column.getValueLocator().getTable() instanceof DBSDataContainer;
+    }
+
     public int getRowsCount()
     {
         return curRows.size();
@@ -539,7 +548,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.singleSourceCells = true;
         DBSTable sourceTable = null;
         for (DBDColumnBinding column : metaColumns) {
-            if (column.getValueLocator() == null) {
+            if (isColumnReadOnly(column)) {
                 singleSourceCells = false;
                 break;
             }
@@ -634,8 +643,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
         DBDColumnBinding metaColumn = metaColumns[columnIndex];
-        boolean readOnly = metaColumn.getValueLocator() == null;
-        if (readOnly && inline) {
+        if (isColumnReadOnly(metaColumn) && inline) {
             // No inline editors for readonly columns
             return false;
         }
@@ -962,7 +970,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public boolean isReadOnly()
         {
-            return metaColumns[columnIndex].getValueLocator() == null;
+            return isColumnReadOnly(metaColumns[columnIndex]);
         }
 
         public IWorkbenchPartSite getValueSite()
@@ -1108,6 +1116,15 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
+    static class KeyValues {
+        DBSTable table;
+        List<DBDColumnValue> keyColumns;
+    }
+
+    static class UpdateValues extends KeyValues {
+        List<DBDColumnValue> updateColumns;
+    }
+    
     private class CellDataSaver {
 
         private Set<CellInfo> cells;
@@ -1115,6 +1132,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         private Set<RowInfo> removedRowSet;
         private Map<Integer, Map<DBCTableMetaData, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBCTableMetaData, TableRowInfo>>();
         private List<SQLStatementInfo> statements = new ArrayList<SQLStatementInfo>();
+
+        private List<KeyValues> insertStatements = new ArrayList<KeyValues>();
+        private List<KeyValues> deleteStatements = new ArrayList<KeyValues>();
+        private List<KeyValues> updateStatements = new ArrayList<KeyValues>();
 
         private int updateCount = 0, insertCount = 0, deleteCount = 0;
 
@@ -1192,7 +1213,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 for (int i = 0; i < keyColumns.size(); i++) {
                     DBCColumnMetaData column = keyColumns.get(i);
                     if (i > 0) {
-                        query.append(",");
+                        query.append(" AND ");
                     }
                     int colIndex = getMetaColumnIndex(column);
                     if (colIndex < 0) {

@@ -149,6 +149,17 @@ public abstract class StatementManagable implements JDBCStatement {
         }
     }
 
+    public DBCResultSet openGeneratedKeysResultSet()
+        throws DBCException
+    {
+        try {
+            return makeResultSet(getOriginal().getGeneratedKeys());
+        }
+        catch (SQLException e) {
+            throw new DBCException(e);
+        }
+    }
+
     public int getUpdateRowCount() throws DBCException
     {
         try {

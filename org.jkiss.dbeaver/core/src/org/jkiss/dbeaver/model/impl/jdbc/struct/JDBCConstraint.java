@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
-import net.sf.jkiss.utils.CommonUtils;
-
 /**
  * JDBC abstract constraint
  */
@@ -103,7 +101,7 @@ public abstract class JDBCConstraint<DATASOURCE extends DBPDataSource, TABLE ext
                     query.append(" ").append(conditions.get(i));
                 }
             }
-            DBCStatement dbStat = context.prepareStatement(query.toString(), false, false);
+            DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, false);
             try {
                 int paramPos = 0;
                 if (keyPattern instanceof CharSequence) {

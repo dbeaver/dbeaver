@@ -40,6 +40,13 @@ public interface DBCStatement extends DBRBlockingObject
     DBCResultSet openResultSet() throws DBCException;
 
     /**
+     * Returns result set with generated key values. Valid only on after {@link #executeStatement} invocation.
+     * @return result set or null
+     * @throws DBCException on error
+     */
+    DBCResultSet openGeneratedKeysResultSet() throws DBCException;
+
+    /**
      * Returns number of rows updated by this statement executed.
      * @return number of row updated
      * @throws DBCException on error

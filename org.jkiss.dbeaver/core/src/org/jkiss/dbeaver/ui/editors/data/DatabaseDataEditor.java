@@ -176,7 +176,7 @@ public class DatabaseDataEditor extends EditorPart implements IEmbeddedWorkbench
             String statusMessage;
             boolean hasErrors = false;
             try {
-                int rowCount = getDataContainer().pumpAllData(monitor, resultSetView.getDataReciever(), 0, maxRows);
+                int rowCount = getDataContainer().readData(monitor, resultSetView.getDataReciever(), 0, maxRows);
                 if (rowCount > 0) {
                     statusMessage = rowCount + " row(s)";
                 } else {

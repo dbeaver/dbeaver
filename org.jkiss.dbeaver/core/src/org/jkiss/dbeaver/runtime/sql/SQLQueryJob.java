@@ -10,20 +10,19 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataReciever;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.dbc.DBCResultSet;
+import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +39,6 @@ public class SQLQueryJob extends DataSourceJob
 
     private List<SQLStatementInfo> queries;
     private DBDDataReciever dataReciever;
-    private DBSObject dataContainer;
 
     private SQLScriptCommitType commitType;
     private SQLScriptErrorHandling errorHandling;
@@ -75,14 +73,6 @@ public class SQLQueryJob extends DataSourceJob
             this.fetchResultSets = (queries.size() == 1);
             this.maxResults = preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
         }
-    }
-
-    public DBSObject getDataContainer() {
-        return dataContainer;
-    }
-
-    public void setDataContainer(DBSObject dataContainer) {
-        this.dataContainer = dataContainer;
     }
 
     public void addQueryListener(ISQLQueryListener listener)
@@ -256,10 +246,7 @@ public class SQLQueryJob extends DataSourceJob
         SQLQueryResult result = new SQLQueryResult(query);
         try {
             // Prepare statement
-            curStatement = context.prepareStatement(sqlQuery, false, false);
-            if (dataContainer != null) {
-                curStatement.setDataContainer(dataContainer);
-            }
+            curStatement = context.prepareStatement(sqlQuery, false, false, false);
             curStatement.setLimit(0, maxResults);
 
             // Bind parameters

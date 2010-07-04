@@ -9,7 +9,9 @@ import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * Data reciever
+ * Data reciever.
+ * Used to recieve some resultset data.
+ * Resultset can be a result of some query execution, cursor returned from stored procedure, generated keys result set, etc.
  */
 public interface DBDDataReciever {
 

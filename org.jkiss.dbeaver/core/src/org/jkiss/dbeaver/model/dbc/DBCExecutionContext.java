@@ -24,7 +24,8 @@ public interface DBCExecutionContext {
     DBCStatement prepareStatement(
         String query,
         boolean scrollable,
-        boolean updatable) throws DBCException;
+        boolean updatable,
+        boolean returnGeneratedKeys) throws DBCException;
 
     void close();
 
