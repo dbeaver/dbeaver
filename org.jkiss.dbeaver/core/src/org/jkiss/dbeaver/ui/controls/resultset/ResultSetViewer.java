@@ -216,7 +216,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             validPosition = curRowNum >= 0;
         }
         itemRowEdit.setEnabled(validPosition);
-        itemRowAdd.setEnabled(singleSourceCells && validPosition);
+        itemRowAdd.setEnabled(singleSourceCells && !CommonUtils.isEmpty(metaColumns));
         itemRowCopy.setEnabled(singleSourceCells && validPosition);
         itemRowDelete.setEnabled(singleSourceCells && validPosition);
     }
@@ -239,6 +239,33 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         boolean hasChanges = !editedValues.isEmpty() || !addedRows.isEmpty() || !removedRows.isEmpty();
         itemAccept.setEnabled(hasChanges);
         itemReject.setEnabled(hasChanges);
+    }
+
+    private void refreshSpreadsheet(boolean rowsChanged)
+    {
+        if (rowsChanged) {
+            GridPos curPos = spreadsheet.getCursorPosition();
+            if (mode == ResultSetMode.RECORD) {
+                if (curRowNum >= curRows.size()) {
+                    curRowNum = curRows.size() - 1;
+                }
+            } else if (mode == ResultSetMode.GRID) {
+                if (curPos.row >= curRows.size()) {
+                    curPos.row = curRows.size() - 1;
+                }
+            }
+
+            this.spreadsheet.reinitState();
+
+            // Set cursor on new row
+            if (mode == ResultSetMode.GRID) {
+                spreadsheet.setCursor(curPos, false);
+            }
+
+        } else {
+            this.spreadsheet.redrawGrid();
+        }
+        updateEditControls();
     }
 
     private void createStatusBar(Composite parent)
@@ -736,25 +763,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private void addNewRow(boolean copyCurrent)
     {
         GridPos curPos = spreadsheet.getCursorPosition();
-        int rowNum, colNum;
+        int rowNum;
         if (mode == ResultSetMode.RECORD) {
             rowNum = this.curRowNum;
-            colNum = curPos.row;
         } else {
             rowNum = curPos.row;
-            colNum = curPos.col;
         }
-
-        // Slide all existing edited rows/cells down
-        for (CellInfo cell : editedValues) {
-            if (cell.row >= rowNum) cell.row++;
+        if (rowNum < 0) {
+            rowNum = 0;
         }
-        for (RowInfo row : addedRows) {
-            if (row.row >= rowNum) row.row++;
-        }
-        for (RowInfo row : removedRows) {
-            if (row.row >= rowNum) row.row++;
-        }
+        shiftRows(rowNum, 1);
 
         // Add new row
         Object[] cells = new Object[metaColumns.length];
@@ -768,14 +786,21 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         curRows.add(rowNum, cells);
 
         addedRows.add(new RowInfo(rowNum));
-        spreadsheet.reinitState();
+        refreshSpreadsheet(true);
+    }
 
-        // Set cursor on new row
-        if (mode == ResultSetMode.GRID) {
-            spreadsheet.setCursor(new GridPos(colNum, rowNum), false);
+    private void shiftRows(int rowNum, int delta)
+    {
+        // Slide all existing edited rows/cells down
+        for (CellInfo cell : editedValues) {
+            if (cell.row >= rowNum) cell.row += delta;
         }
-
-        updateEditControls();
+        for (RowInfo row : addedRows) {
+            if (row.row >= rowNum) row.row += delta;
+        }
+        for (RowInfo row : removedRows) {
+            if (row.row >= rowNum) row.row += delta;
+        }
     }
 
     private boolean isRowDeleted(int row)
@@ -792,7 +817,20 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         } else {
             rowNum = curPos.row;
         }
-        removedRows.add(new RowInfo(rowNum));
+
+        RowInfo rowInfo = new RowInfo(rowNum);
+        if (addedRows.contains(rowInfo)) {
+            // Remove just added row 
+            addedRows.remove(rowInfo);
+            curRows.remove(rowNum);
+            shiftRows(rowNum, -1);
+
+            refreshSpreadsheet(true);
+
+        } else {
+            // Mark row as deleted
+            removedRows.add(rowInfo);
+        }
         spreadsheet.redrawGrid();
         updateEditControls();
     }
@@ -1074,8 +1112,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         private Map<Integer, Map<DBCTableMetaData, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBCTableMetaData, TableRowInfo>>();
         private List<SQLStatementInfo> statements = new ArrayList<SQLStatementInfo>();
 
-        private CellDataSaver(Set<RowInfo> newRowSet, Set<RowInfo> removedRowSet, Set<CellInfo> cells
-        )
+        private CellDataSaver(Set<RowInfo> newRowSet, Set<RowInfo> removedRowSet, Set<CellInfo> cells)
         {
             this.cells = cells;
             this.newRowSet = newRowSet;
@@ -1090,14 +1127,28 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         void applyChanges(ISQLQueryListener listener)
             throws DBException
         {
-            prepareRows();
-            prepareStatements();
+            prepareDeleteStatements();
+            prepareInsertStatements();
+            prepareUpdateStatements();
             execute(listener);
         }
 
-        private void prepareRows()
+        private int getMetaColumnIndex(DBCColumnMetaData column)
+        {
+            for (int i = 0; i < metaColumns.length; i++) {
+                if (column == metaColumns[i].getMetaData()) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        private void prepareUpdateRows()
             throws DBException
         {
+            if (this.cells == null) {
+                return;
+            }
             // Prepare rows
             for (CellInfo cell : this.cells) {
                 Map<DBCTableMetaData, TableRowInfo> tableMap = updatedRows.get(cell.row);
@@ -1117,9 +1168,113 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
-        private void prepareStatements()
+        private void prepareDeleteStatements()
             throws DBException
         {
+            if (this.removedRowSet == null) {
+                return;
+            }
+            // Make delete statements
+            for (RowInfo rowNum : removedRowSet) {
+                DBCTableMetaData table = metaColumns[0].getMetaData().getTable();
+                String tableName = table.getFullQualifiedName();
+                List<SQLStatementParameter> parameters = new ArrayList<SQLStatementParameter>();
+                StringBuilder query = new StringBuilder();
+                query.append("DELETE FROM ").append(tableName).append(" WHERE ");
+
+                List<? extends DBCColumnMetaData> keyColumns = metaColumns[0].getValueLocator().getKeyColumns();
+                for (int i = 0; i < keyColumns.size(); i++) {
+                    DBCColumnMetaData column = keyColumns.get(i);
+                    if (i > 0) {
+                        query.append(",");
+                    }
+                    int colIndex = getMetaColumnIndex(column);
+                    if (colIndex < 0) {
+                        throw new DBCException("Can't find meta column for ID column " + column.getColumnName());
+                    }
+
+                    String columnName = DBUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), column.getColumnName());
+                    query.append(columnName).append("=?");
+                    parameters.add(new SQLStatementParameter(
+                        metaColumns[colIndex].getValueHandler(),
+                        column,
+                        parameters.size(),
+                        curRows.get(rowNum.row)[colIndex]));
+                }
+
+                SQLStatementInfo statement = new SQLStatementInfo(query.toString(), parameters);
+                statement.setOffset(rowNum.row);
+                statement.setData(rowNum);
+                statements.add(statement);
+            }
+        }
+
+        private void prepareInsertStatements()
+            throws DBException
+        {
+            if (this.newRowSet == null) {
+                return;
+            }
+            // Make insert statements
+            for (RowInfo rowNum : newRowSet) {
+                Object[] cellValues = curRows.get(rowNum.row);
+
+                DBCTableMetaData table = metaColumns[0].getMetaData().getTable();
+                String tableName = table.getFullQualifiedName();
+                List<SQLStatementParameter> parameters = new ArrayList<SQLStatementParameter>();
+                StringBuilder query = new StringBuilder();
+                query.append("INSERT INTO ").append(tableName).append(" (");
+                boolean hasKey = false;
+                for (int i = 0; i < metaColumns.length; i++) {
+                    if (DBUtils.isNullValue(cellValues[i])) {
+                        // do not use null values
+                        continue;
+                    }
+                    DBDColumnBinding column = metaColumns[i];
+                    if (hasKey) query.append(",");
+                    hasKey = true;
+                    query.append(DBUtils.getQuotedIdentifier(resultSetProvider.getDataSource(), column.getMetaData().getColumnName()));
+                }
+                query.append(") VALUES (");
+                hasKey = false;
+                for (int i = 0; i < metaColumns.length; i++) {
+                    if (DBUtils.isNullValue(cellValues[i])) {
+                        continue;
+                    }
+                    if (hasKey) query.append(",");
+                    hasKey = true;
+                    query.append("?");
+                }
+                query.append(")");
+
+                for (int i = 0; i < metaColumns.length; i++) {
+                    if (DBUtils.isNullValue(cellValues[i])) {
+                        continue;
+                    }
+                    DBDColumnBinding column = metaColumns[i];
+                    parameters.add(new SQLStatementParameter(
+                        column.getValueHandler(),
+                        column.getMetaData(),
+                        parameters.size(),
+                        cellValues[i]));
+                }
+
+                SQLStatementInfo statement = new SQLStatementInfo(query.toString(), parameters);
+                statement.setOffset(rowNum.row);
+                statement.setData(rowNum);
+                statements.add(statement);
+            }
+        }
+
+        private void prepareUpdateStatements()
+            throws DBException
+        {
+            prepareUpdateRows();
+
+            if (updatedRows == null) {
+                return;
+            }
+
             // Make statements
             for (Integer rowNum : updatedRows.keySet()) {
                 Map<DBCTableMetaData, TableRowInfo> tableMap = updatedRows.get(rowNum);
@@ -1156,19 +1311,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         firstCol = false;
 
                         // Find meta column and add statement parameter
-                        DBDColumnBinding metaColumn = null;
-                        int columnIndex = -1;
-                        for (int i = 0; i < metaColumns.length; i++) {
-                            DBDColumnBinding tmpColumn = metaColumns[i];
-                            if (idColumn == tmpColumn.getMetaData()) {
-                                metaColumn = tmpColumn;
-                                columnIndex = i;
-                                break;
-                            }
-                        }
-                        if (metaColumn == null) {
+                        int columnIndex = getMetaColumnIndex(idColumn);
+                        if (columnIndex < 0) {
                             throw new DBCException("Can't find meta column for ID column " + idColumn.getColumnName());
                         }
+                        DBDColumnBinding metaColumn = metaColumns[columnIndex];
                         Object keyValue = curRows.get(rowNum)[columnIndex];
                         // Try to find old key value
                         for (CellInfo cell : this.cells) {
@@ -1226,7 +1373,17 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
                 @Override
                 public void onEndJob(final boolean hasErrors) {
-                    cells.clear();
+                    if (!hasErrors) {
+                        if (cells != null) {
+                            cells.clear();
+                        }
+                        if (newRowSet != null) {
+                            newRowSet.clear();
+                        }
+                        if (removedRowSet != null) {
+                            removedRowSet.clear();
+                        }
+                    }
                     site.getShell().getDisplay().asyncExec(new Runnable() {
                         public void run()
                         {
@@ -1243,12 +1400,14 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public void rejectChanges()
         {
-            for (CellInfo cell : this.cells) {
-                ResultSetViewer.this.curRows.get(cell.row)[cell.col] = cell.value;
+            if (this.cells != null) {
+                for (CellInfo cell : this.cells) {
+                    ResultSetViewer.this.curRows.get(cell.row)[cell.col] = cell.value;
+                }
+                this.cells.clear();
             }
-            this.cells.clear();
-
-            if (this.newRowSet != null) {
+            boolean rowsChanged = false;
+            if (this.newRowSet != null && !this.newRowSet.isEmpty()) {
                 // Remove new rows (in descending order to prevent concurrent modification errors)
                 int[] rowsToRemove = new int[this.newRowSet.size()];
                 int i = 0;
@@ -1258,26 +1417,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     ResultSetViewer.this.curRows.remove(rowsToRemove[i - 1]);
                 }
                 this.newRowSet.clear();
+                rowsChanged = true;
             }
             // Remove deleted rows
             if (this.removedRowSet != null) {
                 this.removedRowSet.clear();
             }
 
-            if (mode == ResultSetMode.RECORD) {
-                if (curRowNum >= curRows.size()) {
-                    curRowNum = curRows.size() - 1;
-                }
-            } else if (mode == ResultSetMode.GRID) {
-                GridPos curPos = spreadsheet.getCursorPosition();
-                if (curPos.row >= curRows.size()) {
-                    curPos.row = curRows.size() - 1;
-                }
-            }
-
-            ResultSetViewer.this.spreadsheet.reinitState();
-            updateEditControls();
+            refreshSpreadsheet(rowsChanged);
         }
+
     }
 
     private class ContentProvider implements IGridContentProvider {
