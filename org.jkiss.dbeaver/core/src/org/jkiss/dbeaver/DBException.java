@@ -29,7 +29,7 @@ public class DBException extends Exception
 
     public DBException(Throwable cause)
     {
-        super(cause);
+        super(cause.getMessage(), cause);
     }
 
     public DBException(SQLException ex)

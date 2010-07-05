@@ -170,6 +170,14 @@ public interface DBPDataSourceInfo
     boolean supportsTransactions();
 
     /**
+     * Retrieves whether this database supports savepoints.
+     *
+     * @return <code>true</code> if savepoints are supported;
+     *         <code>false</code> otherwise
+     */
+    boolean supportsSavepoints();
+
+    /**
      * Retrieves list of supported transaction isolation levels
      * @return list of supported transaction isolation levels
      */

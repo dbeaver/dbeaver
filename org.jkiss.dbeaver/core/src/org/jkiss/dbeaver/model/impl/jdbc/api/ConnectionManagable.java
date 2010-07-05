@@ -301,12 +301,18 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     public void rollback(Savepoint savepoint)
         throws SQLException
     {
+        if (savepoint instanceof SavepointManagable) {
+            savepoint = ((SavepointManagable)savepoint).getOriginal();
+        }
         original.rollback(savepoint);
     }
 
     public void releaseSavepoint(Savepoint savepoint)
         throws SQLException
     {
+        if (savepoint instanceof SavepointManagable) {
+            savepoint = ((SavepointManagable)savepoint).getOriginal();
+        }
         original.releaseSavepoint(savepoint);
     }
 
@@ -493,6 +499,11 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
             }
         }
 
+        public boolean supportsSavepoints()
+        {
+            return dataSource.getInfo().supportsSavepoints();
+        }
+
         public DBCSavepoint setSavepoint(String name)
             throws DBCException
         {
@@ -508,6 +519,21 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
                 throw new DBCException(e);
             }
             return new SavepointManagable(ConnectionManagable.this, savepoint);
+        }
+
+        public void releaseSavepoint(DBCSavepoint savepoint)
+            throws DBCException
+        {
+            try {
+                if (savepoint instanceof Savepoint) {
+                    ConnectionManagable.this.releaseSavepoint((Savepoint)savepoint);
+                } else {
+                    throw new SQLFeatureNotSupportedException("Bad savepoint object");
+                }
+            }
+            catch (SQLException e) {
+                throw new JDBCException(e);
+            }
         }
 
         public void commit()
@@ -526,7 +552,11 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         {
             try {
                 if (savepoint != null) {
-                    ConnectionManagable.this.rollback((Savepoint)savepoint);
+                    if (savepoint instanceof Savepoint) {
+                        ConnectionManagable.this.rollback((Savepoint)savepoint);
+                    } else {
+                        throw new SQLFeatureNotSupportedException("Bad savepoint object");
+                    }
                 }
                 ConnectionManagable.this.rollback();
             }

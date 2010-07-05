@@ -40,7 +40,7 @@ public abstract class JDBCDataSource
     private DBSDataSourceContainer container;
     private Connection connection;
 
-    private DBPDataSourceInfo info;
+    protected DBPDataSourceInfo dataSourceInfo;
 
     public JDBCDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
@@ -122,7 +122,7 @@ public abstract class JDBCDataSource
 
     public DBPDataSourceInfo getInfo()
     {
-        return info;
+        return dataSourceInfo;
     }
 
     public void checkConnection(DBRProgressMonitor monitor)
@@ -154,7 +154,7 @@ public abstract class JDBCDataSource
     {
         JDBCExecutionContext context = openContext(monitor);
         try {
-            info = new JDBCDataSourceInfo(
+            dataSourceInfo = new JDBCDataSourceInfo(
                 context.getMetaData());
         } catch (SQLException ex) {
             throw new DBException("Error getting JDBC metadata", ex);

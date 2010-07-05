@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
@@ -756,7 +757,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private void applyChanges()
     {
         try {
-            new CellDataSaver(addedRows, removedRows, editedValues).applyChanges(null);
+            new DataUpdater(addedRows, removedRows, editedValues).applyChanges(null);
         } catch (DBException e) {
             log.error("Could not obtain result set metdata", e);
         }
@@ -764,7 +765,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void rejectChanges()
     {
-        new CellDataSaver(addedRows, removedRows, editedValues).rejectChanges();
+        new DataUpdater(addedRows, removedRows, editedValues).rejectChanges();
     }
 
     private boolean isRowAdded(int row)
@@ -966,7 +967,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     Set<CellInfo> cells = new HashSet<CellInfo>();
                     cells.add(new CellInfo(columnIndex, rowIndex, oldValue));
                     try {
-                        new CellDataSaver(null, null, cells).applyChanges(listener);
+                        new DataUpdater(null, null, cells).applyChanges(listener);
                     }
                     catch (DBException e) {
                         // Rollback value
@@ -1140,39 +1141,40 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
-    static class KeyValues {
+    enum StatementType {
+        INSERT,
+        DELETE,
+        UPDATE,
+    }
+
+    static class DataStatementInfo {
+        StatementType type;
         int rowNum;
         DBSTable table;
         List<DBDColumnValue> keyColumns = new ArrayList<DBDColumnValue>();
+        List<DBDColumnValue> updateColumns = new ArrayList<DBDColumnValue>();
+        boolean executed = false;
 
-        KeyValues(int rowNum, DBSTable table)
+        DataStatementInfo(StatementType type, int rowNum, DBSTable table)
         {
+            this.type = type;
             this.rowNum = rowNum;
             this.table = table;
         }
     }
 
-    static class UpdateValues extends KeyValues {
-        List<DBDColumnValue> updateColumns = new ArrayList<DBDColumnValue>();
-
-        UpdateValues(int rowNum, DBSTable table)
-        {
-            super(rowNum, table);
-        }
-    }
-    
-    private class CellDataSaver {
+    private class DataUpdater {
 
         private Set<CellInfo> cells;
         private Set<RowInfo> newRowSet;
         private Set<RowInfo> removedRowSet;
         private Map<Integer, Map<DBSTable, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSTable, TableRowInfo>>();
 
-        private List<KeyValues> insertStatements = new ArrayList<KeyValues>();
-        private List<KeyValues> deleteStatements = new ArrayList<KeyValues>();
-        private List<UpdateValues> updateStatements = new ArrayList<UpdateValues>();
+        private List<DataStatementInfo> insertStatements = new ArrayList<DataStatementInfo>();
+        private List<DataStatementInfo> deleteStatements = new ArrayList<DataStatementInfo>();
+        private List<DataStatementInfo> updateStatements = new ArrayList<DataStatementInfo>();
 
-        private CellDataSaver(Set<RowInfo> newRowSet, Set<RowInfo> removedRowSet, Set<CellInfo> cells)
+        private DataUpdater(Set<RowInfo> newRowSet, Set<RowInfo> removedRowSet, Set<CellInfo> cells)
         {
             this.cells = cells;
             this.newRowSet = newRowSet;
@@ -1227,7 +1229,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             // Make delete statements
             for (RowInfo rowNum : removedRowSet) {
                 DBSTable table = metaColumns[0].getValueLocator().getTable();
-                KeyValues statement = new KeyValues(rowNum.row, table);
+                DataStatementInfo statement = new DataStatementInfo(StatementType.DELETE, rowNum.row, table);
                 List<? extends DBCColumnMetaData> keyColumns = metaColumns[0].getValueLocator().getKeyColumns();
                 for (DBCColumnMetaData column : keyColumns) {
                     int colIndex = getMetaColumnIndex(column);
@@ -1250,7 +1252,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             for (RowInfo rowNum : newRowSet) {
                 Object[] cellValues = curRows.get(rowNum.row);
                 DBSTable table = metaColumns[0].getValueLocator().getTable();
-                KeyValues statement = new KeyValues(rowNum.row, table);
+                DataStatementInfo statement = new DataStatementInfo(StatementType.INSERT, rowNum.row, table);
                 for (int i = 0; i < metaColumns.length; i++) {
                     DBDColumnBinding column = metaColumns[i];
                     statement.keyColumns.add(new DBDColumnValue(column.getMetaData(), cellValues[i]));
@@ -1273,7 +1275,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(rowNum);
                 for (DBSTable table : tableMap.keySet()) {
                     TableRowInfo rowInfo = tableMap.get(table);
-                    UpdateValues statement = new UpdateValues(rowNum, table);
+                    DataStatementInfo statement = new DataStatementInfo(StatementType.UPDATE, rowNum, table);
                     // Updated columns
                     for (int i = 0; i < rowInfo.tableCells.size(); i++) {
                         CellInfo cell = rowInfo.tableCells.get(i);
@@ -1347,7 +1349,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         private class DataUpdaterJob extends DataSourceJob {
             private DBDValueListener listener;
+            private boolean autocommit;
             private int updateCount = 0, insertCount = 0, deleteCount = 0;
+            private DBCSavepoint savepoint;
 
             protected DataUpdaterJob(DBDValueListener listener)
             {
@@ -1359,69 +1363,36 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             {
                 updateInProgress = true;
                 try {
-                    Throwable error = null;
-                    DBCExecutionContext context = getDataSource().openContext(monitor);
-                    try {
-                        monitor.beginTask("Apply resultset changes", deleteStatements.size() + insertStatements.size() + updateStatements.size());
+                    final Throwable error = executeStatements(monitor);
 
-                        for (KeyValues statement : deleteStatements) {
-                            if (monitor.isCanceled()) break;
-                            DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
-                            try {
-                                deleteCount += dataContainer.deleteData(context, statement.keyColumns);
-                            }
-                            catch (DBException e) {
-                                error = e;
-                                return DBeaverUtils.makeExceptionStatus(e);
-                            }
-                            monitor.worked(1);
-                        }
-                        for (KeyValues statement : insertStatements) {
-                            if (monitor.isCanceled()) break;
-                            DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
-                            try {
-                                insertCount += dataContainer.insertData(context, statement.keyColumns, new KeyDataReciever(statement));
-                            }
-                            catch (DBException e) {
-                                error = e;
-                                return DBeaverUtils.makeExceptionStatus(e);
-                            }
-                            monitor.worked(1);
-                        }
-                        for (UpdateValues statement : updateStatements) {
-                            if (monitor.isCanceled()) break;
-                            DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
-                            try {
-                                updateCount += dataContainer.updateData(context, statement.keyColumns, statement.updateColumns, new KeyDataReciever(statement));
-                            }
-                            catch (DBException e) {
-                                error = e;
-                                return DBeaverUtils.makeExceptionStatus(e);
-                            }
-                            monitor.worked(1);
-                        }
-                    }
-                    finally {
-                        monitor.done();
-                        context.close();
-                        if (listener != null) {
-                            listener.onUpdate(error == null);
-                        }
+                    if (listener != null) {
+                        listener.onUpdate(error == null);
                     }
 
-                    if (cells != null) {
-                        cells.clear();
+                    boolean rowsChanged = false;
+                    if (!autocommit && error == null) {
+                        // Reflect data changes in viewer
+                        // Only for transactional update and if no error occured
+                        if (cells != null) {
+                            cells.clear();
+                        }
+                        if (newRowSet != null) {
+                            newRowSet.clear();
+                        }
+                        rowsChanged = deleteRows(removedRowSet);
                     }
-                    if (newRowSet != null) {
-                        newRowSet.clear();
-                    }
-                    final boolean rowsChanged = deleteRows(removedRowSet);
 
+                    final boolean updateRows = rowsChanged;
                     site.getShell().getDisplay().syncExec(new Runnable() {
                         public void run()
                         {
-                            refreshSpreadsheet(rowsChanged);
-                            setStatus("Instered: " + insertCount + " / Deleted: " + deleteCount + " / Updated: " + updateCount, false);
+                            refreshSpreadsheet(updateRows);
+                            if (error == null) {
+                                setStatus("Instered: " + insertCount + " / Deleted: " + deleteCount + " / Updated: " + updateCount, false);
+                            } else {
+                                DBeaverUtils.showErrorDialog(site.getShell(), "Data error", "Error synchronizing data with database", error);
+                                setStatus(error.getMessage(), true);
+                            }
                         }
                     });
 
@@ -1432,12 +1403,109 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 return Status.OK_STATUS;
             }
 
+            private Throwable executeStatements(DBRProgressMonitor monitor)
+            {
+                DBCExecutionContext context = getDataSource().openContext(monitor);
+                try {
+                    try {
+                        autocommit = context.getTransactionManager().isAutoCommit();
+                    }
+                    catch (DBCException e) {
+                        log.warn("Could not determine autocommit state", e);
+                        autocommit = true;
+                    }
+                    if (!autocommit && context.getTransactionManager().supportsSavepoints()) {
+                        try {
+                            savepoint = context.getTransactionManager().setSavepoint(null);
+                        }
+                        catch (Throwable e) {
+                            // May be savepoints not supported
+                            log.debug("Could not set savepoint", e);
+                        }
+                    }
+                    try {
+                        monitor.beginTask("Apply resultset changes", deleteStatements.size() + insertStatements.size() + updateStatements.size());
+
+                        for (DataStatementInfo statement : deleteStatements) {
+                            if (monitor.isCanceled()) break;
+                            DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
+                            try {
+                                deleteCount += dataContainer.deleteData(context, statement.keyColumns);
+                                processStatementChanges(statement);
+                            }
+                            catch (DBException e) {
+                                processStatementError(statement, context);
+                                return e;
+                            }
+                            monitor.worked(1);
+                        }
+                        for (DataStatementInfo statement : insertStatements) {
+                            if (monitor.isCanceled()) break;
+                            DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
+                            try {
+                                insertCount += dataContainer.insertData(context, statement.keyColumns, new KeyDataReciever(statement));
+                            }
+                            catch (DBException e) {
+                                processStatementError(statement, context);
+                                return e;
+                            }
+                            monitor.worked(1);
+                        }
+                        for (DataStatementInfo statement : updateStatements) {
+                            if (monitor.isCanceled()) break;
+                            DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
+                            try {
+                                updateCount += dataContainer.updateData(context, statement.keyColumns, statement.updateColumns, new KeyDataReciever(statement));
+                            }
+                            catch (DBException e) {
+                                processStatementError(statement, context);
+                                return e;
+                            }
+                            monitor.worked(1);
+                        }
+
+                        return null;
+                    }
+                    finally {
+                        if (savepoint != null) {
+                            try {
+                                context.getTransactionManager().releaseSavepoint(savepoint);
+                            }
+                            catch (Throwable e) {
+                                // May be savepoints not supported
+                                log.debug("Could not release savepoint", e);
+                            }
+                        }
+                    }
+                }
+                finally {
+                    monitor.done();
+                    context.close();
+                }
+            }
+
+            private void processStatementChanges(DataStatementInfo statement)
+            {
+                statement.executed = true;
+            }
+
+            private void processStatementError(DataStatementInfo statement, DBCExecutionContext context)
+            {
+                statement.executed = false;
+                try {
+                    context.getTransactionManager().rollback(savepoint);
+                }
+                catch (Throwable e) {
+                    log.debug("Error during transaction rollback", e);
+                }
+            }
+
         }
     }
 
     private class KeyDataReciever implements DBDDataReciever {
-        KeyValues statement;
-        public KeyDataReciever(KeyValues statement)
+        DataStatementInfo statement;
+        public KeyDataReciever(DataStatementInfo statement)
         {
             this.statement = statement;
         }
@@ -1493,6 +1561,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         }
     }
+
     private class ContentProvider implements IGridContentProvider {
 
         public GridPos getSize()

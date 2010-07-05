@@ -24,9 +24,13 @@ public interface DBCTransactionManager
 
     void setAutoCommit(boolean autoCommit) throws DBCException;
 
+    boolean supportsSavepoints();
+
     DBCSavepoint setSavepoint(String name)
         throws DBCException;
-    
+
+    void releaseSavepoint(DBCSavepoint savepoint) throws DBCException;
+
     void commit() throws DBCException;
 
     void rollback(DBCSavepoint savepoint) throws DBCException;

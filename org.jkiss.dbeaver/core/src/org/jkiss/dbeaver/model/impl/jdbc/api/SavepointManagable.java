@@ -15,7 +15,7 @@ import java.sql.Savepoint;
 /**
  * Savepoint
  */
-public class SavepointManagable implements DBCSavepoint {
+public class SavepointManagable implements DBCSavepoint, Savepoint {
 
     static Log log = LogFactory.getLog(SavepointManagable.class);
 
@@ -53,5 +53,22 @@ public class SavepointManagable implements DBCSavepoint {
     public JDBCExecutionContext getContext()
     {
         return connection;
+    }
+
+    public int getSavepointId()
+        throws SQLException
+    {
+        return original.getSavepointId();
+    }
+
+    public String getSavepointName()
+        throws SQLException
+    {
+        return original.getSavepointName();
+    }
+
+    public Savepoint getOriginal()
+    {
+        return original;
     }
 }
