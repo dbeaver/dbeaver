@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.dbeaver.model.data.DBDDataReciever;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
@@ -26,27 +27,27 @@ public interface DBSDataContainer extends DBSObject {
     int getSupportedFeatures();
 
     int readData(
-        DBRProgressMonitor monitor,
+        DBCExecutionContext context,
         DBDDataReciever dataReciever,
         int firstRow,
         int maxRows)
         throws DBException;
 
     int insertData(
-        DBRProgressMonitor monitor,
+        DBCExecutionContext context,
         List<DBDColumnValue> columns,
         DBDDataReciever keysReciever)
         throws DBException;
 
     int updateData(
-        DBRProgressMonitor monitor,
+        DBCExecutionContext context,
         List<DBDColumnValue> keyColumns,
         List<DBDColumnValue> updateColumns,
         DBDDataReciever keysReciever)
         throws DBException;
 
     int deleteData(
-        DBRProgressMonitor monitor,
+        DBCExecutionContext context,
         List<DBDColumnValue> keyColumns)
         throws DBException;
 

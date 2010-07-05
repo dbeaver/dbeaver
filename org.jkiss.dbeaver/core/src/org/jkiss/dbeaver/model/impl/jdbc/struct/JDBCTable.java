@@ -15,12 +15,11 @@ import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.impl.meta.AbstractTable;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * JDBC abstract table mplementation
@@ -45,224 +44,203 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return DATA_INSERT | DATA_UPDATE | DATA_DELETE;
     }
 
-    public int readData(DBRProgressMonitor monitor, DBDDataReciever dataReciever, int firstRow, int maxRows)
+    public int readData(DBCExecutionContext context, DBDDataReciever dataReciever, int firstRow, int maxRows)
         throws DBException
     {
         if (firstRow > 0) {
             throw new DBException("First row number must be 0");
         }
-        DBCExecutionContext context = getDataSource().openContext(monitor, "Query table " + getFullQualifiedName() + " data");
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT * FROM ").append(getFullQualifiedName());
+        DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, false);
         try {
-            StringBuilder query = new StringBuilder();
-            query.append("SELECT * FROM ").append(getFullQualifiedName());
-            DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, false);
+            dbStat.setDataContainer(this);
+            if (maxRows > 0) {
+                dbStat.setLimit(0, maxRows);
+            }
+            if (!dbStat.executeStatement()) {
+                return 0;
+            }
+            DBCResultSet dbResult = dbStat.openResultSet();
+            if (dbResult == null) {
+                return 0;
+            }
             try {
-                dbStat.setDataContainer(this);
-                if (maxRows > 0) {
-                    dbStat.setLimit(0, maxRows);
-                }
-                if (!dbStat.executeStatement()) {
-                    return 0;
-                }
-                DBCResultSet dbResult = dbStat.openResultSet();
-                if (dbResult == null) {
-                    return 0;
-                }
+                dataReciever.fetchStart(context.getProgressMonitor(), dbResult);
                 try {
-                    dataReciever.fetchStart(monitor, dbResult);
-                    try {
-                        int rowCount = 0;
-                        while (dbResult.nextRow()) {
-                            dataReciever.fetchRow(monitor, dbResult);
-                            rowCount++;
-                        }
-                        return rowCount;
+                    int rowCount = 0;
+                    while (dbResult.nextRow()) {
+                        dataReciever.fetchRow(context.getProgressMonitor(), dbResult);
+                        rowCount++;
                     }
-                    finally {
-                        dataReciever.fetchEnd(monitor);
-                    }
+                    return rowCount;
                 }
                 finally {
-                    dbResult.close();
+                    dataReciever.fetchEnd(context.getProgressMonitor());
                 }
             }
             finally {
-                dbStat.close();
+                dbResult.close();
             }
-
         }
         finally {
-            context.close();
+            dbStat.close();
         }
     }
 
-    public int insertData(DBRProgressMonitor monitor, List<DBDColumnValue> columns, DBDDataReciever keysReciever)
+    public int insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReciever keysReciever)
         throws DBException
     {
-        DBCExecutionContext context = getDataSource().openContext(monitor, "Insert data in table " + getFullQualifiedName() + "");
         try {
-            // Make query
-            StringBuilder query = new StringBuilder();
-            query.append("INSERT INTO ").append(getFullQualifiedName()).append(" (");
+            Thread.sleep(1000);
+        }
+        catch (InterruptedException e) {
+            
+        }
+        // Make query
+        StringBuilder query = new StringBuilder();
+        query.append("INSERT INTO ").append(getFullQualifiedName()).append(" (");
 
-            boolean hasKey = false;
+        boolean hasKey = false;
+        for (DBDColumnValue column : columns) {
+            if (DBUtils.isNullValue(column.getValue())) {
+                // do not use null values
+                continue;
+            }
+            if (hasKey) query.append(",");
+            hasKey = true;
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName()));
+        }
+        query.append(") VALUES (");
+        hasKey = false;
+        for (DBDColumnValue column1 : columns) {
+            if (DBUtils.isNullValue(column1.getValue())) {
+                continue;
+            }
+            if (hasKey) query.append(",");
+            hasKey = true;
+            query.append("?");
+        }
+        query.append(")");
+
+        // Execute
+        DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, keysReciever != null);
+        try {
+            dbStat.setDataContainer(this);
+
+            // Set parameters
+            int paramNum = 0;
             for (DBDColumnValue column : columns) {
                 if (DBUtils.isNullValue(column.getValue())) {
-                    // do not use null values
                     continue;
                 }
-                if (hasKey) query.append(",");
-                hasKey = true;
-                query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName()));
-            }
-            query.append(") VALUES (");
-            hasKey = false;
-            for (DBDColumnValue column1 : columns) {
-                if (DBUtils.isNullValue(column1.getValue())) {
-                    continue;
-                }
-                if (hasKey) query.append(",");
-                hasKey = true;
-                query.append("?");
-            }
-            query.append(")");
-
-            // Execute
-            DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, keysReciever != null);
-            try {
-                dbStat.setDataContainer(this);
-
-                // Set parameters
-                int paramNum = 0;
-                for (DBDColumnValue column : columns) {
-                    if (DBUtils.isNullValue(column.getValue())) {
-                        continue;
-                    }
-                    DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(getDataSource(), column.getColumn());
-                    valueHandler.bindValueObject(dbStat, column.getColumn(), paramNum++, column.getValue());
-                }
-
-                // Execute statement
-                dbStat.executeStatement();
-                int rowCount = dbStat.getUpdateRowCount();
-                if (keysReciever != null) {
-                    readKeys(monitor, dbStat, keysReciever);
-                }
-                return rowCount;
-            }
-            finally {
-                dbStat.close();
+                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(getDataSource(), column.getColumn());
+                valueHandler.bindValueObject(dbStat, column.getColumn(), paramNum++, column.getValue());
             }
 
+            // Execute statement
+            dbStat.executeStatement();
+            int rowCount = dbStat.getUpdateRowCount();
+            if (keysReciever != null) {
+                readKeys(context, dbStat, keysReciever);
+            }
+            return rowCount;
         }
         finally {
-            context.close();
+            dbStat.close();
         }
+
     }
 
     public int updateData(
-        DBRProgressMonitor monitor,
+        DBCExecutionContext context,
         List<DBDColumnValue> keyColumns,
         List<DBDColumnValue> updateColumns,
         DBDDataReciever keysReciever)
         throws DBException
     {
-        DBCExecutionContext context = getDataSource().openContext(monitor, "Update data in table " + getFullQualifiedName() + "");
+        // Make query
+        StringBuilder query = new StringBuilder();
+        query.append("UPDATE ").append(getFullQualifiedName()).append(" SET ");
+
+        boolean hasKey = false;
+        for (DBDColumnValue column : updateColumns) {
+            if (hasKey) query.append(",");
+            hasKey = true;
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?");
+        }
+        query.append(" WHERE ");
+        hasKey = false;
+        for (DBDColumnValue column : keyColumns) {
+            if (hasKey) query.append(" AND ");
+            hasKey = true;
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?");
+        }
+
+        // Execute
+        DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, keysReciever != null);
         try {
-            // Make query
-            StringBuilder query = new StringBuilder();
-            query.append("UPDATE ").append(getFullQualifiedName()).append(" SET ");
+            dbStat.setDataContainer(this);
 
-            boolean hasKey = false;
-            for (DBDColumnValue column : updateColumns) {
-                if (hasKey) query.append(",");
-                hasKey = true;
-                query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?");
-            }
-            query.append(" WHERE ");
-            hasKey = false;
-            for (DBDColumnValue column : keyColumns) {
-                if (hasKey) query.append(" AND ");
-                hasKey = true;
-                query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?");
+            // Set parameters
+            List<DBDColumnValue> allColumn = new ArrayList<DBDColumnValue>(updateColumns.size() + keyColumns.size());
+            allColumn.addAll(updateColumns);
+            allColumn.addAll(keyColumns);
+            for (int i = 0; i < allColumn.size(); i++) {
+                DBDColumnValue column = allColumn.get(i);
+                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(getDataSource(), column.getColumn());
+                valueHandler.bindValueObject(dbStat, column.getColumn(), i, column.getValue());
             }
 
-            // Execute
-            DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, keysReciever != null);
-            try {
-                dbStat.setDataContainer(this);
-
-                // Set parameters
-                List<DBDColumnValue> allColumn = new ArrayList<DBDColumnValue>(updateColumns.size() + keyColumns.size());
-                allColumn.addAll(updateColumns);
-                allColumn.addAll(keyColumns);
-                for (int i = 0; i < allColumn.size(); i++) {
-                    DBDColumnValue column = allColumn.get(i);
-                    DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(getDataSource(), column.getColumn());
-                    valueHandler.bindValueObject(dbStat, column.getColumn(), i, column.getValue());
-                }
-
-                // Execute statement
-                dbStat.executeStatement();
-                int rowCount = dbStat.getUpdateRowCount();
-                if (keysReciever != null) {
-                    readKeys(monitor, dbStat, keysReciever);
-                }
-                return rowCount;
+            // Execute statement
+            dbStat.executeStatement();
+            int rowCount = dbStat.getUpdateRowCount();
+            if (keysReciever != null) {
+                readKeys(context, dbStat, keysReciever);
             }
-            finally {
-                dbStat.close();
-            }
-
+            return rowCount;
         }
         finally {
-            context.close();
+            dbStat.close();
         }
     }
 
-    public int deleteData(DBRProgressMonitor monitor, List<DBDColumnValue> keyColumns)
+    public int deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns)
         throws DBException
     {
-        DBCExecutionContext context = getDataSource().openContext(monitor, "Update data in table " + getFullQualifiedName() + "");
+        // Make query
+        StringBuilder query = new StringBuilder();
+        query.append("DELETE FROM ").append(getFullQualifiedName()).append(" WHERE ");
+
+        boolean hasKey = false;
+        for (DBDColumnValue column : keyColumns) {
+            if (hasKey) query.append(" AND ");
+            hasKey = true;
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?");
+        }
+
+        // Execute
+        DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, false);
         try {
-            // Make query
-            StringBuilder query = new StringBuilder();
-            query.append("DELETE FROM ").append(getFullQualifiedName()).append(" WHERE ");
+            dbStat.setDataContainer(this);
 
-            boolean hasKey = false;
-            for (DBDColumnValue column : keyColumns) {
-                if (hasKey) query.append(" AND ");
-                hasKey = true;
-                query.append(DBUtils.getQuotedIdentifier(getDataSource(), column.getColumn().getName())).append("=?");
+            // Set parameters
+            for (int i = 0; i < keyColumns.size(); i++) {
+                DBDColumnValue column = keyColumns.get(i);
+                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(getDataSource(), column.getColumn());
+                valueHandler.bindValueObject(dbStat, column.getColumn(), i, column.getValue());
             }
 
-            // Execute
-            DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, false);
-            try {
-                dbStat.setDataContainer(this);
-
-                // Set parameters
-                for (int i = 0; i < keyColumns.size(); i++) {
-                    DBDColumnValue column = keyColumns.get(i);
-                    DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(getDataSource(), column.getColumn());
-                    valueHandler.bindValueObject(dbStat, column.getColumn(), i, column.getValue());
-                }
-
-                // Execute statement
-                dbStat.executeStatement();
-                return dbStat.getUpdateRowCount();
-            }
-            finally {
-                dbStat.close();
-            }
-
+            // Execute statement
+            dbStat.executeStatement();
+            return dbStat.getUpdateRowCount();
         }
         finally {
-            context.close();
+            dbStat.close();
         }
     }
 
-    private void readKeys(DBRProgressMonitor monitor, DBCStatement dbStat, DBDDataReciever keysReciever)
+    private void readKeys(DBCExecutionContext context, DBCStatement dbStat, DBDDataReciever keysReciever)
         throws DBCException
     {
         DBCResultSet dbResult;
@@ -276,14 +254,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             return;
         }
         try {
-            keysReciever.fetchStart(monitor, dbResult);
+            keysReciever.fetchStart(context.getProgressMonitor(), dbResult);
             try {
                 while (dbResult.nextRow()) {
-                    keysReciever.fetchRow(monitor, dbResult);
+                    keysReciever.fetchRow(context.getProgressMonitor(), dbResult);
                 }
             }
             finally {
-                keysReciever.fetchEnd(monitor);
+                keysReciever.fetchEnd(context.getProgressMonitor());
             }
         }
         finally {

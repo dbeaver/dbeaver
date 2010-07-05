@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -175,8 +176,9 @@ public class DatabaseDataEditor extends EditorPart implements IEmbeddedWorkbench
 
             String statusMessage;
             boolean hasErrors = false;
+            DBCExecutionContext context = getDataSource().openContext(monitor, "Read '" + getDataContainer().getName() + "' data");
             try {
-                int rowCount = getDataContainer().readData(monitor, resultSetView.getDataReciever(), 0, maxRows);
+                int rowCount = getDataContainer().readData(context, resultSetView.getDataReciever(), 0, maxRows);
                 if (rowCount > 0) {
                     statusMessage = rowCount + " row(s)";
                 } else {
@@ -187,6 +189,9 @@ public class DatabaseDataEditor extends EditorPart implements IEmbeddedWorkbench
                 statusMessage = e.getMessage();
                 hasErrors = true;
                 log.error(e);
+            }
+            finally {
+                context.close();
             }
 
             {

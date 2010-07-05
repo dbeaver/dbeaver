@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
@@ -1358,13 +1359,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             {
                 updateInProgress = true;
                 try {
-                    monitor.beginTask("Apply resultset changes", deleteStatements.size() + insertStatements.size() + updateStatements.size());
                     Throwable error = null;
+                    DBCExecutionContext context = getDataSource().openContext(monitor);
                     try {
+                        monitor.beginTask("Apply resultset changes", deleteStatements.size() + insertStatements.size() + updateStatements.size());
+
                         for (KeyValues statement : deleteStatements) {
+                            if (monitor.isCanceled()) break;
                             DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
                             try {
-                                deleteCount += dataContainer.deleteData(monitor, statement.keyColumns);
+                                deleteCount += dataContainer.deleteData(context, statement.keyColumns);
                             }
                             catch (DBException e) {
                                 error = e;
@@ -1373,9 +1377,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             monitor.worked(1);
                         }
                         for (KeyValues statement : insertStatements) {
+                            if (monitor.isCanceled()) break;
                             DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
                             try {
-                                insertCount += dataContainer.insertData(monitor, statement.keyColumns, new KeyDataReciever(statement));
+                                insertCount += dataContainer.insertData(context, statement.keyColumns, new KeyDataReciever(statement));
                             }
                             catch (DBException e) {
                                 error = e;
@@ -1384,9 +1389,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             monitor.worked(1);
                         }
                         for (UpdateValues statement : updateStatements) {
+                            if (monitor.isCanceled()) break;
                             DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
                             try {
-                                updateCount += dataContainer.updateData(monitor, statement.keyColumns, statement.updateColumns, new KeyDataReciever(statement));
+                                updateCount += dataContainer.updateData(context, statement.keyColumns, statement.updateColumns, new KeyDataReciever(statement));
                             }
                             catch (DBException e) {
                                 error = e;
@@ -1397,7 +1403,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     }
                     finally {
                         monitor.done();
-
+                        context.close();
                         if (listener != null) {
                             listener.onUpdate(error == null);
                         }
