@@ -59,17 +59,13 @@ import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
+import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.runtime.sql.DefaultQueryListener;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
-import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -859,6 +855,27 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
+    private int getMetaColumnIndex(DBCColumnMetaData column)
+    {
+        for (int i = 0; i < metaColumns.length; i++) {
+            if (column == metaColumns[i].getMetaData()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public int getMetaColumnIndex(DBSTable table, String columnName)
+    {
+        for (int i = 0; i < metaColumns.length; i++) {
+            DBDColumnBinding column = metaColumns[i];
+            if (column.getValueLocator().getTable() == table && column.getMetaData().getName().equals(columnName)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     private class ResultSetValueController implements DBDValueController, DBDRowController {
 
         private Object[] curRow;
@@ -1149,13 +1166,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         private Set<RowInfo> newRowSet;
         private Set<RowInfo> removedRowSet;
         private Map<Integer, Map<DBSTable, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSTable, TableRowInfo>>();
-        private List<SQLStatementInfo> statements = new ArrayList<SQLStatementInfo>();
 
         private List<KeyValues> insertStatements = new ArrayList<KeyValues>();
         private List<KeyValues> deleteStatements = new ArrayList<KeyValues>();
         private List<UpdateValues> updateStatements = new ArrayList<UpdateValues>();
-
-        private int updateCount = 0, insertCount = 0, deleteCount = 0;
 
         private CellDataSaver(Set<RowInfo> newRowSet, Set<RowInfo> removedRowSet, Set<CellInfo> cells)
         {
@@ -1176,27 +1190,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             prepareInsertStatements();
             prepareUpdateStatements();
             execute(listener);
-        }
-
-        private int getMetaColumnIndex(DBCColumnMetaData column)
-        {
-            for (int i = 0; i < metaColumns.length; i++) {
-                if (column == metaColumns[i].getMetaData()) {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        public int getMetaColumnIndex(DBSTable table, String columnName)
-        {
-            for (int i = 0; i < metaColumns.length; i++) {
-                DBDColumnBinding column = metaColumns[i];
-                if (column.getValueLocator().getTable() == table && column.getMetaData().getName().equals(columnName)) {
-                    return i;
-                }
-            }
-            return -1;
         }
 
         private void prepareUpdateRows()
@@ -1314,77 +1307,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         {
             DataUpdaterJob job = new DataUpdaterJob(listener);
             job.schedule();
-            if (2+2 == 4) {
-                return;
-            }
-            // Execute statements
-            SQLQueryJob executor = new SQLQueryJob(
-                "Update ResultSet",
-                resultSetProvider.getDataSource(),
-                statements,
-                null);
-            executor.addQueryListener(new DefaultQueryListener() {
-                @Override
-                public void onStartJob() {
-                    updateInProgress = true;
-                }
-
-                @Override
-                public void onEndQuery(SQLQueryResult result) {
-                    Integer rowCount = result.getUpdateCount();
-                    if (rowCount != null) {
-                        switch (result.getStatement().getType()) {
-                            case INSERT: insertCount += rowCount; break;
-                            case DELETE: deleteCount += rowCount; break;
-                            case UPDATE: updateCount += rowCount; break;
-                            default: break;
-                        }
-                    }
-/*
-                    if (result.getError() == null) {
-                        // Remove edited values
-                        TableRowInfo rowInfo = (TableRowInfo)result.getStatement().getData();
-                        if (rowInfo != null) {
-                            for (CellInfo cell : rowInfo.tableCells) {
-                                cells.remove(cell);
-                            }
-                        }
-                    }
-*/
-                }
-
-                @Override
-                public void onEndJob(final boolean hasErrors) {
-                    if (!hasErrors) {
-                        if (cells != null) {
-                            cells.clear();
-                        }
-                        if (newRowSet != null) {
-                            newRowSet.clear();
-                        }
-                        final boolean rowsChanged = deleteRows(removedRowSet);
-
-                        site.getShell().getDisplay().syncExec(new Runnable() {
-                            public void run()
-                            {
-                                refreshSpreadsheet(rowsChanged);
-                                setStatus("Instered: " + insertCount + " / Deleted: " + deleteCount + " / Updated: " + updateCount, false);
-                            }
-                        });
-                    } else {
-                        site.getShell().getDisplay().syncExec(new Runnable() {
-                            public void run()
-                            {
-                                refreshSpreadsheet(false);
-                                setStatus("Error synchronizing result set with database", true);
-                            }
-                        });
-                    }
-                    updateInProgress = false;
-                    if (listener != null) listener.onUpdate(hasErrors);
-                }
-            });
-            executor.schedule();
         }
 
         public void rejectChanges()
@@ -1423,7 +1345,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
 
         private class DataUpdaterJob extends DataSourceJob {
-            DBDValueListener listener;
+            private DBDValueListener listener;
+            private int updateCount = 0, insertCount = 0, deleteCount = 0;
+
             protected DataUpdaterJob(DBDValueListener listener)
             {
                 super("Update data", DBIcon.SQL_EXECUTE.getImageDescriptor(), resultSetProvider.getDataSource());
@@ -1502,67 +1426,67 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 return Status.OK_STATUS;
             }
 
-            private class KeyDataReciever implements DBDDataReciever {
-                KeyValues statement;
-                public KeyDataReciever(KeyValues statement)
-                {
-                    this.statement = statement;
+        }
+    }
+
+    private class KeyDataReciever implements DBDDataReciever {
+        KeyValues statement;
+        public KeyDataReciever(KeyValues statement)
+        {
+            this.statement = statement;
+        }
+
+        public void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet)
+            throws DBCException
+        {
+
+        }
+
+        public void fetchRow(DBRProgressMonitor monitor, DBCResultSet resultSet)
+            throws DBCException
+        {
+            DBCResultSetMetaData rsMeta = resultSet.getResultSetMetaData();
+            List<DBCColumnMetaData> keyColumns = rsMeta.getColumns();
+            for (int i = 0; i < keyColumns.size(); i++) {
+                DBCColumnMetaData keyColumn = keyColumns.get(i);
+                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(resultSetProvider.getDataSource(), keyColumn);
+                Object keyValue = valueHandler.getValueObject(resultSet, keyColumn, i);
+                boolean updated = false;
+                if (!CommonUtils.isEmpty(keyColumn.getName())) {
+                    int colIndex = getMetaColumnIndex(statement.table, keyColumn.getName());
+                    if (colIndex >= 0) {
+                        // Got it. Just update column value
+                        curRows.get(statement.rowNum)[colIndex] = keyValue;
+                        updated = true;
+                    }
                 }
-
-                public void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet)
-                    throws DBCException
-                {
-
-                }
-
-                public void fetchRow(DBRProgressMonitor monitor, DBCResultSet resultSet)
-                    throws DBCException
-                {
-                    DBCResultSetMetaData rsMeta = resultSet.getResultSetMetaData();
-                    List<DBCColumnMetaData> keyColumns = rsMeta.getColumns();
-                    for (int i = 0; i < keyColumns.size(); i++) {
-                        DBCColumnMetaData keyColumn = keyColumns.get(i);
-                        DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(resultSetProvider.getDataSource(), keyColumn);
-                        Object keyValue = valueHandler.getValueObject(resultSet, keyColumn, i);
-                        boolean updated = false;
-                        if (!CommonUtils.isEmpty(keyColumn.getName())) {
-                            int colIndex = getMetaColumnIndex(statement.table, keyColumn.getName());
-                            if (colIndex >= 0) {
-                                // Got it. Just update column value
-                                curRows.get(statement.rowNum)[colIndex] = keyValue;
-                                updated = true;
-                            }
-                        }
-                        if (!updated) {
-                            // Key not found
-                            // Try to find and update auto-increment column
-                            for (int k = 0; k < metaColumns.length; k++) {
-                                DBDColumnBinding column = metaColumns[k];
-                                if (column.getMetaData().isAutoIncrement()) {
-                                    // Got it
-                                    curRows.get(statement.rowNum)[k] = keyValue;
-                                    updated = true;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!updated) {
-                            // Auto-generated key not found
-                            // Just skip it..
+                if (!updated) {
+                    // Key not found
+                    // Try to find and update auto-increment column
+                    for (int k = 0; k < metaColumns.length; k++) {
+                        DBDColumnBinding column = metaColumns[k];
+                        if (column.getMetaData().isAutoIncrement()) {
+                            // Got it
+                            curRows.get(statement.rowNum)[k] = keyValue;
+                            updated = true;
+                            break;
                         }
                     }
                 }
 
-                public void fetchEnd(DBRProgressMonitor monitor)
-                    throws DBCException
-                {
-
+                if (!updated) {
+                    // Auto-generated key not found
+                    // Just skip it..
                 }
             }
         }
-    }
 
+        public void fetchEnd(DBRProgressMonitor monitor)
+            throws DBCException
+        {
+
+        }
+    }
     private class ContentProvider implements IGridContentProvider {
 
         public GridPos getSize()
