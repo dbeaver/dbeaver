@@ -151,7 +151,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.radix = radix;
     }
 
-    @Property(name = "Description", viewable = true, order = 9)
+    @Property(name = "Description", viewable = true, order = 1000)
     public String getDescription()
     {
         return description;

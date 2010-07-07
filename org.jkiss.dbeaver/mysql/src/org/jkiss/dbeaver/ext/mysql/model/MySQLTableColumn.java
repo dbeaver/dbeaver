@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.anno.Property;
 
 import java.sql.ResultSet;
 
@@ -19,6 +20,7 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
     private MySQLTable table;
     private String defaultValue;
     private int charLength;
+    private boolean autoIncrement;
 
     public MySQLTableColumn(
         MySQLTable table,
@@ -36,6 +38,7 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_ORDINAL_POSITION));
         String typeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DATA_TYPE);
         setTypeName(typeName);
+        setValueType(MySQLUtils.typeNameToValueType(typeName));
         DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName.toUpperCase());
         this.charLength = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_CHARACTER_MAXIMUM_LENGTH);
         if (this.charLength <= 0) {
@@ -50,6 +53,8 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
         setScale(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NUMERIC_SCALE));
         setPrecision(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NUMERIC_PRECISION));
         this.defaultValue = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_DEFAULT);
+        String extra = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_EXTRA);
+        this.autoIncrement = extra != null && extra.contains(MySQLConstants.EXTRA_AUTO_INCREMENT);
     }
 
     public DBSObject getParentObject()
@@ -72,14 +77,15 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
         return defaultValue;
     }
 
-    public void setOrdinalPosition(int ordinalPosition)
-    {
-        this.ordinalPosition = ordinalPosition;
-    }
-
     public int getCharLength()
     {
         return charLength;
+    }
+
+    @Property(name = "Auto Increment", viewable = true, order = 10)
+    public boolean isAutoIncrement()
+    {
+        return autoIncrement;
     }
 
     public boolean refreshObject(DBRProgressMonitor monitor)

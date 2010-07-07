@@ -75,6 +75,7 @@ public class JDBCConstants
     public static final String CARDINALITY = "CARDINALITY";
     public static final String PAGES = "PAGES";
     public static final String FILTER_CONDITION = "FILTER_CONDITION";
+    public static final String IS_AUTOINCREMENT = "IS_AUTOINCREMENT";
 
     public static final String KEY_SEQ = "KEY_SEQ";
     public static final String PK_NAME = "PK_NAME";

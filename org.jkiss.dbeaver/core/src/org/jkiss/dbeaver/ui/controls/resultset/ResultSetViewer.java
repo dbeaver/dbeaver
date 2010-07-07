@@ -793,7 +793,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             // Copy cell values
             Object[] origRow = curRows.get(rowNum);
             for (int i = 0; i < metaColumns.length; i++) {
-                cells[i] = metaColumns[i].getValueHandler().copyValueObject(origRow[i]);
+                DBDColumnBinding metaColumn = metaColumns[i];
+                if (metaColumn.getMetaData().isAutoIncrement()) {
+                    // set autoincrement columns to null 
+                    cells[i] = null;
+                } else {
+                    cells[i] = metaColumn.getValueHandler().copyValueObject(origRow[i]);
+                }
             }
         }
         curRows.add(rowNum, cells);

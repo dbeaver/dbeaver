@@ -41,6 +41,7 @@ public class MySQLConstants {
     public static final String COL_COLUMN_DEFAULT = "COLUMN_DEFAULT";
     public static final String COL_IS_NULLABLE = "IS_NULLABLE";
     public static final String COL_COLUMN_COMMENT = "COLUMN_COMMENT";
+    public static final String COL_COLUMN_EXTRA = "EXTRA";
 
     public static final String COL_ROUTINE_SCHEMA = "ROUTINE_SCHEMA";
     public static final String COL_ROUTINE_NAME = "ROUTINE_NAME";
@@ -57,6 +58,8 @@ public class MySQLConstants {
     public static final String COL_ROUTINE_COMMENT = "ROUTINE_COMMENT";
     public static final String COL_DEFINER = "DEFINER";
     public static final String COL_CHARACTER_SET_CLIENT = "CHARACTER_SET_CLIENT";
+
+    public static final String EXTRA_AUTO_INCREMENT = "auto_increment";
 
     public static final String QUERY_SELECT_TABLES =
         "SELECT * FROM " + META_TABLE_TABLES +

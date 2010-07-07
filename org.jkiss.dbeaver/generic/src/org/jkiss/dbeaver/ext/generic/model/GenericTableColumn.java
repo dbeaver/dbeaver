@@ -5,6 +5,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.anno.Property;
 
 /**
  * GenericTable
@@ -15,6 +16,7 @@ public class GenericTableColumn extends JDBCColumn implements DBSTableColumn
     private String defaultValue;
     private int sourceType;
     private int charLength;
+    private boolean autoIncrement;
 
     public GenericTableColumn(
         GenericTable table,
@@ -30,8 +32,8 @@ public class GenericTableColumn extends JDBCColumn implements DBSTableColumn
         int radix,
         boolean nullable,
         String remarks,
-        String defaultValue
-    )
+        String defaultValue,
+        boolean autoIncrement)
     {
         super(columnName,
             typeName,
@@ -47,6 +49,7 @@ public class GenericTableColumn extends JDBCColumn implements DBSTableColumn
         this.sourceType = sourceType;
         this.defaultValue = defaultValue;
         this.charLength = charLength;
+        this.autoIncrement = autoIncrement;
     }
 
     public DBSObject getParentObject()
@@ -69,11 +72,6 @@ public class GenericTableColumn extends JDBCColumn implements DBSTableColumn
         return defaultValue;
     }
 
-    public void setOrdinalPosition(int ordinalPosition)
-    {
-        this.ordinalPosition = ordinalPosition;
-    }
-
     public int getSourceType()
     {
         return sourceType;
@@ -82,6 +80,12 @@ public class GenericTableColumn extends JDBCColumn implements DBSTableColumn
     public int getCharLength()
     {
         return charLength;
+    }
+
+    @Property(name = "Auto Increment", viewable = true, order = 10)
+    public boolean isAutoIncrement()
+    {
+        return autoIncrement;
     }
 
     public boolean refreshObject(DBRProgressMonitor monitor)

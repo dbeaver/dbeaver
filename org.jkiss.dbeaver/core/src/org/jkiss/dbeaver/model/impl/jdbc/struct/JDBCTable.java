@@ -91,12 +91,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     public int insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReciever keysReciever)
         throws DBException
     {
-        try {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException e) {
-            
-        }
         // Make query
         StringBuilder query = new StringBuilder();
         query.append("INSERT INTO ").append(getFullQualifiedName()).append(" (");

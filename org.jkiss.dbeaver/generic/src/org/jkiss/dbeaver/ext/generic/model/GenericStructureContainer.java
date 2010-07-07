@@ -307,6 +307,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
             String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
             int charLength = JDBCUtils.safeGetInt(dbResult, JDBCConstants.CHAR_OCTET_LENGTH);
             int ordinalPos = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
+            boolean autoIncrement = "YES".equals(JDBCUtils.safeGetString(dbResult, JDBCConstants.IS_AUTOINCREMENT));
 
             return new GenericTableColumn(
                 table,
@@ -314,7 +315,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 typeName, valueType, sourceType, ordinalPos,
                 columnSize,
                 charLength, scale, precision, radix, isNullable,
-                remarks, defaultValue
+                remarks, defaultValue, autoIncrement
             );
         }
     }
