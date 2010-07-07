@@ -20,6 +20,7 @@ public class NumberViewDialog extends ValueViewDialog {
 
     private Text textEdit;
     private Combo bitEdit;
+    private boolean isBoolean = false;
 
     public NumberViewDialog(DBDValueController valueController) {
         super(valueController);
@@ -39,14 +40,23 @@ public class NumberViewDialog extends ValueViewDialog {
         if (getValueController().isReadOnly()) {
             style |= SWT.READ_ONLY;
         }
-        if (getValueController().getColumnMetaData().getValueType() == Types.BIT) {
+        int valueType = getValueController().getColumnMetaData().getValueType();
+        if (valueType == Types.BIT || valueType == Types.BOOLEAN) {
             // Bit (boolean)
             style |= SWT.READ_ONLY;
             bitEdit = new Combo(dialogGroup, style);
-            bitEdit.add("0 (FALSE)");
-            bitEdit.add("1 (TRUE)");
-            int intValue = ((Number) value).intValue();
-            bitEdit.select(intValue == 0 ? 0 : 1);
+            if (valueType == Types.BOOLEAN) {
+                isBoolean = true;
+                bitEdit.add("FALSE");
+                bitEdit.add("TRUE");
+                Boolean boolValue = ((Boolean) value);
+                bitEdit.select(Boolean.TRUE.equals(boolValue) ? 1 : 0);
+            } else {
+                bitEdit.add("0 (FALSE)");
+                bitEdit.add("1 (TRUE)");
+                int intValue = ((Number) value).intValue();
+                bitEdit.select(intValue == 0 ? 0 : 1);
+            }
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 50;
             gd.grabExcessVerticalSpace = true;
@@ -89,7 +99,11 @@ public class NumberViewDialog extends ValueViewDialog {
                 textEdit.getText(),
                 getValueController().getColumnMetaData());
         } else if (bitEdit != null) {
-            return (byte)bitEdit.getSelectionIndex();
+            if (isBoolean) {
+                return bitEdit.getSelectionIndex() == 0 ? Boolean.FALSE : Boolean.TRUE;
+            } else {
+                return (byte)bitEdit.getSelectionIndex();
+            }
         } else {
             return null;
         }

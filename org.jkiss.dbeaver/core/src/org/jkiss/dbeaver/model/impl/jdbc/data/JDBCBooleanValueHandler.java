@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Combo;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -54,23 +55,25 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
             Object value = controller.getValue();
 
             Combo editor = new Combo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
-            editor.add("true");
-            editor.add("false");
-            editor.setText(value == null ? "false" : value.toString());
+            editor.add("FALSE");
+            editor.add("TRUE");
+            editor.setText(value == null ? "FALSE" : value.toString().toUpperCase());
             editor.setFocus();
             initInlineControl(controller, editor, new ValueExtractor<Combo>() {
                 public Object getValueFromControl(Combo control)
                 {
                     switch (control.getSelectionIndex()) {
-                        case 0: return Boolean.TRUE;
-                        case 1: return Boolean.FALSE;
+                        case 0: return Boolean.FALSE;
+                        case 1: return Boolean.TRUE;
                         default: return null;
                     }
                 }
             });
             return true;
         } else {
-            return false;
+            NumberViewDialog dialog = new NumberViewDialog(controller);
+            dialog.open();
+            return true;
         }
     }
 
