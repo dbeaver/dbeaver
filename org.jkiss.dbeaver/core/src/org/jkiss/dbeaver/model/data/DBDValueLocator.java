@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSIndex;
 import org.jkiss.dbeaver.model.struct.DBSStructureObject;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class DBDValueLocator implements DBPObject {
     public String getKeyId(DBDRowController rowController)
     {
         StringBuilder keyId = new StringBuilder();
-        List<? extends DBCColumnMetaData> keyColumns = getKeyColumns();
+        List<? extends DBCColumnMetaData> keyColumns = getResultSetColumns();
         for (DBCColumnMetaData keyColumn : keyColumns) {
             keyId.append('.').append(CommonUtils.escapeIdentifier(keyColumn.getName()));
             Object keyValue = rowController.getColumnValue(keyColumn);
@@ -87,9 +88,14 @@ public class DBDValueLocator implements DBPObject {
         }
     }
 
-    public List<? extends DBCColumnMetaData> getKeyColumns()
+    public List<? extends DBCColumnMetaData> getResultSetColumns()
     {
         return tableIdentifier.getResultSetColumns();
+    }
+
+    public List<? extends DBSTableColumn> getTableColumns()
+    {
+        return tableIdentifier.getTableColumns();
     }
 
 /*

@@ -5,33 +5,41 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 /**
  * Column value binding info
  */
 public class DBDColumnBinding {
-    private final DBCColumnMetaData metaData;
+    private final DBCColumnMetaData column;
     private final DBDValueHandler valueHandler;
+    private DBSTableColumn tableColumn;
     private DBDValueLocator valueLocator;
 
-    public DBDColumnBinding(DBCColumnMetaData metaData, DBDValueHandler valueHandler) {
-        this.metaData = metaData;
+    public DBDColumnBinding(DBCColumnMetaData column, DBDValueHandler valueHandler) {
+        this.column = column;
         this.valueHandler = valueHandler;
     }
 
-    public DBCColumnMetaData getMetaData() {
-        return metaData;
+    public DBCColumnMetaData getColumn() {
+        return column;
     }
 
     public DBDValueHandler getValueHandler() {
         return valueHandler;
     }
 
+    public DBSTableColumn getTableColumn()
+    {
+        return tableColumn;
+    }
+
     public DBDValueLocator getValueLocator() {
         return valueLocator;
     }
 
-    public void setValueLocator(DBDValueLocator valueLocator) {
+    public void initValueLocator(DBSTableColumn tableColumn, DBDValueLocator valueLocator) {
+        this.tableColumn = tableColumn;
         this.valueLocator = valueLocator;
     }
 }

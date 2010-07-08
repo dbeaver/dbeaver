@@ -33,7 +33,6 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
 
     private JDBCResultSetMetaData resultSetMeta;
     private int index;
-    private boolean autoIncrement;
     private boolean nullable;
     private int displaySize;
     private String label;
@@ -57,11 +56,6 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         this.index = index;
 
         ResultSetMetaData metaData = resultSetMeta.getJdbcMetaData();
-        try {
-            autoIncrement = metaData.isAutoIncrement(index);
-        } catch (SQLException e) {
-            autoIncrement = false;
-        }
         nullable = metaData.isNullable(index) > 0;
         displaySize = metaData.getColumnDisplaySize(index);
         label = metaData.getColumnLabel(index);
@@ -115,11 +109,6 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
     public int getIndex()
     {
         return index;
-    }
-
-    public boolean isAutoIncrement()
-    {
-        return autoIncrement;
     }
 
     public boolean isNullable()

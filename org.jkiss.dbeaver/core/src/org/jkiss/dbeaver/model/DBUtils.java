@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 
@@ -208,8 +209,12 @@ public final class DBUtils {
         Map<DBSTable, DBDValueLocator> locatorMap = new HashMap<DBSTable, DBDValueLocator>();
         try {
             for (DBDColumnBinding column : bindings) {
-                DBCColumnMetaData meta = column.getMetaData();
+                DBCColumnMetaData meta = column.getColumn();
                 if (meta.getTable() == null || !meta.getTable().isIdentitied(monitor)) {
+                    continue;
+                }
+                DBSTableColumn tableColumn = meta.getTableColumn(monitor);
+                if (tableColumn == null) {
                     continue;
                 }
                 // We got table name and column name
@@ -226,7 +231,7 @@ public final class DBUtils {
                         tableIdentifier);
                     locatorMap.put(meta.getTable().getTable(monitor), valueLocator);
                 }
-                column.setValueLocator(valueLocator);
+                column.initValueLocator(tableColumn, valueLocator);
             }
         }
         catch (DBException e) {

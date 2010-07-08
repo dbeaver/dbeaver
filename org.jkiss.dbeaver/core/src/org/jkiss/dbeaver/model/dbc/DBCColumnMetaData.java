@@ -19,15 +19,9 @@ public interface DBCColumnMetaData extends DBSColumnBase
 {
     int getIndex();
 
-    boolean isAutoIncrement();
-
-    boolean isNullable();
-
     int getDisplaySize();
 
     String getLabel();
-
-    String getName();
 
     String getTableName();
 

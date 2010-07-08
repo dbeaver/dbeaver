@@ -7,8 +7,13 @@ package org.jkiss.dbeaver.model.impl.jdbc.dbc;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.model.struct.DBSIndex;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
+import org.jkiss.dbeaver.model.struct.DBSIndexColumn;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * JDBC Table MetaData
@@ -18,17 +23,26 @@ public class JDBCTableIdentifier implements DBCTableIdentifier {
     private DBSConstraint constraint;
     private DBSIndex index;
     private List<JDBCColumnMetaData> columns;
+    private List<DBSTableColumn> tableColumns;
 
-    public JDBCTableIdentifier(DBSConstraint constraint, List<JDBCColumnMetaData> columns)
+    public JDBCTableIdentifier(DBRProgressMonitor monitor, DBSConstraint constraint, List<JDBCColumnMetaData> columns)
     {
         this.constraint = constraint;
         this.columns = columns;
+        this.tableColumns = new ArrayList<DBSTableColumn>();
+        for (DBSConstraintColumn cColumn : constraint.getColumns(monitor)) {
+            tableColumns.add(cColumn.getTableColumn());
+        }
     }
 
-    public JDBCTableIdentifier(DBSIndex index, List<JDBCColumnMetaData> columns)
+    public JDBCTableIdentifier(DBRProgressMonitor monitor, DBSIndex index, List<JDBCColumnMetaData> columns)
     {
         this.index = index;
         this.columns = columns;
+        this.tableColumns = new ArrayList<DBSTableColumn>();
+        for (DBSIndexColumn cColumn : index.getColumns(monitor)) {
+            tableColumns.add(cColumn.getTableColumn());
+        }
     }
 
     public DBSConstraint getConstraint()
@@ -44,6 +58,11 @@ public class JDBCTableIdentifier implements DBCTableIdentifier {
     public List<JDBCColumnMetaData> getResultSetColumns()
     {
         return columns;
+    }
+
+    public List<? extends DBSTableColumn> getTableColumns()
+    {
+        return tableColumns;
     }
 
 }

@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.dbc;
 
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.model.struct.DBSIndex;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 import java.util.List;
 
@@ -31,5 +32,7 @@ public interface DBCTableIdentifier {
      * @return list of result set columns.
      */
     List<? extends DBCColumnMetaData> getResultSetColumns();
+
+    List<? extends DBSTableColumn> getTableColumns();
 
 }

@@ -141,7 +141,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
                         continue;
                     }
                     identifiers.add(
-                        new JDBCTableIdentifier(constraint, rsColumns));
+                        new JDBCTableIdentifier(monitor, constraint, rsColumns));
                 }
             }
             if (identifiers.isEmpty()) {
@@ -163,7 +163,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
                             continue;
                         }
                         identifiers.add(
-                            new JDBCTableIdentifier(index, rsColumns));
+                            new JDBCTableIdentifier(monitor, index, rsColumns));
                     }
                 }
             }
