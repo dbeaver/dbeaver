@@ -29,6 +29,8 @@ import java.util.List;
 
 /**
  * SQLQueryJob
+ *
+ * @author Serge Rider
  */
 public class SQLQueryJob extends DataSourceJob
 {

@@ -49,6 +49,8 @@ import java.util.List;
 /**
  * JDBC Content value handler.
  * Handle LOBs, LONGs and BINARY types.
+ *
+ * @author Serge Rider
  */
 public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
