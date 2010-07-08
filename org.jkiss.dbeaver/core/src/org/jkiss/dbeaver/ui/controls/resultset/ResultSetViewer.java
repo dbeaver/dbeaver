@@ -1358,6 +1358,50 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             refreshSpreadsheet(rowsChanged);
         }
 
+        // Reflect data changes in viewer
+        // Changes affects only rows which statements executed successfully
+        private boolean reflectChanges()
+        {
+            boolean rowsChanged = false;
+            if (DataUpdater.this.cells != null) {
+                for (Iterator<CellInfo> iter = DataUpdater.this.cells.iterator(); iter.hasNext(); ) {
+                    CellInfo cell = iter.next();
+                    for (DataStatementInfo stat : updateStatements) {
+                        if (stat.executed && stat.row.row == cell.row && stat.hasUpdateColumn(metaColumns[cell.col])) {
+                            iter.remove();
+                            break;
+                        }
+                    }
+                }
+                DataUpdater.this.cells.clear();
+            }
+            if (DataUpdater.this.newRowSet != null) {
+                for (Iterator<RowInfo> iter = DataUpdater.this.newRowSet.iterator(); iter.hasNext(); ) {
+                    RowInfo row = iter.next();
+                    for (DataStatementInfo stat : insertStatements) {
+                        if (stat.row.equals(row) && stat.executed) {
+                            iter.remove();
+                            break;
+                        }
+                    }
+                }
+            }
+            if (DataUpdater.this.removedRowSet != null) {
+                for (Iterator<RowInfo> iter = DataUpdater.this.removedRowSet.iterator(); iter.hasNext(); ) {
+                    RowInfo row = iter.next();
+                    for (DataStatementInfo stat : deleteStatements) {
+                        if (stat.row.equals(row) && stat.executed) {
+                            deleteRow(row.row);
+                            iter.remove();
+                            rowsChanged = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            return rowsChanged;
+        }
+
         private class DataUpdaterJob extends DataSourceJob {
             private DBDValueListener listener;
             private boolean autocommit;
@@ -1384,45 +1428,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         public void run()
                         {
                             boolean rowsChanged = false;
-                            // Reflect data changes in viewer
-                            // Changes affects only rows which statements executed successfully
-                            if (!DataUpdaterJob.this.autocommit && error == null) {
-                                if (DataUpdater.this.cells != null) {
-                                    for (Iterator<CellInfo> iter = DataUpdater.this.cells.iterator(); iter.hasNext(); ) {
-                                        CellInfo cell = iter.next();
-                                        for (DataStatementInfo stat : updateStatements) {
-                                            if (stat.executed && stat.row.row == cell.row && stat.hasUpdateColumn(metaColumns[cell.col])) {
-                                                iter.remove();
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    DataUpdater.this.cells.clear();
-                                }
-                                if (DataUpdater.this.newRowSet != null) {
-                                    for (Iterator<RowInfo> iter = DataUpdater.this.newRowSet.iterator(); iter.hasNext(); ) {
-                                        RowInfo row = iter.next();
-                                        for (DataStatementInfo stat : insertStatements) {
-                                            if (stat.row.equals(row) && stat.executed) {
-                                                iter.remove();
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                                if (DataUpdater.this.removedRowSet != null) {
-                                    for (Iterator<RowInfo> iter = DataUpdater.this.removedRowSet.iterator(); iter.hasNext(); ) {
-                                        RowInfo row = iter.next();
-                                        for (DataStatementInfo stat : deleteStatements) {
-                                            if (stat.row.equals(row) && stat.executed) {
-                                                deleteRow(row.row);
-                                                iter.remove();
-                                                rowsChanged = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
+                            if (DataUpdaterJob.this.autocommit || error == null) {
+                                rowsChanged = reflectChanges();
                             }
 
                             refreshSpreadsheet(rowsChanged);
