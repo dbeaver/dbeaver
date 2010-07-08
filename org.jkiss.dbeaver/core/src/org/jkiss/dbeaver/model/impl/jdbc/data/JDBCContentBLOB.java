@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -100,41 +101,6 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
         }
     }
 
-/*
-    public void updateContents(
-        DBDValueController valueController,
-        InputStream stream,
-        long contentLength,
-        DBRProgressMonitor monitor,
-        DBDValueListener listener)
-        throws DBException
-    {
-        if (blob == null) {
-            // Update using value controller
-            this.stream = stream;
-            this.streamLength = contentLength;
-            valueController.updateValueImmediately(this, listener);
-        } else {
-            // Update BLOB directly
-            try {
-                blob.truncate(0);
-                OutputStream blobStream = blob.setBinaryStream(0);
-                try {
-                    ContentUtils.copyStreams(stream, contentLength, blobStream, monitor);
-                }
-                finally {
-                    ContentUtils.close(blobStream);
-                }
-            } catch (SQLException e) {
-                throw new DBCException("JDBC error", e);
-            }
-            catch (IOException e) {
-                throw new DBCException("Error writing stream into BLOB", e);
-            }
-        }
-    }
-*/
-
     public void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
         throws DBCException
     {
@@ -171,4 +137,8 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
         return blob == null && storage == null ? null : "[BLOB]";
     }
 
+    public DBDValueClonable cloneValue()
+    {
+        return null;
+    }
 }

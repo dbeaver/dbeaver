@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -15,7 +16,7 @@ import java.sql.PreparedStatement;
  *
  * @author Serge Rider
  */
-public abstract class JDBCContentAbstract implements DBDContent {
+public abstract class JDBCContentAbstract implements DBDContent, DBDValueClonable {
 
     public abstract void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
         throws DBCException;

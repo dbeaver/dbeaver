@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -164,4 +165,8 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
         return clob == null && storage == null ? null : "[CLOB]";
     }
 
+    public DBDValueClonable cloneValue()
+    {
+        return null;
+    }
 }

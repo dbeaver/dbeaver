@@ -28,7 +28,7 @@ import java.sql.SQLException;
  *
  * @author Serge Rider
  */
-public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentBinary, DBDValueClonable {
+public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentBinary {
 
     static Log log = LogFactory.getLog(JDBCContentBytes.class);
 
