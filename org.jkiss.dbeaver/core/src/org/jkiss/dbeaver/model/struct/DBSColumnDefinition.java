@@ -11,11 +11,6 @@ public interface DBSColumnDefinition extends DBSStructureObject, DBSColumnBase
 {
     int getMaxLength();
 
-    int getScale();
-
-    int getPrecision();
-
     int getRadix();
 
-    boolean isNullable();
 }

@@ -14,4 +14,7 @@ public interface DBSTableColumn extends DBSColumnDefinition
     int getOrdinalPosition();
 
     String getDefaultValue();
+    
+    boolean isAutoIncrement();
+
 }
