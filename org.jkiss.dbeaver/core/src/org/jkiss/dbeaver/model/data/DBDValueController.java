@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 
@@ -51,12 +50,6 @@ public interface DBDValueController
      * @param value value
      */
     void updateValue(Object value);
-
-    /**
-     * Updates value immediately. Executes SQL update statement for this cell only.
-     * @param value new value
-     */
-    void updateValueImmediately(Object value, DBDValueListener listener) throws DBException;
 
     DBDValueLocator getValueLocator();
 

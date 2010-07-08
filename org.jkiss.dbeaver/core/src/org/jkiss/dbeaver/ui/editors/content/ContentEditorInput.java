@@ -23,9 +23,10 @@ import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueListener;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -37,7 +38,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -53,6 +53,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
     private DBDValueController valueController;
     private IContentEditorPart[] editorParts;
     private IFile contentFile;
+    private boolean contentDetached = false;
 
     ContentEditorInput(
         DBDValueController valueController,
@@ -184,14 +185,13 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
 
     void release(IProgressMonitor monitor)
     {
-        if (contentFile != null) {
+        if (contentFile != null && !contentDetached) {
             try {
                 contentFile.delete(true, false, monitor);
             }
             catch (CoreException e) {
                 log.warn(e);
             }
-            //contentFile = null;
         }
     }
 
@@ -308,7 +308,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
         }
     }
 
-    void updateContentFromFile(IProgressMonitor monitor, DBDValueListener listener)
+    void updateContentFromFile(IProgressMonitor monitor)
         throws DBException, IOException
     {
         if (valueController.isReadOnly()) {
@@ -317,41 +317,10 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
 
         DBRProgressMonitor localMonitor = DBeaverUtils.makeMonitor(monitor);
         DBDContent content = getContent();
-        File file = contentFile.getLocation().toFile();
 
-        InputStream inputStream = new FileInputStream(file);
-        try {
-            if (content instanceof DBDContentBinary) {
-                ((DBDContentBinary)content).updateContents(
-                    valueController,
-                    inputStream,
-                    file.length(),
-                    localMonitor,
-                    listener);
-            } else if (content instanceof DBDContentCharacter) {
-                String charset;
-                try {
-                    charset = contentFile.getCharset();
-                }
-                catch (CoreException e) {
-                    log.warn(e);
-                    charset = ContentUtils.DEFAULT_FILE_CHARSET;
-                }
-
-                long contentLength = ContentUtils.calculateContentLength(file, charset);
-                Reader reader = new InputStreamReader(inputStream, charset);
-                ((DBDContentCharacter)content).updateContents(
-                    valueController,
-                    reader,
-                    contentLength,
-                    localMonitor,
-                    listener);
-            }
-        }
-        finally {
-            inputStream.close();
-        }
-
+        DBDContentStorage storage = new TemporaryContentStorage(contentFile);
+        contentDetached = content.updateContents(localMonitor, valueController, storage);
+        valueController.updateValue(content);
     }
 
 }

@@ -17,19 +17,19 @@ import java.io.InputStream;
 /**
  * File content storage
  */
-public class FileContentStorage2 implements DBDContentStorage {
+public class ExternalContentStorage implements DBDContentStorage {
 
-    static Log log = LogFactory.getLog(FileContentStorage2.class);
+    static Log log = LogFactory.getLog(ExternalContentStorage.class);
 
     private File file;
     private String charset;
 
-    public FileContentStorage2(File file)
+    public ExternalContentStorage(File file)
     {
         this(file, ContentUtils.DEFAULT_FILE_CHARSET);
     }
 
-    public FileContentStorage2(File file, String charset)
+    public ExternalContentStorage(File file, String charset)
     {
         this.file = file;
         this.charset = charset;
@@ -39,6 +39,11 @@ public class FileContentStorage2 implements DBDContentStorage {
         throws IOException
     {
         return new FileInputStream(file);
+    }
+
+    public long getContentLength()
+    {
+        return file.length();
     }
 
     public String getCharset()

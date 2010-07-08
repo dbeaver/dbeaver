@@ -16,6 +16,8 @@ public interface DBDContentStorage {
 
     InputStream getContentStream() throws IOException;
 
+    long getContentLength();
+
     String getCharset();
 
     void release();

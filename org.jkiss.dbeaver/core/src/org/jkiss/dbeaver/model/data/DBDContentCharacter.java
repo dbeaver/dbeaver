@@ -21,11 +21,4 @@ public interface DBDContentCharacter extends DBDContent {
 
     Reader getContents() throws DBException;
 
-    void updateContents(
-        DBDValueController valueController,
-        Reader stream,
-        long contentLength,
-        DBRProgressMonitor monitor,
-        DBDValueListener listener) throws DBException;
-
 }

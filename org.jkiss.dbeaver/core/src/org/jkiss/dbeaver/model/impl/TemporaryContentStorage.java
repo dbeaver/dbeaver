@@ -14,18 +14,17 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.InputStream;
 import java.io.IOException;
-import java.io.File;
 
 /**
  * File content storage
  */
-public class FileContentStorage implements DBDContentStorage {
+public class TemporaryContentStorage implements DBDContentStorage {
 
-    static Log log = LogFactory.getLog(FileContentStorage.class);
+    static Log log = LogFactory.getLog(TemporaryContentStorage.class);
 
     private IFile file;
 
-    public FileContentStorage(IFile file)
+    public TemporaryContentStorage(IFile file)
     {
         this.file = file;
     }
@@ -39,6 +38,11 @@ public class FileContentStorage implements DBDContentStorage {
         catch (CoreException e) {
             throw new IOException(e);
         }
+    }
+
+    public long getContentLength()
+    {
+        return file.getLocation().toFile().length();
     }
 
     public String getCharset()

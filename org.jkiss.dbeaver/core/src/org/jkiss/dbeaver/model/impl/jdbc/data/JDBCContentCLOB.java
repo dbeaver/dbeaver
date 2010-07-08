@@ -5,21 +5,21 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import net.sf.jkiss.utils.streams.MimeTypes;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueListener;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.DBException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.Writer;
 import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -34,8 +34,8 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
     static Log log = LogFactory.getLog(JDBCContentCLOB.class);
 
     private Clob clob;
-    private Reader reader;
-    private long streamLength;
+    private DBDContentStorage storage;
+    private Reader tmpReader;
 
     public JDBCContentCLOB(Clob clob) {
         this.clob = clob;
@@ -57,58 +57,54 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
         return MimeTypes.TEXT_PLAIN;
     }
 
+    public boolean updateContents(
+        DBRProgressMonitor monitor,
+        DBDValueController valueController,
+        DBDContentStorage storage)
+        throws DBException
+    {
+        release();
+        this.storage = storage;
+        return true;
+    }
+
     public void release()
     {
-        if (reader != null) {
-            ContentUtils.close(reader);
-            reader = null;
+        if (tmpReader != null) {
+            ContentUtils.close(tmpReader);
+            tmpReader = null;
+        }
+        if (storage != null) {
+            storage.release();
+            storage = null;
         }
     }
 
     public String getCharset()
     {
+        if (storage != null) {
+            return storage.getCharset();
+        }
         return null;
     }
 
     public Reader getContents() throws DBCException {
         if (clob == null) {
-            return new StringReader("");
+            if (storage != null) {
+                try {
+                    return new InputStreamReader(storage.getContentStream(), storage.getCharset());
+                }
+                catch (IOException e) {
+                    throw new DBCException(e);
+                }
+            } else {
+                return new StringReader("");
+            }
         }
         try {
             return clob.getCharacterStream();
         } catch (SQLException e) {
             throw new DBCException("JDBC error", e);
-        }
-    }
-
-    public void updateContents(
-        DBDValueController valueController,
-        Reader stream,
-        long contentLength,
-        DBRProgressMonitor monitor,
-        DBDValueListener listener)
-        throws DBException
-    {
-        if (clob == null) {
-            // Update with value controller
-            this.reader = stream;
-            this.streamLength = contentLength;
-            valueController.updateValueImmediately(this, listener);
-        }
-        try {
-            clob.truncate(0);
-            Writer clobWriter = clob.setCharacterStream(0);
-            try {
-                ContentUtils.copyStreams(stream, contentLength, clobWriter, monitor);
-            }
-            finally {
-                ContentUtils.close(clobWriter);
-            }
-        } catch (SQLException e) {
-            throw new DBCException("JDBC error", e);
-        }
-        catch (IOException e) {
-            throw new DBCException("Error writing stream into CLOB", e);
         }
     }
 
@@ -118,20 +114,44 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
         try {
             if (clob != null) {
                 preparedStatement.setClob(paramIndex, clob);
-            } else if (reader != null) {
-                preparedStatement.setCharacterStream(paramIndex, reader, streamLength);
+            } else if (storage != null) {
+                // Try 3 jdbc methods to set character stream
+                InputStreamReader streamReader = new InputStreamReader(storage.getContentStream(), storage.getCharset());
+                try {
+                    preparedStatement.setCharacterStream(
+                        paramIndex,
+                        streamReader);
+                }
+                catch (Throwable e) {
+                    long streamLength = ContentUtils.calculateContentLength(storage.getContentStream(), storage.getCharset());
+                    try {
+                        preparedStatement.setCharacterStream(
+                            paramIndex,
+                            streamReader,
+                            streamLength);
+                    }
+                    catch (Throwable e1) {
+                        preparedStatement.setCharacterStream(
+                            paramIndex,
+                            streamReader,
+                            (int)streamLength);
+                    }
+                }
             } else {
                 preparedStatement.setNull(paramIndex + 1, java.sql.Types.CLOB);
             }
         }
         catch (SQLException e) {
-            throw new DBCException("JDBC error", e);
+            throw new DBCException(e);
+        }
+        catch (IOException e) {
+            throw new DBCException(e);
         }
     }
 
     public boolean isNull()
     {
-        return clob == null && reader == null;
+        return clob == null && storage == null;
     }
 
     public JDBCContentCLOB makeNull()
@@ -141,7 +161,7 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
 
     @Override
     public String toString() {
-        return clob == null && reader == null ? null : "[CLOB]";
+        return clob == null && storage == null ? null : "[CLOB]";
     }
 
 }

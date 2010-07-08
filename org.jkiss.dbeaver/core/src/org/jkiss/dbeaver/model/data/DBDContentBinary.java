@@ -19,11 +19,4 @@ public interface DBDContentBinary extends DBDContent {
 
     InputStream getContents() throws DBException;
 
-    void updateContents(
-        DBDValueController valueController,
-        InputStream stream,
-        long contentLength,
-        DBRProgressMonitor monitor,
-        DBDValueListener listener) throws DBException;
-
 }

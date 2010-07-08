@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.actions.SimpleAction;
@@ -54,6 +55,17 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     private IAction closeAction = new CloseAction();
     private Combo encodingCombo;
 
+    private IPropertyListener dirtyListener = new IPropertyListener() {
+        public void propertyChanged(Object source, int propId)
+        {
+            if (propId == ContentEditor.PROP_DIRTY) {
+                if (applyAction != null && activeEditor != null) {
+                    applyAction.setEnabled(activeEditor.isDirty());
+                }
+            }
+        }
+    };
+
     public ContentEditorContributor()
     {
     }
@@ -66,6 +78,9 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     @Override
     public void dispose()
     {
+        if (activeEditor != null) {
+            activeEditor.removePropertyListener(dirtyListener);
+        }
         super.dispose();
     }
 
@@ -73,7 +88,11 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     public void setActiveEditor(IEditorPart part)
     {
         super.setActiveEditor(part);
+        if (activeEditor != null) {
+            activeEditor.removePropertyListener(dirtyListener);
+        }
         this.activeEditor = (ContentEditor) part;
+        this.activeEditor.addPropertyListener(dirtyListener);
 
         if (this.activeEditor != null && encodingCombo != null && !encodingCombo.isDisposed()) {
             try {
@@ -302,7 +321,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     {
         public ApplyAction()
         {
-            super("org.jkiss.dbeaver.lob.actions.apply", "Apply Changes", "Save changes in database", DBIcon.ACCEPT);
+            super("org.jkiss.dbeaver.lob.actions.apply", "Apply Changes", "Apply Changes", DBIcon.ACCEPT);
         }
 
         @Override
@@ -320,8 +339,8 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
             catch (InvocationTargetException e) {
                 DBeaverUtils.showErrorDialog(
                     getEditor().getSite().getShell(),
-                    "Could not save content",
-                    "Could not save content to database",
+                    "Could not apply content changes",
+                    "Could not apply content changes",
                     e.getTargetException());
             }
             catch (InterruptedException e) {
@@ -335,7 +354,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     {
         public CloseAction()
         {
-            super("org.jkiss.dbeaver.lob.actions.close", "Close", "Reject changes and close editorPart", DBIcon.REJECT);
+            super("org.jkiss.dbeaver.lob.actions.close", "Close", "Reject changes", DBIcon.REJECT);
         }
 
         @Override

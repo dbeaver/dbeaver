@@ -17,9 +17,11 @@ import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -33,10 +35,6 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -255,39 +253,14 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     throws InvocationTargetException, InterruptedException
                 {
                     try {
+                        DBDContentStorage storage;
                         if (value instanceof DBDContentCharacter) {
-                            long contentLength = ContentUtils.calculateContentLength(openFile, ContentUtils.DEFAULT_FILE_CHARSET);
-                            Reader reader = new InputStreamReader(
-                                new FileInputStream(openFile),
-                                ContentUtils.DEFAULT_FILE_CHARSET
-                            );
-                            try {
-                                ((DBDContentCharacter)value).updateContents(
-                                controller,
-                                    reader,
-                                    contentLength,
-                                    monitor,
-                                    null);
-                            }
-                            finally {
-                                ContentUtils.close(reader);
-                            }
-                        } else if (value instanceof DBDContentBinary) {
-                            InputStream stream = new FileInputStream(openFile);
-                            try {
-                                ((DBDContentBinary)value).updateContents(
-                                controller,
-                                    stream,
-                                    openFile.length(),
-                                    monitor,
-                                    null);
-                            }
-                            finally {
-                                ContentUtils.close(stream);
-                            }
+                            storage = new ExternalContentStorage(openFile, ContentUtils.DEFAULT_FILE_CHARSET);
                         } else {
-                            log.error("Unsupported content type: " + value);
+                            storage = new ExternalContentStorage(openFile);
                         }
+                        value.updateContents(monitor, controller, storage);
+                        controller.updateValue(value);
                     }
                     catch (Exception e) {
                         throw new InvocationTargetException(e);

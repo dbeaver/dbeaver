@@ -186,8 +186,18 @@ public class ContentUtils {
         throws IOException
     {
         return calculateContentLength(
+            new FileInputStream(file),
+            charset);
+    }
+
+    public static long calculateContentLength(
+        InputStream stream,
+        String charset)
+        throws IOException
+    {
+        return calculateContentLength(
             new InputStreamReader(
-                new FileInputStream(file),
+                stream,
                 charset));
     }
 

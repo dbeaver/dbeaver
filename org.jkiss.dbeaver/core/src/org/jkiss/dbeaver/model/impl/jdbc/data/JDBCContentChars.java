@@ -4,22 +4,25 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import net.sf.jkiss.utils.streams.MimeTypes;
 import net.sf.jkiss.utils.CommonUtils;
+import net.sf.jkiss.utils.streams.MimeTypes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
-import org.jkiss.dbeaver.model.data.DBDValueListener;
+import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -56,6 +59,33 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentC
         return MimeTypes.TEXT_PLAIN;
     }
 
+    public boolean updateContents(
+        DBRProgressMonitor monitor,
+        DBDValueController valueController,
+        DBDContentStorage storage)
+        throws DBException
+    {
+        if (storage == null) {
+            data = null;
+        } else {
+            try {
+                Reader reader = new InputStreamReader(storage.getContentStream(), storage.getCharset());
+                try {
+                    StringWriter sw = new StringWriter((int)storage.getContentLength());
+                    ContentUtils.copyStreams(reader, storage.getContentLength(), sw, monitor);
+                    data = sw.toString();
+                }
+                finally {
+                    ContentUtils.close(reader);
+                }
+            }
+            catch (IOException e) {
+                throw new DBCException(e);
+            }
+        }
+        return false;
+    }
+
     public String getCharset()
     {
         return null;
@@ -68,32 +98,6 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentC
         } else {
             return new StringReader(data);
         }
-    }
-
-    public void updateContents(
-        DBDValueController valueController,
-        Reader stream,
-        long contentLength,
-        DBRProgressMonitor monitor,
-        DBDValueListener listener)
-        throws DBException
-    {
-        if (stream == null) {
-            data = null;
-        } else {
-            char[] buffer = new char[(int) contentLength];
-            try {
-                int count = stream.read(buffer);
-                if (count != contentLength) {
-                    log.warn("Actual content length (" + count + ") is less than declared (" + contentLength + ")");
-                }
-            }
-            catch (IOException e) {
-                throw new DBCException("IO error", e);
-            }
-            data = new String(buffer);
-        }
-        valueController.updateValueImmediately(this, listener);
     }
 
     public void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
@@ -124,11 +128,9 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentC
     @Override
     public boolean equals(Object obj)
     {
-        if (obj instanceof JDBCContentChars) {
-            return CommonUtils.equalObjects(data, ((JDBCContentChars)obj).data);
-        } else {
-            return false;
-        }
+        return
+            obj instanceof JDBCContentChars &&
+            CommonUtils.equalObjects(data, ((JDBCContentChars) obj).data);
     }
 
     @Override

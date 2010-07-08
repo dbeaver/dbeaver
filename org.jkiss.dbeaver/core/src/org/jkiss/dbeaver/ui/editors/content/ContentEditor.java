@@ -23,6 +23,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
@@ -31,7 +32,6 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.data.DBDValueListener;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -139,6 +139,10 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
 
     public void doSave(final IProgressMonitor monitor)
     {
+        if (!isDirty()) {
+            // Nothing to save
+            return;
+        }
         // Execute save in UI thread
         getSite().getShell().getDisplay().syncExec(new Runnable() {
             public void run()
@@ -176,20 +180,10 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
                     // then document remains dirty
                     ContentEditor.this.dirty = true;
 
-                    getEditorInput().updateContentFromFile(
-                        monitor,
-                        new DBDValueListener() {
-                            public void onUpdate(boolean success)
-                            {
-                                ContentEditor.this.dirty = !success;
-                                getSite().getShell().getDisplay().asyncExec(new Runnable() {
-                                    public void run()
-                                    {
-                                        firePropertyChange(PROP_DIRTY);
-                                    }
-                                });
-                            }
-                        });
+                    getEditorInput().updateContentFromFile(monitor);
+
+                    // Close editor
+                    closeValueEditor();
                 }
                 catch (Exception e) {
                     DBeaverUtils.showErrorDialog(

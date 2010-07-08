@@ -965,7 +965,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         public void updateValue(Object value)
         {
             Object oldValue = curRow[columnIndex];
-            if (!CommonUtils.equalObjects(oldValue, value)) {
+            if (value instanceof DBDValue || !CommonUtils.equalObjects(oldValue, value)) {
                 int rowIndex = getRowIndex(curRow);
                 if (rowIndex >= 0) {
                     if (!isRowAdded(rowIndex) && !isRowDeleted(rowIndex)) {
@@ -980,31 +980,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             updateEditControls();
                         }
                     });
-                }
-            }
-        }
-
-        public void updateValueImmediately(Object value, DBDValueListener listener)
-            throws DBException
-        {
-            // Update cell value
-            Object oldValue = curRow[columnIndex];
-            if (value instanceof DBDValue || !CommonUtils.equalObjects(oldValue, value)) {
-                int rowIndex = getRowIndex(curRow);
-                if (rowIndex >= 0) {
-                    curRow[columnIndex] = value;
-
-                    // Run update SQL
-                    Set<CellInfo> cells = new HashSet<CellInfo>();
-                    cells.add(new CellInfo(columnIndex, rowIndex, oldValue));
-                    try {
-                        new DataUpdater(null, null, cells).applyChanges(listener);
-                    }
-                    catch (DBException e) {
-                        // Rollback value
-                        curRow[columnIndex] = oldValue;
-                        throw e;
-                    }
                 }
             }
         }
