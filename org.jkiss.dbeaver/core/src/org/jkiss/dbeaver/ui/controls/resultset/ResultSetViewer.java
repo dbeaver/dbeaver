@@ -77,16 +77,7 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * ResultSetViewer
@@ -841,8 +832,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (addedRows.contains(rowInfo)) {
             // Remove just added row 
             addedRows.remove(rowInfo);
-            curRows.remove(rowNum);
-            shiftRows(rowNum, -1);
+            deleteRow(rowNum);
 
             refreshSpreadsheet(true);
 
@@ -852,6 +842,30 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
         spreadsheet.redrawGrid();
         updateEditControls();
+    }
+
+    private void deleteRow(int rowNum)
+    {
+        this.curRows.remove(rowNum);
+        this.shiftRows(rowNum, -1);
+    }
+
+    private boolean deleteRows(Set<RowInfo> rows)
+    {
+        if (rows != null && !rows.isEmpty()) {
+            // Remove rows (in descending order to prevent concurrent modification errors)
+            int[] rowsToRemove = new int[rows.size()];
+            int i = 0;
+            for (RowInfo rowNum : rows) rowsToRemove[i++] = rowNum.row;
+            Arrays.sort(rowsToRemove);
+            for (i = rowsToRemove.length; i > 0; i--) {
+                deleteRow(rowsToRemove[i - 1]);
+            }
+            rows.clear();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private Image getColumnImage(DBDColumnBinding column)
@@ -1155,17 +1169,26 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     static class DataStatementInfo {
         StatementType type;
-        int rowNum;
+        RowInfo row;
         DBSTable table;
         List<DBDColumnValue> keyColumns = new ArrayList<DBDColumnValue>();
         List<DBDColumnValue> updateColumns = new ArrayList<DBDColumnValue>();
         boolean executed = false;
 
-        DataStatementInfo(StatementType type, int rowNum, DBSTable table)
+        DataStatementInfo(StatementType type, RowInfo row, DBSTable table)
         {
             this.type = type;
-            this.rowNum = rowNum;
+            this.row = row;
             this.table = table;
+        }
+        boolean hasUpdateColumn(DBDColumnBinding column)
+        {
+            for (DBDColumnValue col : updateColumns) {
+                if (col.getColumn() == column) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -1235,7 +1258,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             // Make delete statements
             for (RowInfo rowNum : removedRowSet) {
                 DBSTable table = metaColumns[0].getValueLocator().getTable();
-                DataStatementInfo statement = new DataStatementInfo(StatementType.DELETE, rowNum.row, table);
+                DataStatementInfo statement = new DataStatementInfo(StatementType.DELETE, rowNum, table);
                 List<? extends DBCColumnMetaData> keyColumns = metaColumns[0].getValueLocator().getKeyColumns();
                 for (DBCColumnMetaData column : keyColumns) {
                     int colIndex = getMetaColumnIndex(column);
@@ -1258,7 +1281,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             for (RowInfo rowNum : newRowSet) {
                 Object[] cellValues = curRows.get(rowNum.row);
                 DBSTable table = metaColumns[0].getValueLocator().getTable();
-                DataStatementInfo statement = new DataStatementInfo(StatementType.INSERT, rowNum.row, table);
+                DataStatementInfo statement = new DataStatementInfo(StatementType.INSERT, rowNum, table);
                 for (int i = 0; i < metaColumns.length; i++) {
                     DBDColumnBinding column = metaColumns[i];
                     statement.keyColumns.add(new DBDColumnValue(column.getMetaData(), cellValues[i]));
@@ -1281,7 +1304,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(rowNum);
                 for (DBSTable table : tableMap.keySet()) {
                     TableRowInfo rowInfo = tableMap.get(table);
-                    DataStatementInfo statement = new DataStatementInfo(StatementType.UPDATE, rowNum, table);
+                    DataStatementInfo statement = new DataStatementInfo(StatementType.UPDATE, new RowInfo(rowNum), table);
                     // Updated columns
                     for (int i = 0; i < rowInfo.tableCells.size(); i++) {
                         CellInfo cell = rowInfo.tableCells.get(i);
@@ -1335,24 +1358,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             refreshSpreadsheet(rowsChanged);
         }
 
-        private boolean deleteRows(Set<RowInfo> rows)
-        {
-            if (rows != null && !rows.isEmpty()) {
-                // Remove rows (in descending order to prevent concurrent modification errors)
-                int[] rowsToRemove = new int[rows.size()];
-                int i = 0;
-                for (RowInfo rowNum : rows) rowsToRemove[i++] = rowNum.row;
-                Arrays.sort(rowsToRemove);
-                for (i = rowsToRemove.length; i > 0; i--) {
-                    ResultSetViewer.this.curRows.remove(rowsToRemove[i - 1]);
-                }
-                rows.clear();
-                return true;
-            } else {
-                return false;
-            }
-        }
-
         private class DataUpdaterJob extends DataSourceJob {
             private DBDValueListener listener;
             private boolean autocommit;
@@ -1367,36 +1372,67 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
             protected IStatus run(DBRProgressMonitor monitor)
             {
-                updateInProgress = true;
+                ResultSetViewer.this.updateInProgress = true;
                 try {
                     final Throwable error = executeStatements(monitor);
 
-                    if (listener != null) {
-                        listener.onUpdate(error == null);
+                    if (this.listener != null) {
+                        this.listener.onUpdate(error == null);
                     }
 
-                    boolean rowsChanged = false;
-                    if (!autocommit && error == null) {
-                        // Reflect data changes in viewer
-                        // Only for transactional update and if no error occured
-                        if (cells != null) {
-                            cells.clear();
-                        }
-                        if (newRowSet != null) {
-                            newRowSet.clear();
-                        }
-                        rowsChanged = deleteRows(removedRowSet);
-                    }
-
-                    final boolean updateRows = rowsChanged;
-                    site.getShell().getDisplay().syncExec(new Runnable() {
+                    ResultSetViewer.this.site.getShell().getDisplay().syncExec(new Runnable() {
                         public void run()
                         {
-                            refreshSpreadsheet(updateRows);
+                            boolean rowsChanged = false;
+                            // Reflect data changes in viewer
+                            // Changes affects only rows which statements executed successfully
+                            if (!DataUpdaterJob.this.autocommit && error == null) {
+                                if (DataUpdater.this.cells != null) {
+                                    for (Iterator<CellInfo> iter = DataUpdater.this.cells.iterator(); iter.hasNext(); ) {
+                                        CellInfo cell = iter.next();
+                                        for (DataStatementInfo stat : updateStatements) {
+                                            if (stat.executed && stat.row.row == cell.row && stat.hasUpdateColumn(metaColumns[cell.col])) {
+                                                iter.remove();
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    DataUpdater.this.cells.clear();
+                                }
+                                if (DataUpdater.this.newRowSet != null) {
+                                    for (Iterator<RowInfo> iter = DataUpdater.this.newRowSet.iterator(); iter.hasNext(); ) {
+                                        RowInfo row = iter.next();
+                                        for (DataStatementInfo stat : insertStatements) {
+                                            if (stat.row.equals(row) && stat.executed) {
+                                                iter.remove();
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                if (DataUpdater.this.removedRowSet != null) {
+                                    for (Iterator<RowInfo> iter = DataUpdater.this.removedRowSet.iterator(); iter.hasNext(); ) {
+                                        RowInfo row = iter.next();
+                                        for (DataStatementInfo stat : deleteStatements) {
+                                            if (stat.row.equals(row) && stat.executed) {
+                                                deleteRow(row.row);
+                                                iter.remove();
+                                                rowsChanged = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            refreshSpreadsheet(rowsChanged);
                             if (error == null) {
-                                setStatus("Instered: " + insertCount + " / Deleted: " + deleteCount + " / Updated: " + updateCount, false);
+                                setStatus(
+                                    "Instered: " + DataUpdaterJob.this.insertCount +
+                                    " / Deleted: " + DataUpdaterJob.this.deleteCount +
+                                    " / Updated: " + DataUpdaterJob.this.updateCount, false);
                             } else {
-                                DBeaverUtils.showErrorDialog(site.getShell(), "Data error", "Error synchronizing data with database", error);
+                                DBeaverUtils.showErrorDialog(ResultSetViewer.this.site.getShell(), "Data error", "Error synchronizing data with database", error);
                                 setStatus(error.getMessage(), true);
                             }
                         }
@@ -1404,7 +1440,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
                 }
                 finally {
-                    updateInProgress = false;
+                    ResultSetViewer.this.updateInProgress = false;
                 }
                 return Status.OK_STATUS;
             }
@@ -1414,15 +1450,15 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 DBCExecutionContext context = getDataSource().openContext(monitor);
                 try {
                     try {
-                        autocommit = context.getTransactionManager().isAutoCommit();
+                        this.autocommit = context.getTransactionManager().isAutoCommit();
                     }
                     catch (DBCException e) {
                         log.warn("Could not determine autocommit state", e);
-                        autocommit = true;
+                        this.autocommit = true;
                     }
-                    if (!autocommit && context.getTransactionManager().supportsSavepoints()) {
+                    if (!this.autocommit && context.getTransactionManager().supportsSavepoints()) {
                         try {
-                            savepoint = context.getTransactionManager().setSavepoint(null);
+                            this.savepoint = context.getTransactionManager().setSavepoint(null);
                         }
                         catch (Throwable e) {
                             // May be savepoints not supported
@@ -1430,9 +1466,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         }
                     }
                     try {
-                        monitor.beginTask("Apply resultset changes", deleteStatements.size() + insertStatements.size() + updateStatements.size());
+                        monitor.beginTask("Apply resultset changes", DataUpdater.this.deleteStatements.size() + DataUpdater.this.insertStatements.size() + DataUpdater.this.updateStatements.size());
 
-                        for (DataStatementInfo statement : deleteStatements) {
+                        for (DataStatementInfo statement : DataUpdater.this.deleteStatements) {
                             if (monitor.isCanceled()) break;
                             DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
                             try {
@@ -1445,11 +1481,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             }
                             monitor.worked(1);
                         }
-                        for (DataStatementInfo statement : insertStatements) {
+                        for (DataStatementInfo statement : DataUpdater.this.insertStatements) {
                             if (monitor.isCanceled()) break;
                             DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
                             try {
                                 insertCount += dataContainer.insertData(context, statement.keyColumns, new KeyDataReciever(statement));
+                                processStatementChanges(statement);
                             }
                             catch (DBException e) {
                                 processStatementError(statement, context);
@@ -1457,11 +1494,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             }
                             monitor.worked(1);
                         }
-                        for (DataStatementInfo statement : updateStatements) {
+                        for (DataStatementInfo statement : DataUpdater.this.updateStatements) {
                             if (monitor.isCanceled()) break;
                             DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
                             try {
-                                updateCount += dataContainer.updateData(context, statement.keyColumns, statement.updateColumns, new KeyDataReciever(statement));
+                                this.updateCount += dataContainer.updateData(context, statement.keyColumns, statement.updateColumns, new KeyDataReciever(statement));
+                                processStatementChanges(statement);
                             }
                             catch (DBException e) {
                                 processStatementError(statement, context);
@@ -1473,9 +1511,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         return null;
                     }
                     finally {
-                        if (savepoint != null) {
+                        if (this.savepoint != null) {
                             try {
-                                context.getTransactionManager().releaseSavepoint(savepoint);
+                                context.getTransactionManager().releaseSavepoint(this.savepoint);
                             }
                             catch (Throwable e) {
                                 // May be savepoints not supported
@@ -1536,7 +1574,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     int colIndex = getMetaColumnIndex(statement.table, keyColumn.getName());
                     if (colIndex >= 0) {
                         // Got it. Just update column value
-                        curRows.get(statement.rowNum)[colIndex] = keyValue;
+                        curRows.get(statement.row.row)[colIndex] = keyValue;
                         updated = true;
                     }
                 }
@@ -1547,7 +1585,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         DBDColumnBinding column = metaColumns[k];
                         if (column.getMetaData().isAutoIncrement()) {
                             // Got it
-                            curRows.get(statement.rowNum)[k] = keyValue;
+                            curRows.get(statement.row.row)[k] = keyValue;
                             updated = true;
                             break;
                         }
