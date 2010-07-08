@@ -121,15 +121,21 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         if (value == null) {
             return super.getValueDisplayString(column, value);
         }
+        DateFormat formatter;
         switch (column.getValueType()) {
         case java.sql.Types.TIME:
-            return timeFormat.format(value);
+            formatter = timeFormat;
+            break;
         case java.sql.Types.DATE:
-            return dateFormat.format(value);
+            formatter = dateFormat;
+            break;
         default:
-            return timeStampFormat.format(value);
+            formatter = timeStampFormat;
+            break;
         }
-
+        synchronized (formatter) {
+            return formatter.format(value);
+        }
     }
 
     public Object copyValueObject(Object value)
