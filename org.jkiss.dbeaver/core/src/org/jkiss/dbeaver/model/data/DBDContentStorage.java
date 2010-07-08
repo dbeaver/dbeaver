@@ -4,9 +4,6 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.dbc.DBCException;
-
-import java.io.Reader;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -17,9 +14,9 @@ import java.io.InputStream;
  */
 public interface DBDContentStorage {
 
-    Reader getContentReader() throws IOException;
-
     InputStream getContentStream() throws IOException;
+
+    String getCharset();
 
     void release();
 
