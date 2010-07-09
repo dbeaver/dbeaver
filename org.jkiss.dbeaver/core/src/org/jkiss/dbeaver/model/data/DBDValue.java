@@ -13,4 +13,5 @@ public interface DBDValue {
 
     DBDValue makeNull();
 
+    void release();
 }

@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
 /**
@@ -32,14 +33,14 @@ public interface DBDValueHandler
 
     /**
      * Binds specified parameter to statement
-     * @param statement statement
+     * @param monitor
+     *@param statement statement
      * @param columnType column type
      * @param paramIndex parameter index (starts from 0)
      * @param value parameter value (can be null). Value is get from getValueObject function or from
-     * object set by editor (editValue function).
-     * @throws org.jkiss.dbeaver.model.dbc.DBCException on error
+* object set by editor (editValue function).     @throws org.jkiss.dbeaver.model.dbc.DBCException on error
      */
-    void bindValueObject(DBCStatement statement, DBSTypedObject columnType, int paramIndex, Object value)
+    void bindValueObject(DBRProgressMonitor monitor, DBCStatement statement, DBSTypedObject columnType, int paramIndex, Object value)
         throws DBCException;
 
     /**

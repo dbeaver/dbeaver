@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
 import java.sql.PreparedStatement;
@@ -44,9 +45,10 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         }
     }
 
-    public final void bindValueObject(DBCStatement statement, DBSTypedObject columnMetaData, int paramIndex, Object value) throws DBCException {
+    public final void bindValueObject(DBRProgressMonitor monitor, DBCStatement statement, DBSTypedObject columnMetaData,
+                                      int paramIndex, Object value) throws DBCException {
         try {
-            this.bindParameter((JDBCPreparedStatement) statement, columnMetaData, paramIndex + 1, value);
+            this.bindParameter(monitor, (JDBCPreparedStatement) statement, columnMetaData, paramIndex + 1, value);
         }
         catch (SQLException e) {
             throw new DBCException("Could not bind statement parameter", e);
@@ -117,7 +119,12 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     protected abstract Object getColumnValue(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
         throws DBCException, SQLException;
 
-    protected abstract void bindParameter(PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
+    protected abstract void bindParameter(
+        DBRProgressMonitor monitor,
+        PreparedStatement statement,
+        DBSTypedObject paramType,
+        int paramIndex,
+        Object value)
         throws DBCException, SQLException;
 
 }

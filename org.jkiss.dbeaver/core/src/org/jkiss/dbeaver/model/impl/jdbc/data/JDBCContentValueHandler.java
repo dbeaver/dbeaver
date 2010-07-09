@@ -96,11 +96,12 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    protected void bindParameter(PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
+    protected void bindParameter(DBRProgressMonitor monitor, PreparedStatement statement, DBSTypedObject paramType,
+                                 int paramIndex, Object value)
         throws DBCException, SQLException
     {
         if (value instanceof JDBCContentAbstract) {
-            ((JDBCContentAbstract)value).bindParameter(statement, paramType, paramIndex);
+            ((JDBCContentAbstract)value).bindParameter(monitor, statement, paramType, paramIndex);
         } else {
             throw new DBCException("Unsupported value type: " + value);
         }

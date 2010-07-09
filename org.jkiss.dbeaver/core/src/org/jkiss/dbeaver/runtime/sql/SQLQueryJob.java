@@ -254,7 +254,12 @@ public class SQLQueryJob extends DataSourceJob
             // Bind parameters
             if (!CommonUtils.isEmpty(query.getParameters())) {
                 for (SQLStatementParameter param : query.getParameters()) {
-                    param.getValueHandler().bindValueObject(curStatement, param.getParamType(), param.getIndex(), param.getValue());
+                    param.getValueHandler().bindValueObject(
+                        context.getProgressMonitor(),
+                        curStatement,
+                        param.getParamType(),
+                        param.getIndex(),
+                        param.getValue());
                 }
             }
 

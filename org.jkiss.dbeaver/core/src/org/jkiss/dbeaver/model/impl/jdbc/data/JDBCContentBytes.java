@@ -88,7 +88,8 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentB
         }
     }
 
-    public void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
+    public void bindParameter(DBRProgressMonitor monitor, PreparedStatement preparedStatement,
+                              DBSTypedObject columnType, int paramIndex)
         throws DBCException
     {
         try {

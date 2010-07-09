@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.DBException;
 import org.eclipse.jface.action.IMenuManager;
@@ -28,7 +29,8 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
         return null;
     }
 
-    public void bindValueObject(DBCStatement statement, DBSTypedObject columnType, int paramIndex, Object value) throws DBCException {
+    public void bindValueObject(DBRProgressMonitor monitor, DBCStatement statement, DBSTypedObject columnType,
+                                int paramIndex, Object value) throws DBCException {
 
     }
 

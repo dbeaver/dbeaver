@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Blob;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -100,11 +101,35 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
         return new ByteArrayInputStream(new byte[0]);
     }
 
-    public void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
+    public void bindParameter(DBRProgressMonitor monitor, PreparedStatement preparedStatement,
+                              DBSTypedObject columnType, int paramIndex)
         throws DBCException
     {
         try {
+/*
+            if (blob != null) {
+                // Rewrite blob value
+                if (storage != null) {
+                    blob.truncate(0);
+                    OutputStream os = blob.setBinaryStream(0);
+                    try {
+                        InputStream is = storage.getContentStream();
+                        try {
+                            ContentUtils.copyStreams(is, storage.getContentLength(), os, monitor);
+                        }
+                        finally {
+                            ContentUtils.close(is);
+                        }
+                    }
+                    finally {
+                        ContentUtils.close(os);
+                    }
+                }
+                preparedStatement.setBlob(paramIndex, blob);
+            }
+*/
             if (storage != null) {
+                // Write new blob value
                 tmpStream = storage.getContentStream();
                 try {
                     preparedStatement.setBinaryStream(paramIndex, tmpStream);
@@ -117,8 +142,6 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
                         preparedStatement.setBinaryStream(paramIndex, tmpStream, (int)storage.getContentLength());
                     }
                 }
-            } else if (blob != null) {
-                preparedStatement.setBlob(paramIndex, blob);
             } else {
                 preparedStatement.setNull(paramIndex, java.sql.Types.BLOB);
             }

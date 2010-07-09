@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,7 +34,8 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
         return resultSet.getBoolean(columnIndex);
     }
 
-    protected void bindParameter(PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws SQLException
+    protected void bindParameter(DBRProgressMonitor monitor, PreparedStatement statement, DBSTypedObject paramType,
+                                 int paramIndex, Object value) throws SQLException
     {
         if (value == null) {
             statement.setNull(paramIndex, paramType.getValueType());

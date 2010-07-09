@@ -27,6 +27,4 @@ public interface DBDContent extends DBDValue {
         DBDContentStorage storage)
         throws DBException;
 
-    void release();
-
 }

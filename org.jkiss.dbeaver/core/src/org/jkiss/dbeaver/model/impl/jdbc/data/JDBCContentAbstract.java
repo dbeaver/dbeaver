@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.PreparedStatement;
 
@@ -18,7 +19,7 @@ import java.sql.PreparedStatement;
  */
 public abstract class JDBCContentAbstract implements DBDContent, DBDValueClonable {
 
-    public abstract void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
+    public abstract void bindParameter(DBRProgressMonitor monitor, PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
         throws DBCException;
 
     public void release()

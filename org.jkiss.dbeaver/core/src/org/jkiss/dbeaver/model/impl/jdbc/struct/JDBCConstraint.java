@@ -109,13 +109,13 @@ public abstract class JDBCConstraint<DATASOURCE extends DBPDataSource, TABLE ext
                     keyPattern = keyPattern.toString() + "%";
                 }
                 if (keyPattern != null) {
-                    keyValueHandler.bindValueObject(dbStat, keyColumn, paramPos++, keyPattern);
+                    keyValueHandler.bindValueObject(monitor, dbStat, keyColumn, paramPos++, keyPattern);
                 }
 
                 if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
                     for (DBDColumnValue precColumn : preceedingKeys) {
                         DBDValueHandler precValueHandler = DBUtils.getColumnValueHandler(dataSource, precColumn.getColumn());
-                        precValueHandler.bindValueObject(dbStat, precColumn.getColumn(), paramPos++, precColumn.getValue());
+                        precValueHandler.bindValueObject(monitor, dbStat, precColumn.getColumn(), paramPos++, precColumn.getValue());
                     }
                 }
                 dbStat.setLimit(0, 100);

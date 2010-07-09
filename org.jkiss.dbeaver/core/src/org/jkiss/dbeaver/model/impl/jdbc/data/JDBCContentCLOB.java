@@ -108,7 +108,8 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
         return new StringReader("");
     }
 
-    public void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
+    public void bindParameter(DBRProgressMonitor monitor, PreparedStatement preparedStatement,
+                              DBSTypedObject columnType, int paramIndex)
         throws DBCException
     {
         try {
@@ -120,7 +121,7 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
                         paramIndex,
                         streamReader);
                 }
-                catch (Throwable e) {
+                catch (AbstractMethodError e) {
                     long streamLength = ContentUtils.calculateContentLength(storage.getContentStream(), storage.getCharset());
                     try {
                         preparedStatement.setCharacterStream(
@@ -128,7 +129,7 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
                             streamReader,
                             streamLength);
                     }
-                    catch (Throwable e1) {
+                    catch (AbstractMethodError e1) {
                         preparedStatement.setCharacterStream(
                             paramIndex,
                             streamReader,

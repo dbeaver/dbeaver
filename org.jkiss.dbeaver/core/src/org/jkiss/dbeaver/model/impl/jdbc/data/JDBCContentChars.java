@@ -100,7 +100,8 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentC
         }
     }
 
-    public void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
+    public void bindParameter(DBRProgressMonitor monitor, PreparedStatement preparedStatement,
+                              DBSTypedObject columnType, int paramIndex)
         throws DBCException
     {
         try {

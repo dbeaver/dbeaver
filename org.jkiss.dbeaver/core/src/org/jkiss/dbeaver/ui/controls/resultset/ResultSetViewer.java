@@ -107,7 +107,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     // Edited rows and cells
     private final Set<RowInfo> addedRows = new TreeSet<RowInfo>();
     private final Set<RowInfo> removedRows = new TreeSet<RowInfo>();
-    private Set<CellInfo> editedValues = new HashSet<CellInfo>();
+    private Map<CellInfo, Object> editedValues = new HashMap<CellInfo, Object>();
 
     private Label statusLabel;
 
@@ -533,11 +533,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void setData(List<Object[]> rows)
     {
-        this.editedValues.clear();
-        this.addedRows.clear();
-        this.removedRows.clear();
+        // Clear previous data
+        this.clearData();
 
-        this.curRows.clear();
+        // Add new data
         this.curRows.addAll(rows);
 
         // Check single source flag
@@ -613,7 +612,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     public boolean isCellModified(int col, int row) {
         return 
             !editedValues.isEmpty() &&
-                editedValues.contains(new CellInfo(col, row, null));
+                editedValues.containsKey(new CellInfo(col, row));
     }
 
     public boolean isInsertable()
@@ -658,7 +657,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void fillContextMenu(final GridPos cell, IMenuManager manager) {
 
-        // Custom value items
+        // Custom oldValue items
         final int columnIndex = (mode == ResultSetMode.GRID ? cell.col : cell.row);
         final int rowIndex = (mode == ResultSetMode.GRID ? cell.row : curRowNum);
         if (rowIndex < 0 || curRows.size() <= rowIndex || columnIndex < 0 || columnIndex >= metaColumns.length) {
@@ -735,10 +734,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void refresh()
     {
-        // Refresh all rows
-        this.editedValues.clear();
-
-        this.curRows.clear();
+        this.clearData();
         this.clearResultsView();
         if (resultSetProvider != null) {
             resultSetProvider.extractResultSetData(0);
@@ -746,10 +742,21 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         updateGridCursor();
     }
 
+    private void clearData()
+    {
+        // Refresh all rows
+        this.releaseAll();
+        this.curRows.clear();
+
+        this.editedValues.clear();
+        this.addedRows.clear();
+        this.removedRows.clear();
+    }
+
     private void applyChanges()
     {
         try {
-            new DataUpdater(addedRows, removedRows, editedValues).applyChanges(null);
+            new DataUpdater().applyChanges(null);
         } catch (DBException e) {
             log.error("Could not obtain result set metdata", e);
         }
@@ -757,7 +764,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void rejectChanges()
     {
-        new DataUpdater(addedRows, removedRows, editedValues).rejectChanges();
+        new DataUpdater().rejectChanges();
     }
 
     private boolean isRowAdded(int row)
@@ -803,7 +810,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private void shiftRows(int rowNum, int delta)
     {
         // Slide all existing edited rows/cells down
-        for (CellInfo cell : editedValues) {
+        for (CellInfo cell : editedValues.keySet()) {
             if (cell.row >= rowNum) cell.row += delta;
         }
         for (RowInfo row : addedRows) {
@@ -847,6 +854,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void deleteRow(int rowNum)
     {
+        this.releaseRow(this.curRows.get(rowNum));
         this.curRows.remove(rowNum);
         this.shiftRows(rowNum, -1);
     }
@@ -866,6 +874,37 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return true;
         } else {
             return false;
+        }
+    }
+
+    private void releaseAll()
+    {
+        for (Object[] row : curRows) {
+            releaseRow(row);
+        }
+        releaseEditedValues();
+    }
+
+    private void releaseEditedValues()
+    {
+        for (Object oldValue : editedValues.values()) {
+            releaseValue(oldValue);
+        }
+    }
+
+    private void releaseRow(Object[] values)
+    {
+        for (Object value : values) {
+            if (value instanceof DBDValue) {
+                ((DBDValue)value).release();
+            }
+        }
+    }
+
+    private void releaseValue(Object value)
+    {
+        if (value instanceof DBDValue) {
+            ((DBDValue)value).release();
         }
     }
 
@@ -970,8 +1009,15 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 if (rowIndex >= 0) {
                     if (!isRowAdded(rowIndex) && !isRowDeleted(rowIndex)) {
                         // Do not add edited cell for new/deleted rows 
-                        CellInfo cell = new CellInfo(columnIndex, rowIndex, oldValue);
-                        editedValues.add(cell);
+                        CellInfo cell = new CellInfo(columnIndex, rowIndex);
+                        if (editedValues.containsKey(cell)) {
+                            // Value rewrite - release previous stored old value
+                            Object oldOldValue = editedValues.remove(cell);
+                            if (!CommonUtils.equalObjects(oldValue, oldOldValue)) {
+                                releaseValue(oldOldValue);
+                            }
+                        }
+                        editedValues.put(cell, oldValue);
                     }
                     curRow[columnIndex] = value;
                     // Update controls
@@ -1110,12 +1156,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private static class CellInfo {
         int col;
         int row;
-        Object value;
 
-        private CellInfo(int col, int row, Object value) {
+        private CellInfo(int col, int row) {
             this.col = col;
             this.row = row;
-            this.value = value;
         }
 
         @Override
@@ -1181,20 +1225,14 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private class DataUpdater {
 
-        private final Set<CellInfo> cells;
-        private final Set<RowInfo> newRowSet;
-        private final Set<RowInfo> removedRowSet;
         private final Map<Integer, Map<DBSTable, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSTable, TableRowInfo>>();
 
         private final List<DataStatementInfo> insertStatements = new ArrayList<DataStatementInfo>();
         private final List<DataStatementInfo> deleteStatements = new ArrayList<DataStatementInfo>();
         private final List<DataStatementInfo> updateStatements = new ArrayList<DataStatementInfo>();
 
-        private DataUpdater(Set<RowInfo> newRowSet, Set<RowInfo> removedRowSet, Set<CellInfo> cells)
+        private DataUpdater()
         {
-            this.cells = cells;
-            this.newRowSet = newRowSet;
-            this.removedRowSet = removedRowSet;
         }
 
         /**
@@ -1214,11 +1252,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         private void prepareUpdateRows()
             throws DBException
         {
-            if (this.cells == null) {
+            if (editedValues == null) {
                 return;
             }
             // Prepare rows
-            for (CellInfo cell : this.cells) {
+            for (CellInfo cell : editedValues.keySet()) {
                 Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(cell.row);
                 if (tableMap == null) {
                     tableMap = new HashMap<DBSTable, TableRowInfo>();
@@ -1239,11 +1277,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         private void prepareDeleteStatements()
             throws DBException
         {
-            if (this.removedRowSet == null) {
+            if (removedRows == null) {
                 return;
             }
             // Make delete statements
-            for (RowInfo rowNum : removedRowSet) {
+            for (RowInfo rowNum : removedRows) {
                 DBSTable table = metaColumns[0].getValueLocator().getTable();
                 DataStatementInfo statement = new DataStatementInfo(StatementType.DELETE, rowNum, table);
                 List<? extends DBSTableColumn> keyColumns = metaColumns[0].getValueLocator().getTableColumns();
@@ -1261,11 +1299,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         private void prepareInsertStatements()
             throws DBException
         {
-            if (this.newRowSet == null) {
+            if (addedRows == null) {
                 return;
             }
             // Make insert statements
-            for (RowInfo rowNum : newRowSet) {
+            for (RowInfo rowNum : addedRows) {
                 Object[] cellValues = curRows.get(rowNum.row);
                 DBSTable table = metaColumns[0].getValueLocator().getTable();
                 DataStatementInfo statement = new DataStatementInfo(StatementType.INSERT, rowNum, table);
@@ -1308,10 +1346,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         }
                         DBDColumnBinding metaColumn = metaColumns[columnIndex];
                         Object keyValue = curRows.get(rowNum)[columnIndex];
-                        // Try to find old key value
-                        for (CellInfo cell : this.cells) {
+                        // Try to find old key oldValue
+                        for (CellInfo cell : editedValues.keySet()) {
                             if (cell.equals(columnIndex, rowNum)) {
-                                keyValue = cell.value;
+                                keyValue = editedValues.get(cell);
                             }
                         }
                         statement.keyColumns.add(new DBDColumnValue(metaColumn.getTableColumn(), keyValue));
@@ -1330,16 +1368,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public void rejectChanges()
         {
-            if (this.cells != null) {
-                for (CellInfo cell : this.cells) {
-                    ResultSetViewer.this.curRows.get(cell.row)[cell.col] = cell.value;
+            if (editedValues != null) {
+                for (CellInfo cell : editedValues.keySet()) {
+                    ResultSetViewer.this.curRows.get(cell.row)[cell.col] = editedValues.get(cell);
                 }
-                this.cells.clear();
+                editedValues.clear();
             }
-            boolean rowsChanged = deleteRows(this.newRowSet);
+            boolean rowsChanged = deleteRows(addedRows);
             // Remove deleted rows
-            if (this.removedRowSet != null) {
-                this.removedRowSet.clear();
+            if (removedRows != null) {
+                removedRows.clear();
             }
 
             refreshSpreadsheet(rowsChanged);
@@ -1350,33 +1388,33 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         private boolean reflectChanges()
         {
             boolean rowsChanged = false;
-            if (DataUpdater.this.cells != null) {
-                for (Iterator<CellInfo> iter = DataUpdater.this.cells.iterator(); iter.hasNext(); ) {
-                    CellInfo cell = iter.next();
+            if (editedValues != null) {
+                for (Iterator<Map.Entry<CellInfo, Object>> iter = editedValues.entrySet().iterator(); iter.hasNext(); ) {
+                    Map.Entry<CellInfo, Object> entry = iter.next();
                     for (DataStatementInfo stat : updateStatements) {
-                        if (stat.executed && stat.row.row == cell.row && stat.hasUpdateColumn(metaColumns[cell.col])) {
-                            reflectUpdatedKeys(stat);
+                        if (stat.executed && stat.row.row == entry.getKey().row && stat.hasUpdateColumn(metaColumns[entry.getKey().col])) {
+                            reflectKeysUpdate(stat);
                             iter.remove();
                             break;
                         }
                     }
                 }
-                DataUpdater.this.cells.clear();
+                editedValues.clear();
             }
-            if (DataUpdater.this.newRowSet != null) {
-                for (Iterator<RowInfo> iter = DataUpdater.this.newRowSet.iterator(); iter.hasNext(); ) {
+            if (addedRows != null) {
+                for (Iterator<RowInfo> iter = addedRows.iterator(); iter.hasNext(); ) {
                     RowInfo row = iter.next();
                     for (DataStatementInfo stat : insertStatements) {
                         if (stat.executed && stat.row.equals(row)) {
-                            reflectUpdatedKeys(stat);
+                            reflectKeysUpdate(stat);
                             iter.remove();
                             break;
                         }
                     }
                 }
             }
-            if (DataUpdater.this.removedRowSet != null) {
-                for (Iterator<RowInfo> iter = DataUpdater.this.removedRowSet.iterator(); iter.hasNext(); ) {
+            if (removedRows != null) {
+                for (Iterator<RowInfo> iter = removedRows.iterator(); iter.hasNext(); ) {
                     RowInfo row = iter.next();
                     for (DataStatementInfo stat : deleteStatements) {
                         if (stat.executed && stat.row.equals(row)) {
@@ -1391,13 +1429,29 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return rowsChanged;
         }
 
-        private void reflectUpdatedKeys(DataStatementInfo stat)
+        private void reflectKeysUpdate(DataStatementInfo stat)
         {
+            // Update keys
             if (!stat.updatedCells.isEmpty()) {
                 for (Map.Entry<Integer, Object> entry : stat.updatedCells.entrySet()) {
-                    ResultSetViewer.this.curRows.get(stat.row.row)[entry.getKey()] = entry.getValue();
+                    Object[] row = ResultSetViewer.this.curRows.get(stat.row.row);
+                    releaseValue(row[entry.getKey()]);
+                    row[entry.getKey()] = entry.getValue();
                 }
             }
+        }
+
+        private void releaseStatements()
+        {
+            for (DataStatementInfo stat : updateStatements) releaseStatement(stat);
+            for (DataStatementInfo stat : insertStatements) releaseStatement(stat);
+            for (DataStatementInfo stat : deleteStatements) releaseStatement(stat);
+        }
+
+        private void releaseStatement(DataStatementInfo stat)
+        {
+            for (DBDColumnValue value : stat.keyColumns) releaseValue(value.getValue());
+            for (DBDColumnValue value : stat.updateColumns) releaseValue(value.getValue());
         }
 
         private class DataUpdaterJob extends DataSourceJob {
@@ -1429,7 +1483,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             if (DataUpdaterJob.this.autocommit || error == null) {
                                 rowsChanged = reflectChanges();
                             }
-
+                            //releaseStatements();
                             refreshSpreadsheet(rowsChanged);
                             if (error == null) {
                                 setStatus(
@@ -1577,7 +1631,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 if (!CommonUtils.isEmpty(keyColumn.getName())) {
                     int colIndex = getMetaColumnIndex(statement.table, keyColumn.getName());
                     if (colIndex >= 0) {
-                        // Got it. Just update column value
+                        // Got it. Just update column oldValue
                         statement.updatedCells.put(colIndex, keyValue);
                         //curRows.get(statement.row.row)[colIndex] = keyValue;
                         updated = true;
