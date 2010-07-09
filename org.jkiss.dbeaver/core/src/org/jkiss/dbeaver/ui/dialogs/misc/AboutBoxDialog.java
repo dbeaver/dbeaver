@@ -4,22 +4,27 @@
 
 package org.jkiss.dbeaver.ui.dialogs.misc;
 
+import org.eclipse.core.runtime.IProduct;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.JFaceColors;
-import org.eclipse.swt.widgets.*;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
-import org.eclipse.swt.program.Program;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.program.Program;
+import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.IWorkbenchHelpContextIds;
 import org.eclipse.ui.internal.about.InstallationDialog;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
@@ -27,7 +32,8 @@ import org.jkiss.dbeaver.ui.DBIcon;
  */
 public class AboutBoxDialog extends Dialog
 {
-    private static final String STR_SITE_URL = "<a>http://dbeaver.jkiss.org</a>";
+    private static final String STR_AUTHOR_INFO = "Authored By Serge Rieder, 2010";
+    private static final String STR_SITE_URL = "<a>http://dbeaver.jkiss.org/</a>";
     private static final String STR_EMAIL_URL = "<a>serge@jkiss.org</a>";
     private final Font TITLE_FONT;
 
@@ -70,10 +76,17 @@ public class AboutBoxDialog extends Dialog
 
         GridData gd;
 
+        String productDesc = "", productVersion = "";
+        IProduct product = Platform.getProduct();
+        if (product != null) {
+			productDesc = product.getDescription();
+            productVersion = product.getDefiningBundle().getVersion().toString();
+		}
+
         Label titleLabel = new Label(group, SWT.NONE);
         titleLabel.setBackground(background);
         titleLabel.setFont(TITLE_FONT);
-        titleLabel.setText("Universal Database Manager");
+        titleLabel.setText(productDesc);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         titleLabel.setLayoutData(gd);
@@ -101,9 +114,16 @@ public class AboutBoxDialog extends Dialog
         imageLabel.setLayoutData(gd);
         imageLabel.setImage(DBIcon.ABOUT.getImage());
 
+        Label versionLabel = new Label(group, SWT.NONE);
+        versionLabel.setBackground(background);
+        versionLabel.setText("Version " + productVersion);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalAlignment = GridData.CENTER;
+        versionLabel.setLayoutData(gd);
+
         Label authorLabel = new Label(group, SWT.NONE);
         authorLabel.setBackground(background);
-        authorLabel.setText("Authored By Serge Rieder, 2010");
+        authorLabel.setText(STR_AUTHOR_INFO);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         authorLabel.setLayoutData(gd);

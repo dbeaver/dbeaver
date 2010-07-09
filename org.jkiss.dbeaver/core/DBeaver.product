@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver" id="org.jkiss.dbeaver.core.product" application="org.jkiss.dbeaver.core.application" version="1.0.0" useFeatures="false" includeLaunchers="true">
+<product name="DBeaver" id="org.jkiss.dbeaver.core.product" application="org.jkiss.dbeaver.core.application" version="1.0.0.beta" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <image path="product_lg.gif"/>
