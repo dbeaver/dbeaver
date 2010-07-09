@@ -81,35 +81,44 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
     }
 
     public InputStream getContents() throws DBCException {
-        if (blob == null) {
-            if (storage != null) {
-                try {
-                    return storage.getContentStream();
-                }
-                catch (IOException e) {
-                    throw new DBCException(e);
-                }
-            } else {
-                // Empty content
-                return new ByteArrayInputStream(new byte[0]);
+        if (storage != null) {
+            try {
+                return storage.getContentStream();
+            }
+            catch (IOException e) {
+                throw new DBCException(e);
             }
         }
-        try {
-            return blob.getBinaryStream();
-        } catch (SQLException e) {
-            throw new DBCException(e);
+        if (blob != null) {
+            try {
+                return blob.getBinaryStream();
+            } catch (SQLException e) {
+                throw new DBCException(e);
+            }
         }
+        // Empty content
+        return new ByteArrayInputStream(new byte[0]);
     }
 
     public void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
         throws DBCException
     {
         try {
-            if (blob != null) {
-                preparedStatement.setBlob(paramIndex, blob);
-            } else if (storage != null) {
+            if (storage != null) {
                 tmpStream = storage.getContentStream();
-                preparedStatement.setBinaryStream(paramIndex, tmpStream, storage.getContentLength());
+                try {
+                    preparedStatement.setBinaryStream(paramIndex, tmpStream);
+                }
+                catch (AbstractMethodError e) {
+                    try {
+                        preparedStatement.setBinaryStream(paramIndex, tmpStream, storage.getContentLength());
+                    }
+                    catch (AbstractMethodError e1) {
+                        preparedStatement.setBinaryStream(paramIndex, tmpStream, (int)storage.getContentLength());
+                    }
+                }
+            } else if (blob != null) {
+                preparedStatement.setBlob(paramIndex, blob);
             } else {
                 preparedStatement.setNull(paramIndex, java.sql.Types.BLOB);
             }

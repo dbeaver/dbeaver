@@ -90,32 +90,29 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
     }
 
     public Reader getContents() throws DBCException {
-        if (clob == null) {
-            if (storage != null) {
-                try {
-                    return new InputStreamReader(storage.getContentStream(), storage.getCharset());
-                }
-                catch (IOException e) {
-                    throw new DBCException(e);
-                }
-            } else {
-                return new StringReader("");
+        if (storage != null) {
+            try {
+                return new InputStreamReader(storage.getContentStream(), storage.getCharset());
+            }
+            catch (IOException e) {
+                throw new DBCException(e);
             }
         }
-        try {
-            return clob.getCharacterStream();
-        } catch (SQLException e) {
-            throw new DBCException("JDBC error", e);
+        if (clob != null) {
+            try {
+                return clob.getCharacterStream();
+            } catch (SQLException e) {
+                throw new DBCException("JDBC error", e);
+            }
         }
+        return new StringReader("");
     }
 
     public void bindParameter(PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
         throws DBCException
     {
         try {
-            if (clob != null) {
-                preparedStatement.setClob(paramIndex, clob);
-            } else if (storage != null) {
+            if (storage != null) {
                 // Try 3 jdbc methods to set character stream
                 InputStreamReader streamReader = new InputStreamReader(storage.getContentStream(), storage.getCharset());
                 try {
@@ -138,6 +135,8 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
                             (int)streamLength);
                     }
                 }
+            } else if (clob != null) {
+                preparedStatement.setClob(paramIndex, clob);
             } else {
                 preparedStatement.setNull(paramIndex + 1, java.sql.Types.CLOB);
             }

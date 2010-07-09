@@ -95,9 +95,14 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     {
         try {
             if (returnGeneratedKeys) {
-                return prepareStatement(
-                    sqlQuery,
-                    Statement.RETURN_GENERATED_KEYS);
+                try {
+                    return prepareStatement(
+                        sqlQuery,
+                        Statement.RETURN_GENERATED_KEYS);
+                }
+                catch (AbstractMethodError e) {
+                    return prepareStatement(sqlQuery);
+                }
             } else {
                 return prepareStatement(
                     sqlQuery,
