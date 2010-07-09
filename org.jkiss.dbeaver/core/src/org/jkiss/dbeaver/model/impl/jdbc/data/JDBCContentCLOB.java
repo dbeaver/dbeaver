@@ -43,13 +43,16 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
     }
 
     public long getContentLength() throws DBCException {
+        if (storage != null) {
+            return storage.getContentLength();
+        }
         if (clob == null) {
             return 0;
         }
         try {
             return clob.length();
         } catch (SQLException e) {
-            throw new DBCException("JDBC error", e);
+            throw new DBCException(e);
         }
     }
 

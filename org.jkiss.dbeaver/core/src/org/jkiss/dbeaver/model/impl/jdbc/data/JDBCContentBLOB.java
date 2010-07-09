@@ -43,6 +43,9 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
     }
 
     public long getContentLength() throws DBCException {
+        if (storage != null) {
+            return storage.getContentLength();
+        }
         if (blob == null) {
             return 0;
         }
