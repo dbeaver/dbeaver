@@ -260,7 +260,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                         } else {
                             storage = new ExternalContentStorage(openFile);
                         }
-                        value.updateContents(monitor, controller, storage);
+                        value.updateContents(monitor, storage);
                         controller.updateValue(value);
                     }
                     catch (Exception e) {

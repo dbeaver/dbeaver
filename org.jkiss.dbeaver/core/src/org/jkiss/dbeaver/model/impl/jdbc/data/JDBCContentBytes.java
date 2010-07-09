@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContentBinary;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
-import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -52,7 +51,6 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentB
 
     public boolean updateContents(
         DBRProgressMonitor monitor,
-        DBDValueController valueController,
         DBDContentStorage storage)
         throws DBException
     {

@@ -10,7 +10,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContentCharacter;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -63,7 +62,6 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
 
     public boolean updateContents(
         DBRProgressMonitor monitor,
-        DBDValueController valueController,
         DBDContentStorage storage)
         throws DBException
     {

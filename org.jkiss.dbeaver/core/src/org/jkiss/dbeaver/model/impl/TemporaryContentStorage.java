@@ -14,6 +14,8 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.InputStreamReader;
 
 /**
  * File content storage
@@ -34,6 +36,19 @@ public class TemporaryContentStorage implements DBDContentStorage {
     {
         try {
             return file.getContents();
+        }
+        catch (CoreException e) {
+            throw new IOException(e);
+        }
+    }
+
+    public Reader getContentReader()
+        throws IOException
+    {
+        try {
+            return new InputStreamReader(
+                file.getContents(),
+                file.getCharset());
         }
         catch (CoreException e) {
             throw new IOException(e);

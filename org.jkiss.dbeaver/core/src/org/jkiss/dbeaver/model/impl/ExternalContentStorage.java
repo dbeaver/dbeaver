@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.io.InputStreamReader;
 
 /**
  * File content storage
@@ -39,6 +41,12 @@ public class ExternalContentStorage implements DBDContentStorage {
         throws IOException
     {
         return new FileInputStream(file);
+    }
+
+    public Reader getContentReader()
+        throws IOException
+    {
+        return new InputStreamReader(getContentStream(), charset);
     }
 
     public long getContentLength()

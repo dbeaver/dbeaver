@@ -93,7 +93,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
     private void saveAndCleanup()
     {
-        final List<IPath> openFiles = new ArrayList<IPath>();
         final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 
         try {
@@ -104,6 +103,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                     public void run(IProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
+                        final List<IPath> openFiles = new ArrayList<IPath>();
                         for (IWorkbenchPage workbenchPage : workbenchWindow.getPages()) {
                             for (IEditorReference editorRef : workbenchPage.getEditorReferences()) {
                                 try {

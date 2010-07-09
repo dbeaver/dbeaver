@@ -11,7 +11,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.io.Closeable;
 import java.io.File;
@@ -34,6 +37,11 @@ public class ContentUtils {
 
     static Log log = LogFactory.getLog(ContentUtils.class);
     public static final String DEFAULT_FILE_CHARSET = "UTF-8";
+
+    public static IFile createTempFile(IProgressMonitor monitor, String fileName)
+    {
+        return DBeaverCore.getInstance().makeTempFile(fileName, "data", monitor);
+    }
 
     public static File selectFileForSave(Shell parentShell)
     {

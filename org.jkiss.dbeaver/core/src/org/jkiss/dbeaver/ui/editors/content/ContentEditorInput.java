@@ -18,7 +18,6 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentBinary;
@@ -136,10 +135,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
             // Construct file name
             String fileName = makeFileName();
             // Create file
-            contentFile = DBeaverCore.getInstance().makeTempFile(
-                fileName,
-                "data",
-                monitor);
+            contentFile = ContentUtils.createTempFile(monitor, fileName);
 
             // Write value to file
             Object value = valueController.getValue();
@@ -168,7 +164,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
             // Delete temp file
             if (contentFile != null && contentFile.exists()) {
                 try {
-                    contentFile.delete(true, true, monitor);
+                    contentFile.delete(true, false, monitor);
                 }
                 catch (CoreException e1) {
                     log.warn("Could not delete temporary content file", e);
@@ -322,7 +318,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
         DBDContent content = getContent();
 
         DBDContentStorage storage = new TemporaryContentStorage(contentFile);
-        contentDetached = content.updateContents(localMonitor, valueController, storage);
+        contentDetached = content.updateContents(localMonitor, storage);
         valueController.updateValue(content);
     }
 

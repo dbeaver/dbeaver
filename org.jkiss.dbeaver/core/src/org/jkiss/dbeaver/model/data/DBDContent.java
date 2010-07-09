@@ -8,8 +8,6 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 
-import java.io.InputStream;
-
 /**
  * DBC LOB
  *
@@ -21,9 +19,17 @@ public interface DBDContent extends DBDValue {
 
     String getContentType() throws DBCException;
 
+    //DBDContentStorage getContents(DBRProgressMonitor monitor) throws DBCException;
+
+    /**
+     * Update contents
+     * @param monitor monitor
+     * @param storage
+     * @return
+     * @throws DBException
+     */
     boolean updateContents(
         DBRProgressMonitor monitor,
-        DBDValueController valueController,
         DBDContentStorage storage)
         throws DBException;
 

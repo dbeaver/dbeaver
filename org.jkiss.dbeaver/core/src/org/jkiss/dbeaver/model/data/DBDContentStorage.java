@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 
 /**
  * Content storage
@@ -15,6 +16,8 @@ import java.io.InputStream;
 public interface DBDContentStorage {
 
     InputStream getContentStream() throws IOException;
+
+    Reader getContentReader() throws IOException;
 
     long getContentLength();
 
