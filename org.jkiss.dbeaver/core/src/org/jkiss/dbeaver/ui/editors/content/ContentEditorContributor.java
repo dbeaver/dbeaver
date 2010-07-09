@@ -48,8 +48,8 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     private ContentEditor activeEditor;
     private IEditorPart activePage;
 
-    private IAction saveAction = new SaveAction();
-    private IAction loadAction = new LoadAction();
+    private IAction saveAction = new FileExportAction();
+    private IAction loadAction = new FileImportAction();
     private IAction infoAction = new InfoAction();
     private IAction applyAction = new ApplyAction();
     private IAction closeAction = new CloseAction();
@@ -94,18 +94,23 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         this.activeEditor = (ContentEditor) part;
         this.activeEditor.addPropertyListener(dirtyListener);
 
-        if (this.activeEditor != null && encodingCombo != null && !encodingCombo.isDisposed()) {
-            try {
-                String curCharset = this.activeEditor.getEditorInput().getFile().getCharset();
-                int charsetCount = encodingCombo.getItemCount();
-                for (int i = 0; i < charsetCount; i++) {
-                    if (encodingCombo.getItem(i).equals(curCharset)) {
-                        encodingCombo.select(i);
-                        break;
+        if (this.activeEditor != null) {
+            if (encodingCombo != null && !encodingCombo.isDisposed()) {
+                try {
+                    String curCharset = this.activeEditor.getEditorInput().getFile().getCharset();
+                    int charsetCount = encodingCombo.getItemCount();
+                    for (int i = 0; i < charsetCount; i++) {
+                        if (encodingCombo.getItem(i).equals(curCharset)) {
+                            encodingCombo.select(i);
+                            break;
+                        }
                     }
+                } catch (CoreException e) {
+                    log.error(e);
                 }
-            } catch (CoreException e) {
-                log.error(e);
+            }
+            if (applyAction != null) {
+                applyAction.setEnabled(activeEditor.isDirty());
             }
         }
     }
@@ -219,11 +224,11 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     // Actions
     /////////////////////////////////////////////////////////
 
-    private class SaveAction extends SimpleAction
+    private class FileExportAction extends SimpleAction
     {
-        public SaveAction()
+        public FileExportAction()
         {
-            super(IWorkbenchCommandConstants.FILE_EXPORT, "Save", "Save to File", DBIcon.SAVE);
+            super(IWorkbenchCommandConstants.FILE_EXPORT, "Export", "Save to File", DBIcon.EXPORT);
         }
 
         @Override
@@ -261,11 +266,11 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         }
     }
 
-    private class LoadAction extends SimpleAction
+    private class FileImportAction extends SimpleAction
     {
-        public LoadAction()
+        public FileImportAction()
         {
-            super(IWorkbenchCommandConstants.FILE_IMPORT, "Load", "Load from File", DBIcon.LOAD);
+            super(IWorkbenchCommandConstants.FILE_IMPORT, "Import", "Load from File", DBIcon.IMPORT);
         }
 
         @Override
@@ -321,7 +326,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     {
         public ApplyAction()
         {
-            super("org.jkiss.dbeaver.lob.actions.apply", "Apply Changes", "Apply Changes", DBIcon.ACCEPT);
+            super("org.jkiss.dbeaver.lob.actions.apply", "Apply Changes", "Apply Changes", DBIcon.SAVE);
         }
 
         @Override
