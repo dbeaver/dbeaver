@@ -10,7 +10,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -23,8 +22,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -86,7 +85,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         {
             try {
                 editorInput = new ContentEditorInput(valueController, editorParts, monitor);
-            } catch (CoreException e) {
+            } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }
         }

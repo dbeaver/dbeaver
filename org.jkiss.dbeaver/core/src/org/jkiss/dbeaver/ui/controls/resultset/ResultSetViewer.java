@@ -445,6 +445,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void dispose()
     {
+        clearData();
         closeEditors();
 
         if (!spreadsheet.isDisposed()) {

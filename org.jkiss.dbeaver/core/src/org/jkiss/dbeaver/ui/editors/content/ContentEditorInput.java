@@ -59,7 +59,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
         DBDValueController valueController,
         IContentEditorPart[] editorParts,
         IProgressMonitor monitor)
-        throws CoreException
+        throws DBException
     {
         this.valueController = valueController;
         this.editorParts = editorParts;
@@ -128,19 +128,13 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
     }
 
     private void saveDataToFile(IProgressMonitor monitor)
-        throws CoreException
+        throws DBException
     {
         try {
             DBDContent content = getContent();
 
             // Construct file name
-            String fileName;
-            try {
-                fileName = makeFileName();
-            } catch (DBException e) {
-                throw new CoreException(
-                    DBeaverUtils.makeExceptionStatus(e));
-            }
+            String fileName = makeFileName();
             // Create file
             contentFile = DBeaverCore.getInstance().makeTempFile(
                 fileName,
@@ -160,18 +154,27 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
                 ResourceAttributes attributes = contentFile.getResourceAttributes();
                 if (attributes != null) {
                     attributes.setReadOnly(true);
-                    contentFile.setResourceAttributes(attributes);
+                    try {
+                        contentFile.setResourceAttributes(attributes);
+                    }
+                    catch (CoreException e) {
+                        throw new DBException(e);
+                    }
                 }
             }
 
         }
-        catch (DBException e) {
-            throw new CoreException(
-                DBeaverUtils.makeExceptionStatus(e));
-        }
         catch (IOException e) {
-            throw new CoreException(
-                DBeaverUtils.makeExceptionStatus(e));
+            // Delete temp file
+            if (contentFile != null && contentFile.exists()) {
+                try {
+                    contentFile.delete(true, true, monitor);
+                }
+                catch (CoreException e1) {
+                    log.warn("Could not delete temporary content file", e);
+                }
+            }
+            throw new DBException(e);
         }
     }
 
