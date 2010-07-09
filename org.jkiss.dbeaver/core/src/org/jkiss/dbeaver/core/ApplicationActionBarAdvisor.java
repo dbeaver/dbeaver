@@ -6,22 +6,23 @@ package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.jface.action.*;
+import org.eclipse.ui.IActionDelegate;
+import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.actions.ActionFactory;
-import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.internal.WorkbenchPlugin;
-import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
+import org.jkiss.dbeaver.ui.actions.AboutBoxAction;
 import org.jkiss.dbeaver.ui.actions.ToggleViewAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementAction;
 import org.jkiss.dbeaver.ui.views.console.ConsoleView;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
 /**
  * An action bar advisor is responsible for creating, adding, and disposing of the
@@ -35,16 +36,14 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     // in the fill methods.  This ensures that the actions aren't recreated
     // when fillActionBars is called with FILL_PROXY.
     private IWorkbenchAction exitAction;
-    private IWorkbenchAction aboutAction;
+    private IActionDelegate aboutAction;
     private IWorkbenchAction newWindowAction;
     //private IWorkbenchAction viewPropertiesAction;
     private IWorkbenchAction viewPreferencesAction;
-    private IWorkbenchWindow window;
 
     public ApplicationActionBarAdvisor(IActionBarConfigurer configurer)
     {
         super(configurer);
-        window = configurer.getWindowConfigurer().getWindow();
     }
 
     @SuppressWarnings("restriction")
@@ -81,8 +80,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         exitAction = ActionFactory.QUIT.create(window);
         register(exitAction);
 
-        aboutAction = ActionFactory.ABOUT.create(window);
-        register(aboutAction);
+        //aboutAction = ActionFactory.ABOUT.create(window);
+        //register(aboutAction);
+        aboutAction = new AboutBoxAction(window);
+        //register(aboutAction);
 
         newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
         register(newWindowAction);
@@ -143,7 +144,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 */
 
         // Help
-        helpMenu.add(aboutAction);
+        helpMenu.add(ViewUtils.makeAction(aboutAction, null, null, "About"));
     }
 
     protected void fillCoolBar(ICoolBarManager coolBar)
