@@ -38,10 +38,11 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
 
     public static final int MAX_STRING_LENGTH = 1000;
 
+    private String originalData;
     private String data;
 
     public JDBCContentChars(String data) {
-        this.data = data;
+        this.data = this.originalData = data;
     }
 
     public String getData() {
@@ -143,6 +144,11 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
     public JDBCContentChars makeNull()
     {
         return new JDBCContentChars(null);
+    }
+
+    public void release()
+    {
+        this.data = this.originalData;
     }
 
     @Override

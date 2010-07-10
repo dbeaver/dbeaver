@@ -33,10 +33,11 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
 
     static Log log = LogFactory.getLog(JDBCContentBytes.class);
 
+    private byte[] originalData;
     private byte[] data;
 
     public JDBCContentBytes(byte[] data) {
-        this.data = data;
+        this.data = this.originalData = data;
     }
 
     public InputStream getContentStream()
@@ -107,8 +108,11 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         return false;
     }
 
-    public void bindParameter(DBRProgressMonitor monitor, PreparedStatement preparedStatement,
-                              DBSTypedObject columnType, int paramIndex)
+    public void bindParameter(
+        DBRProgressMonitor monitor,
+        PreparedStatement preparedStatement,
+        DBSTypedObject columnType,
+        int paramIndex)
         throws DBCException
     {
         try {
@@ -131,6 +135,12 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
     public JDBCContentBytes makeNull()
     {
         return new JDBCContentBytes(null);
+    }
+
+    public void release()
+    {
+        // Return original data
+        this.data = this.originalData;
     }
 
     @Override

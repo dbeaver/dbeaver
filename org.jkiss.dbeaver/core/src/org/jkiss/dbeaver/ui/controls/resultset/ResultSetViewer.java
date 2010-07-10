@@ -1373,7 +1373,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         {
             if (editedValues != null) {
                 for (CellInfo cell : editedValues.keySet()) {
-                    ResultSetViewer.this.curRows.get(cell.row)[cell.col] = editedValues.get(cell);
+                    Object[] row = ResultSetViewer.this.curRows.get(cell.row);
+                    releaseValue(row[cell.col]);
+                    row[cell.col] = editedValues.get(cell);
                 }
                 editedValues.clear();
             }

@@ -22,8 +22,4 @@ public abstract class JDBCContentAbstract implements DBDContent, DBDValueClonabl
     public abstract void bindParameter(DBRProgressMonitor monitor, PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
         throws DBCException;
 
-    public void release()
-    {
-        // do nothing by default
-    }
 }
