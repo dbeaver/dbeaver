@@ -13,5 +13,14 @@ public interface DBDValue {
 
     DBDValue makeNull();
 
+    /**
+     * Checks transactional state (transactional values valid only during transaction at which thy were retrieved
+     * @return
+     */
+    //boolean isTransactional();
+
+    /**
+     * Releases allocated resources. Resets to original value
+     */
     void release();
 }
