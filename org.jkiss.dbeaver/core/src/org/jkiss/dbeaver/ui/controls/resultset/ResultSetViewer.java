@@ -445,8 +445,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void dispose()
     {
-        clearData();
         closeEditors();
+        clearData();
 
         if (!spreadsheet.isDisposed()) {
             spreadsheet.dispose();
@@ -535,6 +535,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     public void setData(List<Object[]> rows)
     {
         // Clear previous data
+        this.closeEditors();
         this.clearData();
 
         // Add new data
@@ -735,6 +736,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void refresh()
     {
+        this.closeEditors();
         this.clearData();
         this.clearResultsView();
         if (resultSetProvider != null) {

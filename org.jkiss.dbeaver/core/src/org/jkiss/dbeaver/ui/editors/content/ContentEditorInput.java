@@ -135,7 +135,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
             // Copy content to local file
             try {
                 // Create file
-                contentFile = ContentUtils.createTempFile( monitor, valueController.getColumnId());
+                contentFile = ContentUtils.createTempContentFile( monitor, valueController.getColumnId());
 
                 // Write value to file
                 if (!content.isNull()) {
@@ -175,6 +175,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
     {
         if (contentFile != null && !contentDetached) {
             ContentUtils.deleteTempFile(monitor, contentFile);
+            contentDetached = true;
         }
     }
 

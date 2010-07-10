@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.io.IOException;
 
 public class OpenSQLEditorAction extends DataSourceAction
 {
@@ -31,10 +32,18 @@ public class OpenSQLEditorAction extends DataSourceAction
     {
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(true);
         if (dataSourceContainer != null) {
-            IFile tempFile = DBeaverCore.getInstance().makeTempFile(
-                dataSourceContainer.getName(),
-                "sql",
-                VoidProgressMonitor.INSTANCE);
+            IFile tempFile;
+            try {
+                tempFile = DBeaverCore.getInstance().makeTempFile(
+                    VoidProgressMonitor.INSTANCE,
+                    DBeaverCore.getInstance().getAutosaveFolder(VoidProgressMonitor.INSTANCE),
+                    dataSourceContainer.getName(),
+                    "sql");
+            }
+            catch (IOException e) {
+                log.error(e);
+                return;
+            }
             SQLEditorInput sqlInput = new SQLEditorInput(
                 tempFile,
                 dataSourceContainer,

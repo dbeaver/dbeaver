@@ -65,7 +65,13 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContent {
     {
         if (storage == null && blob != null) {
             // Create new local storage
-            IFile tempFile = ContentUtils.createTempFile(monitor, "blob" + blob.hashCode());
+            IFile tempFile;
+            try {
+                tempFile = ContentUtils.createTempContentFile(monitor, "blob" + blob.hashCode());
+            }
+            catch (IOException e) {
+                throw new DBCException(e);
+            }
             try {
                 ContentUtils.copyStreamToFile(monitor, blob.getBinaryStream(), blob.length(), tempFile);
             } catch (Exception e) {

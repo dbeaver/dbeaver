@@ -13,11 +13,14 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.part.EditorInputTransfer;
+import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 {
@@ -66,6 +69,18 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 
     public boolean preWindowShellClose()
     {
+        // Close al content editors
+        // They are locks resources which are shared between other editors
+        // So we need to close em first
+        IWorkbenchPage workbenchPage = getWindowConfigurer().getWindow().getActivePage();
+        IEditorReference[] editors = workbenchPage.getEditorReferences();
+        for (IEditorReference editor : editors) {
+            IEditorPart editorPart = editor.getEditor(false);
+            if (editorPart != null && editorPart.getEditorInput() instanceof ContentEditorInput) {
+                workbenchPage.closeEditor(editorPart, false);
+            }
+        }
+        // Do its job
         return super.preWindowShellClose();
     }
 

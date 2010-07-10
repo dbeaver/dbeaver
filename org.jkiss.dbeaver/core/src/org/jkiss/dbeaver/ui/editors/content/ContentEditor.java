@@ -21,6 +21,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
@@ -129,8 +131,8 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         }
         try {
             valueController.getValueSite().getWorkbenchWindow().getActivePage().openEditor(
-            editorInput,
-            ContentEditor.class.getName());
+                editorInput,
+                ContentEditor.class.getName());
         }
         catch (PartInitException e) {
             log.error("Could not open LOB editorPart", e);
@@ -430,6 +432,8 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         if (workbenchPage != null) {
             workbenchPage.closeEditor(this, false);
         } else {
+            // Special case - occured when entire workbench is closed
+            // We need to unregister editor and release all resource here
             if (valueEditorRegistered) {
                 getValueController().unregisterEditor(this);
                 valueEditorRegistered = false;

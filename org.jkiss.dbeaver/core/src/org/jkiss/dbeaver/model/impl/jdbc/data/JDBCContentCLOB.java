@@ -66,7 +66,13 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContent {
     {
         if (storage == null && clob != null) {
             // Create new local storage
-            IFile tempFile = ContentUtils.createTempFile(monitor, "clob" + clob.hashCode());
+            IFile tempFile;
+            try {
+                tempFile = ContentUtils.createTempContentFile(monitor, "clob" + clob.hashCode());
+            }
+            catch (IOException e) {
+                throw new DBCException(e);
+            }
             try {
                 ContentUtils.copyReaderToFile(monitor, clob.getCharacterStream(), clob.length(), ContentUtils.DEFAULT_FILE_CHARSET, tempFile);
             } catch (Exception e) {

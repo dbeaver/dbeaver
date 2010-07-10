@@ -24,10 +24,12 @@ import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.IOException;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -57,6 +59,13 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
         // Initialize DBeaver Core
         DBeaverCore.createInstance(DBeaverActivator.getInstance());
+    }
+
+    @Override
+    public void preStartup()
+    {
+        super.preStartup();
+        cleanupLobFiles(VoidProgressMonitor.INSTANCE);
     }
 
     public boolean preShutdown()
@@ -99,7 +108,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
         try {
             workbenchWindow.getWorkbench().getProgressService().run(
-            false,
+                false,
                 false,
                 new IRunnableWithProgress() {
                     public void run(IProgressMonitor monitor)
@@ -128,9 +137,15 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                                 }
                             }
                         }
+
                         DBRProgressMonitor localMonitor = DBeaverUtils.makeMonitor(monitor);
-                        IFolder tempFolder = DBeaverCore.getInstance().getTempFolder(localMonitor);
-                        if (tempFolder == null) {
+
+                        IFolder tempFolder;
+                        try {
+                            tempFolder = DBeaverCore.getInstance().getAutosaveFolder(localMonitor);
+                        }
+                        catch (IOException e) {
+                            log.error(e);
                             return;
                         }
                         try {
@@ -144,7 +159,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                                 }
                             }
                         } catch (CoreException ex) {
-                            log.warn("Error deleting temp files", ex);
+                            log.warn("Error deleting autosave files", ex);
                         }
                     }
                 });
@@ -154,6 +169,29 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         }
         catch (InterruptedException e) {
             // do nothing
+        }
+    }
+
+    private void cleanupLobFiles(DBRProgressMonitor monitor)
+    {
+        IFolder tempFolder;
+        try {
+            tempFolder = DBeaverCore.getInstance().getLobFolder(monitor);
+        }
+        catch (IOException e) {
+            log.error(e);
+            return;
+        }
+        try {
+            IResource[] tempResources = tempFolder.members();
+            for (IResource tempResource : tempResources) {
+                if (tempResource instanceof IFile) {
+                    IFile tempFile = (IFile)tempResource;
+                    tempFile.delete(true, false, monitor.getNestedMonitor());
+                }
+            }
+        } catch (CoreException ex) {
+            log.warn("Error deleting temp lob file", ex);
         }
     }
 

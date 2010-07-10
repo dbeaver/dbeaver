@@ -40,9 +40,14 @@ public class ContentUtils {
     static Log log = LogFactory.getLog(ContentUtils.class);
     public static final String DEFAULT_FILE_CHARSET = "UTF-8";
 
-    public static IFile createTempFile(DBRProgressMonitor monitor, String fileName)
+    public static IFile createTempContentFile(DBRProgressMonitor monitor, String fileName)
+        throws IOException
     {
-        return DBeaverCore.getInstance().makeTempFile(fileName, "data", monitor);
+        return DBeaverCore.getInstance().makeTempFile(
+            monitor,
+            DBeaverCore.getInstance().getLobFolder(monitor),
+            fileName,
+            "data");
     }
 
     public static void deleteTempFile(DBRProgressMonitor monitor, IFile file)

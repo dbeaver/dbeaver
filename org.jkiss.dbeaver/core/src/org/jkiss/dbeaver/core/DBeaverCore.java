@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -47,6 +48,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     private static final String DEFAULT_PROJECT_NAME = "default";
     private static final String AUTOSAVE_DIR = "autosave";
+    private static final String LOB_DIR = "lob";
 
     private static DBeaverCore instance;
     private DBeaverActivator plugin;
@@ -314,37 +316,44 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.getWorkbench().getProgressService().run(fork, cancelable, runnable);
     }
 
-    public IFolder getTempFolder(DBRProgressMonitor monitor)
+    public IFolder getAutosaveFolder(DBRProgressMonitor monitor)
+        throws IOException
     {
-        IPath tempPath = defaultProject.getProjectRelativePath().append(AUTOSAVE_DIR);
+        return getLocalFolder(monitor, AUTOSAVE_DIR);
+    }
+
+    public IFolder getLobFolder(DBRProgressMonitor monitor)
+        throws IOException
+    {
+        return getLocalFolder(monitor, LOB_DIR);
+    }
+
+    private IFolder getLocalFolder(DBRProgressMonitor monitor, String name)
+        throws IOException
+    {
+        IPath tempPath = defaultProject.getProjectRelativePath().append(name);
         IFolder tempFolder = defaultProject.getFolder(tempPath);
         if (!tempFolder.exists()) {
             try {
                 tempFolder.create(true, true, monitor.getNestedMonitor());
             }
             catch (CoreException ex) {
-                log.warn("Can't create temp directory '" + tempFolder.toString() + "'", ex);
-                return null;
+                throw new IOException("Could not create temp directory '" + tempFolder.toString() + "'", ex);
             }
         }
         return tempFolder;
     }
 
-    public IFile makeTempFile(String name, String extension, DBRProgressMonitor monitor)
+    public IFile makeTempFile(DBRProgressMonitor monitor, IFolder folder, String name, String extension)
+        throws IOException
     {
-        IFolder tempFolder = getTempFolder(monitor);
-        if (tempFolder == null) {
-            return null;
-        }
-
-        IFile tempFile = tempFolder.getFile(name + "-" + System.currentTimeMillis() + "." + extension);
+        IFile tempFile = folder.getFile(name + "-" + System.currentTimeMillis() + "." + extension);
         try {
             InputStream contents = new ByteArrayInputStream(new byte[0]);
             tempFile.create(contents, true, monitor.getNestedMonitor());
         }
         catch (CoreException ex) {
-            log.warn("Can't create temp file '" + tempFile.toString() + "'", ex);
-            return null;
+            throw new IOException("Coud not create temp file '" + tempFile.toString() + "' in '" + folder.toString() + "'", ex);
         }
         return tempFile;
     }
