@@ -172,9 +172,9 @@
     <extension
           point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
-            class="org.jkiss.dbeaver.ext.mysql.MySQLDataTypeProvider"
+            class="org.jkiss.dbeaver.ext.mysql.data.MySQLDataTypeProvider"
             description="MySQL data types provider"
-            id="org.jkiss.dbeaver.ext.mysql.MySQLDataTypeProvider"
+            id="org.jkiss.dbeaver.ext.mysql.data.MySQLDataTypeProvider"
             label="MySQL data types provider">
 
             <datasource id="mysql"/>

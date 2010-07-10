@@ -2,10 +2,10 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.mysql;
+package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.ext.mysql.data.MySQLEnumValueHandler;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataTypeProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -28,7 +28,7 @@ public class MySQLDataTypeProvider implements DBDDataTypeProvider {
         if (MySQLConstants.TYPE_NAME_ENUM.equalsIgnoreCase(typeName)) {
             return MySQLEnumValueHandler.INSTANCE;
         } else if (MySQLConstants.TYPE_NAME_SET.equalsIgnoreCase(typeName)) {
-            return MySQLEnumValueHandler.INSTANCE;
+            return MySQLSetValueHandler.INSTANCE;
         } else {
             return null;
         }

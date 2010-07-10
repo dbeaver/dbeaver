@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * JDBC string value handler
+ * MySQL ENUM value handler
  */
 public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
 
