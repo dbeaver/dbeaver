@@ -84,12 +84,16 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
 
             Combo editor = new Combo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
             List<String> enumValues = value.getColumn().getEnumValues();
+            editor.add("");
             if (enumValues != null) {
                 for (String enumValue : enumValues) {
                     editor.add(enumValue);
                 }
             }
             editor.setText(value.isNull() ? "" : value.getValue());
+            if (editor.getSelectionIndex() < 0) {
+                editor.select(0);
+            }
             editor.setFocus();
             initInlineControl(controller, editor, new ValueExtractor<Combo>() {
                 public Object getValueFromControl(Combo control)
@@ -97,8 +101,11 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
                     int selIndex = control.getSelectionIndex();
                     if (selIndex < 0) {
                         return new MySQLTypeEnum(value.getColumn(), null);
+                    } else if (selIndex == 0) {
+                        return new MySQLTypeEnum(value.getColumn(), null);
+                    } else {
+                        return new MySQLTypeEnum(value.getColumn(), control.getItem(selIndex));
                     }
-                    return new MySQLTypeEnum(value.getColumn(), control.getItem(selIndex));
                 }
             });
             return true;

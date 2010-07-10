@@ -1010,8 +1010,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             if (value instanceof DBDValue || !CommonUtils.equalObjects(oldValue, value)) {
                 int rowIndex = getRowIndex(curRow);
                 if (rowIndex >= 0) {
+                    if (DBUtils.isNullValue(oldValue) && DBUtils.isNullValue(value)) {
+                        // Both nulls - nothing to update
+                        return;
+                    }
+                    // Do not add edited cell for new/deleted rows
                     if (!isRowAdded(rowIndex) && !isRowDeleted(rowIndex)) {
-                        // Do not add edited cell for new/deleted rows 
+                        // Save old value
                         CellInfo cell = new CellInfo(columnIndex, rowIndex);
                         Object oldOldValue = editedValues.get(cell);
                         if (oldOldValue != null && !CommonUtils.equalObjects(oldValue, oldOldValue)) {

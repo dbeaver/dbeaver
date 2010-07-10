@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
+import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * Enum type
@@ -44,5 +45,18 @@ public class MySQLTypeEnum implements DBDValue {
     public void release()
     {
         // do nothing
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return value == null ? super.hashCode() : value.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return this == obj ||
+            (obj instanceof MySQLTypeEnum && CommonUtils.equalObjects(((MySQLTypeEnum)obj).getValue(), value));
     }
 }
