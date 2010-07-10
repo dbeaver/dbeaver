@@ -4,18 +4,14 @@
 
 package org.jkiss.dbeaver.ext.mysql.data;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Combo;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.ArrayList;
-import java.util.regex.Pattern;
-
-import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * MySQL SET value handler
@@ -75,7 +71,7 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
             });
             return true;
         } else {
-            TextViewDialog dialog = new TextViewDialog(controller);
+            EnumViewDialog dialog = new EnumViewDialog(controller);
             dialog.open();
             return true;
         }

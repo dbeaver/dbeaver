@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -149,7 +150,13 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.IGNORE_ID) {
             if (!valueController.isReadOnly()) {
-                getValueController().updateValue(null);
+                Object value = valueController.getValue();
+                if (value instanceof DBDValue) {
+                    value = ((DBDValue)value).makeNull();
+                } else {
+                    value = null;
+                }
+                getValueController().updateValue(value);
             }
             super.okPressed();
         } else {

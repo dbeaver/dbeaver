@@ -30,6 +30,9 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     public static final MySQLEnumValueHandler INSTANCE = new MySQLEnumValueHandler();
 
     public String getValueDisplayString(DBSTypedObject column, Object value) {
+        if (!(value instanceof MySQLTypeEnum)) {
+            return super.getValueDisplayString(column, value);
+        }
         String strValue = ((MySQLTypeEnum) value).getValue();
         return strValue == null ? NULL_VALUE_LABEL : strValue;
     }
@@ -110,7 +113,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
             });
             return true;
         } else {
-            TextViewDialog dialog = new TextViewDialog(controller);
+            EnumViewDialog dialog = new EnumViewDialog(controller);
             dialog.open();
             return true;
         }
