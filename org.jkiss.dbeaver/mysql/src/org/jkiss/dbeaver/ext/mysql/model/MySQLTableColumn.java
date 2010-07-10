@@ -3,25 +3,35 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
+import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.anno.Property;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * GenericTable
  */
 public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
 {
+    private static Pattern enumPattern = Pattern.compile("'([^']+)'");
+
     private MySQLTable table;
     private String defaultValue;
     private int charLength;
     private boolean autoIncrement;
+
+    private List<String> enumValues;
 
     public MySQLTableColumn(
         MySQLTable table,
@@ -56,6 +66,18 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
         this.defaultValue = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_DEFAULT);
         String extra = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_EXTRA);
         this.autoIncrement = extra != null && extra.contains(MySQLConstants.EXTRA_AUTO_INCREMENT);
+
+        String typeDesc = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_TYPE);
+        if (!CommonUtils.isEmpty(typeDesc) &&
+            (typeName.equalsIgnoreCase(MySQLConstants.TYPE_NAME_ENUM) || typeName.equalsIgnoreCase(MySQLConstants.TYPE_NAME_SET)))
+        {
+            enumValues = new ArrayList<String>();
+            Matcher enumMatcher = enumPattern.matcher(typeDesc);
+            while (enumMatcher.find()) {
+                String enumStr = enumMatcher.group(1);
+                enumValues.add(enumStr);
+            }
+        }
     }
 
     public DBSObject getParentObject()
@@ -95,4 +117,8 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
         return false;
     }
 
+    public List<String> getEnumValues()
+    {
+        return enumValues;
+    }
 }

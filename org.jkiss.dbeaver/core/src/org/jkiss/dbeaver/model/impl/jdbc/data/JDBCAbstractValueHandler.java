@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -32,13 +33,13 @@ import java.sql.SQLException;
  */
 public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
 
-    private static final String NULL_VALUE_LABEL = "[NULL]";
+    protected static final String NULL_VALUE_LABEL = "[NULL]";
 
-    public final Object getValueObject(DBCResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+    public final Object getValueObject(DBRProgressMonitor monitor, DBCResultSet resultSet, DBSColumnBase column, int columnIndex)
         throws DBCException
     {
         try {
-            return getColumnValue((JDBCResultSet) resultSet, columnType, columnIndex + 1);
+            return getColumnValue(monitor, (JDBCResultSet) resultSet, column, columnIndex + 1);
         }
         catch (SQLException e) {
             throw new DBCException("Could not get result set value", e);
@@ -116,7 +117,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         });
     }
 
-    protected abstract Object getColumnValue(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+    protected abstract Object getColumnValue(DBRProgressMonitor monitor, ResultSet resultSet, DBSColumnBase column, int columnIndex)
         throws DBCException, SQLException;
 
     protected abstract void bindParameter(

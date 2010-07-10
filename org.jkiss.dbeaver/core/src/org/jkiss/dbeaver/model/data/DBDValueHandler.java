@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
@@ -22,13 +23,13 @@ public interface DBDValueHandler
 {
     /**
      * Extracts object from result set
-     * @param resultSet result set
-     * @param columnType columns type
-     * @param columnIndex column index
-     * @return value or null
+     * @param monitor
+     *@param resultSet result set
+     * @param column
+     * @param columnIndex column index   @return value or null
      * @throws org.jkiss.dbeaver.model.dbc.DBCException on error
      */
-    Object getValueObject(DBCResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+    Object getValueObject(DBRProgressMonitor monitor, DBCResultSet resultSet, DBSColumnBase column, int columnIndex)
         throws DBCException;
 
     /**

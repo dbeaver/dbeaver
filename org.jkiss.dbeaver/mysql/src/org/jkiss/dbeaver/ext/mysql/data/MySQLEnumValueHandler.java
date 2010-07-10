@@ -5,19 +5,22 @@
 package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Combo;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCAbstractValueHandler;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStringValueHandler;
+import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
-import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * JDBC string value handler
@@ -26,23 +29,50 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
 
     public static final MySQLEnumValueHandler INSTANCE = new MySQLEnumValueHandler();
 
-    private static final int MAX_STRING_LENGTH = 0xffff;
+    public String getValueDisplayString(DBSTypedObject column, Object value) {
+        String strValue = ((MySQLTypeEnum) value).getValue();
+        return strValue == null ? NULL_VALUE_LABEL : strValue;
+    }
 
-    protected Object getColumnValue(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+    protected Object getColumnValue(
+        DBRProgressMonitor monitor,
+        ResultSet resultSet,
+        DBSColumnBase column,
+        int columnIndex)
         throws SQLException
     {
-        return resultSet.getString(columnIndex);
+        DBSTableColumn tableColumn = null;
+        if (column instanceof DBSTableColumn) {
+            tableColumn = (DBSTableColumn)column;
+        } else if (column instanceof DBCColumnMetaData) {
+            try {
+                tableColumn = ((DBCColumnMetaData)column).getTableColumn(monitor);
+            }
+            catch (DBException e) {
+                throw new SQLException(e);
+            }
+        }
+        if (tableColumn == null) {
+            throw new SQLException("Could not find table column for column '" + column.getName() + "'");
+        }
+        MySQLTableColumn enumColumn;
+        if (tableColumn instanceof MySQLTableColumn) {
+            enumColumn = (MySQLTableColumn)tableColumn;
+        } else {
+            throw new SQLException("Bad column type: " + tableColumn.getClass().getName());
+        }
+        return new MySQLTypeEnum(enumColumn, resultSet.getString(columnIndex));
     }
 
     @Override
-    public void bindParameter(DBRProgressMonitor monitor, PreparedStatement statement, DBSTypedObject paramType,
-                              int paramIndex, Object value)
+    public void bindParameter(DBRProgressMonitor monitor, PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
         throws SQLException
     {
-        if (value == null) {
+        MySQLTypeEnum e = (MySQLTypeEnum)value;
+        if (e == null || e.isNull()) {
             statement.setNull(paramIndex, paramType.getValueType());
         } else {
-            statement.setString(paramIndex, value.toString());
+            statement.setString(paramIndex, e.getValue());
         }
     }
 
@@ -50,18 +80,25 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         throws DBException
     {
         if (controller.isInlineEdit()) {
+            final MySQLTypeEnum value = (MySQLTypeEnum)controller.getValue();
 
-            Object value = controller.getValue();
-            Text editor = new Text(controller.getInlinePlaceholder(), SWT.NONE);
-            editor.setText(value == null ? "" : value.toString());
-            editor.setEditable(!controller.isReadOnly());
-            editor.setTextLimit(MAX_STRING_LENGTH);
-            editor.selectAll();
+            Combo editor = new Combo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
+            List<String> enumValues = value.getColumn().getEnumValues();
+            if (enumValues != null) {
+                for (String enumValue : enumValues) {
+                    editor.add(enumValue);
+                }
+            }
+            editor.setText(value.isNull() ? "" : value.getValue());
             editor.setFocus();
-            initInlineControl(controller, editor, new ValueExtractor<Text>() {
-                public Object getValueFromControl(Text control)
+            initInlineControl(controller, editor, new ValueExtractor<Combo>() {
+                public Object getValueFromControl(Combo control)
                 {
-                    return control.getText();
+                    int selIndex = control.getSelectionIndex();
+                    if (selIndex < 0) {
+                        return new MySQLTypeEnum(value.getColumn(), null);
+                    }
+                    return new MySQLTypeEnum(value.getColumn(), control.getItem(selIndex));
                 }
             });
             return true;
@@ -75,7 +112,8 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     public Object copyValueObject(Object value)
     {
         // String are immutable
-        return value;
+        MySQLTypeEnum e = (MySQLTypeEnum)value;
+        return new MySQLTypeEnum(e.getColumn(), e.getValue());
     }
 
 /*

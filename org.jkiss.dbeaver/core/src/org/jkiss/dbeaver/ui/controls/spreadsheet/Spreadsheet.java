@@ -562,7 +562,7 @@ public class Spreadsheet extends Composite implements Listener {
         if (inline) {
             cancelInlineEditor();
 
-            placeholder = new Composite(grid, SWT.BORDER);
+            placeholder = new Composite(grid, SWT.NONE);
             placeholder.setFont(grid.getFont());
             GridLayout layout = new GridLayout(1, true);
             layout.marginWidth = 0;

@@ -134,13 +134,13 @@ public abstract class JDBCConstraint<DATASOURCE extends DBPDataSource, TABLE ext
                                 break;
                             }
                             // Get value and description
-                            Object keyValue = keyValueHandler.getValueObject(dbResult, keyColumn, 0);
+                            Object keyValue = keyValueHandler.getValueObject(monitor, dbResult, keyColumn, 0);
                             if (keyValue == null) {
                                 continue;
                             }
                             String keyLabel = keyValueHandler.getValueDisplayString(keyColumn, keyValue);
                             if (descValueHandler != null) {
-                                Object descValue = descValueHandler.getValueObject(dbResult, descColumn, 1);
+                                Object descValue = descValueHandler.getValueObject(monitor, dbResult, descColumn, 1);
                                 keyLabel = descValueHandler.getValueDisplayString(descColumn, descValue);
                             }
                             values.add(new DBDLabelValuePair(keyLabel, keyValue));

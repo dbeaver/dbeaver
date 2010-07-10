@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
@@ -56,13 +57,14 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
     private static final int MAX_STRING_LENGTH = 0xfffff;
 
-    protected DBDContent getColumnValue(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+    protected DBDContent getColumnValue(DBRProgressMonitor monitor, ResultSet resultSet, DBSColumnBase column,
+                                        int columnIndex)
         throws DBCException, SQLException
     {
         Object value = resultSet.getObject(columnIndex);
         if (value == null) {
             // Create wrapper using column type
-            switch (columnType.getValueType()) {
+            switch (column.getValueType()) {
                 case java.sql.Types.CHAR:
                 case java.sql.Types.VARCHAR:
                 case java.sql.Types.NVARCHAR:
@@ -79,7 +81,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 case java.sql.Types.BLOB:
                     return new JDBCContentBLOB(null);
                 default:
-                    throw new DBCException("Unsupported column type: " + columnType.getTypeName());
+                    throw new DBCException("Unsupported column type: " + column.getTypeName());
             }
         } else if (value instanceof byte[]) {
             return new JDBCContentBytes((byte[]) value);

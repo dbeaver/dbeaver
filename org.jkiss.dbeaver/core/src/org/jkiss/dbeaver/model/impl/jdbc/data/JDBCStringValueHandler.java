@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
@@ -26,7 +27,8 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
 
     private static final int MAX_STRING_LENGTH = 0xffff;
 
-    protected Object getColumnValue(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+    protected Object getColumnValue(DBRProgressMonitor monitor, ResultSet resultSet, DBSColumnBase column,
+                                    int columnIndex)
         throws SQLException
     {
         return resultSet.getString(columnIndex);
@@ -50,7 +52,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         if (controller.isInlineEdit()) {
 
             Object value = controller.getValue();
-            Text editor = new Text(controller.getInlinePlaceholder(), SWT.NONE);
+            Text editor = new Text(controller.getInlinePlaceholder(), SWT.BORDER);
             editor.setText(value == null ? "" : value.toString());
             editor.setEditable(!controller.isReadOnly());
             editor.setTextLimit(MAX_STRING_LENGTH);

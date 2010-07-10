@@ -42,6 +42,7 @@ public class MySQLConstants {
     public static final String COL_IS_NULLABLE = "IS_NULLABLE";
     public static final String COL_COLUMN_COMMENT = "COLUMN_COMMENT";
     public static final String COL_COLUMN_EXTRA = "EXTRA";
+    public static final String COL_COLUMN_TYPE = "COLUMN_TYPE";
 
     public static final String COL_ROUTINE_SCHEMA = "ROUTINE_SCHEMA";
     public static final String COL_ROUTINE_NAME = "ROUTINE_NAME";

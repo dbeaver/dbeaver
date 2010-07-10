@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
@@ -34,10 +35,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
     private static final int MAX_NUMBER_LENGTH = 100;
 
-    protected Object getColumnValue(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+    protected Object getColumnValue(DBRProgressMonitor monitor, ResultSet resultSet, DBSColumnBase column,
+                                    int columnIndex)
         throws DBCException, SQLException
     {
-        switch (columnType.getValueType()) {
+        switch (column.getValueType()) {
         case java.sql.Types.BIGINT:
             return resultSet.getLong(columnIndex);
         case java.sql.Types.FLOAT:
@@ -50,7 +52,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         case java.sql.Types.BIT:
             return resultSet.getByte(columnIndex);
         default:
-            if (columnType.getScale() > 0) {
+            if (column.getScale() > 0) {
                 return resultSet.getDouble(columnIndex);
             } else {
                 return resultSet.getLong(columnIndex);
@@ -116,7 +118,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     }
                 });
             } else {
-                Text editor = new Text(controller.getInlinePlaceholder(), SWT.NONE);
+                Text editor = new Text(controller.getInlinePlaceholder(), SWT.BORDER);
                 editor.setText(value == null ? "" : value.toString());
                 editor.setEditable(!controller.isReadOnly());
                 editor.setTextLimit(MAX_NUMBER_LENGTH);

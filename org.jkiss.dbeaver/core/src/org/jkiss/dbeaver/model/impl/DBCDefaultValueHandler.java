@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.DBException;
@@ -25,7 +26,8 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
     public static final DBCDefaultValueHandler INSTANCE = new DBCDefaultValueHandler();
 
 
-    public Object getValueObject(DBCResultSet resultSet, DBSTypedObject columnType, int columnIndex) throws DBCException {
+    public Object getValueObject(DBRProgressMonitor monitor, DBCResultSet resultSet, DBSColumnBase column,
+                                 int columnIndex) throws DBCException {
         return null;
     }
 

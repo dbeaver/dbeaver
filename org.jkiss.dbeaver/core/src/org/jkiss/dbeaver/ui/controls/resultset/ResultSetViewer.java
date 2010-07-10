@@ -1013,14 +1013,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     if (!isRowAdded(rowIndex) && !isRowDeleted(rowIndex)) {
                         // Do not add edited cell for new/deleted rows 
                         CellInfo cell = new CellInfo(columnIndex, rowIndex);
-                        if (editedValues.containsKey(cell)) {
+                        Object oldOldValue = editedValues.get(cell);
+                        if (oldOldValue != null && !CommonUtils.equalObjects(oldValue, oldOldValue)) {
                             // Value rewrite - release previous stored old value
-                            Object oldOldValue = editedValues.remove(cell);
-                            if (!CommonUtils.equalObjects(oldValue, oldOldValue)) {
-                                releaseValue(oldOldValue);
-                            }
+                            releaseValue(oldValue);
+                        } else {
+                            editedValues.put(cell, oldValue);
                         }
-                        editedValues.put(cell, oldValue);
                     }
                     curRow[columnIndex] = value;
                     // Update controls
@@ -1633,7 +1632,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             for (int i = 0; i < keyColumns.size(); i++) {
                 DBCColumnMetaData keyColumn = keyColumns.get(i);
                 DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(resultSetProvider.getDataSource(), keyColumn);
-                Object keyValue = valueHandler.getValueObject(resultSet, keyColumn, i);
+                Object keyValue = valueHandler.getValueObject(monitor, resultSet, keyColumn, i);
                 boolean updated = false;
                 if (!CommonUtils.isEmpty(keyColumn.getName())) {
                     int colIndex = getMetaColumnIndex(statement.table, keyColumn.getName());

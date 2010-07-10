@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
 
@@ -34,10 +35,11 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
     public static final DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.LONG);//new SimpleDateFormat("HH:mm:ss");
     public static final DateFormat timeStampFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);//new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    protected Object getColumnValue(ResultSet resultSet, DBSTypedObject columnType, int columnIndex)
+    protected Object getColumnValue(DBRProgressMonitor monitor, ResultSet resultSet, DBSColumnBase column,
+                                    int columnIndex)
         throws DBCException, SQLException
     {
-        switch (columnType.getValueType()) {
+        switch (column.getValueType()) {
         case java.sql.Types.TIME:
             return resultSet.getTime(columnIndex);
         case java.sql.Types.DATE:
@@ -79,8 +81,8 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
             boolean isTime = controller.getColumnMetaData().getValueType() == java.sql.Types.TIME;
             boolean isTimeStamp = controller.getColumnMetaData().getValueType() == java.sql.Types.TIMESTAMP;
 
-            final DateTime dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup, SWT.DATE | SWT.LONG) : null;
-            final DateTime timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup, SWT.TIME | SWT.LONG) : null;
+            final DateTime dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.DATE | SWT.LONG) : null;
+            final DateTime timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.TIME | SWT.LONG) : null;
 
             if (dateEditor != null) {
                 if (value instanceof Date) {
