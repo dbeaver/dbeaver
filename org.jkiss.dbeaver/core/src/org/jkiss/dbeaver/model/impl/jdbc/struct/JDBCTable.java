@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.data.DBDDataReciever;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -50,6 +51,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         if (firstRow > 0) {
             throw new DBException("First row number must be 0");
         }
+        readRequiredMeta(context.getProgressMonitor());
+
         StringBuilder query = new StringBuilder();
         query.append("SELECT * FROM ").append(getFullQualifiedName());
         DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, false);
@@ -91,6 +94,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     public int insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReciever keysReciever)
         throws DBException
     {
+        readRequiredMeta(context.getProgressMonitor());
+
         // Make query
         StringBuilder query = new StringBuilder();
         query.append("INSERT INTO ").append(getFullQualifiedName()).append(" (");
@@ -153,6 +158,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         DBDDataReciever keysReciever)
         throws DBException
     {
+        readRequiredMeta(context.getProgressMonitor());
+
         // Make query
         StringBuilder query = new StringBuilder();
         query.append("UPDATE ").append(getFullQualifiedName()).append(" SET ");
@@ -202,6 +209,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     public int deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns)
         throws DBException
     {
+        readRequiredMeta(context.getProgressMonitor());
+
         // Make query
         StringBuilder query = new StringBuilder();
         query.append("DELETE FROM ").append(getFullQualifiedName()).append(" WHERE ");
@@ -260,6 +269,22 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
         finally {
             dbResult.close();
+        }
+    }
+
+    /**
+     * Reads and caches metadata which is required for data requests
+     * @param monitor
+     * @throws DBException
+     */
+    private void readRequiredMeta(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        try {
+            getColumns(monitor);
+        }
+        catch (DBException e) {
+            throw new DBException("Could not cache table columns", e);
         }
     }
 

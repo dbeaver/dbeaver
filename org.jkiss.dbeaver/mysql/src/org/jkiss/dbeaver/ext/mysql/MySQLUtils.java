@@ -2,12 +2,9 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.mysql.model;
-
-import com.sun.xml.internal.bind.v2.runtime.reflect.Accessor;
+package org.jkiss.dbeaver.ext.mysql;
 
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.HashMap;
 
 /**
@@ -45,8 +42,8 @@ public class MySQLUtils {
         typeMap.put("TEXT", java.sql.Types.LONGVARCHAR);
         typeMap.put("MEDIUMTEXT", java.sql.Types.LONGVARCHAR);
         typeMap.put("LONGTEXT", java.sql.Types.LONGVARCHAR);
-        typeMap.put("ENUM", java.sql.Types.CHAR);
-        typeMap.put("SET", java.sql.Types.CHAR);
+        typeMap.put(MySQLConstants.TYPE_NAME_ENUM, java.sql.Types.CHAR);
+        typeMap.put(MySQLConstants.TYPE_NAME_SET, java.sql.Types.CHAR);
         typeMap.put("GEOMETRY", java.sql.Types.BINARY);
         typeMap.put("BINARY", java.sql.Types.BINARY);
         typeMap.put("VARBINARY", java.sql.Types.VARBINARY);

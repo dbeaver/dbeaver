@@ -47,7 +47,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
             log.error("Empty class name of data type provider '" + this.id + "'");
         } else {
             try {
-                Class<?> providerClass = Class.forName(className);
+                Class<?> providerClass = getContributorBundle().loadClass(className);
                 this.instance = (DBDDataTypeProvider) providerClass.newInstance();
             }
             catch (Exception e) {
@@ -59,7 +59,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
         for (IConfigurationElement typeElement : typeElements) {
             String typeName = typeElement.getAttribute("name");
             if (typeName != null) {
-                supportedTypes.add(typeName);
+                supportedTypes.add(typeName.toLowerCase());
             } else {
                 typeName = typeElement.getAttribute("standard");
                 if (typeName == null) {
@@ -128,7 +128,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
 
     public boolean supportsType(DBSTypedObject type)
     {
-        return supportedTypes.contains(type.getValueType()) || supportedTypes.contains(type.getTypeName());
+        return supportedTypes.contains(type.getValueType()) || supportedTypes.contains(type.getTypeName().toLowerCase());
     }
 
     public Set<Object> getSupportedTypes()

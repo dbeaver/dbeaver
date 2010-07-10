@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -17,6 +18,8 @@ import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSSchema;
+import org.jkiss.dbeaver.model.struct.DBSCatalog;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -53,51 +56,89 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         throws SQLException
     {
         this.resultSetMeta = resultSetMeta;
+
+        DBSObject dataContainer = this.resultSetMeta.getResultSet().getSource().getDataContainer();
+        DBSTable ownerTable = null;
+        if (dataContainer instanceof DBSTable) {
+            ownerTable = (DBSTable)dataContainer;
+        }
         this.index = index;
 
         ResultSetMetaData metaData = resultSetMeta.getJdbcMetaData();
-        nullable = metaData.isNullable(index) > 0;
-        displaySize = metaData.getColumnDisplaySize(index);
-        label = metaData.getColumnLabel(index);
-        name = metaData.getColumnName(index);
-        catalogName = metaData.getCatalogName(index);
-        schemaName = metaData.getSchemaName(index);
-        tableName = metaData.getTableName(index);
-        type = metaData.getColumnType(index);
-        typeName = metaData.getColumnTypeName(index);
-        readOnly = metaData.isReadOnly(index);
-        writable = metaData.isWritable(index);
+        this.label = metaData.getColumnLabel(index);
+        this.name = metaData.getColumnName(index);
+        boolean hasData = false;
+        if (ownerTable != null) {
+            // Get column using void monitor because all columns MUST be already read
+            try {
+                this.tableColumn = ownerTable.getColumn(VoidProgressMonitor.INSTANCE, name);
+            }
+            catch (DBException e) {
+                log.warn(e);
+            }
+            if (this.tableColumn != null) {
+                this.nullable = this.tableColumn.isNullable();
+                this.displaySize = this.tableColumn.getMaxLength();
+                DBSObject tableParent = ownerTable.getParentObject();
+                DBSObject tableGrandParent = tableParent == null ? null : tableParent.getParentObject();
+                this.catalogName = tableParent instanceof DBSCatalog ? tableParent.getName() : tableGrandParent instanceof DBSCatalog ? tableGrandParent.getName() : null;
+                this.schemaName = tableParent instanceof DBSSchema ? tableParent.getName() : null;
+                this.tableName = metaData.getTableName(index);
+                this.type = this.tableColumn.getValueType();
+                this.typeName = this.tableColumn.getTypeName();
+                this.readOnly = false;
+                this.writable = true;
+                this.precision = this.tableColumn.getPrecision();
+                this.scale = this.tableColumn.getScale();
 
-        try {
-            precision = metaData.getPrecision(index);
-        } catch (Exception e) {
-            // NumberFormatException occured in Oracle on BLOB columns
-            precision = 0;
-        }
-        try {
-            scale = metaData.getScale(index);
-        } catch (Exception e) {
-            scale = 0;
-        }
-
-        try {
-            if (!CommonUtils.isEmpty(tableName)) {
-                tableMetaData = resultSetMeta.getTableMetaData(catalogName, schemaName, tableName);
-                if (tableMetaData != null) {
-                    tableMetaData.addColumn(this);
+                try {
+                    this.tableMetaData = resultSetMeta.getTableMetaData(ownerTable);
+                    if (this.tableMetaData != null) {
+                        this.tableMetaData.addColumn(this);
+                    }
                 }
-            } else {
-                DBSObject dataContainer = getResultSetMeta().getResultSet().getSource().getDataContainer();
-                if (dataContainer instanceof DBSTable) {
-                    tableMetaData = resultSetMeta.getTableMetaData((DBSTable)dataContainer);
-                    if (tableMetaData != null) {
-                        tableMetaData.addColumn(this);
+                catch (DBException e) {
+                    log.warn(e);
+                }
+                hasData = true;
+            }
+
+        }
+
+        if (!hasData) {
+            this.nullable = metaData.isNullable(index) > 0;
+            this.displaySize = metaData.getColumnDisplaySize(index);
+            this.catalogName = metaData.getCatalogName(index);
+            this.schemaName = metaData.getSchemaName(index);
+            this.tableName = metaData.getTableName(index);
+            this.type = metaData.getColumnType(index);
+            this.typeName = metaData.getColumnTypeName(index);
+            this.readOnly = metaData.isReadOnly(index);
+            this.writable = metaData.isWritable(index);
+
+            try {
+                this.precision = metaData.getPrecision(index);
+            } catch (Exception e) {
+                // NumberFormatException occured in Oracle on BLOB columns
+                this.precision = 0;
+            }
+            try {
+                this.scale = metaData.getScale(index);
+            } catch (Exception e) {
+                this.scale = 0;
+            }
+
+            try {
+                if (!CommonUtils.isEmpty(this.tableName)) {
+                    this.tableMetaData = resultSetMeta.getTableMetaData(catalogName, schemaName, tableName);
+                    if (this.tableMetaData != null) {
+                        this.tableMetaData.addColumn(this);
                     }
                 }
             }
-        }
-        catch (DBException e) {
-            log.warn(e);
+            catch (DBException e) {
+                log.warn(e);
+            }
         }
     }
 

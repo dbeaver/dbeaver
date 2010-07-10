@@ -76,4 +76,6 @@ public class MySQLConstants {
         " WHERE " + COL_ROUTINE_SCHEMA + "=?" +
         " ORDER BY " + COL_ROUTINE_NAME;
 
+    public static final String TYPE_NAME_ENUM = "ENUM";
+    public static final String TYPE_NAME_SET = "SET";
 }

@@ -662,6 +662,7 @@
             <type standard="REF"/>
             <type standard="DATALINK"/>
             -->
+            
             <type standard="BOOLEAN"/>
             <type standard="ROWID"/>
             <type standard="NCHAR"/>
