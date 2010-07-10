@@ -1444,6 +1444,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
+/*
         private void releaseStatements()
         {
             for (DataStatementInfo stat : updateStatements) releaseStatement(stat);
@@ -1457,6 +1458,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             for (DBDColumnValue value : stat.updateColumns) releaseValue(value.getValue());
         }
 
+*/
         private class DataUpdaterJob extends DataSourceJob {
             private final DBDValueListener listener;
             private boolean autocommit;

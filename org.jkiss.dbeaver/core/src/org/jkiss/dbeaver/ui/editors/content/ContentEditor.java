@@ -21,8 +21,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
