@@ -4,20 +4,16 @@
 
 package org.jkiss.dbeaver.ext.mysql.data;
 
-import org.jkiss.dbeaver.ui.dialogs.data.ValueViewDialog;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.List;
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import net.sf.jkiss.utils.CommonUtils;
-
-import java.util.ArrayList;
-import java.util.StringTokenizer;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.List;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.ui.dialogs.data.ValueViewDialog;
 
 /**
  * Enum editor dialog
@@ -48,28 +44,7 @@ public class EnumViewDialog extends ValueViewDialog {
         }
         enumEdit = new List(dialogGroup, style);
 
-        java.util.List<String> enumValues = value.getColumn().getEnumValues();
-        String setString = value.getValue();
-        java.util.List<String> setValues = new ArrayList<String>();
-        if (!CommonUtils.isEmpty(setString)) {
-            StringTokenizer st = new StringTokenizer(setString, ",");
-            while (st.hasMoreTokens()) {
-                setValues.add(st.nextToken());
-            }
-        }
-
-        if (enumValues != null) {
-            int[] selIndices = new int[setValues.size()];
-            int selIndex = 0;
-            for (int i = 0; i < enumValues.size(); i++) {
-                String enumValue = enumValues.get(i);
-                enumEdit.add(enumValue);
-                if (setValues.contains(enumValue)) {
-                    selIndices[selIndex++] = i;
-                }
-            }
-            enumEdit.select(selIndices);
-        }
+        MySQLSetValueHandler.fillSetList(enumEdit, value);
 
         enumEdit.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
         GridData gd = new GridData(isForeignKey ? GridData.FILL_HORIZONTAL : GridData.FILL_BOTH);

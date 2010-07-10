@@ -27,31 +27,7 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
             final MySQLTypeEnum value = (MySQLTypeEnum)controller.getValue();
 
             org.eclipse.swt.widgets.List editor = new org.eclipse.swt.widgets.List(controller.getInlinePlaceholder(), SWT.BORDER | SWT.MULTI);
-            List<String> enumValues = value.getColumn().getEnumValues();
-            String setString = value.getValue();
-            List<String> setValues = new ArrayList<String>();
-            if (!CommonUtils.isEmpty(setString)) {
-                StringTokenizer st = new StringTokenizer(setString, ",");
-                while (st.hasMoreTokens()) {
-                    setValues.add(st.nextToken());
-                }
-            }
-            if (enumValues != null) {
-                int[] selIndices = new int[setValues.size()];
-                int selIndex = 0;
-                for (int i = 0; i < enumValues.size(); i++) {
-                    String enumValue = enumValues.get(i);
-                    editor.add(enumValue);
-                    if (setValues.contains(enumValue)) {
-                        selIndices[selIndex++] = i;
-                    }
-                }
-                editor.select(selIndices);
-
-            } else {
-                // Can't edit empty set
-                return false;
-            }
+            fillSetList(editor, value);
 
             editor.setFocus();
             initInlineControl(controller, editor, new ValueExtractor<org.eclipse.swt.widgets.List>() {
@@ -74,6 +50,31 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
             EnumViewDialog dialog = new EnumViewDialog(controller);
             dialog.open();
             return true;
+        }
+    }
+
+    static void fillSetList(org.eclipse.swt.widgets.List editor, MySQLTypeEnum value)
+    {
+        List<String> enumValues = value.getColumn().getEnumValues();
+        String setString = value.getValue();
+        List<String> setValues = new ArrayList<String>();
+        if (!CommonUtils.isEmpty(setString)) {
+            StringTokenizer st = new StringTokenizer(setString, ",");
+            while (st.hasMoreTokens()) {
+                setValues.add(st.nextToken());
+            }
+        }
+        if (enumValues != null) {
+            int[] selIndices = new int[setValues.size()];
+            int selIndex = 0;
+            for (int i = 0; i < enumValues.size(); i++) {
+                String enumValue = enumValues.get(i);
+                editor.add(enumValue);
+                if (setValues.contains(enumValue)) {
+                    selIndices[selIndex++] = i;
+                }
+            }
+            editor.select(selIndices);
         }
     }
 
