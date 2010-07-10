@@ -8,7 +8,7 @@ import net.sf.jkiss.utils.streams.MimeTypes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDContentBinary;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.dbc.DBCException;
@@ -19,6 +19,8 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -27,7 +29,7 @@ import java.sql.SQLException;
  *
  * @author Serge Rider
  */
-public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentBinary {
+public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent, DBDValueClonable, DBDContentStorage  {
 
     static Log log = LogFactory.getLog(JDBCContentBytes.class);
 
@@ -37,6 +39,23 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentB
         this.data = data;
     }
 
+    public InputStream getContentStream()
+        throws IOException
+    {
+        if (data == null) {
+            return new ByteArrayInputStream(new byte[0]);
+        } else {
+            return new ByteArrayInputStream(data);
+        }
+    }
+
+    public Reader getContentReader()
+        throws IOException
+    {
+        return new InputStreamReader(
+            getContentStream());
+    }
+
     public long getContentLength() {
         if (data == null) {
             return 0;
@@ -44,9 +63,20 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentB
         return data.length;
     }
 
+    public String getCharset()
+    {
+        return null;
+    }
+
     public String getContentType()
     {
         return MimeTypes.OCTET_STREAM;
+    }
+
+    public DBDContentStorage getContents(DBRProgressMonitor monitor)
+        throws DBCException
+    {
+        return this;
     }
 
     public boolean updateContents(
@@ -75,15 +105,6 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentB
             }
         }
         return false;
-    }
-
-    public InputStream getContents() throws DBCException {
-        if (data == null) {
-            // Empty content
-            return new ByteArrayInputStream(new byte[0]);
-        } else {
-            return new ByteArrayInputStream(data);
-        }
     }
 
     public void bindParameter(DBRProgressMonitor monitor, PreparedStatement preparedStatement,

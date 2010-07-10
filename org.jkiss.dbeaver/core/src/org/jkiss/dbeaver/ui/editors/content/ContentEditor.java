@@ -11,7 +11,6 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
@@ -84,7 +84,10 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
             throws InvocationTargetException, InterruptedException
         {
             try {
-                editorInput = new ContentEditorInput(valueController, editorParts, monitor);
+                editorInput = new ContentEditorInput(
+                    valueController,
+                    editorParts,
+                    DBeaverUtils.makeMonitor(monitor));
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }
@@ -236,7 +239,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
         if (getEditorInput() != null) {
             // Release LOB input resources
             try {
-                getEditorInput().release(new NullProgressMonitor());
+                getEditorInput().release(VoidProgressMonitor.INSTANCE);
             } catch (Throwable e) {
                 log.warn("Error releasing LOB input", e);
             }

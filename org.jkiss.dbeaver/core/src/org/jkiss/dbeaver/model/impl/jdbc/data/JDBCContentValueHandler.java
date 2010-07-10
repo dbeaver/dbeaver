@@ -15,8 +15,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDContentBinary;
-import org.jkiss.dbeaver.model.data.DBDContentCharacter;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -217,22 +215,26 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
         // Open LOB editor
         Object value = controller.getValue();
-        boolean isText = value instanceof DBDContentCharacter;
-        if (isText) {
-            // Check for length
-
-        }
-        List<IContentEditorPart> parts = new ArrayList<IContentEditorPart>();
-        if (isText) {
-            parts.add(new ContentTextEditorPart());
+        if (value instanceof DBDContent) {
+            boolean isText = ContentUtils.isTextContent((DBDContent)value);
+            if (isText) {
+                // Check for length
+            }
+            List<IContentEditorPart> parts = new ArrayList<IContentEditorPart>();
+            if (isText) {
+                parts.add(new ContentTextEditorPart());
+            } else {
+                parts.add(new ContentBinaryEditorPart());
+                parts.add(new ContentTextEditorPart());
+                parts.add(new ContentImageEditorPart());
+            }
+            return ContentEditor.openEditor(
+                controller,
+                parts.toArray(new IContentEditorPart[parts.size()]) );
         } else {
-            parts.add(new ContentBinaryEditorPart());
-            parts.add(new ContentTextEditorPart());
-            parts.add(new ContentImageEditorPart());
+            controller.showMessage("Unsupported content value type", true);
+            return false;
         }
-        return ContentEditor.openEditor(
-            controller,
-            parts.toArray(new IContentEditorPart[parts.size()]) );
     }
 
     private void loadFromFile(final DBDValueController controller)
@@ -255,7 +257,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 {
                     try {
                         DBDContentStorage storage;
-                        if (value instanceof DBDContentCharacter) {
+                        if (ContentUtils.isTextContent(value)) {
                             storage = new ExternalContentStorage(openFile, ContentUtils.DEFAULT_FILE_CHARSET);
                         } else {
                             storage = new ExternalContentStorage(openFile);
@@ -300,21 +302,20 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        if (value instanceof DBDContentCharacter) {
+                        DBDContentStorage storage = value.getContents(monitor);
+                        if (ContentUtils.isTextContent(value)) {
                             ContentUtils.saveContentToFile(
-                                ((DBDContentCharacter)value).getContents(),
+                                storage.getContentReader(),
                                 saveFile,
                                 ContentUtils.DEFAULT_FILE_CHARSET,
                                 monitor
                             );
-                        } else if (value instanceof DBDContentBinary) {
+                        } else {
                             ContentUtils.saveContentToFile(
-                                ((DBDContentBinary)value).getContents(),
+                                storage.getContentStream(),
                                 saveFile,
                                 monitor
                             );
-                        } else {
-                            log.error("Unsupported content type: " + value);
                         }
                     }
                     catch (Exception e) {

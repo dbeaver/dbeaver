@@ -7,17 +7,18 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import net.sf.jkiss.utils.streams.MimeTypes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDContentCharacter;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.sql.Clob;
@@ -29,7 +30,7 @@ import java.sql.SQLException;
  *
  * @author Serge Rider
  */
-public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCharacter {
+public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContent {
 
     static Log log = LogFactory.getLog(JDBCContentCLOB.class);
 
@@ -60,6 +61,24 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
         return MimeTypes.TEXT_PLAIN;
     }
 
+    public DBDContentStorage getContents(DBRProgressMonitor monitor)
+        throws DBCException
+    {
+        if (storage == null && clob != null) {
+            // Create new local storage
+            IFile tempFile = ContentUtils.createTempFile(monitor, "clob" + clob.hashCode());
+            try {
+                ContentUtils.copyReaderToFile(monitor, clob.getCharacterStream(), clob.length(), ContentUtils.DEFAULT_FILE_CHARSET, tempFile);
+            } catch (Exception e) {
+                ContentUtils.deleteTempFile(monitor, tempFile);
+                throw new DBCException(e);
+            }
+            this.storage = new TemporaryContentStorage(tempFile);
+            
+        }
+        return storage;
+    }
+
     public boolean updateContents(
         DBRProgressMonitor monitor,
         DBDContentStorage storage)
@@ -82,18 +101,10 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
         }
     }
 
-    public String getCharset()
-    {
-        if (storage != null) {
-            return storage.getCharset();
-        }
-        return null;
-    }
-
     public Reader getContents() throws DBCException {
         if (storage != null) {
             try {
-                return new InputStreamReader(storage.getContentStream(), storage.getCharset());
+                return storage.getContentReader();
             }
             catch (IOException e) {
                 throw new DBCException(e);
@@ -116,14 +127,14 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContentCh
         try {
             if (storage != null) {
                 // Try 3 jdbc methods to set character stream
-                InputStreamReader streamReader = new InputStreamReader(storage.getContentStream(), storage.getCharset());
+                Reader streamReader = storage.getContentReader();
                 try {
                     preparedStatement.setCharacterStream(
                         paramIndex,
                         streamReader);
                 }
                 catch (AbstractMethodError e) {
-                    long streamLength = ContentUtils.calculateContentLength(storage.getContentStream(), storage.getCharset());
+                    long streamLength = ContentUtils.calculateContentLength(storage.getContentReader());
                     try {
                         preparedStatement.setCharacterStream(
                             paramIndex,

@@ -7,16 +7,17 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import net.sf.jkiss.utils.streams.MimeTypes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.model.data.DBDContentBinary;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
@@ -28,7 +29,7 @@ import java.sql.SQLException;
  *
  * @author Serge Rider
  */
-public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBinary {
+public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContent {
 
     static Log log = LogFactory.getLog(JDBCContentBLOB.class);
 
@@ -44,19 +45,37 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
         if (storage != null) {
             return storage.getContentLength();
         }
-        if (blob == null) {
-            return 0;
+        if (blob != null) {
+            try {
+                return blob.length();
+            } catch (SQLException e) {
+                throw new DBCException(e);
+            }
         }
-        try {
-            return blob.length();
-        } catch (SQLException e) {
-            throw new DBCException("JDBC error", e);
-        }
+        return 0;
     }
 
     public String getContentType()
     {
         return MimeTypes.OCTET_STREAM;
+    }
+
+    public DBDContentStorage getContents(DBRProgressMonitor monitor)
+        throws DBCException
+    {
+        if (storage == null && blob != null) {
+            // Create new local storage
+            IFile tempFile = ContentUtils.createTempFile(monitor, "blob" + blob.hashCode());
+            try {
+                ContentUtils.copyStreamToFile(monitor, blob.getBinaryStream(), blob.length(), tempFile);
+            } catch (Exception e) {
+                ContentUtils.deleteTempFile(monitor, tempFile);
+                throw new DBCException(e);
+            }
+            this.storage = new TemporaryContentStorage(tempFile);
+
+        }
+        return storage;
     }
 
     public boolean updateContents(
@@ -81,6 +100,7 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
         }
     }
 
+/*
     public InputStream getContents() throws DBCException {
         if (storage != null) {
             try {
@@ -100,9 +120,9 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContentBi
         // Empty content
         return new ByteArrayInputStream(new byte[0]);
     }
+*/
 
-    public void bindParameter(DBRProgressMonitor monitor, PreparedStatement preparedStatement,
-                              DBSTypedObject columnType, int paramIndex)
+    public void bindParameter(DBRProgressMonitor monitor, PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
         throws DBCException
     {
         try {

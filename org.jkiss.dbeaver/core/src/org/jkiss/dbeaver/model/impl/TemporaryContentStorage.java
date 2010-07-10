@@ -4,23 +4,23 @@
 
 package org.jkiss.dbeaver.model.impl;
 
-import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.model.data.DBDContentStorageLocal;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 
 /**
  * File content storage
  */
-public class TemporaryContentStorage implements DBDContentStorage {
+public class TemporaryContentStorage implements DBDContentStorageLocal {
 
     static Log log = LogFactory.getLog(TemporaryContentStorage.class);
 
@@ -79,5 +79,10 @@ public class TemporaryContentStorage implements DBDContentStorage {
         catch (CoreException e) {
             log.warn(e);
         }
+    }
+
+    public IFile getDataFile()
+    {
+        return file;
     }
 }

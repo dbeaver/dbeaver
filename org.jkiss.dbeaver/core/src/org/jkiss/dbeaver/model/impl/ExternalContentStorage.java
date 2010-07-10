@@ -46,7 +46,7 @@ public class ExternalContentStorage implements DBDContentStorage {
     public Reader getContentReader()
         throws IOException
     {
-        return new InputStreamReader(getContentStream(), charset);
+        return new InputStreamReader(new FileInputStream(file), charset);
     }
 
     public long getContentLength()

@@ -17,9 +17,9 @@ public interface DBDContent extends DBDValue {
 
     long getContentLength() throws DBCException;
 
-    String getContentType() throws DBCException;
+    String getContentType();
 
-    //DBDContentStorage getContents(DBRProgressMonitor monitor) throws DBCException;
+    DBDContentStorage getContents(DBRProgressMonitor monitor) throws DBCException;
 
     /**
      * Update contents

@@ -314,13 +314,13 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.getWorkbench().getProgressService().run(fork, cancelable, runnable);
     }
 
-    public IFolder getTempFolder(IProgressMonitor monitor)
+    public IFolder getTempFolder(DBRProgressMonitor monitor)
     {
         IPath tempPath = defaultProject.getProjectRelativePath().append(AUTOSAVE_DIR);
         IFolder tempFolder = defaultProject.getFolder(tempPath);
         if (!tempFolder.exists()) {
             try {
-                tempFolder.create(true, true, monitor);
+                tempFolder.create(true, true, monitor.getNestedMonitor());
             }
             catch (CoreException ex) {
                 log.warn("Can't create temp directory '" + tempFolder.toString() + "'", ex);
@@ -330,7 +330,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return tempFolder;
     }
 
-    public IFile makeTempFile(String name, String extension, IProgressMonitor monitor)
+    public IFile makeTempFile(String name, String extension, DBRProgressMonitor monitor)
     {
         IFolder tempFolder = getTempFolder(monitor);
         if (tempFolder == null) {
@@ -340,7 +340,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         IFile tempFile = tempFolder.getFile(name + "-" + System.currentTimeMillis() + "." + extension);
         try {
             InputStream contents = new ByteArrayInputStream(new byte[0]);
-            tempFile.create(contents, true, monitor);
+            tempFile.create(contents, true, monitor.getNestedMonitor());
         }
         catch (CoreException ex) {
             log.warn("Can't create temp file '" + tempFile.toString() + "'", ex);

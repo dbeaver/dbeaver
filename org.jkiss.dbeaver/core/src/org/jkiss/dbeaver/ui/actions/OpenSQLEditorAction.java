@@ -7,11 +7,16 @@ package org.jkiss.dbeaver.ui.actions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 
@@ -29,7 +34,7 @@ public class OpenSQLEditorAction extends DataSourceAction
             IFile tempFile = DBeaverCore.getInstance().makeTempFile(
                 dataSourceContainer.getName(),
                 "sql",
-                new NullProgressMonitor());
+                VoidProgressMonitor.INSTANCE);
             SQLEditorInput sqlInput = new SQLEditorInput(
                 tempFile,
                 dataSourceContainer,

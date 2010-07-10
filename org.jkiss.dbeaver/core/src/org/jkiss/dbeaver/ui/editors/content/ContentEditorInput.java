@@ -20,9 +20,8 @@ import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDContentBinary;
-import org.jkiss.dbeaver.model.data.DBDContentCharacter;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.DBDContentStorageLocal;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
@@ -38,9 +37,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
 
 /**
  * LOBEditorInput
@@ -57,12 +53,12 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
     ContentEditorInput(
         DBDValueController valueController,
         IContentEditorPart[] editorParts,
-        IProgressMonitor monitor)
+        DBRProgressMonitor monitor)
         throws DBException
     {
         this.valueController = valueController;
         this.editorParts = editorParts;
-        this.saveDataToFile(monitor);
+        this.prepareContent(monitor);
     }
 
     public DBDValueController getValueController()
@@ -126,71 +122,59 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
         }
     }
 
-    private void saveDataToFile(IProgressMonitor monitor)
+    private void prepareContent(DBRProgressMonitor monitor)
         throws DBException
     {
-        try {
-            DBDContent content = getContent();
+        DBDContent content = getContent();
+        DBDContentStorage storage = content.getContents(monitor);
+        if (storage instanceof DBDContentStorageLocal) {
+            // User content's storage directly
+            contentFile = ((DBDContentStorageLocal)storage).getDataFile();
+            contentDetached = true;
+        } else {
+            // Copy content to local file
+            try {
+                // Create file
+                contentFile = ContentUtils.createTempFile( monitor, valueController.getColumnId());
 
-            // Construct file name
-            String fileName = makeFileName();
-            // Create file
-            contentFile = ContentUtils.createTempFile(monitor, fileName);
-
-            // Write value to file
-            Object value = valueController.getValue();
-            if (value != null) {
-                //Object contents = content.getContents(value);
-                long contentLength = content.getContentLength();
-                copyContentToFile(content, contentLength, monitor);
+                // Write value to file
+                if (!content.isNull()) {
+                    copyContentToFile(content, monitor);
+                }
             }
-
-            // Mark file as readonly
-            if (valueController.isReadOnly()) {
-                ResourceAttributes attributes = contentFile.getResourceAttributes();
-                if (attributes != null) {
-                    attributes.setReadOnly(true);
+            catch (IOException e) {
+                // Delete temp file
+                if (contentFile != null && contentFile.exists()) {
                     try {
-                        contentFile.setResourceAttributes(attributes);
+                        contentFile.delete(true, false, monitor.getNestedMonitor());
                     }
-                    catch (CoreException e) {
-                        throw new DBException(e);
+                    catch (CoreException e1) {
+                        log.warn("Could not delete temporary content file", e);
                     }
                 }
+                throw new DBException(e);
             }
-
         }
-        catch (IOException e) {
-            // Delete temp file
-            if (contentFile != null && contentFile.exists()) {
+
+        // Mark file as readonly
+        if (valueController.isReadOnly()) {
+            ResourceAttributes attributes = contentFile.getResourceAttributes();
+            if (attributes != null) {
+                attributes.setReadOnly(true);
                 try {
-                    contentFile.delete(true, false, monitor);
+                    contentFile.setResourceAttributes(attributes);
                 }
-                catch (CoreException e1) {
-                    log.warn("Could not delete temporary content file", e);
+                catch (CoreException e) {
+                    throw new DBException(e);
                 }
             }
-            throw new DBException(e);
         }
     }
 
-    private String makeFileName() throws DBException {
-        StringBuilder fileName = new StringBuilder(valueController.getColumnId());
-        //if (valueController.getValueLocator() != null) {
-        //    fileName.append(valueController.getValueLocator().getKeyId(valueController.getRow()));
-        //}
-        return fileName.toString();
-    }
-
-    void release(IProgressMonitor monitor)
+    void release(DBRProgressMonitor monitor)
     {
         if (contentFile != null && !contentDetached) {
-            try {
-                contentFile.delete(true, false, monitor);
-            }
-            catch (CoreException e) {
-                log.warn(e);
-            }
+            ContentUtils.deleteTempFile(monitor, contentFile);
         }
     }
 
@@ -257,53 +241,19 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
         }
     }
 
-    private void copyContentToFile(DBDContent contents, long contentLength, IProgressMonitor monitor)
+    private void copyContentToFile(DBDContent contents, DBRProgressMonitor monitor)
         throws DBException, IOException
     {
-        File file = contentFile.getLocation().toFile();
+        DBDContentStorage storage = contents.getContents(monitor);
+        if (contents.isNull() || storage == null) {
+            log.warn("Could not copy null content");
+            return;
+        }
 
-        if (contents instanceof DBDContentBinary) {
-            InputStream inputStream = ((DBDContentBinary)contents).getContents();
-            try {
-                OutputStream outputStream = new FileOutputStream(file);
-                try {
-                    ContentUtils.copyStreams(inputStream, contentLength, outputStream, DBeaverUtils.makeMonitor(monitor));
-                }
-                finally {
-                    outputStream.close();
-                }
-            }
-            finally {
-                inputStream.close();
-            }
-        } else if (contents instanceof DBDContentCharacter) {
-            Reader reader = ((DBDContentCharacter)contents).getContents();
-            try {
-                OutputStream outputStream = new FileOutputStream(file);
-                try {
-                    String charset = ((DBDContentCharacter)contents).getCharset();
-                    if (charset == null) {
-                        charset = ContentUtils.DEFAULT_FILE_CHARSET;
-                    }
-                    Writer writer = new OutputStreamWriter(outputStream, charset);
-                    ContentUtils.copyStreams(reader, contentLength, writer, DBeaverUtils.makeMonitor(monitor));
-                    writer.flush();
-                    try {
-                        contentFile.setCharset(charset, monitor);
-                    }
-                    catch (CoreException e) {
-                        log.warn(e);
-                    }
-                }
-                finally {
-                    outputStream.close();
-                }
-            }
-            finally {
-                reader.close();
-            }
+        if (ContentUtils.isTextContent(contents)) {
+            ContentUtils.copyReaderToFile(monitor, storage.getContentReader(), storage.getContentLength(), storage.getCharset(), contentFile);
         } else {
-            throw new DBCException("Unsupported content stream type: " + contents);
+            ContentUtils.copyStreamToFile(monitor, storage.getContentStream(), storage.getContentLength(), contentFile);
         }
     }
 
@@ -316,9 +266,15 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
 
         DBRProgressMonitor localMonitor = DBeaverUtils.makeMonitor(monitor);
         DBDContent content = getContent();
-
-        DBDContentStorage storage = new TemporaryContentStorage(contentFile);
-        contentDetached = content.updateContents(localMonitor, storage);
+        DBDContentStorage storage = content.getContents(localMonitor);
+        if (storage instanceof DBDContentStorageLocal) {
+            // Nothing to update - we user content's storage
+            contentDetached = true;
+        } else {
+            // Create new storage and pass it to content
+            storage = new TemporaryContentStorage(contentFile);
+            contentDetached = content.updateContents(localMonitor, storage);
+        }
         valueController.updateValue(content);
     }
 
