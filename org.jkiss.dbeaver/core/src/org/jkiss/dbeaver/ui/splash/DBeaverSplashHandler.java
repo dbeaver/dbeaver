@@ -10,9 +10,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
 
@@ -42,6 +47,10 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
         }
     }
 
+    private Font normalFont;
+    private Font boldFont;
+
+
     public DBeaverSplashHandler()
     {
         instance = this;
@@ -55,7 +64,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
         String progressRectString = null;
         String messageRectString = null;
         String foregroundColorString = null;
-        IProduct product = Platform.getProduct();
+        final IProduct product = Platform.getProduct();
         if (product != null) {
             progressRectString = product
                     .getProperty(IProductConstants.STARTUP_PROGRESS_RECT);
@@ -85,36 +94,39 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
                 (foregroundColorInteger & 0xFF00) >> 8,
                 foregroundColorInteger & 0xFF));
 
-        getContent();
-/*
-        // the following code will be removed for release time
-        if (PrefUtil.getInternalPreferenceStore().getBoolean(
-                "SHOW_BUILDID_ON_STARTUP")) { //$NON-NLS-1$
-            final String buildId = System.getProperty(
-                    "eclipse.buildId", "Unknown Build"); //$NON-NLS-1$ //$NON-NLS-2$
-            // find the specified location.  Not currently API
-            // hardcoded to be sensible with our current Europa Graphic
-            String buildIdLocString = product.getProperty("buildIdLocation"); //$NON-NLS-1$
-            final Point buildIdPoint = StringConverter.asPoint(buildIdLocString,
-                    new Point(322, 190));
-            getContent().addPaintListener(new PaintListener() {
+        normalFont = getContent().getFont();
+        boldFont = null;
+        FontData[] fontData = normalFont.getFontData();
+        if (fontData.length > 0) {
+            fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
+            boldFont = new Font(normalFont.getDevice(), fontData[0]);
+        }
 
-                public void paintControl(PaintEvent e) {
-                    e.gc.setForeground(getForeground());
-                    e.gc.drawText(buildId, buildIdPoint.x, buildIdPoint.y, true);
+        getContent().addPaintListener(new PaintListener() {
+
+            public void paintControl(PaintEvent e) {
+                String productVersion = "";
+                if (product != null) {
+                    productVersion = product.getDefiningBundle().getVersion().toString();
                 }
-            });
-        }
-        else {
-            getContent(); // ensure creation of the progress
-        }
-*/
+                if (boldFont != null) {
+                    e.gc.setFont(boldFont);
+                }
+                e.gc.setForeground(getForeground());
+                e.gc.drawText(productVersion, 115, 200, true);
+                e.gc.setFont(normalFont);
+            }
+        });
     }
 
     @Override
     public void dispose()
     {
         super.dispose();
+        if (boldFont != null) {
+            boldFont.dispose();
+            boldFont = null;
+        }
         instance = null;
     }
 

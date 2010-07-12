@@ -21,7 +21,7 @@
 
    <splash
       location="org.jkiss.dbeaver.core"
-      startupProgressRect="25,45,150,20"
+      startupProgressRect="25,45,150,15"
       startupMessageRect="25,25,200,15"
       startupForegroundColor="000000" />
    <launcher name="dbeaver.exe">
