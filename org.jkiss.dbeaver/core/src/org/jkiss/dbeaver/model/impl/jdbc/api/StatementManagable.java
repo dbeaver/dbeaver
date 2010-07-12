@@ -48,10 +48,6 @@ public abstract class StatementManagable implements JDBCStatement {
 
     protected void startBlock()
     {
-        if (blockStarted) {
-            // Another block (reexecution?)
-            endBlock();
-        }
         this.connection.getProgressMonitor().startBlock(
             this,
             this.description == null ?
@@ -61,9 +57,7 @@ public abstract class StatementManagable implements JDBCStatement {
 
     protected void endBlock()
     {
-        if (blockStarted) {
-            connection.getProgressMonitor().endBlock();
-        }
+        connection.getProgressMonitor().endBlock();
     }
 
     protected void handleExecuteError(SQLException ex)
@@ -216,6 +210,8 @@ public abstract class StatementManagable implements JDBCStatement {
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
+        } finally {
+            this.endBlock();
         }
     }
 
@@ -230,6 +226,8 @@ public abstract class StatementManagable implements JDBCStatement {
             } catch (SQLException e) {
                 this.handleExecuteError(e);
                 throw e;
+            } finally {
+                this.endBlock();
             }
         } else {
             throw new SQLFeatureNotSupportedException();
@@ -246,6 +244,8 @@ public abstract class StatementManagable implements JDBCStatement {
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
+        } finally {
+            this.endBlock();
         }
     }
 
@@ -258,6 +258,8 @@ public abstract class StatementManagable implements JDBCStatement {
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
+        } finally {
+            this.endBlock();
         }
     }
 
@@ -271,6 +273,8 @@ public abstract class StatementManagable implements JDBCStatement {
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
+        } finally {
+            this.endBlock();
         }
     }
 
@@ -284,6 +288,8 @@ public abstract class StatementManagable implements JDBCStatement {
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
+        } finally {
+            this.endBlock();
         }
     }
 
@@ -297,6 +303,8 @@ public abstract class StatementManagable implements JDBCStatement {
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
+        } finally {
+            this.endBlock();
         }
     }
 
@@ -310,6 +318,8 @@ public abstract class StatementManagable implements JDBCStatement {
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
+        } finally {
+            this.endBlock();
         }
     }
 
@@ -323,6 +333,8 @@ public abstract class StatementManagable implements JDBCStatement {
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
+        } finally {
+            this.endBlock();
         }
     }
 
@@ -336,6 +348,8 @@ public abstract class StatementManagable implements JDBCStatement {
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
+        } finally {
+            this.endBlock();
         }
     }
 
@@ -345,15 +359,10 @@ public abstract class StatementManagable implements JDBCStatement {
     public void close()
     {
         try {
-            try {
-                getOriginal().close();
-            }
-            catch (SQLException e) {
-                log.error("Could not close statement", e);
-            }
+            getOriginal().close();
         }
-        finally {
-            endBlock();
+        catch (SQLException e) {
+            log.error("Could not close statement", e);
         }
     }
 

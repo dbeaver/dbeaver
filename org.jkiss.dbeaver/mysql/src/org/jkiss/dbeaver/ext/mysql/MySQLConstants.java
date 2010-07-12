@@ -13,6 +13,7 @@ public class MySQLConstants {
     public static final String META_TABLE_SCHEMATA = INFO_SCHEMA_NAME + ".SCHEMATA";
     public static final String META_TABLE_TABLES = INFO_SCHEMA_NAME + ".TABLES";
     public static final String META_TABLE_ROUTINES = INFO_SCHEMA_NAME + ".ROUTINES";
+    public static final String META_TABLE_TRIGGERS = INFO_SCHEMA_NAME + ".TRIGGERS";
     public static final String META_TABLE_COLUMNS = INFO_SCHEMA_NAME + ".COLUMNS";
 
     public static final String COL_CATALOG_NAME = "CATALOG_NAME";
@@ -60,6 +61,22 @@ public class MySQLConstants {
     public static final String COL_DEFINER = "DEFINER";
     public static final String COL_CHARACTER_SET_CLIENT = "CHARACTER_SET_CLIENT";
 
+    public static final String COL_TRIGGER_SCHEMA = "TRIGGER_SCHEMA";
+	public static final String COL_TRIGGER_NAME = "TRIGGER_NAME";
+	public static final String COL_TRIGGER_EVENT_MANIPULATION = "EVENT_MANIPULATION"; 	 
+	public static final String COL_TRIGGER_EVENT_OBJECT_SCHEMA = "EVENT_OBJECT_SCHEMA";
+	public static final String COL_TRIGGER_EVENT_OBJECT_TABLE = "EVENT_OBJECT_TABLE"; 	 
+	public static final String COL_TRIGGER_ACTION_ORDER = "ACTION_ORDER";
+	public static final String COL_TRIGGER_ACTION_CONDITION = "ACTION_CONDITION";
+	public static final String COL_TRIGGER_ACTION_STATEMENT = "ACTION_STATEMENT"; 	 
+	public static final String COL_TRIGGER_ACTION_ORIENTATION = "ACTION_ORIENTATION";
+	public static final String COL_TRIGGER_ACTION_TIMING = "ACTION_TIMING"; 	 
+	public static final String COL_TRIGGER_SQL_MODE = "SQL_MODE";
+	public static final String COL_TRIGGER_DEFINER = "DEFINER";
+	public static final String COL_TRIGGER_CHARACTER_SET_CLIENT = "CHARACTER_SET_CLIENT";
+	public static final String COL_TRIGGER_COLLATION_CONNECTION = "COLLATION_CONNECTION";
+	public static final String COL_TRIGGER_DATABASE_COLLATION = "DATABASE_COLLATION";
+    
     public static final String EXTRA_AUTO_INCREMENT = "auto_increment";
 
     public static final String QUERY_SELECT_TABLES =
@@ -79,4 +96,5 @@ public class MySQLConstants {
 
     public static final String TYPE_NAME_ENUM = "ENUM";
     public static final String TYPE_NAME_SET = "SET";
+
 }

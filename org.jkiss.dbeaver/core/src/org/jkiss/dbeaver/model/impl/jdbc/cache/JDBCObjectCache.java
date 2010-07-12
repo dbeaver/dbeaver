@@ -75,8 +75,8 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
             return;
         }
 
-        List<OBJECT> tmpTableList = new ArrayList<OBJECT>();
-        Map<String, OBJECT> tmpTableMap = new HashMap<String, OBJECT>();
+        List<OBJECT> tmpObjectList = new ArrayList<OBJECT>();
+        Map<String, OBJECT> tmpObjectMap = new HashMap<String, OBJECT>();
 
         JDBCExecutionContext context = connector.openContext(monitor);
         try {
@@ -86,14 +86,14 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
                 try {
                     while (dbResult.next()) {
 
-                        OBJECT table = fetchObject(context, dbResult);
-                        if (table == null) {
+                        OBJECT object = fetchObject(context, dbResult);
+                        if (object == null) {
                             continue;
                         }
-                        tmpTableList.add(table);
-                        tmpTableMap.put(table.getName(), table);
+                        tmpObjectList.add(object);
+                        tmpObjectMap.put(object.getName(), object);
 
-                        monitor.subTask(table.getName());
+                        monitor.subTask(object.getName());
                         if (monitor.isCanceled()) {
                             break;
                         }
@@ -114,8 +114,8 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
             context.close();
         }
 
-        this.objectList = tmpTableList;
-        this.objectMap = tmpTableMap;
+        this.objectList = tmpObjectList;
+        this.objectMap = tmpObjectMap;
     }
 
 }

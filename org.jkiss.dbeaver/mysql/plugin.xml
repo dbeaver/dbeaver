@@ -53,10 +53,14 @@
                                             </items>
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.model.struct.DBSPrimaryKey" label="References" iconId="#references" description="Table references">
+                                    <folder type="org.jkiss.dbeaver.model.struct.DBSForeignKey" label="References" iconId="#references" description="Table references">
                                         <items label="Reference Key" path="referenceKey" property="references" iconId="#reference">
                                             <items label="Reference key columns" path="column" property="columns" navigable="false">
                                             </items>
+                                        </items>
+                                    </folder>
+                                    <folder type="org.jkiss.dbeaver.model.struct.DBSTrigger" label="Triggers" iconId="#triggers" description="Triggers">
+                                        <items label="Triggers" path="trigger" property="triggers" iconId="#trigger">
                                         </items>
                                     </folder>
                                 </items>
@@ -71,6 +75,10 @@
                                 <items label="Procedures" path="procedure" property="procedures" iconId="#procedure">
                                     <items label="Procedure columns" path="column" property="columns" navigable="false">
                                     </items>
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.model.struct.DBSTrigger" label="Triggers" iconId="#triggers" description="Triggers">
+                                <items label="Triggers" path="trigger" property="triggers" iconId="#trigger">
                                 </items>
                             </folder>
                         </items>
@@ -102,29 +110,6 @@
                     sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                     webURL="http://mysql.com"
                     description="MySQL standard driver">
-                    <!--
-                    <propertyGroup label="Connection/Authentication">
-                        <property label="connectTimeout" description="Timeout for socket connect (in milliseconds), with 0 being no timeout. Only works on JDK-1.4 or newer. Defaults to '0'."/>
-                        <property label="socketTimeout" description="Timeout on network socket operations (0, the default means no timeout)."/>
-                        <property label="useCompression" description="Use zlib compression when communicating with the server (true/false)? Defaults to 'false'."/>
-                    </propertyGroup>
-                    <propertyGroup label="Debuging/Profiling">
-                        <property label="profileSQL" description="Trace queries and their execution/fetch times to the configured logger (true/false) defaults to 'false'"/>
-                        <property label="reportMetricsIntervalMillis" description="If 'gatherPerfMetrics' is enabled, how often should they be logged (in ms)?"/>
-                        <property label="maxQuerySizeToLog" description="Controls the maximum length/size of a query that will get logged when profiling or tracing"/>
-                        <property label="packetDebugBufferSize" description="The maximum number of packets to retain when 'enablePacketDebug' is true"/>
-                        <property label="slowQueryThresholdMillis" description="If 'logSlowQueries' is enabled, how long should a query (in ms) before it is logged as 'slow'?"/>
-                        <property label="useUsageAdvisor" description="Should the driver issue 'usage' warnings advising proper and efficient usage of JDBC and MySQL Connector/J to the log (true/false, defaults to 'false')?"/>
-                        <property label="autoGenerateTestcaseScript" description="Should the driver dump the SQL it is executing, including server-side prepared statements to STDERR?"/>
-                        <property label="dumpQueriesOnException" description="Should the driver dump the contents of the query sent to the server in the message for SQLExceptions?"/>
-                        <property label="enablePacketDebug" description="When enabled, a ring-buffer of 'packetDebugBufferSize' packets will be kept, and dumped when exceptions are thrown in key areas in the driver's code"/>
-                        <property label="explainSlowQueries" description="If 'logSlowQueries' is enabled, should the driver automatically issue an 'EXPLAIN' on the server and send the results to the configured log at a WARN level?"/>
-                        <property label="logSlowQueries" description="Should queries that take longer than 'slowQueryThresholdMillis' be logged?"/>
-                        <property label="traceProtocol" description="Should trace-level network protocol be logged?"/>
-                    </propertyGroup>
-                    -->
-                    <query label="GET_ACTIVE_DB">select database()</query>
-                    <query label="SET_ACTIVE_DB">use ?</query>
                 </driver>
             </drivers>
             <views>
@@ -164,6 +149,17 @@
             main="false"
             label="Source"
             description="Procedure source"
+            position="additions_end"
+            icon="icons/proc_body.png">
+        </editor>
+
+        <editor
+            id="org.jkiss.dbeaver.ext.mysql.views.MySQLTriggerEditor"
+            class="org.jkiss.dbeaver.ext.mysql.views.MySQLTriggerEditor"
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger"
+            main="false"
+            label="Statement"
+            description="Trigger statement"
             position="additions_end"
             icon="icons/proc_body.png">
         </editor>

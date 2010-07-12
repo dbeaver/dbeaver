@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
@@ -46,6 +47,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     private List<MySQLIndex> indexes;
     private List<MySQLConstraint> constraints;
     private List<MySQLForeignKey> foreignKeys;
+    private List<MySQLTrigger> triggers;
 
     private long rowCount;
     private long autoIncrement;
@@ -134,6 +136,21 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
             foreignKeys = loadForeignKeys(monitor, false);
         }
         return foreignKeys;
+    }
+
+    public List<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        if (triggers == null) {
+            loadTriggers(monitor);
+        }
+        return triggers;
+    }
+
+    public MySQLTrigger getTrigger(DBRProgressMonitor monitor, String triggerName)
+        throws DBException
+    {
+        return DBUtils.findObject(getTriggers(monitor), triggerName);
     }
 
     public boolean refreshObject(DBRProgressMonitor monitor)
@@ -501,6 +518,56 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
             case DatabaseMetaData.importedKeySetDefault: return DBSConstraintCascade.SET_DEFAULT;
             case DatabaseMetaData.importedKeyRestrict: return DBSConstraintCascade.RESTRICT;
             default: return DBSConstraintCascade.UNKNOWN;
+        }
+    }
+
+    private void loadTriggers(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        // Load only trigger's owner catalog and trigger name
+        // Actual triggers are stored in catalog - we just get em from cache
+        JDBCExecutionContext context = getDataSource().openContext(monitor, "Load table '" + getName() + "' triggers");
+        try {
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT " + MySQLConstants.COL_TRIGGER_SCHEMA + "," + MySQLConstants.COL_TRIGGER_NAME + " FROM " + MySQLConstants.META_TABLE_TRIGGERS +
+                " WHERE " + MySQLConstants.COL_TRIGGER_EVENT_OBJECT_SCHEMA + "=? AND " + MySQLConstants.COL_TRIGGER_EVENT_OBJECT_TABLE + "=? " +
+                " ORDER BY " + MySQLConstants.COL_TRIGGER_NAME);
+            try {
+                dbStat.setString(1, getContainer().getName());
+                dbStat.setString(2, getName());
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    List<MySQLTrigger> tmpTriggers = new ArrayList<MySQLTrigger>();
+                    while (dbResult.next()) {
+                        String ownerSchema = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_SCHEMA);
+                        String triggerName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_NAME);
+                        MySQLCatalog triggerCatalog = getDataSource().getCatalog(ownerSchema);
+                        if (triggerCatalog == null) {
+                            log.warn("Could not find catalog '" + ownerSchema + "'");
+                            continue;
+                        }
+                        MySQLTrigger trigger = triggerCatalog.getTrigger(monitor, triggerName);
+                        if (trigger == null) {
+                            log.warn("Could not find trigger '" + triggerName + "' catalog '" + ownerSchema + "'");
+                            continue;
+                        }
+                        tmpTriggers.add(trigger);
+                    }
+                    this.triggers = tmpTriggers;
+                }
+                finally {
+                    dbResult.close();
+                }
+            }
+            finally {
+                dbStat.close();
+            }
+        }
+        catch (SQLException e) {
+            throw new DBException(e);
+        }
+        finally {
+            context.close();
         }
     }
 

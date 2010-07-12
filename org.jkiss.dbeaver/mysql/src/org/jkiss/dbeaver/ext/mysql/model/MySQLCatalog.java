@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.meta.AbstractCatalog;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
@@ -35,6 +36,7 @@ public class MySQLCatalog
     private String sqlPath;
     private TableCache tableCache = new TableCache();
     private ProceduresCache proceduresCache = new ProceduresCache();
+    private TriggerCache triggerCache = new TriggerCache();
 
     public MySQLCatalog(MySQLDataSource dataSource, String catalogName)
     {
@@ -49,6 +51,11 @@ public class MySQLCatalog
     ProceduresCache getProceduresCache()
     {
         return proceduresCache;
+    }
+
+    TriggerCache getTriggerCache()
+    {
+        return triggerCache;
     }
 
     public String getDescription()
@@ -122,6 +129,18 @@ public class MySQLCatalog
         return proceduresCache.getObjects(monitor);
     }
 
+    public List<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return triggerCache.getObjects(monitor);
+    }
+
+    public MySQLTrigger getTrigger(DBRProgressMonitor monitor, String name)
+        throws DBException
+    {
+        return triggerCache.getObject(monitor, name);
+    }
+
     public List<DBSTablePath> findTableNames(DBRProgressMonitor monitor, String tableMask, int maxResults) throws DBException
     {
         return getDataSource().findTableNames(monitor, tableMask, maxResults);
@@ -161,6 +180,7 @@ public class MySQLCatalog
         super.refreshObject(monitor);
         tableCache.clearCache();
         proceduresCache.clearCache();
+        triggerCache.clearCache();
         return true;
     }
 
@@ -308,6 +328,35 @@ public class MySQLCatalog
                 remarks,
                 columnType);
         }
+    }
+
+    class TriggerCache extends JDBCObjectCache<MySQLTrigger> {
+        
+        protected TriggerCache()
+        {
+            super(getDataSource());
+        }
+
+        protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
+            throws SQLException, DBException
+        {
+            JDBCPreparedStatement dbStat = context.prepareStatement(        
+                "SELECT * FROM " + MySQLConstants.META_TABLE_TRIGGERS +
+                " WHERE " + MySQLConstants.COL_TRIGGER_SCHEMA + "=?" +
+                " ORDER BY " + MySQLConstants.COL_TRIGGER_NAME);
+            dbStat.setString(1, getName());
+            return dbStat;
+        }
+
+        protected MySQLTrigger fetchObject(JDBCExecutionContext context, ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            String tableSchema = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_EVENT_OBJECT_SCHEMA);
+            String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_EVENT_OBJECT_TABLE);
+            MySQLTable triggerTable = getDataSource().findTable(context.getProgressMonitor(), tableSchema, tableName);
+            return new MySQLTrigger(MySQLCatalog.this, triggerTable, dbResult);
+        }
+
     }
 
 }

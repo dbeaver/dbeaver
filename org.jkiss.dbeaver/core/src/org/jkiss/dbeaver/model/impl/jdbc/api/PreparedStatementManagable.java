@@ -79,6 +79,8 @@ public class PreparedStatementManagable extends StatementManagable implements JD
         } catch (SQLException e) {
             super.handleExecuteError(e);
             throw e;
+        } finally {
+            super.endBlock();
         }
     }
 
@@ -91,6 +93,8 @@ public class PreparedStatementManagable extends StatementManagable implements JD
         } catch (SQLException e) {
             super.handleExecuteError(e);
             throw e;
+        } finally {
+            super.endBlock();
         }
     }
 
@@ -103,6 +107,8 @@ public class PreparedStatementManagable extends StatementManagable implements JD
         } catch (SQLException e) {
             super.handleExecuteError(e);
             throw e;
+        } finally {
+            super.endBlock();
         }
     }
 

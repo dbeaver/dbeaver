@@ -68,6 +68,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSManipulationType;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
@@ -1198,14 +1199,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
-    enum StatementType {
-        INSERT,
-        DELETE,
-        UPDATE,
-    }
-
     static class DataStatementInfo {
-        StatementType type;
+        DBSManipulationType type;
         RowInfo row;
         DBSTable table;
         List<DBDColumnValue> keyColumns = new ArrayList<DBDColumnValue>();
@@ -1213,7 +1208,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         boolean executed = false;
         Map<Integer, Object> updatedCells = new HashMap<Integer, Object>();
 
-        DataStatementInfo(StatementType type, RowInfo row, DBSTable table)
+        DataStatementInfo(DBSManipulationType type, RowInfo row, DBSTable table)
         {
             this.type = type;
             this.row = row;
@@ -1290,7 +1285,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             // Make delete statements
             for (RowInfo rowNum : removedRows) {
                 DBSTable table = metaColumns[0].getValueLocator().getTable();
-                DataStatementInfo statement = new DataStatementInfo(StatementType.DELETE, rowNum, table);
+                DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, rowNum, table);
                 List<? extends DBSTableColumn> keyColumns = metaColumns[0].getValueLocator().getTableColumns();
                 for (DBSTableColumn column : keyColumns) {
                     int colIndex = getMetaColumnIndex(column);
@@ -1313,7 +1308,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             for (RowInfo rowNum : addedRows) {
                 Object[] cellValues = curRows.get(rowNum.row);
                 DBSTable table = metaColumns[0].getValueLocator().getTable();
-                DataStatementInfo statement = new DataStatementInfo(StatementType.INSERT, rowNum, table);
+                DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, rowNum, table);
                 for (int i = 0; i < metaColumns.length; i++) {
                     DBDColumnBinding column = metaColumns[i];
                     statement.keyColumns.add(new DBDColumnValue(column.getTableColumn(), cellValues[i]));
@@ -1336,7 +1331,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 Map<DBSTable, TableRowInfo> tableMap = updatedRows.get(rowNum);
                 for (DBSTable table : tableMap.keySet()) {
                     TableRowInfo rowInfo = tableMap.get(table);
-                    DataStatementInfo statement = new DataStatementInfo(StatementType.UPDATE, new RowInfo(rowNum), table);
+                    DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, new RowInfo(rowNum), table);
                     // Updated columns
                     for (int i = 0; i < rowInfo.tableCells.size(); i++) {
                         CellInfo cell = rowInfo.tableCells.get(i);

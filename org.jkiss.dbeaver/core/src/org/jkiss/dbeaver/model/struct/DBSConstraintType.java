@@ -18,7 +18,7 @@ public class DBSConstraintType
     private final String name;
     private final boolean unique;
 
-    DBSConstraintType(String name, boolean unique)
+    protected DBSConstraintType(String name, boolean unique)
     {
         this.name = name;
         this.unique = unique;
