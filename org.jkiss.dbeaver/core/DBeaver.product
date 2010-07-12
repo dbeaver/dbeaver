@@ -21,12 +21,14 @@
 
    <splash
       location="org.jkiss.dbeaver.core"
-      startupProgressRect="5,275,445,15"
-      startupMessageRect="7,252,445,20"
+      startupProgressRect="25,45,150,20"
+      startupMessageRect="25,25,200,15"
       startupForegroundColor="000000" />
    <launcher name="dbeaver.exe">
+      <macosx icon="/org.jkiss.dbeaver.core/icons/logo/dbeaver.icns"/>
       <solaris/>
-      <win useIco="false">
+      <win useIco="true">
+         <ico path="/org.jkiss.dbeaver.core/icons/logo/dbeaver.ico"/>
          <bmp/>
       </win>
    </launcher>
@@ -73,7 +75,7 @@
       <plugin id="org.eclipse.ecf.ssl" fragment="true"/>
       <plugin id="org.eclipse.equinox.app"/>
       <plugin id="org.eclipse.equinox.common"/>
-      <plugin id="org.eclipse.equinox.concurrent" fragment=""/>
+      <plugin id="org.eclipse.equinox.concurrent"/>
       <plugin id="org.eclipse.equinox.p2.artifact.repository"/>
       <plugin id="org.eclipse.equinox.p2.core"/>
       <plugin id="org.eclipse.equinox.p2.engine"/>
