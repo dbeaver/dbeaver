@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import net.sf.jkiss.utils.CommonUtils;
+
 /**
  * JDBC Table MetaData
  */
@@ -124,35 +126,15 @@ public class JDBCTableMetaData implements DBCTableMetaData {
             // Load identifiers
             identifiers = new ArrayList<JDBCTableIdentifier>();
             // Check constraints
-            for (DBSConstraint constraint : getTable(monitor).getConstraints(monitor)) {
-                if (constraint.getConstraintType().isUnique()) {
-                    // We need ALL columns from this constraint
-                    List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
-                    Collection<? extends DBSConstraintColumn> constrColumns = constraint.getColumns(monitor);
-                    for (DBSConstraintColumn constrColumn : constrColumns) {
-                        JDBCColumnMetaData rsColumn = getColumnMetaData(monitor, constrColumn.getTableColumn());
-                        if (rsColumn == null) {
-                            break;
-                        }
-                        rsColumns.add(rsColumn);
-                    }
-                    if (rsColumns.isEmpty() || rsColumns.size() < constrColumns.size()) {
-                        // Not all columns are here
-                        continue;
-                    }
-                    identifiers.add(
-                        new JDBCTableIdentifier(monitor, constraint, rsColumns));
-                }
-            }
-            if (identifiers.isEmpty()) {
-                // Check indexes only if no unique constraints found
-                for (DBSIndex index : getTable(monitor).getIndexes(monitor)) {
-                    if (index.isUnique()) {
+            Collection<? extends DBSConstraint> uniqueKeys = getTable(monitor).getUniqueKeys(monitor);
+            if (!CommonUtils.isEmpty(uniqueKeys)) {
+                for (DBSConstraint constraint : uniqueKeys) {
+                    if (constraint.getConstraintType().isUnique()) {
                         // We need ALL columns from this constraint
                         List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
-                        Collection<? extends DBSIndexColumn> constrColumns = index.getColumns(monitor);
-                        for (DBSIndexColumn indexColumn : constrColumns) {
-                            JDBCColumnMetaData rsColumn = getColumnMetaData(monitor, indexColumn.getTableColumn());
+                        Collection<? extends DBSConstraintColumn> constrColumns = constraint.getColumns(monitor);
+                        for (DBSConstraintColumn constrColumn : constrColumns) {
+                            JDBCColumnMetaData rsColumn = getColumnMetaData(monitor, constrColumn.getTableColumn());
                             if (rsColumn == null) {
                                 break;
                             }
@@ -163,7 +145,33 @@ public class JDBCTableMetaData implements DBCTableMetaData {
                             continue;
                         }
                         identifiers.add(
-                            new JDBCTableIdentifier(monitor, index, rsColumns));
+                            new JDBCTableIdentifier(monitor, constraint, rsColumns));
+                    }
+                }
+            }
+            if (identifiers.isEmpty()) {
+                // Check indexes only if no unique constraints found
+                Collection<? extends DBSIndex> indexes = getTable(monitor).getIndexes(monitor);
+                if (!CommonUtils.isEmpty(indexes)) {
+                    for (DBSIndex index : indexes) {
+                        if (index.isUnique()) {
+                            // We need ALL columns from this constraint
+                            List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
+                            Collection<? extends DBSIndexColumn> constrColumns = index.getColumns(monitor);
+                            for (DBSIndexColumn indexColumn : constrColumns) {
+                                JDBCColumnMetaData rsColumn = getColumnMetaData(monitor, indexColumn.getTableColumn());
+                                if (rsColumn == null) {
+                                    break;
+                                }
+                                rsColumns.add(rsColumn);
+                            }
+                            if (rsColumns.isEmpty() || rsColumns.size() < constrColumns.size()) {
+                                // Not all columns are here
+                                continue;
+                            }
+                            identifiers.add(
+                                new JDBCTableIdentifier(monitor, index, rsColumns));
+                        }
                     }
                 }
             }

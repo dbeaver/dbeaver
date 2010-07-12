@@ -45,7 +45,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
     private List<MySQLTableColumn> columns;
     private List<MySQLIndex> indexes;
-    private List<MySQLConstraint> constraints;
+    private List<MySQLConstraint> uniqueKeys;
     private List<MySQLForeignKey> foreignKeys;
     private List<MySQLTrigger> triggers;
 
@@ -114,13 +114,13 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         return DBUtils.findObject(getIndexes(monitor), indexName);
     }
 
-    public List<MySQLConstraint> getConstraints(DBRProgressMonitor monitor)
+    public List<MySQLConstraint> getUniqueKeys(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (constraints == null) {
-            constraints = loadConstraints(monitor);
+        if (uniqueKeys == null) {
+            loadConstraints(monitor);
         }
-        return constraints;
+        return uniqueKeys;
     }
 
     public List<MySQLForeignKey> getReferences(DBRProgressMonitor monitor)
@@ -317,54 +317,62 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
-    private List<MySQLConstraint> loadConstraints(DBRProgressMonitor monitor)
+    private void loadConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
         JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
             List<MySQLConstraint> pkList = new ArrayList<MySQLConstraint>();
             Map<String, MySQLConstraint> pkMap = new HashMap<String, MySQLConstraint>();
-            JDBCDatabaseMetaData metaData = context.getMetaData();
-            // Load indexes
-            JDBCResultSet dbResult = metaData.getPrimaryKeys(
-                getContainer().getName(),
-                null,
-                getName());
+            // Load unique keys
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT tc.CONSTRAINT_NAME,tc.TABLE_NAME,tc.CONSTRAINT_TYPE FROM " + MySQLConstants.META_TABLE_TABLE_CONSTRAINTS +
+                " tc WHERE tc.TABLE_SCHEMA=? AND tc.TABLE_NAME=? ");
             try {
-                while (dbResult.next()) {
-                    String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-                    int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
-                    String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
-                    MySQLConstraint pk = pkMap.get(pkName);
-                    if (pk == null) {
-                        pk = new MySQLConstraint(
-                            this,
-                            pkName,
-                            null,
-                            DBSConstraintType.PRIMARY_KEY);
-                        pkList.add(pk);
-                        pkMap.put(pkName, pk);
+                dbStat.setString(1, getContainer().getName());
+                dbStat.setString(2, getName());
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    while (dbResult.next()) {
+/*
+                        String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
+                        int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
+                        String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
+                        MySQLConstraint pk = pkMap.get(pkName);
+                        if (pk == null) {
+                            pk = new MySQLConstraint(
+                                this,
+                                pkName,
+                                null,
+                                DBSConstraintType.PRIMARY_KEY);
+                            pkList.add(pk);
+                            pkMap.put(pkName, pk);
+                        }
+                        if (CommonUtils.isEmpty(columnName)) {
+                            // Bad index - can't evaluate it
+                            continue;
+                        }
+                        MySQLTableColumn tableColumn = this.getColumn(monitor, columnName);
+                        if (tableColumn == null) {
+                            log.warn("Column '" + columnName + "' not found in table '" + this.getName() + "' for PK");
+                            continue;
+                        }
+                        pk.addColumn(
+                            new MySQLConstraintColumn(
+                                pk,
+                                tableColumn,
+                                keySeq));
+*/
                     }
-                    if (CommonUtils.isEmpty(columnName)) {
-                        // Bad index - can't evaluate it
-                        continue;
-                    }
-                    MySQLTableColumn tableColumn = this.getColumn(monitor, columnName);
-                    if (tableColumn == null) {
-                        log.warn("Column '" + columnName + "' not found in table '" + this.getName() + "' for PK");
-                        continue;
-                    }
-                    pk.addColumn(
-                        new MySQLConstraintColumn(
-                            pk,
-                            tableColumn,
-                            keySeq));
+                }
+                finally {
+                    dbResult.close();
                 }
             }
             finally {
-                dbResult.close();
+                dbStat.close();
             }
-            return pkList;
+            this.uniqueKeys = pkList;
         } catch (SQLException ex) {
             throw new DBException(ex);
         }
@@ -446,13 +454,13 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                     // Find PK
                     MySQLConstraint pk = null;
                     if (pkName != null) {
-                        pk = DBUtils.findObject(pkTable.getConstraints(monitor), pkName);
+                        pk = DBUtils.findObject(pkTable.getUniqueKeys(monitor), pkName);
                         if (pk == null) {
                             log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
                         }
                     }
                     if (pk == null) {
-                        for (MySQLConstraint pkConstraint : pkTable.getConstraints(monitor)) {
+                        for (MySQLConstraint pkConstraint : pkTable.getUniqueKeys(monitor)) {
                             if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
                                 pk = pkConstraint;
                                 break;

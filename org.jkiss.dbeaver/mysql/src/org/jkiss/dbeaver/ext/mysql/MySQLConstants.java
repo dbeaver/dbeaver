@@ -17,6 +17,7 @@ public class MySQLConstants {
     public static final String META_TABLE_ROUTINES = INFO_SCHEMA_NAME + ".ROUTINES";
     public static final String META_TABLE_TRIGGERS = INFO_SCHEMA_NAME + ".TRIGGERS";
     public static final String META_TABLE_COLUMNS = INFO_SCHEMA_NAME + ".COLUMNS";
+    public static final String META_TABLE_TABLE_CONSTRAINTS = INFO_SCHEMA_NAME + ".TABLE_CONSTRAINTS";
 
     public static final String COL_ENGINE_NAME = "ENGINE";
     public static final String COL_ENGINE_SUPPORTED = "SUPPORT";

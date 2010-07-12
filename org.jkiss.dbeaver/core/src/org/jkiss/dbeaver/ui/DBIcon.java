@@ -27,7 +27,7 @@ public enum DBIcon
     TREE_COLUMN("column", "icons/tree/column.png"),
     TREE_INDEX("index", "icons/tree/index.png"),
     TREE_CONSTRAINT("constraint", "icons/tree/constraint.png"),
-    TREE_UNIQUE_CONSTRAINT("unique-constraint", "icons/tree/unique_constraint.png"),
+    TREE_UNIQUE_KEY("unique-key", "icons/tree/unique_constraint.png"),
     TREE_FOREIGN_KEY("foreign-key", "icons/tree/foreign_key.png"),
     TREE_REFERENCE("reference", "icons/tree/reference.png"),
     TREE_TRIGGER("trigger", "icons/tree/trigger.png"),

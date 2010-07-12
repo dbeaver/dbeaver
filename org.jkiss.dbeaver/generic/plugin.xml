@@ -61,9 +61,9 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="Constraints" iconId="#constraints" description="Table constraints">
-                                    <items label="Constraints" path="constraint" property="constraints" iconId="#constraint">
-                                        <items label="Constraint columns" path="column" property="columns" navigable="false">
+                                <folder type="org.jkiss.dbeaver.model.struct.DBSConstraint" label="Unique Keys" iconId="#constraints" description="Table unique keys">
+                                    <items label="Unique Keys" path="uniqueKey" property="uniqueKeys" iconId="#unique-key">
+                                        <items label="Unique key columns" path="column" property="columns" navigable="false">
                                         </items>
                                     </items>
                                 </folder>

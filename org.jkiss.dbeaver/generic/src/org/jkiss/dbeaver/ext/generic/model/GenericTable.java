@@ -171,7 +171,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructureC
         return this.indexes != null;
     }
 
-    public List<GenericPrimaryKey> getConstraints(DBRProgressMonitor monitor)
+    public List<GenericPrimaryKey> getUniqueKeys(DBRProgressMonitor monitor)
         throws DBException
     {
         if (constraints == null) {
@@ -396,13 +396,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructureC
                     // Find PK
                     GenericPrimaryKey pk = null;
                     if (pkName != null) {
-                        pk = DBUtils.findObject(pkTable.getConstraints(monitor), pkName);
+                        pk = DBUtils.findObject(pkTable.getUniqueKeys(monitor), pkName);
                         if (pk == null) {
                             log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
                         }
                     }
                     if (pk == null) {
-                        for (GenericPrimaryKey pkConstraint : pkTable.getConstraints(monitor)) {
+                        for (GenericPrimaryKey pkConstraint : pkTable.getUniqueKeys(monitor)) {
                             if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
                                 pk = pkConstraint;
                                 break;

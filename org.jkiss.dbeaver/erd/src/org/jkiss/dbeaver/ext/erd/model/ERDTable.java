@@ -79,7 +79,7 @@ public class ERDTable extends ERDNode {
         throws DBException
     {
         // Try to get key number from primary key constraint column
-        Collection<? extends DBSConstraint> constraints = getTable().getConstraints(monitor);
+        Collection<? extends DBSConstraint> constraints = getTable().getUniqueKeys(monitor);
         if (constraints != null) {
             for (DBSConstraint constraint : constraints) {
                 if (constraint.getConstraintType().isUnique()) {
