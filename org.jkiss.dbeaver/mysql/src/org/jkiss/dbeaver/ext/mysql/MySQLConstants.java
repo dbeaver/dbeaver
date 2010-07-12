@@ -10,11 +10,20 @@ public class MySQLConstants {
     public static final String[] TABLE_TYPES = new String[]{"TABLE", "VIEW", "LOCAL TEMPORARY"};
 
     public static final String INFO_SCHEMA_NAME = "information_schema";
+
+    public static final String META_TABLE_ENGINES = INFO_SCHEMA_NAME + ".ENGINES";
     public static final String META_TABLE_SCHEMATA = INFO_SCHEMA_NAME + ".SCHEMATA";
     public static final String META_TABLE_TABLES = INFO_SCHEMA_NAME + ".TABLES";
     public static final String META_TABLE_ROUTINES = INFO_SCHEMA_NAME + ".ROUTINES";
     public static final String META_TABLE_TRIGGERS = INFO_SCHEMA_NAME + ".TRIGGERS";
     public static final String META_TABLE_COLUMNS = INFO_SCHEMA_NAME + ".COLUMNS";
+
+    public static final String COL_ENGINE_NAME = "ENGINE";
+    public static final String COL_ENGINE_SUPPORTED = "SUPPORT";
+    public static final String COL_ENGINE_DESCRIPTION = "COMMENT";
+    public static final String COL_ENGINE_SUPPORT_TXN = "TRANSACTIONS";
+    public static final String COL_ENGINE_SUPPORT_XA = "XA";
+    public static final String COL_ENGINE_SUPPORT_SAVEPOINTS = "SAVEPOINTS";
 
     public static final String COL_CATALOG_NAME = "CATALOG_NAME";
     public static final String COL_SCHEMA_NAME = "SCHEMA_NAME";

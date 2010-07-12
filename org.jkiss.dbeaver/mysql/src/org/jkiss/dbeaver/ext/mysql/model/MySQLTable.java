@@ -229,7 +229,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
             }
         }
         this.setDescription(desc);
-        this.engine = MySQLEngine.getByName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE));
+        this.engine = getDataSource().getEngine(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE));
         this.rowCount = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_TABLE_ROWS);
         this.autoIncrement = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AUTO_INCREMENT);
 

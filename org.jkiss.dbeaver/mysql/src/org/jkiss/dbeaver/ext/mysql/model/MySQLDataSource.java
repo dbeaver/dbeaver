@@ -44,6 +44,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         connectionsProps.setProperty("zeroDateTimeBehavior", "convertToNull");
     }
 
+    private List<MySQLEngine> engines;
     private List<MySQLCatalog> catalogs;
     private MySQLCatalog activeCatalog;
 
@@ -73,16 +74,45 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         return DBUtils.findObject(catalogs, name);
     }
 
+    public List<MySQLEngine> getEngines()
+    {
+        return engines;
+    }
+
+    public MySQLEngine getEngine(String name)
+    {
+        return DBUtils.findObject(engines, name);
+    }
+
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
         super.initialize(monitor);
 
-        // Read catalogs
-        List<MySQLCatalog> tmpCatalogs = new ArrayList<MySQLCatalog>();
         JDBCExecutionContext context = openContext(monitor);
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
+            // Read engines
+            List<MySQLEngine> tmpEngines = new ArrayList<MySQLEngine>();
+            JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM " + MySQLConstants.META_TABLE_ENGINES);
+            try {
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    while (dbResult.next()) {
+                        MySQLEngine engine = new MySQLEngine(this, dbResult);
+                        tmpEngines.add(engine);
+                    }
+                } finally {
+                    dbResult.close();
+                }
+            }
+            finally {
+                dbStat.close();
+            }
+            this.engines = tmpEngines;
+
+            // Read catalogs
+            List<MySQLCatalog> tmpCatalogs = new ArrayList<MySQLCatalog>();
+            dbStat = context.prepareStatement("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
@@ -106,13 +136,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
             finally {
                 dbStat.close();
             }
+            this.catalogs = tmpCatalogs;
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex);
         }
         finally {
             context.close();
         }
-        this.catalogs = tmpCatalogs;
     }
 
     public void refreshDataSource(DBRProgressMonitor monitor)
