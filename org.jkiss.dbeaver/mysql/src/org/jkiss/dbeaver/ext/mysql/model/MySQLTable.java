@@ -34,7 +34,9 @@ import java.util.Map;
  */
 public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 {
-    static Log log = LogFactory.getLog(MySQLTable.class);
+    static final Log log = LogFactory.getLog(MySQLTable.class);
+
+    private static final String INNODB_COMMENT = "InnoDB free";
 
     private MySQLEngine engine;
     private boolean isView;
@@ -198,7 +200,18 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     {
         this.setName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME));
         this.setTableType(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_TYPE));
-        this.setDescription(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_COMMENT));
+
+        // filer table comment (for INNODB it contains some system information) 
+        String desc = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_COMMENT);
+        if (desc.startsWith(INNODB_COMMENT)) {
+            desc = "";
+        } else if (!CommonUtils.isEmpty(desc)) {
+            int divPos = desc.indexOf("; " + INNODB_COMMENT);
+            if (divPos != -1) {
+                desc = desc.substring(0, divPos);
+            }
+        }
+        this.setDescription(desc);
         this.engine = MySQLEngine.getByName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE));
         this.rowCount = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_TABLE_ROWS);
         this.autoIncrement = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AUTO_INCREMENT);

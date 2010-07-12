@@ -92,7 +92,10 @@ public abstract class DBMNode
                 // skip folders
                 continue;
             }
-            pathName.insert(0, '.').insert(0, parent.getNodeName());
+            String parentName = parent.getNodeName();
+            if (!CommonUtils.isEmpty(parentName)) {
+                pathName.insert(0, '.').insert(0, parentName);
+            }
         }
         return pathName.toString();
     }

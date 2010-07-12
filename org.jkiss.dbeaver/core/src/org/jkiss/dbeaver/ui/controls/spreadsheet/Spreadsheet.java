@@ -608,7 +608,10 @@ public class Spreadsheet extends Composite implements Listener {
     public void cancelInlineEditor()
     {
         Control oldEditor = tableEditor.getEditor();
-        if (oldEditor != null) oldEditor.dispose();
+        if (oldEditor != null) {
+            oldEditor.dispose();
+            this.setFocus();
+        }
     }
 
     public int getItemCount()
