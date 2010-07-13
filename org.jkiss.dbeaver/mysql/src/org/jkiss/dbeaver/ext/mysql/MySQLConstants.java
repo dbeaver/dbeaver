@@ -18,6 +18,7 @@ public class MySQLConstants {
     public static final String META_TABLE_TRIGGERS = INFO_SCHEMA_NAME + ".TRIGGERS";
     public static final String META_TABLE_COLUMNS = INFO_SCHEMA_NAME + ".COLUMNS";
     public static final String META_TABLE_TABLE_CONSTRAINTS = INFO_SCHEMA_NAME + ".TABLE_CONSTRAINTS";
+    public static final String META_TABLE_KEY_COLUMN_USAGE = INFO_SCHEMA_NAME + ".KEY_COLUMN_USAGE";
 
     public static final String COL_ENGINE_NAME = "ENGINE";
     public static final String COL_ENGINE_SUPPORTED = "SUPPORT";
@@ -87,6 +88,13 @@ public class MySQLConstants {
 	public static final String COL_TRIGGER_COLLATION_CONNECTION = "COLLATION_CONNECTION";
 	public static final String COL_TRIGGER_DATABASE_COLLATION = "DATABASE_COLLATION";
     
+    public static final String COL_CONSTRAINT_NAME = "CONSTRAINT_NAME";
+    public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
+
+    public static final String CONSTRAINT_FOREIGN_KEY = "FOREIGN KEY";
+    public static final String CONSTRAINT_PRIMARY_KEY = "PRIMARY KEY";
+    public static final String CONSTRAINT_UNIQUE = "UNIQUE";
+
     public static final String EXTRA_AUTO_INCREMENT = "auto_increment";
 
     public static final String QUERY_SELECT_TABLES =

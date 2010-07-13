@@ -11,26 +11,24 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.meta.AbstractCatalog;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.model.struct.DBSTablePath;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * GenericCatalog
  */
-public class MySQLCatalog
-    extends AbstractCatalog<MySQLDataSource>
-    implements DBSStructureAssistant
+public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DBSStructureAssistant
 {
+    static final Log log = LogFactory.getLog(MySQLCatalog.class);
+
     private String defaultCharset;
     private String defaultCollation;
     private String sqlPath;
@@ -182,6 +180,106 @@ public class MySQLCatalog
         proceduresCache.clearCache();
         triggerCache.clearCache();
         return true;
+    }
+
+    private void loadConstraints(DBRProgressMonitor monitor, MySQLTable forTable)
+        throws DBException
+    {
+        if (forTable == null) {
+            tableCache.getObjects(monitor);
+        }
+        JDBCExecutionContext context = getDataSource().openContext(monitor);
+        try {
+            Map<String, String> constrMap = new HashMap<String, String>();
+
+            // Read constraints and their types
+            StringBuilder query = new StringBuilder();
+            query.append("SELECT tc.CONSTRAINT_NAME,tc.TABLE_NAME,tc.CONSTRAINT_TYPE FROM ").append(MySQLConstants.META_TABLE_TABLE_CONSTRAINTS)
+                .append(" tc WHERE tc.TABLE_SCHEMA=?");
+            if (forTable != null) {
+                query.append(" AND tc.TABLE_NAME=?");
+            }
+            JDBCPreparedStatement dbStat = context.prepareStatement(query.toString());
+            try {
+                dbStat.setString(1, getName());
+                if (forTable != null) {
+                    dbStat.setString(2, forTable.getName());
+                }
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    while (dbResult.next()) {
+                        String constraintName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_NAME);
+                        String constraintType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_TYPE);
+                        String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
+                        constrMap.put(tableName + "." + constraintName, constraintType);
+                    }
+                }
+                finally {
+                    dbResult.close();
+                }
+            }
+            finally {
+                dbStat.close();
+            }
+
+            // Read constraint columns
+            query = new StringBuilder();
+            query.append("SELECT CONSTRAINT_NAME,TABLE_NAME,COLUMN_NAME,ORDINAL_POSITION,REFERENCED_TABLE_SCHEMA,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM ")
+                .append(MySQLConstants.META_TABLE_KEY_COLUMN_USAGE)
+                .append(" tc WHERE tc.TABLE_SCHEMA=?");
+            if (forTable != null) {
+                query.append(" AND tc.TABLE_NAME=?");
+            }
+            dbStat = context.prepareStatement(query.toString());
+            try {
+                dbStat.setString(1, getName());
+                if (forTable != null) {
+                    dbStat.setString(2, forTable.getName());
+                }
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    while (dbResult.next()) {
+                        String constraintName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_NAME);
+                        String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
+                        String constraintType = constrMap.get(tableName + "." + constraintName);
+                        if (constraintType == null) {
+                            log.warn("Constraint '" + constraintName + "' is not recognized");
+                            continue;
+                        }
+                        if (forTable == null) {
+                            forTable = getTable(monitor, tableName);
+                            if (forTable == null) {
+                                log.warn("Table '" + tableName + "' not found");
+                                continue;
+                            }
+                        }
+
+                        MySQLConstraint constraint;
+                        if (MySQLConstants.CONSTRAINT_PRIMARY_KEY.equals(constraintType)) {
+                            constraint = new MySQLConstraint(forTable, constraintName, "", DBSConstraintType.PRIMARY_KEY);
+                        } else if (MySQLConstants.CONSTRAINT_UNIQUE.equals(constraintType)) {
+                            constraint = new MySQLConstraint(forTable, constraintName, "", DBSConstraintType.UNIQUE_KEY);
+                        } else if (MySQLConstants.CONSTRAINT_FOREIGN_KEY.equals(constraintType)) {
+                            //constraint = new MySQLForeignKey(forTable, constraintName, "", DBSConstraintType.PRIMARY_KEY);
+                        } else {
+                            log.warn("Constraint type '" + constraintType + "' is not supported");
+                            continue;
+                        }
+                    }
+                }
+                finally {
+                    dbResult.close();
+                }
+            }
+            finally {
+                dbStat.close();
+            }
+        } catch (SQLException ex) {
+            throw new DBException(ex);
+        }
+        finally {
+            context.close();
+        }
     }
 
     class TableCache extends JDBCStructCache<MySQLTable, MySQLTableColumn> {

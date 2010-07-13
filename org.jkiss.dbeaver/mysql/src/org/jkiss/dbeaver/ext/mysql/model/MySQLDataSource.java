@@ -104,8 +104,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
                 } finally {
                     dbResult.close();
                 }
-            }
-            finally {
+            } catch (SQLException ex ) {
+                // Engines are not supported. Fill them with constants
+                tmpEngines.add(new MySQLEngine(this, "InnoDB"));
+                tmpEngines.add(new MySQLEngine(this, "MyISAM"));
+            } finally {
                 dbStat.close();
             }
             this.engines = tmpEngines;

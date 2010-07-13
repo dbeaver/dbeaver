@@ -32,6 +32,11 @@ public class MySQLEngine implements DBSObject {
         this.loadInfo(dbResult);
     }
 
+    public MySQLEngine(MySQLDataSource dataSource, String name) {
+        this.dataSource = dataSource;
+        this.name = name;
+    }
+
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
