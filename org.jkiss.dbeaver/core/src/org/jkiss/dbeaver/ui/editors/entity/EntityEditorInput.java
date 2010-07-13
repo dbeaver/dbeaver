@@ -89,4 +89,11 @@ public class EntityEditorInput implements IDatabaseEditorInput
     {
         this.defaultPageId = defaultPageId;
     }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return obj == this ||
+            (obj instanceof EntityEditorInput && ((EntityEditorInput)obj).node.equals(node));
+    }
 }

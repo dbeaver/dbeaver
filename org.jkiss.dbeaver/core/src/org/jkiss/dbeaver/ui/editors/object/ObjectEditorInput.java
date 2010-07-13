@@ -2,31 +2,32 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.folder;
+package org.jkiss.dbeaver.ui.editors.object;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
+import org.eclipse.ui.IEditorDescriptor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.meta.DBMModel;
-import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
+import org.jkiss.dbeaver.model.meta.DBMTreeObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * FolderEditorInput
  */
-public class FolderEditorInput implements IDatabaseEditorInput
+public class ObjectEditorInput implements IDatabaseEditorInput
 {
-    private DBMTreeFolder folder;
+    private DBMTreeObject node;
     private String defaultPageId;
 
-    public FolderEditorInput(DBMTreeFolder folder)
+    public ObjectEditorInput(DBMTreeObject node)
     {
-        this.folder = folder;
+        this.node = node;
     }
 
-    public DBMTreeFolder getFolder()
+    public DBMTreeObject getNode()
     {
-        return folder;
+        return node;
     }
 
     public boolean exists()
@@ -36,12 +37,17 @@ public class FolderEditorInput implements IDatabaseEditorInput
 
     public ImageDescriptor getImageDescriptor()
     {
-        return ImageDescriptor.createFromImage(folder.getNodeIconDefault());
+        IEditorDescriptor editorDescriptor = node.getEditorDescriptor();
+        if (editorDescriptor != null) {
+            return editorDescriptor.getImageDescriptor();
+        } else {
+            return ImageDescriptor.createFromImage(node.getNodeIconDefault());
+        }
     }
 
     public String getName()
     {
-        return folder.getName();
+        return node.getNodePathName();
     }
 
     public IPersistableElement getPersistable()
@@ -51,7 +57,7 @@ public class FolderEditorInput implements IDatabaseEditorInput
 
     public String getToolTipText()
     {
-        return folder.getDescription();
+        return node.getMeta().getDescription();
     }
 
     public Object getAdapter(Class adapter)
@@ -61,12 +67,12 @@ public class FolderEditorInput implements IDatabaseEditorInput
 
     public DBMModel getModel()
     {
-        return folder.getModel();
+        return node.getModel();
     }
 
     public DBSObject getDatabaseObject()
     {
-        return folder.getObject();
+        return node.getObject();
     }
 
     public String getDefaultPageId()
@@ -83,6 +89,6 @@ public class FolderEditorInput implements IDatabaseEditorInput
     public boolean equals(Object obj)
     {
         return obj == this ||
-            (obj instanceof FolderEditorInput && ((FolderEditorInput)obj).folder.equals(folder));
+            (obj instanceof ObjectEditorInput && ((ObjectEditorInput)obj).node.equals(node));
     }
 }

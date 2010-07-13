@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeIcon;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.registry.tree.DBXTreeObject;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 
 import java.util.*;
@@ -167,9 +168,14 @@ public abstract class DBMTreeNode extends DBMNode {
                 if (!isLoaded && item.isOptional()) {
                     loadChildren(monitor, item, toList);
                 }
-            } else {
+            } else if (child instanceof DBXTreeFolder) {
                 toList.add(
                     new DBMTreeFolder(DBMTreeNode.this, (DBXTreeFolder) child));
+            } else if (child instanceof DBXTreeObject) {
+                toList.add(
+                    new DBMTreeObject(DBMTreeNode.this, (DBXTreeObject) child));
+            } else {
+                log.warn("Unsupported meta node type: " + child);
             }
             monitor.worked(1);
         }
@@ -183,8 +189,7 @@ public abstract class DBMTreeNode extends DBMNode {
      * @param toList list ot add new items   @return true on success
      * @throws DBException on any DB error
      */
-    private boolean loadTreeItems(DBRProgressMonitor monitor, DBXTreeItem meta, List<DBMTreeNode> toList
-    )
+    private boolean loadTreeItems(DBRProgressMonitor monitor, DBXTreeItem meta, List<DBMTreeNode> toList)
         throws DBException
     {
         // Read property using reflection

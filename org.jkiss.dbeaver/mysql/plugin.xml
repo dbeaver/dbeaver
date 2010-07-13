@@ -101,7 +101,7 @@
                     </folder>
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSMaintance" label="Maintance/Settings" iconId="#settings" description="Maintance/Settings">
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSSessions" label="Connections" iconId="#connections" description="Server session manager"/>
+                    <object type="org.jkiss.dbeaver.ext.mysql.admin.SessionManager" label="Sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.mysql.admin.SessionManager"/>
                     <folder type="org.jkiss.dbeaver.model.struct.DBSVariables" label="Variables" iconId="#variables" description="Server variables"/>
                     <folder type="org.jkiss.dbeaver.model.struct.DBSLogs" label="Server Logs" iconId="#logs" description="Server logs"/>
                     <folder type="org.jkiss.dbeaver.model.struct.DBSRepl" label="Replication Status" iconId="#repl" description="Replication Status"/>
@@ -185,6 +185,15 @@
             <type name="SET"/>
 
         </provider>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors">
+        <editor
+            name="Session Manager"
+            icon="icons/sessions.png"
+            class="org.jkiss.dbeaver.ext.mysql.admin.SessionManager"
+            id="org.jkiss.dbeaver.ext.mysql.admin.SessionManager">
+        </editor>
     </extension>
 
     <extension

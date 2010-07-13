@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeIcon;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.registry.tree.DBXTreeObject;
 import org.osgi.framework.Bundle;
 
 import java.util.ArrayList;
@@ -281,7 +282,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 config.getAttribute("type"),
                 config.getAttribute("label"),
                 !"false".equals(config.getAttribute("navigable")));
-            loadTreeIcon(folder, config);
             folder.setDescription(config.getAttribute("description"));
             child = folder;
         } else if (nodeType.equals("items")) {
@@ -293,11 +293,17 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 "true".equals(config.getAttribute("optional")),
                 "true".equals(config.getAttribute("virtual")),
                 !"false".equals(config.getAttribute("navigable")));
-            loadTreeIcon(child, config);
+        } else if (nodeType.equals("object")) {
+            child = new DBXTreeObject(
+                parent,
+                config.getAttribute("label"),
+                config.getAttribute("description"),
+                config.getAttribute("editor"));
         } else {
             // Unknown node type
         }
         if (child != null) {
+            loadTreeIcon(child, config);
             loadTreeChildren(config, child);
         }
     }

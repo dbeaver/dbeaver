@@ -11,10 +11,12 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
+import org.jkiss.dbeaver.model.meta.DBMTreeObject;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.editors.folder.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.folder.FolderEditorInput;
+import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
 
 public class OpenObjectEditorAction extends NavigatorAction
 {
@@ -43,6 +45,13 @@ public class OpenObjectEditorAction extends NavigatorAction
                 workbenchWindow.getActivePage().openEditor(
                     folderInput,
                     FolderEditor.class.getName());
+            } else if (selectedNode instanceof DBMTreeObject) {
+                DBMTreeObject objectNode = (DBMTreeObject) selectedNode;
+                ObjectEditorInput objectInput = new ObjectEditorInput(objectNode);
+                workbenchWindow.getActivePage().openEditor(
+                    objectInput,
+                    objectNode.getMeta().getEditorId());
+
             } else {
                 EntityEditorInput editorInput = new EntityEditorInput(selectedNode);
                 editorInput.setDefaultPageId(defaultPageId);
