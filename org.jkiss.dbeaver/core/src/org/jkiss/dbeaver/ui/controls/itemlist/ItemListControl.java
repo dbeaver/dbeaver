@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.views.properties.PropertyAnnoDescriptor;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
@@ -306,6 +307,12 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
             if (columnIndex == 0) {
                 return row.object.getNodeIconDefault();
             }
+            ItemCell cell = getCellByIndex(row, columnIndex);
+            if (cell.value instanceof Boolean) {
+                if (((Boolean)cell.value).booleanValue()) {
+                    return DBIcon.CHECK.getImage();
+                }
+            }
 /*
             ItemCell cell = getCellByIndex(row, columnIndex);
             if (cell.value instanceof ILoadService) {
@@ -323,6 +330,9 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
             }
             ItemCell cell = getCellByIndex(row, columnIndex);
             if (cell.value == null) {
+                return "";
+            }
+            if (cell.value instanceof Boolean) {
                 return "";
             }
             if (cell.value instanceof DBSObject) {

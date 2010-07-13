@@ -50,6 +50,8 @@ public enum DBIcon
     RS_PREV("rs_prev", "/icons/sql/resultset_previous.png"),
     RS_REFRESH("rs_refresh", "/icons/sql/resultset_refresh.png"),
 
+    CHECK("check", "/icons/misc/check.png"),
+    CHECK2("check2", "/icons/misc/check2.png"),
     ZOOM("zoom", "/icons/misc/zoom.png"),
     ZOOM_IN("zoom_in", "/icons/misc/zoom_in.png"),
     ZOOM_OUT("zoom_out", "/icons/misc/zoom_out.png"),

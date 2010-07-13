@@ -166,7 +166,6 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         this.rowCount = rowCount;
     }
 
-    @Property(name = "Auto Increment", viewable = true, order = 6)
     public long getAutoIncrement()
     {
         return autoIncrement;
