@@ -5,6 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -12,7 +13,9 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.core.runtime.FileLocator;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.Activator;
 import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -33,9 +36,23 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
     private Text passwordText;
     private DriverPropertiesControl driverProps;
     private Button testButton;
+    private Image logoImage;
+
+    @Override
+    public void dispose()
+    {
+        if (logoImage != null) {
+            logoImage.dispose();
+            logoImage = null;
+        }
+        super.dispose();
+    }
 
     public void createControl(Composite composite)
     {
+        logoImage = Activator.getImageDescriptor("icons/mysql_logo.png").createImage();
+
+
         //Composite group = new Composite(composite, SWT.NONE);
         //group.setLayout(new GridLayout(1, true));
 
@@ -83,7 +100,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
         };
 
         Composite addrGroup = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(2, false);
+        GridLayout gl = new GridLayout(3, false);
         gl.marginHeight = 20;
         gl.marginWidth = 20;
         addrGroup.setLayout(gl);
@@ -97,6 +114,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
         hostText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
+        gd.horizontalSpan = 2;
         hostText.setLayoutData(gd);
         hostText.addModifyListener(textListener);
 
@@ -110,6 +128,12 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
         gd.widthHint = 40;
         portText.setLayoutData(gd);
         portText.addModifyListener(textListener);
+
+        Label logoLabel = new Label(addrGroup, SWT.NONE);
+        logoLabel.setImage(logoImage);
+        gd = new GridData();
+        gd.verticalSpan = 4;
+        logoLabel.setLayoutData(gd);
 
         Label dbLabel = new Label(addrGroup, SWT.NONE);
         dbLabel.setText("Database:");
@@ -170,7 +194,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
 
     public boolean isComplete()
     {
-        return
+        return hostText != null && portText != null && 
             !CommonUtils.isEmpty(hostText.getText()) &&
             !CommonUtils.isEmpty(portText.getText());
     }
@@ -252,7 +276,9 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
     private void evaluateURL()
     {
         site.updateButtons();
-        testButton.setEnabled(this.isComplete());
+        if (testButton != null) {
+            testButton.setEnabled(this.isComplete());
+        }
     }
 
 }

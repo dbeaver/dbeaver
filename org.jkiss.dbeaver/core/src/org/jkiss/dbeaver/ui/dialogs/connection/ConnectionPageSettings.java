@@ -163,4 +163,13 @@ class ConnectionPageSettings extends WizardPage implements IDataSourceEditorSite
         return dialog.open() == IDialogConstants.OK_ID;
     }
 
+    @Override
+    public void dispose()
+    {
+        if (editor != null) {
+            editor.dispose();
+            editor = null;
+        }
+        super.dispose();    //To change body of overridden methods use File | Settings | File Templates.
+    }
 }
