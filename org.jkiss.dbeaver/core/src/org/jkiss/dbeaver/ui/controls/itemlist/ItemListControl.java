@@ -21,6 +21,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -91,6 +92,8 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
         final Table table = itemsViewer.getTable();
         table.setLinesVisible (true);
         table.setHeaderVisible(true);
+        //table.addListener(SWT.MeasureItem, paintListener);
+        table.addListener(SWT.PaintItem, new PaintListener());
         GridData gd = new GridData(GridData.FILL_BOTH);
         table.setLayoutData(gd);
         itemsViewer.setContentProvider(new IStructuredContentProvider()
@@ -252,6 +255,17 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
         }
     }
 
+    private ItemCell getCellByIndex(ItemRow row, int index)
+    {
+        TableColumn column = columns.get(index);
+        for (ItemCell cell : row.props) {
+            if (cell.prop.getId().equals(column.getData())) {
+                return cell;
+            }
+        }
+        return null;
+    }
+
     private class SortListener implements Listener
     {
         int sortDirection = SWT.DOWN;
@@ -307,12 +321,6 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
             if (columnIndex == 0) {
                 return row.object.getNodeIconDefault();
             }
-            ItemCell cell = getCellByIndex(row, columnIndex);
-            if (cell.value instanceof Boolean) {
-                if (((Boolean)cell.value).booleanValue()) {
-                    return DBIcon.CHECK.getImage();
-                }
-            }
 /*
             ItemCell cell = getCellByIndex(row, columnIndex);
             if (cell.value instanceof ILoadService) {
@@ -344,16 +352,6 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
             return UIUtils.makeStringForUI(cell.value).toString();
         }
 
-        private ItemCell getCellByIndex(ItemRow row, int index)
-        {
-            TableColumn column = columns.get(index);
-            for (ItemCell cell : row.props) {
-                if (cell.prop.getId().equals(column.getData())) {
-                    return cell;
-                }
-            }
-            return null;
-        }
     }
 
     private class ItemLoadService extends AbstractLoadService<List<DBMNode>> {
@@ -611,4 +609,24 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
             }
         }
     }
+
+	class PaintListener implements Listener {
+		public void handleEvent(Event event) {
+			switch(event.type) {
+				case SWT.PaintItem: {
+                    ItemRow row = itemMap.get(DBSObject.class.cast(event.item.getData()));
+                    ItemCell cell = row == null ? null : getCellByIndex(row, event.index);
+                    if (cell != null && cell.value instanceof Boolean) {
+                        if (((Boolean)cell.value)) {
+                            int columnWidth = columns.get(event.index).getWidth();
+                            Image image = DBIcon.CHECK.getImage();
+                            event.gc.drawImage(image, event.x + (columnWidth - image.getBounds().width) / 2, event.y);
+                            event.doit = false;
+                        }
+                    }
+					break;
+				}
+			}
+		}
+	};
 }

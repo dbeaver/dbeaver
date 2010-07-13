@@ -55,7 +55,7 @@ public class MySQLTrigger extends AbstractTrigger
         return body;
     }
 
-    @Property(name = "Table", order = 4)
+    @Property(name = "Table", viewable = true, order = 4)
     public MySQLTable getTable()
     {
         return table;

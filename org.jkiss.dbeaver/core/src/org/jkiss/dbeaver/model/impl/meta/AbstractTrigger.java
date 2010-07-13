@@ -36,7 +36,7 @@ public abstract class AbstractTrigger implements DBSTrigger
         this.description = description;
     }
 
-    @Property(name = "Trigger Name", order = 1)
+    @Property(name = "Trigger Name", viewable = true, order = 1)
     public String getName()
     {
         return name;
@@ -47,7 +47,7 @@ public abstract class AbstractTrigger implements DBSTrigger
         this.name = tableName;
     }
 
-    @Property(name = "Timing", order = 2)
+    @Property(name = "Timing", viewable = true, order = 2)
     public DBSActionTiming getActionTiming()
     {
         return actionTiming;
@@ -58,7 +58,7 @@ public abstract class AbstractTrigger implements DBSTrigger
         this.actionTiming = actionTiming;
     }
 
-    @Property(name = "Type", order = 3)
+    @Property(name = "Type", viewable = true, order = 3)
     public DBSManipulationType getManipulationType()
     {
         return manipulationType;
@@ -69,7 +69,7 @@ public abstract class AbstractTrigger implements DBSTrigger
         this.manipulationType = manipulationType;
     }
 
-    @Property(name = "Ordinal Position", order = 99)
+    @Property(name = "Ordinal Position", viewable = true, order = 99)
     public int getOrdinalPosition()
     {
         return ordinalPosition;
