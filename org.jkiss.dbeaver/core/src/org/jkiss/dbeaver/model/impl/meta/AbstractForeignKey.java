@@ -19,9 +19,9 @@ public abstract class AbstractForeignKey<
     extends AbstractConstraint<DATASOURCE, TABLE>
     implements DBSForeignKey
 {
-    private PRIMARY_KEY referencedKey;
-    private DBSConstraintCascade deleteRule;
-    private DBSConstraintCascade updateRule;
+    protected PRIMARY_KEY referencedKey;
+    protected DBSConstraintCascade deleteRule;
+    protected DBSConstraintCascade updateRule;
 
     public AbstractForeignKey(
         TABLE table,

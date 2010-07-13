@@ -169,6 +169,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             tableCache.loadChildren(monitor, null);
         }
+        loadConstraints(monitor, null);
     }
 
     @Override
@@ -182,7 +183,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         return true;
     }
 
-    private void loadConstraints(DBRProgressMonitor monitor, MySQLTable forTable)
+    void loadConstraints(DBRProgressMonitor monitor, MySQLTable forTable)
         throws DBException
     {
         if (forTable == null) {
@@ -190,7 +191,8 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         }
         JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
-            Map<String, String> constrMap = new HashMap<String, String>();
+            Map<String, String> constrTypeMap = new HashMap<String, String>();
+            Map<String, MySQLConstraint> constrMap = new HashMap<String, MySQLConstraint>();
 
             // Read constraints and their types
             StringBuilder query = new StringBuilder();
@@ -210,8 +212,24 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
                     while (dbResult.next()) {
                         String constraintName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_NAME);
                         String constraintType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_TYPE);
+                        if (MySQLConstants.CONSTRAINT_FOREIGN_KEY.equals(constraintType)) {
+                            // Skip foreign keys
+                            continue;
+                        }
                         String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
-                        constrMap.put(tableName + "." + constraintName, constraintType);
+                        MySQLTable table = forTable;
+                        if (table == null) {
+                            table = getTable(monitor, tableName);
+                            if (table == null) {
+                                log.warn("Table '" + tableName + "' not found");
+                                continue;
+                            }
+                            if (table.uniqueKeysCached()) {
+                                // Already cached
+                                continue;
+                            }
+                        }
+                        constrTypeMap.put(tableName + "." + constraintName, constraintType);
                     }
                 }
                 finally {
@@ -241,30 +259,46 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
                     while (dbResult.next()) {
                         String constraintName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_NAME);
                         String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
-                        String constraintType = constrMap.get(tableName + "." + constraintName);
+                        String constId = tableName + "." + constraintName;
+                        String constraintType = constrTypeMap.get(constId);
                         if (constraintType == null) {
-                            log.warn("Constraint '" + constraintName + "' is not recognized");
+                            // Skip this one
                             continue;
                         }
-                        if (forTable == null) {
-                            forTable = getTable(monitor, tableName);
-                            if (forTable == null) {
+                        MySQLTable table = forTable;
+                        if (table == null) {
+                            table = getTable(monitor, tableName);
+                            if (table == null) {
                                 log.warn("Table '" + tableName + "' not found");
                                 continue;
                             }
                         }
-
-                        MySQLConstraint constraint;
-                        if (MySQLConstants.CONSTRAINT_PRIMARY_KEY.equals(constraintType)) {
-                            constraint = new MySQLConstraint(forTable, constraintName, "", DBSConstraintType.PRIMARY_KEY);
-                        } else if (MySQLConstants.CONSTRAINT_UNIQUE.equals(constraintType)) {
-                            constraint = new MySQLConstraint(forTable, constraintName, "", DBSConstraintType.UNIQUE_KEY);
-                        } else if (MySQLConstants.CONSTRAINT_FOREIGN_KEY.equals(constraintType)) {
-                            //constraint = new MySQLForeignKey(forTable, constraintName, "", DBSConstraintType.PRIMARY_KEY);
-                        } else {
-                            log.warn("Constraint type '" + constraintType + "' is not supported");
+                        String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
+                        MySQLTableColumn column = table.getColumn(monitor, columnName);
+                        if (column == null) {
+                            log.warn("Column '" + columnName + "' not found in table '" + tableName + "'");
                             continue;
                         }
+                        int ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_ORDINAL_POSITION);
+
+                        MySQLConstraint constraint = constrMap.get(constId);
+                        if (constraint == null) {
+                            if (MySQLConstants.CONSTRAINT_PRIMARY_KEY.equals(constraintType)) {
+                                constraint = new MySQLConstraint(table, constraintName, "", DBSConstraintType.PRIMARY_KEY);
+                            } else if (MySQLConstants.CONSTRAINT_UNIQUE.equals(constraintType)) {
+                                constraint = new MySQLConstraint(table, constraintName, "", DBSConstraintType.UNIQUE_KEY);
+                            } else {
+                                log.warn("Constraint type '" + constraintType + "' is not supported");
+                                continue;
+                            }
+                            constrMap.put(constId, constraint);
+                            table.cacheUniqueKey(constraint);
+                        }
+                        constraint.addColumn(
+                            new MySQLConstraintColumn(
+                                constraint,
+                                column,
+                                ordinalPosition));
                     }
                 }
                 finally {

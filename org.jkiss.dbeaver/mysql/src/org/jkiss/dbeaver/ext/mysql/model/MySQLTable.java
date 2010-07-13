@@ -15,11 +15,7 @@ import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
-import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSIndexType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -118,7 +114,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         throws DBException
     {
         if (uniqueKeys == null) {
-            loadConstraints(monitor);
+            getContainer().loadConstraints(monitor, this);
         }
         return uniqueKeys;
     }
@@ -317,68 +313,18 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         }
     }
 
-    private void loadConstraints(DBRProgressMonitor monitor)
-        throws DBException
+    boolean uniqueKeysCached()
     {
-        JDBCExecutionContext context = getDataSource().openContext(monitor);
-        try {
-            List<MySQLConstraint> pkList = new ArrayList<MySQLConstraint>();
-            Map<String, MySQLConstraint> pkMap = new HashMap<String, MySQLConstraint>();
-            // Load unique keys
-            JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT tc.CONSTRAINT_NAME,tc.TABLE_NAME,tc.CONSTRAINT_TYPE FROM " + MySQLConstants.META_TABLE_TABLE_CONSTRAINTS +
-                " tc WHERE tc.TABLE_SCHEMA=? AND tc.TABLE_NAME=? ");
-            try {
-                dbStat.setString(1, getContainer().getName());
-                dbStat.setString(2, getName());
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
-                    while (dbResult.next()) {
-/*
-                        String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-                        int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
-                        String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
-                        MySQLConstraint pk = pkMap.get(pkName);
-                        if (pk == null) {
-                            pk = new MySQLConstraint(
-                                this,
-                                pkName,
-                                null,
-                                DBSConstraintType.PRIMARY_KEY);
-                            pkList.add(pk);
-                            pkMap.put(pkName, pk);
-                        }
-                        if (CommonUtils.isEmpty(columnName)) {
-                            // Bad index - can't evaluate it
-                            continue;
-                        }
-                        MySQLTableColumn tableColumn = this.getColumn(monitor, columnName);
-                        if (tableColumn == null) {
-                            log.warn("Column '" + columnName + "' not found in table '" + this.getName() + "' for PK");
-                            continue;
-                        }
-                        pk.addColumn(
-                            new MySQLConstraintColumn(
-                                pk,
-                                tableColumn,
-                                keySeq));
-*/
-                    }
-                }
-                finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
-            }
-            this.uniqueKeys = pkList;
-        } catch (SQLException ex) {
-            throw new DBException(ex);
+        return this.uniqueKeys != null;
+    }
+
+    void cacheUniqueKey(MySQLConstraint constraint)
+    {
+        if (uniqueKeys == null) {
+            uniqueKeys = new ArrayList<MySQLConstraint>();
         }
-        finally {
-            context.close();
-        }
+        
+        uniqueKeys.add(constraint);
     }
 
     private List<MySQLForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)
