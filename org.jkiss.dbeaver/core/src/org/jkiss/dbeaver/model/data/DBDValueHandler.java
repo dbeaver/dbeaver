@@ -47,10 +47,11 @@ public interface DBDValueHandler
     /**
      * Makes value copy. For Non-mutable objects (like numbers and string) may return the same value as passed in.
      * If copy operation is not supported for some values then may return null.
-     * @param value original value
-     * @return copied value or null
+     * @param monitor
+     *@param value original value  @return copied value or null
      */
-    Object copyValueObject(Object value);
+    Object copyValueObject(DBRProgressMonitor monitor, Object value)
+        throws DBCException;
 
     /**
      * Release any internal resources associated with this value.

@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -22,6 +24,8 @@ public interface DBDContentStorage {
     long getContentLength();
 
     String getCharset();
+
+    DBDContentStorage cloneStorage(DBRProgressMonitor monitor) throws IOException;
 
     void release();
 

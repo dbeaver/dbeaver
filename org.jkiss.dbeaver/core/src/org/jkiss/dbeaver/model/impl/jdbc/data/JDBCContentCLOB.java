@@ -20,7 +20,6 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -107,25 +106,6 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContent {
         }
     }
 
-    public Reader getContents() throws DBCException {
-        if (storage != null) {
-            try {
-                return storage.getContentReader();
-            }
-            catch (IOException e) {
-                throw new DBCException(e);
-            }
-        }
-        if (clob != null) {
-            try {
-                return clob.getCharacterStream();
-            } catch (SQLException e) {
-                throw new DBCException("JDBC error", e);
-            }
-        }
-        return new StringReader("");
-    }
-
     public void bindParameter(DBRProgressMonitor monitor, PreparedStatement preparedStatement,
                               DBSTypedObject columnType, int paramIndex)
         throws DBCException
@@ -183,8 +163,17 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContent {
         return clob == null && storage == null ? null : "[CLOB]";
     }
 
-    public DBDValueClonable cloneValue()
+    public DBDValueClonable cloneValue(DBRProgressMonitor monitor)
+        throws DBCException
     {
-        return null;
+        JDBCContentCLOB copy = new JDBCContentCLOB(null);
+        DBDContentStorage storage = getContents(monitor);
+        try {
+            copy.updateContents(monitor, storage.cloneStorage(monitor));
+        }
+        catch (Exception e) {
+            throw new DBCException(e);
+        }
+        return copy;
     }
 }

@@ -9,7 +9,9 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDContentStorageLocal;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
@@ -69,6 +71,26 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
             log.warn(e);
             return ContentUtils.DEFAULT_FILE_CHARSET;
         }
+    }
+
+    public DBDContentStorage cloneStorage(DBRProgressMonitor monitor)
+        throws IOException
+    {
+        // Create new local storage
+        IFile tempFile = ContentUtils.createTempContentFile(monitor, "copy" + this.hashCode());
+        try {
+            InputStream is = file.getContents(true);
+            try {
+                tempFile.setContents(is, true, false, monitor.getNestedMonitor());
+            }
+            finally {
+                ContentUtils.close(is);
+            }
+        } catch (CoreException e) {
+            ContentUtils.deleteTempFile(monitor, tempFile);
+            throw new IOException(e);
+        }
+        return new TemporaryContentStorage(tempFile);
     }
 
     public void release()

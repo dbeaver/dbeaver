@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -107,12 +108,16 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    public Object copyValueObject(Object value)
+    public Object copyValueObject(DBRProgressMonitor monitor, Object value)
+        throws DBCException
     {
         if (value instanceof DBDValueClonable) {
-            return ((DBDValueClonable)value).cloneValue();
+            return ((DBDValueClonable)value).cloneValue(monitor);
         }
         // Copy not supported
+        if (value instanceof DBDValue) {
+            return ((DBDValue)value).makeNull();
+        }
         return null;
     }
 

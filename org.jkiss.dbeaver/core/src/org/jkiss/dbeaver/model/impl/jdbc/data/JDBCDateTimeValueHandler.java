@@ -142,7 +142,8 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    public Object copyValueObject(Object value)
+    public Object copyValueObject(DBRProgressMonitor monitor, Object value)
+        throws DBCException
     {
         if (value instanceof Timestamp) {
             Timestamp copy = new Timestamp(((Timestamp)value).getTime());

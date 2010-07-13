@@ -69,6 +69,12 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         return null;
     }
 
+    public JDBCContentBytes cloneStorage(DBRProgressMonitor monitor)
+        throws IOException
+    {
+        return cloneValue(monitor);
+    }
+
     public String getContentType()
     {
         return MimeTypes.OCTET_STREAM;
@@ -151,7 +157,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         return "binary [" + data.length + "]";
     }
 
-    public DBDValueClonable cloneValue()
+    public JDBCContentBytes cloneValue(DBRProgressMonitor monitor)
     {
         return new JDBCContentBytes(data);
     }

@@ -106,54 +106,10 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContent {
         }
     }
 
-/*
-    public InputStream getContents() throws DBCException {
-        if (storage != null) {
-            try {
-                return storage.getContentStream();
-            }
-            catch (IOException e) {
-                throw new DBCException(e);
-            }
-        }
-        if (blob != null) {
-            try {
-                return blob.getBinaryStream();
-            } catch (SQLException e) {
-                throw new DBCException(e);
-            }
-        }
-        // Empty content
-        return new ByteArrayInputStream(new byte[0]);
-    }
-*/
-
     public void bindParameter(DBRProgressMonitor monitor, PreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
         throws DBCException
     {
         try {
-/*
-            if (blob != null) {
-                // Rewrite blob value
-                if (storage != null) {
-                    blob.truncate(0);
-                    OutputStream os = blob.setBinaryStream(0);
-                    try {
-                        InputStream is = storage.getContentStream();
-                        try {
-                            ContentUtils.copyStreams(is, storage.getContentLength(), os, monitor);
-                        }
-                        finally {
-                            ContentUtils.close(is);
-                        }
-                    }
-                    finally {
-                        ContentUtils.close(os);
-                    }
-                }
-                preparedStatement.setBlob(paramIndex, blob);
-            }
-*/
             if (storage != null) {
                 // Write new blob value
                 tmpStream = storage.getContentStream();
@@ -195,8 +151,17 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContent {
         return blob == null && storage == null ? null : "[BLOB]";
     }
 
-    public DBDValueClonable cloneValue()
+    public DBDValueClonable cloneValue(DBRProgressMonitor monitor)
+        throws DBCException
     {
-        return null;
+        JDBCContentBLOB copy = new JDBCContentBLOB(null);
+        DBDContentStorage storage = getContents(monitor);
+        try {
+            copy.updateContents(monitor, storage.cloneStorage(monitor));
+        }
+        catch (Exception e) {
+            throw new DBCException(e);
+        }
+        return copy;
     }
 }

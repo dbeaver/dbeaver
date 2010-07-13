@@ -148,7 +148,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    public Object copyValueObject(Object value)
+    public Object copyValueObject(DBRProgressMonitor monitor, Object value)
+        throws DBCException
     {
         // Number are immutable
         return value;

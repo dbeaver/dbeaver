@@ -20,7 +20,6 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -120,6 +119,11 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
         return ContentUtils.DEFAULT_FILE_CHARSET;
     }
 
+    public JDBCContentChars cloneStorage(DBRProgressMonitor monitor)
+    {
+        return cloneValue(monitor);
+    }
+
     public void bindParameter(DBRProgressMonitor monitor, PreparedStatement preparedStatement,
                               DBSTypedObject columnType, int paramIndex)
         throws DBCException
@@ -171,7 +175,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
         }
     }
 
-    public DBDValueClonable cloneValue()
+    public JDBCContentChars cloneValue(DBRProgressMonitor monitor)
     {
         return new JDBCContentChars(data);
     }

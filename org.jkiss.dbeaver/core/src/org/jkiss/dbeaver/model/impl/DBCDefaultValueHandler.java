@@ -36,7 +36,8 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
 
     }
 
-    public Object copyValueObject(Object value)
+    public Object copyValueObject(DBRProgressMonitor monitor, Object value)
+        throws DBCException
     {
         return value;
     }

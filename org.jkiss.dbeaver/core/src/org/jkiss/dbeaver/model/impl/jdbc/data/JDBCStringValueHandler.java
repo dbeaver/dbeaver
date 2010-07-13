@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
@@ -72,7 +73,8 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    public Object copyValueObject(Object value)
+    public Object copyValueObject(DBRProgressMonitor monitor, Object value)
+        throws DBCException
     {
         // String are immutable
         return value;

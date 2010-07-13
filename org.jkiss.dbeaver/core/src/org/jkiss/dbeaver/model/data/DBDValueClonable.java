@@ -4,6 +4,10 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.DBException;
+
 /**
  * DBDContentClonable
  */
@@ -11,8 +15,9 @@ public interface DBDValueClonable extends DBDValue {
 
     /**
      * Makes exact copy of content object
-     * @return copy
+     * @return copy  @param monitor
      */
-    DBDValueClonable cloneValue();
+    DBDValueClonable cloneValue(DBRProgressMonitor monitor)
+        throws DBCException;
 
 }

@@ -7,7 +7,10 @@ package org.jkiss.dbeaver.model.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,6 +60,26 @@ public class ExternalContentStorage implements DBDContentStorage {
     public String getCharset()
     {
         return charset;
+    }
+
+    public DBDContentStorage cloneStorage(DBRProgressMonitor monitor)
+        throws IOException
+    {
+        // Create new local storage
+        IFile tempFile = ContentUtils.createTempContentFile(monitor, "copy" + this.hashCode());
+        try {
+            InputStream is = new FileInputStream(file);
+            try {
+                tempFile.setContents(is, true, false, monitor.getNestedMonitor());
+            }
+            finally {
+                ContentUtils.close(is);
+            }
+        } catch (CoreException e) {
+            ContentUtils.deleteTempFile(monitor, tempFile);
+            throw new IOException(e);
+        }
+        return new TemporaryContentStorage(tempFile);
     }
 
     public void release()

@@ -43,6 +43,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -65,6 +66,7 @@ import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
@@ -80,6 +82,7 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.util.*;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * ResultSetViewer
@@ -791,19 +794,32 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         shiftRows(rowNum, 1);
 
         // Add new row
-        Object[] cells = new Object[metaColumns.length];
+        final Object[] cells = new Object[metaColumns.length];
         if (copyCurrent) {
-            // Copy cell values
-            Object[] origRow = curRows.get(rowNum);
-            for (int i = 0; i < metaColumns.length; i++) {
-                DBDColumnBinding metaColumn = metaColumns[i];
-                if (metaColumn.getTableColumn().isAutoIncrement()) {
-                    // set autoincrement columns to null 
-                    cells[i] = null;
-                } else {
-                    cells[i] = metaColumn.getValueHandler().copyValueObject(origRow[i]);
+            final int currentRowNumber = rowNum;
+            DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
+                public void run(DBRProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException
+                {
+                    // Copy cell values
+                    Object[] origRow = curRows.get(currentRowNumber);
+                    for (int i = 0; i < metaColumns.length; i++) {
+                        DBDColumnBinding metaColumn = metaColumns[i];
+                        if (metaColumn.getTableColumn().isAutoIncrement()) {
+                            // set autoincrement columns to null
+                            cells[i] = null;
+                        } else {
+                            try {
+                                cells[i] = metaColumn.getValueHandler().copyValueObject(monitor, origRow[i]);
+                            }
+                            catch (DBCException e) {
+                                log.warn(e);
+                                cells[i] = DBUtils.makeNullValue(origRow[i]);
+                            }
+                        }
+                    }
                 }
-            }
+            });
         }
         curRows.add(rowNum, cells);
 

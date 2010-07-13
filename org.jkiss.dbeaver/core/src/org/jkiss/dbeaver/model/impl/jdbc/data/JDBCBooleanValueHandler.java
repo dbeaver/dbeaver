@@ -46,7 +46,8 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    public Object copyValueObject(Object value)
+    public Object copyValueObject(DBRProgressMonitor monitor, Object value)
+        throws DBCException
     {
         // Boolean is immutable
         return value;
