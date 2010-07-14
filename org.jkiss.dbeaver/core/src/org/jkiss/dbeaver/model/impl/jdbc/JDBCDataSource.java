@@ -14,7 +14,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.api.ConnectionManagable;
 import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -112,6 +111,9 @@ public abstract class JDBCDataSource
 
     public JDBCExecutionContext openContext(DBRProgressMonitor monitor, String taskTitle)
     {
+        if (connection == null) {
+            throw new IllegalStateException("Not connected to database");
+        }
         return new ConnectionManagable(this, monitor, taskTitle);
     }
 
@@ -125,27 +127,17 @@ public abstract class JDBCDataSource
         return dataSourceInfo;
     }
 
-    public void checkConnection(DBRProgressMonitor monitor)
+    public void invalidateConnection(DBRProgressMonitor monitor)
         throws DBException
     {
         if (connection == null) {
-            throw new DBException("Not connected");
+            connection = openConnection(monitor);
+            return;
         }
-        JDBCExecutionContext context = openContext(monitor);
-        try {
-            JDBCResultSet dbResult = context.getMetaData().getTables(null, null, null, null);
-            try {
-                dbResult.next();
-            }
-            finally {
-                dbResult.close();
-            }
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            context.close();
+
+        if (!JDBCUtils.isConnectionAlive(connection)) {
+            close(monitor);
+            connection = openConnection(monitor);
         }
     }
 

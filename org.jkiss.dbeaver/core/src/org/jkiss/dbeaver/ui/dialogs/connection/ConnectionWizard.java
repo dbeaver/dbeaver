@@ -70,7 +70,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                         monitor.subTask("Test connection");
                         try {
                             // test connection
-                            dataSource.checkConnection(monitor);
+                            dataSource.invalidateConnection(monitor);
                             monitor.done();
                         }
                         finally {

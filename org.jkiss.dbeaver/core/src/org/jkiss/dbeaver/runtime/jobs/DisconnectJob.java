@@ -8,7 +8,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -33,7 +32,7 @@ public class DisconnectJob extends DataSourceJob
             // First rollback active transaction
             DBCExecutionContext context = getDataSource().openContext(monitor);
             try {
-                if (context.isConnected()) {
+                if (context.isConnected() && !context.getTransactionManager().isAutoCommit()) {
                     monitor.subTask("Rollback active transaction");
                     context.getTransactionManager().rollback(null);
                 }

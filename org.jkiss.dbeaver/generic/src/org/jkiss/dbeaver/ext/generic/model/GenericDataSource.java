@@ -149,27 +149,17 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         return DBUtils.findObject(getSchemas(monitor), name);
     }
 
-    public void checkConnection(DBRProgressMonitor monitor)
+    public void invalidateConnection(DBRProgressMonitor monitor)
         throws DBException
     {
         if (connection == null) {
-            throw new DBException("Not connected");
+            connection = openConnection(monitor);
+            return;
         }
-        JDBCExecutionContext context = openContext(monitor);
-        try {
-            JDBCResultSet dbResult = context.getMetaData().getTables("noname", "noname", "noname", null);
-            try {
-                dbResult.next();
-            }
-            finally {
-                dbResult.close();
-            }
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            context.close();
+
+        if (!JDBCUtils.isConnectionAlive(connection)) {
+            close(monitor);
+            connection = openConnection(monitor);
         }
     }
 

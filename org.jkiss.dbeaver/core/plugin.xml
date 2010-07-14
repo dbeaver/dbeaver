@@ -233,10 +233,7 @@
                 id="org.jkiss.dbeaver.ui.actions.DisconnectAction"
                 label="Disconnect">
                 <enablement>
-                    <objectState
-                        name="connected"
-                        value="true">
-                    </objectState>
+                    <objectState name="connected" value="true"/>
                 </enablement>
             </action>
             <action
@@ -245,10 +242,7 @@
                 id="org.jkiss.dbeaver.ui.actions.ConnectAction"
                 label="Connect">
                 <enablement>
-                    <objectState
-                        name="connected"
-                        value="false">
-                    </objectState>
+                    <objectState name="connected" value="false"/>
                 </enablement>
             </action>
             <action
@@ -727,6 +721,15 @@
                   menubarPath="dataSourceMenu/connectionGroup"
                   toolbarPath="connectionGroup"
                   tooltip="Disconnect from database">
+            </action>
+            <action
+                  class="org.jkiss.dbeaver.ui.actions.ReconnectAction"
+                  icon="icons/sql/reconnect.png"
+                  id="org.jkiss.dbeaver.ui.actions.ReconnectAction"
+                  label="Reconnect"
+                  menubarPath="dataSourceMenu/connectionGroup"
+                  toolbarPath="connectionGroup"
+                  tooltip="Invalidate connection">
             </action>
             <action
                   class="org.jkiss.dbeaver.ui.actions.ConnectAction"

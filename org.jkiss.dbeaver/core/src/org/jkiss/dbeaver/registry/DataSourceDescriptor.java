@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectAction;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
+import org.jkiss.dbeaver.runtime.jobs.ReconnectJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionAuthDialog;
@@ -40,10 +41,10 @@ import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 import java.lang.reflect.InvocationTargetException;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.text.DateFormat;
 
 /**
  * DataSourceDescriptor
@@ -322,19 +323,8 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             log.error("Datasource is not connected");
             return;
         }
-        DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress()
-        {
-            public void run(DBRProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException
-            {
-                try {
-                    dataSource.checkConnection(monitor);
-                }
-                catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            }
-        });
+        ReconnectJob reconnectJob = new ReconnectJob(dataSource);
+        reconnectJob.schedule();
     }
 
     public void acquire(DBPDataSourceUser user)

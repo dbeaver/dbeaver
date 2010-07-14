@@ -39,12 +39,12 @@ public interface DBPDataSource extends DBPObject
     DBCExecutionContext openContext(DBRProgressMonitor monitor, String task);
 
     /**
-     * Executes test query agains connected database.
+     * checks connection is alive and reconnects if needed.
      *
      * @throws org.jkiss.dbeaver.DBException on any error
      * @param monitor
      */
-    void checkConnection(DBRProgressMonitor monitor) throws DBException;
+    void invalidateConnection(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Reads base metadata from remote database or do any neccessary initialization routines.

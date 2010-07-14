@@ -10,6 +10,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
@@ -269,6 +271,21 @@ public class JDBCUtils
         }
         catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static boolean isConnectionAlive(Connection connection)
+    {
+        try {
+            if (connection.isClosed()) {
+                return false;
+            }
+            connection.getMetaData().getTables(null, null, "UN_EXIST_TBL_NAME1978", null);
+            return true;
+        }
+        catch (SQLException e) {
+            log.debug(e);
+            return false;
         }
     }
 
