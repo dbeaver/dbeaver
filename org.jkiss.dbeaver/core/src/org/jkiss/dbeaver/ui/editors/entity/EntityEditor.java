@@ -7,27 +7,18 @@ package org.jkiss.dbeaver.ui.editors.entity;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.*;
-import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IObjectEditor;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
-import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.meta.*;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
@@ -42,29 +33,16 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * EntityEditor
  */
-public class EntityEditor extends MultiPageEditorPart implements IDBMListener, IMetaModelView, IDataSourceUser
+public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> implements IDBMListener, IMetaModelView
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
-    private EntityEditorInput entityInput;
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
-
-    public void doSave(IProgressMonitor monitor)
-    {
-    }
-
-    public void doSaveAs()
-    {
-    }
 
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {
         super.init(site, input);
-        this.entityInput = (EntityEditorInput) input;
-        setPartName(this.entityInput.getName());
-        setTitleImage(this.entityInput.getImageDescriptor().createImage());
-
         DBeaverCore.getInstance().getMetaModel().addListener(this);
     }
 
@@ -74,41 +52,21 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
         super.dispose();
     }
 
-    public boolean isDirty()
-    {
-        return false;
-    }
-
-    public boolean isSaveAsAllowed()
-    {
-        return false;
-    }
-
-    protected int getContainerStyle()
-    {
-        return SWT.TOP | SWT.FLAT | SWT.BORDER;
-    }
-
-    protected int getContainerMargin()
-    {
-        return 5;
-    }
-
     protected void createPages()
     {
-        setContainerStyles();
+        super.createPages();
 
         // Add object editor page
         EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
-        EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(entityInput.getDatabaseObject().getClass());
+        EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(getEditorInput().getDatabaseObject().getClass());
         boolean mainAdded = false;
         if (defaultEditor != null) {
             mainAdded = addEditorTab(defaultEditor);
         }
         if (!mainAdded) {
             try {
-                DBMNode node = entityInput.getNode();
-                int index = addPage(new DefaultObjectEditor(node), entityInput);
+                DBMNode node = getEditorInput().getNode();
+                int index = addPage(new DefaultObjectEditor(node), getEditorInput());
                 setPageText(index, "Properties");
                 if (node instanceof DBMTreeNode) {
                     setPageToolTip(index, ((DBMTreeNode)node).getMeta().getLabel() + " Properties");
@@ -142,66 +100,12 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_END);
 
-        String defPageId = entityInput.getDefaultPageId();
+        String defPageId = getEditorInput().getDefaultPageId();
         if (defPageId != null) {
             IEditorPart defEditorPage = editorMap.get(defPageId);
             if (defEditorPage != null) {
                 setActiveEditor(defEditorPage);
             }
-        }
-    }
-
-    private void setContainerStyles()
-    {
-        Composite pageContainer = getContainer();
-        if (pageContainer instanceof CTabFolder) {
-            CTabFolder tabFolder = (CTabFolder)pageContainer;
-            tabFolder.setSimple(false);
-            tabFolder.setTabPosition(SWT.TOP);
-            tabFolder.setBorderVisible(true);
-            Layout parentLayout = tabFolder.getParent().getLayout();
-            if (parentLayout instanceof FillLayout) {
-                ((FillLayout)parentLayout).marginHeight = 5;
-                ((FillLayout)parentLayout).marginWidth = 5;
-            }
-        }
-    }
-
-    private void setPageToolTip(int index, String toolTip)
-    {
-        Composite pageContainer = getContainer();
-        if (pageContainer instanceof CTabFolder) {
-            CTabFolder tabFolder = (CTabFolder)pageContainer;
-            if (index > 0 && index < tabFolder.getItemCount()) {
-                tabFolder.getItem(index).setToolTipText(toolTip);
-            }
-        }
-    }
-
-    protected void pageChange(int newPageIndex)
-    {
-        deactivateEditor();
-        super.pageChange(newPageIndex);
-        activateEditor();
-    }
-
-    protected final void deactivateEditor()
-    {
-        // Deactivate the nested services from the last active service locator.
-        final int pageIndex = getActivePage();
-        final IWorkbenchPart part = getEditor(pageIndex);
-        if (part instanceof IEmbeddedWorkbenchPart) {
-            ((IEmbeddedWorkbenchPart) part).deactivatePart();
-        }
-    }
-
-    protected final void activateEditor()
-    {
-        final int pageIndex = getActivePage();
-        final IWorkbenchPart part = getEditor(pageIndex);
-
-        if (part instanceof IEmbeddedWorkbenchPart) {
-            ((IEmbeddedWorkbenchPart) part).activatePart();
         }
     }
 
@@ -224,7 +128,7 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
         List<TabInfo> tabs = new ArrayList<TabInfo>();
 
         // Add all nested folders as tabs
-        DBMNode node = entityInput.getNode();
+        DBMNode node = getEditorInput().getNode();
         try {
             List<? extends DBMNode> children = node.getChildren(monitor);
             if (children != null) {
@@ -261,7 +165,7 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
     private void addContributions(String position)
     {
         EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
-        List<EntityEditorDescriptor> descriptors = editorsRegistry.getEntityEditors(entityInput.getDatabaseObject().getClass(), position);
+        List<EntityEditorDescriptor> descriptors = editorsRegistry.getEntityEditors(getEditorInput().getDatabaseObject().getClass(), position);
         for (EntityEditorDescriptor descriptor : descriptors) {
             addEditorTab(descriptor);
         }
@@ -275,9 +179,9 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
                 return false;
             }
             if (editor instanceof IObjectEditor) {
-                ((IObjectEditor)editor).setObject(entityInput.getDatabaseObject());
+                ((IObjectEditor)editor).setObject(getEditorInput().getDatabaseObject());
             }
-            int index = addPage(editor, entityInput);
+            int index = addPage(editor, getEditorInput());
             setPageText(index, descriptor.getName());
             if (descriptor.getIcon() != null) {
                 setPageImage(index, descriptor.getIcon());
@@ -297,11 +201,11 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
     {
         try {
             EntityNodeEditor nodeEditor = new EntityNodeEditor(node);
-            int index = addPage(nodeEditor, entityInput);
+            int index = addPage(nodeEditor, getEditorInput());
             setPageText(index, node.getNodeName());
             setPageImage(index, node.getNodeIconDefault());
-            if (entityInput.getNode() instanceof DBMTreeNode) {
-                setPageToolTip(index, ((DBMTreeNode)entityInput.getNode()).getMeta().getLabel() + " " + node.getNodeName());
+            if (getEditorInput().getNode() instanceof DBMTreeNode) {
+                setPageToolTip(index, ((DBMTreeNode)getEditorInput().getNode()).getMeta().getLabel() + " " + node.getNodeName());
             }
             editorMap.put("node." + node.getNodeName(), nodeEditor);
         } catch (PartInitException ex) {
@@ -313,7 +217,7 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
     {
         try {
             EntityNodeEditor nodeEditor = new EntityNodeEditor(node, metaItem);
-            int index = addPage(nodeEditor, entityInput);
+            int index = addPage(nodeEditor, getEditorInput());
             setPageText(index, metaItem.getLabel());
             if (metaItem.getDefaultIcon() != null) {
                 setPageImage(index, metaItem.getDefaultIcon());
@@ -336,12 +240,12 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
                 ((IRefreshablePart)part).refreshPart(event);
             }
         }
-        setTitleImage(this.entityInput.getImageDescriptor().createImage());
+        setTitleImage(this.getEditorInput().getImageDescriptor().createImage());
     }
 
     public void nodeChanged(final DBMEvent event)
     {
-        if (event.getNode() == entityInput.getNode()) {
+        if (event.getNode() == getEditorInput().getNode()) {
             if (event.getAction() == DBMEvent.Action.REMOVE) {
                 getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
                     IWorkbenchPage workbenchPage = getSite().getWorkbenchWindow().getActivePage();
@@ -359,7 +263,7 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
 
     public DBMModel getMetaModel()
     {
-        return entityInput.getNode().getModel();
+        return getEditorInput().getNode().getModel();
     }
 
     public Viewer getViewer()
@@ -369,20 +273,6 @@ public class EntityEditor extends MultiPageEditorPart implements IDBMListener, I
             return ((IMetaModelView)activePart).getViewer();
         }
         return null;
-    }
-
-    public IWorkbenchPart getWorkbenchPart()
-    {
-        return this;
-    }
-
-    public DBSDataSourceContainer getDataSourceContainer() {
-        DBPDataSource dataSource = getDataSource();
-        return dataSource == null ? null : dataSource.getContainer();
-    }
-
-    public DBPDataSource getDataSource() {
-        return entityInput == null || entityInput.getDatabaseObject() == null ? null : entityInput.getDatabaseObject().getDataSource();
     }
 
 }

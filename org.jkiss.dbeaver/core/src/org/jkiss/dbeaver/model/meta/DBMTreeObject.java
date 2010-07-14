@@ -122,12 +122,13 @@ public class DBMTreeObject extends DBMTreeNode implements DBSObject
 
     public DBSObject getParentObject()
     {
-        return getParentNode().getObject();
+        return getParentNode() == null ? null : getParentNode().getObject();
     }
 
     public DBPDataSource getDataSource()
     {
-        return getParentObject().getDataSource();
+        DBSObject parentObject = getParentObject();
+        return parentObject == null ? null : parentObject.getDataSource();
     }
 
     public boolean refreshObject(DBRProgressMonitor monitor)

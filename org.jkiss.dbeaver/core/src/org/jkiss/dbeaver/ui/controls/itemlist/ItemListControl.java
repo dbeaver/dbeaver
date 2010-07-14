@@ -54,8 +54,6 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
     private ISelectionProvider selectionProvider;
     private IDoubleClickListener doubleClickHandler;
 
-    private int loadCount = 0;
-
     public ItemListControl(
         Composite parent,
         int style,
@@ -94,7 +92,7 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
         itemsViewer.setLabelProvider(new ItemLabelProvider());
         itemsViewer.addDoubleClickListener(this);
 
-        super.createProgressPanel(this);
+        super.createProgressPanel();
 
         sortListener = new SortListener();
 

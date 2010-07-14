@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * ItemListControl
  */
-public abstract class ProgressPageControl extends Composite
+public class ProgressPageControl extends Composite
 {
     static final Log log = LogFactory.getLog(ProgressPageControl.class);
 
@@ -92,6 +92,11 @@ public abstract class ProgressPageControl extends Composite
         UIUtils.dispose(listInfoLabel);
         UIUtils.dispose(progressBar);
         super.dispose();
+    }
+
+    public <RESULT> ProgressVisualizer<RESULT> createVisualizer()
+    {
+        return new ProgressVisualizer<RESULT>();
     }
 
     protected class ProgressVisualizer<RESULT> implements ILoadVisualizer<RESULT> {

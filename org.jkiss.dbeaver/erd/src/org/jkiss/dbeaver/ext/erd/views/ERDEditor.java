@@ -395,14 +395,6 @@ public class ERDEditor extends EditorPart implements IObjectEditor
             return infoGroup;
         }
 
-        GraphLoadVisualizer createVisualizer()
-        {
-            return new GraphLoadVisualizer();
-        }
-
-        private class GraphLoadVisualizer extends ProgressVisualizer<Object> {
-
-        }
     }
 
 
