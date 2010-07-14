@@ -13,6 +13,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -30,11 +31,11 @@ public class DeleteConnectionAction implements IObjectActionDelegate
             Object editElement = structSelection.getFirstElement();
             if (editElement instanceof DataSourceDescriptor) {
                 DataSourceDescriptor dataSource = (DataSourceDescriptor)editElement;
-                MessageBox messageBox = new MessageBox(window.getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-                messageBox.setMessage("Do you really want to delete connection '" + dataSource.getName() + "'?");
-                messageBox.setText("Delete connection");
-                int response = messageBox.open();
-                if (response == SWT.YES) {
+                if (UIUtils.confirmAction(
+                    window.getShell(),
+                    "Delete connection",
+                    "Are you sure you want to delete connection '" + dataSource.getName() + "'?"))
+                {
                     // Then delete it
                     if (dataSource.isConnected()) {
                         try {

@@ -2,7 +2,6 @@ package org.jkiss.dbeaver.ext.erd.views;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -12,11 +11,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.part.EditorPart;
 import org.jgraph.JGraph;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
@@ -31,7 +26,6 @@ import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaEdge;
 import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaLayouter;
 import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaNode;
-import org.jkiss.dbeaver.ext.ui.IObjectEditor;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
@@ -42,6 +36,7 @@ import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.AbstractObjectEditor;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 
 import javax.swing.*;
@@ -56,7 +51,7 @@ import java.util.Map;
 /**
  * ERDEditor
  */
-public class ERDEditor extends EditorPart implements IObjectEditor
+public class ERDEditor extends AbstractObjectEditor
 {
     static final Log log = LogFactory.getLog(ERDEditor.class);
 
@@ -70,35 +65,11 @@ public class ERDEditor extends EditorPart implements IObjectEditor
     private JGraph graph;
     private Graphics graphics;
 
-    public void doSave(IProgressMonitor monitor)
-    {
-    }
-
-    public void doSaveAs()
-    {
-    }
-
-    public void init(IEditorSite site, IEditorInput input)
-            throws PartInitException {
-        setSite(site);
-        setInput(input);
-    }
-
     @Override
     public void dispose()
     {
         progressControl.dispose();
         super.dispose();
-    }
-
-    public boolean isDirty()
-    {
-        return false;
-    }
-
-    public boolean isSaveAsAllowed()
-    {
-        return false;
     }
 
     public void createPartControl(Composite parent)
@@ -122,10 +93,6 @@ public class ERDEditor extends EditorPart implements IObjectEditor
         //scroller.setContent(graphContainer);
 
         progressControl.createProgressPanel();
-    }
-
-    public void setFocus()
-    {
     }
 
     public void activatePart()

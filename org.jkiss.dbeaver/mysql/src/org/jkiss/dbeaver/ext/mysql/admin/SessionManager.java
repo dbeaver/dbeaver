@@ -205,6 +205,14 @@ public class SessionManager extends SinglePageDatabaseEditor<IDatabaseEditorInpu
     }
 
     private void killSession(final SessionInfo session, final boolean killConnection) {
+        if (!UIUtils.confirmAction(
+            getSite().getShell(),
+            killConnection ? "Kill session" : "Terminate query",
+            "Are you sure?"))
+        {
+            return;
+        }
+
         LoadingUtils.executeService(
             new AbstractLoadService<SessionInfo>("Kill " + (killConnection ? ("session " + session.pid) : ("query " + session.info))) {
                 public SessionInfo evaluate()

@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.editors.binary.dialogs.FindReplaceDialog;
 import org.jkiss.dbeaver.ui.editors.binary.dialogs.GoToDialog;
 import org.jkiss.dbeaver.ui.editors.binary.dialogs.SelectBlockDialog;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -841,26 +842,16 @@ public class HexManager {
         if (fileText == null) return null;
 
         File file = new File(fileText);
-        if (file.exists() && !showMessageBox(aShell, fileText)) return null;
+        if (file.exists() && !UIUtils.confirmAction(
+            aShell,
+            "File already exists",
+            "The file " + file + " already exists.\nOverwrite file?"))
+        {
+            return null;
+        }
 
         return file;
     }
-
-
-    /**
-     * Show a message box with a file-already-exists message
-     *
-     * @param aShell parent of the dialog
-     */
-    public boolean showMessageBox(Shell aShell, String file)
-    {
-        MessageBox aMessageBox = new MessageBox(aShell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
-        aMessageBox.setText("File already exists");
-        aMessageBox.setMessage("The file " + file + " already exists.\nOverwrite file?");
-
-        return aMessageBox.open() == SWT.YES;
-    }
-
 
     void writeNonDefaultFont()
     {

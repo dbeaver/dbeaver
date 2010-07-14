@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.controls.proptree.DriverPropertiesControl;
 
 /**
- * ConnectionEditorPage
+ * MySQLConnectionPage
  */
 public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
 {

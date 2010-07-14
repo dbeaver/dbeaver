@@ -121,4 +121,22 @@ public class UIUtils {
             widget.dispose();
         }
     }
+
+    public static void showMessageBox(Shell shell, String title, String info)
+    {
+        MessageBox messageBox = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
+        messageBox.setMessage(info);
+        messageBox.setText(title);
+        messageBox.open();
+    }
+
+    public static boolean confirmAction(Shell shell, String title, String question)
+    {
+        MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
+        messageBox.setMessage(question);
+        messageBox.setText(title);
+        int response = messageBox.open();
+        return response == SWT.YES;
+    }
+
 }

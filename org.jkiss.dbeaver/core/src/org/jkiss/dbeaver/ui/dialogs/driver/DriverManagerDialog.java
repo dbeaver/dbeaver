@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -196,21 +197,18 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
             }
         }
         if (!usedDS.isEmpty()) {
-            MessageBox messageBox = new MessageBox(getShell(), SWT.ICON_ERROR | SWT.OK);
             StringBuilder message = new StringBuilder("Your can't delete driver '" + selectedDriver.getName() +"' because it's used by next data source(s):");
             for (DataSourceDescriptor ds : usedDS) {
                 message.append("\n - ").append(ds.getName());
             }
-            messageBox.setMessage(message.toString());
-            messageBox.setText("Can't delete driver");
-            messageBox.open();
+            UIUtils.showMessageBox(getShell(), "Can't delete driver", message.toString());
             return;
         }
-        MessageBox messageBox = new MessageBox(getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-        messageBox.setMessage("Do you really want to delete driver '" + selectedDriver.getName() + "'?");
-        messageBox.setText("Delete driver");
-        int response = messageBox.open();
-        if (response == SWT.YES) {
+        if (UIUtils.confirmAction(
+            getShell(),
+            "Delete driver",
+            "Are you sure you want to delete driver '" + selectedDriver.getName() + "'?"))
+        {
             selectedDriver.getProviderDescriptor().removeDriver(selectedDriver);
             selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
             treeControl.refresh();

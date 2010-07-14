@@ -17,55 +17,23 @@ import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
 import org.jkiss.dbeaver.ext.ui.IObjectEditor;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.ui.editors.AbstractObjectEditor;
 
 /**
- * SQLTableData
+ * MySQLTriggerEditor
  */
-public class MySQLTriggerEditor extends EditorPart implements IObjectEditor
+public class MySQLTriggerEditor extends AbstractObjectEditor
 {
     static final Log log = LogFactory.getLog(MySQLTriggerEditor.class);
 
     private Text ddlText;
     private MySQLTrigger trigger;
 
-    public void doSave(IProgressMonitor monitor)
-    {
-    }
-
-    public void doSaveAs()
-    {
-    }
-
-    public void init(IEditorSite site, IEditorInput input)
-            throws PartInitException {
-        setSite(site);
-        setInput(input);
-    }
-
-    public void dispose()
-    {
-        super.dispose();
-    }
-
-    public boolean isDirty()
-    {
-        return false;
-    }
-
-    public boolean isSaveAsAllowed()
-    {
-        return false;
-    }
-
     public void createPartControl(Composite parent)
     {
         ddlText = new Text(parent, SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.WRAP | SWT.BORDER);
         ddlText.setForeground(getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_INFO_FOREGROUND));
         ddlText.setBackground(getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND));
-    }
-
-    public void setFocus()
-    {
     }
 
     public void activatePart()
