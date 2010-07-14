@@ -529,5 +529,5 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
 				}
 			}
 		}
-	};
+	}
 }

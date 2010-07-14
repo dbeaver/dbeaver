@@ -10,17 +10,20 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.meta.IDBMListener;
+import org.jkiss.dbeaver.model.meta.DBMEvent;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 /**
  * SinglePageDatabaseEditor
  */
-public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends EditorPart implements IDataSourceUser 
+public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends EditorPart implements IDataSourceUser, IDBMListener
 {
     static final Log log = LogFactory.getLog(SinglePageDatabaseEditor.class);
 
@@ -34,6 +37,14 @@ public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEdito
         this.editorInput = (INPUT_TYPE)input;
         this.setPartName(input.getName());
         this.setTitleImage(input.getImageDescriptor().createImage());
+
+        DBeaverCore.getInstance().getMetaModel().addListener(this);
+    }
+
+    public void dispose()
+    {
+        DBeaverCore.getInstance().getMetaModel().removeListener(this);
+        super.dispose();
     }
 
     @Override
@@ -71,4 +82,28 @@ public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEdito
     public void setFocus() {
 
     }
+
+    public void nodeChanged(final DBMEvent event)
+    {
+        if (event.getNode() == getEditorInput().getTreeNode()) {
+            if (event.getAction() == DBMEvent.Action.REMOVE) {
+                getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
+                    IWorkbenchPage workbenchPage = getSite().getWorkbenchWindow().getActivePage();
+                    if (workbenchPage != null) {
+                        workbenchPage.closeEditor(SinglePageDatabaseEditor.this, false);
+                    }
+                }});
+            } else if (event.getAction() == DBMEvent.Action.REFRESH) {
+                getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
+                    refreshContent(event);
+                }});
+            }
+        }
+    }
+
+    protected void refreshContent(DBMEvent event)
+    {
+
+    }
+
 }

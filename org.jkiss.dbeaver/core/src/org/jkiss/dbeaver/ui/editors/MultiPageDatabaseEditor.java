@@ -16,17 +16,21 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.meta.IDBMListener;
+import org.jkiss.dbeaver.model.meta.DBMEvent;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 /**
  * MultiPageDatabaseEditor
  */
-public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends MultiPageEditorPart implements IDataSourceUser
+public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends MultiPageEditorPart implements IDataSourceUser, IDBMListener
 {
     static final Log log = LogFactory.getLog(MultiPageDatabaseEditor.class);
 
@@ -36,6 +40,14 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
         super.init(site, input);
         setPartName(input.getName());
         setTitleImage(input.getImageDescriptor().createImage());
+
+        DBeaverCore.getInstance().getMetaModel().addListener(this);
+    }
+
+    public void dispose()
+    {
+        DBeaverCore.getInstance().getMetaModel().removeListener(this);
+        super.dispose();
     }
 
     @Override
@@ -143,6 +155,29 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
 
     public DBPDataSource getDataSource() {
         return getEditorInput() == null || getEditorInput().getDatabaseObject() == null ? null : getEditorInput().getDatabaseObject().getDataSource();
+    }
+
+    public void nodeChanged(final DBMEvent event)
+    {
+        if (event.getNode() == getEditorInput().getTreeNode()) {
+            if (event.getAction() == DBMEvent.Action.REMOVE) {
+                getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
+                    IWorkbenchPage workbenchPage = getSite().getWorkbenchWindow().getActivePage();
+                    if (workbenchPage != null) {
+                        workbenchPage.closeEditor(MultiPageDatabaseEditor.this, false);
+                    }
+                }});
+            } else if (event.getAction() == DBMEvent.Action.REFRESH) {
+                getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
+                    refreshContent(event);
+                }});
+            }
+        }
+    }
+
+    protected void refreshContent(DBMEvent event)
+    {
+
     }
 
 }

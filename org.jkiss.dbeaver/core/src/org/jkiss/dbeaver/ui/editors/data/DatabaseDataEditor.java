@@ -10,20 +10,16 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
-import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -38,7 +34,7 @@ import org.jkiss.dbeaver.utils.DBeaverUtils;
 /**
  * SQLTableData
  */
-public class DatabaseDataEditor extends EditorPart implements IEmbeddedWorkbenchPart, IMetaModelView, ResultSetProvider
+public class DatabaseDataEditor extends EditorPart implements IEmbeddedWorkbenchPart, ResultSetProvider
 {
     static final Log log = LogFactory.getLog(DatabaseDataEditor.class);
 
@@ -115,21 +111,6 @@ public class DatabaseDataEditor extends EditorPart implements IEmbeddedWorkbench
             curSession = null;
         }
 */
-    }
-
-    public DBMModel getMetaModel()
-    {
-        return ((IDatabaseEditorInput)getEditorInput()).getTreeNode().getModel();
-    }
-
-    public Viewer getViewer()
-    {
-        return resultSetView;
-    }
-
-    public IWorkbenchPart getWorkbenchPart()
-    {
-        return this;
     }
 
     public DBSDataSourceContainer getDataSourceContainer() {

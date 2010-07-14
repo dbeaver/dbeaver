@@ -38,19 +38,6 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
 
-    public void init(IEditorSite site, IEditorInput input)
-        throws PartInitException
-    {
-        super.init(site, input);
-        DBeaverCore.getInstance().getMetaModel().addListener(this);
-    }
-
-    public void dispose()
-    {
-        DBeaverCore.getInstance().getMetaModel().removeListener(this);
-        super.dispose();
-    }
-
     protected void createPages()
     {
         super.createPages();
@@ -230,7 +217,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         }
     }
 
-    private void refreshContent(DBMEvent event)
+    protected void refreshContent(final DBMEvent event)
     {
         int pageCount = getPageCount();
         for (int i = 0; i < pageCount; i++) {
@@ -239,25 +226,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                 ((IRefreshablePart)part).refreshPart(event);
             }
         }
-        setTitleImage(this.getEditorInput().getImageDescriptor().createImage());
-    }
-
-    public void nodeChanged(final DBMEvent event)
-    {
-        if (event.getNode() == getEditorInput().getTreeNode()) {
-            if (event.getAction() == DBMEvent.Action.REMOVE) {
-                getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
-                    IWorkbenchPage workbenchPage = getSite().getWorkbenchWindow().getActivePage();
-                    if (workbenchPage != null) {
-                        workbenchPage.closeEditor(EntityEditor.this, false);
-                    }
-                }});
-            } else if (event.getAction() == DBMEvent.Action.REFRESH) {
-                getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
-                    refreshContent(event);
-                }});
-            }
-        }
+        setTitleImage(getEditorInput().getImageDescriptor().createImage());
     }
 
     public DBMModel getMetaModel()
