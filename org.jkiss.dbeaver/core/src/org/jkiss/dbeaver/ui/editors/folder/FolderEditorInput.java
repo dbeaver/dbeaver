@@ -4,85 +4,17 @@
 
 package org.jkiss.dbeaver.ui.editors.folder;
 
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IPersistableElement;
-import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 
 /**
  * FolderEditorInput
  */
-public class FolderEditorInput implements IDatabaseEditorInput
+public class FolderEditorInput extends DatabaseEditorInput<DBMTreeFolder>
 {
-    private DBMTreeFolder folder;
-    private String defaultPageId;
-
-    public FolderEditorInput(DBMTreeFolder folder)
+    public FolderEditorInput(DBMTreeFolder dbmTreeFolder)
     {
-        this.folder = folder;
+        super(dbmTreeFolder);
     }
 
-    public DBMTreeFolder getFolder()
-    {
-        return folder;
-    }
-
-    public boolean exists()
-    {
-        return false;
-    }
-
-    public ImageDescriptor getImageDescriptor()
-    {
-        return ImageDescriptor.createFromImage(folder.getNodeIconDefault());
-    }
-
-    public String getName()
-    {
-        return folder.getName();
-    }
-
-    public IPersistableElement getPersistable()
-    {
-        return null;
-    }
-
-    public String getToolTipText()
-    {
-        return folder.getDescription();
-    }
-
-    public Object getAdapter(Class adapter)
-    {
-        return null;
-    }
-
-    public DBMModel getModel()
-    {
-        return folder.getModel();
-    }
-
-    public DBSObject getDatabaseObject()
-    {
-        return folder.getObject();
-    }
-
-    public String getDefaultPageId()
-    {
-        return defaultPageId;
-    }
-
-    public void setDefaultPageId(String defaultPageId)
-    {
-        this.defaultPageId = defaultPageId;
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        return obj == this ||
-            (obj instanceof FolderEditorInput && ((FolderEditorInput)obj).folder.equals(folder));
-    }
 }

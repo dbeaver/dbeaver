@@ -70,7 +70,7 @@ public class FolderEditor extends EditorPart implements IDBMListener, IMetaModel
 
     public void createPartControl(Composite parent)
     {
-        itemControl = new ItemListControl(parent, SWT.NONE, this, folderInput.getFolder());
+        itemControl = new ItemListControl(parent, SWT.NONE, this, folderInput.getTreeNode());
         itemControl.fillData();
         // Hook context menu
         ViewUtils.addContextMenu(this);
@@ -85,7 +85,7 @@ public class FolderEditor extends EditorPart implements IDBMListener, IMetaModel
 
     public void nodeChanged(DBMEvent event)
     {
-        if (event.getNode() == folderInput.getFolder()) {
+        if (event.getNode() == folderInput.getTreeNode()) {
             if (event.getAction() == DBMEvent.Action.REMOVE) {
                 getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
                     IWorkbenchPage activePage = getSite().getWorkbenchWindow().getActivePage();
@@ -99,7 +99,7 @@ public class FolderEditor extends EditorPart implements IDBMListener, IMetaModel
 
     public DBMModel getMetaModel()
     {
-        return folderInput.getFolder().getModel();
+        return folderInput.getTreeNode().getModel();
     }
 
     public Viewer getViewer()

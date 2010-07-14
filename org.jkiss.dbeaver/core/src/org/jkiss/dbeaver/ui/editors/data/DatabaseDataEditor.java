@@ -43,7 +43,6 @@ public class DatabaseDataEditor extends EditorPart implements IEmbeddedWorkbench
     static final Log log = LogFactory.getLog(DatabaseDataEditor.class);
 
     private ResultSetViewer resultSetView;
-    private DBMModel model;
     private DBSDataContainer dataContainer;
 
     public void doSave(IProgressMonitor monitor)
@@ -93,7 +92,6 @@ public class DatabaseDataEditor extends EditorPart implements IEmbeddedWorkbench
                 return;
             }
             IDatabaseEditorInput dbei = (IDatabaseEditorInput)editorInput;
-            model = dbei.getModel();
             DBSObject object = dbei.getDatabaseObject();
             if (!(object instanceof DBSDataContainer)) {
                 log.error("Data editor supports only data contaner objects!");
@@ -121,7 +119,7 @@ public class DatabaseDataEditor extends EditorPart implements IEmbeddedWorkbench
 
     public DBMModel getMetaModel()
     {
-        return model;
+        return ((IDatabaseEditorInput)getEditorInput()).getTreeNode().getModel();
     }
 
     public Viewer getViewer()

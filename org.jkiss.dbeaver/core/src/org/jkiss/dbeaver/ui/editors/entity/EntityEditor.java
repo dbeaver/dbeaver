@@ -64,7 +64,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         }
         if (!mainAdded) {
             try {
-                DBMNode node = getEditorInput().getNode();
+                DBMNode node = getEditorInput().getTreeNode();
                 int index = addPage(new DefaultObjectEditor(node), getEditorInput());
                 setPageText(index, "Properties");
                 if (node instanceof DBMTreeNode) {
@@ -127,7 +127,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         List<TabInfo> tabs = new ArrayList<TabInfo>();
 
         // Add all nested folders as tabs
-        DBMNode node = getEditorInput().getNode();
+        DBMNode node = getEditorInput().getTreeNode();
         try {
             List<? extends DBMNode> children = node.getChildren(monitor);
             if (children != null) {
@@ -203,8 +203,8 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             int index = addPage(nodeEditor, getEditorInput());
             setPageText(index, node.getNodeName());
             setPageImage(index, node.getNodeIconDefault());
-            if (getEditorInput().getNode() instanceof DBMTreeNode) {
-                setPageToolTip(index, ((DBMTreeNode)getEditorInput().getNode()).getMeta().getLabel() + " " + node.getNodeName());
+            if (getEditorInput().getTreeNode() instanceof DBMTreeNode) {
+                setPageToolTip(index, ((DBMTreeNode)getEditorInput().getTreeNode()).getMeta().getLabel() + " " + node.getNodeName());
             }
             editorMap.put("node." + node.getNodeName(), nodeEditor);
         } catch (PartInitException ex) {
@@ -244,7 +244,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 
     public void nodeChanged(final DBMEvent event)
     {
-        if (event.getNode() == getEditorInput().getNode()) {
+        if (event.getNode() == getEditorInput().getTreeNode()) {
             if (event.getAction() == DBMEvent.Action.REMOVE) {
                 getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
                     IWorkbenchPage workbenchPage = getSite().getWorkbenchWindow().getActivePage();
@@ -262,7 +262,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 
     public DBMModel getMetaModel()
     {
-        return getEditorInput().getNode().getModel();
+        return getEditorInput().getTreeNode().getModel();
     }
 
     public Viewer getViewer()

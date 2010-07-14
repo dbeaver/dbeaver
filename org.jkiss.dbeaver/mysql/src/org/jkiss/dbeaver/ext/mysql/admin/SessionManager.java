@@ -121,7 +121,7 @@ public class SessionManager extends SinglePageDatabaseEditor<IDatabaseEditorInpu
         UIUtils.createTableColumn(table, SWT.LEFT, "User");
         UIUtils.createTableColumn(table, SWT.LEFT, "Host");
         UIUtils.createTableColumn(table, SWT.LEFT, "DB");
-        UIUtils.createTableColumn(table, SWT.LEFT, "Ñommand");
+        UIUtils.createTableColumn(table, SWT.LEFT, "Command");
         UIUtils.createTableColumn(table, SWT.LEFT, "Time");
         UIUtils.createTableColumn(table, SWT.LEFT, "State");
         UIUtils.packColumns(table);
@@ -349,7 +349,7 @@ public class SessionManager extends SinglePageDatabaseEditor<IDatabaseEditorInpu
                 try {
                     sessionsViewer.setInput(sessionInfos);
                     UIUtils.packColumns(table);
-                    UIUtils.maxTableColumnsWidth(table);
+                    //UIUtils.maxTableColumnsWidth(table);
                     setInfo(sessionInfos.size() + " sessions");
                 } finally {
                     table.setRedraw(true);

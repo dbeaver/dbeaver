@@ -34,7 +34,7 @@ public class OpenObjectEditorAction extends NavigatorAction
     {
         try {
             for (IEditorReference ref : workbenchWindow.getActivePage().getEditorReferences()) {
-                if (ref.getEditorInput() instanceof EntityEditorInput && ((EntityEditorInput)ref.getEditorInput()).getNode() == selectedNode) {
+                if (ref.getEditorInput() instanceof EntityEditorInput && ((EntityEditorInput)ref.getEditorInput()).getTreeNode() == selectedNode) {
                     workbenchWindow.getActivePage().activate(ref.getEditor(false));
                     return;
                 }

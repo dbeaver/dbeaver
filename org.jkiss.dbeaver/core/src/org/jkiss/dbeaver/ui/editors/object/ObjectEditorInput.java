@@ -5,38 +5,23 @@
 package org.jkiss.dbeaver.ui.editors.object;
 
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IEditorDescriptor;
-import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.model.meta.DBMModel;
 import org.jkiss.dbeaver.model.meta.DBMTreeObject;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 
 /**
  * FolderEditorInput
  */
-public class ObjectEditorInput implements IDatabaseEditorInput
+public class ObjectEditorInput extends DatabaseEditorInput<DBMTreeObject>
 {
-    private DBMTreeObject node;
-    private String defaultPageId;
-
-    public ObjectEditorInput(DBMTreeObject node)
+    public ObjectEditorInput(DBMTreeObject dbmNode)
     {
-        this.node = node;
-    }
-
-    public DBMTreeObject getNode()
-    {
-        return node;
-    }
-
-    public boolean exists()
-    {
-        return false;
+        super(dbmNode);
     }
 
     public ImageDescriptor getImageDescriptor()
     {
+        DBMTreeObject node = getTreeNode();
         IEditorDescriptor editorDescriptor = node.getEditorDescriptor();
         if (editorDescriptor != null) {
             return editorDescriptor.getImageDescriptor();
@@ -45,50 +30,9 @@ public class ObjectEditorInput implements IDatabaseEditorInput
         }
     }
 
-    public String getName()
-    {
-        return node.getNodePathName();
-    }
-
-    public IPersistableElement getPersistable()
-    {
-        return null;
-    }
-
     public String getToolTipText()
     {
-        return node.getMeta().getDescription();
+        return getTreeNode().getMeta().getDescription();
     }
 
-    public Object getAdapter(Class adapter)
-    {
-        return null;
-    }
-
-    public DBMModel getModel()
-    {
-        return node.getModel();
-    }
-
-    public DBSObject getDatabaseObject()
-    {
-        return node.getObject();
-    }
-
-    public String getDefaultPageId()
-    {
-        return defaultPageId;
-    }
-
-    public void setDefaultPageId(String defaultPageId)
-    {
-        this.defaultPageId = defaultPageId;
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        return obj == this ||
-            (obj instanceof ObjectEditorInput && ((ObjectEditorInput)obj).node.equals(node));
-    }
 }
