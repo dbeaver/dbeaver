@@ -10,17 +10,16 @@ import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * NavigatorTreeLabelProvider
@@ -37,11 +36,7 @@ class NavigatorTreeLabelProvider extends LabelProvider implements IFontProvider,
     {
         this.view = view;
         this.normalFont = view.getViewer().getControl().getFont();
-        FontData[] fontData = this.normalFont.getFontData();
-        if (fontData.length > 0) {
-            fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
-            this.defaultFont = new Font(normalFont.getDevice(), fontData[0]);
-        }
+        this.defaultFont = UIUtils.makeBoldFont(normalFont);
     }
 
     @Override

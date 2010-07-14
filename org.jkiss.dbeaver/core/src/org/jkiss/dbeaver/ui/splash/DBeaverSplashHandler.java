@@ -12,14 +12,13 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.SWT;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * @since 3.3
@@ -95,12 +94,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
                 foregroundColorInteger & 0xFF));
 
         normalFont = getContent().getFont();
-        boldFont = null;
-        FontData[] fontData = normalFont.getFontData();
-        if (fontData.length > 0) {
-            fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
-            boldFont = new Font(normalFont.getDevice(), fontData[0]);
-        }
+        boldFont = UIUtils.makeBoldFont(normalFont);
 
         getContent().addPaintListener(new PaintListener() {
 

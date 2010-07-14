@@ -12,6 +12,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
@@ -45,9 +46,17 @@ public class SessionManager extends SinglePageDatabaseEditor<IDatabaseEditorInpu
     private PageControl pageControl;
     private TableViewer sessionsViewer;
     private Text sessionInfo;
+    private Font boldFont;
+
+    @Override
+    public void dispose()
+    {
+        UIUtils.dispose(boldFont);
+        super.dispose();
+    }
 
     public void createPartControl(Composite parent) {
-
+        boldFont = UIUtils.makeBoldFont(parent.getFont());
         pageControl = new PageControl(parent, SWT.NONE, getSite().getPart());
 
         SashForm sash = new SashForm(pageControl, SWT.VERTICAL | SWT.SMOOTH);
@@ -256,7 +265,7 @@ public class SessionManager extends SinglePageDatabaseEditor<IDatabaseEditorInpu
         return null;
     }
 
-    class SessionLabelProvider extends LabelProvider implements ITableLabelProvider
+    class SessionLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider
     {
         public Image getColumnImage(Object element, int columnIndex)
         {
@@ -279,6 +288,14 @@ public class SessionManager extends SinglePageDatabaseEditor<IDatabaseEditorInpu
             }
         }
 
+        public Font getFont(Object element, int columnIndex)
+        {
+            SessionInfo session = (SessionInfo) element;
+            if (!CommonUtils.isEmpty(session.info)) {
+                return boldFont;
+            }
+            return null;
+        }
     }
 
     private class PageControl extends ProgressPageControl {

@@ -6,6 +6,9 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.widgets.*;
 
@@ -122,6 +125,13 @@ public class UIUtils {
         }
     }
 
+    public static void dispose(Resource resourse)
+    {
+        if (resourse != null && !resourse.isDisposed()) {
+            resourse.dispose();
+        }
+    }
+
     public static void showMessageBox(Shell shell, String title, String info)
     {
         MessageBox messageBox = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
@@ -139,4 +149,10 @@ public class UIUtils {
         return response == SWT.YES;
     }
 
+    public static Font makeBoldFont(Font normalFont)
+    {
+        FontData[] fontData = normalFont.getFontData();
+        fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
+        return new Font(normalFont.getDevice(), fontData[0]);
+    }
 }
