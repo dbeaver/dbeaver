@@ -24,7 +24,8 @@
       startupProgressRect="25,45,150,15"
       startupMessageRect="25,25,200,15"
       startupForegroundColor="000000" />
-   <launcher name="dbeaver.exe">
+   <launcher name="dbeaver">
+      <linux icon="/org.jkiss.dbeaver.core/icons/logo/dbeaver.xpm"/>
       <macosx icon="/org.jkiss.dbeaver.core/icons/logo/dbeaver.icns"/>
       <solaris/>
       <win useIco="true">

@@ -16,11 +16,17 @@ import java.sql.SQLException;
  */
 public class MySQLEngine implements DBSObject {
 
+    public static enum Support {
+        YES,
+        NO,
+        DEFAULT,
+        DISABLED
+    }
+
     private MySQLDataSource dataSource;
     private String name;
     private String description;
-    private boolean isDefault;
-    private boolean supported;
+    private Support support;
     private boolean supportsTransactions;
     private boolean supportsXA;
     private boolean supportsSavepoints;
@@ -42,12 +48,10 @@ public class MySQLEngine implements DBSObject {
     {
         this.name = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE_NAME);
         this.description = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE_DESCRIPTION);
-        String support = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE_SUPPORTED);
-        this.isDefault = "DEFAULT".equals(support);
-        this.supported = !"NO".equals(support);
-        this.supportsTransactions = !"NO".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE_SUPPORT_TXN));
-        this.supportsXA = !"NO".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE_SUPPORT_XA));
-        this.supportsSavepoints = !"NO".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE_SUPPORT_SAVEPOINTS));
+        this.support = Support.valueOf(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE_SUPPORT));
+        this.supportsTransactions = "YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE_SUPPORT_TXN));
+        this.supportsXA = "YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE_SUPPORT_XA));
+        this.supportsSavepoints = "YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE_SUPPORT_SAVEPOINTS));
     }
 
     @Property(name = "Name", viewable = true, order = 1)
@@ -62,16 +66,9 @@ public class MySQLEngine implements DBSObject {
         return description;
     }
 
-    @Property(name = "Default", viewable = true, order = 2)
-    public boolean isDefault()
-    {
-        return isDefault;
-    }
-
-    @Property(name = "Supported", viewable = true, order = 3)
-    public boolean isSupported()
-    {
-        return supported;
+    @Property(name = "Support", viewable = true, order = 3)
+    public Support getSupport() {
+        return support;
     }
 
     @Property(name = "Supports Transactions", viewable = true, order = 4)

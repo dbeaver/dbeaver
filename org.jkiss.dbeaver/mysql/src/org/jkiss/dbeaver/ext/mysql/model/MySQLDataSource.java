@@ -93,7 +93,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         try {
             // Read engines
             List<MySQLEngine> tmpEngines = new ArrayList<MySQLEngine>();
-            JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM " + MySQLConstants.META_TABLE_ENGINES);
+            JDBCPreparedStatement dbStat = context.prepareStatement("SHOW ENGINES");
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
@@ -105,9 +105,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
                     dbResult.close();
                 }
             } catch (SQLException ex ) {
-                // Engines are not supported. Fill them with constants
-                tmpEngines.add(new MySQLEngine(this, "InnoDB"));
-                tmpEngines.add(new MySQLEngine(this, "MyISAM"));
+                // Engines are not supported. Shame on it. Leave this list empty
             } finally {
                 dbStat.close();
             }

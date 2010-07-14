@@ -21,7 +21,7 @@ public class MySQLConstants {
     public static final String META_TABLE_KEY_COLUMN_USAGE = INFO_SCHEMA_NAME + ".KEY_COLUMN_USAGE";
 
     public static final String COL_ENGINE_NAME = "ENGINE";
-    public static final String COL_ENGINE_SUPPORTED = "SUPPORT";
+    public static final String COL_ENGINE_SUPPORT = "SUPPORT";
     public static final String COL_ENGINE_DESCRIPTION = "COMMENT";
     public static final String COL_ENGINE_SUPPORT_TXN = "TRANSACTIONS";
     public static final String COL_ENGINE_SUPPORT_XA = "XA";
