@@ -229,11 +229,9 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         //gd.grabExcessHorizontalSpace = true;
         editorSelector.setLayoutData(gd);
 
-        TableColumn keyValueColumn = new TableColumn(editorSelector, SWT.LEFT);
-        keyValueColumn.setText("Value");
-
-        TableColumn descValueColumn = new TableColumn(editorSelector, SWT.LEFT);
-        descValueColumn.setText("Description");
+        UIUtils.createTableColumn(editorSelector, SWT.LEFT, "Value");
+        UIUtils.createTableColumn(editorSelector, SWT.LEFT, "Description");
+        UIUtils.packColumns(editorSelector);
 
         editorSelector.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -247,9 +245,6 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                 }
             }
         });
-        keyValueColumn.pack();
-        descValueColumn.pack();
-
 
         editor.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e)

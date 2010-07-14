@@ -168,7 +168,9 @@ public abstract class JDBCDataSource
     {
         if (connection != null) {
             try {
-                connection.close();
+                if (!connection.isClosed()) {
+                    connection.close();
+                }
             }
             catch (SQLException ex) {
                 log.error(ex);

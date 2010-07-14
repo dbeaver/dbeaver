@@ -82,6 +82,20 @@ public class UIUtils {
         new ToolItem(toolBar, SWT.SEPARATOR);
     }
 
+    public static TableColumn createTableColumn(Table table, int style, String text)
+    {
+        TableColumn column = new TableColumn(table, style);
+        column.setText(text);
+        return column;
+    }
+
+    public static void packColumns(Table table)
+    {
+        for (TableColumn column : table.getColumns()) {
+            column.pack();
+        }
+    }
+
     public static void maxTableColumnsWidth(Table table)
     {
         int columnCount = table.getColumnCount();

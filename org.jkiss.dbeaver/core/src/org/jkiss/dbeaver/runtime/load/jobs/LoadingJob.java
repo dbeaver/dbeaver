@@ -56,7 +56,6 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         }
         catch (InvocationTargetException e) {
             error = e.getTargetException();
-            log.error("Loading error", e.getTargetException());
         }
         catch (InterruptedException e) {
             return new Status(Status.CANCEL, DBeaverConstants.PLUGIN_ID, "Loading interrupted");

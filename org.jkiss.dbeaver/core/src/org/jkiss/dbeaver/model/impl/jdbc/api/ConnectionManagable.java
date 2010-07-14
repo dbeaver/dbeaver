@@ -76,6 +76,15 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         return dataSource;
     }
 
+    public boolean isConnected() {
+        try {
+            return !isClosed();
+        } catch (SQLException e) {
+            log.error("could not check connection state", e);
+            return false;
+        }
+    }
+
     public DBRProgressMonitor getProgressMonitor()
     {
         return monitor;
@@ -188,8 +197,9 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     }
 
     public boolean isClosed()
+        throws SQLException
     {
-        return false;
+        return original.isClosed();
     }
 
     public JDBCDatabaseMetaData getMetaData()

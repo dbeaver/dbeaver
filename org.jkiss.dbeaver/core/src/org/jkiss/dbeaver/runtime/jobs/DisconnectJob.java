@@ -33,8 +33,10 @@ public class DisconnectJob extends DataSourceJob
             // First rollback active transaction
             DBCExecutionContext context = getDataSource().openContext(monitor);
             try {
-                monitor.subTask("Rollback active transaction");
-                context.getTransactionManager().rollback(null);
+                if (context.isConnected()) {
+                    monitor.subTask("Rollback active transaction");
+                    context.getTransactionManager().rollback(null);
+                }
             }
             catch (Throwable e) {
                 log.warn("Could not rallback active transaction before disconnect", e);
@@ -47,10 +49,7 @@ public class DisconnectJob extends DataSourceJob
             monitor.subTask("Disconnect datasource");
             getDataSource().close(monitor);
 
-            return new Status(
-                Status.OK,
-                DBeaverCore.getInstance().getPluginID(),
-                "Disconnected");
+            return Status.OK_STATUS;
         }
         catch (Exception ex) {
             return DBeaverUtils.makeExceptionStatus(

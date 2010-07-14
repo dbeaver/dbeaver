@@ -64,7 +64,7 @@ public abstract class StatementManagable implements JDBCStatement {
     {
         if (connection.getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR)) {
             try {
-                if (!connection.getAutoCommit()) {
+                if (!connection.isClosed() && !connection.getAutoCommit()) {
                     connection.rollback();
                 }
             } catch (SQLException e) {

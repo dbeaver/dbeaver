@@ -35,7 +35,7 @@ public class DBeaverUtils
         String message,
         Throwable error)
     {
-        log.error(message, error);
+        log.error(error);
 
         // Display the dialog
         ErrorDialog.openError(

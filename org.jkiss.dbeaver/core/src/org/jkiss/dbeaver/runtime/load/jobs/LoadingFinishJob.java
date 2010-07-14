@@ -32,8 +32,8 @@ class LoadingFinishJob<RESULT> extends AbstractUIJob {
         if (error != null) {
             DBeaverUtils.showErrorDialog(
                 visualizer.getShell(),
-                "Error loading items",
-                "Could not load child items",
+                "Error loading data",
+                "Could not load data",
                 error);
         }
         return Status.OK_STATUS;

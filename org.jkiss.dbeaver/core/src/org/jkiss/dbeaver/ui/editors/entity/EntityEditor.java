@@ -10,25 +10,24 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IObjectEditor;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * EntityEditor
