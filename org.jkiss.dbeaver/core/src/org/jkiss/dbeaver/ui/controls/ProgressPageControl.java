@@ -130,6 +130,7 @@ public class ProgressPageControl extends Composite
                 return;
             }
             visualizeLoading();
+            loadCount = 0;
             if (!progressBar.isDisposed()) {
                 progressBar.setState(SWT.PAUSED);
                 progressBar.setVisible(false);
