@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class PropertyCollector extends PropertySourceAbstract
 {
-    static Log log = LogFactory.getLog(PropertyCollector.class);
+    static final Log log = LogFactory.getLog(PropertyCollector.class);
 
     public PropertyCollector(DBPObject object, boolean loadLazyProps)
     {

@@ -31,7 +31,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCNumberValueHandler INSTANCE = new JDBCNumberValueHandler();
 
-    static Log log = LogFactory.getLog(JDBCNumberValueHandler.class);
+    static final Log log = LogFactory.getLog(JDBCNumberValueHandler.class);
 
     private static final int MAX_NUMBER_LENGTH = 100;
 

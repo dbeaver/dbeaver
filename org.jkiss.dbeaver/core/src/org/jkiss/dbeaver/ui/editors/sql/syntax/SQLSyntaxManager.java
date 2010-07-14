@@ -29,7 +29,7 @@ import java.util.*;
  */
 public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChangeListener
 {
-    static Log log = LogFactory.getLog(SQLSyntaxManager.class);
+    static final Log log = LogFactory.getLog(SQLSyntaxManager.class);
 
     public enum KeywordType {
         KEYWORD,

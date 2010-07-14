@@ -32,7 +32,7 @@ import java.util.*;
  */
 public abstract class GenericStructureContainer implements DBSStructureContainer, DBSStructureAssistant
 {
-    static Log log = LogFactory.getLog(GenericStructureContainer.class);
+    static final Log log = LogFactory.getLog(GenericStructureContainer.class);
 
     // Tables types which are not actually a table
     // This is needed for some strange JDBC drivers which returns not a table objects

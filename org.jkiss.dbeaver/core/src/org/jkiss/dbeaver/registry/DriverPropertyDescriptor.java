@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.model.DBPDriverProperty;
 public class DriverPropertyDescriptor implements DBPDriverProperty
 {
 
-    static Log log = LogFactory.getLog(DriverPropertyDescriptor.class);
+    static final Log log = LogFactory.getLog(DriverPropertyDescriptor.class);
 
     private DriverPropertyGroupDescriptor group;
     private String name;

@@ -36,7 +36,7 @@ import java.util.Iterator;
  */
 public class RefreshTreeAction extends Action implements IObjectActionDelegate
 {
-    static Log log = LogFactory.getLog(RefreshTreeAction.class);
+    static final Log log = LogFactory.getLog(RefreshTreeAction.class);
 
     private IWorkbenchPart targetPart;
 

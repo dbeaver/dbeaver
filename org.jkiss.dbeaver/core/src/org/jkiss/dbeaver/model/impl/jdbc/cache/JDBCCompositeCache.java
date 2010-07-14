@@ -38,7 +38,7 @@ public abstract class JDBCCompositeCache<
     OBJECT extends DBSObject,
     ROW_REF extends DBSObject>
 {
-    static Log log = LogFactory.getLog(JDBCCompositeCache.class);
+    static final Log log = LogFactory.getLog(JDBCCompositeCache.class);
 
     private JDBCObjectCache<PARENT> parentCache;
     private List<OBJECT> objectList;

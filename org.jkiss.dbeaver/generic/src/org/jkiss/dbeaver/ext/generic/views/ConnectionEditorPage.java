@@ -29,7 +29,7 @@ import java.util.Set;
  */
 public class ConnectionEditorPage extends DialogPage implements IDataSourceEditor
 {
-    static Log log = LogFactory.getLog(ConnectionEditorPage.class);
+    static final Log log = LogFactory.getLog(ConnectionEditorPage.class);
 
     private static final String PROP_HOST = "host";
     private static final String PROP_PORT = "port";

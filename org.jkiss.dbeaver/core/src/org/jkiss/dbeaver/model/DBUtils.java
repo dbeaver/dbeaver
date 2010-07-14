@@ -40,7 +40,7 @@ import java.util.Map;
  */
 public final class DBUtils {
 
-    static Log log = LogFactory.getLog(DBUtils.class);
+    static final Log log = LogFactory.getLog(DBUtils.class);
 
     public static String getQuotedIdentifier(DBPDataSource dataSource, String str)
     {

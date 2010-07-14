@@ -18,7 +18,7 @@ import java.util.List;
 public class BestMatchHover extends AbstractSQLEditorTextHover
     implements ITextHover, ITextHoverExtension, ITextHoverExtension2, IInformationProviderExtension2
 {
-    static Log log = LogFactory.getLog(BestMatchHover.class);
+    static final Log log = LogFactory.getLog(BestMatchHover.class);
 
     private List<ITextHover> instantiatedTextHovers = new ArrayList<ITextHover>(2);
     private ITextHover bestHover;

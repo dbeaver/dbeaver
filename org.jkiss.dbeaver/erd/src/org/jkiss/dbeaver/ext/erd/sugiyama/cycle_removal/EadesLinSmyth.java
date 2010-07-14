@@ -49,7 +49,7 @@ public class EadesLinSmyth {
     /**
      * The logger.
      */
-    private static Log log = LogFactory.getLog(EadesLinSmyth.class);
+    private static final Log log = LogFactory.getLog(EadesLinSmyth.class);
 
     public EadesLinSmyth(SugiyamaGraph graph)
     {

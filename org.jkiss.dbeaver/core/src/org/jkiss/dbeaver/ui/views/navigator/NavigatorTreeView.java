@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.utils.ViewUtils;
 public class NavigatorTreeView extends ViewPart
     implements IDBMListener, IMetaModelView, IRefreshableView, IDoubleClickListener
 {
-    static Log log = LogFactory.getLog(NavigatorTreeView.class);
+    static final Log log = LogFactory.getLog(NavigatorTreeView.class);
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.navigationView";
 

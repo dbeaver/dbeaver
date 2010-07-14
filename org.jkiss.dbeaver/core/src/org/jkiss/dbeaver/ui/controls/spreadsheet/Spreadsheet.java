@@ -50,7 +50,7 @@ import java.util.List;
  * ResultSetControl
  */
 public class Spreadsheet extends Composite implements Listener {
-    static Log log = LogFactory.getLog(Spreadsheet.class);
+    static final Log log = LogFactory.getLog(Spreadsheet.class);
 
     public static final int MAX_DEF_COLUMN_WIDTH = 300;
     public static final int MAX_INLINE_EDIT_WITH = 300;

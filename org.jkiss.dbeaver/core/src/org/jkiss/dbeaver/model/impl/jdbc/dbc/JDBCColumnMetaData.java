@@ -32,7 +32,7 @@ import java.util.List;
  */
 public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvider
 {
-    static Log log = LogFactory.getLog(JDBCColumnMetaData.class);
+    static final Log log = LogFactory.getLog(JDBCColumnMetaData.class);
 
     private JDBCResultSetMetaData resultSetMeta;
     private int index;

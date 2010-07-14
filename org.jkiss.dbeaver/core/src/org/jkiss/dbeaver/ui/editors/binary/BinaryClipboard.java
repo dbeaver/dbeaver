@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class BinaryClipboard {
 
-    static Log log = LogFactory.getLog(HexEditControl.class);
+    static final Log log = LogFactory.getLog(HexEditControl.class);
 
     static class FileByteArrayTransfer extends ByteArrayTransfer {
         static final String FORMAT_NAME = "BinaryFileByteArrayTypeName";

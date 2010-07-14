@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class SplitterEditorPart extends EditorPart {
-    static Log log = LogFactory.getLog(SplitterEditorPart.class);
+    static final Log log = LogFactory.getLog(SplitterEditorPart.class);
 
     private CTabFolder container;
     private Cursor hyperlinkCursor;

@@ -44,7 +44,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ViewUtils
 {
-    static Log log = LogFactory.getLog(ViewUtils.class);
+    static final Log log = LogFactory.getLog(ViewUtils.class);
     //public static final String MENU_ID = "org.jkiss.dbeaver.core.navigationMenu";
     public static final String MB_ADDITIONS_END = "additions_end";
 

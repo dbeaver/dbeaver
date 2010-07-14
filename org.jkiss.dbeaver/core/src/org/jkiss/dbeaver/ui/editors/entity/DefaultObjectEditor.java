@@ -36,7 +36,7 @@ import java.util.List;
  */
 class DefaultObjectEditor extends EditorPart
 {
-    static Log log = LogFactory.getLog(DefaultObjectEditor.class);
+    static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
 
     private DBMNode node;
     private PropertyPageStandard properties;

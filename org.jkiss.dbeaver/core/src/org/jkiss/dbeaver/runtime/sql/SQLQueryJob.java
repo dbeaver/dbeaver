@@ -34,7 +34,7 @@ import java.util.List;
  */
 public class SQLQueryJob extends DataSourceJob
 {
-    static Log log = LogFactory.getLog(SQLQueryJob.class);
+    static final Log log = LogFactory.getLog(SQLQueryJob.class);
 
     private static final int SUBTASK_COUNT = 5;
     //private static final int DEFAULT_MAX_ROWS = 500;

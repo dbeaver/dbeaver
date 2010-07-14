@@ -29,7 +29,7 @@ import java.io.InputStream;
  */
 public class ContentImageEditorPart extends EditorPart implements IContentEditorPart, IResourceChangeListener {
 
-    static Log log = LogFactory.getLog(ContentImageEditorPart.class);
+    static final Log log = LogFactory.getLog(ContentImageEditorPart.class);
 
     private ImageViewControl imageViewer;
     private boolean contentValid;

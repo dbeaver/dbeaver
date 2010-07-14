@@ -19,7 +19,7 @@ import org.jkiss.dbeaver.utils.DBeaverUtils;
  */
 public class DisconnectJob extends DataSourceJob
 {
-    static Log log = LogFactory.getLog(DisconnectJob.class);
+    static final Log log = LogFactory.getLog(DisconnectJob.class);
 
     public DisconnectJob(
         DBPDataSource dataSource)

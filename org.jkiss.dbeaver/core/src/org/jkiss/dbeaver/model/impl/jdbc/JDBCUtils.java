@@ -25,7 +25,7 @@ import java.sql.ResultSetMetaData;
  */
 public class JDBCUtils
 {
-    static Log log = LogFactory.getLog(JDBCUtils.class);
+    static final Log log = LogFactory.getLog(JDBCUtils.class);
 
     public static String safeGetString(ResultSet dbResult, String columnName)
     {

@@ -16,7 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import java.lang.reflect.InvocationTargetException;
 
 class LoadingUIJob<RESULT> extends AbstractUIJob {
-    static Log log = LogFactory.getLog(LoadingUIJob.class);
+    static final Log log = LogFactory.getLog(LoadingUIJob.class);
 
     private static final long DELAY = 200;
 

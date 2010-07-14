@@ -26,7 +26,7 @@ import java.io.IOException;
 
 public class OpenSQLEditorAction extends DataSourceAction
 {
-    static Log log = LogFactory.getLog(OpenSQLEditorAction.class);
+    static final Log log = LogFactory.getLog(OpenSQLEditorAction.class);
 
     public void run(IAction action)
     {

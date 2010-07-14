@@ -21,7 +21,7 @@ import java.sql.ResultSet;
  */
 public class MySQLTrigger extends AbstractTrigger
 {
-    static Log log = LogFactory.getLog(MySQLTrigger.class);
+    static final Log log = LogFactory.getLog(MySQLTrigger.class);
 
     private MySQLCatalog catalog;
     private MySQLTable table;

@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public class GenericTable extends JDBCTable<GenericDataSource, GenericStructureContainer>
 {
-    static Log log = LogFactory.getLog(GenericTable.class);
+    static final Log log = LogFactory.getLog(GenericTable.class);
 
     private boolean isView;
     private boolean isSystem;

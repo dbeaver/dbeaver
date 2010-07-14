@@ -19,7 +19,7 @@ import org.jkiss.dbeaver.utils.DBeaverUtils;
  */
 class ContentTextDocumentProvider extends FileDocumentProvider implements IDocumentProviderExtension {
 
-    static Log log = LogFactory.getLog(ContentTextDocumentProvider.class);
+    static final Log log = LogFactory.getLog(ContentTextDocumentProvider.class);
 
     protected IDocument createDocument(Object element) throws CoreException
     {

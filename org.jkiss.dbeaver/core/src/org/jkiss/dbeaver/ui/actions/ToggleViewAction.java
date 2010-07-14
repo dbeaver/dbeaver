@@ -14,7 +14,7 @@ import org.eclipse.ui.views.IViewDescriptor;
 
 public class ToggleViewAction extends Action implements IPartListener
 {
-    static Log log = LogFactory.getLog(ToggleViewAction.class);
+    static final Log log = LogFactory.getLog(ToggleViewAction.class);
 
     private String viewId;
     private boolean listenerRegistered = false;

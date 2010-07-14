@@ -44,7 +44,7 @@ public class BrandesKopf {
     /**
      * The logger.
      */
-    private static Log log = LogFactory.getLog(BrandesKopf.class);
+    private static final Log log = LogFactory.getLog(BrandesKopf.class);
 
     private static int BK_DOWN = 1;
     

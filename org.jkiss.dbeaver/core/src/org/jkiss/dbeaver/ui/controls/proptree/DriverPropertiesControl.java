@@ -44,7 +44,7 @@ import java.util.List;
  */
 public class DriverPropertiesControl extends Composite {
 
-    static Log log = LogFactory.getLog(DriverPropertiesControl.class);
+    static final Log log = LogFactory.getLog(DriverPropertiesControl.class);
 
     private TreeViewer propsTree;
     private TreeEditor treeEditor;

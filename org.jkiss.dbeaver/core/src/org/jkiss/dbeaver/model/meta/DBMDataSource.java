@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.ui.actions.EditConnectionAction;
  */
 public class DBMDataSource extends DBMTreeNode
 {
-    static Log log = LogFactory.getLog(DBMDataSource.class);
+    static final Log log = LogFactory.getLog(DBMDataSource.class);
 
     private DataSourceDescriptor dataSource;
     private DBXTreeNode treeRoot;

@@ -24,7 +24,7 @@ import java.io.Reader;
  */
 public class TemporaryContentStorage implements DBDContentStorageLocal {
 
-    static Log log = LogFactory.getLog(TemporaryContentStorage.class);
+    static final Log log = LogFactory.getLog(TemporaryContentStorage.class);
 
     private IFile file;
 

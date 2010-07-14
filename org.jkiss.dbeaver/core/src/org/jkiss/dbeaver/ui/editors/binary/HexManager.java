@@ -52,7 +52,7 @@ import java.util.Properties;
  */
 public class HexManager {
 
-    static Log log = LogFactory.getLog(HexManager.class);
+    static final Log log = LogFactory.getLog(HexManager.class);
 
     class MySelectionAdapter extends SelectionAdapter {
         static final int PASTE = 1;

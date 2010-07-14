@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
  */
 public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
 {
-    static Log log = LogFactory.getLog(ResultSetViewer.class);
+    static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
     private Tree planTree;
     private Label statusLabel;

@@ -43,7 +43,7 @@ public class SimpleMethod {
     /**
      * The logger.
      */
-    private static Log log = LogFactory.getLog(SimpleMethod.class);
+    private static final Log log = LogFactory.getLog(SimpleMethod.class);
     
     public SimpleMethod(SugiyamaGraph graph, int depth, int xGap, int yGap) {
             log.debug("Simple Coordinate Assignment");

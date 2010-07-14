@@ -56,7 +56,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class SQLEditorContributor extends TextEditorActionContributor implements IDataSourceListener, IPropertyChangeListener
 {
-    static Log log = LogFactory.getLog(SQLEditorContributor.class);
+    static final Log log = LogFactory.getLog(SQLEditorContributor.class);
 
     private static class StatusFieldDef
     {

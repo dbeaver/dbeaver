@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 */
 class NavigatorTreeLabelProvider extends LabelProvider implements IFontProvider, IColorProvider
 {
-    static Log log = LogFactory.getLog(NavigatorTreeLabelProvider.class);
+    static final Log log = LogFactory.getLog(NavigatorTreeLabelProvider.class);
 
     private NavigatorTreeView view;
     private Font normalFont;

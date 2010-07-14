@@ -52,7 +52,7 @@ import java.util.Set;
 
 public class BinaryEditor extends EditorPart implements ISelectionProvider, IMenuListener, IResourceChangeListener {
 
-    static Log log = LogFactory.getLog(HexEditControl.class);
+    static final Log log = LogFactory.getLog(HexEditControl.class);
 
     static final String textSavingFilePleaseWait = "Saving file, please wait";
 

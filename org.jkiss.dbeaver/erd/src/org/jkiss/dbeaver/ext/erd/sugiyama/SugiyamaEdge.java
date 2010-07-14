@@ -39,7 +39,7 @@ public class SugiyamaEdge implements LayouterEdge {
     /**
      * The logger.
      */
-    private static Log log = LogFactory.getLog(SugiyamaEdge.class);
+    private static final Log log = LogFactory.getLog(SugiyamaEdge.class);
        
     /**
      * A reference to the actual edge.

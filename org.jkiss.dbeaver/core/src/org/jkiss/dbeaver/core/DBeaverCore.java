@@ -44,7 +44,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
-    static Log log = LogFactory.getLog(DBeaverCore.class);
+    static final Log log = LogFactory.getLog(DBeaverCore.class);
 
     private static final String DEFAULT_PROJECT_NAME = "default";
     private static final String AUTOSAVE_DIR = "autosave";

@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
 public class SQLEditorInputFactory implements IElementFactory
 {
-    static Log log = LogFactory.getLog(SQLEditorInputFactory.class);
+    static final Log log = LogFactory.getLog(SQLEditorInputFactory.class);
 
     private static final String ID_FACTORY = "org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory"; //$NON-NLS-1$
 

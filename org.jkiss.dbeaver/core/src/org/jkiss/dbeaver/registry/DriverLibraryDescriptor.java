@@ -20,7 +20,7 @@ import java.net.URL;
  */
 public class DriverLibraryDescriptor
 {
-    static Log log = LogFactory.getLog(DriverLibraryDescriptor.class);
+    static final Log log = LogFactory.getLog(DriverLibraryDescriptor.class);
 
     private DriverDescriptor driver;
     private String path;

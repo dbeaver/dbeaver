@@ -100,7 +100,7 @@ public class SQLEditor extends BaseTextEditor
     implements
         IResourceChangeListener, IDataSourceListener, ResultSetProvider, ISaveablePart2
 {
-    static Log log = LogFactory.getLog(SQLEditor.class);
+    static final Log log = LogFactory.getLog(SQLEditor.class);
 
     static final String ACTION_CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal";
     static final String ACTION_CONTENT_ASSIST_TIP = "ContentAssistTip";

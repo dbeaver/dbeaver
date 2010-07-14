@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ui.editors.folder.FolderEditorInput;
  */
 public class SessionManager extends EditorPart implements IDataSourceUser
 {
-    static Log log = LogFactory.getLog(SessionManager.class);
+    static final Log log = LogFactory.getLog(SessionManager.class);
 
     private IDatabaseEditorInput editorInput;
 

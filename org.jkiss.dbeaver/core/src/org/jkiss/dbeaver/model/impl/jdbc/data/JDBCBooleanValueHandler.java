@@ -27,7 +27,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCBooleanValueHandler INSTANCE = new JDBCBooleanValueHandler();
 
-    static Log log = LogFactory.getLog(JDBCBooleanValueHandler.class);
+    static final Log log = LogFactory.getLog(JDBCBooleanValueHandler.class);
 
     protected Object getColumnValue(DBRProgressMonitor monitor, ResultSet resultSet, DBSColumnBase column,
                                     int columnIndex)

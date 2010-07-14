@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.utils.ViewUtils;
  */
 public class FolderEditor extends EditorPart implements IDBMListener, IMetaModelView, IDataSourceUser
 {
-    static Log log = LogFactory.getLog(FolderEditor.class);
+    static final Log log = LogFactory.getLog(FolderEditor.class);
 
     private FolderEditorInput folderInput;
     private ItemListControl itemControl;

@@ -20,7 +20,7 @@ import java.text.BreakIterator;
  */
 public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
-    static Log log = LogFactory.getLog(SQLCommentAutoIndentStrategy.class);
+    static final Log log = LogFactory.getLog(SQLCommentAutoIndentStrategy.class);
 
     private String partitioning;
 

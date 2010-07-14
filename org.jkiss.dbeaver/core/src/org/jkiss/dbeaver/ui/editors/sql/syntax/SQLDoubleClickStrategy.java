@@ -15,7 +15,7 @@ import org.eclipse.jface.text.ITextViewer;
  * Process double clicks in the SQL content.
  */
 public class SQLDoubleClickStrategy implements ITextDoubleClickStrategy {
-    static Log log = LogFactory.getLog(SQLDoubleClickStrategy.class);
+    static final Log log = LogFactory.getLog(SQLDoubleClickStrategy.class);
 
     protected ITextViewer fText;
     protected int curPos;

@@ -36,7 +36,7 @@ import java.util.Properties;
  */
 public class GenericDataSource extends GenericStructureContainer implements DBPDataSource, JDBCConnector, DBSStructureContainerActive
 {
-    static Log log = LogFactory.getLog(GenericDataSource.class);
+    static final Log log = LogFactory.getLog(GenericDataSource.class);
 
     public static final String QUERY_GET_ACTIVE_DB = "GET_ACTIVE_DB";
     public static final String QUERY_SET_ACTIVE_DB = "SET_ACTIVE_DB";

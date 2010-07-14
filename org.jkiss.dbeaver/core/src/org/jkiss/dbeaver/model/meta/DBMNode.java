@@ -22,7 +22,7 @@ import java.util.List;
  */
 public abstract class DBMNode
 {
-    static Log log = LogFactory.getLog(DBMNode.class);
+    static final Log log = LogFactory.getLog(DBMNode.class);
 
     private DBMModel model;
     private DBMNode parentNode;

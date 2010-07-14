@@ -48,7 +48,7 @@ import java.util.Properties;
  */
 public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObject {
 
-    static Log log = LogFactory.getLog(ConnectionManagable.class);
+    static final Log log = LogFactory.getLog(ConnectionManagable.class);
 
     private DBPDataSource dataSource;
     private Connection original;

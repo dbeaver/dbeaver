@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.utils.DBeaverUtils;
  */
 public class ConnectJob extends AbstractJob
 {
-    static Log log = LogFactory.getLog(ConnectJob.class);
+    static final Log log = LogFactory.getLog(ConnectJob.class);
 
     private DataSourceDescriptor container;
     private DBPDataSource dataSource;

@@ -24,7 +24,7 @@ import java.io.InputStreamReader;
  */
 public class ExternalContentStorage implements DBDContentStorage {
 
-    static Log log = LogFactory.getLog(ExternalContentStorage.class);
+    static final Log log = LogFactory.getLog(ExternalContentStorage.class);
 
     private File file;
     private String charset;

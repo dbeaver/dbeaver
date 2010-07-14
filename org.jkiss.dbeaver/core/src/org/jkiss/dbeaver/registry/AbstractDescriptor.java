@@ -23,7 +23,7 @@ import java.net.URL;
  */
 public class AbstractDescriptor {
 
-    static Log log = LogFactory.getLog(AbstractDescriptor.class);
+    static final Log log = LogFactory.getLog(AbstractDescriptor.class);
 
     private IContributor contributor;
 

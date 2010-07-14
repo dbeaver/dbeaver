@@ -7,10 +7,7 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.*;
 
 import java.text.NumberFormat;
 
@@ -101,6 +98,13 @@ public class UIUtils {
                     tc.setWidth(tc.getWidth() + extraSpace);
                 }
             }
+        }
+    }
+
+    public static void dispose(Widget widget)
+    {
+        if (widget != null && !widget.isDisposed()) {
+            widget.dispose();
         }
     }
 }

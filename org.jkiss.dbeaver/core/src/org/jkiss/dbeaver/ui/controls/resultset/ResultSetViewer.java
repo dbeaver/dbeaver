@@ -89,7 +89,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ResultSetViewer extends Viewer implements ISpreadsheetController, IPropertyChangeListener
 {
-    static Log log = LogFactory.getLog(ResultSetViewer.class);
+    static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
     private static final int DEFAULT_ROW_HEADER_WIDTH = 50;
 

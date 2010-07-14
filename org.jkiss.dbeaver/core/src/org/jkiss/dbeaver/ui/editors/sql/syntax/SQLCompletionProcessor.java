@@ -39,7 +39,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class SQLCompletionProcessor implements IContentAssistProcessor
 {
-    static Log log = LogFactory.getLog(SQLCompletionProcessor.class);
+    static final Log log = LogFactory.getLog(SQLCompletionProcessor.class);
 
     private SQLEditor editor;
     private IContextInformationValidator validator = new Validator();

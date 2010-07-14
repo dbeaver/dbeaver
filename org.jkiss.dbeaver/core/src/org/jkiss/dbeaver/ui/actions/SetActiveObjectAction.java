@@ -19,7 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class SetActiveObjectAction extends NavigatorAction
 {
-    static Log log = LogFactory.getLog(SetActiveObjectAction.class);
+    static final Log log = LogFactory.getLog(SetActiveObjectAction.class);
 
     public void run(IAction action)
     {

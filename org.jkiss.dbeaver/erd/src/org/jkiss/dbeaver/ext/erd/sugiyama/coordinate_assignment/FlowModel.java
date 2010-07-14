@@ -44,7 +44,7 @@ public class FlowModel {
     /**
      * The logger.
      */
-    private static Log log = LogFactory.getLog(BrandesKopf.class);
+    private static final Log log = LogFactory.getLog(BrandesKopf.class);
 
     public FlowModel(SugiyamaGraph graph, int depth, int xGap, int yGap) {
         log.debug("Flow Based Coordinate Assignment");

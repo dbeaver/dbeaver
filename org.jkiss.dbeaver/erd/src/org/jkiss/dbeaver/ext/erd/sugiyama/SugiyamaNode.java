@@ -38,7 +38,7 @@ public class SugiyamaNode implements LayouterNode {
     /**
      * The Logger.
      */
-    private static Log log = LogFactory.getLog(SugiyamaNode.class);
+    private static final Log log = LogFactory.getLog(SugiyamaNode.class);
        
     /**
      * A reference to the actual node we are laying out.

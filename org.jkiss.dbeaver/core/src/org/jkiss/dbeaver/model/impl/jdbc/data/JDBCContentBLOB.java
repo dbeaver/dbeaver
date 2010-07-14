@@ -31,7 +31,7 @@ import java.sql.SQLException;
  */
 public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContent {
 
-    static Log log = LogFactory.getLog(JDBCContentBLOB.class);
+    static final Log log = LogFactory.getLog(JDBCContentBLOB.class);
 
     private Blob blob;
     private DBDContentStorage storage;

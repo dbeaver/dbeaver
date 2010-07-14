@@ -43,7 +43,7 @@ import java.util.SortedMap;
  */
 public class ContentEditorContributor extends MultiPageEditorActionBarContributor
 {
-    static Log log = LogFactory.getLog(ContentEditorContributor.class);
+    static final Log log = LogFactory.getLog(ContentEditorContributor.class);
 
     private ContentEditor activeEditor;
     private IEditorPart activePage;

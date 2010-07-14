@@ -43,7 +43,7 @@ import java.io.OutputStream;
  */
 public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //IDatabaseEditorInput
 {
-    static Log log = LogFactory.getLog(ContentEditorInput.class);
+    static final Log log = LogFactory.getLog(ContentEditorInput.class);
 
     private DBDValueController valueController;
     private IContentEditorPart[] editorParts;

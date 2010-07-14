@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.registry.tree.DBXTreeObject;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
+import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * DBMTreeItem
@@ -71,6 +72,28 @@ public class DBMTreeObject extends DBMTreeNode implements DBSObject
         }
         return super.getNodeIcon();
     }
+
+    public String getNodePathName()
+    {
+        StringBuilder pathName = new StringBuilder();
+        for (DBMNode parent = getParentNode(); parent != null; parent = parent.getParentNode()) {
+            if (parent instanceof DBMTreeFolder) {
+                // skip folders
+                continue;
+            }
+            String parentName = parent.getNodeName();
+            if (!CommonUtils.isEmpty(parentName)) {
+                if (pathName.length() > 0) {
+                    pathName.insert(0, '.');
+                }
+                pathName.insert(0, parentName);
+            }
+        }
+        pathName.insert(0, getNodeName() + " (");
+        pathName.append(")");
+        return pathName.toString();
+    }
+
 
     public DBMNode refreshNode(DBRProgressMonitor monitor)
         throws DBException

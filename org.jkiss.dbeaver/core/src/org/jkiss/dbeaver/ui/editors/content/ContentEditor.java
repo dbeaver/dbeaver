@@ -49,7 +49,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
     public static final long MAX_TEXT_LENGTH = 10 * 1024 * 1024;
     public static final long MAX_IMAGE_LENGTH = 10 * 1024 * 1024;
 
-    static Log log = LogFactory.getLog(ContentEditor.class);
+    static final Log log = LogFactory.getLog(ContentEditor.class);
 
     private boolean valueEditorRegistered = false;
 

@@ -26,7 +26,7 @@ import java.util.*;
  * DBMTreeNode
  */
 public abstract class DBMTreeNode extends DBMNode {
-    static Log log = LogFactory.getLog(DBMTreeNode.class);
+    static final Log log = LogFactory.getLog(DBMTreeNode.class);
 
     private List<DBMTreeNode> childNodes;
 

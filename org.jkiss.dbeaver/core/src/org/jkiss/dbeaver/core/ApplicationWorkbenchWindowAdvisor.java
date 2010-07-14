@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 {
-    static Log log = LogFactory.getLog(ApplicationWorkbenchWindowAdvisor.class);
+    static final Log log = LogFactory.getLog(ApplicationWorkbenchWindowAdvisor.class);
 
     public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
     {

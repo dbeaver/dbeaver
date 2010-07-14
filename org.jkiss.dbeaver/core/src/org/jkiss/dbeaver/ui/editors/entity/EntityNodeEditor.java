@@ -35,7 +35,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 class EntityNodeEditor extends EditorPart implements IRefreshablePart, IMetaModelView, IEmbeddedWorkbenchPart
 {
-    static Log log = LogFactory.getLog(EntityNodeEditor.class);
+    static final Log log = LogFactory.getLog(EntityNodeEditor.class);
 
     private DBMNode node;
     private DBXTreeNode metaNode;

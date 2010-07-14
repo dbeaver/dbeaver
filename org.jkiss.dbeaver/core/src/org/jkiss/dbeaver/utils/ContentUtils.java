@@ -37,7 +37,7 @@ public class ContentUtils {
 
     static final int STREAM_COPY_BUFFER_SIZE = 10000;
 
-    static Log log = LogFactory.getLog(ContentUtils.class);
+    static final Log log = LogFactory.getLog(ContentUtils.class);
     public static final String DEFAULT_FILE_CHARSET = "UTF-8";
 
     public static IFile createTempContentFile(DBRProgressMonitor monitor, String fileName)

@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.DBPObject;
  */
 public class MySQLTriggerEditor extends EditorPart implements IObjectEditor
 {
-    static Log log = LogFactory.getLog(MySQLTriggerEditor.class);
+    static final Log log = LogFactory.getLog(MySQLTriggerEditor.class);
 
     private Text ddlText;
     private MySQLTrigger trigger;

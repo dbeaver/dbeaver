@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.utils.DBeaverUtils;
  */
 public class DatabaseDataEditor extends EditorPart implements IEmbeddedWorkbenchPart, IMetaModelView, ResultSetProvider
 {
-    static Log log = LogFactory.getLog(DatabaseDataEditor.class);
+    static final Log log = LogFactory.getLog(DatabaseDataEditor.class);
 
     private ResultSetViewer resultSetView;
     private DBMModel model;

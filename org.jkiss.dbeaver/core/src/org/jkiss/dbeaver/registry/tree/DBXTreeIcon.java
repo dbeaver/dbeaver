@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
  */
 public class DBXTreeIcon
 {
-    static Log log = LogFactory.getLog(DBXTreeIcon.class);
+    static final Log log = LogFactory.getLog(DBXTreeIcon.class);
 
     private String exprString;
     private Image icon;

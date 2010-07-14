@@ -47,7 +47,7 @@ public class SweepingMethod {
     /**
      * The logger.
      */
-    private static Log log = LogFactory.getLog(SweepingMethod.class);
+    private static final Log log = LogFactory.getLog(SweepingMethod.class);
     
     /**
      * Maximum number of sweeps of any heuristic to reduce crossings.

@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class GenericProcedure extends AbstractProcedure<GenericDataSource, GenericStructureContainer>
 {
-    static Log log = LogFactory.getLog(GenericProcedure.class);
+    static final Log log = LogFactory.getLog(GenericProcedure.class);
 
     private DBSProcedureType procedureType;
     private List<GenericProcedureColumn> columns;

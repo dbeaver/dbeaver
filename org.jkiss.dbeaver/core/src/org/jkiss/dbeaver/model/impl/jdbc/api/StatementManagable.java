@@ -28,7 +28,7 @@ import java.sql.Statement;
  */
 public abstract class StatementManagable implements JDBCStatement {
 
-    static Log log = LogFactory.getLog(StatementManagable.class);
+    static final Log log = LogFactory.getLog(StatementManagable.class);
 
     private ConnectionManagable connection;
 

@@ -18,7 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class LoadingJob<RESULT>  extends AbstractJob {
 
-    static Log log = LogFactory.getLog(LoadingJob.class);
+    static final Log log = LogFactory.getLog(LoadingJob.class);
 
     public static final Object LOADING_FAMILY = new Object();
 

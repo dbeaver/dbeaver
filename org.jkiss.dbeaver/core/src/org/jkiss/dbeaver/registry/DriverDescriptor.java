@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 {
-    static Log log = LogFactory.getLog(DriverDescriptor.class);
+    static final Log log = LogFactory.getLog(DriverDescriptor.class);
 
     private DataSourceProviderDescriptor providerDescriptor;
     private String id;

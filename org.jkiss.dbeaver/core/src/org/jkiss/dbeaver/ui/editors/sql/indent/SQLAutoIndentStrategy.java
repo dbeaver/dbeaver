@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy
 {
-    static Log log = LogFactory.getLog(SQLAutoIndentStrategy.class);
+    static final Log log = LogFactory.getLog(SQLAutoIndentStrategy.class);
 
     private String partitioning;
 

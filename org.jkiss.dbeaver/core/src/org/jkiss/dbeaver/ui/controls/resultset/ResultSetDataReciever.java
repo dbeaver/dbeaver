@@ -27,7 +27,7 @@ import java.util.Map;
  */
 class ResultSetDataReciever implements DBDDataReciever {
 
-    static Log log = LogFactory.getLog(ResultSetDataReciever.class);
+    static final Log log = LogFactory.getLog(ResultSetDataReciever.class);
 
     private ResultSetViewer resultSetViewer;
     private Display display;

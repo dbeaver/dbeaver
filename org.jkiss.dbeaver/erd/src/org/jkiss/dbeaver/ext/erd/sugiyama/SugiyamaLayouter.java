@@ -45,7 +45,7 @@ public class SugiyamaLayouter implements Layouter {
     /**
      * The logger.
      */
-    private static Log log = LogFactory.getLog(SugiyamaLayouter.class);
+    private static final Log log = LogFactory.getLog(SugiyamaLayouter.class);
     
     /**
      * Default gap between nodes within a level.

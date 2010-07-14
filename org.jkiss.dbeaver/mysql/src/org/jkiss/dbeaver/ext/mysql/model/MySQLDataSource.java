@@ -32,7 +32,7 @@ import java.util.Properties;
  */
 public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssistant,DBSStructureContainerActive
 {
-    static Log log = LogFactory.getLog(MySQLDataSource.class);
+    static final Log log = LogFactory.getLog(MySQLDataSource.class);
 
     private static Properties connectionsProps;
 

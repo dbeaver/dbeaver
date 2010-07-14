@@ -52,7 +52,7 @@ import java.util.*;
  */
 public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
-    static Log log = LogFactory.getLog(ValueViewDialog.class);
+    static final Log log = LogFactory.getLog(ValueViewDialog.class);
 
     private static int dialogCount = 0;
 

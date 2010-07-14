@@ -40,7 +40,7 @@ import java.io.IOException;
  */
 public abstract class TargetPrefPage extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
-    static Log log = LogFactory.getLog(TargetPrefPage.class);
+    static final Log log = LogFactory.getLog(TargetPrefPage.class);
 
     private DataSourceDescriptor dataSource;
     private Composite parentComposite;

@@ -18,7 +18,7 @@ import java.util.ArrayList;
  */
 public class DefaultProgressMonitor implements DBRProgressMonitor {
 
-    static Log log = LogFactory.getLog(DefaultProgressMonitor.class);
+    static final Log log = LogFactory.getLog(DefaultProgressMonitor.class);
 
     private IProgressMonitor nestedMonitor;
     private List<DBRBlockingObject> blocks = null;

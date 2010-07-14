@@ -30,7 +30,7 @@ import java.util.*;
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
 public class DBMModel implements IDataSourceListener, DBSListener {
-    static Log log = LogFactory.getLog(DBMModel.class);
+    static final Log log = LogFactory.getLog(DBMModel.class);
 
     private DataSourceRegistry registry;
     private DBMRoot root;

@@ -52,7 +52,7 @@ import java.util.List;
  */
 public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
-    static Log log = LogFactory.getLog(JDBCContentValueHandler.class);
+    static final Log log = LogFactory.getLog(JDBCContentValueHandler.class);
 
     public static final JDBCContentValueHandler INSTANCE = new JDBCContentValueHandler();
 

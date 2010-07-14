@@ -30,7 +30,7 @@ public abstract class JDBCStructCache<
     CHILD extends DBSObject>
     extends JDBCObjectCache<OBJECT>
 {
-    static Log log = LogFactory.getLog(JDBCStructCache.class);
+    static final Log log = LogFactory.getLog(JDBCStructCache.class);
 
     private boolean childrenCached = false;
 

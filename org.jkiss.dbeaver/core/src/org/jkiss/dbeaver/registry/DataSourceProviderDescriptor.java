@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class DataSourceProviderDescriptor extends AbstractDescriptor
 {
-    static Log log = LogFactory.getLog(DataSourceProviderDescriptor.class);
+    static final Log log = LogFactory.getLog(DataSourceProviderDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider";
 

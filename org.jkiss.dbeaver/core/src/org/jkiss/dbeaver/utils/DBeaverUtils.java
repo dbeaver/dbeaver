@@ -27,7 +27,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class DBeaverUtils
 {
-    static Log log = LogFactory.getLog(DBeaverUtils.class);
+    static final Log log = LogFactory.getLog(DBeaverUtils.class);
 
     public static void showErrorDialog(
         Shell shell,

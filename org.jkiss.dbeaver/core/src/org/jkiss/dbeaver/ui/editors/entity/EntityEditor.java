@@ -44,7 +44,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class EntityEditor extends MultiPageEditorPart implements IDBMListener, IMetaModelView, IDataSourceUser
 {
-    static Log log = LogFactory.getLog(EntityEditor.class);
+    static final Log log = LogFactory.getLog(EntityEditor.class);
 
     private EntityEditorInput entityInput;
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();

@@ -39,7 +39,7 @@ public class SugiyamaGraph {
     /**
      * The logger.
      */
-    private static Log log = LogFactory.getLog(SugiyamaGraph.class);
+    private static final Log log = LogFactory.getLog(SugiyamaGraph.class);
     
     /**
      * A map of lists of SugiyamaNodes.

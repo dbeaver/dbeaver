@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class HexEditControl extends Composite {
 
-    static Log log = LogFactory.getLog(HexEditControl.class);
+    static final Log log = LogFactory.getLog(HexEditControl.class);
     /**
      * Map of displayed chars. Chars that cannot be displayed correctly are changed for a '.' char.
      * There are differences on which chars can correctly be displayed in each operating system,

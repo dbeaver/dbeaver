@@ -44,7 +44,7 @@ public class LongestPath {
     /**
      * The logger.
      */
-    private static Log log = LogFactory.getLog(LongestPath.class);
+    private static final Log log = LogFactory.getLog(LongestPath.class);
 
     private int depth;
 

@@ -14,7 +14,7 @@ import java.util.ArrayList;
  */
 public class QMControllerImpl implements QMController {
 
-    static Log log = LogFactory.getLog(QMControllerImpl.class);
+    static final Log log = LogFactory.getLog(QMControllerImpl.class);
 
     private QMExecutionHandlerImpl defaultHandler;
     private List<QMExecutionHandler> handlers = new ArrayList<QMExecutionHandler>();

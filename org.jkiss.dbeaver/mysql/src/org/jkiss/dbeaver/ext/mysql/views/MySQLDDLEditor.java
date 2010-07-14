@@ -25,7 +25,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class MySQLDDLEditor extends EditorPart implements IObjectEditor
 {
-    static Log log = LogFactory.getLog(MySQLDDLEditor.class);
+    static final Log log = LogFactory.getLog(MySQLDDLEditor.class);
 
     private Text ddlText;
     private MySQLTable table;

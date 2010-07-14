@@ -31,7 +31,7 @@ import java.sql.SQLException;
  */
 public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent, DBDValueClonable, DBDContentStorage  {
 
-    static Log log = LogFactory.getLog(JDBCContentBytes.class);
+    static final Log log = LogFactory.getLog(JDBCContentBytes.class);
 
     private byte[] originalData;
     private byte[] data;

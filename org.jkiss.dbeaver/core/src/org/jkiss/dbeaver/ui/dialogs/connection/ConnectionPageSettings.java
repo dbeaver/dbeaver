@@ -29,7 +29,7 @@ import java.util.Map;
 
 class ConnectionPageSettings extends WizardPage implements IDataSourceEditorSite
 {
-    static Log log = LogFactory.getLog(DriverDescriptor.class);
+    static final Log log = LogFactory.getLog(DriverDescriptor.class);
 
     private ConnectionWizard wizard;
     private DataSourceViewDescriptor viewDescriptor;

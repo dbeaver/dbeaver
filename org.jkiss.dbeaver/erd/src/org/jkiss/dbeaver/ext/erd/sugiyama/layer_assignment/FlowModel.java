@@ -38,7 +38,7 @@ public class FlowModel {
     /**
      * The logger.
      */
-    private static Log log = LogFactory.getLog(FlowModel.class);
+    private static final Log log = LogFactory.getLog(FlowModel.class);
 
     private int depth;
 

@@ -33,7 +33,7 @@ import java.sql.SQLException;
  */
 public class JDBCContentChars extends JDBCContentAbstract implements DBDContent, DBDValueClonable, DBDContentStorage {
 
-    static Log log = LogFactory.getLog(JDBCContentChars.class);
+    static final Log log = LogFactory.getLog(JDBCContentChars.class);
 
     public static final int MAX_STRING_LENGTH = 1000;
 

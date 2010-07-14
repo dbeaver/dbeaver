@@ -20,7 +20,7 @@ import java.lang.reflect.Modifier;
  */
 public class LoadingUtils {
 
-    static Log log = LogFactory.getLog(LoadingUtils.class);
+    static final Log log = LogFactory.getLog(LoadingUtils.class);
 
     public static Object extractPropertyValue(DBRProgressMonitor monitor, Object object, String propertyName
     )

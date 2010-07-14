@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.ext.erd.model.ERDNode;
  */
 public class SugiyamaContainer extends SugiyamaNode implements LayouterContainer {
 
-    private static Log log = LogFactory.getLog(SugiyamaContainer.class);
+    private static final Log log = LogFactory.getLog(SugiyamaContainer.class);
     
     private Layouter layouter;
     

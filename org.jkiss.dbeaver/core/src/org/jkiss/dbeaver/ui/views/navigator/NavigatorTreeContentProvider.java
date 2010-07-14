@@ -24,7 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 */
 class NavigatorTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider
 {
-    static Log log = LogFactory.getLog(NavigatorTreeContentProvider.class);
+    static final Log log = LogFactory.getLog(NavigatorTreeContentProvider.class);
 
     private static final Object[] EMPTY_CHILDREN = new Object[0];
 

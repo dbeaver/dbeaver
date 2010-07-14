@@ -37,7 +37,7 @@ import java.util.Comparator;
 public class DataSourceRegistry implements DBPRegistry
 {
 
-    static Log log = LogFactory.getLog(DataSourceRegistry.class);
+    static final Log log = LogFactory.getLog(DataSourceRegistry.class);
 
     private DBeaverCore core;
     private File workspaceRoot;

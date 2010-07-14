@@ -39,7 +39,7 @@ import java.util.Map;
  */
 public class ResultSetManagable implements JDBCResultSet {
 
-    static Log log = LogFactory.getLog(ResultSetManagable.class);
+    static final Log log = LogFactory.getLog(ResultSetManagable.class);
 
     private PreparedStatementManagable statement;
     private ResultSet original;

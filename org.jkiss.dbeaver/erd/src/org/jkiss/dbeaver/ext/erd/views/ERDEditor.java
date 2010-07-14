@@ -9,9 +9,12 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.jgraph.JGraph;
@@ -36,13 +39,13 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
-import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 
-import javax.swing.JScrollPane;
-import java.awt.Graphics;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -55,7 +58,7 @@ import java.util.Map;
  */
 public class ERDEditor extends EditorPart implements IObjectEditor
 {
-    static Log log = LogFactory.getLog(ERDEditor.class);
+    static final Log log = LogFactory.getLog(ERDEditor.class);
 
     private DBSStructureContainer container;
     private ERDModel graphModel;
@@ -63,12 +66,7 @@ public class ERDEditor extends EditorPart implements IObjectEditor
 
     //private ScrolledComposite scroller;
     private Composite graphContainer;
-    private ProgressBar progressBar;
-    private Label listInfoLabel;
-    private ToolItem itemZoomIn;
-    private ToolItem itemZoomOut;
-    private ToolItem itemZoomNorm;
-    private ToolItem itemRefresh;
+    private ProgressControl progressControl;
     private JGraph graph;
     private Graphics graphics;
 
@@ -89,8 +87,7 @@ public class ERDEditor extends EditorPart implements IObjectEditor
     @Override
     public void dispose()
     {
-        listInfoLabel.dispose();
-        progressBar.dispose();
+        progressControl.dispose();
         super.dispose();
     }
 
@@ -115,79 +112,16 @@ public class ERDEditor extends EditorPart implements IObjectEditor
         //scroller.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_RED));
         
 */
-        Composite panelContainer = new Composite(parent, SWT.NONE);
-        panelContainer.setLayout(new GridLayout(1, true));
+        progressControl = new ProgressControl(parent, SWT.NONE, this.getSite().getPart());
 
-        graphContainer = new Composite(panelContainer, SWT.EMBEDDED);
+        graphContainer = new Composite(progressControl, SWT.EMBEDDED);
         graphContainer.setLayout(new GridLayout(1, true));
         GridData gd = new GridData(GridData.FILL_BOTH);
         graphContainer.setLayoutData(gd);
         //graphContainer.setBackground(PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_GREEN));
         //scroller.setContent(graphContainer);
 
-        {
-            Composite infoGroup = new Composite(panelContainer, SWT.NONE);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            infoGroup.setLayoutData(gd);
-            GridLayout gl = new GridLayout(3, false);
-            gl.marginHeight = 0;
-            gl.marginWidth = 0;
-            infoGroup.setLayout(gl);
-
-            listInfoLabel = new Label(infoGroup, SWT.NONE);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 200;
-            listInfoLabel.setLayoutData(gd);
-
-            progressBar = new ProgressBar(infoGroup, SWT.SMOOTH | SWT.HORIZONTAL);
-            progressBar.setSize(300, 16);
-            progressBar.setState(SWT.NORMAL);
-            progressBar.setMinimum(0);
-            progressBar.setMaximum(10);
-            progressBar.setToolTipText("Graph loading progress");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            progressBar.setLayoutData(gd);
-
-            {
-                ToolBar toolBar = new ToolBar(infoGroup, SWT.FLAT | SWT.HORIZONTAL);
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-                toolBar.setLayoutData(gd);
-                itemZoomIn = UIUtils.createToolItem(toolBar, "Zoom In", DBIcon.ZOOM_IN, new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        synchronized (ERDEditor.this) {
-                            if (graph.getScale() < 2.0) {
-                                graph.setScale(graph.getScale() + 0.1);
-                            }
-                        }
-                    }
-                });
-                itemZoomOut = UIUtils.createToolItem(toolBar, "Zoom Out", DBIcon.ZOOM_OUT, new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        synchronized (ERDEditor.this) {
-                            if (graph.getScale() > 0.2) {
-                                graph.setScale(graph.getScale() - 0.1);
-                            }
-                        }
-                    }
-                });
-                itemZoomNorm = UIUtils.createToolItem(toolBar, "Standard Zoom", DBIcon.ZOOM, new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        synchronized (ERDEditor.this) {
-                            graph.setScale(1.0);
-                        }
-                    }
-                });
-                itemRefresh = UIUtils.createToolItem(toolBar, "Refresh", DBIcon.RS_REFRESH, new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        
-                    }
-                });
-            }
-        }
+        progressControl.createProgressPanel();
     }
 
     public void setFocus()
@@ -239,7 +173,7 @@ public class ERDEditor extends EditorPart implements IObjectEditor
                         return null;
                     }
                 },
-                new GraphLoadVisualizer());
+                progressControl.createVisualizer());
         }
     }
 
@@ -250,14 +184,12 @@ public class ERDEditor extends EditorPart implements IObjectEditor
             new Runnable() {
                 public void run()
                 {
-                    if (!listInfoLabel.isDisposed()) {
-                        if (cell instanceof ERDNode) {
-                            listInfoLabel.setText(((ERDNode)cell).getId());
-                        } else if (cell == null) {
-                            listInfoLabel.setText("");
-                        } else {
-                            listInfoLabel.setText(cell.toString());
-                        }
+                    if (cell instanceof ERDNode) {
+                        progressControl.setInfo(((ERDNode)cell).getId());
+                    } else if (cell == null) {
+                        progressControl.setInfo("");
+                    } else {
+                        progressControl.setInfo(cell.toString());
                     }
                 }
             });
@@ -395,38 +327,83 @@ public class ERDEditor extends EditorPart implements IObjectEditor
         }
     }
 
-    private class GraphLoadVisualizer implements ILoadVisualizer<Object> {
+    private class ProgressControl extends ProgressPageControl {
+        private ToolItem itemZoomIn;
+        private ToolItem itemZoomOut;
+        private ToolItem itemZoomNorm;
+        private ToolItem itemRefresh;
 
-        private boolean completed = false;
-        private int loadCount = 0;
-
-        public Shell getShell() {
-            return getShell();
+        private ProgressControl(Composite parent, int style, IWorkbenchPart workbenchPart) {
+            super(parent, style, workbenchPart);
         }
 
-        public boolean isCompleted()
-        {
-            return completed;
+        @Override
+        public void dispose() {
+            UIUtils.dispose(itemZoomIn);
+            UIUtils.dispose(itemZoomOut);
+            UIUtils.dispose(itemZoomNorm);
+            UIUtils.dispose(itemRefresh);
+            super.dispose();
         }
 
-        public void visualizeLoading()
+        protected int getProgressCellCount()
         {
-            if (!progressBar.isDisposed()) {
-                if (!progressBar.isVisible()) {
-                    progressBar.setVisible(true);
+            return 3;
+        }
+
+        @Override
+        protected Composite createProgressPanel(Composite container) {
+            Composite infoGroup = super.createProgressPanel(container);
+
+            ToolBar toolBar = new ToolBar(infoGroup, SWT.FLAT | SWT.HORIZONTAL);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+            toolBar.setLayoutData(gd);
+            itemZoomIn = UIUtils.createToolItem(toolBar, "Zoom In", DBIcon.ZOOM_IN, new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+                    synchronized (ERDEditor.this) {
+                        if (graph.getScale() < 2.0) {
+                            graph.setScale(graph.getScale() + 0.1);
+                        }
+                    }
                 }
-                progressBar.setSelection(loadCount++ % 10);
-            }
+            });
+            itemZoomOut = UIUtils.createToolItem(toolBar, "Zoom Out", DBIcon.ZOOM_OUT, new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+                    synchronized (ERDEditor.this) {
+                        if (graph.getScale() > 0.2) {
+                            graph.setScale(graph.getScale() - 0.1);
+                        }
+                    }
+                }
+            });
+            itemZoomNorm = UIUtils.createToolItem(toolBar, "Standard Zoom", DBIcon.ZOOM, new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+                    synchronized (ERDEditor.this) {
+                        graph.setScale(1.0);
+                    }
+                }
+            });
+            itemRefresh = UIUtils.createToolItem(toolBar, "Refresh", DBIcon.RS_REFRESH, new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+
+                }
+            });
+            return infoGroup;
         }
 
-        public void completeLoading(Object result)
+        GraphLoadVisualizer createVisualizer()
         {
-            completed = true;
-            visualizeLoading();
-            if (!progressBar.isDisposed()) {
-                progressBar.setVisible(false);
-            }
+            return new GraphLoadVisualizer();
+        }
+
+        private class GraphLoadVisualizer extends ProgressVisualizer<Object> {
+
         }
     }
+
 
 }

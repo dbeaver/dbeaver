@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
  */
 public class LobViewDialog extends ValueViewDialog {
 
-    static Log log = LogFactory.getLog(LobViewDialog.class);
+    static final Log log = LogFactory.getLog(LobViewDialog.class);
 
     public LobViewDialog(DBDValueController valueController) {
         super(valueController);

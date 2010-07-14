@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.model.DBPDriverCustomQuery;
 public class DriverCustomQueryDescriptor implements DBPDriverCustomQuery
 {
 
-    static Log log = LogFactory.getLog(DriverCustomQueryDescriptor.class);
+    static final Log log = LogFactory.getLog(DriverCustomQueryDescriptor.class);
 
     private String name;
     private String query;

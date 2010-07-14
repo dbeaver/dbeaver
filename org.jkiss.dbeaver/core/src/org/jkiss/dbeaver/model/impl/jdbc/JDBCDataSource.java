@@ -35,7 +35,7 @@ public abstract class JDBCDataSource
         DBSStructureContainer,
         DBSObject
 {
-    static Log log = LogFactory.getLog(JDBCDataSource.class);
+    static final Log log = LogFactory.getLog(JDBCDataSource.class);
 
     private DBSDataSourceContainer container;
     private Connection connection;

@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ui.controls.proptree.DriverPropertiesControl;
  */
 public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
 {
-    static Log log = LogFactory.getLog(MySQLConnectionPage.class);
+    static final Log log = LogFactory.getLog(MySQLConnectionPage.class);
 
     private IDataSourceEditorSite site;
     private Text hostText;

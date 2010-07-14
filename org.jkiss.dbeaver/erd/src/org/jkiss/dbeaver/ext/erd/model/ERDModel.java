@@ -9,7 +9,7 @@ import org.jgraph.graph.DefaultGraphModel;
  */
 public class ERDModel extends DefaultGraphModel {
 
-    static Log log = LogFactory.getLog(ERDModel.class);
+    static final Log log = LogFactory.getLog(ERDModel.class);
 
     public ERDModel()
     {

@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
  */
 public class SQLLogViewer extends Viewer implements IPropertyChangeListener
 {
-    static Log log = LogFactory.getLog(ResultSetViewer.class);
+    static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
     private Table logTable;
 

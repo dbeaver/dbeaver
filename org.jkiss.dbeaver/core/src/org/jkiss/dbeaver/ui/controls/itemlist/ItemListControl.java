@@ -8,20 +8,9 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerSorter;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -35,41 +24,32 @@ import org.jkiss.dbeaver.model.meta.DBMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
-import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.views.properties.PropertyAnnoDescriptor;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * ItemListControl
  */
-public class ItemListControl extends Composite implements IMetaModelView, IDoubleClickListener
+public class ItemListControl extends ProgressPageControl implements IMetaModelView, IDoubleClickListener
 {
-    static Log log = LogFactory.getLog(ItemListControl.class);
-
-    private final static int PROGRESS_MIN = 0;
-    private final static int PROGRESS_MAX = 10;
+    static final Log log = LogFactory.getLog(ItemListControl.class);
 
     private final static Object LOADING_VALUE = new Object();
 
-    private IWorkbenchPart workbenchPart;
     private DBMNode node;
 
     private TableViewer itemsViewer;
-    private ProgressBar progressBar;
     private List<TableColumn> columns = new ArrayList<TableColumn>();
     private SortListener sortListener;
-    private Label listInfoLabel;
     private Map<DBSObject, ItemRow> itemMap = new IdentityHashMap<DBSObject, ItemRow>();
     private ISelectionProvider selectionProvider;
     private IDoubleClickListener doubleClickHandler;
@@ -82,8 +62,7 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
         IWorkbenchPart workbenchPart,
         DBMNode node)
     {
-        super(parent, style);
-        this.workbenchPart = workbenchPart;
+        super(parent, style, workbenchPart);
         this.node = node;
 
         this.setLayout(new GridLayout(1, true));
@@ -115,28 +94,7 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
         itemsViewer.setLabelProvider(new ItemLabelProvider());
         itemsViewer.addDoubleClickListener(this);
 
-        {
-            Composite infoGroup = new Composite(this, SWT.NONE);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            infoGroup.setLayoutData(gd);
-            GridLayout gl = new GridLayout(2, false);
-            gl.marginHeight = 0;
-            gl.marginWidth = 0;
-            infoGroup.setLayout(gl);
-
-            listInfoLabel = new Label(infoGroup, SWT.NONE);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            listInfoLabel.setLayoutData(gd);
-
-            progressBar = new ProgressBar(infoGroup, SWT.SMOOTH | SWT.HORIZONTAL);
-            progressBar.setSize(300, 16);
-            progressBar.setState(SWT.NORMAL);
-            progressBar.setMinimum(PROGRESS_MIN);
-            progressBar.setMaximum(PROGRESS_MAX);
-            progressBar.setToolTipText("Loading progress");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            progressBar.setLayoutData(gd);
-        }
+        super.createProgressPanel(this);
 
         sortListener = new SortListener();
 
@@ -176,8 +134,6 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
     public void dispose()
     {
         itemsViewer.getControl().dispose();
-        listInfoLabel.dispose();
-        progressBar.dispose();
         super.dispose();
     }
 
@@ -398,41 +354,13 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
         }
     }
 
-    private class ItemsLoadVisualizer implements ILoadVisualizer<List<DBMNode>> {
+    private class ItemsLoadVisualizer extends ProgressVisualizer<List<DBMNode>> {
 
-        private boolean completed = false;
         private List<ItemCell> lazyItems = new ArrayList<ItemCell>();
-
-        public Shell getShell() {
-            return workbenchPart.getSite().getShell();
-        }
-
-        public boolean isCompleted()
-        {
-            return completed;
-        }
-
-        public void visualizeLoading()
-        {
-            if (!progressBar.isDisposed()) {
-                if (!progressBar.isVisible()) {
-                    progressBar.setVisible(true);
-                }
-                progressBar.setSelection(loadCount++ % PROGRESS_MAX);
-            }
-        }
 
         public void completeLoading(List<DBMNode> items)
         {
-            completed = true;
-
-            if (itemsViewer.getControl().isDisposed()) {
-                return;
-            }
-            if (!progressBar.isDisposed()) {
-                progressBar.setState(SWT.PAUSED);
-                progressBar.setVisible(false);
-            }
+            super.completeLoading(items);
 
             List<DBSObject> objectList = new ArrayList<DBSObject>();
             if (!CommonUtils.isEmpty(items)) {
@@ -442,9 +370,9 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
                 }
             }
             if (itemMap.isEmpty()) {
-                listInfoLabel.setText("No items");
+                setInfo("No items");
             } else {
-                listInfoLabel.setText(itemMap.size() + " items");
+                setInfo(itemMap.size() + " items");
             }
 
             Table table = itemsViewer.getTable();
@@ -536,7 +464,7 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
             //rows.add(row);
 
             if (itemMap.size() % 10 == 0) {
-                listInfoLabel.setText(itemMap.size() + " items");
+                setInfo(itemMap.size() + " items");
             }
 
             return item.getObject();
@@ -574,38 +502,13 @@ public class ItemListControl extends Composite implements IMetaModelView, IDoubl
         }
     }
 
-    private class ValuesLoadVisualizer implements ILoadVisualizer<Object> {
-
-        private boolean completed = false;
-
-        public Shell getShell() {
-            return workbenchPart.getSite().getShell();
-        }
-
-        public boolean isCompleted()
-        {
-            return completed;
-        }
+    private class ValuesLoadVisualizer extends ProgressVisualizer<Object> {
 
         public void visualizeLoading()
         {
-            if (!progressBar.isDisposed()) {
-                if (!progressBar.isVisible()) {
-                    progressBar.setVisible(true);
-                }
-                progressBar.setSelection(loadCount++ % PROGRESS_MAX);
-            }
+            super.visualizeLoading();
             if (!itemsViewer.getTable().isDisposed()) {
                 itemsViewer.refresh();
-            }
-        }
-
-        public void completeLoading(Object result)
-        {
-            completed = true;
-            visualizeLoading();
-            if (!progressBar.isDisposed()) {
-                progressBar.setVisible(false);
             }
         }
     }

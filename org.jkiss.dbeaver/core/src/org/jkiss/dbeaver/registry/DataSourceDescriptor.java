@@ -50,7 +50,7 @@ import java.text.DateFormat;
  */
 public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImageProvider, IAdaptable, IActionFilter
 {
-    static Log log = LogFactory.getLog(DataSourceDescriptor.class);
+    static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
 
     private DriverDescriptor driver;
     private DBPConnectionInfo connectionInfo;

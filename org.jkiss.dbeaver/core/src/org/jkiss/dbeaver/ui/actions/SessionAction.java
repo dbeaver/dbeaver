@@ -12,7 +12,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 public abstract class SessionAction extends DataSourceAction
 {
-    static Log log = LogFactory.getLog(SessionAction.class);
+    static final Log log = LogFactory.getLog(SessionAction.class);
 
     @Override
     protected void updateAction(IAction action)

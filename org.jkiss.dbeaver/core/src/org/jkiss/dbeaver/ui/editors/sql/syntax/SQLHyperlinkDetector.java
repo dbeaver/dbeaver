@@ -36,7 +36,7 @@ import java.util.List;
  */
 public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 {
-    static Log log = LogFactory.getLog(SQLHyperlinkDetector.class);
+    static final Log log = LogFactory.getLog(SQLHyperlinkDetector.class);
 
     private SQLEditor editor;
 

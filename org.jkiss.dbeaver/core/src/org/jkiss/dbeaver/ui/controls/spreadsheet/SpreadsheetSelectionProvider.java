@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class SpreadsheetSelectionProvider implements ISelectionProvider
 {
-    static Log log = LogFactory.getLog(SpreadsheetSelectionProvider.class);
+    static final Log log = LogFactory.getLog(SpreadsheetSelectionProvider.class);
 
     private Spreadsheet grid;
     private List<ISelectionChangedListener> listeners;
