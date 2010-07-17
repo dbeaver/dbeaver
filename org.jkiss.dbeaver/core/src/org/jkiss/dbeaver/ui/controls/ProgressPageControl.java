@@ -25,7 +25,7 @@ public class ProgressPageControl extends Composite
     static final Log log = LogFactory.getLog(ProgressPageControl.class);
 
     private final static int PROGRESS_MIN = 0;
-    private final static int PROGRESS_MAX = 10;
+    private final static int PROGRESS_MAX = 20;
 
     protected final IWorkbenchPart workbenchPart;
     private ProgressBar progressBar;
@@ -118,7 +118,11 @@ public class ProgressPageControl extends Composite
                 if (!progressBar.isVisible()) {
                     progressBar.setVisible(true);
                 }
-                progressBar.setSelection(loadCount++ % PROGRESS_MAX);
+                progressBar.setSelection(loadCount);
+                loadCount++;
+                if (loadCount > PROGRESS_MAX) {
+                    loadCount = PROGRESS_MIN;
+                }
             }
         }
 
