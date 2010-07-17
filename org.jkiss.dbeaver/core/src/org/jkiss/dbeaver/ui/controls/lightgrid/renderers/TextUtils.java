@@ -103,18 +103,23 @@ public class TextUtils
         int length = t.length();
         if (width < length * avgCharWidth) {
             length = width / avgCharWidth;
+            length *= 1.5;
+/*
             for (;;) {
                 String tmp = t.substring(0, length);
                 int textLength = gc.textExtent(tmp).x;
                 if (textLength >= width) {
                     break;
                 }
-                length += 5;
+                length += 100;
                 if (length >= t.length()) {
                     return t;
                 }
             }
-            t = t.substring(0, length);
+*/
+            if (length < t.length()) {
+                t = t.substring(0, length);
+            }
         }
         return t;
 /*
