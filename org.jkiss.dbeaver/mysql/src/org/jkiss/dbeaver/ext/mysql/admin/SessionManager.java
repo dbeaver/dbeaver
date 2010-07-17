@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
 
@@ -42,6 +43,28 @@ import net.sf.jkiss.utils.CommonUtils;
 public class SessionManager extends SinglePageDatabaseEditor<IDatabaseEditorInput>
 {
     static final Log log = LogFactory.getLog(SessionManager.class);
+
+    private static class SessionInfo {
+        String pid;
+        String user;
+        String host;
+        String db;
+        String command;
+        String time;
+        String state;
+        String info;
+
+        private SessionInfo(String pid, String user, String host, String db, String command, String time, String state, String info) {
+            this.pid = pid;
+            this.user = user;
+            this.host = host;
+            this.db = db;
+            this.command = command;
+            this.time = time;
+            this.state = state;
+            this.info = info;
+        }
+    }
 
     private PageControl pageControl;
     private TableViewer sessionsViewer;
@@ -87,22 +110,7 @@ public class SessionManager extends SinglePageDatabaseEditor<IDatabaseEditorInpu
         table.setHeaderVisible(true);
         gd = new GridData(GridData.FILL_BOTH);
         table.setLayoutData(gd);
-        sessionsViewer.setContentProvider(new IStructuredContentProvider()
-        {
-            public void dispose()
-            {
-            }
-            public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-            {
-            }
-            public Object[] getElements(Object inputElement)
-            {
-                if (inputElement instanceof List) {
-                    return ((List)inputElement).toArray();
-                }
-                return null;
-            }
-        });
+        sessionsViewer.setContentProvider(new ListContentProvider());
         sessionsViewer.setLabelProvider(new SessionLabelProvider());
         sessionsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
@@ -143,28 +151,6 @@ public class SessionManager extends SinglePageDatabaseEditor<IDatabaseEditorInpu
             return (SessionInfo)((IStructuredSelection) selection).getFirstElement();
         } else {
             return null;
-        }
-    }
-
-    private static class SessionInfo {
-        String pid;
-        String user;
-        String host;
-        String db;
-        String command;
-        String time;
-        String state;
-        String info;
-
-        private SessionInfo(String pid, String user, String host, String db, String command, String time, String state, String info) {
-            this.pid = pid;
-            this.user = user;
-            this.host = host;
-            this.db = db;
-            this.command = command;
-            this.time = time;
-            this.state = state;
-            this.info = info;
         }
     }
 
@@ -210,7 +196,7 @@ public class SessionManager extends SinglePageDatabaseEditor<IDatabaseEditorInpu
                     }
                 }
             },
-            pageControl.createVisualizer());
+            pageControl.createRefreshVisualizer());
     }
 
     private void killSession(final SessionInfo session, final boolean killConnection) {
@@ -330,7 +316,7 @@ public class SessionManager extends SinglePageDatabaseEditor<IDatabaseEditorInpu
             });
 
             killQueryButton = new Button(panel, SWT.PUSH);
-            killQueryButton.setText("Terminsate query");
+            killQueryButton.setText("Terminate query");
             killQueryButton.setEnabled(false);
             killQueryButton.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -354,7 +340,7 @@ public class SessionManager extends SinglePageDatabaseEditor<IDatabaseEditorInpu
             return panel;
         }
 
-        public ProgressVisualizer<List<SessionInfo>> createVisualizer() {
+        public ProgressVisualizer<List<SessionInfo>> createRefreshVisualizer() {
             return new SessionsVisualizer();
         }
 
@@ -374,7 +360,6 @@ public class SessionManager extends SinglePageDatabaseEditor<IDatabaseEditorInpu
                 try {
                     sessionsViewer.setInput(sessionInfos);
                     UIUtils.packColumns(table);
-                    //UIUtils.maxTableColumnsWidth(table);
                     setInfo(sessionInfos.size() + " sessions");
                 } finally {
                     table.setRedraw(true);
