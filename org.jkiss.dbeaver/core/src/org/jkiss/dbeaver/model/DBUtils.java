@@ -18,14 +18,7 @@ import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSForeignKey;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
-import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSTablePath;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 
@@ -87,8 +80,12 @@ public final class DBUtils {
         return getObjectByPath(monitor, rootSC, path.getCatalogName(), path.getSchemaName(), path.getTableName());
     }
 
-    public static DBSObject getObjectByPath(DBRProgressMonitor monitor, DBSStructureContainer rootSC,
-                                            String catalogName, String schemaName, String tableName)
+    public static DBSObject getObjectByPath(
+            DBRProgressMonitor monitor,
+            DBSStructureContainer rootSC,
+            String catalogName,
+            String schemaName,
+            String tableName)
         throws DBException
     {
         if (!CommonUtils.isEmpty(catalogName)) {
@@ -105,7 +102,22 @@ public final class DBUtils {
             }
             rootSC = (DBSStructureContainer) schema;
         }
-        return rootSC.getChild(monitor, tableName);
+        Class<? extends DBSObject> childType = rootSC.getChildType(monitor);
+        if (DBSTable.class.isAssignableFrom(childType)) {
+            return rootSC.getChild(monitor, tableName);
+        } else {
+            // Child is not a table. May be catalog/schema names was omitted.
+            // Try to use active child
+            if (rootSC instanceof DBSStructureContainerActive) {
+                DBSObject activeChild = ((DBSStructureContainerActive) rootSC).getActiveChild(monitor);
+                if (activeChild instanceof DBSStructureContainer && DBSTable.class.isAssignableFrom(((DBSStructureContainer)activeChild).getChildType(monitor))) {
+                    return ((DBSStructureContainer)activeChild).getChild(monitor, tableName);
+                }
+            }
+
+            // Table container not found
+            return null;
+        }
     }
 
     public static DBSObject findNestedObject(DBRProgressMonitor monitor, DBSStructureContainer parent,

@@ -1,5 +1,10 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import com.mysql.jdbc.ConnectionImpl;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,6 +26,8 @@ import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
 import org.jkiss.dbeaver.model.DBUtils;
 
+import java.lang.reflect.Field;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +49,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         // Prevent stupid errors "Cannot convert value '0000-00-00 00:00:00' from column X to TIMESTAMP"
         // Widely appears in MyISAM tables (joomla, etc)
         connectionsProps.setProperty("zeroDateTimeBehavior", "convertToNull");
+        // Set utf-8 as default charset
+        connectionsProps.setProperty("characterEncoding", "utf-8");
     }
 
     private List<MySQLEngine> engines;
@@ -319,5 +328,26 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
             context.close();
             JDBCUtils.endConnectionBlock(monitor);
         }
+    }
+
+    @Override
+    protected Connection openConnection(DBRProgressMonitor monitor) throws DBException {
+        ConnectionImpl mysqlConnection = (ConnectionImpl)super.openConnection(monitor);
+
+        // Fix "errorMessageEncoding" error. Dirty hack.
+        // characterSetMetadata -> errorMessageEncoding
+        try {
+            Field characterSetMetadataField = ConnectionImpl.class.getDeclaredField("characterSetMetadata");
+            Field errorMessageEncodingField = ConnectionImpl.class.getDeclaredField("errorMessageEncoding");
+            characterSetMetadataField.setAccessible(true);
+            errorMessageEncodingField.setAccessible(true);
+            errorMessageEncodingField.set(
+                mysqlConnection,
+                characterSetMetadataField.get(mysqlConnection));
+        } catch (Throwable e) {
+            log.debug(e);
+        }
+
+        return mysqlConnection;
     }
 }

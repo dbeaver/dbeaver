@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
+<!--
+  ~ Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+  -->
+
 <plugin>
 
     <extension
@@ -108,7 +112,7 @@
                     description="MySQL standard driver">
                     <query label="GET_ACTIVE_DB">select database()</query>
                     <query label="SET_ACTIVE_DB">use ?</query>
-                    <library path="drivers/mysql-connector-java-5.1.5-bin.jar"/>
+                    <library path="drivers/mysql-connector-java-5.1.13-bin.jar"/>
                 </driver>
                 <driver
                     id="postgresql"

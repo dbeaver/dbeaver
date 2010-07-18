@@ -10,5 +10,5 @@ Require-Bundle: org.eclipse.ui,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Vendor: Serge Rieder
-Bundle-ClassPath: drivers/mysql-connector-java-5.1.5-bin.jar,
+Bundle-ClassPath: drivers/mysql-connector-java-5.1.13-bin.jar,
  .

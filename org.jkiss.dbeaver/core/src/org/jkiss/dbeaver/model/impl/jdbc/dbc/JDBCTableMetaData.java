@@ -65,9 +65,9 @@ public class JDBCTableMetaData implements DBCTableMetaData {
                 DBSStructureContainer sc = (DBSStructureContainer) dataSource;
                 Class<? extends DBSObject> scChildType = sc.getChildType(monitor);
                 DBSObject tableObject;
-                if (catalogName != null && scChildType != null && DBSSchema.class.isAssignableFrom(scChildType)) {
+                if (!CommonUtils.isEmpty(catalogName) && scChildType != null && DBSSchema.class.isAssignableFrom(scChildType)) {
                     // Do not use catalog name
-                    // Some datasource do not load catalog list but result set metadata contains one (e.g. DB2)
+                    // Some data sources do not load catalog list but result set meta data contains one (e.g. DB2)
                     tableObject = DBUtils.getObjectByPath(monitor, sc, null, schemaName, tableName);
                 } else {
                     tableObject = DBUtils.getObjectByPath(monitor, sc, catalogName, schemaName, tableName);
