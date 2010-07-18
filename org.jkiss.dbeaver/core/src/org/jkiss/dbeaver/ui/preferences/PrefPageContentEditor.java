@@ -10,6 +10,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 import java.io.IOException;
@@ -58,8 +59,7 @@ public class PrefPageContentEditor extends TargetPrefPage
             contentGroup.setText("Content");
             contentGroup.setLayout(new GridLayout(2, false));
 
-            Label label = new Label(contentGroup, SWT.NONE);
-            label.setText("Maximum text editor content length:");
+            UIUtils.createControlLabel(contentGroup, "Maximum text editor content length");
 
             maxTextContentSize = new Spinner(contentGroup, SWT.BORDER);
             maxTextContentSize.setSelection(0);
@@ -68,17 +68,9 @@ public class PrefPageContentEditor extends TargetPrefPage
             maxTextContentSize.setMinimum(0);
             maxTextContentSize.setMaximum(Integer.MAX_VALUE);
 
-            label = new Label(contentGroup, SWT.NONE);
-            label.setText("Edit LONG columns as LOBs:");
-            editLongAsLobCheck = new Button(contentGroup, SWT.CHECK);
-
-            label = new Label(contentGroup, SWT.NONE);
-            label.setText("Commit session on value edit apply:");
-            commitOnEditApplyCheck = new Button(contentGroup, SWT.CHECK);
-
-            label = new Label(contentGroup, SWT.NONE);
-            label.setText("Commit session on content edit apply:");
-            commitOnContentApplyCheck = new Button(contentGroup, SWT.CHECK);
+            editLongAsLobCheck = UIUtils.createLabelCheckbox(contentGroup, "Edit LONG columns as LOBs", false);
+            commitOnEditApplyCheck = UIUtils.createLabelCheckbox(contentGroup, "Commit session on value edit apply", false);
+            commitOnContentApplyCheck = UIUtils.createLabelCheckbox(contentGroup, "Commit session on content edit apply", false);
         }
         return composite;
     }

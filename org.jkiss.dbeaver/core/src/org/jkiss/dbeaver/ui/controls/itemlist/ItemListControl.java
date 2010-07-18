@@ -277,7 +277,7 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
                 return row.object.getNodeName();
             }
             ItemCell cell = getCellByIndex(row, columnIndex);
-            if (cell.value == null) {
+            if (cell == null || cell.value == null) {
                 return "";
             }
             if (cell.value instanceof Boolean) {

@@ -1,21 +1,5 @@
 /*
- * binary, a java binary editor
- * Copyright (C) 2006, 2009 Jordi Bergenthal, pestatije(-at_)users.sourceforge.net
- * The official binary site is sourceforge.net/projects/binary
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 package org.jkiss.dbeaver.ui.editors.binary;
 
@@ -33,6 +17,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.widgets.List;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.*;
 
@@ -126,18 +111,14 @@ public class PreferencesManager {
         gridLayout.numColumns = 3;
         group.setLayout(gridLayout);
 
-        Label label = new Label(group, SWT.NONE);
-        label.setText("Available fixed char width fonts:");
+        Label label = UIUtils.createControlLabel(group, "Available fixed char width fonts");
         label.setVisible(true);
         GridData gridData = new GridData();
         gridData.horizontalSpan = 3;
         label.setLayoutData(gridData);
-        Label label1 = new Label(group, SWT.NONE);
-        label1.setText("Name");
-        Label label2 = new Label(group, SWT.NONE);
-        label2.setText("Style");
-        Label label3 = new Label(group, SWT.NONE);
-        label3.setText("Size");
+        UIUtils.createControlLabel(group, "Name");
+        UIUtils.createControlLabel(group, "Style");
+        UIUtils.createControlLabel(group, "Size");
 
         text = new Text(group, SWT.SINGLE | SWT.BORDER);
         GridData gridData4 = new GridData();

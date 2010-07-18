@@ -10,6 +10,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
 import java.text.NumberFormat;
@@ -155,4 +157,66 @@ public class UIUtils {
         fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
         return new Font(normalFont.getDevice(), fontData[0]);
     }
+
+    public static Group createControlGroup(Composite parent, String label, int columns, int layoutStyle, int widthHint)
+    {
+        Group group = new Group(parent, SWT.NONE);
+        group.setText(label);
+
+        GridData gd = new GridData(layoutStyle);
+        if (widthHint > 0) {
+            gd.widthHint = widthHint;
+        }
+        group.setLayoutData(gd);
+
+        GridLayout gl = new GridLayout(columns, false);
+        group.setLayout(gl);
+
+        return group;
+    }
+
+    public static Label createControlLabel(Composite parent, String label)
+    {
+        Label textLabel = new Label(parent, SWT.NONE);
+        textLabel.setText(label + ": ");
+
+        return textLabel;
+    }
+
+    public static Text createLabelText(Composite parent, String label, String value)
+    {
+        return createLabelText(parent, label, value, SWT.BORDER);
+    }
+
+    public static Text createLabelText(Composite parent, String label, String value, int style)
+    {
+        createControlLabel(parent, label);
+
+        Text text = new Text(parent, style);
+        text.setText(value);
+
+        if (parent.getLayout() instanceof GridLayout) {
+            text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        }
+
+        return text;
+    }
+
+    public static Button createLabelCheckbox(Composite parent, String label, boolean checked)
+    {
+        return createLabelCheckbox(parent, label, checked, SWT.NONE);
+    }
+
+    public static Button createLabelCheckbox(Composite parent, String label, boolean checked, int style)
+    {
+        createControlLabel(parent, label);
+
+        Button button = new Button(parent, SWT.CHECK | style);
+        if (checked) {
+            button.setSelection(true);
+        }
+
+        return button;
+    }
+
 }

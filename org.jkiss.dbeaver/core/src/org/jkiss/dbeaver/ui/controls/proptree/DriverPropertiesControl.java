@@ -746,15 +746,7 @@ public class DriverPropertiesControl extends Composite {
             GridData gd = new GridData(GridData.FILL_BOTH);
             propGroup.setLayoutData(gd);
 
-            Label usernameLabel = new Label(propGroup, SWT.NONE);
-            usernameLabel.setText("Property Name:");
-            usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-            propNameText = new Text(propGroup, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            //gd.horizontalSpan = 3;
-            propNameText.setLayoutData(gd);
+            propNameText = UIUtils.createLabelText(propGroup, "Property Name", "");
 
             return parent;
         }

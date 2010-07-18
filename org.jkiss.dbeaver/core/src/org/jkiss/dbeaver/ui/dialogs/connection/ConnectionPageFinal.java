@@ -17,6 +17,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well
@@ -80,19 +81,7 @@ class ConnectionPageFinal extends WizardPage
         //gd.verticalAlignment = GridData.VERTICAL_ALIGN_CENTER;
         group.setLayoutData(gd);
 
-        Label nameLabel = new Label(group, SWT.NONE);
-        nameLabel.setText("Connection name:");
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        nameLabel.setLayoutData(gd);
-
-        connectionNameText = new Text(group, SWT.BORDER);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.grabExcessHorizontalSpace = true;
-        gd.minimumWidth = 200;
-        connectionNameText.setLayoutData(gd);
-        if (dataSource != null) {
-            connectionNameText.setText(dataSource.getName());
-        }
+        connectionNameText = UIUtils.createLabelText(group, "Connection name", dataSource == null ? "" : dataSource.getName());
 
         savePasswordCheck = new Button(group, SWT.CHECK);
         savePasswordCheck.setText("Save password locally");

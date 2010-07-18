@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 import java.io.IOException;
@@ -66,8 +67,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             commonGroup.setLayout(new GridLayout(2, false));
 
             {
-                Label rsSizeLabel = new Label(commonGroup, SWT.NONE);
-                rsSizeLabel.setText("ResultSet maximum size:");
+                UIUtils.createControlLabel(commonGroup, "ResultSet maximum size");
 
                 resultSetSize = new Spinner(commonGroup, SWT.BORDER);
                 resultSetSize.setSelection(0);
@@ -78,8 +78,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             }
 
             {
-                Label executeTimeoutLabel = new Label(commonGroup, SWT.NONE);
-                executeTimeoutLabel.setText("SQL statement timeout:");
+                UIUtils.createControlLabel(commonGroup, "SQL statement timeout");
 
                 executeTimeoutText = new Spinner(commonGroup, SWT.BORDER);
                 executeTimeoutText.setSelection(0);
@@ -97,8 +96,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             scriptsGroup.setLayout(new GridLayout(2, false));
 
             {
-                Label commitTypeLabel = new Label(scriptsGroup, SWT.NONE);
-                commitTypeLabel.setText("Commit type:");
+                UIUtils.createControlLabel(scriptsGroup, "Commit type");
 
                 commitTypeCombo = new Combo(scriptsGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
                 commitTypeCombo.add("At script end", SQLScriptCommitType.AT_END.ordinal());
@@ -108,8 +106,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             }
 
             {
-                Label commitLinesLabel = new Label(scriptsGroup, SWT.NONE);
-                commitLinesLabel.setText("Commit after line:");
+                UIUtils.createControlLabel(scriptsGroup, "Commit after line");
                 commitLinesText = new Spinner(scriptsGroup, SWT.BORDER);
                 commitLinesText.setSelection(0);
                 commitLinesText.setDigits(0);
@@ -119,8 +116,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             }
 
             {
-                Label errorHandlingLabel = new Label(scriptsGroup, SWT.NONE);
-                errorHandlingLabel.setText("Error handling:");
+                UIUtils.createControlLabel(scriptsGroup, "Error handling");
 
                 errorHandlingCombo = new Combo(scriptsGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
                 errorHandlingCombo.add("Stop + rollback", SQLScriptErrorHandling.STOP_ROLLBACK.ordinal());
@@ -128,12 +124,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
                 errorHandlingCombo.add("Ignore", SQLScriptErrorHandling.IGNORE.ordinal());
             }
 
-            {
-                Label fetchLabel = new Label(scriptsGroup, SWT.NONE);
-                fetchLabel.setText("Fetch resultsets:");
-
-                fetchResultSets = new Button(scriptsGroup, SWT.CHECK);
-            }
+            fetchResultSets = UIUtils.createLabelCheckbox(scriptsGroup, "Fetch resultsets", false);
         }
 
         return composite;

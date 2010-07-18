@@ -11,6 +11,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 import java.io.IOException;
@@ -55,21 +56,8 @@ public class PrefPageCommon extends TargetPrefPage
             txnGroup.setText("Transactions");
             txnGroup.setLayout(new GridLayout(2, false));
 
-            {
-                Label acEnabledLabel = new Label(txnGroup, SWT.NONE);
-                acEnabledLabel.setText("Auto-commit by default:");
-
-                autoCommitCheck = new Button(txnGroup, SWT.CHECK);
-                autoCommitCheck.setText("Enabled");
-            }
-
-            {
-                Label acEnabledLabel = new Label(txnGroup, SWT.NONE);
-                acEnabledLabel.setText("Rollback on error:");
-
-                rollbackOnErrorCheck = new Button(txnGroup, SWT.CHECK);
-                rollbackOnErrorCheck.setText("Enabled");
-            }
+            autoCommitCheck = UIUtils.createLabelCheckbox(txnGroup, "Auto-commit by default", false);
+            rollbackOnErrorCheck = UIUtils.createLabelCheckbox(txnGroup, "Rollback on error", false);
         }
 
 

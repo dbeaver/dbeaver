@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.File;
@@ -90,11 +91,7 @@ public class EditDriverDialog extends Dialog
             gd = new GridData(GridData.FILL_HORIZONTAL);
             propsGroup.setLayoutData(gd);
 
-            Label driverNameLabel = new Label(propsGroup, SWT.NONE);
-            driverNameLabel.setText("Driver Name: ");
-            driverNameText = new Text(propsGroup, SWT.BORDER | advStyle);
-            driverNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            driverNameText.setText(CommonUtils.getString(driver.getName()));
+            driverNameText = UIUtils.createLabelText(propsGroup, "Driver Name", CommonUtils.getString(driver.getName()), SWT.BORDER | advStyle);
             driverNameText.addModifyListener(new ModifyListener()
             {
                 public void modifyText(ModifyEvent e)
@@ -103,17 +100,9 @@ public class EditDriverDialog extends Dialog
                 }
             });
 
-            Label driverDescLabel = new Label(propsGroup, SWT.NONE);
-            driverDescLabel.setText("Description: ");
-            driverDescText = new Text(propsGroup, SWT.BORDER | advStyle);
-            driverDescText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            driverDescText.setText(CommonUtils.getString(driver.getDescription()));
+            driverDescText = UIUtils.createLabelText(propsGroup, "Description", CommonUtils.getString(driver.getDescription()), SWT.BORDER | advStyle);
 
-            Label driverClassLabel = new Label(propsGroup, SWT.NONE);
-            driverClassLabel.setText("Class Name: ");
-            driverClassText = new Text(propsGroup, SWT.BORDER | advStyle);
-            driverClassText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            driverClassText.setText(CommonUtils.getString(driver.getDriverClassName()));
+            driverClassText = UIUtils.createLabelText(propsGroup, "Class Name", CommonUtils.getString(driver.getDriverClassName()), SWT.BORDER | advStyle);
             driverClassText.addModifyListener(new ModifyListener()
             {
                 public void modifyText(ModifyEvent e)
@@ -122,11 +111,7 @@ public class EditDriverDialog extends Dialog
                 }
             });
 
-            Label driverURLLabel = new Label(propsGroup, SWT.NONE);
-            driverURLLabel.setText("Sample URL: ");
-            driverURLText = new Text(propsGroup, SWT.BORDER | advStyle);
-            driverURLText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            driverURLText.setText(CommonUtils.getString(driver.getSampleURL()));
+            driverURLText = UIUtils.createLabelText(propsGroup, "Sample URL", CommonUtils.getString(driver.getSampleURL()), SWT.BORDER | advStyle);
             driverURLText.addModifyListener(new ModifyListener()
             {
                 public void modifyText(ModifyEvent e)
@@ -135,11 +120,8 @@ public class EditDriverDialog extends Dialog
                 }
             });
 
-            Label defaultPortLabel = new Label(propsGroup, SWT.NONE);
-            defaultPortLabel.setText("Default Port: ");
-            driverPortText= new Text(propsGroup, SWT.BORDER | advStyle);
-            //driverPortText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            driverPortText.setText(driver.getDefaultPort() == null ? "" : driver.getDefaultPort().toString());
+            driverPortText = UIUtils.createLabelText(propsGroup, "Default Port", driver.getDefaultPort() == null ? "" : driver.getDefaultPort().toString(), SWT.BORDER | advStyle);
+            driverPortText.setLayoutData(new GridData(SWT.NONE));
             driverPortText.addModifyListener(new ModifyListener()
             {
                 public void modifyText(ModifyEvent e)
@@ -154,8 +136,7 @@ public class EditDriverDialog extends Dialog
             gd = new GridData(GridData.FILL_BOTH);
             libsGroup.setLayoutData(gd);
 
-            Label libsLabel = new Label(libsGroup, SWT.NONE);
-            libsLabel.setText("Additional Driver Libraries: ");
+            Label libsLabel = UIUtils.createControlLabel(libsGroup, "Additional Driver Libraries");
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             libsLabel.setLayoutData(gd);
