@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.ext.ui.IDatabaseObjectManager;
+import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 
 /**
  * EntityEditorDescriptor

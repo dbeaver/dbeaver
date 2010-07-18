@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectManager;
+import org.jkiss.dbeaver.runtime.AbstractDatabaseObjectManager;
 
 /**
  * DefaultDatabaseObjectManager

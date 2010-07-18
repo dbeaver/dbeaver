@@ -4,21 +4,21 @@
 
 package org.jkiss.dbeaver.ui.editors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.model.DBPObject;
 
 /**
  * AbstractDatabaseObjectEditor
  */
-public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE> extends EditorPart implements IDatabaseObjectEditor<OBJECT_TYPE>
+public abstract class AbstractDatabaseObjectEditor<OBJECT_MANAGER extends IDatabaseObjectManager<? extends DBPObject>>
+    extends EditorPart implements IDatabaseObjectEditor<OBJECT_MANAGER>
 {
-    static final Log log = LogFactory.getLog(AbstractDatabaseObjectEditor.class);
 
     @SuppressWarnings("unchecked")
     public void init(IEditorSite site, IEditorInput input)

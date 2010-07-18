@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaEdge;
 import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaLayouter;
 import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaNode;
-import org.jkiss.dbeaver.ext.ui.IDatabaseObjectManager;
+import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -55,7 +55,7 @@ import java.util.Map;
 /**
  * ERDEditor
  */
-public class ERDEditor extends AbstractDatabaseObjectEditor<DBSStructureContainer>
+public class ERDEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManager<DBSStructureContainer>>
 {
     static final Log log = LogFactory.getLog(ERDEditor.class);
 

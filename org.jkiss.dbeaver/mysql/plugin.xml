@@ -99,7 +99,7 @@
                     </items>
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSAdminister" label="Aminister" iconId="#settings" description="Maintance/Settings">
-                    <object type="org.jkiss.dbeaver.ext.mysql.admin.SessionManager" label="Sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.mysql.admin.SessionManager"/>
+                    <object type="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor" label="Sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"/>
                     <folder type="org.jkiss.dbeaver.model.struct.DBSVariables" label="Variables" iconId="#variables" description="Server variables"/>
                     <folder type="org.jkiss.dbeaver.model.struct.DBSLogs" label="Server Logs" iconId="#logs" description="Server logs"/>
                     <folder type="org.jkiss.dbeaver.model.struct.DBSRepl" label="Replication Status" iconId="#repl" description="Replication Status"/>
@@ -136,15 +136,15 @@
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <manager
-            id="org.jkiss.dbeaver.ext.mysql.views.MySQLUserManager"
-            class="org.jkiss.dbeaver.ext.mysql.views.MySQLUserManager"
+            id="org.jkiss.dbeaver.ext.mysql.runtime.MySQLUserManager"
+            class="org.jkiss.dbeaver.ext.mysql.runtime.MySQLUserManager"
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"
             label="User manager">
         </manager>
 
         <editor
-            id="org.jkiss.dbeaver.ext.mysql.views.MySQLDDLEditor"
-            class="org.jkiss.dbeaver.ext.mysql.views.MySQLDDLEditor"
+            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLDDLEditor"
+            class="org.jkiss.dbeaver.ext.mysql.editors.MySQLDDLEditor"
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"
             main="false"
             label="DDL"
@@ -154,8 +154,8 @@
         </editor>
 
         <editor
-            id="org.jkiss.dbeaver.ext.mysql.views.MySQLProcedureEditor"
-            class="org.jkiss.dbeaver.ext.mysql.views.MySQLProcedureEditor"
+            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLProcedureEditor"
+            class="org.jkiss.dbeaver.ext.mysql.editors.MySQLProcedureEditor"
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"
             main="false"
             label="Source"
@@ -165,8 +165,8 @@
         </editor>
 
         <editor
-            id="org.jkiss.dbeaver.ext.mysql.views.MySQLTriggerEditor"
-            class="org.jkiss.dbeaver.ext.mysql.views.MySQLTriggerEditor"
+            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLTriggerEditor"
+            class="org.jkiss.dbeaver.ext.mysql.editors.MySQLTriggerEditor"
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger"
             main="false"
             label="Statement"
@@ -176,8 +176,8 @@
         </editor>
 
         <editor
-            id="org.jkiss.dbeaver.ext.mysql.views.MySQLUserEditorGeneral"
-            class="org.jkiss.dbeaver.ext.mysql.views.MySQLUserEditorGeneral"
+            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLUserEditorGeneral"
+            class="org.jkiss.dbeaver.ext.mysql.editors.MySQLUserEditorGeneral"
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"
             main="true"
             label="General"
@@ -185,8 +185,8 @@
             icon="#user">
         </editor>
         <editor
-            id="org.jkiss.dbeaver.ext.mysql.views.MySQLUserEditorPrivileges"
-            class="org.jkiss.dbeaver.ext.mysql.views.MySQLUserEditorPrivileges"
+            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLUserEditorPrivileges"
+            class="org.jkiss.dbeaver.ext.mysql.editors.MySQLUserEditorPrivileges"
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"
             main="false"
             label="Privileges"
@@ -216,8 +216,8 @@
         <editor
             name="Session Manager"
             icon="icons/sessions.png"
-            class="org.jkiss.dbeaver.ext.mysql.admin.SessionManager"
-            id="org.jkiss.dbeaver.ext.mysql.admin.SessionManager">
+            class="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"
+            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor">
         </editor>
     </extension>
 

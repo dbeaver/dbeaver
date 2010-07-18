@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.mysql.views;
+package org.jkiss.dbeaver.ext.mysql.editors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

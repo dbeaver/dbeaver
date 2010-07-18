@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.mysql.admin;
+package org.jkiss.dbeaver.ext.mysql.editors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,11 +38,11 @@ import java.util.List;
 import net.sf.jkiss.utils.CommonUtils;
 
 /**
- * FolderEditor
+ * MySQLSessionEditor
  */
-public class SessionManager extends SinglePageDatabaseEditor<IDatabaseEditorInput>
+public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput>
 {
-    static final Log log = LogFactory.getLog(SessionManager.class);
+    static final Log log = LogFactory.getLog(MySQLSessionEditor.class);
 
     private static class SessionInfo {
         String pid;

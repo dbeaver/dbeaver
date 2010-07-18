@@ -2,26 +2,26 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.mysql.views;
+package org.jkiss.dbeaver.ext.mysql.editors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
-import org.jkiss.dbeaver.ext.ui.IDatabaseObjectManager;
+import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
 /**
- * MySQLTriggerEditor
+ * MySQLProcedureEditor
  */
-public class MySQLTriggerEditor extends AbstractDatabaseObjectEditor<MySQLTrigger>
+public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManager<MySQLProcedure>>
 {
-    static final Log log = LogFactory.getLog(MySQLTriggerEditor.class);
+    static final Log log = LogFactory.getLog(MySQLProcedureEditor.class);
 
     private Text ddlText;
-    private MySQLTrigger trigger;
+    private MySQLProcedure procedure;
 
     public void createPartControl(Composite parent)
     {
@@ -33,16 +33,16 @@ public class MySQLTriggerEditor extends AbstractDatabaseObjectEditor<MySQLTrigge
     public void activatePart()
     {
         try {
-            ddlText.setText(trigger.getBody());
+            ddlText.setText(procedure.getBody());
         }
         catch (Exception ex) {
-            log.error("Can't obtain trigger body", ex);
+            log.error("Can't obtain procedure body", ex);
         }
     }
 
-    public void initObjectEditor(IDatabaseObjectManager<MySQLTrigger> manager)
+    public void initObjectEditor(IDatabaseObjectManager<MySQLProcedure> manager)
     {
-        trigger = (MySQLTrigger) manager;
+        procedure = (MySQLProcedure) manager;
     }
 
 }
