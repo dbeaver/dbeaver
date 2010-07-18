@@ -59,6 +59,7 @@ Export-Package: net.sf.jkiss.utils,
    org.jkiss.dbeaver.model.struct,
    org.jkiss.dbeaver.model.dbc,
    org.jkiss.dbeaver.model.runtime",
+ org.jkiss.dbeaver.model.access,
  org.jkiss.dbeaver.model.anno,
  org.jkiss.dbeaver.model.data;
   uses:="org.jkiss.dbeaver.model,

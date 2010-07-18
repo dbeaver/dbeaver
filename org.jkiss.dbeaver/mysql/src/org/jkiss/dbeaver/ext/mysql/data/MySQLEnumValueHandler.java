@@ -87,7 +87,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
 
             Combo editor = new Combo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
             List<String> enumValues = value.getColumn().getEnumValues();
-            editor.add("");
+            //editor.add("");
             if (enumValues != null) {
                 for (String enumValue : enumValues) {
                     editor.add(enumValue);

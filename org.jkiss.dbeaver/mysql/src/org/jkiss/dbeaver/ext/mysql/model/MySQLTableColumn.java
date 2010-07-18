@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.DBException;
@@ -24,7 +28,7 @@ import net.sf.jkiss.utils.CommonUtils;
  */
 public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
 {
-    private static Pattern enumPattern = Pattern.compile("'([^']+)'");
+    private static Pattern enumPattern = Pattern.compile("'([^']*)'");
 
     private MySQLTable table;
     private String defaultValue;

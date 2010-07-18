@@ -10,21 +10,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectAction;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
-import org.jkiss.dbeaver.model.struct.DBSTablePath;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -55,6 +50,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
 
     private List<MySQLEngine> engines;
     private List<MySQLCatalog> catalogs;
+    private List<MySQLUser> users;
     private MySQLCatalog activeCatalog;
 
     public MySQLDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
@@ -350,4 +346,52 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
 
         return mysqlConnection;
     }
+
+
+    public List<MySQLUser> getUsers(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        if (users == null) {
+            users = loadUsers(monitor);
+        }
+        return users;
+    }
+
+    public MySQLUser getUser(DBRProgressMonitor monitor, String name)
+        throws DBException
+    {
+        return DBUtils.findObject(getUsers(monitor), name);
+    }
+
+    private List<MySQLUser> loadUsers(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        JDBCExecutionContext context = getDataSource().openContext(monitor, "Load users");
+        try {
+            JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM mysql.user ORDER BY user");
+            try {
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    List<MySQLUser> userList = new ArrayList<MySQLUser>();
+                    while (dbResult.next()) {
+                            MySQLUser user = new MySQLUser(this, dbResult);
+                            userList.add(user);
+                        }
+                    return userList;
+                } finally {
+                    dbResult.close();
+                }
+            } finally {
+                dbStat.close();
+            }
+        }
+        catch (SQLException ex) {
+            throw new DBException(ex);
+        }
+        finally {
+            context.close();
+        }
+    }
+
+
 }

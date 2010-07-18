@@ -34,6 +34,7 @@ public class JDBCUtils
         try {
             return dbResult.getString(columnName);
         } catch (SQLException e) {
+            log.debug(e);
             return null;
         }
     }
@@ -43,6 +44,7 @@ public class JDBCUtils
         try {
             return dbResult.getString(columnIndex);
         } catch (SQLException e) {
+            log.debug(e);
             return null;
         }
     }
@@ -52,6 +54,7 @@ public class JDBCUtils
         try {
             return dbResult.getInt(columnName);
         } catch (SQLException e) {
+            log.debug(e);
             return 0;
         }
     }
@@ -61,6 +64,7 @@ public class JDBCUtils
         try {
             return dbResult.getLong(columnName);
         } catch (SQLException e) {
+            log.debug(e);
             return 0;
         }
     }
@@ -70,7 +74,18 @@ public class JDBCUtils
         try {
             return dbResult.getBoolean(columnName);
         } catch (SQLException e) {
+            log.debug(e);
             return false;
+        }
+    }
+
+    public static byte[] safeGetBytes(ResultSet dbResult, String columnName)
+    {
+        try {
+            return dbResult.getBytes(columnName);
+        } catch (SQLException e) {
+            log.debug(e);
+            return null;
         }
     }
 

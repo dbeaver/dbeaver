@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
+<!--
+  ~ Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+  -->
+
 <plugin>
 
     <extension
@@ -90,17 +94,11 @@
                         </items>
                     </items>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSSecurity" label="Security" iconId="#security" description="Security">
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSUser" label="Users" iconId="#users" description="Users">
-                        <items label="Users" path="users" property="users" iconId="#user">
-                        </items>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.model.struct.DBSPrivilegy" label="Privileges" iconId="#roles" description="Privileges">
-                        <items label="Privileges" path="privileges" property="privileges" iconId="#role">
-                        </items>
-                    </folder>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSUser" label="Users" iconId="#users" description="Users">
+                    <items label="Users" path="users" property="users" iconId="#user">
+                    </items>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSMaintance" label="Maintance/Settings" iconId="#settings" description="Maintance/Settings">
+                <folder type="org.jkiss.dbeaver.model.struct.DBSAdminister" label="Aminister" iconId="#settings" description="Maintance/Settings">
                     <object type="org.jkiss.dbeaver.ext.mysql.admin.SessionManager" label="Sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.mysql.admin.SessionManager"/>
                     <folder type="org.jkiss.dbeaver.model.struct.DBSVariables" label="Variables" iconId="#variables" description="Server variables"/>
                     <folder type="org.jkiss.dbeaver.model.struct.DBSLogs" label="Server Logs" iconId="#logs" description="Server logs"/>
