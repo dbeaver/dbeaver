@@ -11,14 +11,14 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
-import org.jkiss.dbeaver.ext.ui.IObjectEditor;
+import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 
 /**
- * AbstractObjectEditor
+ * AbstractDatabaseObjectEditor
  */
-public abstract class AbstractObjectEditor extends EditorPart implements IObjectEditor
+public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE> extends EditorPart implements IDatabaseObjectEditor<OBJECT_TYPE>
 {
-    static final Log log = LogFactory.getLog(AbstractObjectEditor.class);
+    static final Log log = LogFactory.getLog(AbstractDatabaseObjectEditor.class);
 
     @SuppressWarnings("unchecked")
     public void init(IEditorSite site, IEditorInput input)

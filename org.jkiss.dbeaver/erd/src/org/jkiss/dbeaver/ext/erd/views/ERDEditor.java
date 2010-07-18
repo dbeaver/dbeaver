@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaEdge;
 import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaLayouter;
 import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaNode;
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.ext.ui.IDatabaseObjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.AbstractObjectEditor;
+import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 
 import javax.swing.*;
@@ -55,7 +55,7 @@ import java.util.Map;
 /**
  * ERDEditor
  */
-public class ERDEditor extends AbstractObjectEditor
+public class ERDEditor extends AbstractDatabaseObjectEditor<DBSStructureContainer>
 {
     static final Log log = LogFactory.getLog(ERDEditor.class);
 
@@ -166,17 +166,9 @@ public class ERDEditor extends AbstractObjectEditor
             });
     }
 
-    public DBPObject getObject()
+    public void initObjectEditor(IDatabaseObjectManager<DBSStructureContainer> manager)
     {
-        return container;
-    }
-
-    public void setObject(DBPObject object)
-    {
-        if (!(object instanceof DBSStructureContainer)) {
-            throw new IllegalArgumentException("object must be of type " + DBSStructureContainer.class);
-        }
-        container = (DBSStructureContainer)object;
+        container = manager.getObject();
     }
 
     private void loadModel(DBRProgressMonitor monitor)

@@ -97,7 +97,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.workspace = ResourcesPlugin.getWorkspace();
         this.rootPath = Platform.getLocation();
         this.dataSourceRegistry = new DataSourceRegistry(this, Platform.getExtensionRegistry());
-        this.editorsRegistry = new EntityEditorsRegistry(this, Platform.getExtensionRegistry());
+        this.editorsRegistry = new EntityEditorsRegistry(Platform.getExtensionRegistry());
         this.metaModel = new DBMModel(dataSourceRegistry);
         this.queryManager = new QMControllerImpl(dataSourceRegistry);
         // Make default project

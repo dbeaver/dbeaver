@@ -348,7 +348,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         try {
             if (!isManagable()) {
                 // Use plugin's classloader to load driver
-                driverClass = getProviderDescriptor().getContributorBundle().loadClass(driverClassName);
+                driverClass = super.getObjectClass(driverClassName);
             } else {
                 // Load driver classes into core module using plugin class loader
                 driverClass = Class.forName(driverClassName, true, classLoader);

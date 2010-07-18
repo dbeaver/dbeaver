@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
-import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,26 +15,27 @@ import java.util.List;
  */
 public class EntityEditorsRegistry {
 
-    private DBeaverCore core;
+    private static final String CFG_EDITOR = "editor";
+    private static final String CFG_MANAGER = "manager";
+
     private List<EntityEditorDescriptor> entityEditors = new ArrayList<EntityEditorDescriptor>();
+    private List<EntityManagerDescriptor> entityManagers = new ArrayList<EntityManagerDescriptor>();
 
-    public EntityEditorsRegistry(DBeaverCore core, IExtensionRegistry registry)
+    public EntityEditorsRegistry(IExtensionRegistry registry)
     {
-        this.core = core;
-
         // Load datasource providers from external plugins
 
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EntityEditorDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
-            EntityEditorDescriptor provider = new EntityEditorDescriptor(this, ext);
-            entityEditors.add(provider);
+            if (CFG_EDITOR.equals(ext.getName())) {
+                EntityEditorDescriptor descriptor = new EntityEditorDescriptor(ext);
+                entityEditors.add(descriptor);
+            } else if (CFG_MANAGER.equals(ext.getName())) {
+                EntityManagerDescriptor descriptor = new EntityManagerDescriptor(ext);
+                entityManagers.add(descriptor);
+            }
         }
 
-    }
-
-    public DBeaverCore getCore()
-    {
-        return core;
     }
 
     public List<EntityEditorDescriptor> getEntityEditors()
@@ -62,6 +62,16 @@ public class EntityEditorsRegistry {
             }
         }
         return editors;
+    }
+
+    public EntityManagerDescriptor getEntityManager(Class objectType)
+    {
+        for (EntityManagerDescriptor descriptor : entityManagers) {
+            if (descriptor.appliesToType(objectType)) {
+                return descriptor;
+            }
+        }
+        return null;
     }
 
 }

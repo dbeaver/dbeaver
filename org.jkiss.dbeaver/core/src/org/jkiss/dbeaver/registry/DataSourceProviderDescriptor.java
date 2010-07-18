@@ -10,14 +10,9 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
-import org.jkiss.dbeaver.registry.tree.DBXTreeIcon;
-import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
-import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
-import org.jkiss.dbeaver.registry.tree.DBXTreeObject;
-import org.osgi.framework.Bundle;
+import org.jkiss.dbeaver.registry.tree.*;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,6 +91,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         }
     }
 
+    public void dispose()
+    {
+        if (this.instance != null) {
+            this.instance.close();
+        }
+    }
+
     public DataSourceRegistry getRegistry()
     {
         return registry;
@@ -130,19 +132,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         throws DBException
     {
         if (instance == null) {
-            Bundle extBundle = getContributorBundle();
-            if (extBundle == null) {
-                throw new DBException("Bundle " + getContributorName() + " not found");
-            }
-
             // Create instance
-            Class<?> implClass;
-            try {
-                implClass = extBundle.loadClass(implClassName);
-            }
-            catch (ClassNotFoundException ex) {
-                throw new DBException("Can't locate data source provider implementation class: '" + implClassName + "'",
-                    ex);
+            Class<?> implClass = getObjectClass(implClassName);
+            if (implClass == null) {
+                throw new DBException("Can't find descriptor class '" + implClassName + "'");
             }
             try {
                 this.instance = (DBPDataSourceProvider) implClass.newInstance();
@@ -238,13 +231,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             }
         }
         return null;
-    }
-
-    void close()
-    {
-        if (this.instance != null) {
-            this.instance.close();
-        }
     }
 
     private DBXTreeNode loadTreeInfo(IConfigurationElement config)

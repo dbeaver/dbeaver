@@ -10,13 +10,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.ui.editors.AbstractObjectEditor;
+import org.jkiss.dbeaver.ext.ui.IDatabaseObjectManager;
+import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
 /**
  * MySQLProcedureEditor
  */
-public class MySQLProcedureEditor extends AbstractObjectEditor
+public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<MySQLProcedure>
 {
     static final Log log = LogFactory.getLog(MySQLProcedureEditor.class);
 
@@ -40,17 +40,9 @@ public class MySQLProcedureEditor extends AbstractObjectEditor
         }
     }
 
-    public DBPObject getObject()
+    public void initObjectEditor(IDatabaseObjectManager<MySQLProcedure> manager)
     {
-        return procedure;
-    }
-
-    public void setObject(DBPObject object)
-    {
-        if (!(object instanceof MySQLProcedure)) {
-            throw new IllegalArgumentException("object must be of type " + MySQLProcedure.class);
-        }
-        procedure = (MySQLProcedure) object;
+        procedure = (MySQLProcedure) manager;
     }
 
 }

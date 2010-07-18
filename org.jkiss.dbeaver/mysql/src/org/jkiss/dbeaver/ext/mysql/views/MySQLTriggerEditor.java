@@ -6,23 +6,17 @@ package org.jkiss.dbeaver.ext.mysql.views;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
-import org.jkiss.dbeaver.ext.ui.IObjectEditor;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.ui.editors.AbstractObjectEditor;
+import org.jkiss.dbeaver.ext.ui.IDatabaseObjectManager;
+import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
 /**
  * MySQLTriggerEditor
  */
-public class MySQLTriggerEditor extends AbstractObjectEditor
+public class MySQLTriggerEditor extends AbstractDatabaseObjectEditor<MySQLTrigger>
 {
     static final Log log = LogFactory.getLog(MySQLTriggerEditor.class);
 
@@ -46,17 +40,9 @@ public class MySQLTriggerEditor extends AbstractObjectEditor
         }
     }
 
-    public DBPObject getObject()
+    public void initObjectEditor(IDatabaseObjectManager<MySQLTrigger> manager)
     {
-        return trigger;
-    }
-
-    public void setObject(DBPObject object)
-    {
-        if (!(object instanceof MySQLTrigger)) {
-            throw new IllegalArgumentException("object must be of type " + MySQLTrigger.class);
-        }
-        trigger = (MySQLTrigger) object;
+        trigger = (MySQLTrigger) manager;
     }
 
 }

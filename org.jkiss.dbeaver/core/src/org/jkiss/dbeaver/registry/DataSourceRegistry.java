@@ -111,6 +111,10 @@ public class DataSourceRegistry implements DBPRegistry
             dataSourceDescriptor.dispose();
         }
         this.dataSources.clear();
+
+        for (DataSourceProviderDescriptor providerDescriptor : this.dataSourceProviders) {
+            providerDescriptor.dispose();
+        }
         this.dataSourceProviders.clear();
     }
 

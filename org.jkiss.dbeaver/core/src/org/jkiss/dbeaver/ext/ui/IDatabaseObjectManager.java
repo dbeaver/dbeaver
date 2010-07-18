@@ -9,11 +9,11 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * IObjectEditor
+ * IDatabaseObjectManager
  */
-public interface IObjectManager {
+public interface IDatabaseObjectManager<OBJECT_TYPE> {
 
-    DBPObject getObject();
+    OBJECT_TYPE getObject();
 
     void init(DBPObject object) throws DBException;
 

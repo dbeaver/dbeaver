@@ -46,12 +46,16 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
         if (className == null) {
             log.error("Empty class name of data type provider '" + this.id + "'");
         } else {
-            try {
-                Class<?> providerClass = getContributorBundle().loadClass(className);
-                this.instance = (DBDDataTypeProvider) providerClass.newInstance();
-            }
-            catch (Exception e) {
-                log.error("Can't instantiate data type provider '" + this.id + "'", e);
+            Class<?> providerClass = super.getObjectClass(className);
+            if (providerClass == null) {
+                log.error("Could not find datatype provider class '" + this.className + "'");
+            } else {
+                try {
+                    this.instance = (DBDDataTypeProvider) providerClass.newInstance();
+                }
+                catch (Exception e) {
+                    log.error("Can't instantiate data type provider '" + this.id + "'", e);
+                }
             }
         }
 
@@ -94,11 +98,6 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
             }
             supportedDataSources.add(dsProvider);
         }
-    }
-
-    public DataSourceRegistry getRegistry()
-    {
-        return registry;
     }
 
     public String getId()
@@ -150,4 +149,5 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
     {
         return supportedDataSources;
     }
+
 }

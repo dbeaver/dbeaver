@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.IContributor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverIcons;
 import org.osgi.framework.Bundle;
 
@@ -69,6 +70,24 @@ public class AbstractDescriptor {
             }
         }
         return null;
+    }
+
+    protected Class getObjectClass(String className)
+    {
+        Class objectClass = null;
+        try {
+            objectClass = DBeaverCore.getInstance().getPlugin().getBundle().loadClass(className);
+        } catch (ClassNotFoundException ex) {
+            // do nothing
+        }
+        if (objectClass == null) {
+            try {
+                objectClass = getContributorBundle().loadClass(className);
+            } catch (ClassNotFoundException ex) {
+                log.error("Can't determine object class '" + className + "'", ex);
+            }
+        }
+        return objectClass;
     }
 
 }

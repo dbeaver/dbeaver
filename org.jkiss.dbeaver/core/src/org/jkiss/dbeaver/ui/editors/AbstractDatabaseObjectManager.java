@@ -5,14 +5,14 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.ui.IObjectManager;
+import org.jkiss.dbeaver.ext.ui.IDatabaseObjectManager;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * AbstractObjectManager
+ * AbstractDatabaseObjectManager
  */
-public abstract class AbstractObjectManager<OBJECT_TYPE extends DBPObject> implements IObjectManager {
+public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBPObject> implements IDatabaseObjectManager<OBJECT_TYPE> {
 
     private OBJECT_TYPE object;
 

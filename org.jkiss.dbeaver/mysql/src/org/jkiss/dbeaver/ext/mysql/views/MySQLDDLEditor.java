@@ -12,17 +12,17 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.ext.ui.IDatabaseObjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.ui.editors.AbstractObjectEditor;
+import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
 import java.lang.reflect.InvocationTargetException;
 
 /**
  * MySQLDDLEditor
  */
-public class MySQLDDLEditor extends AbstractObjectEditor
+public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<MySQLTable>
 {
     static final Log log = LogFactory.getLog(MySQLDDLEditor.class);
 
@@ -54,17 +54,9 @@ public class MySQLDDLEditor extends AbstractObjectEditor
         ddlText.setText(ddl.toString());
     }
 
-    public DBPObject getObject()
+    public void initObjectEditor(IDatabaseObjectManager<MySQLTable> manager)
     {
-        return table;
-    }
-
-    public void setObject(DBPObject object)
-    {
-        if (!(object instanceof MySQLTable)) {
-            throw new IllegalArgumentException("object must be of type " + MySQLTable.class);
-        }
-        table = (MySQLTable)object;
+        table = manager.getObject();
     }
 
 }

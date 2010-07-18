@@ -135,6 +135,13 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
+        <manager
+            id="org.jkiss.dbeaver.ext.mysql.views.MySQLUserManager"
+            class="org.jkiss.dbeaver.ext.mysql.views.MySQLUserManager"
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"
+            label="User manager">
+        </manager>
+
         <editor
             id="org.jkiss.dbeaver.ext.mysql.views.MySQLDDLEditor"
             class="org.jkiss.dbeaver.ext.mysql.views.MySQLDDLEditor"
@@ -178,8 +185,8 @@
             icon="#user">
         </editor>
         <editor
-            id="org.jkiss.dbeaver.ext.mysql.views.MySQLUserEditorGeneral"
-            class="org.jkiss.dbeaver.ext.mysql.views.MySQLUserEditorGeneral"
+            id="org.jkiss.dbeaver.ext.mysql.views.MySQLUserEditorPrivileges"
+            class="org.jkiss.dbeaver.ext.mysql.views.MySQLUserEditorPrivileges"
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"
             main="false"
             label="Privileges"

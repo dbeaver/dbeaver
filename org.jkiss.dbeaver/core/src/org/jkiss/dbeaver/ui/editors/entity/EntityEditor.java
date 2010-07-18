@@ -11,9 +11,9 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.ext.ui.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
-import org.jkiss.dbeaver.ext.ui.IObjectEditor;
-import org.jkiss.dbeaver.ext.ui.IObjectManager;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -21,11 +21,15 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +42,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
-    private IObjectManager objectManager;
+    private IDatabaseObjectManager objectManager;
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
 
     protected void createPages()
@@ -49,7 +53,22 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         DBSObject databaseObject = getEditorInput().getDatabaseObject();
 
         // Instantiate object manager
-        this.objectManager = new DefaultObjectManager();
+        EntityManagerDescriptor managerDescriptor = editorsRegistry.getEntityManager(databaseObject.getClass());
+        if (managerDescriptor != null) {
+            this.objectManager = managerDescriptor.createMannager();
+            if (this.objectManager == null) {
+                log.warn("Could not instantiate object manager '" + managerDescriptor.getName() + "'");
+            }
+        }
+        if (this.objectManager == null) {
+            this.objectManager = new DefaultDatabaseObjectManager();
+        }
+
+        try {
+            this.objectManager.init(databaseObject);
+        } catch (DBException e) {
+            log.error("Could not initialize object manager", e);
+        }
 
         // Add object editor page
         EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(databaseObject.getClass());
@@ -172,8 +191,24 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             if (editor == null) {
                 return false;
             }
-            if (editor instanceof IObjectEditor) {
-                ((IObjectEditor)editor).setObject(getEditorInput().getDatabaseObject());
+            Object object = this.objectManager.getObject();
+            if (editor instanceof IDatabaseObjectEditor) {
+                try {
+                    Method initMethod = editor.getClass().getMethod("initObjectEditor", IDatabaseObjectManager.class);
+                    Type initParam = initMethod.getGenericParameterTypes()[0];
+                    if (initParam instanceof ParameterizedType) {
+                        Type typeArgument = ((ParameterizedType) initParam).getActualTypeArguments()[0];
+                        if (typeArgument instanceof Class && !((Class) typeArgument).isAssignableFrom(object.getClass())) {
+                            // Bad parameter type
+                            log.error(descriptor.getName() + " editor misconfiguration - invalid object type '" + object.getClass().getName() + "' specified while '" + ((Class) typeArgument).getName() + "' was expected");
+                            return false;
+                        }
+                    }
+                } catch (Throwable e) {
+                    log.error(e);
+                    return false;
+                }
+                ((IDatabaseObjectEditor)editor).initObjectEditor(this.objectManager);
             }
             int index = addPage(editor, getEditorInput());
             setPageText(index, descriptor.getName());
