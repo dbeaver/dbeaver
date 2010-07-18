@@ -167,6 +167,26 @@
             position="additions_end"
             icon="icons/proc_body.png">
         </editor>
+
+        <editor
+            id="org.jkiss.dbeaver.ext.mysql.views.MySQLUserEditorGeneral"
+            class="org.jkiss.dbeaver.ext.mysql.views.MySQLUserEditorGeneral"
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"
+            main="true"
+            label="General"
+            description="General user settings"
+            icon="#user">
+        </editor>
+        <editor
+            id="org.jkiss.dbeaver.ext.mysql.views.MySQLUserEditorGeneral"
+            class="org.jkiss.dbeaver.ext.mysql.views.MySQLUserEditorGeneral"
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"
+            main="false"
+            label="Privileges"
+            description="Global user privileges"
+            position="additions_start"
+            icon="#user">
+        </editor>
     </extension>
 
     <extension

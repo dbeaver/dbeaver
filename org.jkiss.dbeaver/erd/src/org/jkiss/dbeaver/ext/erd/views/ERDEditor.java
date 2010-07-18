@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.erd.views;
 
 import org.apache.commons.logging.Log;
@@ -160,10 +164,6 @@ public class ERDEditor extends AbstractObjectEditor
                     }
                 }
             });
-    }
-
-    public void deactivatePart()
-    {
     }
 
     public DBPObject getObject()

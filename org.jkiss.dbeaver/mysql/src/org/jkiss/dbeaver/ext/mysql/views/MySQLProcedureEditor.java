@@ -40,10 +40,6 @@ public class MySQLProcedureEditor extends AbstractObjectEditor
         }
     }
 
-    public void deactivatePart()
-    {
-    }
-
     public DBPObject getObject()
     {
         return procedure;

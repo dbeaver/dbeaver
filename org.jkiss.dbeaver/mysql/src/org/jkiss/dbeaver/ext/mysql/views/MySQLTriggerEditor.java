@@ -46,10 +46,6 @@ public class MySQLTriggerEditor extends AbstractObjectEditor
         }
     }
 
-    public void deactivatePart()
-    {
-    }
-
     public DBPObject getObject()
     {
         return trigger;

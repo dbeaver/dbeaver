@@ -13,10 +13,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IObjectEditor;
+import org.jkiss.dbeaver.ext.ui.IObjectManager;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
@@ -36,15 +38,21 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
+    private IObjectManager objectManager;
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
 
     protected void createPages()
     {
         super.createPages();
 
-        // Add object editor page
         EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
-        EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(getEditorInput().getDatabaseObject().getClass());
+        DBSObject databaseObject = getEditorInput().getDatabaseObject();
+
+        // Instantiate object manager
+        this.objectManager = new DefaultObjectManager();
+
+        // Add object editor page
+        EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(databaseObject.getClass());
         boolean mainAdded = false;
         if (defaultEditor != null) {
             mainAdded = addEditorTab(defaultEditor);

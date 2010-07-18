@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.mysql.views;
 
 import org.apache.commons.logging.Log;
@@ -48,10 +52,6 @@ public class MySQLDDLEditor extends AbstractObjectEditor
             }
         });
         ddlText.setText(ddl.toString());
-    }
-
-    public void deactivatePart()
-    {
     }
 
     public DBPObject getObject()

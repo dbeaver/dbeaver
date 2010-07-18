@@ -55,4 +55,7 @@ public abstract class AbstractObjectEditor extends EditorPart implements IObject
 
     }
 
+    public void deactivatePart() {
+        // do nothing by default
+    }
 }
