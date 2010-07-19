@@ -7,13 +7,13 @@ package org.jkiss.dbeaver.ui.controls;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
@@ -80,33 +80,33 @@ public class PairListControl<ELEMENT> extends Composite
             GridLayout gl = new GridLayout(1, false);
             buttonsPane.setLayout(gl);
 
-            final Button btnMoveRight = createButton(buttonsPane, ">", new SelectionAdapter() {
+            final Button btnMoveRight = createButton(buttonsPane, DBIcon.ARROW_RIGHT.getImage(), new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     moveElements(true);
                 }
             });
-            final Button btnMoveRightAll = createButton(buttonsPane, ">>", new SelectionAdapter() {
+            final Button btnMoveRightAll = createButton(buttonsPane, DBIcon.ARROW_RIGHT_ALL.getImage(), new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     leftList.selectAll();
                     moveElements(true);
                 }
             });
-            final Button btnMoveLeft = createButton(buttonsPane, "<", new SelectionAdapter() {
+            final Button btnMoveLeft = createButton(buttonsPane, DBIcon.ARROW_LEFT.getImage(), new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     moveElements(false);
                 }
             });
-            final Button btnMoveLeftAll = createButton(buttonsPane, "<<", new SelectionAdapter() {
+            final Button btnMoveLeftAll = createButton(buttonsPane, DBIcon.ARROW_LEFT_ALL.getImage(), new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     rightList.selectAll();
                     moveElements(false);
                 }
             });
-            createButton(buttonsPane, "*", new SelectionAdapter() {
+            createButton(buttonsPane, DBIcon.ARROW_RESET.getImage(), new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     setListData(leftList, leftElements);
@@ -134,6 +134,18 @@ public class PairListControl<ELEMENT> extends Composite
 
         leftList.addSelectionListener(selListener);
         rightList.addSelectionListener(selListener);
+        leftList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                moveElements(true);
+            }
+        });
+        rightList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                moveElements(false);
+            }
+        });
     }
 
     private Table createList(Composite panel)
@@ -152,10 +164,10 @@ public class PairListControl<ELEMENT> extends Composite
         return table;
     }
 
-    private Button createButton(Composite panel, String label, SelectionListener listener)
+    private Button createButton(Composite panel, Image label, SelectionListener listener)
     {
         Button button = new Button(panel, SWT.PUSH);
-        button.setText(label);
+        button.setImage(label);
         button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         button.addSelectionListener(listener);
         return button;

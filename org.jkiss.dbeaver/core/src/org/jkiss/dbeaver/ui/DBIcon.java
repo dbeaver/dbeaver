@@ -61,6 +61,11 @@ public enum DBIcon
     ROTATE_RIGHT("rotate_right", "/icons/misc/rotate_right.png"),
     FIT_WINDOW("fit_window", "/icons/misc/fit-window.png"),
     ORIGINAL_SIZE("original_size", "/icons/misc/original-size.png"),
+    ARROW_LEFT("arrow_left", "/icons/misc/arrow_left.png"),
+    ARROW_LEFT_ALL("arrow_left_all", "/icons/misc/arrow_left_all.png"),
+    ARROW_RIGHT("arrow_right", "/icons/misc/arrow_right.png"),
+    ARROW_RIGHT_ALL("arrow_right_all", "/icons/misc/arrow_right_all.png"),
+    ARROW_RESET("arrow_reset", "/icons/misc/arrow_reset.png"),
 
     INFO("info", "/icons/file/info.png"),
     SAVE("save", "/icons/file/save.png"),
