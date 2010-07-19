@@ -70,7 +70,7 @@ public class MySQLUser implements DBAUser
             ResultSetMetaData rsMetaData = resultSet.getMetaData();
             int colCount = rsMetaData.getColumnCount();
             for (int i = 0; i < colCount; i++) {
-                String colName = rsMetaData.getCatalogName(i + 1);
+                String colName = rsMetaData.getColumnName(i + 1);
                 if (colName.toLowerCase().endsWith("_priv")) {
                     globalPrivileges.put(colName.substring(0, colName.length() - 5), "Y".equals(JDBCUtils.safeGetString(resultSet, colName)));
                 }

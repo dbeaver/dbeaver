@@ -153,8 +153,13 @@ public class UIUtils {
 
     public static Font makeBoldFont(Font normalFont)
     {
+        return modifyFont(normalFont, SWT.BOLD);
+    }
+
+    public static Font modifyFont(Font normalFont, int style)
+    {
         FontData[] fontData = normalFont.getFontData();
-        fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
+        fontData[0].setStyle(fontData[0].getStyle() | style);
         return new Font(normalFont.getDevice(), fontData[0]);
     }
 

@@ -156,6 +156,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
     {
         this.activeCatalog = null;
         this.catalogs = null;
+        this.users = null;
 
         this.initialize(monitor);
     }
