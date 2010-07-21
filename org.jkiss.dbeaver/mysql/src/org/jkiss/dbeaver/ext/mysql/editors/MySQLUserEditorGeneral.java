@@ -12,6 +12,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.dbeaver.ext.mysql.controls.PrivilegesPairList;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.PairListControl;
 
@@ -58,29 +59,14 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
             gd.horizontalSpan = 2;
             gd.widthHint = 400;
 
-            List<String> availPrivs = new ArrayList<String>();
-            List<String> grantedPrivs = new ArrayList<String>();
-            for (Map.Entry<String,Boolean> priv : getUser().getGlobalPrivileges().entrySet()) {
-                if (priv.getValue()) {
-                    grantedPrivs.add(priv.getKey());
-                } else {
-                    availPrivs.add(priv.getKey());
-                }
-            }
-            PairListControl<String> privPair = new PairListControl<String>(privsGroup, SWT.NONE, "Available", "Granted");
-            privPair.setModel(availPrivs, grantedPrivs);
+            PrivilegesPairList privPair = new PrivilegesPairList(privsGroup);
+            privPair.setModel(getUser().getGlobalPrivileges());
         }
     }
 
     public void activatePart()
     {
-        try {
-            //
-            getUser().getHost();
-        }
-        catch (Exception ex) {
-            log.error("Can't obtain trigger body", ex);
-        }
+
     }
 
 }

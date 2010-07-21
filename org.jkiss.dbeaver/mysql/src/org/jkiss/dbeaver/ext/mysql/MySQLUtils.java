@@ -4,14 +4,27 @@
 
 package org.jkiss.dbeaver.ext.mysql;
 
-import java.util.Map;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * MySQL utils
  */
 public class MySQLUtils {
+
+    static final Log log = LogFactory.getLog(MySQLUtils.class);
+
     private static Map<String, Integer> typeMap = new HashMap<String, Integer>();
+    public static final String COLUMN_POSTFIX_PRIV = "_priv";
 
     static {
         typeMap.put("BIT", java.sql.Types.BIT);
@@ -55,4 +68,24 @@ public class MySQLUtils {
         return valueType == null ? java.sql.Types.OTHER : valueType;
     }
 
+    public static Map<String, Boolean> collectPrivileges(ResultSet resultSet)
+    {
+        // Now collect all privileges columns
+        try {
+            Map<String, Boolean> privs = new TreeMap<String, Boolean>();
+            ResultSetMetaData rsMetaData = resultSet.getMetaData();
+            int colCount = rsMetaData.getColumnCount();
+            for (int i = 0; i < colCount; i++) {
+                String colName = rsMetaData.getColumnName(i + 1);
+                if (colName.toLowerCase().endsWith(COLUMN_POSTFIX_PRIV)) {
+                    privs.put(colName.substring(0, colName.length() - 5), "Y".equals(JDBCUtils.safeGetString(resultSet, colName)));
+                }
+            }
+            return privs;
+        } catch (SQLException e) {
+            log.debug(e);
+            return Collections.emptyMap();
+        }
+    }
+    
 }

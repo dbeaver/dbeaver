@@ -7,20 +7,20 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.meta.AbstractTrigger;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSActionTiming;
-import org.jkiss.dbeaver.model.struct.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.TreeMap;
@@ -37,7 +37,7 @@ public class MySQLUser implements DBAUser
     private String host;
     private String passwordHash;
 
-    private Map<String, Boolean> globalPrivileges = new TreeMap<String, Boolean>();
+    private Map<String, Boolean> globalPrivileges;
 
     private String sslType;
     private byte[] sslCipher;
@@ -65,23 +65,15 @@ public class MySQLUser implements DBAUser
         this.maxConnections = JDBCUtils.safeGetInt(resultSet, "max_connections");
         this.maxUserConnections = JDBCUtils.safeGetInt(resultSet, "max_user_connections");
 
-        // Now collect all privileges columns
-        try {
-            ResultSetMetaData rsMetaData = resultSet.getMetaData();
-            int colCount = rsMetaData.getColumnCount();
-            for (int i = 0; i < colCount; i++) {
-                String colName = rsMetaData.getColumnName(i + 1);
-                if (colName.toLowerCase().endsWith("_priv")) {
-                    globalPrivileges.put(colName.substring(0, colName.length() - 5), "Y".equals(JDBCUtils.safeGetString(resultSet, colName)));
-                }
-            }
-        } catch (SQLException e) {
-            log.debug(e);
-        }
+        this.globalPrivileges = MySQLUtils.collectPrivileges(resultSet);
     }
 
     //@Property(name = "User name", viewable = true, order = 1)
     public String getName() {
+        return username + "@" + host;
+    }
+
+    public String getUserName() {
         return username;
     }
 
@@ -93,7 +85,7 @@ public class MySQLUser implements DBAUser
         return dataSource;
     }
 
-    public DBPDataSource getDataSource() {
+    public JDBCDataSource getDataSource() {
         return dataSource;
     }
 
@@ -116,6 +108,38 @@ public class MySQLUser implements DBAUser
 
     public Map<String, Boolean> getGlobalPrivileges() {
         return globalPrivileges;
+    }
+
+    public Map<String, Map<String, Boolean>> getCatalogPrivileges(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        JDBCExecutionContext context = getDataSource().openContext(monitor, "Read catalog privileges");
+        try {
+            JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM mysql.db WHERE User=?");
+            try {
+                dbStat.setString(1, getUserName());
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    Map<String, Map<String, Boolean>> privs = new TreeMap<String, Map<String, Boolean>>();
+                    while (dbResult.next()) {
+                        privs.put(
+                            dbResult.getString("db"),
+                            MySQLUtils.collectPrivileges(dbResult));
+                    }
+                    return privs;
+                } finally {
+                    dbResult.close();
+                }
+            } finally {
+                dbStat.close();
+            }
+        }
+        catch (SQLException e) {
+            throw new DBException(e);
+        }
+        finally {
+            context.close();
+        }
     }
 
     public String getSslType() {
