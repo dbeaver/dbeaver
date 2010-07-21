@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -35,18 +36,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
 {
     static final Log log = LogFactory.getLog(MySQLDataSource.class);
 
-    private static Properties connectionsProps;
-
-    static {
-        connectionsProps = new Properties();
-
-        // Prevent stupid errors "Cannot convert value '0000-00-00 00:00:00' from column X to TIMESTAMP"
-        // Widely appears in MyISAM tables (joomla, etc)
-        connectionsProps.setProperty("zeroDateTimeBehavior", "convertToNull");
-        // Set utf-8 as default charset
-        connectionsProps.setProperty("characterEncoding", "utf-8");
-    }
-
     private List<MySQLEngine> engines;
     private List<MySQLCatalog> catalogs;
     private List<MySQLUser> users;
@@ -60,7 +49,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
 
     protected Properties getInternalConnectionProperties()
     {
-        return connectionsProps;
+        return MySQLDataSourceProvider.getConnectionsProps();
     }
 
     public String[] getTableTypes()

@@ -62,9 +62,14 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
 
         List<DBPConnectionProperty> result = new ArrayList<DBPConnectionProperty>();
         for (DriverPropertyInfo desc : propDescs) {
+            desc.value = getConnectionPropertyDefaultValue(desc.name, desc.value);
             result.add(new JDBCConnectionProperty(desc));
         }
         return result;
     }
 
+    protected String getConnectionPropertyDefaultValue(String name, String value)
+    {
+        return value;
+    }
 }
