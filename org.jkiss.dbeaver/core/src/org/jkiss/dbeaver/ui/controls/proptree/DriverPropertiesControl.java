@@ -7,22 +7,10 @@ package org.jkiss.dbeaver.ui.controls.proptree;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.CellLabelProvider;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.TreeViewerColumn;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
@@ -38,35 +26,14 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeColumn;
-import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDriver;
-import org.jkiss.dbeaver.model.DBPDriverProperty;
-import org.jkiss.dbeaver.model.DBPDriverPropertyGroup;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.sql.DriverPropertyInfo;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * Driver properties control
@@ -93,7 +60,7 @@ public class DriverPropertiesControl extends Composite {
     {
         super(parent, style);
 
-        colorBlue = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_BLUE);
+        colorBlue = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);
         clipboard = new Clipboard(getDisplay());
 
         GridLayout gl = new GridLayout(1, false);
@@ -126,10 +93,11 @@ public class DriverPropertiesControl extends Composite {
         this.showDriverProperties = showDriverProperties;
     }
 
-    public void loadProperties(DBPDriver driver, String url, Map<String, String> connectionProps)
+    public void loadProperties(DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
         propValues.clear();
         originalValues.clear();
+        Map<String, String> connectionProps = connectionInfo.getProperties();
         if (connectionProps != null) {
             propValues.putAll(connectionProps);
             originalValues.putAll(connectionProps);
@@ -137,7 +105,7 @@ public class DriverPropertiesControl extends Composite {
         driverProvidedProperties = null;
         customProperties = null;
 
-        loadDriverProperties(driver, url);
+        loadDriverProperties(driver, connectionInfo);
         loadCustomProperties(driver);
         if (propsTree != null) {
             propsTree.setInput(driver);
@@ -419,30 +387,15 @@ public class DriverPropertiesControl extends Composite {
         propsTree.update(prop, null);
     }
 
-    private void loadDriverProperties(DBPDriver driver, String url)
+    private void loadDriverProperties(DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
-        if (driver.supportsDriverProperties()) {
-            try {
-                Object driverInstance = driver.getDriverInstance();
-                if (driverInstance instanceof java.sql.Driver) {
-                    Properties jdbcProps = new Properties();
-                    //jdbcProps.putAll(connectionProps);
-                    final DriverPropertyInfo[] propInfos = ((java.sql.Driver)driverInstance).getPropertyInfo(
-                        url,
-                        jdbcProps);
-                    if (!CommonUtils.isEmpty(propInfos)) {
-                        driverProvidedProperties = new DriverProvidedPropertyGroup(driver, propInfos);
-                    }
-                }
-
-            } catch (SQLException ex) {
-                //log.warn("Can't read driver properties", ex);
-
-            } catch (DBException e) {
-                log.warn("Can't obtain driver instance", e);
+        try {
+            List<DBPConnectionProperty> propInfos = driver.getDataSourceProvider().getConnectionProperties(driver, connectionInfo);
+            if (!CommonUtils.isEmpty(propInfos)) {
+                driverProvidedProperties = new DriverProvidedPropertyGroup(driver, propInfos);
             }
-        } else {
-            driverProvidedProperties = new DriverProvidedPropertyGroup(driver, new DriverPropertyInfo[0]);
+        } catch (DBException e) {
+            log.warn("Can't load driver properties", e);
         }
     }
 
@@ -583,10 +536,10 @@ public class DriverPropertiesControl extends Composite {
 
     private class DriverPropertyImpl implements DBPDriverProperty {
         private final DBPDriverPropertyGroup group;
-        private DriverPropertyInfo propInfo;
+        private DBPConnectionProperty propInfo;
         private String name;
 
-        public DriverPropertyImpl(DBPDriverPropertyGroup group, DriverPropertyInfo propInfo) {
+        public DriverPropertyImpl(DBPDriverPropertyGroup group, DBPConnectionProperty propInfo) {
             this.group = group;
             this.propInfo = propInfo;
         }
@@ -603,7 +556,7 @@ public class DriverPropertiesControl extends Composite {
 
         public String getName()
         {
-            return propInfo == null ? name : propInfo.name;
+            return propInfo == null ? name : propInfo.getName();
         }
 
         public void setName(String name)
@@ -613,12 +566,12 @@ public class DriverPropertiesControl extends Composite {
 
         public String getDescription()
         {
-            return propInfo == null ? null : propInfo.description;
+            return propInfo == null ? null : propInfo.getDescription();
         }
 
         public String getDefaultValue()
         {
-            return propInfo == null ? null : propInfo.value;
+            return propInfo == null ? null : propInfo.getValue();
         }
 
         public PropertyType getType()
@@ -628,17 +581,17 @@ public class DriverPropertiesControl extends Composite {
 
         public String[] getValidValues()
         {
-            return propInfo == null ? null : propInfo.choices;
+            return propInfo == null ? null : propInfo.getChoices();
         }
     }
 
     private class DriverProvidedPropertyGroup implements DBPDriverPropertyGroup
     {
         private DBPDriver driver;
-        private final DriverPropertyInfo[] propInfos;
+        private final List<DBPConnectionProperty> propInfos;
         private List<DBPDriverProperty> propList;
 
-        public DriverProvidedPropertyGroup(DBPDriver driver, DriverPropertyInfo[] propInfos)
+        public DriverProvidedPropertyGroup(DBPDriver driver, List<DBPConnectionProperty> propInfos)
         {
             this.driver = driver;
             this.propInfos = propInfos;
@@ -664,8 +617,8 @@ public class DriverPropertiesControl extends Composite {
         {
             if (propList == null) {
                 propList = new ArrayList<DBPDriverProperty>();
-                for (final DriverPropertyInfo propInfo : propInfos) {
-                    if (JDBCConstants.PROPERTY_USER.equals(propInfo.name) || JDBCConstants.PROPERTY_PASSWORD.equals(propInfo.name)) {
+                for (final DBPConnectionProperty propInfo : propInfos) {
+                    if (JDBCConstants.PROPERTY_USER.equals(propInfo.getName()) || JDBCConstants.PROPERTY_PASSWORD.equals(propInfo.getName())) {
                         continue;
                     }
                     DBPDriverProperty prop = new DriverPropertyImpl(this, propInfo);

@@ -8,6 +8,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.List;
+
 /**
  * DBPDataSourceProvider
  */
@@ -17,9 +19,13 @@ public interface DBPDataSourceProvider
 
     void close();
 
+    List<DBPConnectionProperty> getConnectionProperties(
+        DBPDriver driver, DBPConnectionInfo connectionInfo)
+        throws DBException;
+
     DBPDataSource openDataSource(
-        DBRProgressMonitor monitor, DBSDataSourceContainer container
-    )
+        DBRProgressMonitor monitor,
+        DBSDataSourceContainer container)
         throws DBException;
 
 }

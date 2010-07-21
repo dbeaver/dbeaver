@@ -22,8 +22,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
 import java.lang.reflect.Field;
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -393,6 +392,5 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
             context.close();
         }
     }
-
 
 }

@@ -242,7 +242,8 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
     {
         DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
         saveSettings(tmpConnectionInfo);
-        driverProps.loadProperties(site.getDriver(), tmpConnectionInfo.getJdbcURL(), site.getConnectionInfo().getProperties());
+        tmpConnectionInfo.setProperties(site.getConnectionInfo().getProperties());
+        driverProps.loadProperties(site.getDriver(), tmpConnectionInfo/*.getJdbcURL(), site.getConnectionInfo().getProperties()*/);
     }
 
     public void saveSettings()

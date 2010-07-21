@@ -3,23 +3,14 @@ package org.jkiss.dbeaver.ext.mysql;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
-public class MySQLDataSourceProvider implements DBPDataSourceProvider {
+public class MySQLDataSourceProvider extends JDBCDataSourceProvider {
 
     public MySQLDataSourceProvider()
     {
-    }
-
-    public void close()
-    {
-
-    }
-
-    public void init(DBPApplication application)
-    {
-
     }
 
     public DBPDataSource openDataSource(

@@ -358,7 +358,8 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
         if (!driverPropsLoaded) {
             DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
             saveSettings(tmpConnectionInfo);
-            propsControl.loadProperties(site.getDriver(), tmpConnectionInfo.getJdbcURL(), site.getConnectionInfo().getProperties());
+            tmpConnectionInfo.setProperties(site.getConnectionInfo().getProperties());
+            propsControl.loadProperties(site.getDriver(), tmpConnectionInfo/*.getJdbcURL(), site.getConnectionInfo().getProperties()*/);
             driverPropsLoaded = true;
         }
     }
