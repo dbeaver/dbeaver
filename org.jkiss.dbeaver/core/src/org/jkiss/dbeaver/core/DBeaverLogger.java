@@ -8,24 +8,35 @@ import org.apache.commons.logging.Log;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.Serializable;
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.FileNotFoundException;
+import java.util.Date;
 
 /**
  * DBeaverLogger
  */
 public class DBeaverLogger implements Log, Serializable
 {
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-
 	private String name;
+    private PrintWriter debugWriter;
 
     public DBeaverLogger()
     {
+        File rootPath = Platform.getLocation().toFile();
+        File debugLogFile = new File(rootPath, "debug.log");
+        if (debugLogFile.exists()) {
+            debugLogFile.delete();
+        }
+        try {
+            debugWriter = new PrintWriter(debugLogFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public DBeaverLogger(String name)
@@ -79,10 +90,26 @@ public class DBeaverLogger implements Log, Serializable
 
     public void debug(Object message)
     {
+        if (message instanceof Throwable) {
+            debug(message.toString(), (Throwable)message);
+            return;
+        } else {
+            debug(message, null);
+        }
     }
 
     public void debug(Object message, Throwable t)
     {
+        if (debugWriter != null) {
+            debugWriter.print(new Date());
+            debugWriter.print(" - ");
+            if (t == null) {
+                debugWriter.println(message);
+            } else {
+                t.printStackTrace(debugWriter);
+            }
+            debugWriter.flush();
+        }
     }
 
     public void info(Object message)
