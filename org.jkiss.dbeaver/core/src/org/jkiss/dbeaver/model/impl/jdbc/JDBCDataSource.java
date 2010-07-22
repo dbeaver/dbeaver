@@ -12,6 +12,9 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.dbc.DBCQueryTransformProvider;
+import org.jkiss.dbeaver.model.dbc.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.dbc.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.api.ConnectionManagable;
 import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
@@ -33,7 +36,8 @@ public abstract class JDBCDataSource
         DBPDataSource,
         JDBCConnector,
         DBSStructureContainer,
-        DBSObject
+        DBSObject,
+        DBCQueryTransformProvider
 {
     static final Log log = LogFactory.getLog(JDBCDataSource.class);
 
@@ -196,4 +200,10 @@ public abstract class JDBCDataSource
         this.dataSourceInfo = null;
         return true;
     }
+
+    public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type)
+    {
+        return null;
+    }
+
 }

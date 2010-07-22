@@ -12,6 +12,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.dbc.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.dbc.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -380,6 +382,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         finally {
             context.close();
         }
+    }
+
+    @Override
+    public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
+        if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
+            return new QueryTransformerLimit();
+        }
+        return super.createQueryTransformer(type);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
 }

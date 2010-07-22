@@ -10,10 +10,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.data.DBDDataReciever;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.dbc.*;
 import org.jkiss.dbeaver.model.impl.meta.AbstractTable;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
@@ -57,11 +54,16 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         JDBCExecutionContext jdbcContext = (JDBCExecutionContext)context;
         readRequiredMeta(context.getProgressMonitor());
 
-        boolean scrollWithQuery = (this instanceof JDBCScrollableTable);
+        DBCQueryTransformer limitTransformer = null;
+        if (getDataSource() instanceof DBCQueryTransformProvider) {
+            limitTransformer = ((DBCQueryTransformProvider) getDataSource()).createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
+        }
+        boolean scrollWithQuery = limitTransformer != null;
 
         String query = "SELECT * FROM " + getFullQualifiedName();
         if (scrollWithQuery) {
-            query = ((JDBCScrollableTable)this).makeScrollableQuery(query, firstRow, maxRows);
+            limitTransformer.setParameters(firstRow, maxRows);
+            query = limitTransformer.transformQueryString(query);
         }
         boolean fetchStarted = false;
         JDBCStatement dbStat = jdbcContext.prepareStatement(query, !scrollWithQuery, false, false);
@@ -69,6 +71,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             dbStat.setDataContainer(this);
             if (!scrollWithQuery) {
                 dbStat.setLimit(firstRow, maxRows);
+            } else {
+                limitTransformer.transformStatement(dbStat, 0);
             }
             if (!dbStat.executeStatement()) {
                 return 0;
