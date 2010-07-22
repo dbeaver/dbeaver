@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.data.DBDDataReciever;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -15,7 +14,12 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.meta.AbstractTable;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 
@@ -48,23 +52,26 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     public int readData(DBCExecutionContext context, DBDDataReciever dataReciever, int firstRow, int maxRows)
         throws DBException
     {
-        if (firstRow > 0) {
-            throw new DBException("First row number must be 0");
+        if (!(context instanceof JDBCExecutionContext)) {
+            throw new IllegalArgumentException("Bad execution context");
         }
+        JDBCExecutionContext jdbcContext = (JDBCExecutionContext)context;
         readRequiredMeta(context.getProgressMonitor());
 
-        StringBuilder query = new StringBuilder();
-        query.append("SELECT * FROM ").append(getFullQualifiedName());
-        DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, false);
+        String query = "SELECT * FROM " + getFullQualifiedName();
+        if (this instanceof JDBCScrollableTable) {
+            query = ((JDBCScrollableTable)this).makeScrollableQuery(query, firstRow, maxRows);
+        }
+        JDBCStatement dbStat = jdbcContext.prepareStatement(query.toString(), false, false, false);
         try {
             dbStat.setDataContainer(this);
-            if (maxRows > 0) {
-                dbStat.setLimit(0, maxRows);
+            if (!(this instanceof JDBCScrollableTable)) {
+                dbStat.setLimit(firstRow, maxRows);
             }
             if (!dbStat.executeStatement()) {
                 return 0;
             }
-            DBCResultSet dbResult = dbStat.openResultSet();
+            JDBCResultSet dbResult = dbStat.openResultSet();
             if (dbResult == null) {
                 return 0;
             }
@@ -73,6 +80,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 try {
                     int rowCount = 0;
                     while (dbResult.nextRow()) {
+                        if (rowCount >= maxRows) {
+                            // Fetch not more than max rows
+                            break;
+                        }
                         dataReciever.fetchRow(context.getProgressMonitor(), dbResult);
                         rowCount++;
                     }

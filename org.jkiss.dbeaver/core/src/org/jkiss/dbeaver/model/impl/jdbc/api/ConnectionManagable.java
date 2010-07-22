@@ -95,7 +95,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         return new TransactionManager();
     }
 
-    public DBCStatement prepareStatement(
+    public JDBCStatement prepareStatement(
         String sqlQuery,
         boolean scrollable,
         boolean updatable,

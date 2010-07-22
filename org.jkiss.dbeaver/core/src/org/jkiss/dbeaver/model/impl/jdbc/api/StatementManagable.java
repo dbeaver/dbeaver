@@ -8,19 +8,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCQueryPurpose;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.dbc.DBCQueryPurpose;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
+import java.sql.*;
 
 /**
  * Managable statement.
@@ -35,7 +31,9 @@ public abstract class StatementManagable implements JDBCStatement {
     private String query;
     private String description;
     private DBCQueryPurpose queryPurpose;
-    private boolean blockStarted = false;
+    //private boolean blockStarted = false;
+    private int rsOffset = -1;
+    private int rsMaxRows = -1;
 
     private DBSObject dataContainer;
 
@@ -135,7 +133,7 @@ public abstract class StatementManagable implements JDBCStatement {
         return query;
     }
 
-    public DBCResultSet openResultSet() throws DBCException
+    public JDBCResultSet openResultSet() throws DBCException
     {
         try {
             return getResultSet();
@@ -145,7 +143,7 @@ public abstract class StatementManagable implements JDBCStatement {
         }
     }
 
-    public DBCResultSet openGeneratedKeysResultSet()
+    public JDBCResultSet openGeneratedKeysResultSet()
         throws DBCException
     {
         try {
@@ -169,7 +167,16 @@ public abstract class StatementManagable implements JDBCStatement {
     public void setLimit(int offset, int limit) throws DBCException
     {
         try {
-            getOriginal().setMaxRows(limit);
+            if (offset <= 0) {
+                // Just set max row num
+                getOriginal().setMaxRows(limit);
+                this.rsMaxRows = limit;
+            } else {
+                // Remember limit values - we'll use them in resultset fetch routine
+                this.rsOffset = offset;
+                this.rsMaxRows = limit;
+                getOriginal().setMaxRows(offset + limit);
+            }
         }
         catch (SQLException e) {
             throw new DBCException(e);
@@ -187,14 +194,22 @@ public abstract class StatementManagable implements JDBCStatement {
     }
 
     private ResultSetManagable makeResultSet(ResultSet resultSet)
-        throws SQLFeatureNotSupportedException
-    {
+        throws SQLException {
         if (this instanceof PreparedStatementManagable) {
-            return new ResultSetManagable((PreparedStatementManagable) this, resultSet);
+            ResultSetManagable dbResult = new ResultSetManagable((PreparedStatementManagable) this, resultSet);
+            // Scroll result set if needed
+            if (rsOffset > 0) {
+                JDBCUtils.scrollResultSet(dbResult, rsOffset);
+            }
+            if (rsMaxRows > 0) {
+                dbResult.setMaxRows(rsMaxRows);
+            }
+            return dbResult;
         } else {
             throw new SQLFeatureNotSupportedException();
         }
     }
+
     ////////////////////////////////////////////////////////////////////
     // Statement overrides
     ////////////////////////////////////////////////////////////////////

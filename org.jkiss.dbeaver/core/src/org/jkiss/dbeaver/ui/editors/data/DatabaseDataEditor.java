@@ -8,7 +8,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
@@ -24,7 +23,6 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseEditor;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**
@@ -89,33 +87,39 @@ public class DatabaseDataEditor extends AbstractDatabaseEditor implements IEmbed
         return dataContainer;
     }
 
-    public void extractResultSetData(int offset)
+    public void extractResultSetData(int offset, int maxRows)
     {
         if (!isConnected()) {
             DBeaverUtils.showErrorDialog(getSite().getShell(), "Not Connected", "Not Connected");
             return;
         }
 
-        new DataPumpJob().schedule();
+        new DataPumpJob(offset, maxRows).schedule();
     }
 
     private class DataPumpJob extends DataSourceJob {
 
-        protected DataPumpJob()
+        private int offset;
+        private int maxRows;
+
+        protected DataPumpJob(int offset, int maxRows)
         {
             super("Pump data from " + getDataContainer().getName(), DBIcon.SQL_EXECUTE.getImageDescriptor(), DatabaseDataEditor.this.getDataSource());
+            this.offset = offset;
+            this.maxRows = maxRows;
         }
 
         protected IStatus run(DBRProgressMonitor monitor)
         {
-            IPreferenceStore preferenceStore = getDataSource().getContainer().getPreferenceStore();
-            int maxRows = preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
-
             String statusMessage;
             boolean hasErrors = false;
             DBCExecutionContext context = getDataSource().openContext(monitor, "Read '" + getDataContainer().getName() + "' data");
             try {
-                int rowCount = getDataContainer().readData(context, resultSetView.getDataReciever(), 0, maxRows);
+                int rowCount = getDataContainer().readData(
+                    context,
+                    resultSetView.getDataReciever(),
+                    offset,
+                    maxRows);
                 if (rowCount > 0) {
                     statusMessage = rowCount + " row(s)";
                 } else {

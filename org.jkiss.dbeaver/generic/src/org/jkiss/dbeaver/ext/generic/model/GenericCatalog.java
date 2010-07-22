@@ -107,7 +107,7 @@ public class GenericCatalog extends GenericStructureContainer implements DBSCata
     public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (getSchemas(monitor) != null) {
+        if (!CommonUtils.isEmpty(getSchemas(monitor))) {
             return GenericSchema.class;
         } else {
             return GenericTable.class;

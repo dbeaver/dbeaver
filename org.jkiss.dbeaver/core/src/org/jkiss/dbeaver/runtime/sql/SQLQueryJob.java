@@ -45,7 +45,8 @@ public class SQLQueryJob extends DataSourceJob
     private SQLScriptCommitType commitType;
     private SQLScriptErrorHandling errorHandling;
     private boolean fetchResultSets;
-    private int maxResults;
+    private int rsOffset;
+    private int rsMaxRows;
 
     private DBCStatement curStatement;
     //private boolean statementCancel = false;
@@ -73,8 +74,14 @@ public class SQLQueryJob extends DataSourceJob
             this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_COMMIT_TYPE));
             this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_ERROR_HANDLING));
             this.fetchResultSets = (queries.size() == 1);
-            this.maxResults = preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
+            this.rsMaxRows = preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
         }
+    }
+
+    public void setResultSetLimit(int offset, int maxRows)
+    {
+        this.rsOffset = offset;
+        this.rsMaxRows = maxRows;
     }
 
     public void addQueryListener(ISQLQueryListener listener)
@@ -249,7 +256,7 @@ public class SQLQueryJob extends DataSourceJob
         try {
             // Prepare statement
             curStatement = context.prepareStatement(sqlQuery, false, false, false);
-            curStatement.setLimit(0, maxResults);
+            curStatement.setLimit(rsOffset, rsMaxRows);
 
             // Bind parameters
             if (!CommonUtils.isEmpty(query.getParameters())) {
@@ -325,7 +332,7 @@ public class SQLQueryJob extends DataSourceJob
 
             try {
 
-                while (rowCount < maxResults && resultSet.nextRow()) {
+                while (rowCount < rsMaxRows && resultSet.nextRow()) {
                     rowCount++;
 
                     if (rowCount % 10 == 0) {

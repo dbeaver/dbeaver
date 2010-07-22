@@ -4,13 +4,14 @@
 
 package org.jkiss.dbeaver.model.jdbc;
 
-import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.dbc.DBCQueryPurpose;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.dbc.DBCResultSet;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 
-import java.sql.Statement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * JDBC statement
@@ -26,6 +27,10 @@ public interface JDBCStatement extends Statement, DBCStatement, DBRBlockingObjec
     JDBCStatement setDescription(String description);
 
     DBCQueryPurpose getQueryPurpose();
+
+    JDBCResultSet openResultSet() throws DBCException;
+
+    JDBCResultSet openGeneratedKeysResultSet() throws DBCException;
 
     JDBCStatement setQueryPurpose(DBCQueryPurpose queryPurpose);
 

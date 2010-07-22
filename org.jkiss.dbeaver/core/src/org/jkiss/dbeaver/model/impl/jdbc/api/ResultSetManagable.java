@@ -43,6 +43,8 @@ public class ResultSetManagable implements JDBCResultSet {
 
     private PreparedStatementManagable statement;
     private ResultSet original;
+    private int rowsFetched;
+    private int maxRows = -1;
 
     public ResultSetManagable(PreparedStatementManagable statement, ResultSet original)
     {
@@ -85,7 +87,7 @@ public class ResultSetManagable implements JDBCResultSet {
         throws DBCException
     {
         try {
-            return original.next();
+            return this.next();
         }
         catch (SQLException e) {
             throw new DBCException(e);
@@ -98,10 +100,23 @@ public class ResultSetManagable implements JDBCResultSet {
         return new JDBCResultSetMetaData(this);
     }
 
+    public void setMaxRows(int maxRows) {
+        this.maxRows = maxRows;
+    }
+
     public boolean next()
         throws SQLException
     {
-        return original.next();
+        // Check max rows
+        if (maxRows >= 0 && rowsFetched >= maxRows) {
+            return false;
+        }
+        // Fetch next row
+        boolean fetched = original.next();
+        if (fetched) {
+            rowsFetched++;
+        }
+        return fetched;
     }
 
     public void close()
@@ -1233,4 +1248,5 @@ public class ResultSetManagable implements JDBCResultSet {
     {
         return original.isWrapperFor(iface);
     }
+
 }

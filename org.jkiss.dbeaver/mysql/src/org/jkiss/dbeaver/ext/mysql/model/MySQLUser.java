@@ -8,10 +8,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
@@ -24,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.List;
 
 /**
  * MySQLUser
@@ -38,6 +37,8 @@ public class MySQLUser implements DBAUser
     private String passwordHash;
 
     private Map<String, Boolean> globalPrivileges;
+    private List<String> catalogPrivNames;
+    private Map<String, Map<String, Boolean>> catalogPrivileges;
 
     private String sslType;
     private byte[] sslCipher;
@@ -65,7 +66,9 @@ public class MySQLUser implements DBAUser
         this.maxConnections = JDBCUtils.safeGetInt(resultSet, "max_connections");
         this.maxUserConnections = JDBCUtils.safeGetInt(resultSet, "max_user_connections");
 
-        this.globalPrivileges = MySQLUtils.collectPrivileges(resultSet);
+        this.globalPrivileges = MySQLUtils.collectPrivileges(
+            MySQLUtils.collectPrivilegeNames(resultSet),
+            resultSet);
     }
 
     //@Property(name = "User name", viewable = true, order = 1)
@@ -110,9 +113,19 @@ public class MySQLUser implements DBAUser
         return globalPrivileges;
     }
 
+    public List<String> getCatalogPrivNames(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        getCatalogPrivileges(monitor);
+        return catalogPrivNames;
+    }
+
     public Map<String, Map<String, Boolean>> getCatalogPrivileges(DBRProgressMonitor monitor)
         throws DBException
     {
+        if (catalogPrivileges != null) {
+            return catalogPrivileges;
+        }
         JDBCExecutionContext context = getDataSource().openContext(monitor, "Read catalog privileges");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM mysql.db WHERE User=?");
@@ -120,13 +133,17 @@ public class MySQLUser implements DBAUser
                 dbStat.setString(1, getUserName());
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
+                    if (catalogPrivNames == null) {
+                        catalogPrivNames = MySQLUtils.collectPrivilegeNames(dbResult);
+                    }
                     Map<String, Map<String, Boolean>> privs = new TreeMap<String, Map<String, Boolean>>();
                     while (dbResult.next()) {
                         privs.put(
                             dbResult.getString("db"),
-                            MySQLUtils.collectPrivileges(dbResult));
+                            MySQLUtils.collectPrivileges(catalogPrivNames, dbResult));
                     }
-                    return privs;
+                    catalogPrivileges = privs;
+                    return catalogPrivileges;
                 } finally {
                     dbResult.close();
                 }

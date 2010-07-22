@@ -16,12 +16,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.ITextViewerExtension;
-import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -46,11 +41,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.texteditor.DefaultRangeIndicator;
-import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.eclipse.ui.texteditor.ITextEditorActionConstants;
-import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
-import org.eclipse.ui.texteditor.TextOperationAction;
+import org.eclipse.ui.texteditor.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -80,18 +71,8 @@ import org.jkiss.dbeaver.ui.views.console.ConsoleMessageType;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.io.*;
+import java.util.*;
 
 /**
  * SQL Executor
@@ -844,7 +825,7 @@ public class SQLEditor extends BaseTextEditor
         return getDataSourceContainer() != null && getDataSourceContainer().isConnected();
     }
 
-    public void extractResultSetData(int offset)
+    public void extractResultSetData(int offset, int maxRows)
     {
         if (curJobRunning) {
             DBeaverUtils.showErrorDialog(
@@ -854,6 +835,7 @@ public class SQLEditor extends BaseTextEditor
             return;
         }
         if (curJob != null) {
+            curJob.setResultSetLimit(offset, maxRows);
             curJob.schedule();
         }
     }

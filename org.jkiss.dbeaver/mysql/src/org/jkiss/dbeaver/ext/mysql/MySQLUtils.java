@@ -11,10 +11,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * MySQL utils
@@ -68,24 +65,34 @@ public class MySQLUtils {
         return valueType == null ? java.sql.Types.OTHER : valueType;
     }
 
-    public static Map<String, Boolean> collectPrivileges(ResultSet resultSet)
+    public static List<String> collectPrivilegeNames(ResultSet resultSet)
     {
         // Now collect all privileges columns
         try {
-            Map<String, Boolean> privs = new TreeMap<String, Boolean>();
+            List<String> privs = new ArrayList<String>();
             ResultSetMetaData rsMetaData = resultSet.getMetaData();
             int colCount = rsMetaData.getColumnCount();
             for (int i = 0; i < colCount; i++) {
                 String colName = rsMetaData.getColumnName(i + 1);
                 if (colName.toLowerCase().endsWith(COLUMN_POSTFIX_PRIV)) {
-                    privs.put(colName.substring(0, colName.length() - 5), "Y".equals(JDBCUtils.safeGetString(resultSet, colName)));
+                    privs.add(colName.substring(0, colName.length() - COLUMN_POSTFIX_PRIV.length()));
                 }
             }
             return privs;
         } catch (SQLException e) {
             log.debug(e);
-            return Collections.emptyMap();
+            return Collections.emptyList();
         }
+    }
+
+    public static Map<String, Boolean> collectPrivileges(List<String> privNames, ResultSet resultSet)
+    {
+        // Now collect all privileges columns
+        Map<String, Boolean> privs = new TreeMap<String, Boolean>();
+        for (String privName : privNames) {
+            privs.put(privName, "Y".equals(JDBCUtils.safeGetString(resultSet, privName + COLUMN_POSTFIX_PRIV)));
+        }
+        return privs;
     }
     
 }

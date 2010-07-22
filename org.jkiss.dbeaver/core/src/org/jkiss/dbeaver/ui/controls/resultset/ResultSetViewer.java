@@ -19,6 +19,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -75,6 +76,7 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
@@ -744,9 +746,18 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.clearData();
         this.clearResultsView();
         if (resultSetProvider != null) {
-            resultSetProvider.extractResultSetData(0);
+            resultSetProvider.extractResultSetData(0, getSegmentMaxRows());
         }
         updateGridCursor();
+    }
+
+    private int getSegmentMaxRows()
+    {
+        if (resultSetProvider == null) {
+            return 0;
+        }
+        IPreferenceStore preferenceStore = resultSetProvider.getDataSource().getContainer().getPreferenceStore();
+        return preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
     }
 
     private void clearData()

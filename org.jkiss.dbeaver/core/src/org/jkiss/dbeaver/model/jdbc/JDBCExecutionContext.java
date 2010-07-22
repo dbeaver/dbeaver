@@ -4,9 +4,8 @@
 
 package org.jkiss.dbeaver.model.jdbc;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -15,6 +14,12 @@ import java.sql.SQLException;
  * JDBC connection
  */
 public interface JDBCExecutionContext extends DBCExecutionContext, Connection {
+
+    JDBCStatement prepareStatement(
+        String query,
+        boolean scrollable,
+        boolean updatable,
+        boolean returnGeneratedKeys) throws DBCException;
 
     JDBCDatabaseMetaData getMetaData()
         throws SQLException;
