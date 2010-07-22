@@ -313,12 +313,14 @@ public class JDBCUtils
             scrolled = dbResult.absolute(offset);
         } catch (SQLException e) {
             // Seems to be not supported
+            log.debug(e);
         } catch (AbstractMethodError e) {
             // Seems to be legacy JDBC
+            log.debug(e);
         }
         if (!scrolled) {
             // Just fetch first 'firstRow' rows
-            for (int i = 1; i < offset; i++) {
+            for (int i = 1; i <= offset; i++) {
                 try {
                     dbResult.next();
                 } catch (SQLException e) {

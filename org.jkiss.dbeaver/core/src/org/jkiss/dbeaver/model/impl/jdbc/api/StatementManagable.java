@@ -197,9 +197,9 @@ public abstract class StatementManagable implements JDBCStatement {
         throws SQLException {
         if (this instanceof PreparedStatementManagable) {
             ResultSetManagable dbResult = new ResultSetManagable((PreparedStatementManagable) this, resultSet);
-            // Scroll result set if needed
+            // Scroll original result set if needed
             if (rsOffset > 0) {
-                JDBCUtils.scrollResultSet(dbResult, rsOffset);
+                JDBCUtils.scrollResultSet(resultSet, rsOffset);
             }
             if (rsMaxRows > 0) {
                 dbResult.setMaxRows(rsMaxRows);

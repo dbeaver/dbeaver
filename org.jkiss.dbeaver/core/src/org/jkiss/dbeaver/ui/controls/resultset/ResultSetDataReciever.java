@@ -34,6 +34,8 @@ class ResultSetDataReciever implements DBDDataReciever {
     private int columnsCount;
     private DBDColumnBinding[] metaColumns;
     private List<Object[]> rows = new ArrayList<Object[]>();
+    private boolean hasMoreData;
+    private boolean nextSegmentRead;
 
     Map<DBCColumnMetaData, List<DBCException>> errors = new HashMap<DBCColumnMetaData, List<DBCException>>();
 
@@ -43,25 +45,45 @@ class ResultSetDataReciever implements DBDDataReciever {
         this.display = resultSetViewer.getControl().getShell().getDisplay();
     }
 
+    boolean isHasMoreData() {
+        return hasMoreData;
+    }
+
+    void setHasMoreData(boolean hasMoreData) {
+        this.hasMoreData = hasMoreData;
+    }
+
+    boolean isNextSegmentRead() {
+        return nextSegmentRead;
+    }
+
+    void setNextSegmentRead(boolean nextSegmentRead) {
+        this.nextSegmentRead = nextSegmentRead;
+    }
+
     public void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet)
         throws DBCException
     {
         rows.clear();
-        DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
 
-        List<DBCColumnMetaData> rsColumns = metaData.getColumns();
-        columnsCount = rsColumns.size();
+        if (!nextSegmentRead) {
+            // Get columns metadata
+            DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
 
-        // Determine type handlers for all columns
-        DBPDataSource dataSource = resultSet.getContext().getDataSource();
+            List<DBCColumnMetaData> rsColumns = metaData.getColumns();
+            columnsCount = rsColumns.size();
 
-        // Extrat column info
-        metaColumns = new DBDColumnBinding[columnsCount];
-        for (int i = 0; i < columnsCount; i++) {
-            metaColumns[i] = DBUtils.getColumnBinding(dataSource, rsColumns.get(i));
+            // Determine type handlers for all columns
+            DBPDataSource dataSource = resultSet.getContext().getDataSource();
+
+            // Extrat column info
+            metaColumns = new DBDColumnBinding[columnsCount];
+            for (int i = 0; i < columnsCount; i++) {
+                metaColumns[i] = DBUtils.getColumnBinding(dataSource, rsColumns.get(i));
+            }
+
+            resultSetViewer.setColumnsInfo(metaColumns);
         }
-
-        resultSetViewer.setColumnsInfo(metaColumns);
     }
 
     public void fetchRow(DBRProgressMonitor monitor, DBCResultSet resultSet)
@@ -96,15 +118,31 @@ class ResultSetDataReciever implements DBDDataReciever {
     public void fetchEnd(DBRProgressMonitor monitor)
         throws DBCException
     {
-        DBUtils.findValueLocators(monitor, metaColumns);
+        if (!nextSegmentRead) {
+            // Read locators metadata
+            DBUtils.findValueLocators(monitor, metaColumns);
+        }
 
-        display.asyncExec(new Runnable() {
+        display.syncExec(new Runnable() {
             public void run()
             {
-                resultSetViewer.setData(rows);
+                if (!nextSegmentRead) {
+                    resultSetViewer.setData(rows);
+                } else {
+                    resultSetViewer.appendData(rows);
+                }
+
+                // Check for more data
+                if (rows.size() >= resultSetViewer.getSegmentMaxRows()) {
+                    hasMoreData = true;
+                } else {
+                    hasMoreData = false;
+                }
+                nextSegmentRead = false;
+
+                errors.clear();
             }
         });
-        errors.clear();
     }
 
 }

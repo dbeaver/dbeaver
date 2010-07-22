@@ -265,6 +265,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             // Set cursor on new row
             if (mode == ResultSetMode.GRID) {
                 spreadsheet.setCursor(curPos, false);
+            } else {
+                updateRecord();
             }
 
         } else {
@@ -569,6 +571,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     public void appendData(List<Object[]> rows)
     {
         curRows.addAll(rows);
+        refreshSpreadsheet(true);
     }
 
     private void clearResultsView()
@@ -635,6 +638,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     {
         final int columnIndex = (mode == ResultSetMode.GRID ? cell.col : cell.row);
         final int rowIndex = (mode == ResultSetMode.GRID ? cell.row : curRowNum);
+        if (rowIndex >= curRows.size() || columnIndex >= metaColumns.length) {
+            // Out of bounds
+            log.debug("Editor position is out of bounds (" + columnIndex + ":" + rowIndex + ")");
+            return false;
+        }
         if (!inline) {
             GridPos testCell = new GridPos(columnIndex, rowIndex);
             for (ResultSetValueController valueController : openEditors.keySet()) {
@@ -751,7 +759,19 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         updateGridCursor();
     }
 
-    private int getSegmentMaxRows()
+    synchronized void readNextSegment()
+    {
+        if (!dataReciever.isHasMoreData()) {
+            return;
+        }
+        if (resultSetProvider != null) {
+            dataReciever.setHasMoreData(false);
+            dataReciever.setNextSegmentRead(true);
+            resultSetProvider.extractResultSetData(curRows.size(), getSegmentMaxRows());
+        }
+    }
+
+    int getSegmentMaxRows()
     {
         if (resultSetProvider == null) {
             return 0;
@@ -765,6 +785,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         // Refresh all rows
         this.releaseAll();
         this.curRows.clear();
+        this.curRowNum = 0;
 
         this.editedValues.clear();
         this.addedRows.clear();
@@ -1717,7 +1738,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public Object[] getElements(Object inputElement)
         {
-            return curRows.get(((Number)inputElement).intValue());
+            int rowNum = ((Number) inputElement).intValue();
+            return curRows.get(rowNum);
         }
 
         public void dispose()
@@ -1735,11 +1757,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             GridPos cell = (GridPos)element;
             Object value;
             DBDValueHandler valueHandler;
+            int rowNum;
             if (mode == ResultSetMode.RECORD) {
                 // Fill record
+                rowNum = curRowNum;
                 if (curRowNum >= curRows.size() || curRowNum < 0) {
-                    log.warn("Bad current row number: " + curRowNum);
-                    return null;
+                    //log.warn("Bad current row number: " + curRowNum);
+                    return "";
                 }
                 Object[] values = curRows.get(curRowNum);
                 if (cell.row >= values.length) {
@@ -1749,6 +1773,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 value = values[cell.row];
                 valueHandler = metaColumns[cell.row].getValueHandler();
             } else {
+                rowNum = cell.row;
                 if (cell.row >= curRows.size()) {
                     log.warn("Bad grid row number: " + cell.row);
                     return null;
@@ -1760,6 +1785,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 value = curRows.get(cell.row)[cell.col];
                 valueHandler = metaColumns[cell.col].getValueHandler();
             }
+
+            if (dataReciever.isHasMoreData() && rowNum == curRows.size() - 1) {
+                readNextSegment();
+            }
+
             if (formatString) {
                 return valueHandler.getValueDisplayString(metaColumns[cell.col].getColumn(), value);
             } else {
