@@ -8,45 +8,32 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.api.ConnectionManagable;
-import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
-import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.jdbc.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectAction;
 import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
 
-import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends GenericStructureContainer implements DBPDataSource, JDBCConnector, DBSStructureContainerActive
+public class GenericDataSource extends JDBCDataSource implements DBPDataSource, JDBCConnector, DBSStructureContainerActive
 {
     static final Log log = LogFactory.getLog(GenericDataSource.class);
 
     public static final String QUERY_GET_ACTIVE_DB = "GET_ACTIVE_DB";
     public static final String QUERY_SET_ACTIVE_DB = "SET_ACTIVE_DB";
-
-    private DBSDataSourceContainer container;
-    private Connection connection;
 
     private List<String> tableTypes;
     private List<GenericCatalog> catalogs;
@@ -54,68 +41,17 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     private DBSObject activeChild;
     private boolean activeChildRead;
 
-    private DBPDataSourceInfo info;
+    private GenericStructureContainer structureContainer;
+
     private String queryGetActiveDB;
     private String querySetActiveDB;
 
     public GenericDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
-        this.container = container;
+        super(monitor, container);
         this.queryGetActiveDB = container.getDriver().getCustomQuery(QUERY_GET_ACTIVE_DB);
         this.querySetActiveDB = container.getDriver().getCustomQuery(QUERY_SET_ACTIVE_DB);
-        this.connection = openConnection(monitor);
-
-        this.initCache();
-    }
-
-    private Connection openConnection(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        Driver driverInstance = Driver.class.cast(container.getDriver().getDriverInstance());
-
-        // Set properties
-        Properties driverProps = new Properties();
-        DBPConnectionInfo connectionInfo = container.getConnectionInfo();
-        if (connectionInfo.getProperties() != null) {
-            driverProps.putAll(connectionInfo.getProperties());
-        }
-        if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-            driverProps.put("user", connectionInfo.getUserName());
-        }
-        if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-            driverProps.put("password", connectionInfo.getUserPassword());
-        }
-
-        // Obtain connection
-        try {
-            if (!driverInstance.acceptsURL(connectionInfo.getUrl())) {
-                throw new DBException("Bad URL: " + connectionInfo.getUrl());
-            }
-            Connection connection = driverInstance.connect(connectionInfo.getUrl(), driverProps);
-            if (connection == null) {
-                throw new DBException("Null connection returned by " + driverInstance);
-            }
-            return connection;
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-    }
-
-    public Connection getConnection()
-    {
-        return connection;
-    }
-
-    public JDBCExecutionContext openContext(DBRProgressMonitor monitor)
-    {
-        return openContext(monitor, null);
-    }
-
-    public JDBCExecutionContext openContext(DBRProgressMonitor monitor, String taskTitle)
-    {
-        return new ConnectionManagable(this, monitor, taskTitle);
     }
 
     public String[] getTableTypes()
@@ -123,62 +59,52 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         return tableTypes.toArray(new String[tableTypes.size()]);
     }
 
-    public DBSDataSourceContainer getContainer()
-    {
-        return container;
-    }
-
-    public DBPDataSourceInfo getInfo()
-    {
-        return info;
-    }
-
-    public List<GenericCatalog> getCatalogs(DBRProgressMonitor monitor)
+    public List<GenericCatalog> getCatalogs()
     {
         return catalogs;
     }
 
-    public GenericCatalog getCatalog(DBRProgressMonitor monitor, String name)
+    public GenericCatalog getCatalog(String name)
     {
-        return DBUtils.findObject(getCatalogs(monitor), name);
+        return DBUtils.findObject(getCatalogs(), name);
     }
 
-    public List<GenericSchema> getSchemas(DBRProgressMonitor monitor)
+    public List<GenericSchema> getSchemas()
     {
         return schemas;
     }
 
-    public GenericSchema getSchema(DBRProgressMonitor monitor, String name)
+    public GenericSchema getSchema(String name)
     {
-        return DBUtils.findObject(getSchemas(monitor), name);
+        return DBUtils.findObject(getSchemas(), name);
     }
 
-    public void invalidateConnection(DBRProgressMonitor monitor)
+    public List<GenericTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (connection == null) {
-            connection = openConnection(monitor);
-            return;
-        }
+        return structureContainer == null ? null : structureContainer.getTables(monitor);
+    }
 
-        if (!JDBCUtils.isConnectionAlive(connection)) {
-            close(monitor);
-            connection = openConnection(monitor);
-        }
+    public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return structureContainer == null ? null : structureContainer.getIndexes(monitor);
+    }
+
+    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return structureContainer == null ? null : structureContainer.getProcedures(monitor);
     }
 
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCUtils.startConnectionBlock(monitor, this, "Initializing data source '" + getName() + "'");
+        super.initialize(monitor);
 
-        JDBCExecutionContext context = openContext(monitor);
+        JDBCExecutionContext context = openContext(monitor, "Read generic metadata");
         try {
-            monitor.subTask("Getting connection metdata");
-            monitor.worked(1);
-
             JDBCDatabaseMetaData metaData = context.getMetaData();
-            info = new JDBCDataSourceInfo(metaData);
             {
                 // Read table types
                 monitor.subTask("Extract table types");
@@ -234,7 +160,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                 }
             }
 
-            if (catalogs == null) {
+            if (CommonUtils.isEmpty(catalogs)) {
                 // Catalogs not supported - try to read root schemas
                 monitor.subTask("Extract schemas");
                 monitor.worked(1);
@@ -242,13 +168,17 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
                 if (!tmpSchemas.isEmpty()) {
                     this.schemas = tmpSchemas;
                 }
+
+                if (CommonUtils.isEmpty(schemas)) {
+                    structureContainer = new DataSourceStructureContainer();
+                    structureContainer.initCache();
+                }
             }
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex);
         }
         finally {
             context.close();
-            JDBCUtils.endConnectionBlock(monitor);
         }
     }
 
@@ -315,41 +245,6 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         refreshObject(monitor);
     }
 
-    public void close(DBRProgressMonitor monitor)
-    {
-        if (connection != null) {
-            try {
-                if (!connection.isClosed()) {
-                    connection.close();
-                }
-            }
-            catch (SQLException ex) {
-                log.error(ex);
-            }
-            connection = null;
-        }
-    }
-
-    public String getName()
-    {
-        return container.getName();
-    }
-
-    public String getDescription()
-    {
-        return container.getDescription();
-    }
-
-    public DBSObject getParentObject()
-    {
-        return container;
-    }
-
-    public GenericDataSource getDataSource()
-    {
-        return this;
-    }
-
     public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -361,34 +256,17 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         this.catalogs = null;
         this.schemas = null;
 
-        this.info = null;
-
         this.initialize(monitor);
 
         return true;
     }
 
-    public GenericCatalog getCatalog()
-    {
-        return null;
-    }
-
-    public GenericSchema getSchema()
-    {
-        return null;
-    }
-
-    public DBSObject getObject()
-    {
-        return container;
-    }
-
     GenericTable findTable(DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)
         throws DBException
     {
-        GenericStructureContainer container = this;
+        GenericStructureContainer container = null;
         if (!CommonUtils.isEmpty(catalogName)) {
-            container = getCatalog(monitor, catalogName);
+            container = getCatalog(catalogName);
             if (container == null) {
                 log.error("Catalog " + catalogName + " not found");
                 return null;
@@ -402,12 +280,15 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
             if (container instanceof GenericCatalog) {
                 container = ((GenericCatalog)container).getSchema(schemaName);
             } else {
-                container = this.getSchema(monitor, schemaName);
+                container = this.getSchema(schemaName);
             }
             if (container == null) {
                 log.error("Schema " + schemaName + " not found");
                 return null;
             }
+        }
+        if (container == null) {
+            container = structureContainer;
         }
         return container.getTable(monitor, tableName);
     }
@@ -415,46 +296,56 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!CommonUtils.isEmpty(getCatalogs(monitor))) {
-            return getCatalogs(monitor);
-        } else if (!CommonUtils.isEmpty(getSchemas(monitor))) {
-            return getSchemas(monitor);
+        if (!CommonUtils.isEmpty(getCatalogs())) {
+            return getCatalogs();
+        } else if (!CommonUtils.isEmpty(getSchemas())) {
+            return getSchemas();
         } else {
-            return getTables(monitor);
+            return structureContainer.getTables(monitor);
         }
     }
 
     public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
-        if (!CommonUtils.isEmpty(getCatalogs(monitor))) {
-            return getCatalog(monitor, childName);
-        } else if (!CommonUtils.isEmpty(getSchemas(monitor))) {
-            return getSchema(monitor, childName);
+        if (!CommonUtils.isEmpty(getCatalogs())) {
+            return getCatalog(childName);
+        } else if (!CommonUtils.isEmpty(getSchemas())) {
+            return getSchema(childName);
         } else {
-            return super.getChild(monitor, childName);
+            return structureContainer.getChild(monitor, childName);
         }
     }
 
     public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (catalogs != null) {
+        if (!CommonUtils.isEmpty(catalogs)) {
             return GenericCatalog.class;
-        } else if (schemas != null) {
+        } else if (!CommonUtils.isEmpty(schemas)) {
             return GenericSchema.class;
         } else {
             return GenericTable.class;
         }
     }
 
-    public boolean isChild(DBRProgressMonitor monitor, DBSObject object)
+    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
+        if (!CommonUtils.isEmpty(catalogs)) {
+            for (GenericCatalog catalog : catalogs) catalog.cacheStructure(monitor, scope);
+        } else if (!CommonUtils.isEmpty(schemas)) {
+            for (GenericSchema schema : schemas) schema.cacheStructure(monitor, scope);
+        } else if (structureContainer != null) {
+            structureContainer.cacheStructure(monitor, scope);
+        }
+    }
+
+    public boolean isChild(DBSObject object)
         throws DBException
     {
         if (object instanceof GenericCatalog) {
-            return getCatalogs(monitor).contains(GenericCatalog.class.cast(object));
+            return getCatalogs().contains(GenericCatalog.class.cast(object));
         } else if (object instanceof GenericSchema) {
-            return getSchemas(monitor).contains(GenericSchema.class.cast(object));
+            return getSchemas().contains(GenericSchema.class.cast(object));
         }
         return false;
     }
@@ -524,7 +415,7 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         if (CommonUtils.isEmpty(querySetActiveDB) || !(child instanceof GenericStructureContainer)) {
             throw new DBException("Active database can't be changed for this kind of datasource!");
         }
-        if (!isChild(monitor, child)) {
+        if (!isChild(child)) {
             throw new DBException("Bad child object specified as active: " + child);
         }
 
@@ -556,4 +447,37 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
         }
     }
 
+    private class DataSourceStructureContainer extends GenericStructureContainer {
+        public GenericDataSource getDataSource() {
+            return GenericDataSource.this;
+        }
+
+        public GenericCatalog getCatalog() {
+            return null;
+        }
+
+        public GenericSchema getSchema() {
+            return null;
+        }
+
+        public DBSObject getObject() {
+            return GenericDataSource.this.getContainer();
+        }
+
+        public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException {
+            return GenericTable.class;
+        }
+
+        public String getName() {
+            return GenericDataSource.this.getName();
+        }
+
+        public String getDescription() {
+            return GenericDataSource.this.getDescription();
+        }
+
+        public DBSObject getParentObject() {
+            return GenericDataSource.this.getParentObject();
+        }
+    }
 }

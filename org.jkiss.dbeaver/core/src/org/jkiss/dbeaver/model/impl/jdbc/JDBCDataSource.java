@@ -145,7 +145,7 @@ public abstract class JDBCDataSource
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCExecutionContext context = openContext(monitor);
+        JDBCExecutionContext context = openContext(monitor, "Read dtabase metadata");
         try {
             dataSourceInfo = new JDBCDataSourceInfo(
                 context.getMetaData());
@@ -192,4 +192,8 @@ public abstract class JDBCDataSource
         return this;
     }
 
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
+        this.dataSourceInfo = null;
+        return true;
+    }
 }

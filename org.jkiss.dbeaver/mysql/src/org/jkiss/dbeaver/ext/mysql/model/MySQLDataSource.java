@@ -152,7 +152,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
     public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
-        return false;
+        return super.refreshObject(monitor);
     }
 
     MySQLTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName)
