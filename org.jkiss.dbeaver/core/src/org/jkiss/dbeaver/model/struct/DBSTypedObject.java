@@ -18,7 +18,7 @@ public interface DBSTypedObject extends DBPObject
     String getTypeName();
 
     /**
-     * JDBC type number.
+     * Type number.
      * Refer java.sql.Types for possible values
      * @return value type
      */

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.generic.views;
 
 import net.sf.jkiss.utils.CommonUtils;
@@ -16,7 +20,6 @@ import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
-import org.jkiss.dbeaver.model.DBPDriverPropertyGroup;
 import org.jkiss.dbeaver.ui.controls.proptree.DriverPropertiesControl;
 
 import java.util.ArrayList;
@@ -335,8 +338,8 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
             }
 
             if (urlText != null) {
-                if (connectionInfo.getJdbcURL() != null) {
-                    urlText.setText(CommonUtils.getString(connectionInfo.getJdbcURL()));
+                if (connectionInfo.getUrl() != null) {
+                    urlText.setText(CommonUtils.getString(connectionInfo.getUrl()));
                 } else {
                     if (!isCustom) {
                         evaluateURL();
@@ -359,7 +362,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
             DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
             saveSettings(tmpConnectionInfo);
             tmpConnectionInfo.setProperties(site.getConnectionInfo().getProperties());
-            propsControl.loadProperties(site.getDriver(), tmpConnectionInfo/*.getJdbcURL(), site.getConnectionInfo().getProperties()*/);
+            propsControl.loadProperties(site.getDriver(), tmpConnectionInfo/*.getUrl(), site.getConnectionInfo().getProperties()*/);
             driverPropsLoaded = true;
         }
     }
@@ -388,7 +391,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
                 connectionInfo.setUserPassword(passwordText.getText());
             }
             if (urlText != null) {
-                connectionInfo.setJdbcURL(urlText.getText());
+                connectionInfo.setUrl(urlText.getText());
             }
             connectionInfo.setProperties(propsControl.getProperties());
         }

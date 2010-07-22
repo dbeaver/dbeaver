@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.generic.model;
 
 import net.sf.jkiss.utils.CommonUtils;
@@ -85,10 +89,10 @@ public class GenericDataSource extends GenericStructureContainer implements DBPD
 
         // Obtain connection
         try {
-            if (!driverInstance.acceptsURL(connectionInfo.getJdbcURL())) {
-                throw new DBException("Bad URL: " + connectionInfo.getJdbcURL());
+            if (!driverInstance.acceptsURL(connectionInfo.getUrl())) {
+                throw new DBException("Bad URL: " + connectionInfo.getUrl());
             }
-            Connection connection = driverInstance.connect(connectionInfo.getJdbcURL(), driverProps);
+            Connection connection = driverInstance.connect(connectionInfo.getUrl(), driverProps);
             if (connection == null) {
                 throw new DBException("Null connection returned by " + driverInstance);
             }

@@ -36,16 +36,16 @@ public interface DBPDataSourceInfo
     String getDatabaseProductVersion();
 
     /**
-     * Retrieves the name of this JDBC driver.
+     * Retrieves the name of this driver.
      *
-     * @return JDBC driver name
+     * @return driver name
      */
     String getDriverName();
 
     /**
-     * Retrieves the version number of this JDBC driver as a <code>String</code>.
+     * Retrieves the version number of this driver as a <code>String</code>.
      *
-     * @return JDBC driver version
+     * @return driver version
      */
     String getDriverVersion();
 
@@ -69,7 +69,7 @@ public interface DBPDataSourceInfo
     /**
      * Retrieves a comma-separated list of math functions available with
      * this database.  These are the Open /Open CLI math function names used in
-     * the JDBC function escape clause.
+     * the function escape clause.
      *
      * @return the list of math functions supported by this database
      */
@@ -78,7 +78,7 @@ public interface DBPDataSourceInfo
     /**
      * Retrieves a comma-separated list of string functions available with
      * this database.  These are the  Open Group CLI string function names used
-     * in the JDBC function escape clause.
+     * in the function escape clause.
      *
      * @return the list of string functions supported by this database
      */
@@ -87,7 +87,7 @@ public interface DBPDataSourceInfo
     /**
      * Retrieves a comma-separated list of system functions available with
      * this database.  These are the  Open Group CLI system function names used
-     * in the JDBC function escape clause.
+     * in the function escape clause.
      *
      * @return a list of system functions supported by this database
      */

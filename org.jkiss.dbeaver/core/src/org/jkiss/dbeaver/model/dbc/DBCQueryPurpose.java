@@ -11,7 +11,7 @@ package org.jkiss.dbeaver.model.dbc;
  * Some of queries are instantiated by user, some are executed internally to obtain metadata, etc.
  * This enum defines different query purposes.
  *
- * Note: for sure, we can't detect ALL executed queries. Some of them are executed by JDBC drivers internally,
+ * Note: for sure, we can't detect ALL executed queries. Some of them are executed by drivers internally,
  * some are executed by plugins and not reported to query manager.
  */
 public enum DBCQueryPurpose {

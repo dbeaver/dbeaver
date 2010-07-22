@@ -491,7 +491,7 @@ public class DataSourceRegistry implements DBPRegistry
                 xml.addAttribute("port", connectionInfo.getHostPort());
             }
             xml.addAttribute("database", CommonUtils.getString(connectionInfo.getDatabaseName()));
-            xml.addAttribute("url", CommonUtils.getString(connectionInfo.getJdbcURL()));
+            xml.addAttribute("url", CommonUtils.getString(connectionInfo.getUrl()));
             xml.addAttribute("user", CommonUtils.getString(connectionInfo.getUserName()));
             if (dataSource.isSavePassword() && !CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
                 String encPassword = connectionInfo.getUserPassword();
@@ -662,7 +662,7 @@ public class DataSourceRegistry implements DBPRegistry
                     curDataSource.getConnectionInfo().setHostName(atts.getValue("host"));
                     curDataSource.getConnectionInfo().setHostPort(atts.getValue("port"));
                     curDataSource.getConnectionInfo().setDatabaseName(atts.getValue("database"));
-                    curDataSource.getConnectionInfo().setJdbcURL(atts.getValue("url"));
+                    curDataSource.getConnectionInfo().setUrl(atts.getValue("url"));
                     curDataSource.getConnectionInfo().setUserName(atts.getValue("user"));
                     String encPassword = atts.getValue("password");
                     if (!CommonUtils.isEmpty(encPassword)) {

@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -67,18 +68,18 @@ public abstract class JDBCDataSource
             driverProps.putAll(connectionInfo.getProperties());
         }
         if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-            driverProps.put(JDBCConstants.PROPERTY_USER, connectionInfo.getUserName());
+            driverProps.put(DBConstants.PROPERTY_USER, connectionInfo.getUserName());
         }
         if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-            driverProps.put(JDBCConstants.PROPERTY_PASSWORD, connectionInfo.getUserPassword());
+            driverProps.put(DBConstants.PROPERTY_PASSWORD, connectionInfo.getUserPassword());
         }
 
         // Obtain connection
         try {
-            if (!driverInstance.acceptsURL(connectionInfo.getJdbcURL())) {
-                throw new DBException("Bad URL: " + connectionInfo.getJdbcURL());
+            if (!driverInstance.acceptsURL(connectionInfo.getUrl())) {
+                throw new DBException("Bad URL: " + connectionInfo.getUrl());
             }
-            Connection connection = driverInstance.connect(connectionInfo.getJdbcURL(), driverProps);
+            Connection connection = driverInstance.connect(connectionInfo.getUrl(), driverProps);
             if (connection == null) {
                 throw new DBException("Null connection returned by " + driverInstance);
             }

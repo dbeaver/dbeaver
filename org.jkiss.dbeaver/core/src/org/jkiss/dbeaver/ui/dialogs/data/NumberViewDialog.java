@@ -29,7 +29,8 @@ public class NumberViewDialog extends ValueViewDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        Object value = getValueController().getValue();
+        DBDValueController valueController = getValueController();
+        Object value = valueController.getValue();
 
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
@@ -45,7 +46,7 @@ public class NumberViewDialog extends ValueViewDialog {
             // Bit (boolean)
             style |= SWT.READ_ONLY;
             bitEdit = new Combo(dialogGroup, style);
-            if (valueType == Types.BOOLEAN) {
+            if (valueType == Types.BOOLEAN || value instanceof Boolean) {
                 isBoolean = true;
                 bitEdit.add("FALSE");
                 bitEdit.add("TRUE");
@@ -71,7 +72,10 @@ public class NumberViewDialog extends ValueViewDialog {
                     UIUtils.INTEGER_VERIFY_LISTENER :
                     UIUtils.NUMBER_VERIFY_LISTENER);
 
-            textEdit.setText(value == null ? "" : value.toString());
+            if (value != null) {
+                String textValue = valueController.getValueHandler().getValueDisplayString(valueController.getColumnMetaData(), value);
+                textEdit.setText(textValue);
+            }
             int maxSize = getValueController().getColumnMetaData().getPrecision();
             if (maxSize > 0) {
                 textEdit.setTextLimit(maxSize + 2);

@@ -8,7 +8,7 @@ import org.jkiss.dbeaver.DBException;
 
 /**
  * Object which can block execution flow.
- * Such as socket, jdbc statement or connection, etc.
+ * Such as socket, statement or connection, etc.
  */
 public interface DBRBlockingObject {
 

@@ -18,7 +18,7 @@ public class DBPConnectionInfo implements DBPObject
     private String databaseName;
     private String userName;
     private String userPassword;
-    private String jdbcURL;
+    private String url;
     private Map<String, String> properties = new HashMap<String, String>();
 
 /*
@@ -63,14 +63,14 @@ public class DBPConnectionInfo implements DBPObject
         this.databaseName = databaseName;
     }
 
-    public String getJdbcURL()
+    public String getUrl()
     {
-        return jdbcURL;
+        return url;
     }
 
-    public void setJdbcURL(String jdbcURL)
+    public void setUrl(String url)
     {
-        this.jdbcURL = jdbcURL;
+        this.url = url;
     }
 
     public String getUserName()

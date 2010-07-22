@@ -9,8 +9,6 @@ package org.jkiss.dbeaver.model.impl.jdbc;
  */
 public class JDBCConstants
 {
-    public static final String PROPERTY_USER = "user";
-    public static final String PROPERTY_PASSWORD = "password";
 
     public static final String TABLE_CAT = "TABLE_CAT";
     public static final String TABLE_SCHEM = "TABLE_SCHEM";

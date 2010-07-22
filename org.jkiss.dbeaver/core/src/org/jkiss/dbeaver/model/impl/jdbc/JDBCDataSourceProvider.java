@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.apache.commons.logging.Log;
@@ -51,7 +55,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
         //driverProps.putAll(connectionInfo.getProperties());
         DriverPropertyInfo[] propDescs;
         try {
-            propDescs = driver.getPropertyInfo(connectionInfo.getJdbcURL(), driverProps);
+            propDescs = driver.getPropertyInfo(connectionInfo.getUrl(), driverProps);
         } catch (SQLException e) {
             log.debug("Could not obtain driver's properties", e);
             return null;

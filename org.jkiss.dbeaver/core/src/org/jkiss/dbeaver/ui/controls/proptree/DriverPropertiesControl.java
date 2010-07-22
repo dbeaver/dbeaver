@@ -29,7 +29,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.*;
@@ -618,7 +617,7 @@ public class DriverPropertiesControl extends Composite {
             if (propList == null) {
                 propList = new ArrayList<DBPDriverProperty>();
                 for (final DBPConnectionProperty propInfo : propInfos) {
-                    if (JDBCConstants.PROPERTY_USER.equals(propInfo.getName()) || JDBCConstants.PROPERTY_PASSWORD.equals(propInfo.getName())) {
+                    if (DBConstants.PROPERTY_USER.equals(propInfo.getName()) || DBConstants.PROPERTY_PASSWORD.equals(propInfo.getName())) {
                         continue;
                     }
                     DBPDriverProperty prop = new DriverPropertyImpl(this, propInfo);

@@ -243,7 +243,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
         DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
         saveSettings(tmpConnectionInfo);
         tmpConnectionInfo.setProperties(site.getConnectionInfo().getProperties());
-        driverProps.loadProperties(site.getDriver(), tmpConnectionInfo/*.getJdbcURL(), site.getConnectionInfo().getProperties()*/);
+        driverProps.loadProperties(site.getDriver(), tmpConnectionInfo/*.getUrl(), site.getConnectionInfo().getProperties()*/);
     }
 
     public void saveSettings()
@@ -270,7 +270,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
                 connectionInfo.setUserPassword(passwordText.getText());
             }
             connectionInfo.setProperties(driverProps.getProperties());
-            connectionInfo.setJdbcURL(
+            connectionInfo.setUrl(
                 "jdbc:mysql://" + connectionInfo.getHostName() +
                     ":" + connectionInfo.getHostPort() +
                     "/" + connectionInfo.getDatabaseName());

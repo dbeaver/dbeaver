@@ -67,7 +67,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
             } else {
                 typeName = typeElement.getAttribute("standard");
                 if (typeName == null) {
-                    log.warn("Type element without name or standard JDBC type reference");
+                    log.warn("Type element without name or standard type reference");
                     continue;
                 }
                 try {

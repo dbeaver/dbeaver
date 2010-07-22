@@ -23,10 +23,11 @@ public interface DBDValueHandler
 {
     /**
      * Extracts object from result set
-     * @param monitor
-     *@param resultSet result set
-     * @param column
+     * @param monitor progress monitor
+     * @param resultSet result set
+     * @param column column
      * @param columnIndex column index   @return value or null
+     * @return value
      * @throws org.jkiss.dbeaver.model.dbc.DBCException on error
      */
     Object getValueObject(DBRProgressMonitor monitor, DBCResultSet resultSet, DBSColumnBase column, int columnIndex)
@@ -34,12 +35,13 @@ public interface DBDValueHandler
 
     /**
      * Binds specified parameter to statement
-     * @param monitor
-     *@param statement statement
+     * @param monitor progress monitor
+     * @param statement statement
      * @param columnType column type
      * @param paramIndex parameter index (starts from 0)
      * @param value parameter value (can be null). Value is get from getValueObject function or from
-* object set by editor (editValue function).     @throws org.jkiss.dbeaver.model.dbc.DBCException on error
+     * object set by editor (editValue function).
+     * @throws org.jkiss.dbeaver.model.dbc.DBCException on error
      */
     void bindValueObject(DBRProgressMonitor monitor, DBCStatement statement, DBSTypedObject columnType, int paramIndex, Object value)
         throws DBCException;
@@ -47,8 +49,10 @@ public interface DBDValueHandler
     /**
      * Makes value copy. For Non-mutable objects (like numbers and string) may return the same value as passed in.
      * If copy operation is not supported for some values then may return null.
-     * @param monitor
-     *@param value original value  @return copied value or null
+     * @param monitor progress monitor
+     * @param value original value  @return copied value or null
+     * @return value copy
+     * @throws org.jkiss.dbeaver.model.dbc.DBCException on error
      */
     Object copyValueObject(DBRProgressMonitor monitor, Object value)
         throws DBCException;
@@ -56,14 +60,15 @@ public interface DBDValueHandler
     /**
      * Release any internal resources associated with this value.
      * This method is called after value binding and statement execution/close.
-     * @param value
+     * @param value value
      */
     void releaseValueObject(Object value);
 
     /**
      * Converts value to human readable format
-     * @param column
+     * @param column column
      * @param value value  @return string representation
+     * @return formatted string
      */
     String getValueDisplayString(DBSTypedObject column, Object value);
 
@@ -79,6 +84,7 @@ public interface DBDValueHandler
     /**
      * Fills context menu for certain value
      * @param menuManager context menu manager
+     * @param controller value controller
      * @throws DBCException on error
      */
     void fillContextMenu(IMenuManager menuManager, DBDValueController controller)
@@ -102,6 +108,7 @@ public interface DBDValueHandler
      * value controller.
      * @param controller value controller  @return true if editor was successfully opened.
      * makes sence only for inline editors, otherwise return value is ignored.
+     * @return true on success
      * @throws org.jkiss.dbeaver.DBException on error
      */
     boolean editValue(DBDValueController controller)

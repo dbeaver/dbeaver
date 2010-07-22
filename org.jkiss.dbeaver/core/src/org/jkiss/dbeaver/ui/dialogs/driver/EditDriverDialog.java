@@ -71,7 +71,6 @@ public class EditDriverDialog extends Dialog
         if (driver == null) {
             getShell().setText("Create new driver");
             driver = provider.createDriver();
-            //driver.setSampleURL("jdbc:");
         } else {
             getShell().setText("Edit Driver '" + driver.getName() + "'");
         }
