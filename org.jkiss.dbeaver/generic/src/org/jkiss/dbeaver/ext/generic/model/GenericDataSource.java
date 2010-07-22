@@ -300,8 +300,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
             return getCatalogs();
         } else if (!CommonUtils.isEmpty(getSchemas())) {
             return getSchemas();
-        } else {
+        } else if (structureContainer != null) {
             return structureContainer.getTables(monitor);
+        } else {
+            return null;
         }
     }
 
@@ -312,8 +314,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
             return getCatalog(childName);
         } else if (!CommonUtils.isEmpty(getSchemas())) {
             return getSchema(childName);
-        } else {
+        } else if (structureContainer != null) {
             return structureContainer.getChild(monitor, childName);
+        } else {
+            return null;
         }
     }
 
