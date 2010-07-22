@@ -57,15 +57,17 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         JDBCExecutionContext jdbcContext = (JDBCExecutionContext)context;
         readRequiredMeta(context.getProgressMonitor());
 
+        boolean scrollWithQuery = (this instanceof JDBCScrollableTable);
+
         String query = "SELECT * FROM " + getFullQualifiedName();
-        if (this instanceof JDBCScrollableTable) {
+        if (scrollWithQuery) {
             query = ((JDBCScrollableTable)this).makeScrollableQuery(query, firstRow, maxRows);
         }
         boolean fetchStarted = false;
-        JDBCStatement dbStat = jdbcContext.prepareStatement(query.toString(), false, false, false);
+        JDBCStatement dbStat = jdbcContext.prepareStatement(query, !scrollWithQuery, false, false);
         try {
             dbStat.setDataContainer(this);
-            if (!(this instanceof JDBCScrollableTable)) {
+            if (!scrollWithQuery) {
                 dbStat.setLimit(firstRow, maxRows);
             }
             if (!dbStat.executeStatement()) {
@@ -285,8 +287,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     /**
      * Reads and caches metadata which is required for data requests
-     * @param monitor
-     * @throws DBException
+     * @param monitor progress monitor
+     * @throws DBException on error
      */
     private void readRequiredMeta(DBRProgressMonitor monitor)
         throws DBException

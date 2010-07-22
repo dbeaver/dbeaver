@@ -255,7 +255,8 @@ public class SQLQueryJob extends DataSourceJob
         SQLQueryResult result = new SQLQueryResult(query);
         try {
             // Prepare statement
-            curStatement = context.prepareStatement(sqlQuery, false, false, false);
+            boolean isScript = queries.size() > 1;
+            curStatement = context.prepareStatement(sqlQuery, !isScript, false, false);
             curStatement.setLimit(rsOffset, rsMaxRows);
             if (rsOffset > 0) {
                 result.setRowOffset(rsOffset);

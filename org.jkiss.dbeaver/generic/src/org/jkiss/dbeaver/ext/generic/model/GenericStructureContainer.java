@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.generic.model;
 
 import net.sf.jkiss.utils.CommonUtils;
@@ -250,6 +254,10 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
             if (isSystemTable && !getDataSource().getContainer().isShowSystemObjects()) {
                 return null;
             }
+/*
+            // Do not read table type object
+            // Actually dunno what to do with it and it often throws stupid warnings in debug
+
             String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
             String typeCatalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_CAT);
             String typeSchemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_SCHEM);
@@ -261,14 +269,15 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 typeCatalog == null ?
                     getDataSource().getSchema(context.getProgressMonitor(), typeSchemaName) :
                     typeCatalog.getSchema(typeSchemaName);
+*/
             return new GenericTable(
                 GenericStructureContainer.this,
                 tableName,
                 tableType,
-                remarks,
+                remarks/*,
                 typeName,
                 typeCatalog,
-                typeSchema);
+                typeSchema*/);
         }
 
         protected boolean isChildrenCached(GenericTable table)

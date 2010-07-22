@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.generic.model;
 
 import net.sf.jkiss.utils.CommonUtils;
@@ -37,9 +41,11 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructureC
     private boolean isView;
     private boolean isSystem;
 
+/*
     private String typeName;
     private GenericCatalog typeCatalog;
     private GenericSchema typeSchema;
+*/
 
     private List<GenericTableColumn> columns;
     private List<GenericIndex> indexes;
@@ -68,15 +74,17 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructureC
         GenericStructureContainer container,
         String tableName,
         String tableType,
-        String remarks,
+        String remarks/*,
         String typeName,
         GenericCatalog typeCatalog,
-        GenericSchema typeSchema)
+        GenericSchema typeSchema*/)
     {
         super(container, tableName, tableType, remarks);
+/*
         this.typeName = typeName;
         this.typeCatalog = typeCatalog;
         this.typeSchema = typeSchema;
+*/
 
         if (!CommonUtils.isEmpty(this.getTableType())) {
             this.isView = (this.getTableType().toUpperCase().indexOf("VIEW") != -1);
@@ -212,6 +220,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructureC
         return false;
     }
 
+/*
     public String getTypeName()
     {
         return typeName;
@@ -227,6 +236,10 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructureC
         return typeSchema;
     }
 
+*/
+
+/*
+    // Comment row count calculation - it works too long and takes a lot of resources without serious reason
     @Property(name = "Row Count", viewable = true, order = 5)
     public long getRowCount(DBRProgressMonitor monitor)
         throws DBCException
@@ -263,6 +276,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructureC
 
         return rowCount;
     }
+*/
 
     private List<GenericPrimaryKey> loadConstraints(DBRProgressMonitor monitor)
         throws DBException

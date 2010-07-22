@@ -17,7 +17,6 @@ import org.jkiss.dbeaver.ext.mysql.controls.PrivilegesPairList;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.PairListControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 
 import java.lang.reflect.InvocationTargetException;
@@ -126,16 +125,6 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 for (String catalog : catalogPrivileges.keySet()) {
                     catList.add(catalog);
                 }
-/*
-                Table table = sessionsViewer.getTable();
-                table.setRedraw(false);
-                try {
-                    sessionsViewer.setInput(privs);
-                    setInfo(privs.size() + " sessions");
-                } finally {
-                    table.setRedraw(true);
-                }
-*/
             }
         }
 
