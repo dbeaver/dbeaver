@@ -12,6 +12,7 @@ public class SQLQueryResult
     private SQLStatementInfo statement;
     //private DBCResultSetMetaData metaData;
     //private List<Object[]> rows;
+    private Integer rowOffset;
     private Integer rowCount;
     private Integer updateCount;
     private Throwable error;
@@ -44,6 +45,14 @@ public class SQLQueryResult
     }
 
 */
+
+    public Integer getRowOffset() {
+        return rowOffset;
+    }
+
+    public void setRowOffset(Integer rowOffset) {
+        this.rowOffset = rowOffset;
+    }
 
     public Integer getRowCount()
     {

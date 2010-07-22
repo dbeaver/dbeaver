@@ -257,6 +257,9 @@ public class SQLQueryJob extends DataSourceJob
             // Prepare statement
             curStatement = context.prepareStatement(sqlQuery, false, false, false);
             curStatement.setLimit(rsOffset, rsMaxRows);
+            if (rsOffset > 0) {
+                result.setRowOffset(rsOffset);
+            }
 
             // Bind parameters
             if (!CommonUtils.isEmpty(query.getParameters())) {

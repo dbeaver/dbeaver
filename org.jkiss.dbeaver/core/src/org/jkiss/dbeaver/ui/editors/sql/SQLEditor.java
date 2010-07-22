@@ -696,6 +696,9 @@ public class SQLEditor extends BaseTextEditor
                                 String status;
                                 if (result.getRowCount() != null) {
                                     status = result.getRowCount() + " row(s) fetched";
+                                    if (result.getRowOffset() != null) {
+                                        status += " (" + result.getRowOffset() + " - " + (result.getRowOffset() + result.getRowCount()) + ")";
+                                    }
                                 } else if (result.getUpdateCount() != null) {
                                     if (result.getUpdateCount() == 0) {
                                         status = "No rows updated";
@@ -823,6 +826,10 @@ public class SQLEditor extends BaseTextEditor
     public boolean isConnected()
     {
         return getDataSourceContainer() != null && getDataSourceContainer().isConnected();
+    }
+
+    public boolean isRunning() {
+        return curJobRunning;
     }
 
     public void extractResultSetData(int offset, int maxRows)

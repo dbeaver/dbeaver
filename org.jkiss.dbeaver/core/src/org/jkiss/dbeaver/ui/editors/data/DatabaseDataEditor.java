@@ -82,6 +82,10 @@ public class DatabaseDataEditor extends AbstractDatabaseEditor implements IEmbed
         return dataContainer != null && dataContainer.getDataSource().getContainer().isConnected();
     }
 
+    public boolean isRunning() {
+        return false;
+    }
+
     public DBSDataContainer getDataContainer()
     {
         return dataContainer;

@@ -764,7 +764,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (!dataReciever.isHasMoreData()) {
             return;
         }
-        if (resultSetProvider != null) {
+        if (resultSetProvider != null && !resultSetProvider.isRunning()) {
             dataReciever.setHasMoreData(false);
             dataReciever.setNextSegmentRead(true);
             resultSetProvider.extractResultSetData(curRows.size(), getSegmentMaxRows());

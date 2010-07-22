@@ -13,6 +13,8 @@ public interface ResultSetProvider extends IDataSourceUser {
 
     boolean isConnected();
 
+    boolean isRunning();
+
     void extractResultSetData(int offset, int maxRows);
 
 }

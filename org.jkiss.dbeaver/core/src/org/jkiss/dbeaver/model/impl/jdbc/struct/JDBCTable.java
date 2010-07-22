@@ -62,6 +62,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         if (this instanceof JDBCScrollableTable) {
             query = ((JDBCScrollableTable)this).makeScrollableQuery(query, firstRow, maxRows);
         }
+        boolean fetchStarted = false;
         JDBCStatement dbStat = jdbcContext.prepareStatement(query.toString(), false, false, false);
         try {
             dbStat.setDataContainer(this);
@@ -77,21 +78,18 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
             try {
                 dataReciever.fetchStart(context.getProgressMonitor(), dbResult);
-                try {
-                    int rowCount = 0;
-                    while (dbResult.nextRow()) {
-                        if (rowCount >= maxRows) {
-                            // Fetch not more than max rows
-                            break;
-                        }
-                        dataReciever.fetchRow(context.getProgressMonitor(), dbResult);
-                        rowCount++;
+                fetchStarted = true;
+
+                int rowCount = 0;
+                while (dbResult.nextRow()) {
+                    if (rowCount >= maxRows) {
+                        // Fetch not more than max rows
+                        break;
                     }
-                    return rowCount;
+                    dataReciever.fetchRow(context.getProgressMonitor(), dbResult);
+                    rowCount++;
                 }
-                finally {
-                    dataReciever.fetchEnd(context.getProgressMonitor());
-                }
+                return rowCount;
             }
             finally {
                 dbResult.close();
@@ -99,6 +97,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
         finally {
             dbStat.close();
+            if (fetchStarted) {
+                dataReciever.fetchEnd(context.getProgressMonitor());
+            }
         }
     }
 
