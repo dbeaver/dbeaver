@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
@@ -12,8 +11,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
-
-import java.io.IOException;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**
  * PrefPageSQL
@@ -97,13 +95,7 @@ public class PrefPageContentEditor extends TargetPrefPage
         } catch (Exception e) {
             log.warn(e);
         }
-        if (store instanceof IPersistentPreferenceStore) {
-            try {
-                ((IPersistentPreferenceStore)store).save();
-            } catch (IOException e) {
-                log.warn(e);
-            }
-        }
+        DBeaverUtils.savePreferenceStore(store);
     }
 
     protected void clearPreferences(IPreferenceStore store)

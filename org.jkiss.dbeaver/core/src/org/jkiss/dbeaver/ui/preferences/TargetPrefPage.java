@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.IOException;
 
@@ -275,13 +276,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
         } else {
             savePreferences(store);
         }
-        if (store instanceof IPersistentPreferenceStore) {
-            try {
-                ((IPersistentPreferenceStore)store).save();
-            } catch (IOException ex) {
-                log.warn("Error saving preferences", ex);
-            }
-        }
+        DBeaverUtils.savePreferenceStore(store);
         return super.performOk();
     }
 

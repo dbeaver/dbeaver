@@ -14,6 +14,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -21,6 +23,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 
 import java.lang.reflect.InvocationTargetException;
+import java.io.IOException;
 
 /**
  * DBeaverUtils
@@ -126,4 +129,16 @@ public class DBeaverUtils
         });
     }
 
+    public static void savePreferenceStore(IPreferenceStore store)
+    {
+        if (store instanceof IPersistentPreferenceStore) {
+            try {
+                ((IPersistentPreferenceStore)store).save();
+            } catch (IOException e) {
+                log.warn(e);
+            }
+        } else {
+            log.debug("Could not save prefernce store '" + store + "' - not a persistent one");
+        }
+    }
 }

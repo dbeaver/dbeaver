@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.*;
+import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.editors.text.ILocationProvider;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.WorkbenchPart;
@@ -151,6 +152,8 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         id = IWorkbenchCommandConstants.EDIT_SELECT_ALL;
         bars.setGlobalActionHandler(id, new EditorAction(id));
         id = IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE;
+        bars.setGlobalActionHandler(id, new EditorAction(id));
+        id = ITextEditorActionConstants.GOTO_LINE;
         bars.setGlobalActionHandler(id, new EditorAction(id));
 
         manager.addListener(new Listener() {
@@ -460,6 +463,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_PASTE, "Paste"));
         manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL, "Select All"));
         manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, "Find/Replace"));
+        manager.add(new EditorAction(ITextEditorActionConstants.GOTO_LINE, "Go to line"));
         manager.add(new Separator());
         manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_UNDO, "Undo"));
         manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_REDO, "Redo"));
@@ -499,6 +503,8 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
                 getManager().doSelectAll();
             else if (actionId.equals(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE))
                 getManager().doFind();
+            else if (actionId.equals(ITextEditorActionConstants.GOTO_LINE))
+                getManager().doGoTo();
         }
     }
 

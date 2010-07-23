@@ -7,12 +7,11 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
@@ -26,10 +25,8 @@ import org.eclipse.ui.editors.text.TextEditorActionContributor;
 import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.StatusLineContributionItem;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.meta.DBMEvent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -46,10 +43,11 @@ import org.jkiss.dbeaver.ui.actions.sql.*;
 import org.jkiss.dbeaver.ui.controls.DefaultMenuCreator;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * SQL Editor contributor
@@ -567,7 +565,9 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                 if (rsSize.length() == 0) {
                     rsSize = "1";
                 }
-                dsContainer.getPreferenceStore().setValue(PrefConstants.RESULT_SET_MAX_ROWS, rsSize);
+                IPreferenceStore store = dsContainer.getPreferenceStore();
+                store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, rsSize);
+                DBeaverUtils.savePreferenceStore(store);
             }
         }
     }

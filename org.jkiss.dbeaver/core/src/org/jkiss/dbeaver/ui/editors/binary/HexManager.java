@@ -27,22 +27,18 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.editors.binary.dialogs.FindReplaceDialog;
 import org.jkiss.dbeaver.ui.editors.binary.dialogs.GoToDialog;
-import org.jkiss.dbeaver.ui.editors.binary.dialogs.SelectBlockDialog;
-import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Manager of the javahexeditor application, either in its standalone or Eclipse plugin version.
@@ -55,125 +51,19 @@ public class HexManager {
 
     static final Log log = LogFactory.getLog(HexManager.class);
 
-    class MySelectionAdapter extends SelectionAdapter {
-        static final int PASTE = 1;
-        static final int DELETE = 2;
-        static final int SELECT_ALL = 3;
-        static final int FIND = 4;
-        static final int CUT = 10;
-        static final int COPY = 11;
-        static final int GO_TO = 12;
-        static final int GUIDELOCAL = 13;
-        static final int GUIDEONLINE = 14;
-        static final int PREFERENCES = 16;
-        static final int REDO = 17;
-        static final int TRIM = 18;
-        static final int UNDO = 19;
-        static final int UPDATE_POSITION_TEXT = 20;
-        static final int SELECT_BLOCK = 21;
-        int myAction = -1;
-
-        MySelectionAdapter(int action)
-        {
-            myAction = action;
-        }
-
-        public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
-        {
-            switch (myAction) {
-                case PASTE:
-                    doPaste();
-                    break;
-                case DELETE:
-                    doDelete();
-                    break;
-                case SELECT_ALL:
-                    doSelectAll();
-                    break;
-                case FIND:
-                    doFind();
-                    break;
-                case CUT:
-                    doCut();
-                    break;
-                case COPY:
-                    doCopy();
-                    break;
-                case GO_TO:
-                    doGoTo();
-                    break;
-                case GUIDELOCAL:
-                    doOpenUserGuideUrl(false);
-                    break;
-                case GUIDEONLINE:
-                    doOpenUserGuideUrl(true);
-                    break;
-                case PREFERENCES:
-                    doPreferences();
-                    break;
-                case REDO:
-                    doRedo();
-                    break;
-                case TRIM:
-                    doTrim();
-                    break;
-                case UNDO:
-                    doUndo();
-                    break;
-                case UPDATE_POSITION_TEXT:
-                    if (statusLine != null) {
-                        if (hexEditControl != null) {
-                            if (hexEditControl.isSelected())
-                                statusLine.updateSelectionValueText(hexEditControl.getSelection(), hexEditControl.getActualValue());
-                            else
-                                statusLine.updatePositionValueText(hexEditControl.getCaretPos(), hexEditControl.getActualValue());
-                        } else {
-                            statusLine.updatePositionValueText(0L, (byte) 0);
-                        }
-                    }
-                    break;
-                case SELECT_BLOCK:
-                    doSelectBlock();
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-
-    static final String applicationName = "binary";
-    static final String fontExtension = ".font";
-    static final String nameExtension = ".name";
-    static final String propertiesExtension = ".properties";
-    static final String sizeExtension = ".size";
-    static final String styleExtension = ".style";
-    static final String textCouldNotRead = "Could not read from saved file, try reopening the editor";
-    static final String textCouldNotWriteOnFile = "Could not write on file ";
-    static final String textFindReplace = "&Find/Replace...\tCtrl+F";
-    static final String textIsBeingUsed = "\nis currently being used by the editor.\nCannot overwrite file.";
-    static final String textTheFile = "The file ";
-    static final String textErrorFatal = "Unexpected fatal error";
-    static final String textErrorSave = "Save error";
-    static final String textErrorOutOfMemory = "Out of memory error";
-
     private BinaryContent content = null;
     private List<Object[]> findReplaceFindList = null;
     private List<Object[]> findReplaceReplaceList = null;
     private FontData fontData = null;  // when null uses default font
     private Font fontText = null;
-    private File myFile = null;
     private String lastErrorMessage = null;
     private String lastErrorText = null;
     private java.util.List<Listener> listOfStatusChangedListeners = null;
     private java.util.List<SelectionListener> listOfLongListeners = null;
-    private PreferencesManager preferences = null;
 
     // visual controls
-    private Shell sShell = null;  //  @jve:decl-index=0:visual-constraint="70,45"
     private FindReplaceDialog findDialog = null;
     private GoToDialog goToDialog = null;
-    private SelectBlockDialog selectBlockDialog = null;
     private HexEditControl hexEditControl = null;
     private StatusLine statusLine = null;
     private Composite textsParent = null;
@@ -232,7 +122,6 @@ public class HexManager {
         movingShell.setLocation(movingLower[0], movingLower[1]);
     }
 
-
     /**
      * Creates editor part of parent application. Can only be called once per Manager object.
      *
@@ -243,7 +132,7 @@ public class HexManager {
     public Composite createEditorPart(Composite parent, int style)
     {
         if (hexEditControl != null) throw new IllegalStateException("Editor part exists already");
-        if (parent == null) throw new NullPointerException("Cannot use null parent");
+        if (parent == null) throw new NullPointerException("Null parent");
 
         textsParent = parent;
         hexEditControl = new HexEditControl(textsParent, style);
@@ -259,7 +148,7 @@ public class HexManager {
             hexEditControl.setFont(fontText);
         }
 
-        hexEditControl.addLongSelectionListener(new MySelectionAdapter(MySelectionAdapter.UPDATE_POSITION_TEXT));
+        //hexEditControl.addLongSelectionListener(new MySelectionAdapter(MySelectionAdapter.UPDATE_POSITION_TEXT));
         hexEditControl.addListener(SWT.Modify, new Listener() {
             public void handleEvent(Event event)
             {
@@ -461,71 +350,6 @@ public class HexManager {
         }
     }
 
-    /**
-     * Open 'select block' dialog
-     */
-    public void doSelectBlock()
-    {
-        if (content.length() < 1L) return;
-
-        if (selectBlockDialog == null)
-            selectBlockDialog = new SelectBlockDialog(textsParent.getShell());
-        long start = selectBlockDialog.open(hexEditControl.getSelection(), content.length() - 1L);
-        long end = selectBlockDialog.getFinalEndResult();
-        if ((start >= 0L) && (end >= 0L) && (start != end)) {
-            hexEditControl.selectBlock(start, end);
-        }
-    }
-
-
-    void doOpenUserGuideUrl(boolean online)
-    {
-        Program browser = Program.findProgram("html");
-        if (browser == null) {
-            MessageBox box = new MessageBox(sShell, SWT.ICON_WARNING | SWT.OK);
-            box.setText("Browser not found");
-            box.setMessage("Could not find a browser program to open html files.\n" +
-                "Visit binary.sourceforge.net/userGuide.html to see the User Guide.\n");
-            box.open();
-            return;
-        }
-
-        String fileName = "userGuide.html";
-        if (online) {
-            fileName = "binary.sourceforge.net/" + fileName;
-        } else {
-            File theFile = new File(fileName);
-            if (!theFile.exists()) {
-                InputStream inStream = ClassLoader.getSystemResourceAsStream(fileName);
-                if (inStream != null) {
-                    try {
-                        FileOutputStream outStream = new FileOutputStream(theFile);
-                        byte[] buffer = new byte[512];
-                        int read;
-                        try {
-                            while ((read = inStream.read(buffer)) > 0) {
-                                outStream.write(buffer, 0, read);
-                            }
-                        }
-                        finally {
-                            outStream.close();
-                        }
-                    }
-                    catch (IOException e) {
-                        // Open browser anyway
-                    }
-                    try {
-                        inStream.close();
-                    }
-                    catch (IOException e) {
-                        // Open browser anyway
-                    }
-                }
-            }
-        }
-        browser.execute(fileName);
-    }
-
 
     /**
      * Pastes clipboard into editor
@@ -535,18 +359,6 @@ public class HexManager {
         if (hexEditControl == null) return;
 
         hexEditControl.paste();
-    }
-
-
-    void doPreferences()
-    {
-        if (preferences == null) {
-            preferences = new PreferencesManager(fontData == null ? HexEditControl.fontDataDefault : fontData);
-        }
-        if (preferences.openDialog(textsParent.getShell()) == SWT.OK) {
-            setTextFont(preferences.getFontData());
-            writeNonDefaultFont();
-        }
     }
 
 
@@ -676,54 +488,8 @@ public class HexManager {
         throws IOException
     {
         content = new BinaryContent(aFile);  // throws IOException
-        myFile = aFile;
         hexEditControl.setCharset(charset);
         hexEditControl.setContentProvider(content);
-    }
-
-
-    void readNonDefaultFont()
-    {
-        Properties properties = new Properties();
-        try {
-            FileInputStream file = new FileInputStream(applicationName + propertiesExtension);
-            properties.load(file);
-            file.close();
-        }
-        catch (IOException e) {
-            return;
-        }
-
-        String name = properties.getProperty(applicationName + fontExtension + nameExtension);
-        if (name == null) return;
-
-        String styleString = properties.getProperty(applicationName + fontExtension + styleExtension);
-        if (styleString == null) return;
-        int style = PreferencesManager.fontStyleToInt(styleString);
-
-        int size;
-        try {
-            size =
-                Integer.parseInt(properties.getProperty(applicationName + fontExtension + sizeExtension));
-        }
-        catch (NumberFormatException e) {
-            return;
-        }
-
-        fontData = new FontData(name, size, style);
-    }
-
-
-    void refreshTitleBar()
-    {
-        StringBuffer title = new StringBuffer();
-        if (myFile != null) {
-            if (content.isDirty())
-                title.append('*');
-            title.append(myFile.getName()).append(" - ");
-        }
-        title.append(applicationName);
-        sShell.setText(title.toString());
     }
 
 
@@ -825,59 +591,4 @@ public class HexManager {
         aMessageBox.open();
     }
 
-
-    /**
-     * Show a file dialog with a save-as message
-     *
-     * @param aShell parent of the dialog
-     */
-    public File showSaveAsDialog(Shell aShell, boolean selection)
-    {
-        FileDialog dialog = new FileDialog(aShell, SWT.SAVE);
-        if (selection)
-            dialog.setText("Save Selection As");
-        else
-            dialog.setText("Save As");
-        String fileText = dialog.open();
-        if (fileText == null) return null;
-
-        File file = new File(fileText);
-        if (file.exists() && !UIUtils.confirmAction(
-            aShell,
-            "File already exists",
-            "The file " + file + " already exists.\nOverwrite file?"))
-        {
-            return null;
-        }
-
-        return file;
-    }
-
-    void writeNonDefaultFont()
-    {
-        File propertiesFile = new File(applicationName + propertiesExtension);
-        if (fontData == null) {
-            if (propertiesFile.exists()) {
-                if (!propertiesFile.delete()) {
-                    log.warn("Could not delete property file '" + propertiesFile.getAbsolutePath() + "'");
-                }
-            }
-            return;
-        }
-
-        Properties properties = new Properties();
-        properties.setProperty(applicationName + fontExtension + nameExtension, fontData.getName());
-        properties.setProperty(applicationName + fontExtension + styleExtension,
-                               PreferencesManager.fontStyleToString(fontData.getStyle()));
-        properties.setProperty(applicationName + fontExtension + sizeExtension,
-                               Integer.toString(fontData.getHeight()));
-        try {
-            FileOutputStream stream = new FileOutputStream(propertiesFile);
-            properties.store(stream, null);
-            stream.close();
-        }
-        catch (IOException e) {
-            System.err.println(textCouldNotWriteOnFile + propertiesFile.getPath());
-        }
-    }
 }
