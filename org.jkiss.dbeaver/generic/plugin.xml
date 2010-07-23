@@ -153,15 +153,13 @@
                 <driver
                     id="mssql"
                     label="MS SQL Server"
-                    class="com.microsoft.jdbc.sqlserver.SQLServerDriver"
-                    sampleURL="jdbc:microsoft:sqlserver://{host}[:{port}][;DatabaseName={database}]"
+                    class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                    sampleURL="jdbc:sqlserver://{host}[:{port}][;DatabaseName={database}]"
                     webURL="http://microsoft.com"
                     description="MS SQL Server standard driver">
                     <query label="GET_ACTIVE_DB">select db_name()</query>
                     <query label="SET_ACTIVE_DB">use ?</query>
-                    <library path="drivers/msbase.jar"/>
-					<library path="drivers/mssqlserver.jar"/>
-					<library path="drivers/msutil.jar"/>
+                    <library path="drivers/sqljdbc4.jar"/>
                 </driver>
             </drivers>
             <views>

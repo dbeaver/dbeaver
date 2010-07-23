@@ -115,7 +115,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
             } else {
                 return prepareStatement(
                     sqlQuery,
-                    scrollable ? ResultSet.TYPE_SCROLL_SENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
+                    scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
                     updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
             }
         }
