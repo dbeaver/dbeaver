@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSColumnDefinition
  */
-public interface DBSColumnDefinition extends DBSStructureObject, DBSColumnBase
+public interface DBSColumnDefinition extends DBSObject, DBSColumnBase
 {
     int getMaxLength();
 

@@ -17,14 +17,24 @@ public class DBeaverPerspective implements IPerspectiveFactory
         String editorArea = layout.getEditorArea();
         //layout.setEditorAreaVisible(false);
 
-        IFolderLayout treeFolder = layout.createFolder("navigation", IPageLayout.LEFT, 0.3f, editorArea);
+        // Navigator
+        IFolderLayout treeFolder = layout.createFolder(
+            "navigation",
+            IPageLayout.LEFT,
+            0.60f,
+            editorArea);
         //treeFolder.addPlaceholder(NavigatorTreeView.ID + ":*");
         treeFolder.addView(NavigatorTreeView.VIEW_ID);
 
         layout.getViewLayout(NavigatorTreeView.VIEW_ID).setCloseable(false);
 
         // Bottom right.
-        IFolderLayout bottomRight = layout.createFolder("bottomRight", IPageLayout.BOTTOM, (float) 0.66, editorArea);
+        IFolderLayout bottomRight = layout.createFolder(
+            "bottomRight",
+            IPageLayout.BOTTOM,
+            IPageLayout.RATIO_MIN,
+            editorArea);
         bottomRight.addView(IPageLayout.ID_PROP_SHEET);
+
     }
 }
