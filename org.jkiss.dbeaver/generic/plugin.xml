@@ -104,17 +104,6 @@
             </tree>
             <drivers managable="true">
                 <driver
-                    id="mysql"
-                    label="MySQL"
-                    class="com.mysql.jdbc.Driver"
-                    sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
-                    webURL="http://mysql.com"
-                    description="MySQL standard driver">
-                    <query label="GET_ACTIVE_DB">select database()</query>
-                    <query label="SET_ACTIVE_DB">use ?</query>
-                    <library path="drivers/mysql-connector-java-5.1.13-bin.jar"/>
-                </driver>
-                <driver
                     id="postgresql"
                     label="PostgreSQL"
                     class="org.postgresql.Driver"

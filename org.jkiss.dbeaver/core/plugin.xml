@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 
+<!--
+  ~ Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+  -->
+
 <plugin>
     <extension-point id="org.jkiss.dbeaver.dataSourceProvider" name="DataSource provider"
                      schema="schema/org.jkiss.dbeaver.dataSourceProvider.exsd"/>
@@ -169,7 +173,7 @@
               name="DBeaver">
             <property
                 name="aboutText"
-                value="DBeaver Database Manager">
+                value="DBeaver - Universal Database Manager">
             </property>
             <property
                 name="windowImages"
