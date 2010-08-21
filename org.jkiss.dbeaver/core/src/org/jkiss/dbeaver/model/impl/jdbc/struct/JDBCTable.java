@@ -66,7 +66,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             query = limitTransformer.transformQueryString(query);
         }
         boolean fetchStarted = false;
-        JDBCStatement dbStat = jdbcContext.prepareStatement(query, !scrollWithQuery, false, false);
+        JDBCStatement dbStat = jdbcContext.prepareStatement(query, false, false, false);
         try {
             dbStat.setDataContainer(this);
             if (!scrollWithQuery) {

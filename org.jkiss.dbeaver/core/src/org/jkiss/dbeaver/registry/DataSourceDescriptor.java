@@ -14,7 +14,9 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IActionFilter;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.DBException;
@@ -457,16 +459,19 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
     public boolean askForPassword()
     {
-        ConnectionAuthDialog auth = new ConnectionAuthDialog(
-            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-            this);
-        int result = auth.open();
-        if (result == IDialogConstants.OK_ID) {
-            if (isSavePassword()) {
-                // Update connection properties
-                getDriver().getProviderDescriptor().getRegistry().updateDataSource(this);
+        IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        if (workbenchWindow != null) {
+            ConnectionAuthDialog auth = new ConnectionAuthDialog(
+                workbenchWindow.getShell(),
+                this);
+            int result = auth.open();
+            if (result == IDialogConstants.OK_ID) {
+                if (isSavePassword()) {
+                    // Update connection properties
+                    getDriver().getProviderDescriptor().getRegistry().updateDataSource(this);
+                }
+                return true;
             }
-            return true;
         }
         return false;
     }
