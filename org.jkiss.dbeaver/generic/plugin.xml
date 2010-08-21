@@ -121,7 +121,7 @@
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     webURL="http://postgresql.org"
                     description="PostgreSQL standard driver">
-                    <library path="drivers/postgresql.jar"/>
+                    <library path="drivers/postgresql-8.4-701.jdbc4.jar"/>
                 </driver>
                 <driver
                     id="oracle"
@@ -130,25 +130,19 @@
                     sampleURL="jdbc:oracle:thin:@{host}[:{port}]:{database}"
                     webURL="http://oracle.com"
                     description="Oracle thin driver">
-                    <library path="bin/"/>
+                    <library path="drivrs/ojdbc14.jar"/>
                     <query label="GET_ACTIVE_DB">select sys_context( 'userenv', 'current_schema' ) from dual</query>
                     <query label="SET_ACTIVE_DB">alter session set current_schema=?</query>
                 </driver>
                 <driver
                     id="db2"
                     label="DB2"
-                    class="COM.ibm.db2.jdbc.net.DB2Driver"
+                    class="com.ibm.db2.jcc.DB2Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                     webURL="www.ibm.com/software/data/db2/ad/java.html"
-                    description="DB2 Net driver">
-                </driver>
-                <driver
-                    id="odbc"
-                    label="ODBC"
-                    class="sun.jdbc.odbc.JdbcOdbcDriver"
-                    sampleURL="jdbc:odbc:{database}"
-                    webURL="http://sun.com"
-                    description="ODBC bridge driver">
+                    description="DB2 JCC driver">
+					<library path="drivrs/db2jcc.jar"/>
+					<library path="drivrs/db2jcc_license_cu.jar"/>
                 </driver>
                 <driver
                     id="mssql"
@@ -160,6 +154,14 @@
                     <query label="GET_ACTIVE_DB">select db_name()</query>
                     <query label="SET_ACTIVE_DB">use ?</query>
                     <library path="drivers/sqljdbc4.jar"/>
+                </driver>
+                <driver
+                    id="odbc"
+                    label="ODBC"
+                    class="sun.jdbc.odbc.JdbcOdbcDriver"
+                    sampleURL="jdbc:odbc:{database}"
+                    webURL="http://sun.com"
+                    description="ODBC bridge driver">
                 </driver>
             </drivers>
             <views>
