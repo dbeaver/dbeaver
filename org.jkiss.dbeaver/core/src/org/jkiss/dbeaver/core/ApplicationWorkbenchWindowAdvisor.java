@@ -10,6 +10,7 @@ import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
@@ -20,6 +21,7 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.part.EditorInputTransfer;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
@@ -64,7 +66,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
     */
     public void postWindowCreate()
     {
-        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell().setMaximized(true);
+        Shell activeShell = UIUtils.getActiveShell();
+        if (activeShell != null) {
+            activeShell.setMaximized(true);
+        }
     }
 
     public boolean preWindowShellClose()

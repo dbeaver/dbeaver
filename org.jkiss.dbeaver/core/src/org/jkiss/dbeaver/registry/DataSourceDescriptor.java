@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.jobs.ReconnectJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionAuthDialog;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
@@ -459,9 +460,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
     public boolean askForPassword()
     {
-        IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        Shell shell = workbenchWindow != null ? workbenchWindow.getShell() : null;
-        ConnectionAuthDialog auth = new ConnectionAuthDialog(shell, this);
+        ConnectionAuthDialog auth = new ConnectionAuthDialog(UIUtils.getActiveShell(), this);
         int result = auth.open();
         if (result == IDialogConstants.OK_ID) {
             if (isSavePassword()) {

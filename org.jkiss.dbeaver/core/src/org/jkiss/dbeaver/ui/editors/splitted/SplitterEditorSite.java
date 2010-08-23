@@ -21,6 +21,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.internal.KeyBindingService;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 public class SplitterEditorSite implements IEditorSite
 {
@@ -185,7 +186,7 @@ public class SplitterEditorSite implements IEditorSite
 
     public Shell getShell()
     {
-        return getParentSite().getShell();
+        return UIUtils.getShell(getParentSite());
     }
 
     public IWorkbenchWindow getWorkbenchWindow()

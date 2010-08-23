@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -13,6 +14,9 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
 
 import java.text.NumberFormat;
 
@@ -222,6 +226,22 @@ public class UIUtils {
         }
 
         return button;
+    }
+
+    public static Shell getActiveShell()
+    {
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        return workbench == null ? null : getShell(workbench.getActiveWorkbenchWindow());
+    }
+
+    public static Shell getShell(IShellProvider provider)
+    {
+        return provider == null ? null : provider.getShell();
+    }
+    
+    public static Shell getShell(IWorkbenchPart part)
+    {
+        return part == null ? null : getShell(part.getSite());
     }
 
 }

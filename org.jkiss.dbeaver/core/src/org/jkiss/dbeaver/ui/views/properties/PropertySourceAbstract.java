@@ -170,7 +170,7 @@ public class PropertySourceAbstract implements IPropertySource
         }
 
         public Shell getShell() {
-            return DBeaverCore.getActiveWorkbenchWindow().getShell();
+            return UIUtils.getActiveShell();
         }
 
         public boolean isCompleted()

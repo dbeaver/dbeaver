@@ -104,7 +104,7 @@ public class ProgressPageControl extends Composite
         private boolean completed = false;
 
         public Shell getShell() {
-            return workbenchPart.getSite().getShell();
+            return UIUtils.getShell(workbenchPart);
         }
 
         public boolean isCompleted()

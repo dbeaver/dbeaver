@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
@@ -251,7 +252,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             return;
         }
 
-        Shell shell = controller.getValueSite().getShell();
+        Shell shell = UIUtils.getShell(controller.getValueSite());
         final File openFile = ContentUtils.openFile(shell);
         if (openFile == null) {
             return;
@@ -297,7 +298,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             return;
         }
 
-        Shell shell = controller.getValueSite().getShell();
+        Shell shell = UIUtils.getShell(controller.getValueSite());
         final File saveFile = ContentUtils.selectFileForSave(shell);
         if (saveFile == null) {
             return;
