@@ -33,7 +33,8 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
                                     int columnIndex)
         throws DBCException, SQLException
     {
-        return resultSet.getBoolean(columnIndex);
+        boolean value = resultSet.getBoolean(columnIndex);
+        return resultSet.wasNull() ? null : value;
     }
 
     protected void bindParameter(DBRProgressMonitor monitor, PreparedStatement statement, DBSTypedObject paramType,

@@ -39,24 +39,36 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                                     int columnIndex)
         throws DBCException, SQLException
     {
+        Number value;
         switch (column.getValueType()) {
         case java.sql.Types.BIGINT:
-            return resultSet.getLong(columnIndex);
+            value = resultSet.getLong(columnIndex);
+            break;
         case java.sql.Types.FLOAT:
-            return resultSet.getFloat(columnIndex);
+            value = resultSet.getFloat(columnIndex);
+            break;
         case java.sql.Types.INTEGER:
-            return resultSet.getInt(columnIndex);
+            value = resultSet.getInt(columnIndex);
+            break;
         case java.sql.Types.SMALLINT:
-            return resultSet.getShort(columnIndex);
+            value = resultSet.getShort(columnIndex);
+            break;
         case java.sql.Types.TINYINT:
         case java.sql.Types.BIT:
-            return resultSet.getByte(columnIndex);
+            value = resultSet.getByte(columnIndex);
+            break;
         default:
             if (column.getScale() > 0) {
-                return resultSet.getDouble(columnIndex);
+                value = resultSet.getDouble(columnIndex);
             } else {
-                return resultSet.getLong(columnIndex);
+                value = resultSet.getLong(columnIndex);
             }
+            break;
+        }
+        if (resultSet.wasNull()) {
+            return null;
+        } else {
+            return value;
         }
     }
 
