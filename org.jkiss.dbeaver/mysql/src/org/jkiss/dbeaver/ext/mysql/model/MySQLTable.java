@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import net.sf.jkiss.utils.CommonUtils;
@@ -149,7 +153,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         return DBUtils.findObject(getTriggers(monitor), triggerName);
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;

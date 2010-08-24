@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.apache.commons.logging.Log;
@@ -13,7 +17,7 @@ import java.util.List;
 /**
  * GenericProcedure
  */
-public class GenericProcedure extends AbstractProcedure<GenericDataSource, GenericStructureContainer>
+public class GenericProcedure extends AbstractProcedure<GenericDataSource, GenericEntityContainer>
 {
     static final Log log = LogFactory.getLog(GenericProcedure.class);
 
@@ -21,7 +25,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     private List<GenericProcedureColumn> columns;
 
     public GenericProcedure(
-        GenericStructureContainer container,
+        GenericEntityContainer container,
         String procedureName,
         String description,
         DBSProcedureType procedureType)
@@ -56,7 +60,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         return columns;
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;

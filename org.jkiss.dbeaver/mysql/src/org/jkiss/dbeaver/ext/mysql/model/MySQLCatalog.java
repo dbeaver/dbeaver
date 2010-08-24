@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import net.sf.jkiss.utils.CommonUtils;
@@ -173,10 +177,10 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
-        super.refreshObject(monitor);
+        super.refreshEntity(monitor);
         tableCache.clearCache();
         proceduresCache.clearCache();
         triggerCache.clearCache();

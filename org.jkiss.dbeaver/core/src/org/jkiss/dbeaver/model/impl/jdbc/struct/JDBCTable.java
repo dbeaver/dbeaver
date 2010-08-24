@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * JDBC abstract table mplementation
  */
-public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER extends DBSStructureContainer>
+public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER extends DBSEntityContainer>
     extends AbstractTable<DATASOURCE, CONTAINER>
     implements DBSDataContainer
 {

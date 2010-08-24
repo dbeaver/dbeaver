@@ -11,7 +11,7 @@ import java.util.Collection;
 /**
  * DBSConstraint
  */
-public interface DBSConstraint extends DBSStructureObject
+public interface DBSConstraint extends DBSEntity
 {
     DBSConstraintType getConstraintType();
 

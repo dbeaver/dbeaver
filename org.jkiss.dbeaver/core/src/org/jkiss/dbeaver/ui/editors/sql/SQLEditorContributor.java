@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
@@ -611,16 +611,16 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                 if (dsContainer != null && dsContainer.isConnected()) {
                     final DBPDataSource dataSource = dsContainer.getDataSource();
 
-                    if (dataSource instanceof DBSStructureContainer &&
-                        dataSource instanceof DBSStructureContainerActive &&
-                        ((DBSStructureContainerActive)dataSource).supportsActiveChildChange())
+                    if (dataSource instanceof DBSEntityContainer &&
+                        dataSource instanceof DBSEntitySelector &&
+                        ((DBSEntitySelector)dataSource).supportsActiveChildChange())
                     {
                         final CurrentDatabasesInfo databasesInfo = new CurrentDatabasesInfo();
 
                         try {
-                            databasesInfo.list = ((DBSStructureContainer) dataSource).getChildren(
+                            databasesInfo.list = ((DBSEntityContainer) dataSource).getChildren(
                                 monitor);
-                            databasesInfo.active = ((DBSStructureContainerActive)dataSource).getActiveChild(monitor);
+                            databasesInfo.active = ((DBSEntitySelector)dataSource).getActiveChild(monitor);
                         }
                         catch (DBException e) {
                             log.error(e);
@@ -700,18 +700,18 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
             try {
-                if (dataSource instanceof DBSStructureContainer &&
-                    dataSource instanceof DBSStructureContainerActive &&
-                    ((DBSStructureContainerActive)dataSource).supportsActiveChildChange())
+                if (dataSource instanceof DBSEntityContainer &&
+                    dataSource instanceof DBSEntitySelector &&
+                    ((DBSEntitySelector)dataSource).supportsActiveChildChange())
                 {
                     DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
                         public void run(DBRProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException
                         {
                             try {
-                                DBSObject newChild = ((DBSStructureContainer) dataSource).getChild(monitor, newName);
+                                DBSObject newChild = ((DBSEntityContainer) dataSource).getChild(monitor, newName);
                                 if (newChild != null) {
-                                    ((DBSStructureContainerActive)dataSource).setActiveChild(monitor, newChild);
+                                    ((DBSEntitySelector)dataSource).setActiveChild(monitor, newChild);
                                 } else {
                                     throw new DBException("Can't find database '" + newName + "'");
                                 }

@@ -14,7 +14,7 @@ import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSIndex;
 import org.jkiss.dbeaver.model.struct.DBSIndexColumn;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSSchema;
@@ -61,8 +61,8 @@ public class JDBCTableMetaData implements DBCTableMetaData {
     {
         if (table == null) {
             DBPDataSource dataSource = resultSetMetaData.getResultSet().getContext().getDataSource();
-            if (dataSource instanceof DBSStructureContainer) {
-                DBSStructureContainer sc = (DBSStructureContainer) dataSource;
+            if (dataSource instanceof DBSEntityContainer) {
+                DBSEntityContainer sc = (DBSEntityContainer) dataSource;
                 Class<? extends DBSObject> scChildType = sc.getChildType(monitor);
                 DBSObject tableObject;
                 if (!CommonUtils.isEmpty(catalogName) && scChildType != null && DBSSchema.class.isAssignableFrom(scChildType)) {

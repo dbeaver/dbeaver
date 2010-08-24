@@ -132,10 +132,4 @@ public class DBMRoot extends DBMNode implements DBSObject
         return null;
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
-
 }

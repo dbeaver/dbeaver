@@ -17,21 +17,14 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 public class DefaultCellRenderer extends GridCellRenderer
 {
 
-	int leftMargin = 4;
-
-    int rightMargin = 4;
-
-    int topMargin = 0;
-
-    int bottomMargin = 0;
-
-    int textTopMargin = 1;
-
-    int textBottomMargin = 2;
-
+	private int leftMargin = 4;
+    private int rightMargin = 4;
+    private int topMargin = 0;
+    private int bottomMargin = 0;
+    private int textTopMargin = 1;
+    private int textBottomMargin = 2;
     private int insideMargin = 3;
-
-    int treeIndent = 20;
+    private int treeIndent = 20;
 
     public DefaultCellRenderer(LightGrid grid)
     {

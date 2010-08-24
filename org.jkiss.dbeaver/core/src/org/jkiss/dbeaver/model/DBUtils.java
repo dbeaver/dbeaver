@@ -74,7 +74,7 @@ public final class DBUtils {
         return name.toString();
     }
 
-    public static DBSObject getTableByPath(DBRProgressMonitor monitor, DBSStructureContainer rootSC, DBSTablePath path)
+    public static DBSObject getTableByPath(DBRProgressMonitor monitor, DBSEntityContainer rootSC, DBSTablePath path)
         throws DBException
     {
         return getObjectByPath(monitor, rootSC, path.getCatalogName(), path.getSchemaName(), path.getTableName());
@@ -82,7 +82,7 @@ public final class DBUtils {
 
     public static DBSObject getObjectByPath(
             DBRProgressMonitor monitor,
-            DBSStructureContainer rootSC,
+            DBSEntityContainer rootSC,
             String catalogName,
             String schemaName,
             String tableName)
@@ -90,17 +90,17 @@ public final class DBUtils {
     {
         if (!CommonUtils.isEmpty(catalogName)) {
             DBSObject catalog = rootSC.getChild(monitor, catalogName);
-            if (!(catalog instanceof DBSStructureContainer)) {
+            if (!(catalog instanceof DBSEntityContainer)) {
                 return null;
             }
-            rootSC = (DBSStructureContainer) catalog;
+            rootSC = (DBSEntityContainer) catalog;
         }
         if (!CommonUtils.isEmpty(schemaName)) {
             DBSObject schema = rootSC.getChild(monitor, schemaName);
-            if (!(schema instanceof DBSStructureContainer)) {
+            if (!(schema instanceof DBSEntityContainer)) {
                 return null;
             }
-            rootSC = (DBSStructureContainer) schema;
+            rootSC = (DBSEntityContainer) schema;
         }
         Class<? extends DBSObject> childType = rootSC.getChildType(monitor);
         if (DBSTable.class.isAssignableFrom(childType)) {
@@ -108,10 +108,10 @@ public final class DBUtils {
         } else {
             // Child is not a table. May be catalog/schema names was omitted.
             // Try to use active child
-            if (rootSC instanceof DBSStructureContainerActive) {
-                DBSObject activeChild = ((DBSStructureContainerActive) rootSC).getActiveChild(monitor);
-                if (activeChild instanceof DBSStructureContainer && DBSTable.class.isAssignableFrom(((DBSStructureContainer)activeChild).getChildType(monitor))) {
-                    return ((DBSStructureContainer)activeChild).getChild(monitor, tableName);
+            if (rootSC instanceof DBSEntitySelector) {
+                DBSObject activeChild = ((DBSEntitySelector) rootSC).getActiveChild(monitor);
+                if (activeChild instanceof DBSEntityContainer && DBSTable.class.isAssignableFrom(((DBSEntityContainer)activeChild).getChildType(monitor))) {
+                    return ((DBSEntityContainer)activeChild).getChild(monitor, tableName);
                 }
             }
 
@@ -120,7 +120,7 @@ public final class DBUtils {
         }
     }
 
-    public static DBSObject findNestedObject(DBRProgressMonitor monitor, DBSStructureContainer parent,
+    public static DBSObject findNestedObject(DBRProgressMonitor monitor, DBSEntityContainer parent,
                                              List<String> names
     )
         throws DBException
@@ -134,8 +134,8 @@ public final class DBUtils {
             if (i == names.size() - 1) {
                 return child;
             }
-            if (child instanceof DBSStructureContainer) {
-                parent = DBSStructureContainer.class.cast(child);
+            if (child instanceof DBSEntityContainer) {
+                parent = DBSEntityContainer.class.cast(child);
             } else {
                 break;
             }

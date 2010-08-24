@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
 import org.jkiss.dbeaver.model.struct.DBSProcedureType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
 import org.jkiss.dbeaver.model.DBUtils;
 
@@ -32,11 +32,11 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * GenericStructureContainer
+ * GenericEntityContainer
  */
-public abstract class GenericStructureContainer implements DBSStructureContainer, DBSStructureAssistant
+public abstract class GenericEntityContainer implements DBSEntityContainer, DBSStructureAssistant
 {
-    static final Log log = LogFactory.getLog(GenericStructureContainer.class);
+    static final Log log = LogFactory.getLog(GenericEntityContainer.class);
 
     // Tables types which are not actually a table
     // This is needed for some strange JDBC drivers which returns not a table objects
@@ -54,7 +54,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
     private IndexCache indexCache;
     private ProceduresCache procedureCache;
 
-    protected GenericStructureContainer()
+    protected GenericEntityContainer()
     {
 
     }
@@ -204,7 +204,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
         return DBUtils.findObject(getChildren(monitor), childName);
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
         this.tableCache.clearCache();
@@ -271,7 +271,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                     typeCatalog.getSchema(typeSchemaName);
 */
             return new GenericTable(
-                GenericStructureContainer.this,
+                GenericEntityContainer.this,
                 tableName,
                 tableType,
                 remarks/*,
@@ -448,7 +448,7 @@ public abstract class GenericStructureContainer implements DBSStructureContainer
                 default: procedureType = DBSProcedureType.UNKNOWN; break;
             }
             return new GenericProcedure(
-                GenericStructureContainer.this,
+                GenericEntityContainer.this,
                 procedureName,
                 remarks, procedureType
             );

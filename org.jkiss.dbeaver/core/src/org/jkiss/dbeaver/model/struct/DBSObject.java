@@ -41,14 +41,4 @@ public interface DBSObject extends DBPNamedObject
      */
     DBPDataSource getDataSource();
 
-    /**
-     * Refresh object's (and all ща шеэы children) state
-     * @param monitor progress monitor
-     * @return true if object refreshed and false if parent object have to be refreshed
-     * to perform requested operation
-     * @throws org.jkiss.dbeaver.DBException on error
-     */
-    boolean refreshObject(DBRProgressMonitor monitor)
-        throws DBException;
-
 }

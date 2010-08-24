@@ -16,8 +16,8 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -103,8 +103,8 @@ class NavigatorTreeLabelProvider extends LabelProvider implements IFontProvider,
     {
         if (element instanceof DBSObject) {
             DBSObject object = (DBSObject) element;
-            DBSStructureContainerActive activeContainer = DBUtils.queryParentInterface(
-                DBSStructureContainerActive.class, object);
+            DBSEntitySelector activeContainer = DBUtils.queryParentInterface(
+                DBSEntitySelector.class, object);
             if (activeContainer != null) {
                 try {
                     // Check child with null monitor

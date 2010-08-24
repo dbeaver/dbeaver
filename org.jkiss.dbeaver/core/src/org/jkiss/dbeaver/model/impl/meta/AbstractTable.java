@@ -8,8 +8,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 
 import java.util.Collection;
@@ -19,8 +19,8 @@ import java.util.Collection;
  */
 public abstract class AbstractTable<
     DATASOURCE extends DBPDataSource,
-    CONTAINER extends DBSStructureContainer>
-    implements DBSTable, DBSStructureContainer
+    CONTAINER extends DBSEntityContainer>
+    implements DBSTable, DBSEntityContainer
 {
     private CONTAINER container;
     private String tableName;

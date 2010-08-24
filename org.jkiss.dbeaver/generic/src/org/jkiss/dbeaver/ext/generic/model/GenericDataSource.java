@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectAction;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
+import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends JDBCDataSource implements DBPDataSource, JDBCConnector, DBSStructureContainerActive
+public class GenericDataSource extends JDBCDataSource implements DBPDataSource, JDBCConnector, DBSEntitySelector
 {
     static final Log log = LogFactory.getLog(GenericDataSource.class);
 
@@ -41,7 +41,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     private DBSObject activeChild;
     private boolean activeChildRead;
 
-    private GenericStructureContainer structureContainer;
+    private GenericEntityContainer structureContainer;
 
     private String queryGetActiveDB;
     private String querySetActiveDB;
@@ -170,7 +170,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                 }
 
                 if (CommonUtils.isEmpty(schemas)) {
-                    structureContainer = new DataSourceStructureContainer();
+                    structureContainer = new DataSourceEntityContainer();
                     structureContainer.initCache();
                 }
             }
@@ -242,13 +242,13 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     public void refreshDataSource(DBRProgressMonitor monitor)
         throws DBException
     {
-        refreshObject(monitor);
+        refreshEntity(monitor);
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
-        super.refreshObject(monitor);
+        super.refreshEntity(monitor);
 
         this.activeChild = null;
         this.activeChildRead = false;
@@ -264,7 +264,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     GenericTable findTable(DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)
         throws DBException
     {
-        GenericStructureContainer container = null;
+        GenericEntityContainer container = null;
         if (!CommonUtils.isEmpty(catalogName)) {
             container = getCatalog(catalogName);
             if (container == null) {
@@ -416,7 +416,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         if (child == activeChild) {
             return;
         }
-        if (CommonUtils.isEmpty(querySetActiveDB) || !(child instanceof GenericStructureContainer)) {
+        if (CommonUtils.isEmpty(querySetActiveDB) || !(child instanceof GenericEntityContainer)) {
             throw new DBException("Active database can't be changed for this kind of datasource!");
         }
         if (!isChild(child)) {
@@ -451,7 +451,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         }
     }
 
-    private class DataSourceStructureContainer extends GenericStructureContainer {
+    private class DataSourceEntityContainer extends GenericEntityContainer {
         public GenericDataSource getDataSource() {
             return GenericDataSource.this;
         }

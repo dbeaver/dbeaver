@@ -9,11 +9,8 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.anno.Property;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
-import org.jkiss.dbeaver.model.struct.DBSConstraint;
-import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSIndex;
-import org.jkiss.dbeaver.model.struct.DBSStructureObject;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.List;
 
@@ -51,7 +48,7 @@ public class DBDValueLocator implements DBPObject {
     }
 
     @Property(name = "Key", viewable = true, order = 2)
-    public DBSStructureObject getUniqueKey() {
+    public DBSEntity getUniqueKey() {
         return tableIdentifier.getConstraint() != null ? tableIdentifier.getConstraint() : tableIdentifier.getIndex();
     }
 

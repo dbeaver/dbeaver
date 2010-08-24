@@ -34,7 +34,7 @@ import java.util.Properties;
 /**
  * GenericDataSource
  */
-public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssistant,DBSStructureContainerActive
+public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssistant, DBSEntitySelector
 {
     static final Log log = LogFactory.getLog(MySQLDataSource.class);
 
@@ -151,10 +151,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         this.initialize(monitor);
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
-        return super.refreshObject(monitor);
+        return super.refreshEntity(monitor);
     }
 
     MySQLTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName)

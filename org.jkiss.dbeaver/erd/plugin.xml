@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
+<!--
+  ~ Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+  -->
+
 <plugin>
 
     <extension
@@ -24,7 +28,7 @@
         <editor
             id="org.jkiss.dbeaver.ext.erd.views.ERDEditor"
             class="org.jkiss.dbeaver.ext.erd.views.ERDEditor"
-            objectType="org.jkiss.dbeaver.model.struct.DBSStructureContainer"
+            objectType="org.jkiss.dbeaver.model.struct.DBSEntityContainer"
             main="false"
             label="Diagram"
             description="ERD Diagram"

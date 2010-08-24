@@ -32,9 +32,9 @@ import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaLayouter;
 import org.jkiss.dbeaver.ext.erd.sugiyama.SugiyamaNode;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
@@ -55,11 +55,11 @@ import java.util.Map;
 /**
  * ERDEditor
  */
-public class ERDEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManager<DBSStructureContainer>>
+public class ERDEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManager<DBSEntityContainer>>
 {
     static final Log log = LogFactory.getLog(ERDEditor.class);
 
-    private DBSStructureContainer container;
+    private DBSEntityContainer container;
     private ERDModel graphModel;
     private boolean loaded = false;
 
@@ -166,7 +166,7 @@ public class ERDEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManag
             });
     }
 
-    public void initObjectEditor(IDatabaseObjectManager<DBSStructureContainer> manager)
+    public void initObjectEditor(IDatabaseObjectManager<DBSEntityContainer> manager)
     {
         container = manager.getObject();
     }
@@ -181,7 +181,7 @@ public class ERDEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManag
         List<ERDLink> links = new ArrayList<ERDLink>();
         container.cacheStructure(
             monitor,
-            DBSStructureContainer.STRUCT_ENTITIES | DBSStructureContainer.STRUCT_RELATIONS | DBSStructureContainer.STRUCT_ATTRIBUTES);
+            DBSEntityContainer.STRUCT_ENTITIES | DBSEntityContainer.STRUCT_ASSOCIATIONS | DBSEntityContainer.STRUCT_ATTRIBUTES);
         if (container instanceof DBSTable) {
             tables.add(new ERDTable((DBSTable)container));
         } else {

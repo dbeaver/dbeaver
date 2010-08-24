@@ -11,7 +11,7 @@ import java.util.Collection;
 /**
  * DBSIndex
  */
-public interface DBSIndex extends DBSStructureObject
+public interface DBSIndex extends DBSEntity
 {
     DBSTable getTable();
 

@@ -8,16 +8,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSProcedure;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 
 /**
  * AbstractProcedure
  */
 public abstract class AbstractProcedure<
     DATASOURCE extends DBPDataSource,
-    CONTAINER extends DBSStructureContainer>
+    CONTAINER extends DBSEntityContainer>
     implements DBSProcedure
 {
     private CONTAINER container;
@@ -73,7 +73,7 @@ public abstract class AbstractProcedure<
         return container;
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;

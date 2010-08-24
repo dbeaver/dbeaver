@@ -55,7 +55,7 @@ public abstract class AbstractCatalog<DATASOURCE extends DBPDataSource> implemen
         return getDataSource().getContainer();
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;

@@ -131,9 +131,4 @@ public class DBMTreeObject extends DBMTreeNode implements DBSObject
         return parentObject == null ? null : parentObject.getDataSource();
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
 }

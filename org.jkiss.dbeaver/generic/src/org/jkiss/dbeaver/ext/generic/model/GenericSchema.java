@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.model.anno.Property;
@@ -9,7 +13,7 @@ import org.jkiss.dbeaver.DBException;
 /**
  * GenericSchema
  */
-public class GenericSchema extends GenericStructureContainer implements DBSSchema
+public class GenericSchema extends GenericEntityContainer implements DBSSchema
 {
     private GenericDataSource dataSource;
     private GenericCatalog catalog;

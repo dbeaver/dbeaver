@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.generic.model;
 
 import net.sf.jkiss.utils.CommonUtils;
@@ -14,7 +18,7 @@ import java.util.List;
 /**
  * GenericCatalog
  */
-public class GenericCatalog extends GenericStructureContainer implements DBSCatalog
+public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
 {
     private GenericDataSource dataSource;
     private String catalogName;

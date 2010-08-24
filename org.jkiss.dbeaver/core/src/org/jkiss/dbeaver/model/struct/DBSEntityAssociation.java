@@ -5,8 +5,8 @@
 package org.jkiss.dbeaver.model.struct;
 
 /**
- * DBSStructureObject
+ * DBSEntityAssociation
  */
-public interface DBSStructureObject extends DBSObject
-{
+public interface DBSEntityAssociation {
+    
 }

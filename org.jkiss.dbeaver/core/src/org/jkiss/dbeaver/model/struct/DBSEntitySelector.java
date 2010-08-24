@@ -8,10 +8,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * DBSStructureContainerActive
+ * DBSEntitySelector
  */
-public interface DBSStructureContainerActive
+public interface DBSEntitySelector
 {
+
     boolean supportsActiveChildChange();
 
     DBSObject getActiveChild(DBRProgressMonitor monitor) throws DBException;

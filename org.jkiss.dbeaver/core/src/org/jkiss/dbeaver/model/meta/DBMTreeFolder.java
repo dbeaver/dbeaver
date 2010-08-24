@@ -71,12 +71,6 @@ public class DBMTreeFolder extends DBMTreeNode implements DBSFolder
         return getParentObject() == null ? null : getParentObject().getDataSource();
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
-
     public DBMNode refreshNode(DBRProgressMonitor monitor)
         throws DBException
     {

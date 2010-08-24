@@ -5,12 +5,8 @@
 package org.jkiss.dbeaver.model.impl.meta;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSProcedure;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSTrigger;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.DBSManipulationType;
@@ -91,7 +87,7 @@ public abstract class AbstractTrigger implements DBSTrigger
         this.description = description;
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;

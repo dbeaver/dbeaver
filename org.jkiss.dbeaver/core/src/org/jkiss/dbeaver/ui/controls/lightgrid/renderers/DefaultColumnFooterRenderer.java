@@ -21,17 +21,12 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 public class DefaultColumnFooterRenderer extends GridColumnRenderer
 {
 
-    int leftMargin = 6;
-
-    int rightMargin = 6;
-
-    int topMargin = 3;
-
-    int bottomMargin = 3;
-
-    int arrowMargin = 6;
-
-    int imageSpacing = 3;
+    private int leftMargin = 6;
+    private int rightMargin = 6;
+    private int topMargin = 3;
+    private int bottomMargin = 3;
+    private int arrowMargin = 6;
+    private int imageSpacing = 3;
 
     public DefaultColumnFooterRenderer(LightGrid grid) {
         super(grid);

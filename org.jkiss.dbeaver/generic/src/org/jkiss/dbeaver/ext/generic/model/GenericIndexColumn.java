@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.DBException;
@@ -76,9 +80,4 @@ public class GenericIndexColumn extends AbstractIndexColumn
         return index.getDataSource();
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
 }

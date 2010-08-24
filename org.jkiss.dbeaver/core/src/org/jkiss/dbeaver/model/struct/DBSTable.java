@@ -12,7 +12,7 @@ import java.util.Collection;
 /**
  * Table
  */
-public interface DBSTable extends DBSStructureObject
+public interface DBSTable extends DBSEntity
 {
     String getFullQualifiedName();
 
@@ -20,7 +20,7 @@ public interface DBSTable extends DBSStructureObject
 
     boolean isView();
 
-    DBSStructureContainer getContainer();
+    DBSEntityContainer getContainer();
 
     /**
      * Table columns

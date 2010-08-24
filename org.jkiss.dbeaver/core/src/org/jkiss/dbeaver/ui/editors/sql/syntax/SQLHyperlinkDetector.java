@@ -17,9 +17,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainer;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -107,7 +107,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 
         // Detect what all this means
         final DBPDataSource dataSource = editor.getDataSource();
-        if (dataSource instanceof DBSStructureContainer && dataSource instanceof DBSStructureAssistant) {
+        if (dataSource instanceof DBSEntityContainer && dataSource instanceof DBSStructureAssistant) {
             final IRegion wordRegion = new Region(wordStart, wordEnd - wordStart);
             final List<IHyperlink> links = new ArrayList<IHyperlink>();
             final String checkWord = word;
@@ -122,7 +122,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                                 monitor, checkWord, 2);
                             if (!pathList.isEmpty()) {
                                 for (DBSTablePath path : pathList) {
-                                    DBSObject object = DBUtils.getTableByPath(monitor, (DBSStructureContainer) dataSource, path);
+                                    DBSObject object = DBUtils.getTableByPath(monitor, (DBSEntityContainer) dataSource, path);
                                     if (object != null) {
                                         links.add(new EntityHyperlink(object, wordRegion));
                                     }

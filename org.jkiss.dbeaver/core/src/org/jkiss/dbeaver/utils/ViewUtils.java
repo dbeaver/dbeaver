@@ -22,13 +22,13 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyDialogAction;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshableView;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.meta.DBMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -154,8 +154,8 @@ public class ViewUtils
                 // Add "Set active object" menu
                 final DBMNode dbmNode = ViewUtils.getSelectedNode(metaModelView);
                 if (dbmNode instanceof DBMTreeNode && dbmNode.getObject() != null) {
-                    final DBSStructureContainerActive activeContainer = DBUtils.queryParentInterface(
-                        DBSStructureContainerActive.class, dbmNode.getObject());
+                    final DBSEntitySelector activeContainer = DBUtils.queryParentInterface(
+                        DBSEntitySelector.class, dbmNode.getObject());
                     if (activeContainer != null && activeContainer.supportsActiveChildChange()) {
                         try {
                             // Extract active child with void monitor

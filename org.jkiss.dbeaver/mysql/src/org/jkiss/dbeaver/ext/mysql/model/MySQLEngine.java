@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -99,9 +103,4 @@ public class MySQLEngine implements DBSObject {
         return dataSource;
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
 }

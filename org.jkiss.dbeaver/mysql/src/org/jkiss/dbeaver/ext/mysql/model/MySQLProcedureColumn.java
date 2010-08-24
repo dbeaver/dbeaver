@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.DBException;
@@ -63,12 +67,6 @@ public class MySQLProcedureColumn extends JDBCColumn implements DBSProcedureColu
     public DBSProcedureColumnType getColumnType()
     {
         return columnType;
-    }
-
-    public boolean refreshObject(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
     }
 
 }

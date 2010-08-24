@@ -12,7 +12,7 @@ import java.util.Collection;
 /**
  * DBSCatalog
  */
-public interface DBSCatalog extends DBSStructureObject, DBSStructureContainer
+public interface DBSCatalog extends DBSEntity, DBSEntityContainer
 {
     Collection<? extends DBSSchema> getSchemas(DBRProgressMonitor monitor) throws DBException;
 }

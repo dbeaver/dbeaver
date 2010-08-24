@@ -92,10 +92,6 @@ public class MySQLUser implements DBAUser
         return dataSource;
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
-        return false;
-    }
-
     @Property(name = "Host mask", viewable = true, order = 2)
     public String getHost() {
         return host;

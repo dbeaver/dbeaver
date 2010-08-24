@@ -122,8 +122,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             // or get list of root database objects
             if (wordPart.length() == 0) {
                 // Get root objects
-                if (dataSource instanceof DBSStructureContainer) {
-                    makeProposalsFromChildren(monitor, (DBSStructureContainer) dataSource, null, proposals);
+                if (dataSource instanceof DBSEntityContainer) {
+                    makeProposalsFromChildren(monitor, (DBSEntityContainer) dataSource, null, proposals);
                 }
             } else {
                 // Get root object or objects from active database (if any)
@@ -140,10 +140,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         DBPDataSource dataSource,
         List<ICompletionProposal> proposals)
     {
-        if (!(dataSource instanceof DBSStructureContainer)) {
+        if (!(dataSource instanceof DBSEntityContainer)) {
             return;
         }
-        DBSStructureContainer sc = (DBSStructureContainer) dataSource;
+        DBSEntityContainer sc = (DBSEntityContainer) dataSource;
 
         List<String> tokens = wordDetector.splitWordPart();
 
@@ -166,16 +166,16 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                                 // No, it isn't
                                 // May be it's an alias
                                 childObject = this.getTableFromAlias(monitor, sc, token);
-                                if (childObject instanceof DBSStructureContainer) {
-                                    sc = (DBSStructureContainer)childObject;
+                                if (childObject instanceof DBSEntityContainer) {
+                                    sc = (DBSEntityContainer)childObject;
                                 } else {
                                     // So, have no idea what is it
                                     return;
                                 }
                             } else {
                                 DBSObject table = DBUtils.getTableByPath(monitor, sc, tableNames.get(0));
-                                if (table instanceof DBSStructureContainer) {
-                                    sc = (DBSStructureContainer)table;
+                                if (table instanceof DBSEntityContainer) {
+                                    sc = (DBSEntityContainer)table;
                                 } else {
                                     return;
                                 }
@@ -185,11 +185,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         // Path element not found. Dumn - can't do anything.
                         return;
                     }
-                } else if (!(childObject instanceof DBSStructureContainer)) {
+                } else if (!(childObject instanceof DBSEntityContainer)) {
                     // Can't go deeper
                     return;
                 } else {
-                    sc = (DBSStructureContainer) childObject;
+                    sc = (DBSEntityContainer) childObject;
                 }
             } catch (DBException e) {
                 log.error(e.getMessage());
@@ -205,13 +205,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             if (proposals.isEmpty() || tokens.size() == 1) {
                 // At last - try to find child tables by pattern
                 if (sc instanceof DBSStructureAssistant) {
-                    makeProposalsFromAssistant(monitor, (DBSStructureAssistant)sc, (DBSStructureContainer) dataSource, lastToken, proposals);
+                    makeProposalsFromAssistant(monitor, (DBSStructureAssistant)sc, (DBSEntityContainer) dataSource, lastToken, proposals);
                 }
             }
         }
     }
 
-    private DBSObject getTableFromAlias(DBRProgressMonitor monitor, DBSStructureContainer sc, String token)
+    private DBSObject getTableFromAlias(DBRProgressMonitor monitor, DBSEntityContainer sc, String token)
     {
         if (activeQuery == null) {
             activeQuery = editor.extractQueryAtPos(documentOffset).getQuery() + " ";
@@ -285,7 +285,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
     }
 
-    private void makeProposalsFromChildren(DBRProgressMonitor monitor, DBSStructureContainer sc, String startPart,
+    private void makeProposalsFromChildren(DBRProgressMonitor monitor, DBSEntityContainer sc, String startPart,
                                            List<ICompletionProposal> proposals)
     {
         if (startPart != null) {
@@ -307,7 +307,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     }
 
     private void makeProposalsFromAssistant(DBRProgressMonitor monitor, DBSStructureAssistant assistant,
-                                            DBSStructureContainer rootSC, String tableName,
+                                            DBSEntityContainer rootSC, String tableName,
                                             List<ICompletionProposal> proposals)
     {
         try {

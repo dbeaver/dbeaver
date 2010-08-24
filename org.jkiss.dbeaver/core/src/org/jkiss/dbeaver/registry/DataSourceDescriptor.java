@@ -162,7 +162,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         return null;
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
         if (this.isConnected()) {

@@ -5,9 +5,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 /**
- * DBSSchema
+ * DBSEntityAttribute
  */
-public interface DBSSchema extends DBSEntity, DBSEntityContainer
-{
-    DBSCatalog getCatalog();
+public interface DBSEntityAttribute extends DBSObject {
 }

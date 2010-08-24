@@ -80,7 +80,7 @@ public abstract class AbstractConstraint<DATASOURCE extends DBPDataSource, TABLE
         return (DATASOURCE) table.getDataSource();
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
         return false;

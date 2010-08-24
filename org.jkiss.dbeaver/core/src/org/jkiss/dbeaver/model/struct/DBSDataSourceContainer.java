@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 /**
  * DBSDataSourceContainer
  */
-public interface DBSDataSourceContainer extends DBSObject
+public interface DBSDataSourceContainer extends DBSEntity
 {
     /**
      * Associated driver

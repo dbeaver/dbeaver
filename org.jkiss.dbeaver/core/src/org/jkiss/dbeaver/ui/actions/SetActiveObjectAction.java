@@ -10,7 +10,7 @@ import org.eclipse.jface.action.IAction;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.meta.DBMNode;
-import org.jkiss.dbeaver.model.struct.DBSStructureContainerActive;
+import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -25,8 +25,8 @@ public class SetActiveObjectAction extends NavigatorAction
     {
         final DBMNode selectedNode = getSelectedNode();
         if (selectedNode != null) {
-            final DBSStructureContainerActive activeContainer = DBUtils.queryParentInterface(
-                DBSStructureContainerActive.class, selectedNode.getObject());
+            final DBSEntitySelector activeContainer = DBUtils.queryParentInterface(
+                DBSEntitySelector.class, selectedNode.getObject());
             DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException

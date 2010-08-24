@@ -115,12 +115,6 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
         return autoIncrement;
     }
 
-    public boolean refreshObject(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
-
     public List<String> getEnumValues()
     {
         return enumValues;
