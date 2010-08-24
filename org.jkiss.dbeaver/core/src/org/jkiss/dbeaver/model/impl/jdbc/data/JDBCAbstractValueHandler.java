@@ -10,6 +10,7 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -32,8 +33,6 @@ import java.sql.SQLException;
  * Standard JDBC value handler
  */
 public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
-
-    protected static final String NULL_VALUE_LABEL = "[NULL]";
 
     public final Object getValueObject(DBRProgressMonitor monitor, DBCResultSet resultSet, DBSColumnBase column, int columnIndex)
         throws DBCException
@@ -62,7 +61,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     }
 
     public String getValueDisplayString(DBSTypedObject column, Object value) {
-        return value == null ? NULL_VALUE_LABEL : value.toString();
+        return value == null ? DBConstants.NULL_VALUE_LABEL : value.toString();
     }
 
     public DBDValueAnnotation[] getValueAnnotations(DBCColumnMetaData column)

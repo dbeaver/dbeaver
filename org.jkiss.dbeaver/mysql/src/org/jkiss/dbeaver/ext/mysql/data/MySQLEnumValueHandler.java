@@ -8,6 +8,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Combo;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
@@ -34,7 +35,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
             return super.getValueDisplayString(column, value);
         }
         String strValue = ((MySQLTypeEnum) value).getValue();
-        return strValue == null ? NULL_VALUE_LABEL : strValue;
+        return strValue == null ? DBConstants.NULL_VALUE_LABEL : strValue;
     }
 
     protected Object getColumnValue(
