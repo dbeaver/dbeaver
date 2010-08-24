@@ -66,4 +66,9 @@ public abstract class AbstractForeignKey<
         return (DBSForeignKeyColumn)super.getColumn(monitor, tableColumn);
     }
 
+    public DBSEntity getAssociatedEntity()
+    {
+        return getReferencedTable();
+    }
+
 }

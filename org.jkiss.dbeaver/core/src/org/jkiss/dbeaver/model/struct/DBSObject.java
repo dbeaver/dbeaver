@@ -4,22 +4,14 @@
 
 package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Meta object
  */
 public interface DBSObject extends DBPNamedObject
 {
-    /**
-     * Object name
-     *
-     * @return object name
-     */
-    String getName();
 
     /**
      * Object description

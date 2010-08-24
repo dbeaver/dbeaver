@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.model.anno.Property;
@@ -81,4 +85,8 @@ public class GenericForeignKey extends GenericConstraint implements DBSForeignKe
         this.columns.add(column);
     }
 
+    public DBSEntity getAssociatedEntity()
+    {
+        return getReferencedTable();
+    }
 }

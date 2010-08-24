@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 /**
- * DBSColumnDefinition
+ * DBSColumnBase
  */
 public interface DBSColumnBase extends DBSTypedObject
 {

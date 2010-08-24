@@ -7,6 +7,11 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSEntityAssociation
  */
-public interface DBSEntityAssociation {
-    
+public interface DBSEntityAssociation extends DBSObject {
+
+    DBSEntity getAssociatedEntity();
+    // target entity
+    // identifying
+    // multiplicity
+    // bidirectional
 }

@@ -9,5 +9,11 @@ package org.jkiss.dbeaver.model;
  */
 public interface DBPNamedObject extends DBPObject
 {
+    /**
+     * Object name
+     *
+     * @return object name
+     */
     String getName();
+
 }

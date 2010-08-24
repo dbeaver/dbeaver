@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSTableColumn
  */
-public interface DBSTableColumn extends DBSColumnDefinition
+public interface DBSTableColumn extends DBSColumnDefinition, DBSEntityAttribute
 {
     DBSTable getTable();
 

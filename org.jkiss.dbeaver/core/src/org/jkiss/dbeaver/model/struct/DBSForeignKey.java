@@ -11,7 +11,7 @@ import java.util.Collection;
 /**
  * DBSForeignKey
  */
-public interface DBSForeignKey extends DBSConstraint
+public interface DBSForeignKey extends DBSConstraint, DBSEntityAssociation
 {
     DBSConstraint getReferencedKey();
 
@@ -24,4 +24,5 @@ public interface DBSForeignKey extends DBSConstraint
     Collection<? extends DBSForeignKeyColumn> getColumns(DBRProgressMonitor monitor);
 
     DBSForeignKeyColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn);
+
 }
