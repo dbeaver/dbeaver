@@ -31,7 +31,7 @@
 				output="${distr}/${product.short.name}-${product.version}-install.jar"
 				installerType="standard"
 				inheritAll="true"
-				basedir="${temp}"
+				basedir="."
 				compression="deflate"
 				compressionlevel="9"/>
 		<!-- Clean working directory -->

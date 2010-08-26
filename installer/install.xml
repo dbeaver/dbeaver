@@ -16,13 +16,12 @@
         The meaning of the tags should be natural ...
     -->
     <info>
-        <appname>Sample Installation</appname>
-        <appversion>1.4 beta 666</appversion>
+        <appname>DBeaver</appname>
+        <appversion>1.0.0 beta</appversion>
         <authors>
-            <author name="JPz" email="jpz@superman.org"/>
-            <author name="Hidden Man" email="hidden@hisdomain.com"/>
+            <author name="Serge Rieder" email="serge@jkiss.org"/>
         </authors>
-        <url>http://www.anotherworld-inspace-website.net/</url>
+        <url>http://dbeaver.jkiss.org/</url>
     </info>
 
     <!-- 
@@ -37,7 +36,6 @@
     -->
     <locale>
         <langpack iso3="eng"/>
-        <langpack iso3="fra"/>
     </locale>
 
     <!-- 
@@ -45,8 +43,8 @@
         The ids must be these ones if you want to use the LicencePanel and/or the InfoPanel.
     -->
     <resources>
-        <res id="LicencePanel.licence" src="Licence.txt"/>
-        <res id="InfoPanel.info" src="Readme.txt"/>
+        <res id="LicencePanel.licence" src="docs/Licence.txt"/>
+        <res id="InfoPanel.info" src="docs/Readme.txt"/>
     </resources>
 
     <!-- 
@@ -70,20 +68,11 @@
     <packs>
         <pack name="Base" required="yes">
             <description>The base files</description>
-            <file src="Readme.txt" targetdir="$INSTALL_PATH"/>
-            <file src="Licence.txt" targetdir="$INSTALL_PATH"/>
-            <file src="script.bat" targetdir="$INSTALL_PATH"/>
-            <parsable targetfile="$INSTALL_PATH/script.bat"/>
-            <!-- The file will be parsed -->
         </pack>
         <pack name="Docs" required="no">
             <description>The documentation</description>
-            <file src="doc" targetdir="$INSTALL_PATH"/>
+            <file src="docs" targetdir="$INSTALL_PATH"/>
             <!-- Reccursive adding -->
-        </pack>
-        <pack name="Sources" required="no">
-            <description>The sources</description>
-            <file src="src" targetdir="$INSTALL_PATH"/>
         </pack>
     </packs>
 

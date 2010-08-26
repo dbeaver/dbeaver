@@ -265,6 +265,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return getProviderDescriptor().isDriversManagable();
     }
 
+    public boolean isInternalDriver()
+    {
+        return driverClassName != null && driverClassName.indexOf("sun.jdbc") != -1;
+    }
+
     public Class getDriverClass()
     {
         return driverClass;
@@ -350,8 +355,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 // Use plugin's classloader to load driver
                 driverClass = super.getObjectClass(driverClassName);
             } else {
-                // Load driver classes into core module using plugin class loader
-                driverClass = Class.forName(driverClassName, true, classLoader);
+                if (this.isInternalDriver()) {
+                    // Use system classloader
+                    driverClass = Class.forName(driverClassName);
+                } else {
+                    // Load driver classes into core module using plugin class loader
+                    driverClass = Class.forName(driverClassName, true, classLoader);
+                }
             }
         }
         catch (ClassNotFoundException ex) {
@@ -359,7 +369,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
 
         // Create driver instance
-        driverInstance = createDriverInstance();
+        if (!this.isInternalDriver()) {
+            driverInstance = createDriverInstance();
+        }
 
         isLoaded = true;
     }

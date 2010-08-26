@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.sql.DriverManager;
 import java.util.Properties;
 
 /**
@@ -81,12 +82,17 @@ public abstract class JDBCDataSource
 
         // Obtain connection
         try {
-            if (!driverInstance.acceptsURL(connectionInfo.getUrl())) {
+            if (driverInstance != null && !driverInstance.acceptsURL(connectionInfo.getUrl())) {
                 throw new DBException("Bad URL: " + connectionInfo.getUrl());
             }
-            Connection connection = driverInstance.connect(connectionInfo.getUrl(), driverProps);
+            Connection connection;
+            if (driverInstance == null) {
+                connection = DriverManager.getConnection(connectionInfo.getUrl(), driverProps);
+            } else {
+                connection = driverInstance.connect(connectionInfo.getUrl(), driverProps);
+            }
             if (connection == null) {
-                throw new DBException("Null connection returned by " + driverInstance);
+                throw new DBException("Null connection returned");
             }
             return connection;
         }
