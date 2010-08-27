@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.ui.actions.ToggleViewAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementAction;
 import org.jkiss.dbeaver.ui.views.console.ConsoleView;
+import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
+import org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 /**
@@ -126,6 +128,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         // Window
         windowMenu.add(newWindowAction);
+        windowMenu.add(new Separator());
+        windowMenu.add(new ToggleViewAction("databases", DatabaseNavigatorView.VIEW_ID)); //$NON-NLS-1$
+        windowMenu.add(new ToggleViewAction("projects", ProjectNavigatorView.VIEW_ID)); //$NON-NLS-1$
         windowMenu.add(new Separator());
         windowMenu.add(new ToggleViewAction("properties", IPageLayout.ID_PROP_SHEET)); //$NON-NLS-1$
         windowMenu.add(new ToggleViewAction("console", ConsoleView.VIEW_ID)); //$NON-NLS-1$
