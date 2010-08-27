@@ -9,7 +9,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.views.navigator.NavigatorTreeView;
+import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 /**
@@ -31,7 +31,7 @@ public abstract class NavigatorAction extends DataSourceAction {
                 return null;
             }
         } else if (getWindow() != null) {
-            NavigatorTreeView view = ViewUtils.findView(getWindow(), NavigatorTreeView.class);
+            DatabaseNavigatorView view = ViewUtils.findView(getWindow(), DatabaseNavigatorView.class);
             if (view != null) {
                 return ViewUtils.getSelectedNode(view);
             }

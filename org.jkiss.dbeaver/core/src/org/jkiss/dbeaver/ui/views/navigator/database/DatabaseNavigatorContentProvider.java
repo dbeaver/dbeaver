@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.views.navigator;
+package org.jkiss.dbeaver.ui.views.navigator.database;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,17 +20,17 @@ import org.jkiss.dbeaver.utils.DBeaverUtils;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * NavigatorTreeContentProvider
+ * DatabaseNavigatorContentProvider
 */
-class NavigatorTreeContentProvider implements IStructuredContentProvider, ITreeContentProvider
+class DatabaseNavigatorContentProvider implements IStructuredContentProvider, ITreeContentProvider
 {
-    static final Log log = LogFactory.getLog(NavigatorTreeContentProvider.class);
+    static final Log log = LogFactory.getLog(DatabaseNavigatorContentProvider.class);
 
     private static final Object[] EMPTY_CHILDREN = new Object[0];
 
-    private NavigatorTreeView view;
+    private DatabaseNavigatorView view;
 
-    NavigatorTreeContentProvider(NavigatorTreeView view)
+    DatabaseNavigatorContentProvider(DatabaseNavigatorView view)
     {
         this.view = view;
     }

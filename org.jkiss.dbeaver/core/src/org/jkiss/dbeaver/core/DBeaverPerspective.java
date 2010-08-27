@@ -7,7 +7,8 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
-import org.jkiss.dbeaver.ui.views.navigator.NavigatorTreeView;
+import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
+import org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView;
 
 public class DBeaverPerspective implements IPerspectiveFactory
 {
@@ -23,10 +24,11 @@ public class DBeaverPerspective implements IPerspectiveFactory
             IPageLayout.LEFT,
             0.60f,
             editorArea);
-        //treeFolder.addPlaceholder(NavigatorTreeView.ID + ":*");
-        treeFolder.addView(NavigatorTreeView.VIEW_ID);
+        //treeFolder.addPlaceholder(DatabaseNavigatorView.ID + ":*");
+        treeFolder.addView(DatabaseNavigatorView.VIEW_ID);
+        treeFolder.addView(ProjectNavigatorView.VIEW_ID);
 
-        layout.getViewLayout(NavigatorTreeView.VIEW_ID).setCloseable(false);
+        layout.getViewLayout(DatabaseNavigatorView.VIEW_ID).setCloseable(false);
 
         // Bottom right.
         IFolderLayout bottomRight = layout.createFolder(

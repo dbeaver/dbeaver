@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.views.navigator;
+package org.jkiss.dbeaver.ui.views.navigator.database;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
@@ -34,18 +34,18 @@ import org.jkiss.dbeaver.ui.actions.RefreshTreeAction;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
-public class NavigatorTreeView extends ViewPart
+public class DatabaseNavigatorView extends ViewPart
     implements IDBMListener, IMetaModelView, IRefreshableView, IDoubleClickListener
 {
-    static final Log log = LogFactory.getLog(NavigatorTreeView.class);
+    static final Log log = LogFactory.getLog(DatabaseNavigatorView.class);
 
-    public static final String VIEW_ID = "org.jkiss.dbeaver.core.navigationView";
+    public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseNavigator";
 
     private TreeViewer viewer;
     private DBMModel model;
     private RefreshTreeAction refreshAction;
 
-    public NavigatorTreeView()
+    public DatabaseNavigatorView()
     {
         super();
         model = DBeaverCore.getInstance().getMetaModel();
@@ -83,8 +83,8 @@ public class NavigatorTreeView extends ViewPart
     public void createPartControl(Composite parent)
     {
         this.viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-        this.viewer.setLabelProvider(new NavigatorTreeLabelProvider(this));
-        this.viewer.setContentProvider(new NavigatorTreeContentProvider(this));
+        this.viewer.setLabelProvider(new DatabaseNavigatorLabelProvider(this));
+        this.viewer.setContentProvider(new DatabaseNavigatorContentProvider(this));
         this.viewer.setInput(getMetaModel().getRoot());
         this.viewer.addSelectionChangedListener(
             new ISelectionChangedListener()

@@ -38,11 +38,20 @@
         <view
             allowMultiple="false"
             category="org.jkiss.dbeaver.core.category"
-            class="org.jkiss.dbeaver.ui.views.navigator.NavigatorTreeView"
+            class="org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView"
             icon="icons/database_navigator.png"
-            id="org.jkiss.dbeaver.core.navigationView"
-            name="Navigator">
+            id="org.jkiss.dbeaver.core.databaseNavigator"
+            name="Databases">
         </view>
+        <view
+            allowMultiple="false"
+            category="org.jkiss.dbeaver.core.category"
+            class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView"
+            icon="icons/database_navigator.png"
+            id="org.jkiss.dbeaver.core.projectNavigator"
+            name="Projects">
+        </view>
+
         <category
             id="org.jkiss.dbeaver.core.category"
             name="DBeaver Core Category">

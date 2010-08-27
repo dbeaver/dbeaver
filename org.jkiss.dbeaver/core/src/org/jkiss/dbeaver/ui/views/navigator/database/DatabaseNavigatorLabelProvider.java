@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.views.navigator;
+package org.jkiss.dbeaver.ui.views.navigator.database;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,17 +22,17 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
- * NavigatorTreeLabelProvider
+ * DatabaseNavigatorLabelProvider
 */
-class NavigatorTreeLabelProvider extends LabelProvider implements IFontProvider, IColorProvider
+class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvider, IColorProvider
 {
-    static final Log log = LogFactory.getLog(NavigatorTreeLabelProvider.class);
+    static final Log log = LogFactory.getLog(DatabaseNavigatorLabelProvider.class);
 
-    private NavigatorTreeView view;
+    private DatabaseNavigatorView view;
     private Font normalFont;
     private Font defaultFont;
 
-    NavigatorTreeLabelProvider(NavigatorTreeView view)
+    DatabaseNavigatorLabelProvider(DatabaseNavigatorView view)
     {
         this.view = view;
         this.normalFont = view.getViewer().getControl().getFont();
