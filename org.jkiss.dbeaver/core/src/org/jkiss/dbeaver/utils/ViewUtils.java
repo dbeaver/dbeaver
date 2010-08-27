@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
@@ -180,7 +181,7 @@ public class ViewUtils
                                             DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
                                             text += " " + itemMeta.getPath();
                                         }
-                                        IAction action = makeAction(new SetActiveObjectAction(), metaModelView.getWorkbenchPart(), selection, text);
+                                        IAction action = makeAction(new SetActiveObjectAction(), metaModelView.getWorkbenchPart(), selection, text, null, null);
 
                                         manager.add(action);
                                     }
@@ -258,8 +259,12 @@ public class ViewUtils
     {
         action.selectionChanged(actionImpl, selection);
 
-        if (action instanceof IObjectActionDelegate && part != null) {
-            ((IObjectActionDelegate)action).setActivePart(actionImpl, part);
+        if (part != null) {
+            if (action instanceof IObjectActionDelegate) {
+                ((IObjectActionDelegate)action).setActivePart(actionImpl, part);
+            } else if (action instanceof IWorkbenchWindowActionDelegate) {
+                ((IWorkbenchWindowActionDelegate)action).init(part.getSite().getWorkbenchWindow());
+            }
         }
     }
 
@@ -268,7 +273,7 @@ public class ViewUtils
         if (actionClass != null) {
             try {
                 final IActionDelegate actionDelegate = actionClass.newInstance();
-                IAction actionImpl = makeAction(actionDelegate, part, selection, actionDelegate.getClass().getName());
+                IAction actionImpl = makeAction(actionDelegate, part, selection, actionDelegate.getClass().getName(), null, null);
                 actionImpl.run();
             } catch (InstantiationException e) {
                 log.error("Could not instantiate action delegate", e);
@@ -278,7 +283,7 @@ public class ViewUtils
         }
     }
 
-    public static IAction makeAction(final IActionDelegate actionDelegate, IWorkbenchPart part, ISelection selection, String text)
+    public static IAction makeAction(final IActionDelegate actionDelegate, IWorkbenchPart part, ISelection selection, String text, ImageDescriptor image, String toolTip)
     {
         Action actionImpl = new Action() {
             @Override
@@ -286,7 +291,15 @@ public class ViewUtils
                 actionDelegate.run(this);
             }
         };
-        actionImpl.setText(text);
+        if (text != null) {
+            actionImpl.setText(text);
+        }
+        if (image != null) {
+            actionImpl.setImageDescriptor(image);
+        }
+        if (toolTip != null) {
+            actionImpl.setToolTipText(toolTip);
+        }
         initAction(actionImpl, actionDelegate, part, selection);
         return actionImpl;
     }

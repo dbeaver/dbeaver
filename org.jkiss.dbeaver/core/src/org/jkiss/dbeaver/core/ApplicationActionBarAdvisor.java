@@ -149,7 +149,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 */
 
         // Help
-        helpMenu.add(ViewUtils.makeAction(aboutAction, null, null, "About"));
+        helpMenu.add(ViewUtils.makeAction(aboutAction, null, null, "About", null, null));
     }
 
     protected void fillCoolBar(ICoolBarManager coolBar)

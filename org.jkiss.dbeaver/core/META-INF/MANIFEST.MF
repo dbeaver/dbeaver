@@ -394,17 +394,8 @@ Export-Package: net.sf.jkiss.utils,
    org.eclipse.swt.widgets",
  org.jkiss.dbeaver.ui.splash;uses:="org.eclipse.core.runtime,org.eclipse.swt.widgets,org.eclipse.ui.splash",
  org.jkiss.dbeaver.ui.views.console;uses:="org.eclipse.ui.part,org.eclipse.swt.widgets",
- org.jkiss.dbeaver.ui.views.navigator;
-  uses:="org.eclipse.jface.action,
-   org.jkiss.dbeaver.model.meta,
-   org.apache.commons.logging,
-   org.jkiss.dbeaver.model.struct,
-   org.eclipse.ui,
-   org.jkiss.dbeaver.ext.ui,
-   org.eclipse.swt.graphics,
-   org.eclipse.jface.viewers,
-   org.eclipse.ui.part,
-   org.eclipse.swt.widgets",
+ org.jkiss.dbeaver.ui.views.navigator.database,
+ org.jkiss.dbeaver.ui.views.navigator.project,
  org.jkiss.dbeaver.ui.views.properties;
   uses:="org.eclipse.ui.views.properties.tabbed,
    org.apache.commons.logging,
@@ -445,5 +436,6 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.5.0",
  org.eclipse.core.expressions,
  org.eclipse.swt,
  org.eclipse.jface,
- org.eclipse.ui.workbench
+ org.eclipse.ui.workbench,
+ org.eclipse.ui.navigator;bundle-version="3.5.0"
 Bundle-Vendor: Serge Rieder

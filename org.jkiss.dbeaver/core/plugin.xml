@@ -694,6 +694,8 @@
                 </separator>
                 <separator name="connectionGroup">
                 </separator>
+                <separator name="toolsGroup">
+                </separator>
                 <separator name="sessionGroup">
                 </separator>
             </menu>
@@ -703,7 +705,6 @@
                   id="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
                   label="New Connection"
                   menubarPath="dataSourceMenu/driverGroup"
-                  toolbarPath="driverGroup"
                   tooltip="Create New Connection">
             </action>
             <action
@@ -712,20 +713,9 @@
                  id="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
                  label="Driver Manager"
                  menubarPath="dataSourceMenu/driverGroup"
-                 toolbarPath="driverGroup"
                  tooltip="Open Driver Manager">
             </action>
 
-            <action
-                  class="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
-                  definitionId="org.jkiss.dbeaver.core.openSQLEditor"
-                  icon="/icons/sql/sql_script.png"
-                  id="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
-                  label="Open SQL Editor"
-                  menubarPath="dataSourceMenu/connectionGroup"
-                  toolbarPath="connectionGroup"
-                  tooltip="Open SQL Editor">
-            </action>
             <action
                   class="org.jkiss.dbeaver.ui.actions.DisconnectAction"
                   icon="icons/sql/disconnect.png"
@@ -752,6 +742,17 @@
                   menubarPath="dataSourceMenu/connectionGroup"
                   toolbarPath="connectionGroup"
                   tooltip="Connect to database">
+            </action>
+
+            <action
+                  class="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
+                  definitionId="org.jkiss.dbeaver.core.openSQLEditor"
+                  icon="/icons/sql/sql_script.png"
+                  id="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
+                  label="Open SQL Editor"
+                  menubarPath="dataSourceMenu/toolsGroup"
+                  toolbarPath="toolsGroup"
+                  tooltip="Open SQL Editor">
             </action>
 
             <action

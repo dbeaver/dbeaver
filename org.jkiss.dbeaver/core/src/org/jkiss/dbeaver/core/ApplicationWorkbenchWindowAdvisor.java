@@ -10,6 +10,7 @@ import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
@@ -22,7 +23,9 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.part.EditorInputTransfer;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.NewConnectionAction;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 {
@@ -87,6 +90,22 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
         }
         // Do its job
         return super.preWindowShellClose();
+    }
+
+    @Override
+    public void postWindowOpen() {
+        super.postWindowOpen();
+
+        if (DBeaverCore.getInstance().getDataSourceRegistry().getDataSources().isEmpty()) {
+            // Open New Connection wizard
+            Display.getCurrent().asyncExec(new Runnable() {
+                public void run() {
+                    NewConnectionAction action = new NewConnectionAction();
+                    action.init(getWindowConfigurer().getWindow());
+                    action.run(null);
+                }
+            });
+        }
     }
 
     public class EditorAreaDropAdapter extends DropTargetAdapter

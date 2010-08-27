@@ -109,7 +109,11 @@ public enum DBIcon
     OVER_FAILED("over_failed", "/icons/over/failed_ovr.png"),
     OVER_ERROR("over_failed", "/icons/over/error_ovr.png"),
 
-    ABOUT("about", "/icons/about_circle.png");
+    ABOUT("about", "/icons/about_circle.png"),
+
+    ACTION_LINK_TO_EDITOR("linkToEditor", "/icons/link_to_editor.png"),
+    ACTION_DRIVER_MANAGER("driverManager", "/icons/driver_manager.png"),
+    ACTION_NEW_CONNECTION("newConnection", "/icons/database_connect.png");
 
     private final String token;
     private final String path;

@@ -8,6 +8,8 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -16,6 +18,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
@@ -30,6 +33,10 @@ import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.meta.IDBMListener;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.actions.DriverManagerAction;
+import org.jkiss.dbeaver.ui.actions.LinkEditorAction;
+import org.jkiss.dbeaver.ui.actions.NewConnectionAction;
 import org.jkiss.dbeaver.ui.actions.RefreshTreeAction;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.utils.ViewUtils;
@@ -117,9 +124,38 @@ public class DatabaseNavigatorView extends ViewPart
         refreshAction = new RefreshTreeAction(this);
         refreshAction.setEnabled(true);
 
-        getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.REFRESH.getId(), refreshAction);
+        IActionBars actionBars = getViewSite().getActionBars();
+        actionBars.setGlobalActionHandler(ActionFactory.REFRESH.getId(), refreshAction);
 
-        getViewSite().getActionBars().updateActionBars();
+        actionBars.updateActionBars();
+
+        // Make toolbar
+        makeToolbar(actionBars);
+    }
+
+    private void makeToolbar(IActionBars actionBars) {
+        IMenuManager dropDownMenu = actionBars.getMenuManager();
+        IToolBarManager toolBar = actionBars.getToolBarManager();
+
+
+        {
+            IAction driverManagerAction = ViewUtils.makeAction(new DriverManagerAction(), this, null, "Open Driver Manager", DBIcon.ACTION_DRIVER_MANAGER.getImageDescriptor(), null);
+            dropDownMenu.add(driverManagerAction);
+            toolBar.add(driverManagerAction);
+        }
+        {
+            IAction driverManagerAction = ViewUtils.makeAction(new NewConnectionAction(), this, null, "New Connection", DBIcon.ACTION_NEW_CONNECTION.getImageDescriptor(), null);
+            dropDownMenu.add(driverManagerAction);
+            toolBar.add(driverManagerAction);
+        }
+        {
+            IAction driverManagerAction = ViewUtils.makeAction(new LinkEditorAction(), this, null, "Link with Editor", DBIcon.ACTION_LINK_TO_EDITOR.getImageDescriptor(), null);
+            dropDownMenu.add(driverManagerAction);
+            toolBar.add(driverManagerAction);
+        }
+
+        dropDownMenu.add(refreshAction);
+        toolBar.add(refreshAction);
     }
 
     public void dispose()
