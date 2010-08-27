@@ -47,7 +47,7 @@
             allowMultiple="false"
             category="org.jkiss.dbeaver.core.category"
             class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView"
-            icon="icons/database_navigator.png"
+            icon="icons/projects.png"
             id="org.jkiss.dbeaver.core.projectNavigator"
             name="Projects">
         </view>

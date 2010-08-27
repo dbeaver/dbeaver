@@ -16,6 +16,7 @@ public enum DBIcon
     GEN_DATABASE("gen_database", "icons/database.png"),
     GEN_DATABASE_TYPE("gen_database_type", "icons/database_type.png"),
 
+    TREE("tree", "icons/tree/tree.png"),
     TREE_DATABASE("database", "icons/tree/database.png"),
     TREE_CATALOG("catalog", "icons/tree/catalog.png"),
     TREE_SCHEMA("schema", "icons/tree/schema.png"),
@@ -32,6 +33,8 @@ public enum DBIcon
     TREE_REFERENCE("reference", "icons/tree/reference.png"),
     TREE_TRIGGER("trigger", "icons/tree/trigger.png"),
     TREE_USER("user", "icons/tree/user.png"),
+
+    PROJECTS("projects", "icons/projects.png"),
 
     LOADING1("loading1", "icons/tree/load/loading1.gif"),
     LOADING2("loading2", "icons/tree/load/loading2.gif"),
