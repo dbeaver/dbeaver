@@ -53,11 +53,10 @@ public class SQLEditorInput extends FileEditorInput implements IAutoSaveEditorIn
         if (dataSourceContainer == null) {
             return super.getName();
         }
-        String toolTip = dataSourceContainer.getDescription();
-        if (toolTip == null) {
-            toolTip = dataSourceContainer.getName();
-        }
-        return toolTip;
+        return
+            "Connection: " + dataSourceContainer.getName() + "\n" +
+            "Type: " + dataSourceContainer.getDriver().getName() + "\n" +
+            "URL: " + dataSourceContainer.getConnectionInfo().getUrl();
     }
 
     public String getFactoryId()
