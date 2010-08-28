@@ -181,10 +181,10 @@ public class DataSourceRegistry implements DBPRegistry
         return null;
     }
 
-    public DataSourceDescriptor getDataSource(String name)
+    public DataSourceDescriptor getDataSource(String id)
     {
         for (DataSourceDescriptor dsd : dataSources) {
-            if (dsd.getName().equals(name)) {
+            if (dsd.getId().equals(id)) {
                 return dsd;
             }
         }
@@ -469,6 +469,7 @@ public class DataSourceRegistry implements DBPRegistry
         throws IOException
     {
         xml.startElement("data-source");
+        xml.addAttribute("id", dataSource.getId());
         xml.addAttribute("provider", dataSource.getDriver().getProviderDescriptor().getId());
         xml.addAttribute("driver", dataSource.getDriver().getId());
         xml.addAttribute("name", dataSource.getName());
@@ -638,7 +639,13 @@ public class DataSourceRegistry implements DBPRegistry
                     curDataSource = null;
                     return;
                 }
+                String id = atts.getValue("id");
+                if (id == null) {
+                    // Support of old version without ID
+                    id = atts.getValue("name");
+                }
                 curDataSource = new DataSourceDescriptor(
+                    id,
                     driver,
                     new DBPConnectionInfo());
                 curDataSource.setName(atts.getValue("name"));

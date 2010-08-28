@@ -420,15 +420,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                 gd.widthHint = 100;
                 connectionCombo.setLayoutData(gd);
                 connectionCombo.setToolTipText("Active datasource");
-                connectionCombo.add("<None>");
-                List<DataSourceDescriptor> dataSources = DataSourceRegistry.getDefault().getDataSources();
-                for (int i = 0; i < dataSources.size(); i++) {
-                    DataSourceDescriptor ds = dataSources.get(i);
-                    connectionCombo.add(ds.getName(), i + 1);
-                    if (editor != null && editor.getDataSourceContainer() == ds) {
-                        connectionCombo.select(i + 1);
-                    }
-                }
+                fillDataSourceList(editor);
                 connectionCombo.addSelectionListener(new SelectionListener()
                 {
                     public void widgetSelected(SelectionEvent e)
@@ -475,6 +467,19 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                 return comboGroup;
             }
         });
+    }
+
+    private void fillDataSourceList(SQLEditor editor) {
+        connectionCombo.removeAll();
+        connectionCombo.add("<None>");
+        List<DataSourceDescriptor> dataSources = DataSourceRegistry.getDefault().getDataSources();
+        for (int i = 0; i < dataSources.size(); i++) {
+            DataSourceDescriptor ds = dataSources.get(i);
+            connectionCombo.add(ds.getName(), i + 1);
+            if (editor != null && editor.getDataSourceContainer() == ds) {
+                connectionCombo.select(i + 1);
+            }
+        }
     }
 
     public void contributeToCoolBar(ICoolBarManager manager)
@@ -583,14 +588,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                 if (curDataSource == null) {
                     connectionCombo.select(0);
                 } else {
-                    String[] items = connectionCombo.getItems();
-                    for (int i = 0; i < items.length; i++) {
-                        String item = items[i];
-                        if (item.equals(curDataSource.getName())) {
-                            connectionCombo.select(i);
-                            break;
-                        }
-                    }
+                    fillDataSourceList(editor);
                 }
             }
         }

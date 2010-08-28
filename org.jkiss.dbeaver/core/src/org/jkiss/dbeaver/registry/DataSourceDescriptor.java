@@ -14,10 +14,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IActionFilter;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -48,6 +45,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 /**
  * DataSourceDescriptor
@@ -59,6 +57,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     private DriverDescriptor driver;
     private DBPConnectionInfo connectionInfo;
 
+    private String id;
     private String name;
     private String description;
     private boolean savePassword;
@@ -80,9 +79,11 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
 
     public DataSourceDescriptor(
+        String id,
         DriverDescriptor driver,
         DBPConnectionInfo connectionInfo)
     {
+        this.id = id;
         this.driver = driver;
         this.connectionInfo = connectionInfo;
         this.createDate = new Date();
@@ -105,6 +106,10 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             iconError.dispose();
             iconError = null;
         }
+    }
+
+    public String getId() {
+        return id;
     }
 
     public DriverDescriptor getDriver()
@@ -508,4 +513,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         }
     }
 
+    public static String generateNewId(DriverDescriptor driver) {
+        return driver.getId() + "-" + System.currentTimeMillis() + "-" + new Random().nextInt();
+    }
 }

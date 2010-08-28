@@ -151,6 +151,7 @@ public class NewConnectionWizard extends ConnectionWizard
     {
         super.performFinish();
         DataSourceDescriptor dataSource = new DataSourceDescriptor(
+            DataSourceDescriptor.generateNewId(pageDrivers.getSelectedDriver()),
             pageDrivers.getSelectedDriver(),
             getPageSettings().getConnectionInfo());
         pageFinal.saveSettings(dataSource);

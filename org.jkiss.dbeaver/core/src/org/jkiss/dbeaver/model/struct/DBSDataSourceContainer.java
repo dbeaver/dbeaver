@@ -18,6 +18,12 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 public interface DBSDataSourceContainer extends DBSEntity
 {
     /**
+     * Container unique ID
+     * @return id
+     */
+    String getId();
+
+    /**
      * Associated driver
      * @return driver descriptor reference
      */

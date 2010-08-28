@@ -41,7 +41,7 @@
             class="org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView"
             icon="icons/database_navigator.png"
             id="org.jkiss.dbeaver.core.databaseNavigator"
-            name="Databases">
+            name="Database Navigator">
         </view>
         <view
             allowMultiple="false"

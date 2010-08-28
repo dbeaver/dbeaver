@@ -58,7 +58,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                 catch (DBException ex) {
                     throw new InvocationTargetException(ex);
                 }
-                DataSourceDescriptor container = new DataSourceDescriptor(driver, connectionInfo);
+                DataSourceDescriptor container = new DataSourceDescriptor("test", driver, connectionInfo);
                 try {
                     monitor.worked(1);
                     DBPDataSource dataSource = provider.openDataSource(monitor, container);

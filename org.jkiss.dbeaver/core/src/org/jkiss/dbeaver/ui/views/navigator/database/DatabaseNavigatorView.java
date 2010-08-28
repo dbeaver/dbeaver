@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -148,6 +149,8 @@ public class DatabaseNavigatorView extends ViewPart
             dropDownMenu.add(driverManagerAction);
             toolBar.add(driverManagerAction);
         }
+        dropDownMenu.add(new Separator());
+        toolBar.add(new Separator());
         {
             IAction driverManagerAction = ViewUtils.makeAction(new LinkEditorAction(), this, null, "Link with Editor", DBIcon.ACTION_LINK_TO_EDITOR.getImageDescriptor(), null);
             dropDownMenu.add(driverManagerAction);

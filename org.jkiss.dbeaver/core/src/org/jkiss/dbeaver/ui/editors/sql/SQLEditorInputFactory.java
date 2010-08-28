@@ -41,12 +41,12 @@ public class SQLEditorInputFactory implements IElementFactory
         // to a resource that does not exist in workspace
         IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(fileName));
         if (file != null) {
-            String dataSourceName = memento.getString(TAG_DATA_SOURCE);
+            String dataSourceId = memento.getString(TAG_DATA_SOURCE);
             String scriptName = memento.getString(TAG_NAME);
-            if (dataSourceName != null) {
-                DataSourceDescriptor dataSource = DataSourceRegistry.getDefault().getDataSource(dataSourceName);
+            if (dataSourceId != null) {
+                DataSourceDescriptor dataSource = DataSourceRegistry.getDefault().getDataSource(dataSourceId);
                 if (dataSource == null) {
-                    log.warn("Can't find datasource '" + dataSourceName + "' for file '" + fileName + "'");
+                    log.warn("Can't find datasource '" + dataSourceId + "' for file '" + fileName + "'");
                 } else {
                     if (scriptName == null) {
                         scriptName = "";
@@ -69,7 +69,7 @@ public class SQLEditorInputFactory implements IElementFactory
         memento.putString(TAG_PATH, file.getFullPath().toString());
         memento.putString(TAG_NAME, input.getScriptName());
         if (input.getDataSourceContainer() != null) {
-            memento.putString(TAG_DATA_SOURCE, input.getDataSourceContainer().getName());
+            memento.putString(TAG_DATA_SOURCE, input.getDataSourceContainer().getId());
         }
     }
 }
