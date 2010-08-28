@@ -4,11 +4,14 @@ Bundle-Name: ERD Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.erd;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Activator: org.jkiss.dbeaver.ext.erd.Activator
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources;bundle-version="3.6.0",
+ org.eclipse.ui,
+ org.eclipse.ui.ide;bundle-version="3.6.0",
+ org.eclipse.ui.views;bundle-version="3.5.0",
+ org.eclipse.gef;bundle-version="3.6.0",
  org.jkiss.dbeaver.core;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-Vendor: Serge Rieder
-Bundle-ClassPath: lib/jgraph.jar,
- .
+Bundle-ClassPath: .

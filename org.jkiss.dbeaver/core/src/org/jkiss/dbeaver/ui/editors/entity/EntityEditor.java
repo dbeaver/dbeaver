@@ -220,7 +220,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             }
             editorMap.put(descriptor.getId(), editor);
             return true;
-        } catch (PartInitException ex) {
+        } catch (Exception ex) {
             log.error("Error adding nested editor", ex);
             return false;
         }

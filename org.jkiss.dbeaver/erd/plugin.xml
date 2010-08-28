@@ -26,8 +26,8 @@
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
-            id="org.jkiss.dbeaver.ext.erd.old.views.ERDEditor"
-            class="org.jkiss.dbeaver.ext.erd.old.views.ERDEditor"
+            id="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"
+            class="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"
             objectType="org.jkiss.dbeaver.model.struct.DBSEntityContainer"
             main="false"
             label="Diagram"
