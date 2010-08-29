@@ -1,7 +1,11 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.model.impl.meta.AbstractForeignKey;
+import org.jkiss.dbeaver.model.impl.struct.AbstractForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;

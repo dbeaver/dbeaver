@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.meta;
+package org.jkiss.dbeaver.model.navigator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,28 +21,28 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import java.util.*;
 
 /**
- * DBMModel.
+ * DBNModel.
  * Contains all objects which are shown in navigator tree.
- * Also ties DBSObjects to thee model (DBMNode).
+ * Also ties DBSObjects to thee model (DBNNode).
  *
  * It's strongly recommended to not put the same DBSObject in tree model multiple times.
  * It will work but some actions will not work well
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
-public class DBMModel implements IDataSourceListener, DBSListener {
-    static final Log log = LogFactory.getLog(DBMModel.class);
+public class DBNModel implements IDataSourceListener, DBSListener {
+    static final Log log = LogFactory.getLog(DBNModel.class);
 
     private DataSourceRegistry registry;
-    private DBMRoot root;
-    private List<IDBMListener> listeners = new ArrayList<IDBMListener>();
+    private DBNRoot root;
+    private List<IDBNListener> listeners = new ArrayList<IDBNListener>();
     private Map<DBSObject, Object> nodeMap = new HashMap<DBSObject, Object>();
 
-    //private static Map<DataSourceRegistry, DBMModel> modelMap = new HashMap<DataSourceRegistry, DBMModel>();
+    //private static Map<DataSourceRegistry, DBNModel> modelMap = new HashMap<DataSourceRegistry, DBNModel>();
 
-    public DBMModel(DataSourceRegistry registry)
+    public DBNModel(DataSourceRegistry registry)
     {
         this.registry = registry;
-        this.root = new DBMRoot(this);
+        this.root = new DBNRoot(this);
         for (DataSourceDescriptor dataSource : registry.getDataSources()) {
             root.addDataSource(dataSource);
         }
@@ -56,7 +56,7 @@ public class DBMModel implements IDataSourceListener, DBSListener {
         this.root.dispose();
         this.nodeMap.clear();
         if (!listeners.isEmpty()) {
-            for (IDBMListener listener : listeners) {
+            for (IDBNListener listener : listeners) {
                 log.warn("Listener '" + listener + "' is not unregistered from DBM model");
             }
         }
@@ -73,15 +73,15 @@ public class DBMModel implements IDataSourceListener, DBSListener {
         return registry;
     }
 
-    public DBMRoot getRoot()
+    public DBNRoot getRoot()
     {
         return root;
     }
 
-    public DBMNode findNode(Object object)
+    public DBNNode findNode(Object object)
     {
-        if (object instanceof DBMNode) {
-            return (DBMNode)object;
+        if (object instanceof DBNNode) {
+            return (DBNNode)object;
         } else if (object instanceof DBSObject) {
             return this.getNodeByObject((DBSObject)object);
         } else {
@@ -89,25 +89,25 @@ public class DBMModel implements IDataSourceListener, DBSListener {
         }
     }
 
-    public DBMNode getNodeByObject(DBSObject object)
+    public DBNNode getNodeByObject(DBSObject object)
     {
-        if (object instanceof DBMNode) {
-            return (DBMNode)object;
+        if (object instanceof DBNNode) {
+            return (DBNNode)object;
         }
         Object obj = nodeMap.get(object);
         if (obj == null) {
             return null;
-        } else if (obj instanceof DBMNode) {
-            return (DBMNode)obj;
+        } else if (obj instanceof DBNNode) {
+            return (DBNNode)obj;
         } else if (obj instanceof List) {
             @SuppressWarnings("unchecked")
-            List<DBMNode> nodeList = (List<DBMNode>) obj;
+            List<DBNNode> nodeList = (List<DBNNode>) obj;
             if (nodeList.isEmpty()) {
                 return null;
             }
             if (nodeList.size() > 1) {
-                for (DBMNode node : nodeList) {
-                    if (node instanceof DBMTreeItem && !((DBMTreeItem)node).getMeta().isVirtual()) {
+                for (DBNNode node : nodeList) {
+                    if (node instanceof DBNTreeItem && !((DBNTreeItem)node).getMeta().isVirtual()) {
                         return node;
                     }
                 }
@@ -126,9 +126,9 @@ public class DBMModel implements IDataSourceListener, DBSListener {
 */
     }
 
-    public DBMNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean load)
+    public DBNNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean load)
     {
-        DBMNode node = getNodeByObject(object);
+        DBNNode node = getNodeByObject(object);
         if (node != null || !load) {
             return node;
         }
@@ -145,10 +145,10 @@ public class DBMModel implements IDataSourceListener, DBSListener {
                 return null;
             }
             try {
-                List<? extends DBMNode> children = node.getChildren(monitor);
-                for (DBMNode child : children) {
-                    if (child instanceof DBMTreeFolder) {
-                        Class<?> itemsClass = ((DBMTreeFolder) child).getItemsClass();
+                List<? extends DBNNode> children = node.getChildren(monitor);
+                for (DBNNode child : children) {
+                    if (child instanceof DBNTreeFolder) {
+                        Class<?> itemsClass = ((DBNTreeFolder) child).getItemsClass();
                         if (itemsClass != null && itemsClass.isAssignableFrom(nextItem.getClass())) {
                             child.getChildren(monitor);
                         }
@@ -162,35 +162,35 @@ public class DBMModel implements IDataSourceListener, DBSListener {
         return getNodeByObject(object);
     }
 
-    void addNode(DBMNode node)
+    void addNode(DBNNode node)
     {
         Object obj = nodeMap.get(node.getObject());
         if (obj == null) {
             // New node
             nodeMap.put(node.getObject(), node);
-        } else if (obj instanceof DBMNode) {
+        } else if (obj instanceof DBNNode) {
             // Second node - make a list
-            List<DBMNode> nodeList = new ArrayList<DBMNode>(2);
-            nodeList.add((DBMNode)obj);
+            List<DBNNode> nodeList = new ArrayList<DBNNode>(2);
+            nodeList.add((DBNNode)obj);
             nodeList.add(node);
             nodeMap.put(node.getObject(), nodeList);
         } else if (obj instanceof List) {
             // Multiple nodes
             @SuppressWarnings("unchecked")
-            List<DBMNode> nodeList = (List<DBMNode>) obj;
+            List<DBNNode> nodeList = (List<DBNNode>) obj;
             nodeList.add(node);
         }
-        this.fireNodeEvent(new DBMEvent(this, DBMEvent.Action.ADD, node));
+        this.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, node));
     }
 
-    void removeNode(DBMNode node)
+    void removeNode(DBNNode node)
     {
         Object obj = nodeMap.get(node.getObject());
         boolean badNode = false;
         if (obj == null) {
             // No found
             badNode = true;
-        } else if (obj instanceof DBMNode) {
+        } else if (obj instanceof DBNNode) {
             // Just remove it
             if (nodeMap.remove(node.getObject()) != node) {
                 badNode = true;
@@ -198,7 +198,7 @@ public class DBMModel implements IDataSourceListener, DBSListener {
         } else if (obj instanceof List) {
             // Multiple nodes
             @SuppressWarnings("unchecked")
-            List<DBMNode> nodeList = (List<DBMNode>) obj;
+            List<DBNNode> nodeList = (List<DBNNode>) obj;
             if (!nodeList.remove(node)) {
                 badNode = true;
             }
@@ -209,11 +209,11 @@ public class DBMModel implements IDataSourceListener, DBSListener {
         if (badNode) {
             log.warn("Remove unregistered meta node object " + node.getObject().getName() + " (" + node.getObject().getClass().getName() + ")");
         } else {
-            this.fireNodeEvent(new DBMEvent(this, DBMEvent.Action.REMOVE, node));
+            this.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, node));
         }
     }
 
-    public void addListener(IDBMListener listener)
+    public void addListener(IDBNListener listener)
     {
         if (this.listeners.contains(listener)) {
             log.warn("Listener " + listener + " already registered in model");
@@ -222,21 +222,21 @@ public class DBMModel implements IDataSourceListener, DBSListener {
         }
     }
 
-    public void removeListener(IDBMListener listener)
+    public void removeListener(IDBNListener listener)
     {
         if (!this.listeners.remove(listener)) {
             log.warn("Listener " + listener + " wasn't registered in model");
         }
     }
 
-    public void fireNodeRefresh(Object source, DBMNode node, DBMEvent.NodeChange nodeChange)
+    public void fireNodeRefresh(Object source, DBNNode node, DBNEvent.NodeChange nodeChange)
     {
-        this.fireNodeEvent(new DBMEvent(source, DBMEvent.Action.REFRESH, nodeChange, node));
+        this.fireNodeEvent(new DBNEvent(source, DBNEvent.Action.REFRESH, nodeChange, node));
     }
 
-    void fireNodeEvent(final DBMEvent event)
+    void fireNodeEvent(final DBNEvent event)
     {
-        for (IDBMListener listener :  new ArrayList<IDBMListener>(listeners)) {
+        for (IDBNListener listener :  new ArrayList<IDBNListener>(listeners)) {
             listener.nodeChanged(event);
         }
     }
@@ -252,7 +252,7 @@ public class DBMModel implements IDataSourceListener, DBSListener {
                 break;
             case DISCONNECT:
             {
-                final DBMNode dbmNode = getNodeByObject(event.getDataSource());
+                final DBNNode dbmNode = getNodeByObject(event.getDataSource());
                 if (dbmNode != null) {
                     try {
                         // Refresh with void monitor - this is disconnect event so
@@ -261,7 +261,7 @@ public class DBMModel implements IDataSourceListener, DBSListener {
                     } catch (DBException e) {
                         log.error(e);
                     }
-                    fireNodeRefresh(event.getSource(), dbmNode, DBMEvent.NodeChange.UNLOADED);
+                    fireNodeRefresh(event.getSource(), dbmNode, DBNEvent.NodeChange.UNLOADED);
                 }
                 event.getDataSource().removeListener(this);
                 break;
@@ -271,12 +271,12 @@ public class DBMModel implements IDataSourceListener, DBSListener {
             case CHANGE:
             case CONNECT_FAIL:
             {
-                DBMNode dbmNode = getNodeByObject(event.getDataSource());
+                DBNNode dbmNode = getNodeByObject(event.getDataSource());
                 if (dbmNode != null) {
-                    DBMEvent.NodeChange nodeChange = DBMEvent.NodeChange.CHANGED;
+                    DBNEvent.NodeChange nodeChange = DBNEvent.NodeChange.CHANGED;
                     switch (event.getAction()) {
-                    case CONNECT: nodeChange = DBMEvent.NodeChange.LOADED; break;
-                    case CONNECT_FAIL: nodeChange = DBMEvent.NodeChange.UNLOADED; break;
+                    case CONNECT: nodeChange = DBNEvent.NodeChange.LOADED; break;
+                    case CONNECT_FAIL: nodeChange = DBNEvent.NodeChange.UNLOADED; break;
                     }
                     fireNodeRefresh(
                         event.getSource(),
@@ -301,11 +301,11 @@ public class DBMModel implements IDataSourceListener, DBSListener {
             case CHANGED:
             case REFRESHED:
             {
-                DBMNode dbmNode = getNodeByObject(object);
+                DBNNode dbmNode = getNodeByObject(object);
                 if (dbmNode != null) {
-                    DBMEvent.NodeChange nodeChange = DBMEvent.NodeChange.CHANGED;
+                    DBNEvent.NodeChange nodeChange = DBNEvent.NodeChange.CHANGED;
                     if (action == DBSObjectAction.REFRESHED) {
-                        nodeChange = DBMEvent.NodeChange.REFRESH;
+                        nodeChange = DBNEvent.NodeChange.REFRESH;
                     }
                     fireNodeRefresh(this, dbmNode, nodeChange);
                 }

@@ -21,9 +21,9 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
-import org.jkiss.dbeaver.model.meta.DBMNode;
-import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
-import org.jkiss.dbeaver.model.meta.DBMTreeNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
+import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageStandard;
@@ -38,10 +38,10 @@ class DefaultObjectEditor extends EditorPart
 {
     static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
 
-    private DBMNode node;
+    private DBNNode node;
     private PropertyPageStandard properties;
 
-    DefaultObjectEditor(DBMNode node)
+    DefaultObjectEditor(DBNNode node)
     {
         this.node = node;
     }
@@ -58,13 +58,13 @@ class DefaultObjectEditor extends EditorPart
             gl = new GridLayout(3, false);
             infoGroup.setLayout(gl);
 
-            List<DBMTreeNode> nodeList = new ArrayList<DBMTreeNode>();
-            for (DBMNode n = node; n != null; n = n.getParentNode()) {
-                if (n instanceof DBMTreeNode && !(n instanceof DBMTreeFolder)) {
-                    nodeList.add(0, (DBMTreeNode)n);
+            List<DBNTreeNode> nodeList = new ArrayList<DBNTreeNode>();
+            for (DBNNode n = node; n != null; n = n.getParentNode()) {
+                if (n instanceof DBNTreeNode && !(n instanceof DBNTreeFolder)) {
+                    nodeList.add(0, (DBNTreeNode)n);
                 }
             }
-            for (final DBMTreeNode treeNode : nodeList) {
+            for (final DBNTreeNode treeNode : nodeList) {
                 Label objectIcon = new Label(infoGroup, SWT.NONE);
                 objectIcon.setImage(treeNode.getNodeIconDefault());
 

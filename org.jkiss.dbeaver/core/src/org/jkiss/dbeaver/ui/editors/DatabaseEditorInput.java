@@ -7,13 +7,13 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DatabaseEditorInput
  */
-public abstract class DatabaseEditorInput<NODE extends DBMNode> implements IDatabaseEditorInput
+public abstract class DatabaseEditorInput<NODE extends DBNNode> implements IDatabaseEditorInput
 {
     private NODE node;
     private String defaultPageId;

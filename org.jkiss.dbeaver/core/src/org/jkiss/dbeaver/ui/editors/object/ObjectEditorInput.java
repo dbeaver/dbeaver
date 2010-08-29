@@ -6,22 +6,22 @@ package org.jkiss.dbeaver.ui.editors.object;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorDescriptor;
-import org.jkiss.dbeaver.model.meta.DBMTreeObject;
+import org.jkiss.dbeaver.model.navigator.DBNTreeObject;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 
 /**
  * FolderEditorInput
  */
-public class ObjectEditorInput extends DatabaseEditorInput<DBMTreeObject>
+public class ObjectEditorInput extends DatabaseEditorInput<DBNTreeObject>
 {
-    public ObjectEditorInput(DBMTreeObject dbmNode)
+    public ObjectEditorInput(DBNTreeObject dbmNode)
     {
         super(dbmNode);
     }
 
     public ImageDescriptor getImageDescriptor()
     {
-        DBMTreeObject node = getTreeNode();
+        DBNTreeObject node = getTreeNode();
         IEditorDescriptor editorDescriptor = node.getEditorDescriptor();
         if (editorDescriptor != null) {
             return editorDescriptor.getImageDescriptor();

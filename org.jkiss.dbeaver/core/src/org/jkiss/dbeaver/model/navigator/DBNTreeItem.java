@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.meta;
+package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -12,14 +12,14 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
 
 /**
- * DBMTreeItem
+ * DBNTreeItem
  */
-public class DBMTreeItem extends DBMTreeNode
+public class DBNTreeItem extends DBNTreeNode
 {
     private DBXTreeItem meta;
     private DBSObject object;
 
-    DBMTreeItem(DBMNode parent, DBXTreeItem meta, DBSObject object)
+    DBNTreeItem(DBNNode parent, DBXTreeItem meta, DBSObject object)
     {
         super(parent);
         this.meta = meta;
@@ -54,7 +54,7 @@ public class DBMTreeItem extends DBMTreeNode
         return object;
     }
 
-    public DBMNode refreshNode(DBRProgressMonitor monitor)
+    public DBNNode refreshNode(DBRProgressMonitor monitor)
         throws DBException
     {
         if (object instanceof DBSEntity && ((DBSEntity)object).refreshEntity(monitor)) {

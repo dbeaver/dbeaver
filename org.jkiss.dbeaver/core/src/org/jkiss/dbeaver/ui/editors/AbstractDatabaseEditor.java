@@ -10,15 +10,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.meta.IDBMListener;
-import org.jkiss.dbeaver.model.meta.DBMEvent;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.core.DBeaverCore;
 
 /**
  * AbstractDatabaseEditor

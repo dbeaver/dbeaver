@@ -19,7 +19,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.meta.DBMModel;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -61,7 +61,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     private DataSourceRegistry dataSourceRegistry;
     private EntityEditorsRegistry editorsRegistry;
-    private DBMModel metaModel;
+    private DBNModel metaModel;
     private QMControllerImpl queryManager;
     private JexlEngine jexlEngine;
 
@@ -98,7 +98,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.rootPath = Platform.getLocation();
         this.dataSourceRegistry = new DataSourceRegistry(this, Platform.getExtensionRegistry());
         this.editorsRegistry = new EntityEditorsRegistry(Platform.getExtensionRegistry());
-        this.metaModel = new DBMModel(dataSourceRegistry);
+        this.metaModel = new DBNModel(dataSourceRegistry);
         this.queryManager = new QMControllerImpl(dataSourceRegistry);
         // Make default project
         defaultProject = this.workspace.getRoot().getProject(DEFAULT_PROJECT_NAME);
@@ -197,7 +197,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return jexlEngine;
     }
 
-    public DBMModel getMetaModel()
+    public DBNModel getMetaModel()
     {
         return metaModel;
     }

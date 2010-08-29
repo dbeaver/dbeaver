@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.meta;
+package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -13,13 +13,13 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
 
 /**
- * DBMTreeFolder
+ * DBNTreeFolder
  */
-public class DBMTreeFolder extends DBMTreeNode implements DBSFolder
+public class DBNTreeFolder extends DBNTreeNode implements DBSFolder
 {
     private DBXTreeFolder meta;
 
-    DBMTreeFolder(DBMNode parent, DBXTreeFolder meta)
+    DBNTreeFolder(DBNNode parent, DBXTreeFolder meta)
     {
         super(parent);
         this.meta = meta;
@@ -71,7 +71,7 @@ public class DBMTreeFolder extends DBMTreeNode implements DBSFolder
         return getParentObject() == null ? null : getParentObject().getDataSource();
     }
 
-    public DBMNode refreshNode(DBRProgressMonitor monitor)
+    public DBNNode refreshNode(DBRProgressMonitor monitor)
         throws DBException
     {
         if (this.getParentNode() == null) {

@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.meta.AbstractIndex;
+import org.jkiss.dbeaver.model.impl.struct.AbstractIndex;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.DBUtils;

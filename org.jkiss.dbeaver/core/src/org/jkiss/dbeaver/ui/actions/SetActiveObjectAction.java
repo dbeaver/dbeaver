@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IAction;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -23,7 +23,7 @@ public class SetActiveObjectAction extends NavigatorAction
 
     public void run(IAction action)
     {
-        final DBMNode selectedNode = getSelectedNode();
+        final DBNNode selectedNode = getSelectedNode();
         if (selectedNode != null) {
             final DBSEntitySelector activeContainer = DBUtils.queryParentInterface(
                 DBSEntitySelector.class, selectedNode.getObject());

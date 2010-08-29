@@ -9,7 +9,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 
@@ -65,7 +65,7 @@ public class DBeaverAdapterFactory implements IAdapterFactory
 
                         public ImageDescriptor getImageDescriptor(Object object)
                         {
-                            final DBMNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject(dbObject);
+                            final DBNNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject(dbObject);
                             if (node != null) {
                                 return ImageDescriptor.createFromImage(node.getNodeIconDefault());
                             } else {

@@ -7,9 +7,9 @@ package org.jkiss.dbeaver.ui.editors.entity;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.model.meta.DBMDataSource;
-import org.jkiss.dbeaver.model.meta.DBMNode;
-import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -46,10 +46,10 @@ public class EntityHyperlink implements IHyperlink
     {
         StringBuilder nodeFullName = new StringBuilder();
         for (DBSObject t = object; t != null; t = t.getParentObject()) {
-            if (t instanceof DBMTreeFolder) {
+            if (t instanceof DBNTreeFolder) {
                 continue;
             }
-            if (t instanceof DBMDataSource) {
+            if (t instanceof DBNDataSource) {
                 break;
             }
             if (object.getParentObject() != null) {
@@ -66,7 +66,7 @@ public class EntityHyperlink implements IHyperlink
             public void run(DBRProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException
             {
-                DBMNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject(
+                DBNNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject(
                     monitor,
                     object,
                     true

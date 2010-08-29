@@ -4,15 +4,15 @@
 
 package org.jkiss.dbeaver.ui.editors.folder;
 
-import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
+import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 
 /**
  * FolderEditorInput
  */
-public class FolderEditorInput extends DatabaseEditorInput<DBMTreeFolder>
+public class FolderEditorInput extends DatabaseEditorInput<DBNTreeFolder>
 {
-    public FolderEditorInput(DBMTreeFolder dbmTreeFolder)
+    public FolderEditorInput(DBNTreeFolder dbmTreeFolder)
     {
         super(dbmTreeFolder);
     }

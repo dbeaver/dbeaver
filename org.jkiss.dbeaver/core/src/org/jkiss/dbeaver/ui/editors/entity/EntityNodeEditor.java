@@ -18,9 +18,9 @@ import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
-import org.jkiss.dbeaver.model.meta.DBMEvent;
-import org.jkiss.dbeaver.model.meta.DBMModel;
-import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
@@ -37,17 +37,17 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, IMetaMode
 {
     static final Log log = LogFactory.getLog(EntityNodeEditor.class);
 
-    private DBMNode node;
+    private DBNNode node;
     private DBXTreeNode metaNode;
     private ItemListControl itemControl;
     private boolean activated;
 
-    EntityNodeEditor(DBMNode node)
+    EntityNodeEditor(DBNNode node)
     {
         this.node = node;
     }
 
-    EntityNodeEditor(DBMNode node, DBXTreeNode metaNode)
+    EntityNodeEditor(DBNNode node, DBXTreeNode metaNode)
     {
         this.node = node;
         this.metaNode = metaNode;
@@ -93,7 +93,7 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, IMetaMode
     {
     }
 
-    public DBMModel getMetaModel()
+    public DBNModel getMetaModel()
     {
         return node.getModel();
     }
@@ -144,11 +144,11 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, IMetaMode
         // UNLOADED usually means that connection was closed on connection's node is not removed but
         // is in "unloaded" state.
         // Without this check editor will try to reload it's content and thus will reopen just closed connection
-        // (by calling getChildren() on DBMNode)
+        // (by calling getChildren() on DBNNode)
         boolean loadNewData = true;
-        if (source instanceof DBMEvent) {
-            DBMEvent.NodeChange nodeChange = ((DBMEvent) source).getNodeChange();
-            if (nodeChange == DBMEvent.NodeChange.UNLOADED) {
+        if (source instanceof DBNEvent) {
+            DBNEvent.NodeChange nodeChange = ((DBNEvent) source).getNodeChange();
+            if (nodeChange == DBNEvent.NodeChange.UNLOADED) {
                 loadNewData = false;
             }
         }

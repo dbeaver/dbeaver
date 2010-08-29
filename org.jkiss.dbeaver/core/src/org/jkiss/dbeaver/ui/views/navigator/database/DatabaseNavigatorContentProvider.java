@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.load.tree.TreeLoadService;
 import org.jkiss.dbeaver.runtime.load.tree.TreeLoadVisualizer;
@@ -50,7 +50,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
 
     public Object getParent(Object child)
     {
-        DBMNode node = view.getMetaModel().findNode(child);
+        DBNNode node = view.getMetaModel().findNode(child);
         if (node == null || node.getParentNode() == null) {
             return null;
         }
@@ -66,7 +66,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
             log.error("Bad parent type: " + parent);
             return null;
         }
-        final DBMNode parentNode = view.getMetaModel().findNode(parent);
+        final DBNNode parentNode = view.getMetaModel().findNode(parent);
         if (parentNode == null) {
             log.error("Can't find parent node in model");
             return EMPTY_CHILDREN;
@@ -82,7 +82,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
             try {
                 // Read children with null monitor cos' it's not a lazy node
                 // and no blocking prooccess will occure
-                return DBMNode.convertNodesToObjects(
+                return DBNNode.convertNodesToObjects(
                     parentNode.getChildren(VoidProgressMonitor.INSTANCE));
             }
             catch (Throwable ex) {
@@ -109,7 +109,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
 
     public boolean hasChildren(Object parent)
     {
-        DBMNode node = view.getMetaModel().findNode(parent);
+        DBNNode node = view.getMetaModel().findNode(parent);
         return node != null && node.hasNavigableChildren();
     }
 

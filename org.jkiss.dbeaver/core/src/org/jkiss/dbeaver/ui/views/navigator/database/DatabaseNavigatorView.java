@@ -27,11 +27,8 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshableView;
-import org.jkiss.dbeaver.model.meta.DBMDataSource;
-import org.jkiss.dbeaver.model.meta.DBMEvent;
-import org.jkiss.dbeaver.model.meta.DBMModel;
-import org.jkiss.dbeaver.model.meta.DBMNode;
-import org.jkiss.dbeaver.model.meta.IDBMListener;
+import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -43,14 +40,14 @@ import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 public class DatabaseNavigatorView extends ViewPart
-    implements IDBMListener, IMetaModelView, IRefreshableView, IDoubleClickListener
+    implements IDBNListener, IMetaModelView, IRefreshableView, IDoubleClickListener
 {
     static final Log log = LogFactory.getLog(DatabaseNavigatorView.class);
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseNavigator";
 
     private TreeViewer viewer;
-    private DBMModel model;
+    private DBNModel model;
     private RefreshTreeAction refreshAction;
 
     public DatabaseNavigatorView()
@@ -64,7 +61,7 @@ public class DatabaseNavigatorView extends ViewPart
      * We will set up a dummy model to initialize tree heararchy. In real
      * code, you will connect to a real model and expose its hierarchy.
      */
-    public DBMModel getMetaModel()
+    public DBNModel getMetaModel()
     {
         return model;
     }
@@ -177,12 +174,12 @@ public class DatabaseNavigatorView extends ViewPart
         viewer.getControl().setFocus();
     }
 
-    public void nodeChanged(final DBMEvent event)
+    public void nodeChanged(final DBNEvent event)
     {
         switch (event.getAction()) {
             case ADD:
             case REMOVE:
-                if (event.getNode() instanceof DBMDataSource) {
+                if (event.getNode() instanceof DBNDataSource) {
                     asyncExec(new Runnable() { public void run() {
                         if (!viewer.getControl().isDisposed()) {
                             viewer.refresh();
@@ -224,26 +221,26 @@ public class DatabaseNavigatorView extends ViewPart
 
     public void doubleClick(DoubleClickEvent event)
     {
-        DBMNode dbmNode = getSelectedNode();
+        DBNNode dbmNode = getSelectedNode();
         if (dbmNode == null) {
             return;
         }
         ViewUtils.runAction(dbmNode.getDefaultAction(), this, this.viewer.getSelection());
     }
 
-    private DBMNode getSelectedNode()
+    private DBNNode getSelectedNode()
     {
         return ViewUtils.getSelectedNode(this);
     }
 
     public DBSDataSourceContainer getSelectedDataSourceContainer()
     {
-        DBMNode selectedNode = getSelectedNode();
+        DBNNode selectedNode = getSelectedNode();
         if (selectedNode == null) {
             return null;
         }
 
-        for (DBMNode curNode = selectedNode; curNode != null; curNode = curNode.getParentNode()) {
+        for (DBNNode curNode = selectedNode; curNode != null; curNode = curNode.getParentNode()) {
             if (curNode.getObject() instanceof DBSDataSourceContainer) {
                 return (DBSDataSourceContainer)curNode.getObject();
             }

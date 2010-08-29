@@ -4,14 +4,14 @@
 
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.model.meta.DBMModel;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 
 /**
  * DBPApplication
  */
 public interface DBPApplication
 {
-    DBMModel getMetaModel();
+    DBNModel getMetaModel();
 
     DBPRegistry getDataSourceRegistry();
 

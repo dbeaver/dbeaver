@@ -6,14 +6,14 @@ package org.jkiss.dbeaver.ext.ui;
 
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.model.meta.DBMModel;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 
 /**
  * INavigatorView
  */
 public interface IMetaModelView
 {
-    DBMModel getMetaModel();
+    DBNModel getMetaModel();
     
     Viewer getViewer();
 

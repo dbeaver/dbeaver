@@ -149,7 +149,7 @@ public class PropertyAnnoDescriptor implements IPropertyDescriptor
                 {
 /*
                     if (element instanceof DBSObject) {
-                        DBMNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject((DBSObject) element, true);
+                        DBNNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject((DBSObject) element, true);
                         if (node != null) {
                             return node.getNodeIconDefault();
                         }

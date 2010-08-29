@@ -9,9 +9,6 @@ package org.jkiss.dbeaver.ext.erd.directedit;
 
 import org.eclipse.jface.viewers.ICellEditorValidator;
 
-import org.jkiss.dbeaver.ext.erd.model.ColumnType;
-
-
 
 /**
  * ICellValidator to validate direct edit values in the column label
@@ -32,7 +29,6 @@ public class ColumnNameTypeCellEditorValidator implements ICellEditorValidator
 	}
 
 	/**
-	 * @param validation of column type
 	 * @return the error message if an error has occurred, otherwise null
 	 */
 	public String isValid(Object value)
@@ -56,12 +52,9 @@ public class ColumnNameTypeCellEditorValidator implements ICellEditorValidator
 			{
 				String text = "Column name should not include the space character";
 				return setMessageText(text);
-			}
-			else
-			{
-				String text = "Invalid type: permissible types are: " + ColumnType.getTypes();
-				return setMessageText(text);
-			}
+			} else {
+                return unsetMessageText();
+            }
 		}
 		else
 		{

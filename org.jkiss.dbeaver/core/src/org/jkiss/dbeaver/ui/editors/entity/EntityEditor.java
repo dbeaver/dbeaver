@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
-import org.jkiss.dbeaver.model.meta.*;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -38,7 +38,7 @@ import java.util.Map;
 /**
  * EntityEditor
  */
-public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> implements IDBMListener, IMetaModelView
+public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> implements IDBNListener, IMetaModelView
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
@@ -78,11 +78,11 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         }
         if (!mainAdded) {
             try {
-                DBMNode node = getEditorInput().getTreeNode();
+                DBNNode node = getEditorInput().getTreeNode();
                 int index = addPage(new DefaultObjectEditor(node), getEditorInput());
                 setPageText(index, "Properties");
-                if (node instanceof DBMTreeNode) {
-                    setPageToolTip(index, ((DBMTreeNode)node).getMeta().getLabel() + " Properties");
+                if (node instanceof DBNTreeNode) {
+                    setPageToolTip(index, ((DBNTreeNode)node).getMeta().getLabel() + " Properties");
                 }
                 setPageImage(index, node.getNodeIconDefault());
             } catch (PartInitException e) {
@@ -123,13 +123,13 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     }
 
     private static class TabInfo {
-        DBMNode node;
+        DBNNode node;
         DBXTreeNode meta;
-        private TabInfo(DBMNode node)
+        private TabInfo(DBNNode node)
         {
             this.node = node;
         }
-        private TabInfo(DBMNode node, DBXTreeNode meta)
+        private TabInfo(DBNNode node, DBXTreeNode meta)
         {
             this.node = node;
             this.meta = meta;
@@ -141,12 +141,12 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         List<TabInfo> tabs = new ArrayList<TabInfo>();
 
         // Add all nested folders as tabs
-        DBMNode node = getEditorInput().getTreeNode();
+        DBNNode node = getEditorInput().getTreeNode();
         try {
-            List<? extends DBMNode> children = node.getChildren(monitor);
+            List<? extends DBNNode> children = node.getChildren(monitor);
             if (children != null) {
-                for (DBMNode child : children) {
-                    if (child instanceof DBMTreeFolder) {
+                for (DBNNode child : children) {
+                    if (child instanceof DBNTreeFolder) {
                         tabs.add(new TabInfo(child));
                     }
                 }
@@ -155,8 +155,8 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             log.error("Error initializing entity editor");
         }
         // Add itself as tab (if it has child items)
-        if (node instanceof DBMTreeNode) {
-            DBMTreeNode treeNode = (DBMTreeNode)node;
+        if (node instanceof DBNTreeNode) {
+            DBNTreeNode treeNode = (DBNTreeNode)node;
             List<DBXTreeNode> subNodes = treeNode.getMeta().getChildren();
             if (subNodes != null) {
                 for (DBXTreeNode child : subNodes) {
@@ -226,15 +226,15 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         }
     }
 
-    private void addNodeTab(DBMNode node)
+    private void addNodeTab(DBNNode node)
     {
         try {
             EntityNodeEditor nodeEditor = new EntityNodeEditor(node);
             int index = addPage(nodeEditor, getEditorInput());
             setPageText(index, node.getNodeName());
             setPageImage(index, node.getNodeIconDefault());
-            if (getEditorInput().getTreeNode() instanceof DBMTreeNode) {
-                setPageToolTip(index, ((DBMTreeNode)getEditorInput().getTreeNode()).getMeta().getLabel() + " " + node.getNodeName());
+            if (getEditorInput().getTreeNode() instanceof DBNTreeNode) {
+                setPageToolTip(index, ((DBNTreeNode)getEditorInput().getTreeNode()).getMeta().getLabel() + " " + node.getNodeName());
             }
             editorMap.put("node." + node.getNodeName(), nodeEditor);
         } catch (PartInitException ex) {
@@ -242,7 +242,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         }
     }
 
-    private void addNodeTab(DBMNode node, DBXTreeNode metaItem)
+    private void addNodeTab(DBNNode node, DBXTreeNode metaItem)
     {
         try {
             EntityNodeEditor nodeEditor = new EntityNodeEditor(node, metaItem);
@@ -260,7 +260,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         }
     }
 
-    protected void refreshContent(final DBMEvent event)
+    protected void refreshContent(final DBNEvent event)
     {
         int pageCount = getPageCount();
         for (int i = 0; i < pageCount; i++) {
@@ -272,7 +272,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         setTitleImage(getEditorInput().getImageDescriptor().createImage());
     }
 
-    public DBMModel getMetaModel()
+    public DBNModel getMetaModel()
     {
         return getEditorInput().getTreeNode().getModel();
     }

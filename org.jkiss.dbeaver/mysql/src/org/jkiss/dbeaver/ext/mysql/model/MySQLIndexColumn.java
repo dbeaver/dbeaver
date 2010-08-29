@@ -4,10 +4,8 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.meta.AbstractIndexColumn;
+import org.jkiss.dbeaver.model.impl.struct.AbstractIndexColumn;
 import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * GenericIndexColumn

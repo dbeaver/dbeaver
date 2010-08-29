@@ -9,9 +9,9 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.model.meta.DBMNode;
-import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
-import org.jkiss.dbeaver.model.meta.DBMTreeObject;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
+import org.jkiss.dbeaver.model.navigator.DBNTreeObject;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.editors.folder.FolderEditor;
@@ -24,13 +24,13 @@ public class OpenObjectEditorAction extends NavigatorAction
 
     public void run(IAction action)
     {
-        DBMNode selectedNode = getSelectedNode();
+        DBNNode selectedNode = getSelectedNode();
         if (selectedNode != null) {
             openEntityEditor(selectedNode, null, getWindow());
         }
     }
 
-    public static void openEntityEditor(DBMNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
+    public static void openEntityEditor(DBNNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
     {
         try {
             for (IEditorReference ref : workbenchWindow.getActivePage().getEditorReferences()) {
@@ -39,14 +39,14 @@ public class OpenObjectEditorAction extends NavigatorAction
                     return;
                 }
             }
-            if (selectedNode instanceof DBMTreeFolder) {
-                FolderEditorInput folderInput = new FolderEditorInput((DBMTreeFolder)selectedNode);
+            if (selectedNode instanceof DBNTreeFolder) {
+                FolderEditorInput folderInput = new FolderEditorInput((DBNTreeFolder)selectedNode);
                 folderInput.setDefaultPageId(defaultPageId);
                 workbenchWindow.getActivePage().openEditor(
                     folderInput,
                     FolderEditor.class.getName());
-            } else if (selectedNode instanceof DBMTreeObject) {
-                DBMTreeObject objectNode = (DBMTreeObject) selectedNode;
+            } else if (selectedNode instanceof DBNTreeObject) {
+                DBNTreeObject objectNode = (DBNTreeObject) selectedNode;
                 ObjectEditorInput objectInput = new ObjectEditorInput(objectNode);
                 workbenchWindow.getActivePage().openEditor(
                     objectInput,

@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.meta;
+package org.jkiss.dbeaver.model.navigator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,16 +13,16 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.actions.EditConnectionAction;
 
 /**
- * DBMDataSource
+ * DBNDataSource
  */
-public class DBMDataSource extends DBMTreeNode
+public class DBNDataSource extends DBNTreeNode
 {
-    static final Log log = LogFactory.getLog(DBMDataSource.class);
+    static final Log log = LogFactory.getLog(DBNDataSource.class);
 
     private DataSourceDescriptor dataSource;
     private DBXTreeNode treeRoot;
 
-    public DBMDataSource(DBMRoot parentNode, DataSourceDescriptor dataSource)
+    public DBNDataSource(DBNRoot parentNode, DataSourceDescriptor dataSource)
     {
         super(parentNode);
         this.dataSource = dataSource;
@@ -65,7 +65,7 @@ public class DBMDataSource extends DBMTreeNode
         return dataSource.getDescription();
     }
 
-    public DBMNode refreshNode(DBRProgressMonitor monitor)
+    public DBNNode refreshNode(DBRProgressMonitor monitor)
         throws DBException
     {
         if (dataSource.isConnected()) {

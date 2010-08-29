@@ -6,8 +6,6 @@ package org.jkiss.dbeaver.ui.actions;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
@@ -17,15 +15,13 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
-import org.jkiss.dbeaver.model.meta.DBMEvent;
-import org.jkiss.dbeaver.model.meta.DBMModel;
-import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -102,8 +98,8 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
     {
         if (this.targetPart instanceof IMetaModelView) {
             IMetaModelView view = (IMetaModelView)this.targetPart;
-            final DBMModel model = view.getMetaModel();
-            DBMNode node = model.findNode(object);
+            final DBNModel model = view.getMetaModel();
+            DBNNode node = model.findNode(object);
             if (node != null) {
                 try {
                     node = node.refreshNode(monitor);
@@ -113,11 +109,11 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
                 }
             }
             if (node != null) {
-                final DBMNode refNode = node;
+                final DBNNode refNode = node;
                 targetPart.getSite().getShell().getDisplay().asyncExec(new Runnable() {
                     public void run()
                     {
-                        model.fireNodeRefresh(targetPart, refNode, DBMEvent.NodeChange.REFRESH);
+                        model.fireNodeRefresh(targetPart, refNode, DBNEvent.NodeChange.REFRESH);
                     }
                 });
             }

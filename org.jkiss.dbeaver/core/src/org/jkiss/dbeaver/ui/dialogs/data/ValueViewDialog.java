@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
@@ -209,7 +209,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
-                        DBMNode tableNode = DBeaverCore.getInstance().getMetaModel().getNodeByObject(monitor, refConstraint.getReferencedKey().getTable(), true);
+                        DBNNode tableNode = DBeaverCore.getInstance().getMetaModel().getNodeByObject(monitor, refConstraint.getReferencedKey().getTable(), true);
                         if (tableNode != null) {
                             OpenObjectEditorAction.openEntityEditor(tableNode, DatabaseDataEditor.class.getName(), window);
                         }

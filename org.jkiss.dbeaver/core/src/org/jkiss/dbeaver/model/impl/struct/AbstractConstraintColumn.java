@@ -2,10 +2,8 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.impl.meta;
+package org.jkiss.dbeaver.model.impl.struct;
 
-import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.model.struct.DBSColumnDefinition;
 import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;

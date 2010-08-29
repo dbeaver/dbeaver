@@ -14,14 +14,14 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.meta.DBMEvent;
-import org.jkiss.dbeaver.model.meta.IDBMListener;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.IDBNListener;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
  * SinglePageDatabaseEditor
  */
-public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends AbstractDatabaseEditor<INPUT_TYPE> implements IDataSourceUser, IDBMListener
+public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends AbstractDatabaseEditor<INPUT_TYPE> implements IDataSourceUser, IDBNListener
 {
     static final Log log = LogFactory.getLog(SinglePageDatabaseEditor.class);
 
@@ -49,17 +49,17 @@ public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEdito
         return getEditorInput() == null || getEditorInput().getDatabaseObject() == null ? null : getEditorInput().getDatabaseObject().getDataSource();
     }
 
-    public void nodeChanged(final DBMEvent event)
+    public void nodeChanged(final DBNEvent event)
     {
         if (event.getNode() == getEditorInput().getTreeNode()) {
-            if (event.getAction() == DBMEvent.Action.REMOVE) {
+            if (event.getAction() == DBNEvent.Action.REMOVE) {
                 getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
                     IWorkbenchPage workbenchPage = getSite().getWorkbenchWindow().getActivePage();
                     if (workbenchPage != null) {
                         workbenchPage.closeEditor(SinglePageDatabaseEditor.this, false);
                     }
                 }});
-            } else if (event.getAction() == DBMEvent.Action.REFRESH) {
+            } else if (event.getAction() == DBNEvent.Action.REFRESH) {
                 getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
                     refreshContent(event);
                 }});
@@ -67,7 +67,7 @@ public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEdito
         }
     }
 
-    protected void refreshContent(DBMEvent event)
+    protected void refreshContent(DBNEvent event)
     {
 
     }

@@ -17,10 +17,10 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
-import org.jkiss.dbeaver.model.meta.DBMModel;
-import org.jkiss.dbeaver.model.meta.DBMNode;
-import org.jkiss.dbeaver.model.meta.DBMTreeFolder;
-import org.jkiss.dbeaver.model.meta.DBMTreeNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
+import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
@@ -46,7 +46,7 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
 
     private final static Object LOADING_VALUE = new Object();
 
-    private DBMNode node;
+    private DBNNode node;
 
     private TableViewer itemsViewer;
     private List<TableColumn> columns = new ArrayList<TableColumn>();
@@ -59,7 +59,7 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
         Composite parent,
         int style,
         IWorkbenchPart workbenchPart,
-        DBMNode node)
+        DBNNode node)
     {
         super(parent, style, workbenchPart);
         this.node = node;
@@ -150,12 +150,12 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
         return selectionProvider;
     }
 
-    public DBMNode getNode()
+    public DBNNode getNode()
     {
         return node;
     }
 
-    public DBMModel getMetaModel()
+    public DBNModel getMetaModel()
     {
         return node.getModel();
     }
@@ -187,7 +187,7 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
             doubleClickHandler.doubleClick(event);
         } else {
             // Run default node action
-            DBMNode dbmNode = ViewUtils.getSelectedNode(this);
+            DBNNode dbmNode = ViewUtils.getSelectedNode(this);
             if (dbmNode == null) {
                 return;
             }
@@ -294,7 +294,7 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
 
     }
 
-    private class ItemLoadService extends AbstractLoadService<List<DBMNode>> {
+    private class ItemLoadService extends AbstractLoadService<List<DBNNode>> {
 
         private DBXTreeNode metaNode;
 
@@ -304,24 +304,24 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
             this.metaNode = metaNode;
         }
 
-        public List<DBMNode> evaluate()
+        public List<DBNNode> evaluate()
             throws InvocationTargetException, InterruptedException
         {
             try {
-                List<DBMNode> items = new ArrayList<DBMNode>();
-                List<? extends DBMNode> children = node.getChildren(getProgressMonitor());
+                List<DBNNode> items = new ArrayList<DBNNode>();
+                List<? extends DBNNode> children = node.getChildren(getProgressMonitor());
                 if (CommonUtils.isEmpty(children)) {
                     return items;
                 }
-                for (DBMNode item : children) {
-                    if (item instanceof DBMTreeFolder) {
+                for (DBNNode item : children) {
+                    if (item instanceof DBNTreeFolder) {
                         continue;
                     }
                     if (metaNode != null) {
-                        if (!(item instanceof DBMTreeNode)) {
+                        if (!(item instanceof DBNTreeNode)) {
                             continue;
                         }
-                        if (((DBMTreeNode)item).getMeta() != metaNode) {
+                        if (((DBNTreeNode)item).getMeta() != metaNode) {
                             continue;
                         }
                     }
@@ -338,17 +338,17 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
         }
     }
 
-    private class ItemsLoadVisualizer extends ProgressVisualizer<List<DBMNode>> {
+    private class ItemsLoadVisualizer extends ProgressVisualizer<List<DBNNode>> {
 
         private List<ItemCell> lazyItems = new ArrayList<ItemCell>();
 
-        public void completeLoading(List<DBMNode> items)
+        public void completeLoading(List<DBNNode> items)
         {
             super.completeLoading(items);
 
             List<DBSObject> objectList = new ArrayList<DBSObject>();
             if (!CommonUtils.isEmpty(items)) {
-                for (DBMNode item : items) {
+                for (DBNNode item : items) {
                     addRow(item);
                     objectList.add(item.getObject());
                 }
@@ -379,7 +379,7 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
             }
         }
 
-        private DBSObject addRow(DBMNode item)
+        private DBSObject addRow(DBNNode item)
         {
             DBSObject itemObject = item.getObject();
             List<PropertyAnnoDescriptor> annoProps = null;

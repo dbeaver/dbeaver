@@ -16,9 +16,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.meta.DBMNode;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryInfo;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -346,7 +346,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             info.append("<br>");
         }
 
-        DBMNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject(monitor, child, true);
+        DBNNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject(monitor, child, true);
 /*
         return new ContextInformation(
                 node == null ? null : node.getNodeIconDefault(),

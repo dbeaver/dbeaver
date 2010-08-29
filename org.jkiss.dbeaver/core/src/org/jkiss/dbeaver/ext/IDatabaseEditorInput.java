@@ -5,8 +5,7 @@
 package org.jkiss.dbeaver.ext;
 
 import org.eclipse.ui.IEditorInput;
-import org.jkiss.dbeaver.model.meta.DBMModel;
-import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -14,7 +13,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface IDatabaseEditorInput extends IEditorInput {
 
-    DBMNode getTreeNode();
+    DBNNode getTreeNode();
 
     DBSObject getDatabaseObject();
 

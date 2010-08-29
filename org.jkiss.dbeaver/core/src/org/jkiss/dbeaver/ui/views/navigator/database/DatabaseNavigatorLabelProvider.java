@@ -15,7 +15,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -56,8 +56,8 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
             text = ((ILabelProvider)obj).getText(obj);
         } else if (obj instanceof DBSObject) {
             text = ((DBSObject) obj).getName();
-        } else if (obj instanceof DBMNode) {
-            text = ((DBMNode) obj).getNodeName();
+        } else if (obj instanceof DBNNode) {
+            text = ((DBNNode) obj).getNodeName();
         } else {
             text = obj.toString();
         }
@@ -72,7 +72,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         if (obj instanceof ILabelProvider) {
             return ((ILabelProvider)obj).getImage(obj);
         }
-        DBMNode node = view.getMetaModel().findNode(obj);
+        DBNNode node = view.getMetaModel().findNode(obj);
         if (node != null) {
             return node.getNodeIconDefault();
         } else {

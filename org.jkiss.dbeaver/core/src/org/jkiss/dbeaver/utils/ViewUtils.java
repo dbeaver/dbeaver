@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshableView;
-import org.jkiss.dbeaver.model.meta.DBMNode;
-import org.jkiss.dbeaver.model.meta.DBMTreeNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -72,7 +72,7 @@ public class ViewUtils
         return null;
     }
 
-    public static DBMNode getSelectedNode(IMetaModelView metaModelView)
+    public static DBNNode getSelectedNode(IMetaModelView metaModelView)
     {
         Viewer viewer = metaModelView.getViewer();
         if (viewer == null) {
@@ -106,7 +106,7 @@ public class ViewUtils
             public void menuShown(MenuEvent e)
             {
                 Menu m = (Menu)e.widget;
-                DBMNode dbmNode = ViewUtils.getSelectedNode(metaModelView);
+                DBNNode dbmNode = ViewUtils.getSelectedNode(metaModelView);
                 if (dbmNode != null) {
                     Class<? extends IActionDelegate> defaultActionClass = dbmNode.getDefaultAction();
                     if (defaultActionClass != null) {
@@ -153,8 +153,8 @@ public class ViewUtils
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
                 // Add "Set active object" menu
-                final DBMNode dbmNode = ViewUtils.getSelectedNode(metaModelView);
-                if (dbmNode instanceof DBMTreeNode && dbmNode.getObject() != null) {
+                final DBNNode dbmNode = ViewUtils.getSelectedNode(metaModelView);
+                if (dbmNode instanceof DBNTreeNode && dbmNode.getObject() != null) {
                     final DBSEntitySelector activeContainer = DBUtils.queryParentInterface(
                         DBSEntitySelector.class, dbmNode.getObject());
                     if (activeContainer != null && activeContainer.supportsActiveChildChange()) {
@@ -174,7 +174,7 @@ public class ViewUtils
                                         throw new InvocationTargetException(e);
                                     }
                                     if (activeChild != dbmNode.getObject()) {
-                                        DBMTreeNode treeNode = (DBMTreeNode)dbmNode;
+                                        DBNTreeNode treeNode = (DBNTreeNode)dbmNode;
                                         DBXTreeNode nodeMeta = treeNode.getMeta();
                                         String text = "Set active";
                                         if (nodeMeta instanceof DBXTreeItem) {

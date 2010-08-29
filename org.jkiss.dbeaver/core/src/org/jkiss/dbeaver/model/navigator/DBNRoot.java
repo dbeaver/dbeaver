@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.meta;
+package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionDelegate;
@@ -17,20 +17,20 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * DBMRoot
+ * DBNRoot
  */
-public class DBMRoot extends DBMNode implements DBSObject
+public class DBNRoot extends DBNNode implements DBSObject
 {
-    private List<DBMDataSource> dataSources = new ArrayList<DBMDataSource>();
+    private List<DBNDataSource> dataSources = new ArrayList<DBNDataSource>();
 
-    public DBMRoot(DBMModel model)
+    public DBNRoot(DBNModel model)
     {
         super(model);
     }
 
     void dispose()
     {
-        for (DBMDataSource dataSource : dataSources) {
+        for (DBNDataSource dataSource : dataSources) {
             dataSource.dispose();
         }
         dataSources.clear();
@@ -72,12 +72,12 @@ public class DBMRoot extends DBMNode implements DBSObject
         return hasChildren();
     }
 
-    public List<? extends DBMNode> getChildren(DBRProgressMonitor monitor)
+    public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)
     {
         return dataSources;
     }
 
-    public DBMNode refreshNode(DBRProgressMonitor monitor)
+    public DBNNode refreshNode(DBRProgressMonitor monitor)
         throws DBException
     {
         // Nothing to do
@@ -97,13 +97,13 @@ public class DBMRoot extends DBMNode implements DBSObject
     void addDataSource(DataSourceDescriptor descriptor)
     {
         dataSources.add(
-            new DBMDataSource(this, descriptor));
+            new DBNDataSource(this, descriptor));
     }
 
     void removeDataSource(DataSourceDescriptor descriptor)
     {
-        for (Iterator<DBMDataSource> iter = dataSources.iterator(); iter.hasNext(); ) {
-            DBMDataSource dataSource = iter.next();
+        for (Iterator<DBNDataSource> iter = dataSources.iterator(); iter.hasNext(); ) {
+            DBNDataSource dataSource = iter.next();
             if (dataSource.getObject() == descriptor) {
                 iter.remove();
                 dataSource.dispose();

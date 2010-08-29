@@ -2,10 +2,8 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.meta;
+package org.jkiss.dbeaver.model.navigator;
 
-import net.sf.jkiss.utils.CommonUtils;
-import org.apache.commons.jexl2.JexlContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
@@ -14,7 +12,6 @@ import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
-import org.jkiss.dbeaver.registry.tree.DBXTreeIcon;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeObject;
@@ -23,14 +20,14 @@ import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import java.util.*;
 
 /**
- * DBMTreeNode
+ * DBNTreeNode
  */
-public abstract class DBMTreeNode extends DBMNode {
-    static final Log log = LogFactory.getLog(DBMTreeNode.class);
+public abstract class DBNTreeNode extends DBNNode {
+    static final Log log = LogFactory.getLog(DBNTreeNode.class);
 
-    private List<DBMTreeNode> childNodes;
+    private List<DBNTreeNode> childNodes;
 
-    protected DBMTreeNode(DBMNode parentNode)
+    protected DBNTreeNode(DBNNode parentNode)
     {
         super(parentNode);
     }
@@ -95,7 +92,7 @@ public abstract class DBMTreeNode extends DBMNode {
     public boolean hasChildren(DBRProgressMonitor monitor, DBXTreeNode childType)
         throws DBException
     {
-        for (DBMTreeNode child : getChildren(monitor)) {
+        for (DBNTreeNode child : getChildren(monitor)) {
             if (child.getMeta() == childType) {
                 return true;
             }
@@ -103,7 +100,7 @@ public abstract class DBMTreeNode extends DBMNode {
         return false;
     }
 
-    public List<DBMTreeNode> getChildren(DBRProgressMonitor monitor)
+    public List<DBNTreeNode> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         if (this.hasChildren() && childNodes == null) {
@@ -128,7 +125,7 @@ public abstract class DBMTreeNode extends DBMNode {
     protected void clearChildren()
     {
         if (childNodes != null) {
-            for (DBMNode child : childNodes) {
+            for (DBNNode child : childNodes) {
                 child.dispose();
             }
             childNodes.clear();
@@ -136,11 +133,11 @@ public abstract class DBMTreeNode extends DBMNode {
         }
     }
 
-    private List<DBMTreeNode> loadChildren(DBRProgressMonitor monitor, final DBXTreeNode meta
+    private List<DBNTreeNode> loadChildren(DBRProgressMonitor monitor, final DBXTreeNode meta
     )
         throws DBException
     {
-        final List<DBMTreeNode> tmpList = new ArrayList<DBMTreeNode>();
+        final List<DBNTreeNode> tmpList = new ArrayList<DBNTreeNode>();
         loadChildren(monitor, meta, tmpList);
         return tmpList;
     }
@@ -148,7 +145,7 @@ public abstract class DBMTreeNode extends DBMNode {
     private void loadChildren(
         DBRProgressMonitor monitor,
         final DBXTreeNode meta,
-        final List<DBMTreeNode> toList)
+        final List<DBNTreeNode> toList)
         throws DBException
     {
         if (!meta.hasChildren()) {
@@ -170,10 +167,10 @@ public abstract class DBMTreeNode extends DBMNode {
                 }
             } else if (child instanceof DBXTreeFolder) {
                 toList.add(
-                    new DBMTreeFolder(DBMTreeNode.this, (DBXTreeFolder) child));
+                    new DBNTreeFolder(DBNTreeNode.this, (DBXTreeFolder) child));
             } else if (child instanceof DBXTreeObject) {
                 toList.add(
-                    new DBMTreeObject(DBMTreeNode.this, (DBXTreeObject) child));
+                    new DBNTreeObject(DBNTreeNode.this, (DBXTreeObject) child));
             } else {
                 log.warn("Unsupported meta node type: " + child);
             }
@@ -189,7 +186,7 @@ public abstract class DBMTreeNode extends DBMNode {
      * @param toList list ot add new items   @return true on success
      * @throws DBException on any DB error
      */
-    private boolean loadTreeItems(DBRProgressMonitor monitor, DBXTreeItem meta, List<DBMTreeNode> toList)
+    private boolean loadTreeItems(DBRProgressMonitor monitor, DBXTreeItem meta, List<DBNTreeNode> toList)
         throws DBException
     {
         // Read property using reflection
@@ -223,7 +220,7 @@ public abstract class DBMTreeNode extends DBMNode {
                 log.warn("Bad item type: " + childItem.getClass().getName());
                 continue;
             }
-            DBMTreeItem treeItem = new DBMTreeItem(
+            DBNTreeItem treeItem = new DBNTreeItem(
                 this,
                 meta,
                 (DBSObject) childItem);

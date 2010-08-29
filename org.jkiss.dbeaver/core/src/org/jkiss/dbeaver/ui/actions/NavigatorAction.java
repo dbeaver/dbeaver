@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.meta.DBMNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.utils.ViewUtils;
@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.utils.ViewUtils;
  */
 public abstract class NavigatorAction extends DataSourceAction {
 
-    protected DBMNode getSelectedNode()
+    protected DBNNode getSelectedNode()
     {
         ISelection selection = getSelection();
         if (selection instanceof IStructuredSelection) {

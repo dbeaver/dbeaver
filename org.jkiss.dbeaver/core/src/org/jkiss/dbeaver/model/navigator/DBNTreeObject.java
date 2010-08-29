@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.meta;
+package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorDescriptor;
@@ -16,15 +16,15 @@ import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
 import net.sf.jkiss.utils.CommonUtils;
 
 /**
- * DBMTreeItem
+ * DBNTreeItem
  */
-public class DBMTreeObject extends DBMTreeNode implements DBSObject
+public class DBNTreeObject extends DBNTreeNode implements DBSObject
 {
     private DBXTreeObject meta;
     private IEditorDescriptor editorDescriptor;
     private Image image;
 
-    DBMTreeObject(DBMNode parent, DBXTreeObject meta)
+    DBNTreeObject(DBNNode parent, DBXTreeObject meta)
     {
         super(parent);
         this.meta = meta;
@@ -76,8 +76,8 @@ public class DBMTreeObject extends DBMTreeNode implements DBSObject
     public String getNodePathName()
     {
         StringBuilder pathName = new StringBuilder();
-        for (DBMNode parent = getParentNode(); parent != null; parent = parent.getParentNode()) {
-            if (parent instanceof DBMTreeFolder) {
+        for (DBNNode parent = getParentNode(); parent != null; parent = parent.getParentNode()) {
+            if (parent instanceof DBNTreeFolder) {
                 // skip folders
                 continue;
             }
@@ -95,7 +95,7 @@ public class DBMTreeObject extends DBMTreeNode implements DBSObject
     }
 
 
-    public DBMNode refreshNode(DBRProgressMonitor monitor)
+    public DBNNode refreshNode(DBRProgressMonitor monitor)
         throws DBException
     {
         if (this.getParentNode() != null) {

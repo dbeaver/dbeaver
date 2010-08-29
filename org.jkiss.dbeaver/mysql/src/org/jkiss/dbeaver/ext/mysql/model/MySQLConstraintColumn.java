@@ -4,13 +4,10 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.anno.Property;
-import org.jkiss.dbeaver.model.impl.meta.AbstractConstraint;
-import org.jkiss.dbeaver.model.impl.meta.AbstractConstraintColumn;
-import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
+import org.jkiss.dbeaver.model.impl.struct.AbstractConstraint;
+import org.jkiss.dbeaver.model.impl.struct.AbstractConstraintColumn;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * GenericConstraintColumn

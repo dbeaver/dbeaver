@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.meta.AbstractColumn;
+import org.jkiss.dbeaver.model.impl.struct.AbstractColumn;
 
 /**
  * JDBC abstract column

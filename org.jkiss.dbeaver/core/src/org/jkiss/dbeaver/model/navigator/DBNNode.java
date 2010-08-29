@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.meta;
+package org.jkiss.dbeaver.model.navigator;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
@@ -18,22 +18,22 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import java.util.List;
 
 /**
- * DBMNode
+ * DBNNode
  */
-public abstract class DBMNode
+public abstract class DBNNode
 {
-    static final Log log = LogFactory.getLog(DBMNode.class);
+    static final Log log = LogFactory.getLog(DBNNode.class);
 
-    private DBMModel model;
-    private DBMNode parentNode;
+    private DBNModel model;
+    private DBNNode parentNode;
 
-    protected DBMNode(DBMModel model)
+    protected DBNNode(DBNModel model)
     {
         this.model = model;
         this.parentNode = null;
     }
 
-    protected DBMNode(DBMNode parentNode)
+    protected DBNNode(DBNNode parentNode)
     {
         this.model = parentNode.getModel();
         this.parentNode = parentNode;
@@ -50,12 +50,12 @@ public abstract class DBMNode
         this.parentNode = null;
     }
 
-    public DBMModel getModel()
+    public DBNModel getModel()
     {
         return model;
     }
 
-    public DBMNode getParentNode()
+    public DBNNode getParentNode()
     {
         return parentNode;
     }
@@ -87,8 +87,8 @@ public abstract class DBMNode
     {
         StringBuilder pathName = new StringBuilder();
         pathName.append(getNodeName());
-        for (DBMNode parent = getParentNode(); parent != null && !(parent instanceof DBMDataSource); parent = parent.getParentNode()) {
-            if (parent instanceof DBMTreeFolder) {
+        for (DBNNode parent = getParentNode(); parent != null && !(parent instanceof DBNDataSource); parent = parent.getParentNode()) {
+            if (parent instanceof DBNTreeFolder) {
                 // skip folders
                 continue;
             }
@@ -104,7 +104,7 @@ public abstract class DBMNode
 
     public abstract boolean hasNavigableChildren();
     
-    public abstract List<? extends DBMNode> getChildren(DBRProgressMonitor monitor)  throws DBException;
+    public abstract List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)  throws DBException;
 
     /**
      * Refreshes node.
@@ -113,20 +113,20 @@ public abstract class DBMNode
      * @return real refreshed node or null if nothing was refreshed
      * @throws DBException on any internal exception
      */
-    public abstract DBMNode refreshNode(DBRProgressMonitor monitor) throws DBException;
+    public abstract DBNNode refreshNode(DBRProgressMonitor monitor) throws DBException;
 
     public abstract Class<? extends IActionDelegate> getDefaultAction();
 
     public abstract boolean isLazyNode();
 
-    public static Object[] convertNodesToObjects(List<? extends DBMNode> children)
+    public static Object[] convertNodesToObjects(List<? extends DBNNode> children)
     {
         if (CommonUtils.isEmpty(children)) {
             return new Object[0];
         }
         Object[] result = new Object[children.size()];
         for (int i = 0; i < children.size(); i++) {
-            DBMNode child = children.get(i);
+            DBNNode child = children.get(i);
             result[i] = child.getObject();
         }
         return result;
