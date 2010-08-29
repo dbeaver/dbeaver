@@ -15,7 +15,7 @@ public class PropertySourceCollection extends PropertySourceAbstract {
 
     private Object id;
 
-    public PropertySourceCollection(Object id, boolean loadLazyProps, Collection value)
+    public PropertySourceCollection(Object id, boolean loadLazyProps, Collection<?> value)
     {
         super(value, loadLazyProps);
         this.id = id;
@@ -42,6 +42,6 @@ public class PropertySourceCollection extends PropertySourceAbstract {
     @Override
     public Object getEditableValue()
     {
-        return "[" + ((Collection)super.getEditableValue()).size() + "]"; 
+        return "[" + ((Collection<?>)super.getEditableValue()).size() + "]"; 
     }
 }

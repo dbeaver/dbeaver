@@ -42,7 +42,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
-    private IDatabaseObjectManager objectManager;
+    private IDatabaseObjectManager<?> objectManager;
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
 
     protected void createPages()
@@ -198,9 +198,9 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                     Type initParam = initMethod.getGenericParameterTypes()[0];
                     if (initParam instanceof ParameterizedType) {
                         Type typeArgument = ((ParameterizedType) initParam).getActualTypeArguments()[0];
-                        if (typeArgument instanceof Class && !((Class) typeArgument).isAssignableFrom(object.getClass())) {
+                        if (typeArgument instanceof Class && !((Class<?>) typeArgument).isAssignableFrom(object.getClass())) {
                             // Bad parameter type
-                            log.error(descriptor.getName() + " editor misconfiguration - invalid object type '" + object.getClass().getName() + "' specified while '" + ((Class) typeArgument).getName() + "' was expected");
+                            log.error(descriptor.getName() + " editor misconfiguration - invalid object type '" + object.getClass().getName() + "' specified while '" + ((Class<?>) typeArgument).getName() + "' was expected");
                             return false;
                         }
                     }

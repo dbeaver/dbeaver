@@ -72,9 +72,9 @@ public class AbstractDescriptor {
         return null;
     }
 
-    protected Class getObjectClass(String className)
+    protected Class<?> getObjectClass(String className)
     {
-        Class objectClass = null;
+        Class<?> objectClass = null;
         try {
             objectClass = DBeaverCore.getInstance().getPlugin().getBundle().loadClass(className);
         } catch (ClassNotFoundException ex) {

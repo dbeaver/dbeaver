@@ -7,8 +7,6 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;

@@ -60,7 +60,7 @@ public class PropertySourceAbstract implements IPropertySource
     {
         if (value instanceof Collection) {
             props.add(new PropertyDescriptor(id, name));
-            propValues.put(id, new PropertySourceCollection(id, loadLazyProps, (Collection) value));
+            propValues.put(id, new PropertySourceCollection(id, loadLazyProps, (Collection<?>) value));
         } else {
             props.add(new PropertyDescriptor(id, name));
             propValues.put(id, value);
@@ -113,7 +113,7 @@ public class PropertySourceAbstract implements IPropertySource
         if (value instanceof Collection) {
             // Make descriptor of collection
             // Each element as separate property
-            Collection collection = (Collection)value;
+            Collection<?> collection = (Collection<?>)value;
             collection.size();
         }
         return UIUtils.makeStringForUI(value);

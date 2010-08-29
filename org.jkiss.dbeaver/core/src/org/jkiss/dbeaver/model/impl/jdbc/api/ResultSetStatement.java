@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.api;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * ResultSet container.

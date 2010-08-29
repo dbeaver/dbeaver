@@ -20,7 +20,6 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_MANAGER extends IDatab
     extends EditorPart implements IDatabaseObjectEditor<OBJECT_MANAGER>
 {
 
-    @SuppressWarnings("unchecked")
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {

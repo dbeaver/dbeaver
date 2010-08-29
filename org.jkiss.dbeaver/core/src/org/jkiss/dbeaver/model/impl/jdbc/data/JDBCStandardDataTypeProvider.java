@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * standard JDBC data types provider

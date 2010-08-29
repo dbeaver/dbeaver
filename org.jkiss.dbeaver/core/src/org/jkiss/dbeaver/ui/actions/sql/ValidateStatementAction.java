@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.actions.sql;
 
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.DBIcon;
 

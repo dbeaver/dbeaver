@@ -22,6 +22,10 @@ import java.util.Date;
  */
 public class DBeaverLogger implements Log, Serializable
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4079924783238318027L;
 	private String name;
     private PrintWriter debugWriter;
 

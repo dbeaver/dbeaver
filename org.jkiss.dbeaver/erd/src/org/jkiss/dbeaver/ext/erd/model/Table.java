@@ -24,20 +24,17 @@ public class Table extends PropertyAwareObject
 
 	private Schema schema;
 	private String name;
-	private ArrayList columns = new ArrayList();
+	private List<Column> columns = new ArrayList<Column>();
 	private Rectangle bounds;
 
-	private ArrayList primaryKeyRelationships = new ArrayList();
-	private ArrayList foreignKeyRelationships = new ArrayList();
+	private List<Relationship> primaryKeyRelationships = new ArrayList<Relationship>();
+	private List<Relationship> foreignKeyRelationships = new ArrayList<Relationship>();
 
 	public Table()
 	{
 		super();
 	}
 
-	/**
-	 * @param name
-	 */
 	public Table(String name, Schema schema)
 	{
 		super();
@@ -206,7 +203,7 @@ public class Table extends PropertyAwareObject
 	/**
 	 * @return Returns the foreignKeyRelationships.
 	 */
-	public List getForeignKeyRelationships()
+	public List<Relationship> getForeignKeyRelationships()
 	{
 		return foreignKeyRelationships;
 	}
@@ -214,7 +211,7 @@ public class Table extends PropertyAwareObject
 	/**
 	 * @return Returns the primaryKeyRelationships.
 	 */
-	public List getPrimaryKeyRelationships()
+	public List<Relationship> getPrimaryKeyRelationships()
 	{
 		return primaryKeyRelationships;
 	}

@@ -28,8 +28,8 @@ public class DeleteTableCommand extends Command
 	private Table table;
 	private Schema schema;
 	private int index = -1;
-	private List foreignKeyRelationships = new ArrayList();
-	private List primaryKeyRelationships = new ArrayList();
+	private List<Relationship> foreignKeyRelationships = new ArrayList<Relationship>();
+	private List<Relationship> primaryKeyRelationships = new ArrayList<Relationship>();
 	private Rectangle bounds;
 
 	private void deleteRelationships(Table t)
@@ -40,7 +40,7 @@ public class DeleteTableCommand extends Command
 		//for all relationships where current table is foreign key
 		for (int i = 0; i < foreignKeyRelationships.size(); i++)
 		{
-			Relationship r = (Relationship) foreignKeyRelationships.get(i);
+			Relationship r = foreignKeyRelationships.get(i);
 			r.getPrimaryKeyTable().removePrimaryKeyRelationship(r);
 			t.removeForeignKeyRelationship(r);
 		}
@@ -49,7 +49,7 @@ public class DeleteTableCommand extends Command
 		this.primaryKeyRelationships.addAll(t.getPrimaryKeyRelationships());
 		for (int i = 0; i < primaryKeyRelationships.size(); i++)
 		{
-			Relationship r = (Relationship) primaryKeyRelationships.get(i);
+			Relationship r = primaryKeyRelationships.get(i);
 			r.getForeignKeyTable().removeForeignKeyRelationship(r);
 			t.removePrimaryKeyRelationship(r);
 		}
@@ -85,14 +85,14 @@ public class DeleteTableCommand extends Command
 	{
 		for (int i = 0; i < foreignKeyRelationships.size(); i++)
 		{
-			Relationship r = (Relationship) foreignKeyRelationships.get(i);
+			Relationship r = foreignKeyRelationships.get(i);
 			r.getForeignKeyTable().addForeignKeyRelationship(r);
 			r.getPrimaryKeyTable().addPrimaryKeyRelationship(r);
 		}
 		foreignKeyRelationships.clear();
 		for (int i = 0; i < primaryKeyRelationships.size(); i++)
 		{
-			Relationship r = (Relationship) primaryKeyRelationships.get(i);
+			Relationship r = primaryKeyRelationships.get(i);
 			r.getForeignKeyTable().addForeignKeyRelationship(r);
 			r.getPrimaryKeyTable().addPrimaryKeyRelationship(r);
 		}
@@ -133,7 +133,8 @@ public class DeleteTableCommand extends Command
 
 	/**
 	 * Sets the original bounds for the table so that these can be restored
-	 */
+     * @param bounds bounds
+     */
 	public void setOriginalBounds(Rectangle bounds)
 	{
 		this.bounds = bounds;

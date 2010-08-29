@@ -8,9 +8,7 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents a Schema in the model. Note that this class also includes
@@ -22,14 +20,10 @@ public class Schema extends PropertyAwareObject
 {
 
 	private String name;
-	private ArrayList tables = new ArrayList();
-	private Map tablesMap = new HashMap();
+	private List<Table> tables = new ArrayList<Table>();
 	private boolean layoutManualDesired = true;
 	private boolean layoutManualAllowed = false;
 
-	/**
-	 * @param name
-	 */
 	public Schema(String name)
 	{
 		super();
@@ -41,33 +35,22 @@ public class Schema extends PropertyAwareObject
 	public void addTable(Table table)
 	{
 		tables.add(table);
-		tablesMap.put(table.getName(), table);
 		firePropertyChange(CHILD, null, table);
 	}
 
 	public void addTable(Table table, int i)
 	{
 		tables.add(i, table);
-		tablesMap.put(table.getName(), table);
 		firePropertyChange(CHILD, null, table);
 	}
 
 	public void removeTable(Table table)
 	{
 		tables.remove(table);
-		tablesMap.remove(table.getName());
 		firePropertyChange(CHILD, table, null);
 	}
 
-	/**
-	 * returns an individual named table
-	 */
-	public Table getTable(String name)
-	{
-		return (Table) tablesMap.get(name);
-	}
-
-	/**
+    /**
 	 * @return the Tables for the current schema
 	 */
 	public List getTables()

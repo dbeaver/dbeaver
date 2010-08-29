@@ -9,7 +9,12 @@ package org.jkiss.dbeaver;
  */
 public class DBRuntimeException extends RuntimeException
 {
-    public DBRuntimeException()
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public DBRuntimeException()
     {
     }
 

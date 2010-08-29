@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.model.runtime;
 
-import java.lang.reflect.InvocationTargetException;
-
 /**
  * DBPViewCallback
  */

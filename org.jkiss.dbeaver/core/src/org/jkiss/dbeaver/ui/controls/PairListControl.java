@@ -199,7 +199,7 @@ public class PairListControl<ELEMENT> extends Composite
     {
         Table fromTable = toRight ? leftList : rightList;
         Table toTable = toRight ? rightList : leftList;
-        Collection checkList = toRight ? rightElements : leftElements;
+        Collection<?> checkList = toRight ? rightElements : leftElements;
 
         for (TableItem item : fromTable.getSelection()) {
             TableItem newItem = createListItem(toTable, item.getData());

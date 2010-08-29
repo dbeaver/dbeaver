@@ -13,7 +13,12 @@ import java.sql.SQLException;
  */
 public class DBCException extends DBException
 {
-    public DBCException()
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -3658711845969963915L;
+
+	public DBCException()
     {
     }
 

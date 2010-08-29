@@ -15,7 +15,6 @@ import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;

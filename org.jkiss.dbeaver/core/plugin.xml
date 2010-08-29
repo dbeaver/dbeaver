@@ -85,7 +85,7 @@
         </editor>
         <editor
             name="Large Object Editor"
-            icon="icons/misc/lob.png"
+            icon="icons/sql/types/lob.png"
             contributorClass="org.jkiss.dbeaver.ui.editors.content.ContentEditorContributor"
             class="org.jkiss.dbeaver.ui.editors.content.ContentEditor"
             id="org.jkiss.dbeaver.ui.editors.content.ContentEditor">

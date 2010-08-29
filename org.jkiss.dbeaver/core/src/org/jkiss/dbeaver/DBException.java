@@ -13,7 +13,12 @@ import java.sql.SQLException;
  */
 public class DBException extends Exception
 {
-    public DBException()
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public DBException()
     {
     }
 

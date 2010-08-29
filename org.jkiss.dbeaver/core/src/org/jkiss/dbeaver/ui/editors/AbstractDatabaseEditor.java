@@ -20,7 +20,6 @@ public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorI
 {
     static final Log log = LogFactory.getLog(AbstractDatabaseEditor.class);
 
-    @SuppressWarnings("unchecked")
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {

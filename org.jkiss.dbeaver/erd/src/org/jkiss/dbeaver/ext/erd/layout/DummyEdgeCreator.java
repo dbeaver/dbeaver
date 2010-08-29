@@ -30,8 +30,8 @@ public class DummyEdgeCreator
 	EdgeList edgeList;
 	DirectedGraph graph;
 
-	List edgesAdded;
-	List candidateList;
+	List<Edge> edgesAdded;
+	NodeList candidateList;
 	int targetNodeIndex;
 
 	boolean cleanNextTime = false;
@@ -56,7 +56,7 @@ public class DummyEdgeCreator
 		this.graph = graph;
 		this.nodeList = graph.nodes;
 		this.edgeList = graph.edges;
-		edgesAdded = new ArrayList();
+		edgesAdded = new ArrayList<Edge>();
 
 	}
 
@@ -142,7 +142,7 @@ public class DummyEdgeCreator
 			else
 			{
 
-				Comparator comparator = new Comparator()
+				Comparator<Object> comparator = new Comparator<Object>()
 				{
 
 					public int compare(Object o1, Object o2)
@@ -191,9 +191,9 @@ public class DummyEdgeCreator
 
 	protected void removeDummyEdges()
 	{
-		for (Iterator iter = edgesAdded.iterator(); iter.hasNext();)
+		for (Iterator<Edge> iter = edgesAdded.iterator(); iter.hasNext();)
 		{
-			Edge edge = (Edge) iter.next();
+			Edge edge = iter.next();
 			edgeList.remove(edge);
 
 		}

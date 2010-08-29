@@ -10,8 +10,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
-import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;

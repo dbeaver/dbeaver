@@ -547,7 +547,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 	 */
 	protected void updateActions(List actionIds)
 	{
-		for (Iterator ids = actionIds.iterator(); ids.hasNext();)
+		for (Iterator<?> ids = actionIds.iterator(); ids.hasNext();)
 		{
 			IAction action = getActionRegistry().getAction(ids.next());
 			if (null != action && action instanceof UpdateAction)

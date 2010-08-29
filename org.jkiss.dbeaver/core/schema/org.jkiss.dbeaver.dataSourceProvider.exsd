@@ -119,6 +119,7 @@
          <sequence minOccurs="1" maxOccurs="unbounded">
             <element ref="items" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="folder" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="object" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="icon" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="path" type="string" use="required">
@@ -153,43 +154,13 @@
          <sequence minOccurs="0" maxOccurs="unbounded">
             <element ref="folder" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="items" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="object" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="icon" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
-         <attribute name="path" type="string" use="required">
-            <annotation>
-               <documentation>
-                  Items path element
-               </documentation>
-            </annotation>
-         </attribute>
          <attribute name="property" type="string" use="required">
             <annotation>
                <documentation>
                   Item collection reading property
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="icon" type="string">
-            <annotation>
-               <documentation>
-                  Item icon
-               </documentation>
-               <appInfo>
-                  <meta.attribute kind="resource"/>
-               </appInfo>
-            </annotation>
-         </attribute>
-         <attribute name="optional" type="boolean">
-            <annotation>
-               <documentation>
-                  Optional items collection flag
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="recursive" type="string">
-            <annotation>
-               <documentation>
-                  Recursive item reference
                </documentation>
             </annotation>
          </attribute>
@@ -203,10 +174,41 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="icon" type="string">
+            <annotation>
+               <documentation>
+                  Item icon
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="resource"/>
+               </appInfo>
+            </annotation>
+         </attribute>
          <attribute name="iconId" type="string">
             <annotation>
                <documentation>
                   
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="path" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Items path element
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="optional" type="boolean">
+            <annotation>
+               <documentation>
+                  Optional items collection flag
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="recursive" type="string">
+            <annotation>
+               <documentation>
+                  Recursive item reference
                </documentation>
             </annotation>
          </attribute>
@@ -232,6 +234,7 @@
          <sequence minOccurs="0" maxOccurs="unbounded">
             <element ref="items" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="folder" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="object" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="icon" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="type" type="string">
@@ -557,6 +560,48 @@ View must implement interface(s) depending on targetID.
                <documentation>
                   
                </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="object">
+      <complexType>
+         <attribute name="type" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="label" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="editor" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn="org.eclipse.ui.part.EditorPart:"/>
+               </appInfo>
             </annotation>
          </attribute>
       </complexType>

@@ -25,7 +25,7 @@ public class ListContentProvider implements IStructuredContentProvider {
     public Object[] getElements(Object inputElement)
     {
         if (inputElement instanceof Collection) {
-            return ((Collection)inputElement).toArray();
+            return ((Collection<?>)inputElement).toArray();
         }
         return null;
     }

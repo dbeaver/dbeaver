@@ -25,7 +25,6 @@ public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEdito
 {
     static final Log log = LogFactory.getLog(SinglePageDatabaseEditor.class);
 
-    @SuppressWarnings("unchecked")
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {
