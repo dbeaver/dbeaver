@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.access.DBAUser;
-import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;

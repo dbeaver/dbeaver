@@ -9,7 +9,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.data.DBDRowController;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;

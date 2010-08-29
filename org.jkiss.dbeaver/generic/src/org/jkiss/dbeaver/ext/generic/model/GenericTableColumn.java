@@ -4,12 +4,10 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumn;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.meta.Property;
 
 /**
  * GenericTable

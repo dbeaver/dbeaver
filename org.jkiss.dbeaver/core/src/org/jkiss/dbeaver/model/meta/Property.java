@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.anno;
+package org.jkiss.dbeaver.model.meta;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,7 +1,11 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.model.struct.DBSForeignKeyColumn;
-import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.meta.Property;
 
 /**
  * GenericConstraintColumn

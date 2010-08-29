@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractIndex;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.ArrayList;

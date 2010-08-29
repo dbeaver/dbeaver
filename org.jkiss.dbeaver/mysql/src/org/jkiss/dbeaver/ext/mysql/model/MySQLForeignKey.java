@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.model.anno.Property;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.impl.struct.AbstractForeignKey;
 import org.jkiss.dbeaver.model.struct.DBSConstraintCascade;
 import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;

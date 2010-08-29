@@ -338,16 +338,20 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             Table table1 = tableMap.get(entity);
 
             if (entity instanceof DBSTable) {
-                Collection<? extends DBSForeignKey> fks = ((DBSTable) entity).getForeignKeys(monitor);
-                for (DBSForeignKey fk : fks) {
-                    Table table2 = tableMap.get(fk.getReferencedKey().getTable());
-                    if (table2 == null) {
-                        log.warn("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
-                    } else {
-                        if (table1 != table2) {
-                            Relationship relationship = new Relationship(table2, table1);
+                try {
+                    Collection<? extends DBSForeignKey> fks = ((DBSTable) entity).getForeignKeys(monitor);
+                    for (DBSForeignKey fk : fks) {
+                        Table table2 = tableMap.get(fk.getReferencedKey().getTable());
+                        if (table2 == null) {
+                            log.warn("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
+                        } else {
+                            if (table1 != table2) {
+                                Relationship relationship = new Relationship(table2, table1);
+                            }
                         }
                     }
+                } catch (DBException e) {
+                    log.warn("Could not load entity '" + entity.getName() + "' foreign keys", e);
                 }
             }
         }
