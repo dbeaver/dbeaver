@@ -19,9 +19,6 @@ public class StatusLineValidationMessageHandler implements ValidationMessageHand
 
 	private IEditorSite editorSite;
 
-	/**
-	 * @param editorSite
-	 */
 	public StatusLineValidationMessageHandler(IEditorSite editorSite)
 	{
 		this.editorSite = editorSite;

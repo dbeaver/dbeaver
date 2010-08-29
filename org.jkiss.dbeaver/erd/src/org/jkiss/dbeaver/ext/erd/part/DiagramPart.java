@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.ext.erd.policy.SchemaContainerEditPolicy;
  * 
  * @author Phil Zoio
  */
-public class SchemaDiagramPart extends PropertyAwarePart
+public class DiagramPart extends PropertyAwarePart
 {
 
 	CommandStackListener stackListener = new CommandStackListener()

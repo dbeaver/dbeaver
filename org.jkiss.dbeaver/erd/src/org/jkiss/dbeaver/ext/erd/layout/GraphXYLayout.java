@@ -11,7 +11,7 @@ import org.eclipse.draw2d.FreeformLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
 
-import org.jkiss.dbeaver.ext.erd.part.SchemaDiagramPart;
+import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 
 
 /**
@@ -22,9 +22,9 @@ import org.jkiss.dbeaver.ext.erd.part.SchemaDiagramPart;
 public class GraphXYLayout extends FreeformLayout
 {
 
-	private SchemaDiagramPart diagram;
+	private DiagramPart diagram;
 	
-	public GraphXYLayout(SchemaDiagramPart diagram)
+	public GraphXYLayout(DiagramPart diagram)
 	{
 		this.diagram = diagram;
 	}
@@ -39,9 +39,9 @@ public class GraphXYLayout extends FreeformLayout
 	public Object getConstraint(IFigure child)
 	{
 		Object constraint = constraints.get(child);
-		if (constraint != null || constraint instanceof Rectangle)
+		if (constraint instanceof Rectangle)
 		{
-			return (Rectangle)constraint;
+			return constraint;
 		}
 		else
 		{

@@ -56,7 +56,7 @@ public class DirectedGraphLayoutVisitor
 
 	}
 
-	//******************* SchemaDiagramPart contribution methods **********/
+	//******************* DiagramPart contribution methods **********/
 
 	protected void addDiagramNodes(AbstractGraphicalEditPart diagram)
 	{
@@ -116,7 +116,7 @@ public class DirectedGraphLayoutVisitor
 		partToNodesMap.put(connectionPart, e);
 	}
 
-	//******************* SchemaDiagramPart apply methods **********/
+	//******************* DiagramPart apply methods **********/
 
 	protected void applyDiagramResults(AbstractGraphicalEditPart diagram)
 	{

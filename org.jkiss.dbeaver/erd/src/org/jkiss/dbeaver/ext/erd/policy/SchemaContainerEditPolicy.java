@@ -19,7 +19,7 @@ import org.eclipse.gef.requests.GroupRequest;
 import org.jkiss.dbeaver.ext.erd.command.TableAddCommand;
 import org.jkiss.dbeaver.ext.erd.model.Schema;
 import org.jkiss.dbeaver.ext.erd.model.Table;
-import org.jkiss.dbeaver.ext.erd.part.SchemaDiagramPart;
+import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 
 /**
  * Handles creation of new tables using drag and drop or point and click from the palette
@@ -50,8 +50,8 @@ public class SchemaContainerEditPolicy extends ContainerEditPolicy
 		}
 		Point location = request.getLocation();
 		EditPart host = getTargetEditPart(request);
-		SchemaDiagramPart schemaPart = (SchemaDiagramPart)getHost();
-		Schema schema = schemaPart.getSchema();
+		DiagramPart diagramPart = (DiagramPart)getHost();
+		Schema schema = diagramPart.getSchema();
 		Table table = (Table) newObject;
 		TableAddCommand tableAddCommand = new TableAddCommand();
 		tableAddCommand.setSchema(schema);

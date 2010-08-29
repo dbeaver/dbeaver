@@ -8,14 +8,13 @@
 package org.jkiss.dbeaver.ext.erd.layout;
 
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.draw2d.AbstractLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
 
-import org.jkiss.dbeaver.ext.erd.part.SchemaDiagramPart;
+import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 
 
 /**
@@ -25,11 +24,9 @@ import org.jkiss.dbeaver.ext.erd.part.SchemaDiagramPart;
 public class GraphLayoutManager extends AbstractLayout
 {
 
-	private SchemaDiagramPart diagram;
-	private Map figureToBoundsMap;
-	private Map partsToNodeMap;
+	private DiagramPart diagram;
 
-	public GraphLayoutManager(SchemaDiagramPart diagram)
+	public GraphLayoutManager(DiagramPart diagram)
 	{
 		this.diagram = diagram;
 	}

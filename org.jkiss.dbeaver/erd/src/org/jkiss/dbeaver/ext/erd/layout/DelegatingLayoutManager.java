@@ -13,7 +13,7 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.EditPolicy;
 import org.jkiss.dbeaver.ext.erd.model.Schema;
-import org.jkiss.dbeaver.ext.erd.part.SchemaDiagramPart;
+import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.policy.SchemaXYLayoutPolicy;
 
 /**
@@ -23,15 +23,13 @@ import org.jkiss.dbeaver.ext.erd.policy.SchemaXYLayoutPolicy;
 public class DelegatingLayoutManager implements LayoutManager
 {
 
-	private SchemaDiagramPart diagram;
-	//private Map figureToBoundsMap;
-	//private Map partsToNodeMap;
+	private DiagramPart diagram;
 
 	private LayoutManager activeLayoutManager;
 	private GraphLayoutManager graphLayoutManager;
 	private GraphXYLayout xyLayoutManager;
 
-	public DelegatingLayoutManager(SchemaDiagramPart diagram)
+	public DelegatingLayoutManager(DiagramPart diagram)
 	{
 		this.diagram = diagram;
 		this.graphLayoutManager = new GraphLayoutManager(diagram);

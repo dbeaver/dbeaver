@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
+
 package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.draw2d.LightweightSystem;
@@ -26,7 +27,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
  * 
  * @author Gunnar Wagenknecht
  */
-public class OverviewOutlinePage extends Page implements IContentOutlinePage
+public class ERDOutlinePage extends Page implements IContentOutlinePage
 {
 
     /** the control of the overview */
@@ -38,10 +39,10 @@ public class OverviewOutlinePage extends Page implements IContentOutlinePage
     private Thumbnail thumbnail;
 
     /**
-     * Creates a new OverviewOutlinePage instance.
+     * Creates a new ERDOutlinePage instance.
      * @param rootEditPart the root edit part to show the overview from
      */
-    public OverviewOutlinePage(ScalableFreeformRootEditPart rootEditPart)
+    public ERDOutlinePage(ScalableFreeformRootEditPart rootEditPart)
     {
         super();
         this.rootEditPart = rootEditPart;

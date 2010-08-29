@@ -19,7 +19,7 @@ import org.eclipse.gef.requests.CreateRequest;
 import org.jkiss.dbeaver.ext.erd.command.TableMoveCommand;
 import org.jkiss.dbeaver.ext.erd.figures.TableFigure;
 import org.jkiss.dbeaver.ext.erd.model.Table;
-import org.jkiss.dbeaver.ext.erd.part.SchemaDiagramPart;
+import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.TablePart;
 
 /**
@@ -58,7 +58,7 @@ public class SchemaXYLayoutPolicy extends XYLayoutEditPolicy
 		if (oldBounds.height != newBounds.height && newBounds.height != -1)
 			return null;
 
-		SchemaDiagramPart schemaPart = (SchemaDiagramPart) tablePart.getParent();
+		DiagramPart diagramPart = (DiagramPart) tablePart.getParent();
 
 		TableMoveCommand command = new TableMoveCommand(table, oldBounds.getCopy(), newBounds.getCopy());
 		return command;

@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.ext.erd.model.Column;
 import org.jkiss.dbeaver.ext.erd.model.Relationship;
 import org.jkiss.dbeaver.ext.erd.model.Schema;
 import org.jkiss.dbeaver.ext.erd.model.Table;
-import org.jkiss.dbeaver.ext.erd.part.factory.SchemaEditPartFactory;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -92,7 +91,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 	private List<String> editorActionIDs = new ArrayList<String>();
 
 	/** the overview outline page */
-	private OverviewOutlinePage overviewOutlinePage;
+	private ERDOutlinePage outlinePage;
 
 	/** the editor's action registry */
 	private ActionRegistry actionRegistry;
@@ -403,7 +402,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 		// hook the viewer into the EditDomain
 		getEditDomain().addViewer(viewer);
 
-		// acticate the viewer as selection provider for Eclipse
+		// activate the viewer as selection provider for Eclipse
 		getSite().setSelectionProvider(viewer);
 
 		viewer.setContents(schema);
@@ -429,7 +428,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         viewer.addDropTargetListener(new DataEditDropTargetListener(viewer));
 
         // initialize the viewer with input
-        viewer.setEditPartFactory(new SchemaEditPartFactory());
+        viewer.setEditPartFactory(new ERDEditPartFactory());
 
         return viewer;
     }
@@ -571,18 +570,18 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 	 * 
 	 * @return the overview
 	 */
-	protected OverviewOutlinePage getOverviewOutlinePage()
+	protected ERDOutlinePage getOverviewOutlinePage()
 	{
-		if (null == overviewOutlinePage && null != getGraphicalViewer())
+		if (null == outlinePage && null != getGraphicalViewer())
 		{
 			RootEditPart rootEditPart = getGraphicalViewer().getRootEditPart();
 			if (rootEditPart instanceof ScalableFreeformRootEditPart)
 			{
-				overviewOutlinePage = new OverviewOutlinePage((ScalableFreeformRootEditPart) rootEditPart);
+				outlinePage = new ERDOutlinePage((ScalableFreeformRootEditPart) rootEditPart);
 			}
 		}
 
-		return overviewOutlinePage;
+		return outlinePage;
 	}
 
 	/**

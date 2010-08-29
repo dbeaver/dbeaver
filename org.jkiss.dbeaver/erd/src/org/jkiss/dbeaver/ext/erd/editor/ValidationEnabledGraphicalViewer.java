@@ -25,7 +25,7 @@ public class ValidationEnabledGraphicalViewer extends ScrollingGraphicalViewer
 
 	/**
 	 * ValidationMessageHandler to receive messages
-	 * @param messageHandler
+	 * @param messageHandler message handler 
 	 */
 	public ValidationEnabledGraphicalViewer(ValidationMessageHandler messageHandler)
 	{

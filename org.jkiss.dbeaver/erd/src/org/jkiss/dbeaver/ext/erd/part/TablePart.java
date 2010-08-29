@@ -214,7 +214,7 @@ public class TablePart extends PropertyAwarePart implements NodeEditPart
 	{
 		TableFigure tableFigure = (TableFigure) getFigure();
 		Rectangle constraint = (Rectangle) evt.getNewValue();
-		SchemaDiagramPart parent = (SchemaDiagramPart) getParent();
+		DiagramPart parent = (DiagramPart) getParent();
 		parent.setLayoutConstraint(this, tableFigure, constraint);
 	}
 
@@ -238,7 +238,7 @@ public class TablePart extends PropertyAwarePart implements NodeEditPart
 	{
 		TableFigure tableFigure = (TableFigure) getFigure();
 		Point location = tableFigure.getLocation();
-		SchemaDiagramPart parent = (SchemaDiagramPart) getParent();
+		DiagramPart parent = (DiagramPart) getParent();
 		Rectangle constraint = new Rectangle(location.x, location.y, -1, -1);
 		parent.setLayoutConstraint(this, tableFigure, constraint);
 	}
