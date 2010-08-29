@@ -37,8 +37,7 @@ public class PaletteFlyoutPreferences implements FlyoutPreferences
 
 	public int getPaletteState()
 	{
-		int state = Activator.getDefault().getPreferenceStore().getInt(PALETTE_STATE);
-		return state;
+		return Activator.getDefault().getPreferenceStore().getInt(PALETTE_STATE);
 	}
 
 	public int getPaletteWidth()

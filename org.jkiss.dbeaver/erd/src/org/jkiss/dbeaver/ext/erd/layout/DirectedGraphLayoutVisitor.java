@@ -13,11 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.draw2d.AbsoluteBendpoint;
-import org.eclipse.draw2d.Connection;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.PolygonDecoration;
-import org.eclipse.draw2d.PolylineConnection;
+import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.graph.DirectedGraph;
@@ -26,10 +22,9 @@ import org.eclipse.draw2d.graph.Node;
 import org.eclipse.draw2d.graph.NodeList;
 
 import org.eclipse.gef.EditPart;
-import org.jkiss.dbeaver.ext.erd.figures.TableFigure;
-import org.jkiss.dbeaver.ext.erd.part.RelationshipPart;
-import org.jkiss.dbeaver.ext.erd.part.SchemaDiagramPart;
-import org.jkiss.dbeaver.ext.erd.part.TablePart;
+import org.eclipse.gef.GraphicalEditPart;
+import org.eclipse.gef.editparts.AbstractConnectionEditPart;
+import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 
 /**
  * Visitor with support for populating nodes and edges of DirectedGraph
@@ -45,131 +40,122 @@ public class DirectedGraphLayoutVisitor
 	/**
 	 * Public method for reading graph nodes
 	 */
-	public void layoutDiagram(SchemaDiagramPart diagram)
+	public void layoutDiagram(AbstractGraphicalEditPart diagram)
 	{
 
 		partToNodesMap = new HashMap<EditPart, Object>();
 		
 		graph = new DirectedGraph();
-		addNodes(diagram);
+		addDiagramNodes(diagram);
 		if (graph.nodes.size() > 0)
 		{	
-			addEdges(diagram);
+			addDiagramEdges(diagram);
 			new NodeJoiningDirectedGraphLayout().visit(graph);
-			applyResults(diagram);
+			applyDiagramResults(diagram);
 		}
 
 	}
 
 	//******************* SchemaDiagramPart contribution methods **********/
 
-	protected void addNodes(SchemaDiagramPart diagram)
+	protected void addDiagramNodes(AbstractGraphicalEditPart diagram)
 	{
 		GraphAnimation.recordInitialState(diagram.getFigure());
-		IFigure fig = diagram.getFigure();
+		//IFigure fig = diagram.getFigure();
 		for (int i = 0; i < diagram.getChildren().size(); i++)
 		{
-			TablePart tp = (TablePart) diagram.getChildren().get(i);
-			addNodes(tp);
+			GraphicalEditPart tp = (GraphicalEditPart) diagram.getChildren().get(i);
+			addEntityNodes(tp);
 		}
 	}
 
 	/**
 	 * Adds nodes to the graph object for use by the GraphLayoutManager
 	 */
-	protected void addNodes(TablePart tablePart)
+	protected void addEntityNodes(GraphicalEditPart entityPart)
 	{
-		Node n = new Node(tablePart);
-		n.width = tablePart.getFigure().getPreferredSize(400, 300).width;
-		n.height = tablePart.getFigure().getPreferredSize(400, 300).height;
+		Node n = new Node(entityPart);
+		n.width = entityPart.getFigure().getPreferredSize(400, 300).width;
+		n.height = entityPart.getFigure().getPreferredSize(400, 300).height;
 		n.setPadding(new Insets(10, 8, 10, 12));
-		partToNodesMap.put(tablePart, n);
+		partToNodesMap.put(entityPart, n);
 		graph.nodes.add(n);
 	}
 
-	protected void addEdges(SchemaDiagramPart diagram)
+	protected void addDiagramEdges(AbstractGraphicalEditPart diagram)
 	{
 		for (int i = 0; i < diagram.getChildren().size(); i++)
 		{
-			TablePart tablePart = (TablePart) diagram.getChildren().get(i);
-			addEdges(tablePart);
+			GraphicalEditPart entityPart = (GraphicalEditPart) diagram.getChildren().get(i);
+			addEntityEdges(entityPart);
 		}
 	}
 
-	//******************* TablePart contribution methods **********/
+	//******************* Entity contribution methods **********/
 
-	protected void addEdges(TablePart tablePart)
+	protected void addEntityEdges(GraphicalEditPart entityPart)
 	{
-		List outgoing = tablePart.getSourceConnections();
+		List outgoing = entityPart.getSourceConnections();
 		for (int i = 0; i < outgoing.size(); i++)
 		{
-			RelationshipPart relationshipPart = (RelationshipPart) tablePart.getSourceConnections().get(i);
-			addEdges(relationshipPart);
+			AbstractConnectionEditPart connectionPart = (AbstractConnectionEditPart) entityPart.getSourceConnections().get(i);
+			addConnectionEdges(connectionPart);
 		}
 	}
 
-	//******************* RelationshipPart contribution methods **********/
+	//******************* Connection contribution methods **********/
 
-	protected void addEdges(RelationshipPart relationshipPart)
+	protected void addConnectionEdges(AbstractConnectionEditPart connectionPart)
 	{
-		GraphAnimation.recordInitialState((Connection) relationshipPart.getFigure());
-		Node source = (Node)partToNodesMap.get(relationshipPart.getSource());
-		Node target = (Node)partToNodesMap.get(relationshipPart.getTarget());
-		Edge e = new Edge(relationshipPart, source, target);
+		GraphAnimation.recordInitialState((Connection) connectionPart.getFigure());
+		Node source = (Node)partToNodesMap.get(connectionPart.getSource());
+		Node target = (Node)partToNodesMap.get(connectionPart.getTarget());
+		Edge e = new Edge(connectionPart, source, target);
 		e.weight = 2;
 		graph.edges.add(e);
-		partToNodesMap.put(relationshipPart, e);
+		partToNodesMap.put(connectionPart, e);
 	}
 
 	//******************* SchemaDiagramPart apply methods **********/
 
-	protected void applyResults(SchemaDiagramPart diagram)
-	{
-		applyChildrenResults(diagram);
-	}
-
-	protected void applyChildrenResults(SchemaDiagramPart diagram)
+	protected void applyDiagramResults(AbstractGraphicalEditPart diagram)
 	{
 		for (int i = 0; i < diagram.getChildren().size(); i++)
 		{
-			TablePart tablePart = (TablePart) diagram.getChildren().get(i);
-			applyResults(tablePart);
+			GraphicalEditPart entityPart = (GraphicalEditPart) diagram.getChildren().get(i);
+			applyEntityResults(entityPart);
 		}
-	}
-
-	protected void applyOwnResults(SchemaDiagramPart diagram)
-	{
 	}
 
 	//******************* TablePart apply methods **********/
 
-	public void applyResults(TablePart tablePart)
+	public void applyEntityResults(GraphicalEditPart entityPart)
 	{
 
-		Node n = (Node) partToNodesMap.get(tablePart);
-		TableFigure tableFigure = (TableFigure) tablePart.getFigure();
+		Node n = (Node) partToNodesMap.get(entityPart);
+		IFigure tableFigure = entityPart.getFigure();
 
 		Rectangle bounds = new Rectangle(n.x, n.y, tableFigure.getPreferredSize().width,
 				tableFigure.getPreferredSize().height);
 
 		tableFigure.setBounds(bounds);
 
-		for (int i = 0; i < tablePart.getSourceConnections().size(); i++)
+		for (int i = 0; i < entityPart.getSourceConnections().size(); i++)
 		{
-			RelationshipPart relationship = (RelationshipPart) tablePart.getSourceConnections().get(i);
-			applyResults(relationship);
+			AbstractConnectionEditPart relationship = (AbstractConnectionEditPart) entityPart.getSourceConnections().get(i);
+			applyConnectionResults(relationship);
 		}
 	}
 
-	//******************* RelationshipPart apply methods **********/
+	//******************* Connection apply methods **********/
 
-	protected void applyResults(RelationshipPart relationshipPart)
+	protected void applyConnectionResults(AbstractConnectionEditPart connectionPart)
 	{
 
-		Edge e = (Edge) partToNodesMap.get(relationshipPart);
+		Edge e = (Edge) partToNodesMap.get(connectionPart);
 		NodeList nodes = e.vNodes;
 
-		PolylineConnection conn = (PolylineConnection) relationshipPart.getConnectionFigure();
+		PolylineConnection conn = (PolylineConnection) connectionPart.getConnectionFigure();
 		conn.setTargetDecoration(new PolygonDecoration());
 		if (nodes != null)
 		{

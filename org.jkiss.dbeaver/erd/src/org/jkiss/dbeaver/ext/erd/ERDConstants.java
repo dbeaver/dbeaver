@@ -1,13 +1,13 @@
-package org.jkiss.dbeaver.ext.erd;
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
 
-import java.awt.Font;
+package org.jkiss.dbeaver.ext.erd;
 
 /**
  * ERD constants
  */
 public class ERDConstants {
 
-    public static Font ENTITY_NAME_FONT = new Font ("SansSerif", Font.BOLD, 12);
-    public static Font ENTITY_ATTR_FONT = new Font ("Dialog", Font.BOLD, 10);
 
 }

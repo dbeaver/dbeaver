@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.ext.erd.part.SchemaDiagramPart;
 import org.jkiss.dbeaver.ext.erd.policy.SchemaXYLayoutPolicy;
 
 /**
- * Used to delegate between the GraphyLayoutManager and the GraphXYLayout classes
+ * Used to delegate between the GraphLayoutManager and the GraphXYLayout classes
  * @author Phil Zoio
  */
 public class DelegatingLayoutManager implements LayoutManager

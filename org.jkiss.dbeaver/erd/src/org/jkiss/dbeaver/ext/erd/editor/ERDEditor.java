@@ -8,11 +8,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.gef.*;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.commands.CommandStackListener;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
-import org.eclipse.gef.palette.PaletteRoot;
+import org.eclipse.gef.palette.*;
 import org.eclipse.gef.ui.actions.*;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
 import org.eclipse.gef.ui.palette.PaletteViewerProvider;
@@ -36,11 +37,16 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
+import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ext.erd.action.SchemaContextMenuProvider;
+import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
+import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
+import org.jkiss.dbeaver.ext.erd.dnd.DataElementFactory;
 import org.jkiss.dbeaver.ext.erd.model.Column;
 import org.jkiss.dbeaver.ext.erd.model.Relationship;
 import org.jkiss.dbeaver.ext.erd.model.Schema;
 import org.jkiss.dbeaver.ext.erd.model.Table;
+import org.jkiss.dbeaver.ext.erd.part.factory.SchemaEditPartFactory;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -98,14 +104,13 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 	private boolean isDirty;
 
     private DBSEntityContainer entityContainer;
+    private boolean isReadOnly;
     private boolean isLoaded;
 	/**
 	 * No-arg constructor
 	 */
 	public ERDEditor()
 	{
-		editDomain = new DefaultEditDomain(this);
-		setEditDomain(editDomain);
 	}
 
 	/**
@@ -113,6 +118,12 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 	 */
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException
 	{
+        // Editor is readonly if editor input is not a file but database object
+        this.isReadOnly = !(input instanceof IFileEditorInput);
+
+        editDomain = new DefaultEditDomain(this);
+        setEditDomain(editDomain);
+
 		// store site and input
 		setSite(site);
 		setInput(input);
@@ -254,7 +265,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 	 */
 	public boolean isDirty()
 	{
-		return isDirty;
+		return !isReadOnly && isDirty;
 	}
 
 	/**
@@ -383,9 +394,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 	 */
 	protected void createGraphicalViewer(Composite parent)
 	{
-
-		IEditorSite editorSite = getEditorSite();
-		GraphicalViewer viewer = new GraphicalViewerCreator(editorSite).createViewer(parent);
+		GraphicalViewer viewer = createViewer(parent);
 
 		GraphicalViewerKeyHandler graphicalViewerKeyHandler = new GraphicalViewerKeyHandler(viewer);
 		KeyHandler parentKeyHandler = graphicalViewerKeyHandler.setParent(getCommonKeyHandler());
@@ -407,7 +416,25 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
 	}
 
-	protected KeyHandler getCommonKeyHandler()
+    private GraphicalViewer createViewer(Composite parent) {
+        StatusLineValidationMessageHandler validationMessageHandler = new StatusLineValidationMessageHandler(getEditorSite());
+        GraphicalViewer viewer = new ValidationEnabledGraphicalViewer(validationMessageHandler);
+        viewer.createControl(parent);
+
+        // configure the viewer
+        viewer.getControl().setBackground(ColorConstants.white);
+        viewer.setRootEditPart(new ScalableFreeformRootEditPart());
+        viewer.setKeyHandler(new GraphicalViewerKeyHandler(viewer));
+
+        viewer.addDropTargetListener(new DataEditDropTargetListener(viewer));
+
+        // initialize the viewer with input
+        viewer.setEditPartFactory(new SchemaEditPartFactory());
+
+        return viewer;
+    }
+
+    protected KeyHandler getCommonKeyHandler()
 	{
 
 		KeyHandler sharedKeyHandler = new KeyHandler();
@@ -595,7 +622,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 	 */
 	protected PaletteRoot getPaletteRoot()
 	{
-		return new PaletteViewerCreator().createPaletteRoot();
+		return createPaletteRoot();
 	}
 
 	/**
@@ -642,6 +669,61 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
     }
 
+    public PaletteRoot createPaletteRoot()
+    {
+        // create root
+        PaletteRoot paletteRoot = new PaletteRoot();
+
+        // a group of default control tools
+        PaletteGroup controls = new PaletteGroup("Controls");
+        paletteRoot.add(controls);
+
+        // the selection tool
+        ToolEntry selectionTool = new SelectionToolEntry();
+        controls.add(selectionTool);
+
+        // use selection tool as default entry
+        paletteRoot.setDefaultEntry(selectionTool);
+
+        // the marquee selection tool
+        controls.add(new MarqueeToolEntry());
+
+        // a separator
+        PaletteSeparator separator = new PaletteSeparator(Activator.PLUGIN_ID + ".palette.separator");
+        separator.setUserModificationPermission(PaletteEntry.PERMISSION_NO_MODIFICATION);
+        controls.add(separator);
+
+        if (!isReadOnly) {
+            controls.add(new ConnectionCreationToolEntry("Connections", "Create Connections", null,
+                Activator.getImageDescriptor("icons/relationship.gif"),
+                Activator.getImageDescriptor("icons/relationship.gif")));
+
+            PaletteDrawer drawer = new PaletteDrawer("New Component",
+                Activator.getImageDescriptor("icons/connection.gif"));
+
+            List<CombinedTemplateCreationEntry> entries = new ArrayList<CombinedTemplateCreationEntry>();
+
+            CombinedTemplateCreationEntry tableEntry = new CombinedTemplateCreationEntry("New Table", "Create a new table",
+                    Table.class, new DataElementFactory(Table.class),
+                    Activator.getImageDescriptor("icons/table.gif"),
+                    Activator.getImageDescriptor("icons/table.gif"));
+
+            CombinedTemplateCreationEntry columnEntry = new CombinedTemplateCreationEntry("New Column", "Add a new column",
+                    Column.class, new DataElementFactory(Column.class),
+                    Activator.getImageDescriptor("icons/column.gif"),
+                    Activator.getImageDescriptor("icons/column.gif"));
+
+            entries.add(tableEntry);
+            entries.add(columnEntry);
+
+            drawer.addAll(entries);
+
+            paletteRoot.add(drawer);
+        }
+
+        return paletteRoot;
+
+    }
 
     private class ProgressControl extends ProgressPageControl {
         private ToolItem itemZoomIn;
