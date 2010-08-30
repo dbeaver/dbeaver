@@ -24,6 +24,8 @@ import org.eclipse.gef.ui.properties.UndoablePropertySheetEntry;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -724,6 +726,10 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             };
             zoomCombo = new ZoomComboContributionItem(ERDEditor.this.getSite().getPage(), zoomStrings);
             toolBarManager.add(zoomCombo);
+
+            //toolBarManager.add(new UndoAction(ERDEditor.this));
+            //toolBarManager.add(new RedoAction(ERDEditor.this));
+            //toolBarManager.add(new PrintAction(ERDEditor.this));
             toolBarManager.add(new Separator());
             toolBarManager.add(new ZoomInAction(zoomManager));
             toolBarManager.add(new ZoomOutAction(zoomManager));

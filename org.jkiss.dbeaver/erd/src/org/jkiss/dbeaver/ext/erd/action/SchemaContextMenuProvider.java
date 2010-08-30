@@ -14,6 +14,7 @@ import org.eclipse.gef.ui.actions.GEFActionConstants;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.actions.ActionFactory;
 
 /**
  * Provides a context menu for the schema diagram editor. A virtual cut and paste from the flow example
@@ -47,15 +48,20 @@ public class SchemaContextMenuProvider extends ContextMenuProvider
 		GEFActionConstants.addStandardActionGroups(menu);
 
 		IAction action;
-		action = getActionRegistry().getAction(GEFActionConstants.UNDO);
+		action = getActionRegistry().getAction(ActionFactory.UNDO.getId());
 		menu.appendToGroup(GEFActionConstants.GROUP_UNDO, action);
 
-		action = getActionRegistry().getAction(GEFActionConstants.REDO);
+		action = getActionRegistry().getAction(ActionFactory.REDO.getId());
 		menu.appendToGroup(GEFActionConstants.GROUP_UNDO, action);
 
-		action = getActionRegistry().getAction(IWorkbenchActionConstants.DELETE);
+		action = getActionRegistry().getAction(ActionFactory.DELETE.getId());
 		if (action.isEnabled())
 			menu.appendToGroup(GEFActionConstants.GROUP_EDIT, action);
+
+        //action = getActionRegistry().getAction(ActionFactory.PRINT.getId());
+        //menu.appendToGroup(GEFActionConstants.GROUP_PRINT, action);
+        //action = getActionRegistry().getAction(GEFActionConstants.TOGGLE_GRID_VISIBILITY);
+        //.menu.appendToGroup(GEFActionConstants.GROUP_EDIT, action);
 
 	}
 

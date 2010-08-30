@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.*;
+import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
@@ -25,6 +26,7 @@ import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
+import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -286,4 +288,11 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         return null;
     }
 
+    @Override
+    public Object getAdapter(Class adapter) {
+        if (adapter == IPropertySheetPage.class) {
+            return new PropertyPageTabbed();
+        }
+        return super.getAdapter(adapter);
+    }
 }
