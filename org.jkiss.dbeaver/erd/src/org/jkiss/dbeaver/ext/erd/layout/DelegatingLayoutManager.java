@@ -12,9 +12,9 @@ import org.eclipse.draw2d.LayoutManager;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.EditPolicy;
-import org.jkiss.dbeaver.ext.erd.model.Schema;
+import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.ext.erd.policy.SchemaXYLayoutPolicy;
+import org.jkiss.dbeaver.ext.erd.policy.DiagramXYLayoutPolicy;
 
 /**
  * Used to delegate between the GraphLayoutManager and the GraphXYLayout classes
@@ -45,15 +45,15 @@ public class DelegatingLayoutManager implements LayoutManager
 	public void layout(IFigure container)
 	{
 
-		Schema schema = diagram.getSchema();
+		EntityDiagram entityDiagram = diagram.getSchema();
 
-		if (schema.isLayoutManualDesired())
+		if (entityDiagram.isLayoutManualDesired())
 		{
 
 			if (activeLayoutManager != xyLayoutManager)
 			{
 
-				if (schema.isLayoutManualAllowed())
+				if (entityDiagram.isLayoutManualAllowed())
 				{
 
 					//	yes we are okay to start populating the table bounds
@@ -146,7 +146,7 @@ public class DelegatingLayoutManager implements LayoutManager
 		this.activeLayoutManager = layoutManager;
 		if (layoutManager == xyLayoutManager)
 		{
-			diagram.installEditPolicy(EditPolicy.LAYOUT_ROLE, new SchemaXYLayoutPolicy());
+			diagram.installEditPolicy(EditPolicy.LAYOUT_ROLE, new DiagramXYLayoutPolicy());
 		}
 		else
 		{

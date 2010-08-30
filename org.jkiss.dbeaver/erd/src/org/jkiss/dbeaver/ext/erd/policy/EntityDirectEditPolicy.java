@@ -12,16 +12,16 @@ import org.eclipse.gef.editpolicies.DirectEditPolicy;
 import org.eclipse.gef.requests.DirectEditRequest;
 import org.eclipse.jface.viewers.CellEditor;
 
-import org.jkiss.dbeaver.ext.erd.command.AttributeResetNameTypeCommand;
-import org.jkiss.dbeaver.ext.erd.model.Column;
-import org.jkiss.dbeaver.ext.erd.part.AttributePart;
+import org.jkiss.dbeaver.ext.erd.command.EntityRenameCommand;
+import org.jkiss.dbeaver.ext.erd.model.Table;
+import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
 /**
- * EditPolicy for the direct editing of Column names
+ * EditPolicy for the direct editing of table names
  * 
  * @author Phil Zoio
  */
-public class ColumnDirectEditPolicy extends DirectEditPolicy
+public class EntityDirectEditPolicy extends DirectEditPolicy
 {
 
 	private String oldValue;
@@ -31,13 +31,12 @@ public class ColumnDirectEditPolicy extends DirectEditPolicy
 	 */
 	protected Command getDirectEditCommand(DirectEditRequest request)
 	{
-		AttributeResetNameTypeCommand cmd = new AttributeResetNameTypeCommand();
-		Column column = (Column) getHost().getModel();
-		cmd.setSource(column);
-		cmd.setOldName(column.getName());
-		cmd.setOldType(column.getType());
+		EntityRenameCommand cmd = new EntityRenameCommand();
+		Table table = (Table) getHost().getModel();
+		cmd.setTable(table);
+		cmd.setOldName(table.getName());
 		CellEditor cellEditor = request.getCellEditor();
-		cmd.setNameType((String) cellEditor.getValue());
+		cmd.setName((String) cellEditor.getValue());
 		return cmd;
 	}
 
@@ -47,16 +46,17 @@ public class ColumnDirectEditPolicy extends DirectEditPolicy
 	protected void showCurrentEditValue(DirectEditRequest request)
 	{
 		String value = (String) request.getCellEditor().getValue();
-		AttributePart attributePart = (AttributePart) getHost();
-		attributePart.handleNameChange(value);
+		EntityPart entityPart = (EntityPart) getHost();
+		entityPart.handleNameChange(value);
 	}
 
 	/**
 	 * @param to
-	 *            Revert request
+	 *            Saves the initial text value so that if the user's changes are not committed then 
 	 */
 	protected void storeOldEditValue(DirectEditRequest request)
 	{
+		
 		CellEditor cellEditor = request.getCellEditor();
 		oldValue = (String) cellEditor.getValue();
 	}
@@ -68,8 +68,7 @@ public class ColumnDirectEditPolicy extends DirectEditPolicy
 	{
 		CellEditor cellEditor = request.getCellEditor();
 		cellEditor.setValue(oldValue);
-		AttributePart attributePart = (AttributePart) getHost();
-		attributePart.revertNameChange(oldValue);
-		
+		EntityPart entityPart = (EntityPart) getHost();
+		entityPart.revertNameChange();
 	}
 }

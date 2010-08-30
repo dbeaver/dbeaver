@@ -24,8 +24,6 @@ import org.eclipse.gef.ui.properties.UndoablePropertySheetEntry;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -38,13 +36,12 @@ import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.erd.Activator;
-import org.jkiss.dbeaver.ext.erd.action.SchemaContextMenuProvider;
 import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.DataElementFactory;
 import org.jkiss.dbeaver.ext.erd.model.Column;
+import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.model.Relationship;
-import org.jkiss.dbeaver.ext.erd.model.Schema;
 import org.jkiss.dbeaver.ext.erd.model.Table;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -69,7 +66,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
     IDatabaseObjectEditor<IDatabaseObjectManager<DBSEntityContainer>> {
     static final Log log = LogFactory.getLog(ERDEditor.class);
 
-    private Schema schema;
+    private EntityDiagram entityDiagram;
 
     private ProgressControl progressControl;
 
@@ -220,7 +217,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             ObjectOutputStream objectOut = new ObjectOutputStream(out);
-            objectOut.writeObject(schema);
+            objectOut.writeObject(entityDiagram);
             objectOut.close();
             IEditorInput input = getEditorInput();
             if (input instanceof IFileEditorInput) {
@@ -276,8 +273,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
      *
      * @return an instance of <code>Schema</code>
      */
-    public Schema getSchema() {
-        return schema;
+    public EntityDiagram getSchema() {
+        return entityDiagram;
     }
 
     /**
@@ -291,17 +288,17 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         } else {
             // Setup empty schema for now
             // Actual data will be loaded later in activatePart
-            schema = new Schema("empty");
+            entityDiagram = new EntityDiagram("empty");
         }
     }
 
-    private Schema loadFromDatabase(DBRProgressMonitor monitor)
+    private EntityDiagram loadFromDatabase(DBRProgressMonitor monitor)
         throws DBException {
         if (entityContainer == null) {
             log.error("Database object must be entity container to render ERD diagram");
             return null;
         }
-        schema = new Schema(entityContainer.getName());
+        entityDiagram = new EntityDiagram(entityContainer.getName());
 
         // Cache structure
         entityContainer.cacheStructure(monitor, DBSEntityContainer.STRUCT_ENTITIES | DBSEntityContainer.STRUCT_ASSOCIATIONS | DBSEntityContainer.STRUCT_ATTRIBUTES);
@@ -310,7 +307,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         Map<DBSObject, Table> tableMap = new HashMap<DBSObject, Table>();
         Collection<? extends DBSObject> entities = entityContainer.getChildren(monitor);
         for (DBSObject entity : entities) {
-            Table table = new Table(entity.getName(), schema);
+            Table table = new Table(entity.getName(), entityDiagram);
 
             if (entity instanceof DBSTable) {
                 Collection<? extends DBSTableColumn> columns = ((DBSTable) entity).getColumns(monitor);
@@ -319,7 +316,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                     table.addColumn(c1);
                 }
             }
-            schema.addTable(table);
+            entityDiagram.addTable(table);
             tableMap.put(entity, table);
         }
 
@@ -346,7 +343,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             }
         }
 
-        return schema;
+        return entityDiagram;
     }
 
     private void loadContentFromFile(IFileEditorInput input) {
@@ -355,12 +352,12 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             setPartName(file.getName());
             InputStream is = file.getContents(true);
             ObjectInputStream ois = new ObjectInputStream(is);
-            schema = (Schema) ois.readObject();
+            entityDiagram = (EntityDiagram) ois.readObject();
             ois.close();
         }
         catch (Exception e) {
             log.error("Error loading diagram from file '" + file.getFullPath().toString() + "'", e);
-            schema = getContent();
+            entityDiagram = getContent();
         }
     }
 
@@ -371,7 +368,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
      * @return the palette provider
      */
     protected PaletteViewerProvider createPaletteViewerProvider() {
-        return new SchemaPaletteViewerProvider(editDomain);
+        return new ERDPaletteViewerProvider(editDomain);
     }
 
 
@@ -396,17 +393,17 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         initializeGraphicalViewer();
 
         // Set initial contents
-        viewer.setContents(schema);
+        viewer.setContents(entityDiagram);
 
         // Set context menu
-        ContextMenuProvider provider = new SchemaContextMenuProvider(viewer, getActionRegistry());
+        ContextMenuProvider provider = new ERDEditorContextMenuProvider(viewer, getActionRegistry());
         viewer.setContextMenu(provider);
         getSite().registerContextMenu("org.jkiss.dbeaver.ext.erd.editor.contextmenu", provider, viewer);
     }
 
     private GraphicalViewer createViewer(Composite parent) {
         StatusLineValidationMessageHandler validationMessageHandler = new StatusLineValidationMessageHandler(getEditorSite());
-        GraphicalViewer viewer = new ValidationEnabledGraphicalViewer(validationMessageHandler);
+        GraphicalViewer viewer = new ERDGraphicalViewer(validationMessageHandler);
         viewer.createControl(parent);
 
         // configure the viewer
@@ -588,7 +585,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
      * @return the preferences for the Palette Flyout
      */
     protected FlyoutPreferences getPalettePreferences() {
-        return new PaletteFlyoutPreferences();
+        return new ERDPalettePreferences();
     }
 
     /**
@@ -603,8 +600,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
      *
      * @return the model object
      */
-    private Schema getContent() {
-        return new Schema("Schema");//ContentCreator().getContent();
+    private EntityDiagram getContent() {
+        return new EntityDiagram("Schema");//ContentCreator().getContent();
     }
 
     public void initObjectEditor(IDatabaseObjectManager<DBSEntityContainer> manager) {
@@ -616,8 +613,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             return;
         }
         LoadingUtils.executeService(
-            new AbstractLoadService<Schema>("Load schema") {
-                public Schema evaluate()
+            new AbstractLoadService<EntityDiagram>("Load schema") {
+                public EntityDiagram evaluate()
                     throws InvocationTargetException, InterruptedException {
                     try {
                         return loadFromDatabase(getProgressMonitor());
@@ -739,15 +736,15 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             return infoGroup;
         }
 
-        public ProgressVisualizer<Schema> createLoadVisualizer() {
+        public ProgressVisualizer<EntityDiagram> createLoadVisualizer() {
             return new LoadVisualizer();
         }
 
-        private class LoadVisualizer extends ProgressVisualizer<Schema> {
+        private class LoadVisualizer extends ProgressVisualizer<EntityDiagram> {
             @Override
-            public void completeLoading(Schema schema) {
-                super.completeLoading(schema);
-                getGraphicalViewer().setContents(schema);
+            public void completeLoading(EntityDiagram entityDiagram) {
+                super.completeLoading(entityDiagram);
+                getGraphicalViewer().setContents(entityDiagram);
                 zoomCombo.setZoomManager(rootPart.getZoomManager());
             }
         }

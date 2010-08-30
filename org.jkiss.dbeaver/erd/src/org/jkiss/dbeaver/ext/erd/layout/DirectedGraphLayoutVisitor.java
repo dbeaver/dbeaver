@@ -127,7 +127,7 @@ public class DirectedGraphLayoutVisitor
 		}
 	}
 
-	//******************* TablePart apply methods **********/
+	//******************* EntityPart apply methods **********/
 
 	public void applyEntityResults(GraphicalEditPart entityPart)
 	{

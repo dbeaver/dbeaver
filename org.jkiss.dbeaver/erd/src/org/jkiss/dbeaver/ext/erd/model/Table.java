@@ -10,8 +10,6 @@ package org.jkiss.dbeaver.ext.erd.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.draw2d.geometry.Rectangle;
-
 /**
  * Model object representing a relational database Table
  * Also includes the bounds of the table so that the diagram can be 
@@ -22,7 +20,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 public class Table extends PropertyAwareObject
 {
 
-	private Schema schema;
+	private EntityDiagram entityDiagram;
 	private String name;
 	private List<Column> columns = new ArrayList<Column>();
 
@@ -34,15 +32,15 @@ public class Table extends PropertyAwareObject
 		super();
 	}
 
-	public Table(String name, Schema schema)
+	public Table(String name, EntityDiagram entityDiagram)
 	{
 		super();
 		if (name == null)
 			throw new NullPointerException("Name cannot be null");
-		if (schema == null)
+		if (entityDiagram == null)
 			throw new NullPointerException("Schema cannot be null");
 		this.name = name;
-		this.schema = schema;
+		this.entityDiagram = entityDiagram;
 	}
 
 	public void addColumn(Column column)
@@ -90,12 +88,12 @@ public class Table extends PropertyAwareObject
 	}
 
 	/**
-	 * @param schema
+	 * @param entityDiagram
 	 *            The schema to set.
 	 */
-	public void setSchema(Schema schema)
+	public void setSchema(EntityDiagram entityDiagram)
 	{
-		this.schema = schema;
+		this.entityDiagram = entityDiagram;
 	}
 
 	/**
@@ -191,9 +189,9 @@ public class Table extends PropertyAwareObject
 	/**
 	 * @return Returns the schema.
 	 */
-	public Schema getSchema()
+	public EntityDiagram getSchema()
 	{
-		return schema;
+		return entityDiagram;
 	}
 
 	public String toString()
@@ -207,9 +205,9 @@ public class Table extends PropertyAwareObject
 	public int hashCode()
 	{
 		//just an extra line so that this does not fall over when the tool is used incorrectly
-		if (schema == null || name == null)
+		if (entityDiagram == null || name == null)
 			return super.hashCode();
-		String schemaName = schema.getName();
+		String schemaName = entityDiagram.getName();
 		return schemaName.hashCode() + name.hashCode();
 	}
 
@@ -222,7 +220,7 @@ public class Table extends PropertyAwareObject
 			return false;
 		Table t = (Table) o;
 
-		if (schema.getName().equals(t.getSchema().getName()) && name.equals(t.getName()))
+		if (entityDiagram.getName().equals(t.getSchema().getName()) && name.equals(t.getName()))
 		{
 			return true;
 		}

@@ -17,12 +17,11 @@ import java.io.Serializable;
  * Provides base class support for model objects to participate in event handling framework
  * @author Phil Zoio
  */
-public abstract class PropertyAwareObject extends Object implements Serializable
+public abstract class PropertyAwareObject implements Serializable
 {
 
 	public static final String CHILD = "CHILD";
 	public static final String REORDER = "REORDER";
-	public static final String BOUNDS = "BOUNDS";
 	public static final String INPUT = "INPUT";
 	public static final String OUTPUT = "OUTPUT";
 	public static final String NAME = "NAME";

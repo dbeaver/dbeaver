@@ -76,10 +76,6 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 		{
 			commitNameChange(evt);
 		}
-		else if (PropertyAwareObject.BOUNDS.equals(property))
-		{
-			handleBoundsChange(evt);
-		}
 		else if (PropertyAwareObject.LAYOUT.equals(property))
 		{
 			handleLayoutChange(evt);
@@ -250,7 +246,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 			if (partToRemove != null)
 				removeChild(partToRemove);
 		}
-		
+
 		//getContentPane().revalidate();
 
 	}
@@ -264,24 +260,10 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 		refreshVisuals();
 	}
 
-	/**
-	 * @param subclass
-	 *            decides what to do if layout property event is fired
-	 */
 	protected void handleLayoutChange(PropertyChangeEvent evt)
 	{
 	}
 
-	/**
-	 * handles change in bounds, to be overridden by subclass
-	 */
-	protected void handleBoundsChange(PropertyChangeEvent evt)
-	{
-	}
-
-	/**
-	 * Handles change in name - to be overridden by subclasses
-	 */
 	protected void commitNameChange(PropertyChangeEvent evt)
 	{
 	}

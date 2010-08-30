@@ -11,7 +11,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.ui.IEditorPart;
 
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditor;
-import org.jkiss.dbeaver.ext.erd.model.Schema;
+import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 
 /**
  * Action to toggle the layout between manual and automatic
@@ -35,9 +35,9 @@ public class FlyoutChangeLayoutAction extends Action
 		if (editor instanceof ERDEditor)
 		{
 			ERDEditor schemaEditor = (ERDEditor) editor;
-			Schema schema = schemaEditor.getSchema();
-			boolean isManual = schema.isLayoutManualDesired();
-			schema.setLayoutManualDesired(!isManual);
+			EntityDiagram entityDiagram = schemaEditor.getSchema();
+			boolean isManual = entityDiagram.isLayoutManualDesired();
+			entityDiagram.setLayoutManualDesired(!isManual);
 			checked = !isManual;
 			setChecked(checked);
 		}
@@ -60,8 +60,8 @@ public class FlyoutChangeLayoutAction extends Action
 		if (editor instanceof ERDEditor)
 		{
 			ERDEditor schemaEditor = (ERDEditor) editor;
-			Schema schema = schemaEditor.getSchema();
-			boolean checkTrue = schema.isLayoutManualDesired();
+			EntityDiagram entityDiagram = schemaEditor.getSchema();
+			boolean checkTrue = entityDiagram.isLayoutManualDesired();
 			return (!checkTrue);
 		}
 		else

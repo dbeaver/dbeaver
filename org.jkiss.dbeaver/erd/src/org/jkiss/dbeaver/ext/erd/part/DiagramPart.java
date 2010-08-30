@@ -16,14 +16,13 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.commands.CommandStackListener;
 
-import org.jkiss.dbeaver.ext.erd.figures.SchemaFigure;
-import org.jkiss.dbeaver.ext.erd.figures.TableFigure;
+import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
+import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ext.erd.layout.DelegatingLayoutManager;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
 import org.jkiss.dbeaver.ext.erd.layout.GraphLayoutManager;
-import org.jkiss.dbeaver.ext.erd.model.Schema;
-import org.jkiss.dbeaver.ext.erd.model.Table;
-import org.jkiss.dbeaver.ext.erd.policy.SchemaContainerEditPolicy;
+import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.ext.erd.policy.DiagramContainerEditPolicy;
 
 /**
  * Edit part for Schema object, and uses a SchemaDiagram figure as
@@ -76,15 +75,15 @@ public class DiagramPart extends PropertyAwarePart
 
 	protected IFigure createFigure()
 	{
-		Figure f = new SchemaFigure();
+		Figure f = new EntityDiagramFigure();
 		delegatingLayoutManager = new DelegatingLayoutManager(this);
 		f.setLayoutManager(delegatingLayoutManager);
 		return f;
 	}
 
-	public Schema getSchema()
+	public EntityDiagram getSchema()
 	{
-		return (Schema) getModel();
+		return (EntityDiagram) getModel();
 	}
 
 	/**
@@ -109,7 +108,7 @@ public class DiagramPart extends PropertyAwarePart
 	 */
 	protected void createEditPolicies()
 	{
-		installEditPolicy(EditPolicy.CONTAINER_ROLE, new SchemaContainerEditPolicy());
+		installEditPolicy(EditPolicy.CONTAINER_ROLE, new DiagramContainerEditPolicy());
 		installEditPolicy(EditPolicy.LAYOUT_ROLE, null);
 	}
 
@@ -118,27 +117,27 @@ public class DiagramPart extends PropertyAwarePart
 	 * restored after saving
 	 * 
 	 * @return whether the procedure execute successfully without any omissions.
-	 *         The latter occurs if any TableFigure has no bounds set for any of
+	 *         The latter occurs if any EntityFigure has no bounds set for any of
 	 *         the Table model objects
 	 */
 	public boolean setTableModelBounds()
 	{
 
 		List tableParts = getChildren();
-		Schema schema = getSchema();
+		EntityDiagram entityDiagram = getSchema();
 
 		for (Iterator iter = tableParts.iterator(); iter.hasNext();)
 		{
-			TablePart tablePart = (TablePart) iter.next();
-			TableFigure tableFigure = (TableFigure) tablePart.getFigure();
+			EntityPart entityPart = (EntityPart) iter.next();
+			EntityFigure entityFigure = (EntityFigure) entityPart.getFigure();
 
 			//if we don't find a node for one of the children then we should
 			// continue
-			if (tableFigure == null)
+			if (entityFigure == null)
 				continue;
 
-			Rectangle bounds = tableFigure.getBounds().getCopy();
-			tablePart.setBounds(bounds);
+			Rectangle bounds = entityFigure.getBounds().getCopy();
+			entityPart.setBounds(bounds);
 		}
 
 		return true;
@@ -151,7 +150,7 @@ public class DiagramPart extends PropertyAwarePart
 	 * 
 	 * @return whether the procedure execute successfully without any omissions.
 	 *         The latter occurs if any Table objects have no bounds set or if
-	 *         no figure is available for the TablePart
+	 *         no figure is available for the EntityPart
 	 */
 	public boolean setTableFigureBounds(boolean updateConstraint)
 	{
@@ -160,10 +159,10 @@ public class DiagramPart extends PropertyAwarePart
 
 		for (Iterator iter = tableParts.iterator(); iter.hasNext();)
 		{
-			TablePart tablePart = (TablePart) iter.next();
+			EntityPart entityPart = (EntityPart) iter.next();
 
 			//now check whether we can find an entry in the tableToNodesMap
-			Rectangle bounds = tablePart.getBounds();
+			Rectangle bounds = entityPart.getBounds();
 			if (bounds == null)
 			{
 				//TODO handle this better
@@ -171,8 +170,8 @@ public class DiagramPart extends PropertyAwarePart
 			}
 			else
 			{
-				TableFigure tableFigure = (TableFigure) tablePart.getFigure();
-				if (tableFigure == null)
+				EntityFigure entityFigure = (EntityFigure) entityPart.getFigure();
+				if (entityFigure == null)
 				{
 					return false;
 				}
@@ -182,7 +181,7 @@ public class DiagramPart extends PropertyAwarePart
 					{
 						//pass the constraint information to the xy layout
 						//setting the width and height so that the preferred size will be applied
-						delegatingLayoutManager.setXYLayoutConstraint(tableFigure, new Rectangle(bounds.x, bounds.y,
+						delegatingLayoutManager.setXYLayoutConstraint(entityFigure, new Rectangle(bounds.x, bounds.y,
 								-1, -1));
 					}
 				}
