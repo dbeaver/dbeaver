@@ -486,16 +486,4 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         }
     }
 
-    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return GenericTableColumn.class;
-    }
-
-    public void cacheStructure(DBRProgressMonitor monitor, int scope)
-        throws DBException
-    {
-        getColumns(monitor);
-    }
-
 }

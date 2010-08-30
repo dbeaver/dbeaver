@@ -641,6 +641,7 @@ public class Spreadsheet extends Composite implements Listener {
             }
             // TODO: want to remove but can't
             // where one editor page have many controls each with its own behavior
+
             if (register) {
                 site.getKeyBindingService().registerAction(actionInfo.action);
             } else {

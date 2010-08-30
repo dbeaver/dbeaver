@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
@@ -17,6 +18,9 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.IHandlerActivation;
+import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.services.IServiceLocator;
 
 import java.text.NumberFormat;
 
@@ -242,6 +246,24 @@ public class UIUtils {
     public static Shell getShell(IWorkbenchPart part)
     {
         return part == null ? null : getShell(part.getSite());
+    }
+
+    public static IHandlerActivation registerKeyBinding(IServiceLocator serviceLocator, IAction action)
+    {
+        IHandlerService handlerService = (IHandlerService)serviceLocator.getService(IHandlerService.class);
+        if (handlerService != null) {
+            return handlerService.activateHandler(action.getActionDefinitionId(), new ActionHandler(action));
+        } else {
+            return null;
+        }
+    }
+
+    public static void unregisterKeyBinding(IServiceLocator serviceLocator, IHandlerActivation handler)
+    {
+        IHandlerService handlerService = (IHandlerService)serviceLocator.getService(IHandlerService.class);
+        if (handlerService != null) {
+            handlerService.deactivateHandler(handler);
+        }
     }
 
 }

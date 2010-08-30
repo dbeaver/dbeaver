@@ -42,7 +42,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
-    private IDatabaseObjectManager<?> objectManager;
+    private IDatabaseObjectManager objectManager;
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
 
     protected void createPages()

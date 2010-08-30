@@ -13,6 +13,7 @@ import org.eclipse.gef.*;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.commands.CommandStackListener;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
+import org.eclipse.gef.editparts.ZoomManager;
 import org.eclipse.gef.palette.*;
 import org.eclipse.gef.ui.actions.*;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
@@ -21,14 +22,11 @@ import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef.ui.properties.UndoablePropertySheetEntry;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.EditorPart;
@@ -51,7 +49,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 
@@ -64,79 +61,90 @@ import java.util.*;
  * an editor </i> in chapter <i>Introduction to GEF </i>
  */
 public class ERDEditor extends GraphicalEditorWithFlyoutPalette
-		implements
-			CommandStackListener,
-			ISelectionListener,
-        IDatabaseObjectEditor<IDatabaseObjectManager<DBSEntityContainer>>
-{
+    implements
+    CommandStackListener,
+    ISelectionListener,
+    IDatabaseObjectEditor<IDatabaseObjectManager<DBSEntityContainer>> {
     static final Log log = LogFactory.getLog(ERDEditor.class);
 
-	private Schema schema;
+    private Schema schema;
 
     private ProgressControl progressControl;
 
-	/** the undoable <code>IPropertySheetPage</code> */
-	private PropertySheetPage undoablePropertySheetPage;
+    /**
+     * the undoable <code>IPropertySheetPage</code>
+     */
+    private PropertySheetPage undoablePropertySheetPage;
 
-	/** the graphical viewer */
-	private GraphicalViewer graphicalViewer;
+    /**
+     * the graphical viewer
+     */
+    private ScalableFreeformRootEditPart rootPart;
 
-	/** the list of action ids that are to EditPart actions */
-	private List<String> editPartActionIDs = new ArrayList<String>();
+    /**
+     * the list of action ids that are to EditPart actions
+     */
+    private List<String> editPartActionIDs = new ArrayList<String>();
 
-	/** the list of action ids that are to CommandStack actions */
-	private List<String> stackActionIDs = new ArrayList<String>();
+    /**
+     * the list of action ids that are to CommandStack actions
+     */
+    private List<String> stackActionIDs = new ArrayList<String>();
 
-	/** the list of action ids that are editor actions */
-	private List<String> editorActionIDs = new ArrayList<String>();
+    /**
+     * the list of action ids that are editor actions
+     */
+    private List<String> editorActionIDs = new ArrayList<String>();
 
-	/** the overview outline page */
-	private ERDOutlinePage outlinePage;
+    /**
+     * the overview outline page
+     */
+    private ERDOutlinePage outlinePage;
 
-	/** the editor's action registry */
-	private ActionRegistry actionRegistry;
+    /**
+     * the <code>EditDomain</code>
+     */
+    private DefaultEditDomain editDomain;
 
-	/** the <code>EditDomain</code> */
-	private DefaultEditDomain editDomain;
-
-	/** the dirty state */
-	private boolean isDirty;
+    /**
+     * the dirty state
+     */
+    private boolean isDirty;
 
     private DBSEntityContainer entityContainer;
     private boolean isReadOnly;
     private boolean isLoaded;
-	/**
-	 * No-arg constructor
-	 */
-	public ERDEditor()
-	{
-	}
 
-	/**
-	 * Initializes the editor.
-	 */
-	public void init(IEditorSite site, IEditorInput input) throws PartInitException
-	{
+    /**
+     * No-arg constructor
+     */
+    public ERDEditor() {
+    }
+
+    /**
+     * Initializes the editor.
+     */
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         // Editor is readonly if editor input is not a file but database object
         this.isReadOnly = !(input instanceof IFileEditorInput);
 
         editDomain = new DefaultEditDomain(this);
         setEditDomain(editDomain);
 
-		// store site and input
-		setSite(site);
-		setInput(input);
+        // store site and input
+        setSite(site);
+        setInput(input);
 
-		// add CommandStackListener
-		getCommandStack().addCommandStackListener(this);
+        // add CommandStackListener
+        getCommandStack().addCommandStackListener(this);
 
-		// add selection change listener
-		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(this);
+        // add selection change listener
+        getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(this);
 
-		// initialize actions
-		createActions();
+        // initialize actions
+        createActions();
 
-	}
+    }
 
     @Override
     public void createPartControl(Composite parent) {
@@ -147,83 +155,71 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         progressControl.createProgressPanel();
     }
 
-    /** the selection listener implementation */
-	public void selectionChanged(IWorkbenchPart part, ISelection selection)
-	{
-		updateActions(editPartActionIDs);
-	}
+    /**
+     * the selection listener implementation
+     */
+    public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+        updateActions(editPartActionIDs);
+    }
 
-	/**
-	 * The <code>CommandStackListener</code> that listens for
-	 * <code>CommandStack </code> changes.
-	 */
-	public void commandStackChanged(EventObject event)
-	{
-		updateActions(stackActionIDs);
-		setDirty(getCommandStack().isDirty());
-	}
+    /**
+     * The <code>CommandStackListener</code> that listens for
+     * <code>CommandStack </code> changes.
+     */
+    public void commandStackChanged(EventObject event) {
+        updateActions(stackActionIDs);
+        setDirty(getCommandStack().isDirty());
+    }
 
-	/**
-	 * Returns the <code>GraphicalViewer</code> of this editor.
-	 * 
-	 * @return the <code>GraphicalViewer</code>
-	 */
-	public GraphicalViewer getGraphicalViewer()
-	{
-		return graphicalViewer;
-	}
-
-	public void dispose()
-	{
+    public void dispose() {
         if (progressControl != null && !progressControl.isDisposed()) {
             progressControl.dispose();
         }
-		// remove CommandStackListener
-		getCommandStack().removeCommandStackListener(this);
-		// remove selection listener
-		getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(this);
-		// dispos3 the ActionRegistry (will dispose all actions)
-		getActionRegistry().dispose();
-		// important: always call super implementation of dispose
-		super.dispose();
-	}
+        // remove CommandStackListener
+        getCommandStack().removeCommandStackListener(this);
+        // remove selection listener
+        getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(this);
+        // dispose the ActionRegistry (will dispose all actions)
+        getActionRegistry().dispose();
+        // important: always call super implementation of dispose
+        super.dispose();
+    }
 
-	/**
-	 * Adaptable implementation for Editor
-	 */
-	public Object getAdapter(Class adapter)
-	{
-		// we need to handle common GEF elements we created
-		if (adapter == GraphicalViewer.class || adapter == EditPartViewer.class)
-			return getGraphicalViewer();
-		else if (adapter == CommandStack.class)
-			return getCommandStack();
-		else if (adapter == EditDomain.class)
-			return getEditDomain();
-		else if (adapter == ActionRegistry.class)
-			return getActionRegistry();
-		else if (adapter == IPropertySheetPage.class)
-			return getPropertySheetPage();
-		else if (adapter == IContentOutlinePage.class)
-			return getOverviewOutlinePage();
+    /**
+     * Adaptable implementation for Editor
+     */
+    public Object getAdapter(Class adapter) {
+        // we need to handle common GEF elements we created
+        if (adapter == GraphicalViewer.class || adapter == EditPartViewer.class) {
+            return getGraphicalViewer();
+        } else if (adapter == CommandStack.class) {
+            return getCommandStack();
+        } else if (adapter == EditDomain.class) {
+            return getEditDomain();
+        } else if (adapter == ActionRegistry.class) {
+            return getActionRegistry();
+        } else if (adapter == IPropertySheetPage.class) {
+            return getPropertySheetPage();
+        } else if (adapter == IContentOutlinePage.class) {
+            return getOverviewOutlinePage();
+        } else if (adapter == ZoomManager.class) {
+            return getGraphicalViewer().getProperty(ZoomManager.class.toString());
+        }
+        // the super implementation handles the rest
+        return super.getAdapter(adapter);
+    }
 
-		// the super implementation handles the rest
-		return super.getAdapter(adapter);
-	}
-
-	/**
-	 * Saves the schema model to the file
-	 * 
-	 * @see EditorPart#doSave
-	 */
-	public void doSave(IProgressMonitor monitor)
-	{
-		try
-		{
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			ObjectOutputStream objectOut = new ObjectOutputStream(out);
-			objectOut.writeObject(schema);
-			objectOut.close();
+    /**
+     * Saves the schema model to the file
+     *
+     * @see EditorPart#doSave
+     */
+    public void doSave(IProgressMonitor monitor) {
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            ObjectOutputStream objectOut = new ObjectOutputStream(out);
+            objectOut.writeObject(schema);
+            objectOut.close();
             IEditorInput input = getEditorInput();
             if (input instanceof IFileEditorInput) {
                 IFile file = ((IFileEditorInput) input).getFile();
@@ -233,67 +229,60 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                     out.close();
                 }
             }
-		}
-		catch (Exception e)
-		{
-			log.error("Could not save diagram", e);
-		}
-		getCommandStack().markSaveLocation();
-	}
+        }
+        catch (Exception e) {
+            log.error("Could not save diagram", e);
+        }
+        getCommandStack().markSaveLocation();
+    }
 
-	/**
-	 * Save as not allowed
-	 */
-	public void doSaveAs()
-	{
-		throw new UnsupportedOperationException();
-	}
+    /**
+     * Save as not allowed
+     */
+    public void doSaveAs() {
+        throw new UnsupportedOperationException();
+    }
 
-	/**
-	 * Save as not allowed
-	 */
-	public boolean isSaveAsAllowed()
-	{
-		return false;
-	}
+    /**
+     * Save as not allowed
+     */
+    public boolean isSaveAsAllowed() {
+        return false;
+    }
 
-	/**
-	 * Indicates if the editor has unsaved changes.
-	 * 
-	 * @see EditorPart#isDirty
-	 */
-	public boolean isDirty()
-	{
-		return !isReadOnly && isDirty;
-	}
+    /**
+     * Indicates if the editor has unsaved changes.
+     *
+     * @see EditorPart#isDirty
+     */
+    public boolean isDirty() {
+        return !isReadOnly && isDirty;
+    }
 
-	/**
-	 * Returns the <code>CommandStack</code> of this editor's
-	 * <code>EditDomain</code>.
-	 * 
-	 * @return the <code>CommandStack</code>
-	 */
-	public CommandStack getCommandStack()
-	{
-		return getEditDomain().getCommandStack();
-	}
+    /**
+     * Returns the <code>CommandStack</code> of this editor's
+     * <code>EditDomain</code>.
+     *
+     * @return the <code>CommandStack</code>
+     */
+    public CommandStack getCommandStack() {
+        return getEditDomain().getCommandStack();
+    }
 
-	/**
-	 * Returns the schema model associated with the editor
-	 * 
-	 * @return an instance of <code>Schema</code>
-	 */
-	public Schema getSchema()
-	{
-		return schema;
-	}
+    /**
+     * Returns the schema model associated with the editor
+     *
+     * @return an instance of <code>Schema</code>
+     */
+    public Schema getSchema() {
+        return schema;
+    }
 
-	/**
-	 * @see org.eclipse.ui.part.EditorPart#setInput(org.eclipse.ui.IEditorInput)
-	 */
-	protected void setInput(IEditorInput input)
-	{
-		super.setInput(input);
+    /**
+     * @see org.eclipse.ui.part.EditorPart#setInput(org.eclipse.ui.IEditorInput)
+     */
+    protected void setInput(IEditorInput input) {
+        super.setInput(input);
 
         if (input instanceof IFileEditorInput) {
             loadContentFromFile((IFileEditorInput) input);
@@ -302,11 +291,10 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             // Actual data will be loaded later in activatePart
             schema = new Schema("empty");
         }
-	}
+    }
 
     private Schema loadFromDatabase(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         if (entityContainer == null) {
             log.error("Database object must be entity container to render ERD diagram");
             return null;
@@ -346,7 +334,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                             log.warn("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
                         } else {
                             if (table1 != table2) {
-                                Relationship relationship = new Relationship(table2, table1);
+                                new Relationship(table2, table1);
                             }
                         }
                     }
@@ -361,63 +349,58 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
     private void loadContentFromFile(IFileEditorInput input) {
         IFile file = input.getFile();
-        try
-        {
+        try {
             setPartName(file.getName());
             InputStream is = file.getContents(true);
             ObjectInputStream ois = new ObjectInputStream(is);
             schema = (Schema) ois.readObject();
             ois.close();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             log.error("Error loading diagram from file '" + file.getFullPath().toString() + "'", e);
             schema = getContent();
         }
     }
 
     /**
-	 * Creates a PaletteViewerProvider that will be used to create palettes for
-	 * the view and the flyout.
-	 * 
-	 * @return the palette provider
-	 */
-	protected PaletteViewerProvider createPaletteViewerProvider()
-	{
-		return new SchemaPaletteViewerProvider(editDomain);
-	}
-	
+     * Creates a PaletteViewerProvider that will be used to create palettes for
+     * the view and the flyout.
+     *
+     * @return the palette provider
+     */
+    protected PaletteViewerProvider createPaletteViewerProvider() {
+        return new SchemaPaletteViewerProvider(editDomain);
+    }
 
-	/**
-	 * Creates a new <code>GraphicalViewer</code>, configures, registers and
-	 * initializes it.
-	 * 
-	 * @param parent
-	 *            the parent composite
-	 */
-	protected void createGraphicalViewer(Composite parent)
-	{
-		GraphicalViewer viewer = createViewer(parent);
 
-		GraphicalViewerKeyHandler graphicalViewerKeyHandler = new GraphicalViewerKeyHandler(viewer);
-		KeyHandler parentKeyHandler = graphicalViewerKeyHandler.setParent(getCommonKeyHandler());
-		viewer.setKeyHandler(parentKeyHandler);
+    /**
+     * Creates a new <code>GraphicalViewer</code>, configures, registers and
+     * initializes it.
+     *
+     * @param parent the parent composite
+     */
+    protected void createGraphicalViewer(Composite parent) {
+        GraphicalViewer viewer = createViewer(parent);
 
-		// hook the viewer into the EditDomain
-		getEditDomain().addViewer(viewer);
+        GraphicalViewerKeyHandler graphicalViewerKeyHandler = new GraphicalViewerKeyHandler(viewer);
+        KeyHandler parentKeyHandler = graphicalViewerKeyHandler.setParent(getCommonKeyHandler());
+        viewer.setKeyHandler(parentKeyHandler);
 
-		// activate the viewer as selection provider for Eclipse
-		getSite().setSelectionProvider(viewer);
+        // hook the viewer into the EditDomain
+        setGraphicalViewer(viewer);
 
-		viewer.setContents(schema);
+        configureGraphicalViewer();
+        hookGraphicalViewer();
+        initializeGraphicalViewer();
 
-		ContextMenuProvider provider = new SchemaContextMenuProvider(viewer, getActionRegistry());
-		viewer.setContextMenu(provider);
-		getSite().registerContextMenu("org.jkiss.dbeaver.ext.erd.editor.contextmenu", provider, viewer);
+        // Set initial contents
+        viewer.setContents(schema);
 
-		this.graphicalViewer = viewer;
-
-	}
+        // Set context menu
+        ContextMenuProvider provider = new SchemaContextMenuProvider(viewer, getActionRegistry());
+        viewer.setContextMenu(provider);
+        getSite().registerContextMenu("org.jkiss.dbeaver.ext.erd.editor.contextmenu", provider, viewer);
+    }
 
     private GraphicalViewer createViewer(Composite parent) {
         StatusLineValidationMessageHandler validationMessageHandler = new StatusLineValidationMessageHandler(getEditorSite());
@@ -426,7 +409,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
         // configure the viewer
         viewer.getControl().setBackground(ColorConstants.white);
-        viewer.setRootEditPart(new ScalableFreeformRootEditPart());
+        rootPart = new ScalableFreeformRootEditPart();
+        viewer.setRootEditPart(rootPart);
         viewer.setKeyHandler(new GraphicalViewerKeyHandler(viewer));
 
         viewer.addDropTargetListener(new DataEditDropTargetListener(viewer));
@@ -437,222 +421,202 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         return viewer;
     }
 
-    protected KeyHandler getCommonKeyHandler()
-	{
+    @Override
+    protected void configureGraphicalViewer() {
+        super.configureGraphicalViewer();
 
-		KeyHandler sharedKeyHandler = new KeyHandler();
-		sharedKeyHandler.put(KeyStroke.getPressed(SWT.DEL, 127, 0), getActionRegistry().getAction(
-				ActionFactory.DELETE.getId()));
-		sharedKeyHandler.put(KeyStroke.getPressed(SWT.F2, 0), getActionRegistry().getAction(
-				GEFActionConstants.DIRECT_EDIT));
+        ZoomManager zoomManager = rootPart.getZoomManager();
 
-		return sharedKeyHandler;
-	}
+        List<String> zoomLevels = new ArrayList<String>(3);
+        zoomLevels.add(ZoomManager.FIT_ALL);
+        zoomLevels.add(ZoomManager.FIT_WIDTH);
+        zoomLevels.add(ZoomManager.FIT_HEIGHT);
+        zoomManager.setZoomLevelContributions(zoomLevels);
 
-	/**
-	 * Sets the dirty state of this editor.
-	 * 
-	 * <p>
-	 * An event will be fired immediately if the new state is different than the
-	 * current one.
-	 * 
-	 * @param dirty
-	 *            the new dirty state to set
-	 */
-	protected void setDirty(boolean dirty)
-	{
-		if (isDirty != dirty)
-		{
-			isDirty = dirty;
-			firePropertyChange(IEditorPart.PROP_DIRTY);
-		}
-	}
+        IAction zoomIn = new ZoomInAction(zoomManager);
+        IAction zoomOut = new ZoomOutAction(zoomManager);
+        addAction(zoomIn);
+        addAction(zoomOut);
+    }
 
-	/**
-	 * Creates actions and registers them to the ActionRegistry.
-	 */
-	protected void createActions()
-	{
-		addStackAction(new UndoAction(this));
-		addStackAction(new RedoAction(this));
-		addEditPartAction(new DeleteAction((IWorkbenchPart) this));
-		addEditorAction(new SaveAction(this));
-		addEditorAction(new PrintAction(this));
-	}
+    protected KeyHandler getCommonKeyHandler() {
 
-	/**
-	 * Adds an <code>EditPart</code> action to this editor.
-	 * 
-	 * <p>
-	 * <code>EditPart</code> actions are actions that depend and work on the
-	 * selected <code>EditPart</code>s.
-	 * 
-	 * @param action
-	 *            the <code>EditPart</code> action
-	 */
-	protected void addEditPartAction(SelectionAction action)
-	{
-		getActionRegistry().registerAction(action);
-		editPartActionIDs.add(action.getId());
-	}
+        KeyHandler sharedKeyHandler = new KeyHandler();
+        sharedKeyHandler.put(KeyStroke.getPressed(SWT.DEL, 127, 0), getActionRegistry().getAction(
+            ActionFactory.DELETE.getId()));
+        sharedKeyHandler.put(KeyStroke.getPressed(SWT.F2, 0), getActionRegistry().getAction(
+            GEFActionConstants.DIRECT_EDIT));
 
-	/**
-	 * Adds an <code>CommandStack</code> action to this editor.
-	 * 
-	 * <p>
-	 * <code>CommandStack</code> actions are actions that depend and work on
-	 * the <code>CommandStack</code>.
-	 * 
-	 * @param action
-	 *            the <code>CommandStack</code> action
-	 */
-	protected void addStackAction(StackAction action)
-	{
-		getActionRegistry().registerAction(action);
-		stackActionIDs.add(action.getId());
-	}
+        return sharedKeyHandler;
+    }
 
-	/**
-	 * Adds an editor action to this editor.
-	 * 
-	 * <p>
-	 * <Editor actions are actions that depend and work on the editor.
-	 * 
-	 * @param action
-	 *            the editor action
-	 */
-	protected void addEditorAction(WorkbenchPartAction action)
-	{
-		getActionRegistry().registerAction(action);
-		editorActionIDs.add(action.getId());
-	}
+    /**
+     * Sets the dirty state of this editor.
+     * <p/>
+     * <p/>
+     * An event will be fired immediately if the new state is different than the
+     * current one.
+     *
+     * @param dirty the new dirty state to set
+     */
+    protected void setDirty(boolean dirty) {
+        if (isDirty != dirty) {
+            isDirty = dirty;
+            firePropertyChange(IEditorPart.PROP_DIRTY);
+        }
+    }
 
-	/**
-	 * Adds an action to this editor's <code>ActionRegistry</code>. (This is
-	 * a helper method.)
-	 * 
-	 * @param action
-	 *            the action to add.
-	 */
-	protected void addAction(IAction action)
-	{
-		getActionRegistry().registerAction(action);
-	}
+    /**
+     * Creates actions and registers them to the ActionRegistry.
+     */
+    protected void createActions() {
+        addStackAction(new UndoAction(this));
+        addStackAction(new RedoAction(this));
+        addEditPartAction(new DeleteAction((IWorkbenchPart) this));
+        addEditorAction(new SaveAction(this));
+        addEditorAction(new PrintAction(this));
+    }
 
-	/**
-	 * Updates the specified actions.
-	 * 
-	 * @param actionIds
-	 *            the list of ids of actions to update
-	 */
-	protected void updateActions(List actionIds)
-	{
-		for (Iterator<?> ids = actionIds.iterator(); ids.hasNext();)
-		{
-			IAction action = getActionRegistry().getAction(ids.next());
-			if (null != action && action instanceof UpdateAction)
-				((UpdateAction) action).update();
+    /**
+     * Adds an <code>EditPart</code> action to this editor.
+     * <p/>
+     * <p/>
+     * <code>EditPart</code> actions are actions that depend and work on the
+     * selected <code>EditPart</code>s.
+     *
+     * @param action the <code>EditPart</code> action
+     */
+    protected void addEditPartAction(SelectionAction action) {
+        getActionRegistry().registerAction(action);
+        editPartActionIDs.add(action.getId());
+    }
 
-		}
-	}
+    /**
+     * Adds an <code>CommandStack</code> action to this editor.
+     * <p/>
+     * <p/>
+     * <code>CommandStack</code> actions are actions that depend and work on
+     * the <code>CommandStack</code>.
+     *
+     * @param action the <code>CommandStack</code> action
+     */
+    protected void addStackAction(StackAction action) {
+        getActionRegistry().registerAction(action);
+        stackActionIDs.add(action.getId());
+    }
 
-	/**
-	 * Returns the action registry of this editor.
-	 * 
-	 * @return the action registry
-	 */
-	protected ActionRegistry getActionRegistry()
-	{
-		if (actionRegistry == null)
-			actionRegistry = new ActionRegistry();
+    /**
+     * Adds an editor action to this editor.
+     * <p/>
+     * <p/>
+     * <Editor actions are actions that depend and work on the editor.
+     *
+     * @param action the editor action
+     */
+    protected void addEditorAction(WorkbenchPartAction action) {
+        getActionRegistry().registerAction(action);
+        editorActionIDs.add(action.getId());
+    }
 
-		return actionRegistry;
-	}
+    /**
+     * Adds an action to this editor's <code>ActionRegistry</code>. (This is
+     * a helper method.)
+     *
+     * @param action the action to add.
+     */
+    protected void addAction(IAction action) {
+        getActionRegistry().registerAction(action);
+        UIUtils.registerKeyBinding(getSite(), action);
+    }
 
-	/**
-	 * Returns the overview for the outline view.
-	 * 
-	 * @return the overview
-	 */
-	protected ERDOutlinePage getOverviewOutlinePage()
-	{
-		if (null == outlinePage && null != getGraphicalViewer())
-		{
-			RootEditPart rootEditPart = getGraphicalViewer().getRootEditPart();
-			if (rootEditPart instanceof ScalableFreeformRootEditPart)
-			{
-				outlinePage = new ERDOutlinePage((ScalableFreeformRootEditPart) rootEditPart);
-			}
-		}
+    /**
+     * Updates the specified actions.
+     *
+     * @param actionIds the list of ids of actions to update
+     */
+    protected void updateActions(List actionIds) {
+        for (Iterator<?> ids = actionIds.iterator(); ids.hasNext();) {
+            IAction action = getActionRegistry().getAction(ids.next());
+            if (null != action && action instanceof UpdateAction) {
+                ((UpdateAction) action).update();
+            }
 
-		return outlinePage;
-	}
+        }
+    }
 
-	/**
-	 * Returns the undoable <code>PropertySheetPage</code> for this editor.
-	 * 
-	 * @return the undoable <code>PropertySheetPage</code>
-	 */
-	protected PropertySheetPage getPropertySheetPage()
-	{
-		if (null == undoablePropertySheetPage)
-		{
-			undoablePropertySheetPage = new PropertySheetPage();
-			undoablePropertySheetPage.setRootEntry(new UndoablePropertySheetEntry(getCommandStack()));
-		}
+    /**
+     * Returns the overview for the outline view.
+     *
+     * @return the overview
+     */
+    protected ERDOutlinePage getOverviewOutlinePage() {
+        if (null == outlinePage && null != getGraphicalViewer()) {
+            RootEditPart rootEditPart = getGraphicalViewer().getRootEditPart();
+            if (rootEditPart instanceof ScalableFreeformRootEditPart) {
+                outlinePage = new ERDOutlinePage((ScalableFreeformRootEditPart) rootEditPart);
+            }
+        }
 
-		return undoablePropertySheetPage;
-	}
+        return outlinePage;
+    }
 
-	/*
-	 */
-	protected void firePropertyChange(int propertyId)
-	{
-		super.firePropertyChange(propertyId);
-		updateActions(editorActionIDs);
-	}
+    /**
+     * Returns the undoable <code>PropertySheetPage</code> for this editor.
+     *
+     * @return the undoable <code>PropertySheetPage</code>
+     */
+    protected PropertySheetPage getPropertySheetPage() {
+        if (null == undoablePropertySheetPage) {
+            undoablePropertySheetPage = new PropertySheetPage();
+            undoablePropertySheetPage.setRootEntry(new UndoablePropertySheetEntry(getCommandStack()));
+        }
 
-	/**
-	 * @return the preferences for the Palette Flyout
-	 */
-	protected FlyoutPreferences getPalettePreferences()
-	{
-		return new PaletteFlyoutPreferences();
-	}
+        return undoablePropertySheetPage;
+    }
 
-	/**
-	 * @return the PaletteRoot to be used with the PaletteViewer
-	 */
-	protected PaletteRoot getPaletteRoot()
-	{
-		return createPaletteRoot();
-	}
+    /*
+      */
 
-	/**
-	 * Returns the content of this editor
-	 * 
-	 * @return the model object
-	 */
-	private Schema getContent()
-	{
-		return new Schema("Schema");//ContentCreator().getContent();
-	}
+    protected void firePropertyChange(int propertyId) {
+        super.firePropertyChange(propertyId);
+        updateActions(editorActionIDs);
+    }
 
-    public void initObjectEditor(IDatabaseObjectManager<DBSEntityContainer> manager)
-    {
+    /**
+     * @return the preferences for the Palette Flyout
+     */
+    protected FlyoutPreferences getPalettePreferences() {
+        return new PaletteFlyoutPreferences();
+    }
+
+    /**
+     * @return the PaletteRoot to be used with the PaletteViewer
+     */
+    protected PaletteRoot getPaletteRoot() {
+        return createPaletteRoot();
+    }
+
+    /**
+     * Returns the content of this editor
+     *
+     * @return the model object
+     */
+    private Schema getContent() {
+        return new Schema("Schema");//ContentCreator().getContent();
+    }
+
+    public void initObjectEditor(IDatabaseObjectManager<DBSEntityContainer> manager) {
         entityContainer = manager.getObject();
     }
 
-    public void activatePart()
-    {
+    public void activatePart() {
         if (isLoaded) {
             return;
         }
         LoadingUtils.executeService(
             new AbstractLoadService<Schema>("Load schema") {
                 public Schema evaluate()
-                    throws InvocationTargetException, InterruptedException
-                {
+                    throws InvocationTargetException, InterruptedException {
                     try {
                         return loadFromDatabase(getProgressMonitor());
                     }
@@ -665,15 +629,13 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 }
             },
             progressControl.createLoadVisualizer());
-
     }
 
     public void deactivatePart() {
 
     }
 
-    public PaletteRoot createPaletteRoot()
-    {
+    public PaletteRoot createPaletteRoot() {
         // create root
         PaletteRoot paletteRoot = new PaletteRoot();
 
@@ -707,14 +669,14 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             List<CombinedTemplateCreationEntry> entries = new ArrayList<CombinedTemplateCreationEntry>();
 
             CombinedTemplateCreationEntry tableEntry = new CombinedTemplateCreationEntry("New Table", "Create a new table",
-                    Table.class, new DataElementFactory(Table.class),
-                    Activator.getImageDescriptor("icons/table.gif"),
-                    Activator.getImageDescriptor("icons/table.gif"));
+                Table.class, new DataElementFactory(Table.class),
+                Activator.getImageDescriptor("icons/table.gif"),
+                Activator.getImageDescriptor("icons/table.gif"));
 
             CombinedTemplateCreationEntry columnEntry = new CombinedTemplateCreationEntry("New Column", "Add a new column",
-                    Column.class, new DataElementFactory(Column.class),
-                    Activator.getImageDescriptor("icons/column.gif"),
-                    Activator.getImageDescriptor("icons/column.gif"));
+                Column.class, new DataElementFactory(Column.class),
+                Activator.getImageDescriptor("icons/column.gif"),
+                Activator.getImageDescriptor("icons/column.gif"));
 
             entries.add(tableEntry);
             entries.add(columnEntry);
@@ -729,10 +691,9 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
     }
 
     private class ProgressControl extends ProgressPageControl {
-        private ToolItem itemZoomIn;
-        private ToolItem itemZoomOut;
-        private ToolItem itemZoomNorm;
-        private ToolItem itemRefresh;
+
+        private ToolBarManager toolBarManager;
+        private ZoomComboContributionItem zoomCombo;
 
         private ProgressControl(Composite parent, int style, IWorkbenchPart workbenchPart) {
             super(parent, style, workbenchPart);
@@ -740,15 +701,10 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
         @Override
         public void dispose() {
-            UIUtils.dispose(itemZoomIn);
-            UIUtils.dispose(itemZoomOut);
-            UIUtils.dispose(itemZoomNorm);
-            UIUtils.dispose(itemRefresh);
             super.dispose();
         }
 
-        protected int getProgressCellCount()
-        {
+        protected int getProgressCellCount() {
             return 3;
         }
 
@@ -756,49 +712,24 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         protected Composite createProgressPanel(Composite container) {
             Composite infoGroup = super.createProgressPanel(container);
 
-            ToolBar toolBar = new ToolBar(infoGroup, SWT.FLAT | SWT.HORIZONTAL);
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            toolBar.setLayoutData(gd);
-            itemZoomIn = UIUtils.createToolItem(toolBar, "Zoom In", DBIcon.ZOOM_IN, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-/*
-                    synchronized (ERDEditor.this) {
-                        if (graph.getScale() < 2.0) {
-                            graph.setScale(graph.getScale() + 0.1);
-                        }
-                    }
-*/
-                }
-            });
-            itemZoomOut = UIUtils.createToolItem(toolBar, "Zoom Out", DBIcon.ZOOM_OUT, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-/*
-                    synchronized (ERDEditor.this) {
-                        if (graph.getScale() > 0.2) {
-                            graph.setScale(graph.getScale() - 0.1);
-                        }
-                    }
-*/
-                }
-            });
-            itemZoomNorm = UIUtils.createToolItem(toolBar, "Standard Zoom", DBIcon.ZOOM, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-/*
-                    synchronized (ERDEditor.this) {
-                        graph.setScale(1.0);
-                    }
-*/
-                }
-            });
-            itemRefresh = UIUtils.createToolItem(toolBar, "Refresh", DBIcon.RS_REFRESH, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
+            ZoomManager zoomManager = rootPart.getZoomManager();
 
-                }
-            });
+            toolBarManager = new ToolBarManager();
+
+
+            String[] zoomStrings = new String[] {
+                ZoomManager.FIT_ALL,
+                ZoomManager.FIT_HEIGHT,
+                ZoomManager.FIT_WIDTH
+            };
+            zoomCombo = new ZoomComboContributionItem(ERDEditor.this.getSite().getPage(), zoomStrings);
+            toolBarManager.add(zoomCombo);
+            toolBarManager.add(new Separator());
+            toolBarManager.add(new ZoomInAction(zoomManager));
+            toolBarManager.add(new ZoomOutAction(zoomManager));
+
+            toolBarManager.createControl(infoGroup);
+
             return infoGroup;
         }
 
@@ -810,7 +741,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             @Override
             public void completeLoading(Schema schema) {
                 super.completeLoading(schema);
-                graphicalViewer.setContents(schema);
+                getGraphicalViewer().setContents(schema);
+                zoomCombo.setZoomManager(rootPart.getZoomManager());
             }
         }
 

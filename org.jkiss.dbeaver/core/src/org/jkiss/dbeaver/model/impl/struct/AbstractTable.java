@@ -20,7 +20,7 @@ import java.util.Collection;
 public abstract class AbstractTable<
     DATASOURCE extends DBPDataSource,
     CONTAINER extends DBSEntityContainer>
-    implements DBSTable, DBSEntityContainer
+    implements DBSTable
 {
     private CONTAINER container;
     private String tableName;
@@ -89,6 +89,7 @@ public abstract class AbstractTable<
         return container;
     }
 
+/*
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -101,6 +102,7 @@ public abstract class AbstractTable<
         return getColumn(monitor, childName);
     }
 
+*/
     public String toString()
     {
         return getFullQualifiedName();
