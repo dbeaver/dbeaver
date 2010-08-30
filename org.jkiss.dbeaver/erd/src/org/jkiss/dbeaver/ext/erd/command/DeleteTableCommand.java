@@ -16,6 +16,7 @@ import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.ext.erd.model.Relationship;
 import org.jkiss.dbeaver.ext.erd.model.Schema;
 import org.jkiss.dbeaver.ext.erd.model.Table;
+import org.jkiss.dbeaver.ext.erd.part.TablePart;
 
 /**
  * Command to delete tables from the schema
@@ -25,6 +26,7 @@ import org.jkiss.dbeaver.ext.erd.model.Table;
 public class DeleteTableCommand extends Command
 {
 
+    private TablePart tablePart;
 	private Table table;
 	private Schema schema;
 	private int index = -1;
@@ -32,7 +34,14 @@ public class DeleteTableCommand extends Command
 	private List<Relationship> primaryKeyRelationships = new ArrayList<Relationship>();
 	private Rectangle bounds;
 
-	private void deleteRelationships(Table t)
+    public DeleteTableCommand(Schema schema, TablePart tablePart, Rectangle originalBounds) {
+        this.schema = schema;
+        this.tablePart = tablePart;
+        this.table = tablePart.getTable();
+        this.bounds = originalBounds;
+    }
+
+    private void deleteRelationships(Table t)
 	{
 
 		this.foreignKeyRelationships.addAll(t.getForeignKeyRelationships());
@@ -68,9 +77,12 @@ public class DeleteTableCommand extends Command
 	 */
 	protected void primExecute()
 	{
+        tablePart.modifyBounds(new Rectangle(0, 0, 0, 0));
+
 		deleteRelationships(table);
 		index = schema.getTables().indexOf(table);
 		schema.removeTable(table);
+        // Zero bounds - to let modifyBounds reflect on undo
 	}
 
 	/**
@@ -100,44 +112,13 @@ public class DeleteTableCommand extends Command
 	}
 
 	/**
-	 * Sets the child to the passed Table
-	 * 
-	 * @param a
-	 *            the child
-	 */
-	public void setTable(Table a)
-	{
-		table = a;
-	}
-
-	/**
-	 * Sets the parent to the passed Schema
-	 * 
-	 * @param sa
-	 *            the parent
-	 */
-	public void setSchema(Schema sa)
-	{
-		schema = sa;
-	}
-
-	/**
 	 * @see org.eclipse.gef.commands.Command#undo()
 	 */
 	public void undo()
 	{
 		schema.addTable(table, index);
 		restoreRelationships();
-		table.modifyBounds(bounds);
-	}
-
-	/**
-	 * Sets the original bounds for the table so that these can be restored
-     * @param bounds bounds
-     */
-	public void setOriginalBounds(Rectangle bounds)
-	{
-		this.bounds = bounds;
+		//tablePart.modifyBounds(bounds);
 	}
 
 }

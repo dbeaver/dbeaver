@@ -138,8 +138,7 @@ public class DiagramPart extends PropertyAwarePart
 				continue;
 
 			Rectangle bounds = tableFigure.getBounds().getCopy();
-			Table table = tablePart.getTable();
-			table.setBounds(bounds);
+			tablePart.setBounds(bounds);
 		}
 
 		return true;
@@ -158,15 +157,13 @@ public class DiagramPart extends PropertyAwarePart
 	{
 
 		List tableParts = getChildren();
-		Schema schema = getSchema();
 
 		for (Iterator iter = tableParts.iterator(); iter.hasNext();)
 		{
 			TablePart tablePart = (TablePart) iter.next();
-			Table table = tablePart.getTable();
 
 			//now check whether we can find an entry in the tableToNodesMap
-			Rectangle bounds = table.getBounds();
+			Rectangle bounds = tablePart.getBounds();
 			if (bounds == null)
 			{
 				//TODO handle this better

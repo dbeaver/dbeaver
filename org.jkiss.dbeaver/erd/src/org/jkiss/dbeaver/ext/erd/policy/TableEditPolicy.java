@@ -29,11 +29,7 @@ public class TableEditPolicy extends ComponentEditPolicy
 		TablePart tablePart = (TablePart) getHost();
 		Rectangle bounds = tablePart.getFigure().getBounds().getCopy();
 		Schema parent = (Schema) (tablePart.getParent().getModel());
-		DeleteTableCommand deleteCmd = new DeleteTableCommand();
-		deleteCmd.setSchema(parent);
-		deleteCmd.setTable((Table) (tablePart.getModel()));
-		deleteCmd.setOriginalBounds(bounds);
-		return deleteCmd;
+		return new DeleteTableCommand(parent, tablePart, bounds);
 	}
 	
 }

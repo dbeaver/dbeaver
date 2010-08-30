@@ -10,7 +10,7 @@ package org.jkiss.dbeaver.ext.erd.command;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
 
-import org.jkiss.dbeaver.ext.erd.model.Table;
+import org.jkiss.dbeaver.ext.erd.part.TablePart;
 
 /**
  * Command to move the bounds of an existing table. Only used with
@@ -21,26 +21,26 @@ import org.jkiss.dbeaver.ext.erd.model.Table;
 public class TableMoveCommand extends Command
 {
 
-	private Table table;
+	private TablePart tablePart;
 	private Rectangle oldBounds;
 	private Rectangle newBounds;
 
-	public TableMoveCommand(Table table, Rectangle oldBounds, Rectangle newBounds)
+	public TableMoveCommand(TablePart tablePart, Rectangle oldBounds, Rectangle newBounds)
 	{
 		super();
-		this.table = table;
+		this.tablePart = tablePart;
 		this.oldBounds = oldBounds;
 		this.newBounds = newBounds;
 	}
 
 	public void execute()
 	{
-		table.modifyBounds(newBounds);
+		tablePart.modifyBounds(newBounds);
 	}
 
 	public void undo()
 	{
-		table.modifyBounds(oldBounds);
+		tablePart.modifyBounds(oldBounds);
 	}
 
 }

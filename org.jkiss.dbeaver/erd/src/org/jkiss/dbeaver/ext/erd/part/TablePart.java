@@ -50,6 +50,46 @@ public class TablePart extends PropertyAwarePart implements NodeEditPart
 {
 
 	protected DirectEditManager manager;
+    private Rectangle bounds;
+
+
+    /**
+     * @return Returns the bounds.
+     */
+    public Rectangle getBounds()
+    {
+        return bounds;
+    }
+
+    /**
+     * Sets bounds without firing off any event notifications
+     *
+     * @param bounds
+     *            The bounds to set.
+     */
+    public void setBounds(Rectangle bounds)
+    {
+        this.bounds = bounds;
+    }
+
+    /**
+     * If modified, sets bounds and fires off event notification
+     *
+     * @param bounds
+     *            The bounds to set.
+     */
+    public void modifyBounds(Rectangle bounds)
+    {
+        Rectangle oldBounds = this.bounds;
+        if (!bounds.equals(oldBounds))
+        {
+            this.bounds = bounds;
+
+            TableFigure tableFigure = (TableFigure) getFigure();
+            DiagramPart parent = (DiagramPart) getParent();
+            parent.setLayoutConstraint(this, tableFigure, bounds);
+        }
+    }
 
 	//******************* Life-cycle related methods *********************/
 
@@ -114,7 +154,7 @@ public class TablePart extends PropertyAwarePart implements NodeEditPart
 		installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new TableNodeEditPolicy());
 		installEditPolicy(EditPolicy.LAYOUT_ROLE, new TableLayoutEditPolicy());
 		installEditPolicy(EditPolicy.CONTAINER_ROLE, new TableContainerEditPolicy());
-		installEditPolicy(EditPolicy.COMPONENT_ROLE, new TableEditPolicy());
+		//installEditPolicy(EditPolicy.COMPONENT_ROLE, new TableEditPolicy());
 		installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new TableDirectEditPolicy());
 
 	}
@@ -205,17 +245,6 @@ public class TablePart extends PropertyAwarePart implements NodeEditPart
 		label.setText(getTable().getName());
 		label.setVisible(true);
 		refreshVisuals();
-	}
-
-	/**
-	 * handles change in bounds, to be overridden by subclass
-	 */
-	protected void handleBoundsChange(PropertyChangeEvent evt)
-	{
-		TableFigure tableFigure = (TableFigure) getFigure();
-		Rectangle constraint = (Rectangle) evt.getNewValue();
-		DiagramPart parent = (DiagramPart) getParent();
-		parent.setLayoutConstraint(this, tableFigure, constraint);
 	}
 
 	//******************* Layout related methods *********************/

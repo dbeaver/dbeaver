@@ -48,7 +48,6 @@ public class SchemaXYLayoutPolicy extends XYLayoutEditPolicy
 			return null;
 
 		TablePart tablePart = (TablePart) child;
-		Table table = tablePart.getTable();
 		TableFigure figure = (TableFigure) tablePart.getFigure();
 		Rectangle oldBounds = figure.getBounds();
 		Rectangle newBounds = (Rectangle) constraint;
@@ -60,7 +59,7 @@ public class SchemaXYLayoutPolicy extends XYLayoutEditPolicy
 
 		DiagramPart diagramPart = (DiagramPart) tablePart.getParent();
 
-		TableMoveCommand command = new TableMoveCommand(table, oldBounds.getCopy(), newBounds.getCopy());
+		TableMoveCommand command = new TableMoveCommand(tablePart, oldBounds.getCopy(), newBounds.getCopy());
 		return command;
 	}
 

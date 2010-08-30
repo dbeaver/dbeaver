@@ -25,7 +25,6 @@ public class Table extends PropertyAwareObject
 	private Schema schema;
 	private String name;
 	private List<Column> columns = new ArrayList<Column>();
-	private Rectangle bounds;
 
 	private List<Relationship> primaryKeyRelationships = new ArrayList<Relationship>();
 	private List<Relationship> foreignKeyRelationships = new ArrayList<Relationship>();
@@ -100,17 +99,6 @@ public class Table extends PropertyAwareObject
 	}
 
 	/**
-	 * Sets bounds without firing off any event notifications
-	 * 
-	 * @param bounds
-	 *            The bounds to set.
-	 */
-	public void setBounds(Rectangle bounds)
-	{
-		this.bounds = bounds;
-	}
-
-	/**
 	 * Adds relationship where the current object is the foreign key table in a relationship
 	 * 
 	 * @param table
@@ -174,22 +162,6 @@ public class Table extends PropertyAwareObject
 		}
 	}
 
-	/**
-	 * If modified, sets bounds and fires off event notification
-	 * 
-	 * @param bounds
-	 *            The bounds to set.
-	 */
-	public void modifyBounds(Rectangle bounds)
-	{
-		Rectangle oldBounds = this.bounds;
-		if (!bounds.equals(oldBounds))
-		{
-			this.bounds = bounds;
-			firePropertyChange(BOUNDS, null, bounds);
-		}
-	}
-
 	public String getName()
 	{
 		return name;
@@ -222,14 +194,6 @@ public class Table extends PropertyAwareObject
 	public Schema getSchema()
 	{
 		return schema;
-	}
-
-	/**
-	 * @return Returns the bounds.
-	 */
-	public Rectangle getBounds()
-	{
-		return bounds;
 	}
 
 	public String toString()
