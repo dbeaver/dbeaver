@@ -46,8 +46,7 @@ public class AttributePart extends PropertyAwarePart
 	{
 		Column column = (Column) getModel();
 		String label = column.getLabelText();
-		EditableLabel columnLabel = new EditableLabel(label);
-		return columnLabel;
+		return new EditableLabel(label);
 	}
 
 	/**
@@ -75,10 +74,8 @@ public class AttributePart extends PropertyAwarePart
 	{
 		IFigure figure = getFigure();
 		figure.translateToRelative(requestLoc);
-		if (figure.containsPoint(requestLoc))
-			return true;
-		return false;
-	}
+        return figure.containsPoint(requestLoc);
+    }
 
 	protected void performDirectEdit()
 	{

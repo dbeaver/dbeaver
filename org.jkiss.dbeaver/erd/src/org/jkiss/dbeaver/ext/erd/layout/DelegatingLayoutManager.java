@@ -45,7 +45,7 @@ public class DelegatingLayoutManager implements LayoutManager
 	public void layout(IFigure container)
 	{
 
-		EntityDiagram entityDiagram = diagram.getSchema();
+		EntityDiagram entityDiagram = diagram.getDiagram();
 
 		if (entityDiagram.isLayoutManualDesired())
 		{

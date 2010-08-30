@@ -51,7 +51,7 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy
 		Point location = request.getLocation();
 		EditPart host = getTargetEditPart(request);
 		DiagramPart diagramPart = (DiagramPart)getHost();
-		EntityDiagram entityDiagram = diagramPart.getSchema();
+		EntityDiagram entityDiagram = diagramPart.getDiagram();
 		Table table = (Table) newObject;
 		EntityAddCommand entityAddCommand = new EntityAddCommand();
 		entityAddCommand.setSchema(entityDiagram);

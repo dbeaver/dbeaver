@@ -17,7 +17,6 @@ import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.commands.CommandStackListener;
 
 import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
-import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ext.erd.layout.DelegatingLayoutManager;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
 import org.jkiss.dbeaver.ext.erd.layout.GraphLayoutManager;
@@ -75,13 +74,13 @@ public class DiagramPart extends PropertyAwarePart
 
 	protected IFigure createFigure()
 	{
-		Figure f = new EntityDiagramFigure();
+		Figure figure = new EntityDiagramFigure();
 		delegatingLayoutManager = new DelegatingLayoutManager(this);
-		f.setLayoutManager(delegatingLayoutManager);
-		return f;
+		figure.setLayoutManager(delegatingLayoutManager);
+		return figure;
 	}
 
-	public EntityDiagram getSchema()
+	public EntityDiagram getDiagram()
 	{
 		return (EntityDiagram) getModel();
 	}
@@ -91,7 +90,7 @@ public class DiagramPart extends PropertyAwarePart
 	 */
 	protected List getModelChildren()
 	{
-		return getSchema().getTables();
+		return getDiagram().getTables();
 	}
 
 	/**
@@ -123,13 +122,12 @@ public class DiagramPart extends PropertyAwarePart
 	public boolean setTableModelBounds()
 	{
 
-		List tableParts = getChildren();
-		EntityDiagram entityDiagram = getSchema();
+		List entityParts = getChildren();
 
-		for (Iterator iter = tableParts.iterator(); iter.hasNext();)
+		for (Iterator iter = entityParts.iterator(); iter.hasNext();)
 		{
 			EntityPart entityPart = (EntityPart) iter.next();
-			EntityFigure entityFigure = (EntityFigure) entityPart.getFigure();
+			IFigure entityFigure = entityPart.getFigure();
 
 			//if we don't find a node for one of the children then we should
 			// continue
@@ -170,7 +168,7 @@ public class DiagramPart extends PropertyAwarePart
 			}
 			else
 			{
-				EntityFigure entityFigure = (EntityFigure) entityPart.getFigure();
+				IFigure entityFigure = entityPart.getFigure();
 				if (entityFigure == null)
 				{
 					return false;
@@ -181,8 +179,7 @@ public class DiagramPart extends PropertyAwarePart
 					{
 						//pass the constraint information to the xy layout
 						//setting the width and height so that the preferred size will be applied
-						delegatingLayoutManager.setXYLayoutConstraint(entityFigure, new Rectangle(bounds.x, bounds.y,
-								-1, -1));
+						delegatingLayoutManager.setXYLayoutConstraint(entityFigure, new Rectangle(bounds.x, bounds.y, -1, -1));
 					}
 				}
 			}
@@ -199,8 +196,8 @@ public class DiagramPart extends PropertyAwarePart
 	 */
 	protected void handleLayoutChange(PropertyChangeEvent evt)
 	{
-		Boolean layoutType = (Boolean) evt.getNewValue();
-		boolean isManualLayoutDesired = layoutType.booleanValue();
+		//Boolean layoutType = (Boolean) evt.getNewValue();
+		//boolean isManualLayoutDesired = layoutType.booleanValue();
 		getFigure().setLayoutManager(delegatingLayoutManager);
 	}
 
@@ -209,7 +206,7 @@ public class DiagramPart extends PropertyAwarePart
 	 */
 	public void setLayoutConstraint(EditPart child, IFigure childFigure, Object constraint)
 	{
-			super.setLayoutConstraint(child, childFigure, constraint);
+        super.setLayoutConstraint(child, childFigure, constraint);
 	}
 
 	/**
