@@ -7,23 +7,14 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
-import java.beans.PropertyChangeEvent;
-import java.util.List;
-
+import org.eclipse.draw2d.ChopboxAnchor;
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.gef.ConnectionEditPart;
-import org.eclipse.gef.EditPart;
-import org.eclipse.gef.EditPolicy;
-import org.eclipse.gef.NodeEditPart;
-import org.eclipse.gef.Request;
-import org.eclipse.gef.RequestConstants;
-import org.eclipse.gef.requests.DirectEditRequest;
+import org.eclipse.gef.*;
 import org.eclipse.gef.tools.DirectEditManager;
 import org.eclipse.jface.viewers.TextCellEditor;
-
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
 import org.jkiss.dbeaver.ext.erd.directedit.TableNameCellEditorValidator;
@@ -32,12 +23,9 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
-import org.jkiss.dbeaver.ext.erd.part.connector.BottomAnchor;
-import org.jkiss.dbeaver.ext.erd.part.connector.TopAnchor;
-import org.jkiss.dbeaver.ext.erd.policy.EntityContainerEditPolicy;
-import org.jkiss.dbeaver.ext.erd.policy.EntityDirectEditPolicy;
-import org.jkiss.dbeaver.ext.erd.policy.EntityLayoutEditPolicy;
-import org.jkiss.dbeaver.ext.erd.policy.EntityNodeEditPolicy;
+
+import java.beans.PropertyChangeEvent;
+import java.util.List;
 
 /**
  * Represents the editable/resizable table which can have columns added,
@@ -283,7 +271,7 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	 */
 	public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connection)
 	{
-		return new TopAnchor(getFigure());
+		return new ChopboxAnchor(getFigure());
 	}
 
 	/**
@@ -291,7 +279,8 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	 */
 	public ConnectionAnchor getSourceConnectionAnchor(Request request)
 	{
-		return new TopAnchor(getFigure());
+        return new ChopboxAnchor(getFigure());
+		//return new TopAnchor(getFigure());
 	}
 
 	/**
@@ -299,7 +288,8 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	 */
 	public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connection)
 	{
-		return new BottomAnchor(getFigure());
+        return new ChopboxAnchor(getFigure());
+		//return new BottomAnchor(getFigure());
 	}
 
 	/**
@@ -307,7 +297,7 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	 */
 	public ConnectionAnchor getTargetConnectionAnchor(Request request)
 	{
-		return new BottomAnchor(getFigure());
+		return new ChopboxAnchor(getFigure());
 	}
 
 	/**

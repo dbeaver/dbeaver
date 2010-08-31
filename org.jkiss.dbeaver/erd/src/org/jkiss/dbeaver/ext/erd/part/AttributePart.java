@@ -20,6 +20,7 @@ import org.eclipse.gef.requests.DirectEditRequest;
 import org.eclipse.gef.tools.DirectEditManager;
 import org.eclipse.jface.viewers.TextCellEditor;
 
+import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.ext.erd.directedit.ColumnNameTypeCellEditorValidator;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
 import org.jkiss.dbeaver.ext.erd.policy.ColumnDirectEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.AttributeEditPolicy;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * Represents an editable Column object in the model
@@ -51,8 +53,10 @@ public class AttributePart extends PropertyAwarePart
 	{
 		ERDTableColumn column = (ERDTableColumn) getModel();
 		String label = column.getLabelText();
-		return new EditableLabel(label);
-	}
+        EditableLabel editableLabel = new EditableLabel(label);
+        editableLabel.setIcon(column.getLabelImage());
+        return editableLabel;
+    }
 
 	/**
 	 * Creats EditPolicies for the column label

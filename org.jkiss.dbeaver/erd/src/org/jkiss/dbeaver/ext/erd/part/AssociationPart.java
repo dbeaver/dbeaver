@@ -11,10 +11,11 @@ import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPolicy;
+import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
-
+import org.eclipse.swt.SWT;
+import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationBendEditPolicy;
-import org.jkiss.dbeaver.ext.erd.policy.AssociationEditPolicy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,14 +37,30 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     protected void createEditPolicies() {
         installEditPolicy(EditPolicy.CONNECTION_ENDPOINTS_ROLE, new ConnectionEndpointEditPolicy());
-        installEditPolicy(EditPolicy.COMPONENT_ROLE, new AssociationEditPolicy());
+        //installEditPolicy(EditPolicy.COMPONENT_ROLE, new AssociationEditPolicy());
         installEditPolicy(EditPolicy.CONNECTION_BENDPOINTS_ROLE, new AssociationBendEditPolicy());
     }
 
     protected IFigure createFigure() {
+        ERDAssociation association = (ERDAssociation) getModel();
+
         PolylineConnection conn = (PolylineConnection) super.createFigure();
         conn.setConnectionRouter(new BendpointConnectionRouter());
         conn.setTargetDecoration(new PolygonDecoration());
+
+        //ChopboxAnchor sourceAnchor = new ChopboxAnchor(classFigure);
+        //ChopboxAnchor targetAnchor = new ChopboxAnchor(classFigure2);
+        //conn.setSourceAnchor(sourceAnchor);
+        //conn.setTargetAnchor(targetAnchor);
+
+/*
+        ConnectionEndpointLocator relationshipLocator = new ConnectionEndpointLocator(conn, true);
+        //relationshipLocator.setUDistance(30);
+        //relationshipLocator.setVDistance(-20);
+        Label relationshipLabel = new Label(association.getObject().getName());
+        conn.add(relationshipLabel, relationshipLocator);
+*/
+
         return conn;
     }
 

@@ -78,6 +78,13 @@ public class DiagramPart extends PropertyAwarePart
 		Figure figure = new EntityDiagramFigure();
 		delegatingLayoutManager = new DelegatingLayoutManager(this);
 		figure.setLayoutManager(delegatingLayoutManager);
+
+/*
+        ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
+        ViewportAwareConnectionLayerClippingStrategy clippingStrategy = new ViewportAwareConnectionLayerClippingStrategy(cLayer);
+        figure.setClippingStrategy(clippingStrategy);
+*/
+
 		return figure;
 	}
 
