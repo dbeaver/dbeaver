@@ -49,5 +49,8 @@ public class GraphXYLayout extends FreeformLayout
 			return new Rectangle(currentBounds.x, currentBounds.y, -1,-1);
 		}
 	}
-	
+
+    public void cleanupConstraints() {
+        constraints.clear();
+    }
 }
