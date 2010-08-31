@@ -18,7 +18,7 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 
-import org.jkiss.dbeaver.ext.erd.model.PropertyAwareObject;
+import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 
 /**
  * An abstract EditPart implementation which is property aware and responds to
@@ -34,8 +34,8 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 	public void activate()
 	{
 		super.activate();
-		PropertyAwareObject propertyAwareObject = (PropertyAwareObject) getModel();
-		propertyAwareObject.addPropertyChangeListener(this);
+		ERDObject erdObject = (ERDObject) getModel();
+		erdObject.addPropertyChangeListener(this);
 	}
 
 	/**
@@ -44,8 +44,8 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 	public void deactivate()
 	{
 		super.deactivate();
-		PropertyAwareObject propertyAwareObject = (PropertyAwareObject) getModel();
-		propertyAwareObject.removePropertyChangeListener(this);
+		ERDObject erdObject = (ERDObject) getModel();
+		erdObject.removePropertyChangeListener(this);
 	}
 
 	/**
@@ -56,30 +56,30 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 
 		String property = evt.getPropertyName();
 
-		if (PropertyAwareObject.CHILD.equals(property))
+		if (ERDObject.CHILD.equals(property))
 		{
 			handleChildChange(evt);
 		}
-		if (PropertyAwareObject.REORDER.equals(property))
+		if (ERDObject.REORDER.equals(property))
 		{
 			handleReorderChange(evt);
 		}
-		else if (PropertyAwareObject.OUTPUT.equals(property))
+		else if (ERDObject.OUTPUT.equals(property))
 		{
 			handleOutputChange(evt);
 		}
-		else if (PropertyAwareObject.INPUT.equals(property))
+		else if (ERDObject.INPUT.equals(property))
 		{
 			handleInputChange(evt);
 		}
-		else if (PropertyAwareObject.NAME.equals(property))
+		else if (ERDObject.NAME.equals(property))
 		{
 			commitNameChange(evt);
 		}
 
 		//we want direct edit name changes to update immediately
 		//not use the Graph animation, if automatic layout is being used
-		if (PropertyAwareObject.NAME.equals(property))
+		if (ERDObject.NAME.equals(property))
 		{
 			GraphicalEditPart graphicalEditPart = (GraphicalEditPart) (getViewer().getContents());
 			IFigure partFigure = graphicalEditPart.getFigure();

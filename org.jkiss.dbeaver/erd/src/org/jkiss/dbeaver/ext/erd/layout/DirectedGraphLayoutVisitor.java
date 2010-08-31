@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.graph.DirectedGraph;
@@ -46,6 +47,7 @@ public class DirectedGraphLayoutVisitor
 		partToNodesMap = new HashMap<EditPart, Object>();
 		
 		graph = new DirectedGraph();
+        graph.setDirection(PositionConstants.SOUTH);
 		addDiagramNodes(diagram);
 		if (graph.nodes.size() > 0)
 		{	
@@ -62,10 +64,9 @@ public class DirectedGraphLayoutVisitor
 	{
 		GraphAnimation.recordInitialState(diagram.getFigure());
 		//IFigure fig = diagram.getFigure();
-		for (int i = 0; i < diagram.getChildren().size(); i++)
+		for (Object child : diagram.getChildren())
 		{
-			GraphicalEditPart tp = (GraphicalEditPart) diagram.getChildren().get(i);
-			addEntityNodes(tp);
+			addEntityNodes((GraphicalEditPart) child);
 		}
 	}
 
@@ -75,8 +76,9 @@ public class DirectedGraphLayoutVisitor
 	protected void addEntityNodes(GraphicalEditPart entityPart)
 	{
 		Node n = new Node(entityPart);
-		n.width = entityPart.getFigure().getPreferredSize(400, 300).width;
-		n.height = entityPart.getFigure().getPreferredSize(400, 300).height;
+        Dimension preferredSize = entityPart.getFigure().getPreferredSize(400, 300);
+        n.width = preferredSize.width;
+		n.height = preferredSize.height;
 		n.setPadding(new Insets(10, 8, 10, 12));
 		partToNodesMap.put(entityPart, n);
 		graph.nodes.add(n);
@@ -84,10 +86,9 @@ public class DirectedGraphLayoutVisitor
 
 	protected void addDiagramEdges(AbstractGraphicalEditPart diagram)
 	{
-		for (int i = 0; i < diagram.getChildren().size(); i++)
+		for (Object child : diagram.getChildren())
 		{
-			GraphicalEditPart entityPart = (GraphicalEditPart) diagram.getChildren().get(i);
-			addEntityEdges(entityPart);
+			addEntityEdges((GraphicalEditPart) child);
 		}
 	}
 
@@ -111,6 +112,7 @@ public class DirectedGraphLayoutVisitor
 		Node source = (Node)partToNodesMap.get(connectionPart.getSource());
 		Node target = (Node)partToNodesMap.get(connectionPart.getTarget());
 		Edge e = new Edge(connectionPart, source, target);
+        e.setPadding(10);
 		e.weight = 2;
 		graph.edges.add(e);
 		partToNodesMap.put(connectionPart, e);
@@ -120,10 +122,9 @@ public class DirectedGraphLayoutVisitor
 
 	protected void applyDiagramResults(AbstractGraphicalEditPart diagram)
 	{
-		for (int i = 0; i < diagram.getChildren().size(); i++)
+		for (Object child : diagram.getChildren())
 		{
-			GraphicalEditPart entityPart = (GraphicalEditPart) diagram.getChildren().get(i);
-			applyEntityResults(entityPart);
+			applyEntityResults((GraphicalEditPart)child);
 		}
 	}
 
@@ -135,8 +136,8 @@ public class DirectedGraphLayoutVisitor
 		Node n = (Node) partToNodesMap.get(entityPart);
 		IFigure tableFigure = entityPart.getFigure();
 
-		Rectangle bounds = new Rectangle(n.x, n.y, tableFigure.getPreferredSize().width,
-				tableFigure.getPreferredSize().height);
+        Dimension preferredSize = tableFigure.getPreferredSize();
+        Rectangle bounds = new Rectangle(n.x, n.y, preferredSize.width, preferredSize.height);
 
 		tableFigure.setBounds(bounds);
 
@@ -165,7 +166,7 @@ public class DirectedGraphLayoutVisitor
 				Node vn = nodes.getNode(i);
 				int x = vn.x;
 				int y = vn.y;
-				if (e.isFeedback)
+				if (e.isFeedback())
 				{
 					bends.add(new AbsoluteBendpoint(x, y + vn.height));
 					bends.add(new AbsoluteBendpoint(x, y));

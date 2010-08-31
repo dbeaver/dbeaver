@@ -10,10 +10,10 @@ package org.jkiss.dbeaver.ext.erd.editor;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
 
-import org.jkiss.dbeaver.ext.erd.model.Column;
-import org.jkiss.dbeaver.ext.erd.model.Relationship;
+import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
+import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
-import org.jkiss.dbeaver.ext.erd.model.Table;
 import org.jkiss.dbeaver.ext.erd.part.AttributePart;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
@@ -30,11 +30,11 @@ class ERDEditPartFactory implements EditPartFactory
         EditPart part = null;
         if (model instanceof EntityDiagram) {
             part = new DiagramPart();
-        } else if (model instanceof Table) {
+        } else if (model instanceof ERDTable) {
             part = new EntityPart();
-        } else if (model instanceof Relationship) {
+        } else if (model instanceof ERDAssociation) {
             part = new AssociationPart();
-        } else if (model instanceof Column) {
+        } else if (model instanceof ERDTableColumn) {
             part = new AttributePart();
         }
         if (part != null) {

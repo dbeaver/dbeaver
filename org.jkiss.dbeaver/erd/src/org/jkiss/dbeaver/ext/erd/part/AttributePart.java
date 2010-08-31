@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
-import org.jkiss.dbeaver.ext.erd.model.Column;
+import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
 import org.jkiss.dbeaver.ext.erd.policy.ColumnDirectEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.AttributeEditPolicy;
 
@@ -41,7 +41,7 @@ public class AttributePart extends PropertyAwarePart
 
     @Override
     public boolean isSelectable() {
-        return false;
+        return true;
     }
 
     /**
@@ -49,7 +49,7 @@ public class AttributePart extends PropertyAwarePart
 	 */
 	protected IFigure createFigure()
 	{
-		Column column = (Column) getModel();
+		ERDTableColumn column = (ERDTableColumn) getModel();
 		String label = column.getLabelText();
 		return new EditableLabel(label);
 	}
@@ -59,9 +59,9 @@ public class AttributePart extends PropertyAwarePart
 	 */
 	protected void createEditPolicies()
 	{
-		installEditPolicy(EditPolicy.COMPONENT_ROLE, new AttributeEditPolicy());
-		installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new ColumnDirectEditPolicy());
-		installEditPolicy(EditPolicy.LAYOUT_ROLE, null);
+		//installEditPolicy(EditPolicy.COMPONENT_ROLE, new AttributeEditPolicy());
+		//installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new ColumnDirectEditPolicy());
+		//installEditPolicy(EditPolicy.LAYOUT_ROLE, null);
 	}
 
 	public void performRequest(Request request)
@@ -113,10 +113,6 @@ public class AttributePart extends PropertyAwarePart
 		columnLabel.repaint();
 	}
 
-	/**
-	 * @param Handles
-	 *            name change during direct edit
-	 */
 	public void handleNameChange(String textValue)
 	{
 		EditableLabel label = (EditableLabel) getFigure();
@@ -154,16 +150,16 @@ public class AttributePart extends PropertyAwarePart
 	 */
 	protected void refreshVisuals()
 	{
-		Column column = (Column) getModel();
+		ERDTableColumn column = (ERDTableColumn) getModel();
 		EditableLabel columnLabel = (EditableLabel) getFigure();
 		columnLabel.setText(column.getLabelText());
 	}
 	
 	
 
-	private Column getColumn()
+	private ERDTableColumn getColumn()
 	{
-		return (Column) getModel();
+		return (ERDTableColumn) getModel();
 	}
 	
 	

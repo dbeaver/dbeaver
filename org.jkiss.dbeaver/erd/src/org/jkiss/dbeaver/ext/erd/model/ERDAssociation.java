@@ -7,26 +7,22 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.jkiss.dbeaver.model.struct.DBSForeignKey;
+
 /**
  * Relates one table to another
  * 
  * @author Phil Zoio
  */
-public class Relationship extends PropertyAwareObject
+public class ERDAssociation extends ERDObject<DBSForeignKey>
 {
 
-	private Table primaryKeyTable;
-	private Table foreignKeyTable;
-	private Column foreignKeyColumn;
+	private ERDTable primaryKeyTable;
+	private ERDTable foreignKeyTable;
 
-	/**
-	 * @param foreignTable
-	 * @param primaryKeyTable
-	 * @param foreignKeyColumn
-	 */
-	public Relationship(Table foreignTable, Table primaryTable)
+	public ERDAssociation(DBSForeignKey object, ERDTable foreignTable, ERDTable primaryTable)
 	{
-		super();
+		super(object);
 		this.primaryKeyTable = primaryTable;
 		this.foreignKeyTable = foreignTable;
 		this.primaryKeyTable.addPrimaryKeyRelationship(this);
@@ -34,17 +30,9 @@ public class Relationship extends PropertyAwareObject
 	}
 
 	/**
-	 * @return Returns the foreignKeyColumn.
-	 */
-	public Column getForeignKeyColumn()
-	{
-		return foreignKeyColumn;
-	}
-
-	/**
 	 * @return Returns the foreignKeyTable.
 	 */
-	public Table getForeignKeyTable()
+	public ERDTable getForeignKeyTable()
 	{
 		return foreignKeyTable;
 	}
@@ -52,15 +40,12 @@ public class Relationship extends PropertyAwareObject
 	/**
 	 * @return Returns the primaryKeyTable.
 	 */
-	public Table getPrimaryKeyTable()
+	public ERDTable getPrimaryKeyTable()
 	{
 		return primaryKeyTable;
 	}
 
-	/**
-	 * @param sourceForeignKey the primary key table you are connecting to
-	 */
-	public void setPrimaryKeyTable(Table targetPrimaryKey)
+	public void setPrimaryKeyTable(ERDTable targetPrimaryKey)
 	{
 		this.primaryKeyTable = targetPrimaryKey;
 	}	
@@ -68,7 +53,7 @@ public class Relationship extends PropertyAwareObject
 	/**
 	 * @param sourceForeignKey the foreign key table you are connecting from
 	 */
-	public void setForeignKeyTable(Table sourceForeignKey)
+	public void setForeignKeyTable(ERDTable sourceForeignKey)
 	{
 		this.foreignKeyTable = sourceForeignKey;
 	}

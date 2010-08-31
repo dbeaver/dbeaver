@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
-import org.jkiss.dbeaver.ext.erd.model.Table;
+import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.part.connector.BottomAnchor;
 import org.jkiss.dbeaver.ext.erd.part.connector.TopAnchor;
 import org.jkiss.dbeaver.ext.erd.policy.EntityContainerEditPolicy;
@@ -113,9 +113,9 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	/**
 	 * Returns the Table model object represented by this EditPart
 	 */
-	public Table getTable()
+	public ERDTable getTable()
 	{
-		return (Table) getModel();
+		return (ERDTable) getModel();
 	}
 
 	/**
@@ -149,12 +149,11 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	 */
 	protected void createEditPolicies()
 	{
-
-		installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityNodeEditPolicy());
-		installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
-		installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
+		//installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityNodeEditPolicy());
+		//installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
+		//installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
 		//installEditPolicy(EditPolicy.COMPONENT_ROLE, new EntityEditPolicy());
-		installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new EntityDirectEditPolicy());
+		//installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new EntityDirectEditPolicy());
 
 	}
 
@@ -167,10 +166,12 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	{
 		if (request.getType() == RequestConstants.REQ_DIRECT_EDIT)
 		{
+/*
 			if (request instanceof DirectEditRequest
 					&& !directEditHitTest(((DirectEditRequest) request).getLocation().getCopy()))
 				return;
 			performDirectEdit();
+*/
 		}
 	}
 
@@ -179,10 +180,8 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 		EntityFigure figure = (EntityFigure) getFigure();
 		EditableLabel nameLabel = figure.getNameLabel();
 		nameLabel.translateToRelative(requestLoc);
-		if (nameLabel.containsPoint(requestLoc))
-			return true;
-		return false;
-	}
+        return nameLabel.containsPoint(requestLoc);
+    }
 
 	protected void performDirectEdit()
 	{
@@ -216,8 +215,8 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	{
 		EntityFigure entityFigure = (EntityFigure) getFigure();
 		EditableLabel label = entityFigure.getNameLabel();
-		Table table = getTable();
-		label.setText(table.getName());
+		ERDTable table = getTable();
+		label.setText(table.getObject().getName());
 		label.setVisible(true);
 		refreshVisuals();
 	}
@@ -241,7 +240,7 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	{
 		EntityFigure entityFigure = (EntityFigure) getFigure();
 		EditableLabel label = entityFigure.getNameLabel();
-		label.setText(getTable().getName());
+		label.setText(getTable().getObject().getName());
 		label.setVisible(true);
 		refreshVisuals();
 	}
@@ -253,10 +252,9 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	 */
 	protected IFigure createFigure()
 	{
-		Table table = getTable();
-		EditableLabel label = new EditableLabel(table.getName());
-		EntityFigure entityFigure = new EntityFigure(label);
-		return entityFigure;
+		ERDTable table = getTable();
+		EditableLabel label = new EditableLabel(table.getObject().getName());
+		return new EntityFigure(label);
 	}
 
 	/**

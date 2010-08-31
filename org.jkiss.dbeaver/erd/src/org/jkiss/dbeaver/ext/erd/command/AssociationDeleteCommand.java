@@ -9,8 +9,8 @@ package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
 
-import org.jkiss.dbeaver.ext.erd.model.Relationship;
-import org.jkiss.dbeaver.ext.erd.model.Table;
+import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 
 /**
  * Command to delete relationship
@@ -20,11 +20,11 @@ import org.jkiss.dbeaver.ext.erd.model.Table;
 public class AssociationDeleteCommand extends Command
 {
 
-	private Table foreignKeySource;
-	private Table primaryKeyTarget;
-	private Relationship relationship;
+	private ERDTable foreignKeySource;
+	private ERDTable primaryKeyTarget;
+	private ERDAssociation relationship;
 
-	public AssociationDeleteCommand(Table foreignKeySource, Table primaryKeyTarget, Relationship relationship)
+	public AssociationDeleteCommand(ERDTable foreignKeySource, ERDTable primaryKeyTarget, ERDAssociation relationship)
 	{
 		super();
 		this.foreignKeySource = foreignKeySource;

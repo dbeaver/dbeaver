@@ -12,8 +12,6 @@ import org.eclipse.gef.editpolicies.DirectEditPolicy;
 import org.eclipse.gef.requests.DirectEditRequest;
 import org.eclipse.jface.viewers.CellEditor;
 
-import org.jkiss.dbeaver.ext.erd.command.AttributeResetNameTypeCommand;
-import org.jkiss.dbeaver.ext.erd.model.Column;
 import org.jkiss.dbeaver.ext.erd.part.AttributePart;
 
 /**
@@ -31,14 +29,17 @@ public class ColumnDirectEditPolicy extends DirectEditPolicy
 	 */
 	protected Command getDirectEditCommand(DirectEditRequest request)
 	{
+/*
 		AttributeResetNameTypeCommand cmd = new AttributeResetNameTypeCommand();
-		Column column = (Column) getHost().getModel();
+		ERDTableColumn column = (ERDTableColumn) getHost().getModel();
 		cmd.setSource(column);
 		cmd.setOldName(column.getName());
 		cmd.setOldType(column.getType());
 		CellEditor cellEditor = request.getCellEditor();
 		cmd.setNameType((String) cellEditor.getValue());
 		return cmd;
+*/
+        return null;
 	}
 
 	/**

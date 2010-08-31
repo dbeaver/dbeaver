@@ -7,6 +7,9 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,35 +19,35 @@ import java.util.List;
  * although ideally these should be in a separate model hiearchy 
  * @author Phil Zoio
  */
-public class EntityDiagram extends PropertyAwareObject
+public class EntityDiagram extends ERDObject<DBSEntityContainer>
 {
 
 	private String name;
-	private List<Table> tables = new ArrayList<Table>();
+	private List<ERDTable> tables = new ArrayList<ERDTable>();
 	private boolean layoutManualDesired = true;
 	private boolean layoutManualAllowed = false;
 
-	public EntityDiagram(String name)
+	public EntityDiagram(DBSEntityContainer container, String name)
 	{
-		super();
+		super(container);
 		if (name == null)
 			throw new NullPointerException("Name cannot be null");
 		this.name = name;
 	}
 
-	public void addTable(Table table)
+	public void addTable(ERDTable table)
 	{
 		tables.add(table);
 		firePropertyChange(CHILD, null, table);
 	}
 
-	public void addTable(Table table, int i)
+	public void addTable(ERDTable table, int i)
 	{
 		tables.add(i, table);
 		firePropertyChange(CHILD, null, table);
 	}
 
-	public void removeTable(Table table)
+	public void removeTable(ERDTable table)
 	{
 		tables.remove(table);
 		firePropertyChange(CHILD, table, null);

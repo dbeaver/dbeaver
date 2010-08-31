@@ -7,7 +7,6 @@
  */
 package org.jkiss.dbeaver.ext.erd.policy;
 
-import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.commands.Command;
@@ -15,11 +14,6 @@ import org.eclipse.gef.editpolicies.AbstractEditPolicy;
 import org.eclipse.gef.editpolicies.ContainerEditPolicy;
 import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.GroupRequest;
-
-import org.jkiss.dbeaver.ext.erd.command.EntityAddCommand;
-import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
-import org.jkiss.dbeaver.ext.erd.model.Table;
-import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 
 /**
  * Handles creation of new tables using drag and drop or point and click from the palette
@@ -43,8 +37,9 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy
 	protected Command getCreateCommand(CreateRequest request)
 	{
 
+/*
 		Object newObject = request.getNewObject();
-		if (!(newObject instanceof Table))
+		if (!(newObject instanceof ERDTable))
 		{
 			return null;
 		}
@@ -52,11 +47,13 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy
 		EditPart host = getTargetEditPart(request);
 		DiagramPart diagramPart = (DiagramPart)getHost();
 		EntityDiagram entityDiagram = diagramPart.getDiagram();
-		Table table = (Table) newObject;
+		ERDTable table = (ERDTable) newObject;
 		EntityAddCommand entityAddCommand = new EntityAddCommand();
 		entityAddCommand.setSchema(entityDiagram);
 		entityAddCommand.setTable(table);
 		return entityAddCommand;
+*/
+        return null;
 	}
 
 	/**

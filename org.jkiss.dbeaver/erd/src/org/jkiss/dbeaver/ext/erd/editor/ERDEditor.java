@@ -38,14 +38,14 @@ import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 import org.jkiss.dbeaver.ext.erd.action.DiagramRefreshAction;
-import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
+import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
+import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.DataElementFactory;
-import org.jkiss.dbeaver.ext.erd.model.Column;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
-import org.jkiss.dbeaver.ext.erd.model.Relationship;
-import org.jkiss.dbeaver.ext.erd.model.Table;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -295,7 +295,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         } else {
             // Setup empty schema for now
             // Actual data will be loaded later in activatePart
-            entityDiagram = new EntityDiagram("empty");
+            entityDiagram = new EntityDiagram(null, "empty");
         }
     }
 
@@ -305,42 +305,42 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             log.error("Database object must be entity container to render ERD diagram");
             return null;
         }
-        entityDiagram = new EntityDiagram(entityContainer.getName());
+        entityDiagram = new EntityDiagram(entityContainer, entityContainer.getName());
 
         // Cache structure
         entityContainer.cacheStructure(monitor, DBSEntityContainer.STRUCT_ENTITIES | DBSEntityContainer.STRUCT_ASSOCIATIONS | DBSEntityContainer.STRUCT_ATTRIBUTES);
 
         // Load entities
-        Map<DBSObject, Table> tableMap = new HashMap<DBSObject, Table>();
+        Map<DBSObject, ERDTable> tableMap = new HashMap<DBSObject, ERDTable>();
         Collection<? extends DBSObject> entities = entityContainer.getChildren(monitor);
         for (DBSObject entity : entities) {
-            Table table = new Table(entity.getName(), entityDiagram);
-
             if (entity instanceof DBSTable) {
-                Collection<? extends DBSTableColumn> columns = ((DBSTable) entity).getColumns(monitor);
+                DBSTable dbsTable = (DBSTable)entity;
+                ERDTable table = new ERDTable(dbsTable);
+                Collection<? extends DBSTableColumn> columns = dbsTable.getColumns(monitor);
                 for (DBSTableColumn column : columns) {
-                    Column c1 = new Column(column.getName(), column.getTypeName());
+                    ERDTableColumn c1 = new ERDTableColumn(column);
                     table.addColumn(c1);
                 }
+                entityDiagram.addTable(table);
+                tableMap.put(entity, table);
             }
-            entityDiagram.addTable(table);
-            tableMap.put(entity, table);
         }
 
         // Load relations
         for (DBSObject entity : entities) {
-            Table table1 = tableMap.get(entity);
+            ERDTable table1 = tableMap.get(entity);
 
             if (entity instanceof DBSTable) {
                 try {
                     Collection<? extends DBSForeignKey> fks = ((DBSTable) entity).getForeignKeys(monitor);
                     for (DBSForeignKey fk : fks) {
-                        Table table2 = tableMap.get(fk.getReferencedKey().getTable());
+                        ERDTable table2 = tableMap.get(fk.getReferencedKey().getTable());
                         if (table2 == null) {
                             log.warn("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
                         } else {
                             if (table1 != table2) {
-                                new Relationship(table2, table1);
+                                new ERDAssociation(fk, table2, table1);
                             }
                         }
                     }
@@ -616,7 +616,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
      * @return the model object
      */
     private EntityDiagram getContent() {
-        return new EntityDiagram("Schema");//ContentCreator().getContent();
+        return new EntityDiagram(null, "Schema");//ContentCreator().getContent();
     }
 
     public void initObjectEditor(IDatabaseObjectManager<DBSEntityContainer> manager) {
@@ -647,8 +647,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 public EntityDiagram evaluate()
                     throws InvocationTargetException, InterruptedException {
                     try {
-                        EntityDiagram diagram = loadFromDatabase(getProgressMonitor());
-                        return diagram;
+                        return loadFromDatabase(getProgressMonitor());
                     }
                     catch (DBException e) {
                         log.error(e);
@@ -694,12 +693,12 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             List<CombinedTemplateCreationEntry> entries = new ArrayList<CombinedTemplateCreationEntry>();
 
             CombinedTemplateCreationEntry tableEntry = new CombinedTemplateCreationEntry("New Table", "Create a new table",
-                Table.class, new DataElementFactory(Table.class),
+                ERDTable.class, new DataElementFactory(ERDTable.class),
                 Activator.getImageDescriptor("icons/table.gif"),
                 Activator.getImageDescriptor("icons/table.gif"));
 
             CombinedTemplateCreationEntry columnEntry = new CombinedTemplateCreationEntry("New Column", "Add a new column",
-                Column.class, new DataElementFactory(Column.class),
+                ERDTableColumn.class, new DataElementFactory(ERDTableColumn.class),
                 Activator.getImageDescriptor("icons/column.gif"),
                 Activator.getImageDescriptor("icons/column.gif"));
 

@@ -21,61 +21,43 @@ import java.util.List;
 
 /**
  * Represents the editable primary key/foreign key relationship
+ *
  * @author Phil Zoio
  */
-public class AssociationPart extends PropertyAwareConnectionPart
-{
+public class AssociationPart extends PropertyAwareConnectionPart {
 
-    private List<Bendpoint> bendpoints = new ArrayList<Bendpoint>();
+    public void activate() {
+        super.activate();
+    }
 
-	/**
-	 * @see org.eclipse.gef.EditPart#activate()
-	 */
-	public void activate() {
-		super.activate();
-	}
-	
-	
-	/**
-	 * @see org.eclipse.gef.EditPart#activate()
-	 */
-	public void deactivate() {
-		super.deactivate();
-	}
-	
-	
-	/**
-	 * @see org.eclipse.gef.editparts.AbstractEditPart#createEditPolicies()
-	 */
-	protected void createEditPolicies()
-	{
-		installEditPolicy(EditPolicy.CONNECTION_ENDPOINTS_ROLE, new ConnectionEndpointEditPolicy());
-		installEditPolicy(EditPolicy.COMPONENT_ROLE, new AssociationEditPolicy());
+    public void deactivate() {
+        super.deactivate();
+    }
+
+    protected void createEditPolicies() {
+        installEditPolicy(EditPolicy.CONNECTION_ENDPOINTS_ROLE, new ConnectionEndpointEditPolicy());
+        installEditPolicy(EditPolicy.COMPONENT_ROLE, new AssociationEditPolicy());
         installEditPolicy(EditPolicy.CONNECTION_BENDPOINTS_ROLE, new AssociationBendEditPolicy());
-	}
+    }
 
-	/**
-	 * @see org.eclipse.gef.editparts.AbstractConnectionEditPart#createFigure()
-	 */
-	protected IFigure createFigure()
-	{
-		PolylineConnection conn = (PolylineConnection) super.createFigure();
-		conn.setConnectionRouter(new BendpointConnectionRouter());
-		conn.setTargetDecoration(new PolygonDecoration());
-		return conn;
-	}
+    protected IFigure createFigure() {
+        PolylineConnection conn = (PolylineConnection) super.createFigure();
+        conn.setConnectionRouter(new BendpointConnectionRouter());
+        conn.setTargetDecoration(new PolygonDecoration());
+        return conn;
+    }
 
-	/**
-	 * Sets the width of the line when selected
-	 */
-	public void setSelected(int value)
-	{
-		super.setSelected(value);
-		if (value != EditPart.SELECTED_NONE)
-			((Shape) getFigure()).setLineWidth(2);
-		else
-			((Shape) getFigure()).setLineWidth(1);
-	}
+    /**
+     * Sets the width of the line when selected
+     */
+    public void setSelected(int value) {
+        super.setSelected(value);
+        if (value != EditPart.SELECTED_NONE) {
+            ((PolylineConnection) getFigure()).setLineWidth(2);
+        } else {
+            ((PolylineConnection) getFigure()).setLineWidth(1);
+        }
+    }
 
     public void addBendpoint(int bendpointIndex, Point location) {
         Bendpoint bendpoint = new AbsoluteBendpoint(location);
@@ -101,20 +83,18 @@ public class AssociationPart extends PropertyAwareConnectionPart
         }
     }
 
-    private List<Bendpoint> getBendpoints()
-    {
+    private List<Bendpoint> getBendpoints() {
         Object constraint = getConnectionFigure().getRoutingConstraint();
         if (constraint instanceof List) {
             // Make constraint copy
-            List<Bendpoint> curList = (List<Bendpoint>)constraint;
+            List<Bendpoint> curList = (List<Bendpoint>) constraint;
             return new ArrayList<Bendpoint>(curList);
         } else {
             return new ArrayList<Bendpoint>();
         }
     }
 
-    private void updateBendpoints(List<Bendpoint> bendpoints)
-    {
+    private void updateBendpoints(List<Bendpoint> bendpoints) {
         getConnectionFigure().setRoutingConstraint(bendpoints);
     }
 }

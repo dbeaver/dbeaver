@@ -11,10 +11,6 @@ import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.editpolicies.ComponentEditPolicy;
 import org.eclipse.gef.requests.GroupRequest;
 
-import org.jkiss.dbeaver.ext.erd.command.AttributeDeleteCommand;
-import org.jkiss.dbeaver.ext.erd.model.Column;
-import org.jkiss.dbeaver.ext.erd.model.Table;
-
 /**
  * Column component EditPolicy - handles column deletion
  * @author Phil Zoio
@@ -24,10 +20,13 @@ public class AttributeEditPolicy extends ComponentEditPolicy
 
 	protected Command createDeleteCommand(GroupRequest request)
 	{
-		Table parent = (Table) (getHost().getParent().getModel());
+/*
+		ERDTable parent = (ERDTable) (getHost().getParent().getModel());
 		AttributeDeleteCommand deleteCmd = new AttributeDeleteCommand();
 		deleteCmd.setTable(parent);
-		deleteCmd.setColumn((Column) (getHost().getModel()));
+		deleteCmd.setColumn((ERDTableColumn) (getHost().getModel()));
 		return deleteCmd;
+*/
+        return null;
 	}
 }

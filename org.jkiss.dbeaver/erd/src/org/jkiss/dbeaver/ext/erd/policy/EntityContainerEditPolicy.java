@@ -11,11 +11,6 @@ import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.editpolicies.ContainerEditPolicy;
 import org.eclipse.gef.requests.CreateRequest;
 
-import org.jkiss.dbeaver.ext.erd.command.AttributeCreateCommand;
-import org.jkiss.dbeaver.ext.erd.model.Column;
-import org.jkiss.dbeaver.ext.erd.model.Table;
-import org.jkiss.dbeaver.ext.erd.part.EntityPart;
-
 /**
  * Edit policy for Table as a container, handling functionality for dropping new columns into tables
  * 
@@ -29,19 +24,22 @@ public class EntityContainerEditPolicy extends ContainerEditPolicy
  */
 	protected Command getCreateCommand(CreateRequest request)
 	{
+/*
 		Object newObject = request.getNewObject();
-		if (!(newObject instanceof Column))
+		if (!(newObject instanceof ERDTableColumn))
 		{
 			return null;
 		}
 		
 		EntityPart entityPart = (EntityPart) getHost();
-		Table table = entityPart.getTable();
-		Column column = (Column) newObject;
+		ERDTable table = entityPart.getTable();
+		ERDTableColumn column = (ERDTableColumn) newObject;
 		AttributeCreateCommand command = new AttributeCreateCommand();
 		command.setTable(table);
 		command.setColumn(column);
 		return command;
+*/
+        return null;
 	}
 
 }

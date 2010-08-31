@@ -12,8 +12,8 @@ import org.eclipse.gef.editpolicies.ComponentEditPolicy;
 import org.eclipse.gef.requests.GroupRequest;
 
 import org.jkiss.dbeaver.ext.erd.command.AssociationDeleteCommand;
-import org.jkiss.dbeaver.ext.erd.model.Relationship;
-import org.jkiss.dbeaver.ext.erd.model.Table;
+import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 
 /**
  * EditPolicy to handle deletion of relationships
@@ -24,9 +24,9 @@ public class AssociationEditPolicy extends ComponentEditPolicy
 
 	protected Command createDeleteCommand(GroupRequest request)
 	{
-		Relationship relationship = (Relationship) getHost().getModel();
-		Table primaryKeyTarget = relationship.getPrimaryKeyTable();
-		Table foreignKeySource = relationship.getForeignKeyTable();
+		ERDAssociation relationship = (ERDAssociation) getHost().getModel();
+		ERDTable primaryKeyTarget = relationship.getPrimaryKeyTable();
+		ERDTable foreignKeySource = relationship.getForeignKeyTable();
 		AssociationDeleteCommand deleteCmd = new AssociationDeleteCommand(foreignKeySource, primaryKeyTarget, relationship);
 		return deleteCmd;
 	}

@@ -11,8 +11,8 @@ import java.util.List;
 
 import org.eclipse.gef.commands.Command;
 
-import org.jkiss.dbeaver.ext.erd.model.Relationship;
-import org.jkiss.dbeaver.ext.erd.model.Table;
+import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 
 /**
  * Command to change the primary key we are connecting to a particular foreign key
@@ -24,13 +24,13 @@ public class AssociationReconnectTargetCommand extends Command
 {
 
 	/** source Table * */
-	protected Table sourceForeignKey;
+	protected ERDTable sourceForeignKey;
 	/** target Table * */
-	protected Table targetPrimaryKey;
+	protected ERDTable targetPrimaryKey;
 	/** Relationship between source and target * */
-	protected Relationship relationship;
+	protected ERDAssociation relationship;
 	/** previous source prior to command execution * */
-	protected Table oldTargetPrimaryKey;
+	protected ERDTable oldTargetPrimaryKey;
 
 	/**
 	 * Makes sure that foreign key doesn't reconnect to itself or try to create
@@ -41,7 +41,7 @@ public class AssociationReconnectTargetCommand extends Command
 
 		boolean returnVal = true;
 
-		Table foreignKeyTable = relationship.getForeignKeyTable();
+		ERDTable foreignKeyTable = relationship.getForeignKeyTable();
 
 		if (foreignKeyTable.equals(targetPrimaryKey))
 		{
@@ -54,7 +54,7 @@ public class AssociationReconnectTargetCommand extends Command
 			for (int i = 0; i < relationships.size(); i++)
 			{
 
-				Relationship relationship = ((Relationship) (relationships.get(i)));
+				ERDAssociation relationship = ((ERDAssociation) (relationships.get(i)));
 
 				if (relationship.getForeignKeyTable().equals(sourceForeignKey)
 						&& relationship.getPrimaryKeyTable().equals(targetPrimaryKey))
@@ -85,7 +85,7 @@ public class AssociationReconnectTargetCommand extends Command
 	/**
 	 * @return Returns the sourceForeignKey.
 	 */
-	public Table getSourceForeignKey()
+	public ERDTable getSourceForeignKey()
 	{
 		return sourceForeignKey;
 	}
@@ -94,7 +94,7 @@ public class AssociationReconnectTargetCommand extends Command
 	 * @param sourceForeignKey
 	 *            The sourceForeignKey to set.
 	 */
-	public void setSourceForeignKey(Table sourceForeignKey)
+	public void setSourceForeignKey(ERDTable sourceForeignKey)
 	{
 		this.sourceForeignKey = sourceForeignKey;
 	}
@@ -102,7 +102,7 @@ public class AssociationReconnectTargetCommand extends Command
 	/**
 	 * @return Returns the targetPrimaryKey.
 	 */
-	public Table getTargetPrimaryKey()
+	public ERDTable getTargetPrimaryKey()
 	{
 		return targetPrimaryKey;
 	}
@@ -111,7 +111,7 @@ public class AssociationReconnectTargetCommand extends Command
 	 * @param targetPrimaryKey
 	 *            The targetPrimaryKey to set.
 	 */
-	public void setTargetPrimaryKey(Table targetPrimaryKey)
+	public void setTargetPrimaryKey(ERDTable targetPrimaryKey)
 	{
 		this.targetPrimaryKey = targetPrimaryKey;
 	}
@@ -119,7 +119,7 @@ public class AssociationReconnectTargetCommand extends Command
 	/**
 	 * @return Returns the relationship.
 	 */
-	public Relationship getRelationship()
+	public ERDAssociation getRelationship()
 	{
 		return relationship;
 	}
@@ -130,7 +130,7 @@ public class AssociationReconnectTargetCommand extends Command
 	 * @param relationship
 	 *            the Relationship
 	 */
-	public void setRelationship(Relationship relationship)
+	public void setRelationship(ERDAssociation relationship)
 	{
 		this.relationship = relationship;
 		oldTargetPrimaryKey = relationship.getPrimaryKeyTable();

@@ -7,6 +7,8 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.jkiss.dbeaver.model.struct.DBSTable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,33 +19,19 @@ import java.util.List;
  * in a separate diagram specific model hierarchy
  * @author Phil Zoio
  */
-public class Table extends PropertyAwareObject
+public class ERDTable extends ERDObject<DBSTable>
 {
 
-	private EntityDiagram entityDiagram;
-	private String name;
-	private List<Column> columns = new ArrayList<Column>();
+	private List<ERDTableColumn> columns = new ArrayList<ERDTableColumn>();
 
-	private List<Relationship> primaryKeyRelationships = new ArrayList<Relationship>();
-	private List<Relationship> foreignKeyRelationships = new ArrayList<Relationship>();
+	private List<ERDAssociation> primaryKeyRelationships = new ArrayList<ERDAssociation>();
+	private List<ERDAssociation> foreignKeyRelationships = new ArrayList<ERDAssociation>();
 
-	public Table()
-	{
-		super();
-	}
+    public ERDTable(DBSTable dbsTable) {
+        super(dbsTable);
+    }
 
-	public Table(String name, EntityDiagram entityDiagram)
-	{
-		super();
-		if (name == null)
-			throw new NullPointerException("Name cannot be null");
-		if (entityDiagram == null)
-			throw new NullPointerException("Schema cannot be null");
-		this.name = name;
-		this.entityDiagram = entityDiagram;
-	}
-
-	public void addColumn(Column column)
+	public void addColumn(ERDTableColumn column)
 	{
 		if (columns.contains(column))
 		{
@@ -53,7 +41,7 @@ public class Table extends PropertyAwareObject
 		firePropertyChange(CHILD, null, column);
 	}
 
-	public void addColumn(Column column, int index)
+	public void addColumn(ERDTableColumn column, int index)
 	{
 		if (columns.contains(column))
 		{
@@ -63,13 +51,13 @@ public class Table extends PropertyAwareObject
 		firePropertyChange(CHILD, null, column);
 	}
 
-	public void removeColumn(Column column)
+	public void removeColumn(ERDTableColumn column)
 	{
 		columns.remove(column);
 		firePropertyChange(CHILD, column, null);
 	}
 
-	public void switchColumn(Column column, int index)
+	public void switchColumn(ERDTableColumn column, int index)
 	{
 		columns.remove(column);
 		columns.add(index, column);
@@ -81,20 +69,11 @@ public class Table extends PropertyAwareObject
 	 * 
 	 * @param name
 	 *            The name to set.
-	 */
+	 *
 	public void setName(String name)
 	{
 		this.name = name;
-	}
-
-	/**
-	 * @param entityDiagram
-	 *            The schema to set.
-	 */
-	public void setSchema(EntityDiagram entityDiagram)
-	{
-		this.entityDiagram = entityDiagram;
-	}
+	}*/
 
 	/**
 	 * Adds relationship where the current object is the foreign key table in a relationship
@@ -102,7 +81,7 @@ public class Table extends PropertyAwareObject
 	 * @param table
 	 *            the primary key relationship
 	 */
-	public void addForeignKeyRelationship(Relationship table)
+	public void addForeignKeyRelationship(ERDAssociation table)
 	{
 		foreignKeyRelationships.add(table);
 		firePropertyChange(OUTPUT, null, table);
@@ -114,7 +93,7 @@ public class Table extends PropertyAwareObject
 	 * @param table
 	 *            the foreign key relationship
 	 */
-	public void addPrimaryKeyRelationship(Relationship table)
+	public void addPrimaryKeyRelationship(ERDAssociation table)
 	{
 		primaryKeyRelationships.add(table);
 		firePropertyChange(INPUT, null, table);
@@ -126,7 +105,7 @@ public class Table extends PropertyAwareObject
 	 * @param table
 	 *            the primary key relationship
 	 */
-	public void removeForeignKeyRelationship(Relationship table)
+	public void removeForeignKeyRelationship(ERDAssociation table)
 	{
 		foreignKeyRelationships.remove(table);
 		firePropertyChange(OUTPUT, table, null);
@@ -138,7 +117,7 @@ public class Table extends PropertyAwareObject
 	 * @param table
 	 *            the foreign key relationship
 	 */
-	public void removePrimaryKeyRelationship(Relationship table)
+	public void removePrimaryKeyRelationship(ERDAssociation table)
 	{
 		primaryKeyRelationships.remove(table);
 		firePropertyChange(INPUT, table, null);
@@ -149,7 +128,7 @@ public class Table extends PropertyAwareObject
 	 * 
 	 * @param name
 	 *            The name to set.
-	 */
+	 *
 	public void modifyName(String name)
 	{
 		String oldName = this.name;
@@ -164,6 +143,7 @@ public class Table extends PropertyAwareObject
 	{
 		return name;
 	}
+    */
 
 	public List getColumns()
 	{
@@ -173,7 +153,7 @@ public class Table extends PropertyAwareObject
 	/**
 	 * @return Returns the foreignKeyRelationships.
 	 */
-	public List<Relationship> getForeignKeyRelationships()
+	public List<ERDAssociation> getForeignKeyRelationships()
 	{
 		return foreignKeyRelationships;
 	}
@@ -181,22 +161,14 @@ public class Table extends PropertyAwareObject
 	/**
 	 * @return Returns the primaryKeyRelationships.
 	 */
-	public List<Relationship> getPrimaryKeyRelationships()
+	public List<ERDAssociation> getPrimaryKeyRelationships()
 	{
 		return primaryKeyRelationships;
 	}
 
-	/**
-	 * @return Returns the schema.
-	 */
-	public EntityDiagram getSchema()
-	{
-		return entityDiagram;
-	}
-
 	public String toString()
 	{
-		return name;
+		return object.getName();
 	}
 
 	/**
@@ -204,11 +176,7 @@ public class Table extends PropertyAwareObject
 	 */
 	public int hashCode()
 	{
-		//just an extra line so that this does not fall over when the tool is used incorrectly
-		if (entityDiagram == null || name == null)
-			return super.hashCode();
-		String schemaName = entityDiagram.getName();
-		return schemaName.hashCode() + name.hashCode();
+		return object.hashCode();
 	}
 
 	/**
@@ -216,15 +184,8 @@ public class Table extends PropertyAwareObject
 	 */
 	public boolean equals(Object o)
 	{
-		if (o == null || !(o instanceof Table))
+		if (o == null || !(o instanceof ERDTable))
 			return false;
-		Table t = (Table) o;
-
-		if (entityDiagram.getName().equals(t.getSchema().getName()) && name.equals(t.getName()))
-		{
-			return true;
-		}
-		else
-			return false;
+        return object.equals(((ERDTable)o).object);
 	}
 }

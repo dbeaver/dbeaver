@@ -32,7 +32,8 @@ public class DummyEdgePart
 	protected IFigure createFigure()
 	{
 		PolylineConnection conn = new PolylineConnection();
-		conn.setConnectionRouter(new BendpointConnectionRouter());conn.setVisible(false);
+		conn.setConnectionRouter(new BendpointConnectionRouter());
+        conn.setVisible(false);
 		return conn;
 	}
 	

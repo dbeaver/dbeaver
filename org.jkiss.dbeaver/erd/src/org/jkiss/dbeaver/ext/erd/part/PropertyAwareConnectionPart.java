@@ -13,7 +13,7 @@ import java.beans.PropertyChangeListener;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 
-import org.jkiss.dbeaver.ext.erd.model.PropertyAwareObject;
+import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 
 /**
  * An ConnectionEditPart base class which is property aware, that is, can handle property change notification events
@@ -29,8 +29,8 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
 	public void activate()
 	{
 		super.activate();
-		PropertyAwareObject propertyAwareObject = (PropertyAwareObject) getModel();
-		propertyAwareObject.addPropertyChangeListener(this);
+		ERDObject erdObject = (ERDObject) getModel();
+		erdObject.addPropertyChangeListener(this);
 	}
 
 	/**
@@ -39,8 +39,8 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
 	public void deactivate()
 	{
 		super.deactivate();
-		PropertyAwareObject propertyAwareObject = (PropertyAwareObject) getModel();
-		propertyAwareObject.removePropertyChangeListener(this);
+		ERDObject erdObject = (ERDObject) getModel();
+		erdObject.removePropertyChangeListener(this);
 	}
 
 	/**
@@ -51,11 +51,11 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
 
 		String property = evt.getPropertyName();
 
-		if (PropertyAwareObject.CHILD.equals(property))
+		if (ERDObject.CHILD.equals(property))
 			refreshChildren();
-		else if (PropertyAwareObject.INPUT.equals(property))
+		else if (ERDObject.INPUT.equals(property))
 			refreshTargetConnections();
-		else if (PropertyAwareObject.OUTPUT.equals(property))
+		else if (ERDObject.OUTPUT.equals(property))
 			refreshSourceConnections();
 
 		/*

@@ -9,13 +9,14 @@ import java.util.EventObject;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.draw2d.Figure;
-import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPolicy;
+import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.commands.CommandStackListener;
 
+import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
 import org.jkiss.dbeaver.ext.erd.layout.DelegatingLayoutManager;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
@@ -227,5 +228,19 @@ public class DiagramPart extends PropertyAwarePart
 	{
 		super.handleChildChange(evt);
 	}
+
+    @Override
+    protected void refreshVisuals() {
+        Animation.markBegin();
+        ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
+        if ((getViewer().getControl().getStyle() & SWT.MIRRORED ) == 0)
+            cLayer.setAntialias(SWT.ON);
+
+        AutomaticRouter router = new FanRouter();
+        router.setNextRouter(new BendpointConnectionRouter());
+        cLayer.setConnectionRouter(router);
+
+        Animation.run(400);
+    }
 
 }
