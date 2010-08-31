@@ -617,13 +617,14 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 public EntityDiagram evaluate()
                     throws InvocationTargetException, InterruptedException {
                     try {
-                        return loadFromDatabase(getProgressMonitor());
+                        EntityDiagram diagram = loadFromDatabase(getProgressMonitor());
+                        isLoaded = true;
+                        return diagram;
                     }
                     catch (DBException e) {
                         log.error(e);
                     }
 
-                    isLoaded = true;
                     return null;
                 }
             },

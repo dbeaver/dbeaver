@@ -7,16 +7,11 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
-import org.eclipse.draw2d.BendpointConnectionRouter;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.PolygonDecoration;
-import org.eclipse.draw2d.PolylineConnection;
+import org.eclipse.draw2d.*;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 
-import org.eclipse.gmf.runtime.notation.LineStyle;
-import org.eclipse.gmf.runtime.notation.Shape;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationEditPolicy;
 
 /**
@@ -70,9 +65,9 @@ public class AssociationPart extends PropertyAwareConnectionPart
 	{
 		super.setSelected(value);
 		if (value != EditPart.SELECTED_NONE)
-			((LineStyle) getFigure()).setLineWidth(2);
+			((Shape) getFigure()).setLineWidth(2);
 		else
-			((LineStyle) getFigure()).setLineWidth(1);
+			((Shape) getFigure()).setLineWidth(1);
 	}
 
 
