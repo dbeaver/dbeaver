@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
+import org.jkiss.dbeaver.ext.erd.action.DiagramRefreshAction;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
@@ -626,13 +627,27 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         if (isLoaded) {
             return;
         }
+        loadDiagram();
+        isLoaded = true;
+    }
+
+    public void deactivatePart() {
+
+    }
+
+    public void refreshDiagram()
+    {
+        loadDiagram();
+    }
+
+    private void loadDiagram()
+    {
         LoadingUtils.executeService(
             new AbstractLoadService<EntityDiagram>("Load schema") {
                 public EntityDiagram evaluate()
                     throws InvocationTargetException, InterruptedException {
                     try {
                         EntityDiagram diagram = loadFromDatabase(getProgressMonitor());
-                        isLoaded = true;
                         return diagram;
                     }
                     catch (DBException e) {
@@ -643,10 +658,6 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 }
             },
             progressControl.createLoadVisualizer());
-    }
-
-    public void deactivatePart() {
-
     }
 
     public PaletteRoot createPaletteRoot() {
@@ -745,6 +756,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             toolBarManager.add(new ZoomInAction(zoomManager));
             toolBarManager.add(new ZoomOutAction(zoomManager));
             toolBarManager.add(new DiagramLayoutAction(ERDEditor.this));
+            toolBarManager.add(new DiagramRefreshAction(ERDEditor.this));
             toolBarManager.add(new Separator());
             {
                 PrintAction printAction = new PrintAction(ERDEditor.this);

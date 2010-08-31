@@ -38,6 +38,8 @@ public class FlyoutChangeLayoutAction extends Action
 			EntityDiagram entityDiagram = erdEditor.getDiagram();
 			boolean isManual = entityDiagram.isLayoutManualDesired();
 			entityDiagram.setLayoutManualDesired(!isManual);
+            erdEditor.getDiagramPart().changeLayout();
+
 			checked = !isManual;
 			setChecked(checked);
 		}

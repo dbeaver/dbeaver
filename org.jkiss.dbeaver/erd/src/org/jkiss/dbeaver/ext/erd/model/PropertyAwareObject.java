@@ -25,8 +25,7 @@ public abstract class PropertyAwareObject implements Serializable
 	public static final String INPUT = "INPUT";
 	public static final String OUTPUT = "OUTPUT";
 	public static final String NAME = "NAME";
-	public static final String LAYOUT = "LAYOUT";
-	
+
 	protected transient PropertyChangeSupport listeners = new PropertyChangeSupport(this);
 
 	protected PropertyAwareObject()

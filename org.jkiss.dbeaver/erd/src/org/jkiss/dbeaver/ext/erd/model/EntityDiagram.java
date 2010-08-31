@@ -90,7 +90,6 @@ public class EntityDiagram extends PropertyAwareObject
 	public void setLayoutManualDesired(boolean layoutManualDesired)
 	{
 		this.layoutManualDesired = layoutManualDesired;
-		firePropertyChange(LAYOUT, null, layoutManualDesired);
 	}
 
 	/**

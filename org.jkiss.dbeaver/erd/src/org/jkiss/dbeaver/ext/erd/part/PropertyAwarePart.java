@@ -76,10 +76,6 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 		{
 			commitNameChange(evt);
 		}
-		else if (PropertyAwareObject.LAYOUT.equals(property))
-		{
-			handleLayoutChange(evt);
-		}
 
 		//we want direct edit name changes to update immediately
 		//not use the Graph animation, if automatic layout is being used
@@ -258,10 +254,6 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 	{
 		refreshChildren();
 		refreshVisuals();
-	}
-
-	protected void handleLayoutChange(PropertyChangeEvent evt)
-	{
 	}
 
 	protected void commitNameChange(PropertyChangeEvent evt)

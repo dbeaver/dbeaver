@@ -89,6 +89,7 @@ public class DiagramPart extends PropertyAwarePart
     {
         //delegatingLayoutManager.set
         delegatingLayoutManager.rearrange(getFigure());
+        
         //getFigure().setLayoutManager(delegatingLayoutManager);
         //getFigure().getLayoutManager().layout(getFigure());
     }
@@ -197,18 +198,18 @@ public class DiagramPart extends PropertyAwarePart
 
 	}
 
+    public void changeLayout()
+    {
+        //Boolean layoutType = (Boolean) evt.getNewValue();
+        //boolean isManualLayoutDesired = layoutType.booleanValue();
+        getFigure().setLayoutManager(delegatingLayoutManager);
+    }
+
 	/**
 	 * Passes on to the delegating layout manager that the layout type has
 	 * changed. The delegating layout manager will then decide whether to
 	 * delegate layout to the XY or Graph layout
 	 */
-	protected void handleLayoutChange(PropertyChangeEvent evt)
-	{
-		//Boolean layoutType = (Boolean) evt.getNewValue();
-		//boolean isManualLayoutDesired = layoutType.booleanValue();
-		getFigure().setLayoutManager(delegatingLayoutManager);
-	}
-
 	/**
 	 * Sets layout constraint only if XYLayout is active
 	 */
