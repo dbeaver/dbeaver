@@ -17,7 +17,7 @@ import java.util.List;
  * Also includes the bounds of the table so that the diagram can be 
  * restored following a save, although ideally this should be
  * in a separate diagram specific model hierarchy
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class ERDTable extends ERDObject<DBSTable>
 {

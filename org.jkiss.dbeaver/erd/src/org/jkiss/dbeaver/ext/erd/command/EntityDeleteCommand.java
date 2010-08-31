@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 /**
  * Command to delete tables from the schema
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class EntityDeleteCommand extends Command
 {

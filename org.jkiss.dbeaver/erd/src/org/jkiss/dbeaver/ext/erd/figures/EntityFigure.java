@@ -17,7 +17,7 @@ import org.eclipse.swt.graphics.Color;
 
 /**
  * Figure used to represent a table in the schema
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class EntityFigure extends Figure
 {

@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
 /**
  * Handles manipulation of relationships between tables
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class EntityNodeEditPolicy extends GraphicalNodeEditPolicy
 {

@@ -14,7 +14,7 @@ import org.jkiss.dbeaver.ext.erd.Activator;
 /**
  * Action to toggle the layout between manual and automatic
  *
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class DiagramLayoutAction extends Action
 {

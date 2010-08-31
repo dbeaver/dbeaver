@@ -13,7 +13,7 @@ import org.eclipse.gef.requests.GroupRequest;
 
 /**
  * Column component EditPolicy - handles column deletion
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class AttributeEditPolicy extends ComponentEditPolicy
 {

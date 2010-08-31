@@ -21,7 +21,7 @@ import org.eclipse.draw2d.graph.NodeList;
 
 /**
  * Creates dummy edges between nodes, to be used with NodeJoiningDirectedGraphLayout
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class DummyEdgeCreator
 {

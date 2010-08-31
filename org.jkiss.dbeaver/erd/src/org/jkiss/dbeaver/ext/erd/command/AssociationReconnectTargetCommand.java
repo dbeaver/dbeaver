@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.ext.erd.model.ERDTable;
  * Command to change the primary key we are connecting to a particular foreign key
  * key
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class AssociationReconnectTargetCommand extends Command
 {

@@ -30,7 +30,7 @@ import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 /**
  * Visitor with support for populating nodes and edges of DirectedGraph
  * from model objects
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class DirectedGraphLayoutVisitor
 {

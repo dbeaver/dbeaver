@@ -14,7 +14,7 @@ import org.eclipse.gef.requests.CreateRequest;
 /**
  * Edit policy for Table as a container, handling functionality for dropping new columns into tables
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class EntityContainerEditPolicy extends ContainerEditPolicy
 {

@@ -14,7 +14,7 @@ import org.eclipse.gef.ui.palette.PaletteViewerProvider;
 
 /**
  * PaletteViewerProvider subclass used for initialising drag and drop
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class ERDPaletteViewerProvider extends PaletteViewerProvider
 {

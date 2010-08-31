@@ -13,7 +13,7 @@ import org.eclipse.jface.viewers.ICellEditorValidator;
 /**
  * ICellValidator to validate direct edit values in the column label
  * Collaborates with an instance of ValidationMessageHandler
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class ColumnNameTypeCellEditorValidator implements ICellEditorValidator
 {

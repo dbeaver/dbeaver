@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ext.erd.part.EntityPart;
  * Handles manual layout editing for schema diagram. Only available for
  * XYLayoutManagers, not for automatic layout
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 {

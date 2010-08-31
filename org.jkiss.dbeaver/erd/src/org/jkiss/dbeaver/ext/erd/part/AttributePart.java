@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * Represents an editable Column object in the model
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class AttributePart extends PropertyAwarePart
 {

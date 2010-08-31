@@ -12,7 +12,7 @@ import org.jkiss.dbeaver.model.struct.DBSForeignKey;
 /**
  * Relates one table to another
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class ERDAssociation extends ERDObject<DBSForeignKey>
 {

@@ -11,7 +11,7 @@ import org.eclipse.gef.requests.CreationFactory;
 
 /**
  * Factory for creating instances of new objects from a palette
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class DataElementFactory implements CreationFactory
 {

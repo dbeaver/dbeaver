@@ -16,7 +16,7 @@ import org.jkiss.dbeaver.ext.erd.part.EntityPart;
  * Command to move the bounds of an existing table. Only used with
  * XYLayoutEditPolicy (manual layout)
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class EntityMoveCommand extends Command
 {

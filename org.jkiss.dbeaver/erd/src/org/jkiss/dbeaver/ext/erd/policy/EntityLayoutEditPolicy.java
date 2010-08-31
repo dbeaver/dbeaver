@@ -15,7 +15,7 @@ import org.eclipse.gef.requests.CreateRequest;
 
 /**
  * Handles moving of columns within and between tables
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class EntityLayoutEditPolicy extends FlowLayoutEditPolicy
 {

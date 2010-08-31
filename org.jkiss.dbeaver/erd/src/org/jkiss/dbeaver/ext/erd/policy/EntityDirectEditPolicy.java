@@ -16,7 +16,7 @@ import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 /**
  * EditPolicy for the direct editing of table names
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class EntityDirectEditPolicy extends DirectEditPolicy
 {

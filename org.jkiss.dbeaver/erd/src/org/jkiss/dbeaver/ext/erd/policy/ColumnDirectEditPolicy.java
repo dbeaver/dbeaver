@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.ext.erd.part.AttributePart;
 /**
  * EditPolicy for the direct editing of Column names
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class ColumnDirectEditPolicy extends DirectEditPolicy
 {

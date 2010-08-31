@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 /**
  * Action to toggle the layout between manual and automatic
  *
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class DiagramRefreshAction extends Action
 {

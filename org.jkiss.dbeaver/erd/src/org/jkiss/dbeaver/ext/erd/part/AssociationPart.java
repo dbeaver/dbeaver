@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Represents the editable primary key/foreign key relationship
  *
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class AssociationPart extends PropertyAwareConnectionPart {
 

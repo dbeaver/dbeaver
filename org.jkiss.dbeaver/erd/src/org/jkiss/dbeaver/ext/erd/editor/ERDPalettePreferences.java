@@ -14,7 +14,7 @@ import org.jkiss.dbeaver.ext.erd.Activator;
 
 /**
  * Contains the preferences for the palette flyout
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class ERDPalettePreferences implements FlyoutPreferences
 {

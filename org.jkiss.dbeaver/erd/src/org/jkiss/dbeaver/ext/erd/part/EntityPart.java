@@ -31,7 +31,7 @@ import java.util.List;
  * Represents the editable/resizable table which can have columns added,
  * removed, renamed etc.
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class EntityPart extends PropertyAwarePart implements NodeEditPart
 {

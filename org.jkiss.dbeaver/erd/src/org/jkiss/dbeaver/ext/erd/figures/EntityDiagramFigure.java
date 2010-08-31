@@ -12,7 +12,7 @@ import org.eclipse.draw2d.FreeformLayer;
 /**
  * Figure which represents the whole diagram - the view which corresponds to the
  * Schema model object
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class EntityDiagramFigure extends FreeformLayer
 {

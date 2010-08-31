@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 /**
  * An abstract EditPart implementation which is property aware and responds to
  * PropertyChangeEvents fired from the model
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implements PropertyChangeListener
 {

@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 /**
  * An ConnectionEditPart base class which is property aware, that is, can handle property change notification events
  * All our ConnectionEditPart are subclasses of this
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public abstract class PropertyAwareConnectionPart extends AbstractConnectionEditPart implements PropertyChangeListener
 {

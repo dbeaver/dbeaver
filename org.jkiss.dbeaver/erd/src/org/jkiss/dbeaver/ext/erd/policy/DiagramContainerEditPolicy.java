@@ -17,7 +17,7 @@ import org.eclipse.gef.requests.GroupRequest;
 
 /**
  * Handles creation of new tables using drag and drop or point and click from the palette
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class DiagramContainerEditPolicy extends ContainerEditPolicy
 {

@@ -17,7 +17,7 @@ import org.eclipse.draw2d.geometry.Insets;
 
 /**
  * Figure used to hold the column labels
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class AttributeFigure extends Figure
 {

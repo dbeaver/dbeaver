@@ -14,7 +14,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * Column entry in model Table
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class ERDTableColumn extends ERDObject<DBSTableColumn>
 {

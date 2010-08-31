@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 /**
  * Subclass of XYLayout which can use the child figures actual bounds as a constraint
  * when doing manual layout (XYLayout)
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class GraphXYLayout extends FreeformLayout
 {

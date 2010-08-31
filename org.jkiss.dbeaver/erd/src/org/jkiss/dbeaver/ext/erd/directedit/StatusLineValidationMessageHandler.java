@@ -12,7 +12,7 @@ import org.eclipse.ui.IEditorSite;
 
 /**
  * Outputs validation messages to status line
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class StatusLineValidationMessageHandler implements ValidationMessageHandler
 {

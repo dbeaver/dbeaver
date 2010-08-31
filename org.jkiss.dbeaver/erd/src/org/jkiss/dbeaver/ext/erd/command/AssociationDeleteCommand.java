@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 /**
  * Command to delete relationship
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class AssociationDeleteCommand extends Command
 {

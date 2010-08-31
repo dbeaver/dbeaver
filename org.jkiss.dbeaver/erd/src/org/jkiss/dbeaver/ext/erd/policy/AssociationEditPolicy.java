@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 
 /**
  * EditPolicy to handle deletion of relationships
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class AssociationEditPolicy extends ComponentEditPolicy
 {

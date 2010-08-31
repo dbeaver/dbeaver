@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
 /**
  * Handles deletion of tables
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class EntityEditPolicy extends ComponentEditPolicy
 {

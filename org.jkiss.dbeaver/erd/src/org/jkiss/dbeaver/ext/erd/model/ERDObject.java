@@ -21,7 +21,7 @@ import java.io.Serializable;
 
 /**
  * Provides base class support for model objects to participate in event handling framework
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public abstract class ERDObject<OBJECT extends DBSObject> implements IPropertySource
 {

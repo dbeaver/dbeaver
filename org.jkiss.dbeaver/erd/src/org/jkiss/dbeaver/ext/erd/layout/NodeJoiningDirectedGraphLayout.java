@@ -15,7 +15,7 @@ import org.eclipse.draw2d.graph.DirectedGraphLayout;
  * functionality to be used even when graph nodes either have no edges, or when part
  * of clusters isolated from other clusters of Nodes
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class NodeJoiningDirectedGraphLayout extends DirectedGraphLayout
 {

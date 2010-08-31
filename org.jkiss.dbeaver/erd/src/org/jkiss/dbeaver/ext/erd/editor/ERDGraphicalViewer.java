@@ -16,7 +16,7 @@ import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 /**
  * GraphicalViewer which also knows about ValidationMessageHandler to output
  * error messages to
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class ERDGraphicalViewer extends ScrollingGraphicalViewer
 {

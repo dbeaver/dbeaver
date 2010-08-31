@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Text;
 /**
  * A CellEditorLocator for a specified label
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class LabelCellEditorLocator implements CellEditorLocator
 {

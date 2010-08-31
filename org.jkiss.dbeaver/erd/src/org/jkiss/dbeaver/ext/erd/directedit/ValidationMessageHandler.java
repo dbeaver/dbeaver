@@ -9,7 +9,7 @@ package org.jkiss.dbeaver.ext.erd.directedit;
 
 /**
  * Represents interface for outputting validation error messages to some widget
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public interface ValidationMessageHandler
 {

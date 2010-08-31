@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 /**
  * Edit part factory for creating EditPart instances as delegates for model objects
  *
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 class ERDEditPartFactory implements EditPartFactory
 {

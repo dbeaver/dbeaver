@@ -17,7 +17,7 @@ import java.util.List;
  * Represents a Schema in the model. Note that this class also includes
  * diagram specific information (layoutManualDesired and layoutManualAllowed fields)
  * although ideally these should be in a separate model hiearchy 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class EntityDiagram extends ERDObject<DBSEntityContainer>
 {

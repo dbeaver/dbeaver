@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDEditor;
 /**
  * Contributes actions to the Editor
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class ERDEditorActionBarContributor extends ActionBarContributor
 {

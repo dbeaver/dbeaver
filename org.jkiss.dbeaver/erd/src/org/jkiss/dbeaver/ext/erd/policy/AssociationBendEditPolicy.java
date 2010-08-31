@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 
 /**
  * EditPolicy to handle deletion of relationships
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class AssociationBendEditPolicy extends BendpointEditPolicy
 {

@@ -10,6 +10,7 @@ package org.jkiss.dbeaver.ext.erd.layout;
 import java.util.List;
 
 import org.eclipse.draw2d.AbstractLayout;
+import org.eclipse.draw2d.Animation;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -19,7 +20,7 @@ import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 
 /**
  * Uses the DirectedGraphLayoutVisitor to automatically lay out figures on diagram
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class GraphLayoutManager extends AbstractLayout
 {
@@ -46,14 +47,17 @@ public class GraphLayoutManager extends AbstractLayout
 	
 	public void layout(IFigure container)
 	{
-
+        Animation.markBegin();
+/*
 		GraphAnimation.recordInitialState(container);
 		if (GraphAnimation.playbackState(container))
 			return;
-	
+*/
+
 		new DirectedGraphLayoutVisitor().layoutDiagram(diagram);
 		diagram.setTableModelBounds();
 
+        Animation.run(400);
 	}
 	
 }

@@ -14,7 +14,7 @@ import org.eclipse.draw2d.PolylineConnection;
 
 /**
  * Used to represent a dummy edge node with NodeJoiningDirectedGraphLayout
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class DummyEdgePart
 {

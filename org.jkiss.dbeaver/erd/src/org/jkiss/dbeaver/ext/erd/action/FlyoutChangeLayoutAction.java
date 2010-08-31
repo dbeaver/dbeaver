@@ -16,7 +16,7 @@ import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 /**
  * Action to toggle the layout between manual and automatic
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class FlyoutChangeLayoutAction extends Action
 {

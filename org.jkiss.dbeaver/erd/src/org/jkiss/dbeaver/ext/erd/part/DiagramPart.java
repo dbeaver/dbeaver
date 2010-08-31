@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.ext.erd.policy.DiagramContainerEditPolicy;
  * Edit part for Schema object, and uses a SchemaDiagram figure as
  * the container for all graphical objects
  * 
- * @author Phil Zoio
+ * @author Serge Rieder
  */
 public class DiagramPart extends PropertyAwarePart
 {
