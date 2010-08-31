@@ -39,7 +39,12 @@ public class AttributePart extends PropertyAwarePart
 
 	protected DirectEditManager manager;
 
-	/**
+    @Override
+    public boolean isSelectable() {
+        return false;
+    }
+
+    /**
 	 * @return the ColumnLabel representing the Column
 	 */
 	protected IFigure createFigure()
