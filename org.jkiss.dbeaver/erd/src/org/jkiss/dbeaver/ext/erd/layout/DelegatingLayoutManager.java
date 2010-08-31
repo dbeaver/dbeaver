@@ -42,6 +42,11 @@ public class DelegatingLayoutManager implements LayoutManager
 	//********************* layout manager methods methods
 	// ****************************/
 
+    public void rearrange(IFigure container)
+    {
+        graphLayoutManager.layout(container);
+    }
+
 	public void layout(IFigure container)
 	{
 

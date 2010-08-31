@@ -85,6 +85,14 @@ public class DiagramPart extends PropertyAwarePart
 		return (EntityDiagram) getModel();
 	}
 
+    public void rearrangeDiagram()
+    {
+        //delegatingLayoutManager.set
+        delegatingLayoutManager.rearrange(getFigure());
+        //getFigure().setLayoutManager(delegatingLayoutManager);
+        //getFigure().getLayoutManager().layout(getFigure());
+    }
+
 	/**
 	 * @return the children Model objects as a new ArrayList
 	 */

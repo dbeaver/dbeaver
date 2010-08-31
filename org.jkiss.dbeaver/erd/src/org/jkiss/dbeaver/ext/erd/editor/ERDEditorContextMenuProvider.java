@@ -8,13 +8,12 @@
 package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.gef.ContextMenuProvider;
-import org.eclipse.gef.EditPartViewer;
 import org.eclipse.gef.ui.actions.ActionRegistry;
 import org.eclipse.gef.ui.actions.GEFActionConstants;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.actions.ActionFactory;
+import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 
 /**
  * Provides a context menu for the schema diagram editor. A virtual cut and paste from the flow example
@@ -22,7 +21,7 @@ import org.eclipse.ui.actions.ActionFactory;
  */
 public class ERDEditorContextMenuProvider extends ContextMenuProvider
 {
-
+    private ERDEditor editor;
 	private ActionRegistry actionRegistry;
 
 	/**
@@ -34,9 +33,10 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider
 	 * @param registry
 	 *            the action registry
 	 */
-	public ERDEditorContextMenuProvider(EditPartViewer viewer, ActionRegistry registry)
+	public ERDEditorContextMenuProvider(ERDEditor editor, ActionRegistry registry)
 	{
-		super(viewer);
+		super(editor.getViewer());
+        this.editor = editor;
 		setActionRegistry(registry);
 	}
 
@@ -58,6 +58,8 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider
 		if (action.isEnabled())
 			menu.appendToGroup(GEFActionConstants.GROUP_EDIT, action);
 
+        action = new DiagramLayoutAction(editor);
+        menu.appendToGroup(GEFActionConstants.GROUP_VIEW, action);
         //action = getActionRegistry().getAction(ActionFactory.PRINT.getId());
         //menu.appendToGroup(GEFActionConstants.GROUP_PRINT, action);
         //action = getActionRegistry().getAction(GEFActionConstants.TOGGLE_GRID_VISIBILITY);

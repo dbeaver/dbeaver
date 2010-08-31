@@ -21,8 +21,8 @@ import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 public class FlyoutChangeLayoutAction extends Action
 {
 
-	IEditorPart editor;
-	boolean checked;
+	private IEditorPart editor;
+	private boolean checked;
 
 	public FlyoutChangeLayoutAction(IEditorPart editor)
 	{
@@ -34,8 +34,8 @@ public class FlyoutChangeLayoutAction extends Action
 	{
 		if (editor instanceof ERDEditor)
 		{
-			ERDEditor schemaEditor = (ERDEditor) editor;
-			EntityDiagram entityDiagram = schemaEditor.getSchema();
+			ERDEditor erdEditor = (ERDEditor) editor;
+			EntityDiagram entityDiagram = erdEditor.getDiagram();
 			boolean isManual = entityDiagram.isLayoutManualDesired();
 			entityDiagram.setLayoutManualDesired(!isManual);
 			checked = !isManual;
@@ -60,7 +60,7 @@ public class FlyoutChangeLayoutAction extends Action
 		if (editor instanceof ERDEditor)
 		{
 			ERDEditor schemaEditor = (ERDEditor) editor;
-			EntityDiagram entityDiagram = schemaEditor.getSchema();
+			EntityDiagram entityDiagram = schemaEditor.getDiagram();
 			boolean checkTrue = entityDiagram.isLayoutManualDesired();
 			return (!checkTrue);
 		}

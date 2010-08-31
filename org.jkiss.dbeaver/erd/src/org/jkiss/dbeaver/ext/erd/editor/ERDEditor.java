@@ -36,6 +36,8 @@ import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.erd.Activator;
+import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
+import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.DataElementFactory;
@@ -273,8 +275,12 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
      *
      * @return an instance of <code>Schema</code>
      */
-    public EntityDiagram getSchema() {
+    public EntityDiagram getDiagram() {
         return entityDiagram;
+    }
+
+    public DiagramPart getDiagramPart() {
+        return (DiagramPart)rootPart.getContents();
     }
 
     /**
@@ -371,6 +377,10 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         return new ERDPaletteViewerProvider(editDomain);
     }
 
+    public GraphicalViewer getViewer()
+    {
+        return super.getGraphicalViewer();
+    }
 
     /**
      * Creates a new <code>GraphicalViewer</code>, configures, registers and
@@ -396,7 +406,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         viewer.setContents(entityDiagram);
 
         // Set context menu
-        ContextMenuProvider provider = new ERDEditorContextMenuProvider(viewer, getActionRegistry());
+        ContextMenuProvider provider = new ERDEditorContextMenuProvider(this, getActionRegistry());
         viewer.setContextMenu(provider);
         getSite().registerContextMenu("org.jkiss.dbeaver.ext.erd.editor.contextmenu", provider, viewer);
     }
@@ -431,6 +441,10 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         zoomLevels.add(ZoomManager.FIT_WIDTH);
         zoomLevels.add(ZoomManager.FIT_HEIGHT);
         zoomManager.setZoomLevelContributions(zoomLevels);
+
+        zoomManager.setZoomLevels(
+            new double[] { .1, .25, .5, .75, 1.0, 1.5, 2.0, 2.5, 3, 4 }
+        );
 
         IAction zoomIn = new ZoomInAction(zoomManager);
         IAction zoomOut = new ZoomOutAction(zoomManager);
@@ -716,7 +730,6 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
             toolBarManager = new ToolBarManager();
 
-
             String[] zoomStrings = new String[] {
                 ZoomManager.FIT_ALL,
                 ZoomManager.FIT_HEIGHT,
@@ -731,8 +744,16 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             toolBarManager.add(new Separator());
             toolBarManager.add(new ZoomInAction(zoomManager));
             toolBarManager.add(new ZoomOutAction(zoomManager));
+            toolBarManager.add(new DiagramLayoutAction(ERDEditor.this));
+            toolBarManager.add(new Separator());
+            {
+                PrintAction printAction = new PrintAction(ERDEditor.this);
+                printAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_PRINT_EDIT));
+                toolBarManager.add(printAction);
+            }
 
             toolBarManager.createControl(infoGroup);
+            toolBarManager.getControl().setEnabled(false);
 
             return infoGroup;
         }
@@ -745,8 +766,10 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             @Override
             public void completeLoading(EntityDiagram entityDiagram) {
                 super.completeLoading(entityDiagram);
+                setInfo(entityDiagram.getEntityCount() + " objects");
                 getGraphicalViewer().setContents(entityDiagram);
                 zoomCombo.setZoomManager(rootPart.getZoomManager());
+                toolBarManager.getControl().setEnabled(true);
             }
         }
 

@@ -101,4 +101,7 @@ public class EntityDiagram extends PropertyAwareObject
 		return layoutManualAllowed;
 	}
 
+    public int getEntityCount() {
+        return tables.size();
+    }
 }
