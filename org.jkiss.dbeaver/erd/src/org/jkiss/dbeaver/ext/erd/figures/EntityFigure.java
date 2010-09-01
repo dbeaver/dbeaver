@@ -14,6 +14,8 @@ import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.ToolbarLayout;
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * Figure used to represent a table in the schema
@@ -23,18 +25,18 @@ public class EntityFigure extends Figure
 {
 
 	public static Color tableColor = new Color(null, 255, 255, 206);
+
+    private ERDTable table;
 	private AttributeFigure attributeFigure = new AttributeFigure();
 	private EditableLabel nameLabel;
 
-	public EntityFigure(EditableLabel name)
+	public EntityFigure(ERDTable table)
 	{
-		this(name, null);
-	}
+        this.table = table;
+        nameLabel = new EditableLabel(table.getObject().getName());
+        nameLabel.setIcon(table.getObject().isView() ? DBIcon.TREE_VIEW.getImage() : DBIcon.TREE_TABLE.getImage());
+        nameLabel.setForegroundColor(ColorConstants.black);
 
-	public EntityFigure(EditableLabel name, List colums)
-	{
-
-		nameLabel = name;
 		ToolbarLayout layout = new ToolbarLayout();
 		layout.setVertical(true);
 		layout.setStretchMinorAxis(true);
@@ -44,8 +46,7 @@ public class EntityFigure extends Figure
 		setForegroundColor(ColorConstants.black);
 		setOpaque(true);
 
-		name.setForegroundColor(ColorConstants.black);
-		add(name);
+		add(nameLabel);
 		add(attributeFigure);
 
 	}

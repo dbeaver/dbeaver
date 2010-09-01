@@ -55,6 +55,11 @@ public class AttributePart extends PropertyAwarePart
 		String label = column.getLabelText();
         EditableLabel editableLabel = new EditableLabel(label);
         editableLabel.setIcon(column.getLabelImage());
+
+        if (column.isInPrimaryKey()) {
+            DiagramPart diagramPart = (DiagramPart) getParent().getParent();
+            editableLabel.setFont(diagramPart.getBoldFont());
+        }
         return editableLabel;
     }
 

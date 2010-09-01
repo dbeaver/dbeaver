@@ -72,6 +72,7 @@ public class ConnectJob extends AbstractJob
                 "Connected");
         }
         catch (Throwable ex) {
+            log.debug(ex);
             return DBeaverUtils.makeExceptionStatus(
                 "Error connecting to datasource '" + container.getName() + "'",
                 ex);

@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DBUtils
@@ -273,6 +270,76 @@ public final class DBUtils {
             // do nothing
         }
         return finder.refConstraint;
+    }
+
+    public static List<DBSTableColumn> getBestTableIdentifier(DBRProgressMonitor monitor, DBSTable table)
+        throws DBException
+    {
+        if (table.isView()) {
+            return Collections.emptyList();
+        }
+
+        List<DBSObject> identifiers = new ArrayList<DBSObject>();
+        // Check constraints
+        Collection<? extends DBSConstraint> uniqueKeys = table.getUniqueKeys(monitor);
+        if (!CommonUtils.isEmpty(uniqueKeys)) {
+            for (DBSConstraint constraint : uniqueKeys) {
+                if (constraint.getConstraintType().isUnique() && !CommonUtils.isEmpty(constraint.getColumns(monitor))) {
+                    identifiers.add(constraint);
+                }
+            }
+        }
+        if (identifiers.isEmpty()) {
+            // Check indexes only if no unique constraints found
+            try {
+                Collection<? extends DBSIndex> indexes = table.getIndexes(monitor);
+                if (!CommonUtils.isEmpty(indexes)) {
+                    for (DBSIndex index : indexes) {
+                        if (index.isUnique() && !CommonUtils.isEmpty(index.getColumns(monitor))) {
+                            identifiers.add(index);
+                        }
+                    }
+                }
+            } catch (DBException e) {
+                log.debug(e);
+            }
+        }
+
+        // Find PK or unique key
+        DBSConstraint uniqueId = null;
+        DBSIndex uniqueIndex = null;
+        for (DBSObject id : identifiers) {
+            if (id instanceof DBSConstraint) {
+                if (((DBSConstraint)id).getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
+                    return getTableColumns(monitor, (DBSConstraint)id);
+                } else if (((DBSConstraint)id).getConstraintType().isUnique()) {
+                    uniqueId = (DBSConstraint)id;
+                }
+            } else {
+                uniqueIndex = (DBSIndex)id;
+            }
+        }
+        return uniqueId != null ? getTableColumns(monitor, uniqueId) : uniqueIndex != null ? getTableColumns(monitor, uniqueIndex) : Collections.<DBSTableColumn>emptyList();
+    }
+
+    public static List<DBSTableColumn> getTableColumns(DBRProgressMonitor monitor, DBSConstraint constraint)
+    {
+        Collection<? extends DBSConstraintColumn> constraintColumns = constraint.getColumns(monitor);
+        List<DBSTableColumn> columns = new ArrayList<DBSTableColumn>(constraintColumns.size());
+        for (DBSConstraintColumn column : constraintColumns) {
+            columns.add(column.getTableColumn());
+        }
+        return columns;
+    }
+
+    public static List<DBSTableColumn> getTableColumns(DBRProgressMonitor monitor, DBSIndex index)
+    {
+        Collection<? extends DBSIndexColumn> indexColumns = index.getColumns(monitor);
+        List<DBSTableColumn> columns = new ArrayList<DBSTableColumn>(indexColumns.size());
+        for (DBSIndexColumn column : indexColumns) {
+            columns.add(column.getTableColumn());
+        }
+        return columns;
     }
 
     private static class RefColumnFinder implements DBRRunnableWithProgress {

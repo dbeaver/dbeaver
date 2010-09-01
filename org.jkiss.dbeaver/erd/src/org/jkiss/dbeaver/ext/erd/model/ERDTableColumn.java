@@ -18,9 +18,11 @@ import org.jkiss.dbeaver.ui.DBIcon;
  */
 public class ERDTableColumn extends ERDObject<DBSTableColumn>
 {
+    private boolean inPrimaryKey;
 
-    public ERDTableColumn(DBSTableColumn dbsTableColumn) {
+    public ERDTableColumn(DBSTableColumn dbsTableColumn, boolean inPrimaryKey) {
         super(dbsTableColumn);
+        this.inPrimaryKey = inPrimaryKey;
     }
 
 	public String getLabelText()
@@ -35,5 +37,9 @@ public class ERDTableColumn extends ERDObject<DBSTableColumn>
         } else {
             return DBIcon.TYPE_UNKNOWN.getImage();
         }
+    }
+
+    public boolean isInPrimaryKey() {
+        return inPrimaryKey;
     }
 }

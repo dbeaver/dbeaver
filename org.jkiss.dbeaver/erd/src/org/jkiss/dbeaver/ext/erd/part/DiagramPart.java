@@ -17,12 +17,14 @@ import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.commands.CommandStackListener;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
 import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
 import org.jkiss.dbeaver.ext.erd.layout.DelegatingLayoutManager;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
 import org.jkiss.dbeaver.ext.erd.layout.GraphLayoutManager;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.DiagramContainerEditPolicy;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Edit part for Schema object, and uses a SchemaDiagram figure as
@@ -53,6 +55,8 @@ public class DiagramPart extends PropertyAwarePart
 		}
 	};
 	private DelegatingLayoutManager delegatingLayoutManager;
+    private Font boldFont;
+
 
 	/**
 	 * Adds this EditPart as a command stack listener, which can be used to call
@@ -69,6 +73,9 @@ public class DiagramPart extends PropertyAwarePart
 	 */
 	public void deactivate()
 	{
+        if (boldFont != null) {
+            boldFont.dispose();
+        }
 		getViewer().getEditDomain().getCommandStack().removeCommandStackListener(stackListener);
 		super.deactivate();
 	}
@@ -92,6 +99,13 @@ public class DiagramPart extends PropertyAwarePart
 	{
 		return (EntityDiagram) getModel();
 	}
+
+    public Font getBoldFont() {
+        if (boldFont == null) {
+            boldFont = UIUtils.makeBoldFont(getViewer().getControl().getFont());
+        }
+        return boldFont;
+    }
 
     public void rearrangeDiagram()
     {

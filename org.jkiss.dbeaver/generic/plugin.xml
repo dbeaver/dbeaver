@@ -119,7 +119,7 @@
                     sampleURL="jdbc:oracle:thin:@{host}[:{port}]:{database}"
                     webURL="http://oracle.com"
                     description="Oracle thin driver">
-                    <library path="drivrs/ojdbc14.jar"/>
+                    <library path="drivers/ojdbc14.jar"/>
                     <query label="GET_ACTIVE_DB">select sys_context( 'userenv', 'current_schema' ) from dual</query>
                     <query label="SET_ACTIVE_DB">alter session set current_schema=?</query>
                 </driver>
@@ -130,8 +130,8 @@
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                     webURL="www.ibm.com/software/data/db2/ad/java.html"
                     description="DB2 JCC driver">
-					<library path="drivrs/db2jcc.jar"/>
-					<library path="drivrs/db2jcc_license_cu.jar"/>
+					<library path="drivers/db2jcc.jar"/>
+					<library path="drivers/db2jcc_license_cu.jar"/>
                 </driver>
                 <driver
                     id="mssql"

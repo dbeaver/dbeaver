@@ -240,9 +240,7 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	 */
 	protected IFigure createFigure()
 	{
-		ERDTable table = getTable();
-		EditableLabel label = new EditableLabel(table.getObject().getName());
-		return new EntityFigure(label);
+		return new EntityFigure(getTable());
 	}
 
 	/**

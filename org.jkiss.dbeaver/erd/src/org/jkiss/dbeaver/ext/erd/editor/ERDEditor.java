@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.DataElementFactory;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
@@ -316,10 +317,13 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         for (DBSObject entity : entities) {
             if (entity instanceof DBSTable) {
                 DBSTable dbsTable = (DBSTable)entity;
+
+                List<DBSTableColumn> idColumns = DBUtils.getBestTableIdentifier(monitor, dbsTable);
+
                 ERDTable table = new ERDTable(dbsTable);
                 Collection<? extends DBSTableColumn> columns = dbsTable.getColumns(monitor);
                 for (DBSTableColumn column : columns) {
-                    ERDTableColumn c1 = new ERDTableColumn(column);
+                    ERDTableColumn c1 = new ERDTableColumn(column, idColumns.contains(column));
                     table.addColumn(c1);
                 }
                 entityDiagram.addTable(table);
@@ -777,7 +781,11 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             @Override
             public void completeLoading(EntityDiagram entityDiagram) {
                 super.completeLoading(entityDiagram);
-                setInfo(entityDiagram.getEntityCount() + " objects");
+                if (entityDiagram != null) {
+                    setInfo(entityDiagram.getEntityCount() + " objects");
+                } else {
+                    setInfo("Error");
+                }
                 getGraphicalViewer().setContents(entityDiagram);
                 zoomCombo.setZoomManager(rootPart.getZoomManager());
                 toolBarManager.getControl().setEnabled(true);
