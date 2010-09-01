@@ -18,13 +18,15 @@ public class EntityEditorsRegistry {
     private static final String CFG_EDITOR = "editor";
     private static final String CFG_MANAGER = "manager";
 
+    private EntityEditorDescriptor defaultEditor;
     private List<EntityEditorDescriptor> entityEditors = new ArrayList<EntityEditorDescriptor>();
     private List<EntityManagerDescriptor> entityManagers = new ArrayList<EntityManagerDescriptor>();
 
     public EntityEditorsRegistry(IExtensionRegistry registry)
     {
+        // Create default editor
+        defaultEditor = new EntityEditorDescriptor();
         // Load datasource providers from external plugins
-
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EntityEditorDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             if (CFG_EDITOR.equals(ext.getName())) {
@@ -50,7 +52,7 @@ public class EntityEditorsRegistry {
                 return descriptor;
             }
         }
-        return null;
+        return defaultEditor;
     }
 
     public List<EntityEditorDescriptor> getEntityEditors(Class objectType, String position)

@@ -34,20 +34,21 @@ import java.util.List;
 /**
  * DefaultObjectEditor
  */
-class DefaultObjectEditor extends EditorPart
+public class DefaultObjectEditor extends EditorPart
 {
     static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
 
-    private DBNNode node;
     private PropertyPageStandard properties;
 
-    DefaultObjectEditor(DBNNode node)
+    public DefaultObjectEditor()
     {
-        this.node = node;
     }
 
     public void createPartControl(Composite parent)
     {
+        EntityEditorInput entityInput = (EntityEditorInput) getEditorInput();
+        DBNNode node = entityInput.getTreeNode();
+
         Composite container = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, true);
         container.setLayout(gl);
@@ -100,7 +101,7 @@ class DefaultObjectEditor extends EditorPart
             GridData gd = new GridData(GridData.FILL_BOTH);
             propsGroup.setLayoutData(gd);
 
-            DBSObject itemObject = node.getObject();
+            DBSObject itemObject = entityInput.getDatabaseObject();
             //final PropertyCollector propertyCollector = new PropertyCollector(itemObject);
             //List<PropertyAnnoDescriptor> annoProps = PropertyAnnoDescriptor.extractAnnotations(itemObject);
 

@@ -6,8 +6,14 @@ package org.jkiss.dbeaver.registry;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.IContributor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.ui.DBeaverConstants;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * EntityEditorDescriptor
@@ -30,6 +36,23 @@ public class EntityEditorDescriptor extends AbstractDescriptor
 
     private Class objectClass;
     private Class editorClass;
+
+    EntityEditorDescriptor()
+    {
+        super(new IContributor() {
+            public String getName() {
+                return DBeaverConstants.PLUGIN_ID;
+            }
+        });
+        this.id = "default.object.editor";
+        this.className = org.jkiss.dbeaver.ui.editors.entity.DefaultObjectEditor.class.getName();
+        this.objectType = DBSObject.class.getName();
+        this.main = true;
+        this.name = "Properties";
+        this.description = "Object properties";
+        this.position = null;
+        this.icon = DBIcon.TREE_DATABASE.getImage();
+    }
 
     public EntityEditorDescriptor(IConfigurationElement config)
     {

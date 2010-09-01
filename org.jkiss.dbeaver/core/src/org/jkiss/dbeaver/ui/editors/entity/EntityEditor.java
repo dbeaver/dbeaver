@@ -32,10 +32,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * EntityEditor
@@ -43,6 +40,8 @@ import java.util.Map;
 public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> implements IDBNListener, IMetaModelView
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
+
+    private static Map<Class, String> defaultPageMap = new HashMap<Class, String>();
 
     private IDatabaseObjectManager objectManager;
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
@@ -78,6 +77,15 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         if (defaultEditor != null) {
             mainAdded = addEditorTab(defaultEditor);
         }
+        if (mainAdded) {
+            DBNNode node = getEditorInput().getTreeNode();
+            setPageText(0, "Properties");
+            if (node instanceof DBNTreeNode) {
+                setPageToolTip(0, ((DBNTreeNode)node).getMeta().getLabel() + " Properties");
+            }
+            setPageImage(0, node.getNodeIconDefault());
+        }
+/*
         if (!mainAdded) {
             try {
                 DBNNode node = getEditorInput().getTreeNode();
@@ -91,6 +99,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                 log.error("Error creating object editor");
             }
         }
+*/
 
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_START);
@@ -116,10 +125,27 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         addContributions(EntityEditorDescriptor.POSITION_END);
 
         String defPageId = getEditorInput().getDefaultPageId();
+        if (defPageId == null) {
+            defPageId = defaultPageMap.get(getEditorInput().getDatabaseObject().getClass()); 
+        }
         if (defPageId != null) {
             IEditorPart defEditorPage = editorMap.get(defPageId);
             if (defEditorPage != null) {
                 setActiveEditor(defEditorPage);
+            }
+        }
+    }
+
+    @Override
+    protected void pageChange(int newPageIndex) {
+        super.pageChange(newPageIndex);
+
+        DBSObject object = getEditorInput().getDatabaseObject();
+        IEditorPart editor = getEditor(newPageIndex);
+        for (Map.Entry<String,IEditorPart> entry : editorMap.entrySet()) {
+            if (entry.getValue() == editor) {
+                defaultPageMap.put(object.getClass(), entry.getKey());
+                break;
             }
         }
     }
