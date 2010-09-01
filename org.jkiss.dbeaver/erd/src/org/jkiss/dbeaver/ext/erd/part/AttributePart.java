@@ -7,20 +7,14 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
-import java.beans.PropertyChangeEvent;
-
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.EditPart;
-import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.RequestConstants;
-import org.eclipse.gef.requests.DirectEditRequest;
 import org.eclipse.gef.tools.DirectEditManager;
 import org.eclipse.jface.viewers.TextCellEditor;
-
-import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.ext.erd.directedit.ColumnNameTypeCellEditorValidator;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
@@ -28,9 +22,8 @@ import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
-import org.jkiss.dbeaver.ext.erd.policy.ColumnDirectEditPolicy;
-import org.jkiss.dbeaver.ext.erd.policy.AttributeEditPolicy;
-import org.jkiss.dbeaver.ui.DBIcon;
+
+import java.beans.PropertyChangeEvent;
 
 /**
  * Represents an editable Column object in the model
@@ -65,6 +58,8 @@ public class AttributePart extends PropertyAwarePart
             }
         } else if (column.isInForeignKey()) {
             editableLabel.setFont(diagramPart.getItalicFont());
+        } else {
+            editableLabel.setFont(diagramPart.getNormalFont());
         }
         return editableLabel;
     }

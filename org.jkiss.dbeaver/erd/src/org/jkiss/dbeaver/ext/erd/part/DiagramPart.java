@@ -55,7 +55,7 @@ public class DiagramPart extends PropertyAwarePart
 		}
 	};
 	private DelegatingLayoutManager delegatingLayoutManager;
-    private Font boldFont, italicFont, boldItalicFont;
+    private Font normalFont, boldFont, italicFont, boldItalicFont;
 
 
 	/**
@@ -73,9 +73,6 @@ public class DiagramPart extends PropertyAwarePart
 	 */
 	public void deactivate()
 	{
-        if (boldFont != null) {
-            boldFont.dispose();
-        }
 		getViewer().getEditDomain().getCommandStack().removeCommandStackListener(stackListener);
 		super.deactivate();
 	}
@@ -100,23 +97,30 @@ public class DiagramPart extends PropertyAwarePart
 		return (EntityDiagram) getModel();
 	}
 
+    public Font getNormalFont() {
+        if (normalFont == null) {
+            normalFont = UIUtils.modifyFontHeight(getViewer().getControl().getFont(), 8);
+        }
+        return normalFont;
+    }
+
     public Font getBoldFont() {
         if (boldFont == null) {
-            boldFont = UIUtils.makeBoldFont(getViewer().getControl().getFont());
+            boldFont = UIUtils.makeBoldFont(getNormalFont());
         }
         return boldFont;
     }
 
     public Font getItalicFont() {
         if (italicFont == null) {
-            italicFont = UIUtils.modifyFont(getViewer().getControl().getFont(), SWT.ITALIC);
+            italicFont = UIUtils.modifyFont(getNormalFont(), SWT.ITALIC);
         }
         return italicFont;
     }
 
     public Font getBoldItalicFont() {
         if (boldItalicFont == null) {
-            boldItalicFont = UIUtils.modifyFont(getViewer().getControl().getFont(), SWT.BOLD | SWT.ITALIC);
+            boldItalicFont = UIUtils.modifyFont(getNormalFont(), SWT.BOLD | SWT.ITALIC);
         }
         return boldItalicFont;
     }

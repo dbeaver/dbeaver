@@ -171,6 +171,13 @@ public class UIUtils {
         return new Font(normalFont.getDevice(), fontData[0]);
     }
 
+    public static Font modifyFontHeight(Font normalFont, int height)
+    {
+        FontData[] fontData = normalFont.getFontData();
+        fontData[0].setHeight(height);
+        return new Font(normalFont.getDevice(), fontData[0]);
+    }
+
     public static Group createControlGroup(Composite parent, String label, int columns, int layoutStyle, int widthHint)
     {
         Group group = new Group(parent, SWT.NONE);

@@ -258,8 +258,7 @@ Export-Package: net.sf.jkiss.utils,
    org.eclipse.jface.viewers,
    org.jkiss.dbeaver.model.dbc,
    org.eclipse.swt.widgets",
- org.jkiss.dbeaver.ui.editors.object,
- org.jkiss.dbeaver.ui.editors.splitted;
+ org.jkiss.dbeaver.ui.editors.object;
   uses:="org.eclipse.jface.action,
    org.apache.commons.logging,
    org.eclipse.ui,
