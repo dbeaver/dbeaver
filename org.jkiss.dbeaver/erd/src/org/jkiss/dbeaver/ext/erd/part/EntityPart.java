@@ -142,7 +142,6 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 		//installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
 		//installEditPolicy(EditPolicy.COMPONENT_ROLE, new EntityEditPolicy());
 		//installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new EntityDirectEditPolicy());
-
 	}
 
 	//******************* Direct editing related methods *********************/
@@ -160,7 +159,9 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 				return;
 			performDirectEdit();
 */
-		}
+		} else if (request.getType() == RequestConstants.REQ_OPEN) {
+            getTable().openEditor();
+        }
 	}
 
 	private boolean directEditHitTest(Point requestLoc)

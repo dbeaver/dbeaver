@@ -7,17 +7,20 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
-import org.eclipse.ui.views.properties.IPropertySourceProvider;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Provides base class support for model objects to participate in event handling framework
@@ -95,5 +98,24 @@ public abstract class ERDObject<OBJECT extends DBSObject> implements IPropertySo
     public void setPropertyValue(Object id, Object value) {
         getPropertyCollector().setPropertyValue(id, value);
     }
+
+
+    public void openEditor() {
+        DBeaverCore.runUIJob("Open object editor", new DBRRunnableWithProgress() {
+            public void run(DBRProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException
+            {
+                DBNNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject(
+                    monitor,
+                    object,
+                    true
+                );
+                if (node != null) {
+                    OpenObjectEditorAction.openEntityEditor(node, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                }
+            }
+        });
+    }
+
 }
 

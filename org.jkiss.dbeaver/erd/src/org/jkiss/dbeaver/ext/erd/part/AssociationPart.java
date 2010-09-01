@@ -9,12 +9,11 @@ package org.jkiss.dbeaver.ext.erd.part;
 
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.gef.EditPart;
-import org.eclipse.gef.EditPolicy;
-import org.eclipse.gef.LayerConstants;
+import org.eclipse.gef.*;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationBendEditPolicy;
 
 import java.util.ArrayList;
@@ -26,6 +25,11 @@ import java.util.List;
  * @author Serge Rieder
  */
 public class AssociationPart extends PropertyAwareConnectionPart {
+
+    private ERDAssociation getAssociation()
+    {
+        return (ERDAssociation) getModel();
+    }
 
     public void activate() {
         super.activate();
@@ -73,6 +77,13 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             ((PolylineConnection) getFigure()).setLineWidth(2);
         } else {
             ((PolylineConnection) getFigure()).setLineWidth(1);
+        }
+    }
+
+    public void performRequest(Request request)
+    {
+        if (request.getType() == RequestConstants.REQ_OPEN) {
+            getAssociation().openEditor();
         }
     }
 

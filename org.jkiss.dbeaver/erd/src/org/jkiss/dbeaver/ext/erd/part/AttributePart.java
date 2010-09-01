@@ -83,11 +83,15 @@ public class AttributePart extends PropertyAwarePart
 	{
 		if (request.getType() == RequestConstants.REQ_DIRECT_EDIT)
 		{
+/*
 			if (request instanceof DirectEditRequest
 					&& !directEditHitTest(((DirectEditRequest) request).getLocation().getCopy()))
 				return;
 			performDirectEdit();
-		}
+*/
+        } else if (request.getType() == RequestConstants.REQ_OPEN) {
+            getColumn().openEditor();
+        }
 	}
 
 	private boolean directEditHitTest(Point requestLoc)
