@@ -28,7 +28,7 @@ public class ERDTableColumn extends ERDObject<DBSTableColumn>
 
 	public String getLabelText()
 	{
-		return object.getName() + ":" + object.getTypeName();
+		return object.getName();
 	}
 
     public Image getLabelImage()
