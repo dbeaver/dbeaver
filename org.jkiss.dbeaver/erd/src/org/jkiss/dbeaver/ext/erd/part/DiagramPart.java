@@ -55,7 +55,7 @@ public class DiagramPart extends PropertyAwarePart
 		}
 	};
 	private DelegatingLayoutManager delegatingLayoutManager;
-    private Font boldFont;
+    private Font boldFont, italicFont, boldItalicFont;
 
 
 	/**
@@ -105,6 +105,20 @@ public class DiagramPart extends PropertyAwarePart
             boldFont = UIUtils.makeBoldFont(getViewer().getControl().getFont());
         }
         return boldFont;
+    }
+
+    public Font getItalicFont() {
+        if (italicFont == null) {
+            italicFont = UIUtils.modifyFont(getViewer().getControl().getFont(), SWT.ITALIC);
+        }
+        return italicFont;
+    }
+
+    public Font getBoldItalicFont() {
+        if (boldItalicFont == null) {
+            boldItalicFont = UIUtils.modifyFont(getViewer().getControl().getFont(), SWT.BOLD | SWT.ITALIC);
+        }
+        return boldItalicFont;
     }
 
     public void rearrangeDiagram()

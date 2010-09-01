@@ -123,29 +123,7 @@ public class ERDTable extends ERDObject<DBSTable>
 		firePropertyChange(INPUT, table, null);
 	}
 
-	/**
-	 * If modified, sets name and fires off event notification
-	 * 
-	 * @param name
-	 *            The name to set.
-	 *
-	public void modifyName(String name)
-	{
-		String oldName = this.name;
-		if (!name.equals(oldName))
-		{
-			this.name = name;
-			firePropertyChange(NAME, null, name);
-		}
-	}
-
-	public String getName()
-	{
-		return name;
-	}
-    */
-
-	public List getColumns()
+	public List<ERDTableColumn> getColumns()
 	{
 		return columns;
 	}

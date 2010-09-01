@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 public class ERDTableColumn extends ERDObject<DBSTableColumn>
 {
     private boolean inPrimaryKey;
+    private boolean inForeignKey;
 
     public ERDTableColumn(DBSTableColumn dbsTableColumn, boolean inPrimaryKey) {
         super(dbsTableColumn);
@@ -41,5 +42,13 @@ public class ERDTableColumn extends ERDObject<DBSTableColumn>
 
     public boolean isInPrimaryKey() {
         return inPrimaryKey;
+    }
+
+    public boolean isInForeignKey() {
+        return inForeignKey;
+    }
+
+    public void setInForeignKey(boolean inForeignKey) {
+        this.inForeignKey = inForeignKey;
     }
 }

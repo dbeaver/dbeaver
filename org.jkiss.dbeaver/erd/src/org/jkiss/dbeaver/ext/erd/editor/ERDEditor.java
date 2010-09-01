@@ -333,12 +333,14 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
         // Load relations
         for (DBSObject entity : entities) {
-            ERDTable table1 = tableMap.get(entity);
-
             if (entity instanceof DBSTable) {
+                ERDTable table1 = tableMap.get(entity);
                 try {
+                    Set<DBSTableColumn> fkColumns = new HashSet<DBSTableColumn>();
+                    // Make associations
                     Collection<? extends DBSForeignKey> fks = ((DBSTable) entity).getForeignKeys(monitor);
                     for (DBSForeignKey fk : fks) {
+                        fkColumns.addAll(DBUtils.getTableColumns(monitor, fk));
                         ERDTable table2 = tableMap.get(fk.getReferencedKey().getTable());
                         if (table2 == null) {
                             log.warn("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
@@ -348,6 +350,14 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                             }
                         }
                     }
+
+                    // Mark column's fk flag
+                    for (ERDTableColumn column : table1.getColumns()) {
+                        if (fkColumns.contains(column.getObject())) {
+                            column.setInForeignKey(true);
+                        }
+                    }
+
                 } catch (DBException e) {
                     log.warn("Could not load entity '" + entity.getName() + "' foreign keys", e);
                 }

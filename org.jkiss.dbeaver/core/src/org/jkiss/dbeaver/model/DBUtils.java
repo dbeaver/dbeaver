@@ -275,7 +275,7 @@ public final class DBUtils {
     public static List<DBSTableColumn> getBestTableIdentifier(DBRProgressMonitor monitor, DBSTable table)
         throws DBException
     {
-        if (table.isView()) {
+        if (table.isView() || CommonUtils.isEmpty(table.getColumns(monitor))) {
             return Collections.emptyList();
         }
 
