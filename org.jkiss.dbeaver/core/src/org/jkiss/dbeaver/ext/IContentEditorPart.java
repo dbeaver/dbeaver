@@ -24,13 +24,13 @@ public interface IContentEditorPart extends IEditorPart {
     String getPreferedMimeType();
 
     /**
-     * Maximum part length. If content length is more than this value then this part will be ommited.
+     * Maximum part length. If content length is more than this value then this part will be committed.
      * @return
      */
     long getMaxContentLength();
 
     /**
-     * Prefered content part will be set as default part in ontent editor.
+     * Prefered content part will be set as default part in content editor.
      * @return
      */
     boolean isPreferedContent();

@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
+import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import javax.activation.MimeType;
@@ -43,20 +44,39 @@ import java.util.List;
 /**
  * LOBEditor
  */
-public class ContentEditor extends MultiPageEditorPart implements IDataSourceEditor, DBDValueEditor, IResourceChangeListener
+public class ContentEditor extends MultiPageDatabaseEditor<ContentEditorInput> implements IDataSourceEditor, DBDValueEditor, IResourceChangeListener
 {
-    public static final long MAX_TEXT_LENGTH = 10 * 1024 * 1024;
-    public static final long MAX_IMAGE_LENGTH = 10 * 1024 * 1024;
+    public static boolean openEditor(DBDValueController valueController, IContentEditorPart[] editorParts)
+    {
+        ContentEditorInput editorInput;
+        // Save data to file
+        try {
+            LOBInitializer initializer = new LOBInitializer(valueController, editorParts);
+            valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
+            editorInput = initializer.editorInput;
+        } catch (Throwable e) {
+            if (e instanceof InvocationTargetException) {
+                e = ((InvocationTargetException)e).getTargetException();
+            }
+            log.error("Could not init LOB data", e);
+            return false;
+        }
+        try {
+            valueController.getValueSite().getWorkbenchWindow().getActivePage().openEditor(
+                editorInput,
+                ContentEditor.class.getName());
+        }
+        catch (PartInitException e) {
+            log.error("Could not open LOB editorPart", e);
+            return false;
+        }
+        return true;
+    }
+
+    //public static final long MAX_TEXT_LENGTH = 10 * 1024 * 1024;
+    //public static final long MAX_IMAGE_LENGTH = 10 * 1024 * 1024;
 
     static final Log log = LogFactory.getLog(ContentEditor.class);
-
-    private boolean valueEditorRegistered = false;
-
-    private List<ContentPartInfo> contentParts = new ArrayList<ContentPartInfo>();
-    private ColumnInfoPanel infoPanel;
-    private boolean dirty;
-    private boolean partsLoaded;
-    private boolean saveInProgress;
 
     static class ContentPartInfo {
         IContentEditorPart editorPart;
@@ -93,13 +113,16 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceEdi
         }
     }
 
+    private boolean valueEditorRegistered = false;
+
+    private List<ContentPartInfo> contentParts = new ArrayList<ContentPartInfo>();
+    private ColumnInfoPanel infoPanel;
+    private boolean dirty;
+    private boolean partsLoaded;
+    private boolean saveInProgress;
+
     public ContentEditor()
     {
-    }
-
-    @Override
-    public ContentEditorInput getEditorInput() {
-        return (ContentEditorInput)super.getEditorInput();
     }
 
     public ContentPartInfo getContentEditor(IEditorPart editor) {
@@ -109,33 +132,6 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceEdi
             }
         }
         return null;
-    }
-
-    public static boolean openEditor(DBDValueController valueController, IContentEditorPart[] editorParts)
-    {
-        ContentEditorInput editorInput;
-        // Save data to file
-        try {
-            LOBInitializer initializer = new LOBInitializer(valueController, editorParts);
-            valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
-            editorInput = initializer.editorInput;
-        } catch (Throwable e) {
-            if (e instanceof InvocationTargetException) {
-                e = ((InvocationTargetException)e).getTargetException();
-            }
-            log.error("Could not init LOB data", e);
-            return false;
-        }
-        try {
-            valueController.getValueSite().getWorkbenchWindow().getActivePage().openEditor(
-                editorInput,
-                ContentEditor.class.getName());
-        }
-        catch (PartInitException e) {
-            log.error("Could not open LOB editorPart", e);
-            return false;
-        }
-        return true;
     }
 
     public void doSave(final IProgressMonitor monitor)
@@ -197,21 +193,10 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceEdi
         });
     }
 
-    public void doSaveAs()
-    {
-    }
-
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {
-        if (!(input instanceof ContentEditorInput)) {
-            throw new PartInitException("Invalid Input: Must be ContentEditorInput");
-        }
-
-        setSite(site);
-        setInput(input);
-        setPartName(input.getName());
-        setTitleImage(input.getImageDescriptor().createImage());
+        super.init(site, input);
 
         getValueController().registerEditor(this);
         valueEditorRegistered = true;
@@ -440,14 +425,6 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceEdi
 
     public void setFocus()
     {
-    }
-
-    public DBPDataSource getDataSource() {
-        DBDValueController valueController = getValueController();
-        if (valueController == null) {
-            return null;
-        }
-        return valueController.getDataSource();
     }
 
     public void resourceChanged(IResourceChangeEvent event)

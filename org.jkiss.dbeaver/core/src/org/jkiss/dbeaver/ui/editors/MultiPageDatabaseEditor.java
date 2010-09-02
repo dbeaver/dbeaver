@@ -148,7 +148,7 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
     }
 
     public DBPDataSource getDataSource() {
-        return getEditorInput() == null || getEditorInput().getDatabaseObject() == null ? null : getEditorInput().getDatabaseObject().getDataSource();
+        return getEditorInput() == null ? null : getEditorInput().getDataSource();
     }
 
     public void nodeChanged(final DBNEvent event)

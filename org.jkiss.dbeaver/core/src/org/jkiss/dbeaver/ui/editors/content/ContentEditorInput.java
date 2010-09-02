@@ -18,14 +18,20 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDContentStorageLocal;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -39,9 +45,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * LOBEditorInput
+ * ContentEditorInput
  */
-public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //IDatabaseEditorInput
+public class ContentEditorInput implements IFileEditorInput, IPathEditorInput, IDatabaseEditorInput
 {
     static final Log log = LogFactory.getLog(ContentEditorInput.class);
 
@@ -49,6 +55,8 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
     private IContentEditorPart[] editorParts;
     private IFile contentFile;
     private boolean contentDetached = false;
+
+    private DBNNode treeNode;
 
     ContentEditorInput(
         DBDValueController valueController,
@@ -277,6 +285,29 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput //
             contentDetached = content.updateContents(localMonitor, storage);
         }
         valueController.updateValue(content);
+    }
+
+    ////////////////////////////////////////////////////////
+    // IDatabaseEditorInput methods
+
+    public DBPDataSource getDataSource() {
+        return valueController.getDataSource();
+    }
+
+    public DBNNode getTreeNode() {
+        if (treeNode == null) {
+            treeNode = DBeaverCore.getInstance().getMetaModel().findNode(valueController.getDataSource().getContainer());
+        }
+        return treeNode;
+    }
+
+    public DBSObject getDatabaseObject() {
+        DBNNode node = getTreeNode();
+        return node == null ? null : node.getObject();
+    }
+
+    public String getDefaultPageId() {
+        return null;
     }
 
 }
