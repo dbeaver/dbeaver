@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui.controls.imageview;
 
 import org.eclipse.swt.SWT;
@@ -81,6 +85,15 @@ public class ImageViewControl extends Composite {
             }
         }
         updateActions();
+    }
+
+    @Override
+    public void dispose() {
+        if (canvas != null) {
+            canvas.dispose();
+            canvas = null;
+        }
+        super.dispose();
     }
 
     private void updateActions()

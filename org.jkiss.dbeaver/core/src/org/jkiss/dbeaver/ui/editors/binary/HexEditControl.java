@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
+
 package org.jkiss.dbeaver.ui.editors.binary;
 
 import org.apache.commons.logging.Log;
@@ -122,6 +123,11 @@ public class HexEditControl extends Composite {
 
     private Text previewTextSeparator = null;
     private StyledText previewText = null;
+
+    @Override
+    public void dispose() {
+        super.dispose();
+    }
 
     public Finder getFinder()
     {
