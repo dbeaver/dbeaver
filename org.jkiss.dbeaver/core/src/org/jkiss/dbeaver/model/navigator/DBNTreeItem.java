@@ -58,7 +58,7 @@ public class DBNTreeItem extends DBNTreeNode
         throws DBException
     {
         if (object instanceof DBSEntity && ((DBSEntity)object).refreshEntity(monitor)) {
-            this.clearChildren();
+            this.reloadChildren(monitor);
             return this;
         } else if (this.getParentNode() != null) {
             return this.getParentNode().refreshNode(monitor);

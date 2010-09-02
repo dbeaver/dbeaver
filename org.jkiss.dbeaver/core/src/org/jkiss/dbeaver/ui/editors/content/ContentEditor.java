@@ -24,13 +24,12 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
-import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
+import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -44,7 +43,7 @@ import java.util.List;
 /**
  * LOBEditor
  */
-public class ContentEditor extends MultiPageEditorPart implements IDataSourceUser, DBDValueEditor, IResourceChangeListener
+public class ContentEditor extends MultiPageEditorPart implements IDataSourceEditor, DBDValueEditor, IResourceChangeListener
 {
     public static final long MAX_TEXT_LENGTH = 10 * 1024 * 1024;
     public static final long MAX_IMAGE_LENGTH = 10 * 1024 * 1024;
@@ -441,11 +440,6 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourceUse
 
     public void setFocus()
     {
-    }
-
-    public DBSDataSourceContainer getDataSourceContainer() {
-        DBPDataSource dataSource = getDataSource();
-        return dataSource == null ? null : dataSource.getContainer();
     }
 
     public DBPDataSource getDataSource() {

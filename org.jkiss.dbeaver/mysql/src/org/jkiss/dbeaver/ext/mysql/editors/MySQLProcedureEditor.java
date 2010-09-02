@@ -21,7 +21,6 @@ public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<IDatabase
     static final Log log = LogFactory.getLog(MySQLProcedureEditor.class);
 
     private Text ddlText;
-    private MySQLProcedure procedure;
 
     public void createPartControl(Composite parent)
     {
@@ -33,16 +32,11 @@ public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<IDatabase
     public void activatePart()
     {
         try {
-            ddlText.setText(procedure.getBody());
+            ddlText.setText(getObjectManager().getObject().getBody());
         }
         catch (Exception ex) {
             log.error("Can't obtain procedure body", ex);
         }
-    }
-
-    public void initObjectEditor(IDatabaseObjectManager<MySQLProcedure> manager)
-    {
-        procedure = (MySQLProcedure) manager;
     }
 
 }

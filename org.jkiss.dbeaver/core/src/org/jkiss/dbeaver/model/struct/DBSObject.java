@@ -14,6 +14,12 @@ public interface DBSObject extends DBPNamedObject
 {
 
     /**
+     * Object ID. ID must be unique within object's datasource.
+     * @return object ID
+     */
+    String getObjectId();
+
+    /**
      * Object description
      *
      * @return object description or null

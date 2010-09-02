@@ -81,6 +81,10 @@ public abstract class GenericEntityContainer implements DBSEntityContainer, DBSS
         return procedureCache;
     }
 
+    public String getObjectId() {
+        return getParentObject() + "." + getName();
+    }
+
     public abstract GenericDataSource getDataSource();
 
     public abstract GenericCatalog getCatalog();

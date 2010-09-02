@@ -117,6 +117,10 @@ public class DBNRoot extends DBNNode implements DBSObject
         return "#root";
     }
 
+    public String getObjectId() {
+        return "#root";
+    }
+
     public String getDescription()
     {
         return null;

@@ -18,19 +18,18 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.part.MultiPageEditorPart;
-import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
-import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
+import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
+import org.jkiss.dbeaver.ext.ui.IObjectEditorPart;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.IDBNListener;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.core.DBeaverCore;
 
 /**
  * MultiPageDatabaseEditor
  */
-public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends MultiPageEditorPart implements IDataSourceUser, IDBNListener
+public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends MultiPageEditorPart implements IDataSourceEditor, IDBNListener
 {
     static final Log log = LogFactory.getLog(MultiPageDatabaseEditor.class);
 
@@ -128,8 +127,8 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
         // Deactivate the nested services from the last active service locator.
         final int pageIndex = getActivePage();
         final IWorkbenchPart part = getEditor(pageIndex);
-        if (part instanceof IEmbeddedWorkbenchPart) {
-            ((IEmbeddedWorkbenchPart) part).deactivatePart();
+        if (part instanceof IObjectEditorPart) {
+            ((IObjectEditorPart) part).deactivatePart();
         }
     }
 
@@ -138,19 +137,14 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
         final int pageIndex = getActivePage();
         final IWorkbenchPart part = getEditor(pageIndex);
 
-        if (part instanceof IEmbeddedWorkbenchPart) {
-            ((IEmbeddedWorkbenchPart) part).activatePart();
+        if (part instanceof IObjectEditorPart) {
+            ((IObjectEditorPart) part).activatePart();
         }
     }
 
     public IWorkbenchPart getWorkbenchPart()
     {
         return this;
-    }
-
-    public DBSDataSourceContainer getDataSourceContainer() {
-        DBPDataSource dataSource = getDataSource();
-        return dataSource == null ? null : dataSource.getContainer();
     }
 
     public DBPDataSource getDataSource() {

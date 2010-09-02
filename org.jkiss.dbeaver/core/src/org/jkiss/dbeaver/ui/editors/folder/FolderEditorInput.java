@@ -14,7 +14,7 @@ public class FolderEditorInput extends DatabaseEditorInput<DBNTreeFolder>
 {
     public FolderEditorInput(DBNTreeFolder dbmTreeFolder)
     {
-        super(dbmTreeFolder);
+        super(dbmTreeFolder.getDataSource(), dbmTreeFolder);
     }
 
 }

@@ -66,7 +66,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         }
 
         try {
-            this.objectManager.init(databaseObject);
+            this.objectManager.init(getEditorInput().getDataSource(), databaseObject);
         } catch (DBException e) {
             log.error("Could not initialize object manager", e);
         }

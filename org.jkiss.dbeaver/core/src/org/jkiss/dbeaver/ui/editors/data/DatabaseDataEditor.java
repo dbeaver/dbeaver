@@ -10,30 +10,28 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
+import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
-import org.jkiss.dbeaver.ui.editors.AbstractDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**
  * DatabaseDataEditor
  */
-public class DatabaseDataEditor extends AbstractDatabaseEditor implements IEmbeddedWorkbenchPart, ResultSetProvider
+public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManager<DBSDataContainer>> implements ResultSetProvider
 {
     static final Log log = LogFactory.getLog(DatabaseDataEditor.class);
 
     private ResultSetViewer resultSetView;
-    private DBSDataContainer dataContainer;
+    private boolean loaded = false;
 
     public void createPartControl(Composite parent)
     {
@@ -42,16 +40,9 @@ public class DatabaseDataEditor extends AbstractDatabaseEditor implements IEmbed
 
     public void activatePart()
     {
-        if (dataContainer == null) {
-            IDatabaseEditorInput editorInput = getEditorInput();
-            DBSObject object = editorInput.getDatabaseObject();
-            if (!(object instanceof DBSDataContainer)) {
-                log.error("Data editor supports only data contaner objects!");
-                return;
-            }
-            dataContainer = (DBSDataContainer) object;
-
+        if (!loaded) {
             resultSetView.refresh();
+            loaded = true;
         }
     }
 
@@ -70,16 +61,16 @@ public class DatabaseDataEditor extends AbstractDatabaseEditor implements IEmbed
     }
 
     public DBSDataSourceContainer getDataSourceContainer() {
-        return dataContainer.getDataSource().getContainer();
+        return getDataContainer().getDataSource().getContainer();
     }
 
     public DBPDataSource getDataSource() {
-        return dataContainer.getDataSource();
+        return getDataContainer().getDataSource();
     }
 
     public boolean isConnected()
     {
-        return dataContainer != null && dataContainer.getDataSource().getContainer().isConnected();
+        return getDataContainer() != null && getDataContainer().getDataSource().getContainer().isConnected();
     }
 
     public boolean isRunning() {
@@ -88,7 +79,7 @@ public class DatabaseDataEditor extends AbstractDatabaseEditor implements IEmbed
 
     public DBSDataContainer getDataContainer()
     {
-        return dataContainer;
+        return getObjectManager().getObject();
     }
 
     public void extractResultSetData(int offset, int maxRows)

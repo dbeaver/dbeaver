@@ -66,7 +66,6 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 
     public void activatePart()
     {
-
     }
 
 }

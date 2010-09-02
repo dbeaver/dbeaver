@@ -13,7 +13,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.jkiss.dbeaver.ext.ui.IDataSourceUser;
+import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -128,8 +128,8 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
 
     protected DBSDataSourceContainer getDataSourceContainer(boolean chooseOnNoSelection)
     {
-        if (activePart instanceof IDataSourceUser) {
-            return ((IDataSourceUser)activePart).getDataSourceContainer();
+        if (activePart instanceof IDataSourceEditor) {
+            return ((IDataSourceEditor)activePart).getDataSource().getContainer();
         }
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection structSelection = (IStructuredSelection)selection;
@@ -149,8 +149,8 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
 
     protected DBPDataSource getDataSource()
     {
-        if (activePart instanceof IDataSourceUser) {
-            return ((IDataSourceUser)activePart).getDataSource();
+        if (activePart instanceof IDataSourceEditor) {
+            return ((IDataSourceEditor)activePart).getDataSource();
         }
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection structSelection = (IStructuredSelection)selection;

@@ -71,7 +71,7 @@ public class DBNDataSource extends DBNTreeNode
         if (dataSource.isConnected()) {
             dataSource.getDataSource().refreshDataSource(monitor);
         }
-        this.clearChildren();
+        this.reloadChildren(monitor);
         return this;
     }
 

@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -15,11 +16,13 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public abstract class DatabaseEditorInput<NODE extends DBNNode> implements IDatabaseEditorInput
 {
+    private DBPDataSource dataSource;
     private NODE node;
     private String defaultPageId;
 
-    protected DatabaseEditorInput(NODE node)
+    protected DatabaseEditorInput(DBPDataSource dataSource, NODE node)
     {
+        this.dataSource = dataSource;
         this.node = node;
     }
 
@@ -51,6 +54,10 @@ public abstract class DatabaseEditorInput<NODE extends DBNNode> implements IData
     public Object getAdapter(Class adapter)
     {
         return null;
+    }
+
+    public DBPDataSource getDataSource() {
+        return dataSource;
     }
 
     public NODE getTreeNode()

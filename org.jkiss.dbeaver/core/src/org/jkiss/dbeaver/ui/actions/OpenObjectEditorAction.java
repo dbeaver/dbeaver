@@ -53,7 +53,7 @@ public class OpenObjectEditorAction extends NavigatorAction
                     objectNode.getMeta().getEditorId());
 
             } else {
-                EntityEditorInput editorInput = new EntityEditorInput(selectedNode);
+                EntityEditorInput editorInput = new EntityEditorInput(selectedNode.getObject().getDataSource(), selectedNode);
                 editorInput.setDefaultPageId(defaultPageId);
                 workbenchWindow.getActivePage().openEditor(
                     editorInput,

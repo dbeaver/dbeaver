@@ -50,6 +50,10 @@ public abstract class AbstractCatalog<DATASOURCE extends DBPDataSource> implemen
         return null;
     }
 
+    public String getObjectId() {
+        return this.catalogName;
+    }
+
     public DBSObject getParentObject()
     {
         return getDataSource().getContainer();

@@ -188,6 +188,10 @@ public abstract class JDBCDataSource
         return container.getName();
     }
 
+    public String getObjectId() {
+        return container.getObjectId();
+    }
+
     public String getDescription()
     {
         return container.getDescription();

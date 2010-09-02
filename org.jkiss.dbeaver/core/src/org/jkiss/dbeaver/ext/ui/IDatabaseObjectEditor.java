@@ -11,7 +11,9 @@ import org.jkiss.dbeaver.model.DBPObject;
 /**
  * IDatabaseObjectEditor
  */
-public interface IDatabaseObjectEditor<OBJECT_MANAGER extends IDatabaseObjectManager<? extends DBPObject>> extends IEmbeddedWorkbenchPart, IEditorPart {
+public interface IDatabaseObjectEditor<OBJECT_MANAGER extends IDatabaseObjectManager<? extends DBPObject>> extends IObjectEditorPart, IDataSourceEditor, IEditorPart {
+
+    OBJECT_MANAGER getObjectManager();
 
     void initObjectEditor(OBJECT_MANAGER manager);
 

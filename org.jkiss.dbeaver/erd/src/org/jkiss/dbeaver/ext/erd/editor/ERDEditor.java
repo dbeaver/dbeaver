@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.DataElementFactory;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -70,6 +71,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
     IDatabaseObjectEditor<IDatabaseObjectManager<DBSEntityContainer>> {
     static final Log log = LogFactory.getLog(ERDEditor.class);
 
+    private IDatabaseObjectManager<DBSEntityContainer> objectManager;
     private EntityDiagram entityDiagram;
 
     private ProgressControl progressControl;
@@ -114,7 +116,6 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
      */
     private boolean isDirty;
 
-    private DBSEntityContainer entityContainer;
     private boolean isReadOnly;
     private boolean isLoaded;
 
@@ -302,18 +303,18 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
     private EntityDiagram loadFromDatabase(DBRProgressMonitor monitor)
         throws DBException {
-        if (entityContainer == null) {
+        if (getEntityContainer() == null) {
             log.error("Database object must be entity container to render ERD diagram");
             return null;
         }
-        entityDiagram = new EntityDiagram(entityContainer, entityContainer.getName());
+        entityDiagram = new EntityDiagram(getEntityContainer(), getEntityContainer().getName());
 
         // Cache structure
-        entityContainer.cacheStructure(monitor, DBSEntityContainer.STRUCT_ENTITIES | DBSEntityContainer.STRUCT_ASSOCIATIONS | DBSEntityContainer.STRUCT_ATTRIBUTES);
+        getEntityContainer().cacheStructure(monitor, DBSEntityContainer.STRUCT_ENTITIES | DBSEntityContainer.STRUCT_ASSOCIATIONS | DBSEntityContainer.STRUCT_ATTRIBUTES);
 
         // Load entities
         Map<DBSObject, ERDTable> tableMap = new HashMap<DBSObject, ERDTable>();
-        Collection<? extends DBSObject> entities = entityContainer.getChildren(monitor);
+        Collection<? extends DBSObject> entities = getEntityContainer().getChildren(monitor);
         for (DBSObject entity : entities) {
             if (entity instanceof DBSTable) {
                 DBSTable dbsTable = (DBSTable)entity;
@@ -633,8 +634,17 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         return new EntityDiagram(null, "Schema");//ContentCreator().getContent();
     }
 
+    DBSEntityContainer getEntityContainer()
+    {
+        return objectManager.getObject();
+    }
+
+    public IDatabaseObjectManager<DBSEntityContainer> getObjectManager() {
+        return objectManager;
+    }
+
     public void initObjectEditor(IDatabaseObjectManager<DBSEntityContainer> manager) {
-        entityContainer = manager.getObject();
+        objectManager = manager;
     }
 
     public void activatePart() {
@@ -726,6 +736,10 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
         return paletteRoot;
 
+    }
+
+    public DBPDataSource getDataSource() {
+        return objectManager.getDataSource();
     }
 
     private class ProgressControl extends ProgressPageControl {

@@ -22,4 +22,8 @@ public abstract class AbstractConstraintColumn implements DBSConstraintColumn, I
         }
         return null;
     }
+
+    public String getObjectId() {
+        return getConstraint().getObjectId() + "." + getName();
+    }
 }

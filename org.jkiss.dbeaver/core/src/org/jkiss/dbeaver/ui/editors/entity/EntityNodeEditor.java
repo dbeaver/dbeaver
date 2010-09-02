@@ -15,7 +15,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
-import org.jkiss.dbeaver.ext.ui.IEmbeddedWorkbenchPart;
+import org.jkiss.dbeaver.ext.ui.IObjectEditorPart;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
@@ -33,7 +33,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * EntityNodeEditor
  */
-class EntityNodeEditor extends EditorPart implements IRefreshablePart, IMetaModelView, IEmbeddedWorkbenchPart
+class EntityNodeEditor extends EditorPart implements IRefreshablePart, IMetaModelView, IObjectEditorPart
 {
     static final Log log = LogFactory.getLog(EntityNodeEditor.class);
 

@@ -4,19 +4,18 @@
 
 package org.jkiss.dbeaver.ext.ui;
 
-import org.eclipse.jface.dialogs.IDialogPage;
+import org.jkiss.dbeaver.model.DBPDataSource;
 
 /**
- * IDataSourceEditor
+ * DataSource user.
+ * May be editor, view or selection element
  */
-public interface IDataSourceEditor extends IDialogPage
-{
-    void setSite(IDataSourceEditorSite site);
+public interface IDataSourceEditor {
 
-    boolean isComplete();
-
-    void loadSettings();
-
-    void saveSettings();
+    /**
+     * Underlying datasource
+     * @return data source object.
+     */
+    DBPDataSource getDataSource();
 
 }

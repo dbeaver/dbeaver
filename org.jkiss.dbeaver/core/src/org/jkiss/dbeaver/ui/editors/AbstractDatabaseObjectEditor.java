@@ -11,6 +11,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 
 /**
@@ -19,6 +20,8 @@ import org.jkiss.dbeaver.model.DBPObject;
 public abstract class AbstractDatabaseObjectEditor<OBJECT_MANAGER extends IDatabaseObjectManager<? extends DBPObject>>
     extends EditorPart implements IDatabaseObjectEditor<OBJECT_MANAGER>
 {
+
+    private OBJECT_MANAGER objectManager;
 
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
@@ -57,4 +60,18 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_MANAGER extends IDatab
     public void deactivatePart() {
         // do nothing by default
     }
+
+    public DBPDataSource getDataSource() {
+        return getObjectManager().getDataSource();
+    }
+
+    public OBJECT_MANAGER getObjectManager() {
+        return objectManager;
+    }
+
+    public void initObjectEditor(OBJECT_MANAGER objectManager) {
+        this.objectManager = objectManager;
+    }
+
+
 }

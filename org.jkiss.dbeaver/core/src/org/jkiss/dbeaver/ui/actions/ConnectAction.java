@@ -21,7 +21,7 @@ public class ConnectAction extends DataSourceAction
     public void run(IAction action)
     {
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(false);
-        if (dataSourceContainer != null) {
+        if (dataSourceContainer != null && !dataSourceContainer.isConnected()) {
             try {
                 dataSourceContainer.connect(this);
             }

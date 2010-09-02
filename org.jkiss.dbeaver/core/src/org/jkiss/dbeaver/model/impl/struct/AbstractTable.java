@@ -4,15 +4,11 @@
 
 package org.jkiss.dbeaver.model.impl.struct;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
-
-import java.util.Collection;
 
 /**
  * AbstractTable
@@ -65,6 +61,10 @@ public abstract class AbstractTable<
     protected void setTableType(String tableType)
     {
         this.tableType = tableType;
+    }
+
+    public String getObjectId() {
+        return getParentObject().getObjectId() + "." + getName();
     }
 
     @Property(name = "Table Description", viewable = true, order = 100)

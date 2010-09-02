@@ -19,7 +19,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.Activator;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
+import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.controls.proptree.DriverPropertiesControl;
@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ui.controls.proptree.DriverPropertiesControl;
 /**
  * MySQLConnectionPage
  */
-public class MySQLConnectionPage extends DialogPage implements IDataSourceEditor
+public class MySQLConnectionPage extends DialogPage implements IDataSourceConnectionEditor
 {
     static final Log log = LogFactory.getLog(MySQLConnectionPage.class);
 

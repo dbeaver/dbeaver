@@ -137,6 +137,10 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         this.name = name;
     }
 
+    public String getObjectId() {
+        return id;
+    }
+
     public String getDescription()
     {
         return description;

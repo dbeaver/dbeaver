@@ -21,7 +21,6 @@ public class MySQLTriggerEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
     static final Log log = LogFactory.getLog(MySQLTriggerEditor.class);
 
     private Text ddlText;
-    private MySQLTrigger trigger;
 
     public void createPartControl(Composite parent)
     {
@@ -33,16 +32,11 @@ public class MySQLTriggerEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
     public void activatePart()
     {
         try {
-            ddlText.setText(trigger.getBody());
+            ddlText.setText(getObjectManager().getObject().getBody());
         }
         catch (Exception ex) {
             log.error("Can't obtain trigger body", ex);
         }
-    }
-
-    public void initObjectEditor(IDatabaseObjectManager<MySQLTrigger> manager)
-    {
-        trigger = (MySQLTrigger) manager;
     }
 
 }

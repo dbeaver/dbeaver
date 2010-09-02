@@ -56,6 +56,10 @@ public class DBNTreeFolder extends DBNTreeNode implements DBSFolder
         return meta.getLabel();
     }
 
+    public String getObjectId() {
+        return getParentObject().getObjectId() + "." + meta.getLabel();
+    }
+
     public String getDescription()
     {
         return meta.getDescription();

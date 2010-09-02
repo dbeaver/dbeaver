@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
@@ -105,7 +106,9 @@ public abstract class DBNTreeNode extends DBNNode {
     {
         if (this.hasChildren() && childNodes == null) {
             if (this.initializeNode(monitor)) {
-                this.childNodes = loadChildren(monitor, getMeta());
+                final List<DBNTreeNode> tmpList = new ArrayList<DBNTreeNode>();
+                loadChildren(monitor, getMeta(), tmpList);
+                this.childNodes = tmpList;
             }
         }
         return childNodes;
@@ -133,13 +136,51 @@ public abstract class DBNTreeNode extends DBNNode {
         }
     }
 
-    private List<DBNTreeNode> loadChildren(DBRProgressMonitor monitor, final DBXTreeNode meta
-    )
+    protected void reloadChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        final List<DBNTreeNode> tmpList = new ArrayList<DBNTreeNode>();
-        loadChildren(monitor, meta, tmpList);
-        return tmpList;
+/*
+        List<DBNTreeNode> oldChildren = childNodes;
+        List<DBNTreeNode> newChildren = loadChildren(monitor, getMeta());
+        Set<DBNTreeNode> newChildrenReloaded = new HashSet<DBNTreeNode>();
+        List<DBNTreeNode> result = new ArrayList<DBNTreeNode>();
+
+        // Find updated objects
+        for (DBNTreeNode oldChild : oldChildren) {
+            // Find the same node in new list
+            for (DBNTreeNode newChild : newChildren) {
+                if (oldChild.equalObjects(newChild)) {
+                    oldChild.reloadObject(newChild.getObject());
+                    result.add(oldChild);
+                    newChildrenReloaded.add(newChild);
+                    break;
+                }
+            }
+        }
+
+        // Add new objects
+        for (DBNTreeNode newChild : newChildren) {
+            if (!newChildrenReloaded.contains(newChild)) {
+                newChild.setParentNode(this);
+                result.add(newChild);
+            }
+        }
+
+        // Remove deleted objects
+        for (DBNTreeNode oldChild : oldChildren) {
+            if (!result.contains(oldChild)) {
+                oldChild.dispose();
+            }
+        }
+
+        childNodes = result;
+*/
+        clearChildren();
+    }
+
+    private boolean equalObjects(DBNTreeNode node) {
+        return getObject() != null && node.getObject() != null &&
+            CommonUtils.equalObjects(getObject().getObjectId(), node.getObject().getObjectId());
     }
 
     private void loadChildren(
@@ -167,10 +208,10 @@ public abstract class DBNTreeNode extends DBNNode {
                 }
             } else if (child instanceof DBXTreeFolder) {
                 toList.add(
-                    new DBNTreeFolder(DBNTreeNode.this, (DBXTreeFolder) child));
+                    new DBNTreeFolder(this, (DBXTreeFolder) child));
             } else if (child instanceof DBXTreeObject) {
                 toList.add(
-                    new DBNTreeObject(DBNTreeNode.this, (DBXTreeObject) child));
+                    new DBNTreeObject(this, (DBXTreeObject) child));
             } else {
                 log.warn("Unsupported meta node type: " + child);
             }
@@ -181,8 +222,8 @@ public abstract class DBNTreeNode extends DBNNode {
 
     /**
      * Extract items using reflect api
-     * @param monitor
-     *@param meta items meta info
+     * @param monitor progress monitor
+     * @param meta items meta info
      * @param toList list ot add new items   @return true on success
      * @throws DBException on any DB error
      */

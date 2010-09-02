@@ -10,7 +10,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
+import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -33,7 +33,7 @@ class ConnectionPageSettings extends WizardPage implements IDataSourceEditorSite
 
     private ConnectionWizard wizard;
     private DataSourceViewDescriptor viewDescriptor;
-    private IDataSourceEditor editor;
+    private IDataSourceConnectionEditor connectionEditor;
     private DataSourceDescriptor dataSource;
     private Map<DriverDescriptor, DBPConnectionInfo> infoMap = new HashMap<DriverDescriptor, DBPConnectionInfo>();
 
@@ -66,8 +66,8 @@ class ConnectionPageSettings extends WizardPage implements IDataSourceEditorSite
 
     public void setVisible(boolean visible)
     {
-        if (visible && this.editor != null) {
-            this.editor.loadSettings();
+        if (visible && this.connectionEditor != null) {
+            this.connectionEditor.loadSettings();
         }
         super.setVisible(visible);
     }
@@ -80,24 +80,24 @@ class ConnectionPageSettings extends WizardPage implements IDataSourceEditorSite
 
     void deactivate()
     {
-        if (this.editor != null) {
-            this.editor.saveSettings();
+        if (this.connectionEditor != null) {
+            this.connectionEditor.saveSettings();
         }
     }
 
     void saveSettings()
     {
-        if (editor != null) {
-            editor.saveSettings();
+        if (connectionEditor != null) {
+            connectionEditor.saveSettings();
         }
     }
     public void createControl(Composite parent)
     {
         try {
-            this.editor = viewDescriptor.createView(IDataSourceEditor.class);
-            this.editor.setSite(this);
-            this.editor.createControl(parent);
-            setControl(this.editor.getControl());
+            this.connectionEditor = viewDescriptor.createView(IDataSourceConnectionEditor.class);
+            this.connectionEditor.setSite(this);
+            this.connectionEditor.createControl(parent);
+            setControl(this.connectionEditor.getControl());
         }
         catch (Exception ex) {
             log.warn(ex);
@@ -116,7 +116,7 @@ class ConnectionPageSettings extends WizardPage implements IDataSourceEditorSite
         if (wizard.getPageSettings() != this) {
             return true;
         }
-        return this.editor != null && this.editor.isComplete();
+        return this.connectionEditor != null && this.connectionEditor.isComplete();
     }
 
     public DriverDescriptor getDriver()
@@ -151,8 +151,8 @@ class ConnectionPageSettings extends WizardPage implements IDataSourceEditorSite
 
     public void testConnection()
     {
-        if (this.editor != null) {
-            this.editor.saveSettings();
+        if (this.connectionEditor != null) {
+            this.connectionEditor.saveSettings();
             this.wizard.testConnection(getConnectionInfo());
         }
     }
@@ -166,9 +166,9 @@ class ConnectionPageSettings extends WizardPage implements IDataSourceEditorSite
     @Override
     public void dispose()
     {
-        if (editor != null) {
-            editor.dispose();
-            editor = null;
+        if (connectionEditor != null) {
+            connectionEditor.dispose();
+            connectionEditor = null;
         }
         super.dispose();    //To change body of overridden methods use File | Settings | File Templates.
     }

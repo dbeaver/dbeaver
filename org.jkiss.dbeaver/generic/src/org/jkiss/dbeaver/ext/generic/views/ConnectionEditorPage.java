@@ -16,7 +16,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
+import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * ConnectionEditorPage
  */
-public class ConnectionEditorPage extends DialogPage implements IDataSourceEditor
+public class ConnectionEditorPage extends DialogPage implements IDataSourceConnectionEditor
 {
     static final Log log = LogFactory.getLog(ConnectionEditorPage.class);
 
@@ -320,6 +320,8 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceEdito
                         portText.setText(CommonUtils.getString(connectionInfo.getHostPort()));
                     } else if (site.getDriver().getDefaultPort() != null) {
                         portText.setText(site.getDriver().getDefaultPort().toString());
+                    } else {
+                        portText.setText("");
                     }
                 }
                 if (dbText != null) {

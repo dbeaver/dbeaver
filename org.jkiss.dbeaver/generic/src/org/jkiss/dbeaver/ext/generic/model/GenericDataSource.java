@@ -476,6 +476,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
             return GenericDataSource.this.getName();
         }
 
+        public String getObjectId() {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
         public String getDescription() {
             return GenericDataSource.this.getDescription();
         }

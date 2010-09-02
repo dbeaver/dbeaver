@@ -27,7 +27,6 @@ public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<IDatabaseObject
     static final Log log = LogFactory.getLog(MySQLDDLEditor.class);
 
     private Text ddlText;
-    private MySQLTable table;
 
     public void createPartControl(Composite parent)
     {
@@ -44,7 +43,7 @@ public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<IDatabaseObject
                 throws InvocationTargetException, InterruptedException
             {
                 try {
-                    ddl.append(table.getDDL(monitor));
+                    ddl.append(getObjectManager().getObject().getDDL(monitor));
                 }
                 catch (DBException e) {
                     log.error("Can't obtain table DDL", e);
@@ -52,11 +51,6 @@ public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<IDatabaseObject
             }
         });
         ddlText.setText(ddl.toString());
-    }
-
-    public void initObjectEditor(IDatabaseObjectManager<MySQLTable> manager)
-    {
-        table = manager.getObject();
     }
 
 }
