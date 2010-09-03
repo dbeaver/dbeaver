@@ -318,14 +318,19 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         for (DBSObject entity : entities) {
             if (entity instanceof DBSTable) {
                 DBSTable dbsTable = (DBSTable)entity;
-
-                List<DBSTableColumn> idColumns = DBUtils.getBestTableIdentifier(monitor, dbsTable);
-
                 ERDTable table = new ERDTable(dbsTable);
-                Collection<? extends DBSTableColumn> columns = dbsTable.getColumns(monitor);
-                for (DBSTableColumn column : columns) {
-                    ERDTableColumn c1 = new ERDTableColumn(column, idColumns.contains(column));
-                    table.addColumn(c1);
+
+                try {
+                    List<DBSTableColumn> idColumns = DBUtils.getBestTableIdentifier(monitor, dbsTable);
+
+                    Collection<? extends DBSTableColumn> columns = dbsTable.getColumns(monitor);
+                    for (DBSTableColumn column : columns) {
+                        ERDTableColumn c1 = new ERDTableColumn(column, idColumns.contains(column));
+                        table.addColumn(c1);
+                    }
+                } catch (DBException e) {
+                    // just skip this problematic columns
+                    log.debug("Could not load entity '" + entity.getName() + "'columns", e);
                 }
                 entityDiagram.addTable(table);
                 tableMap.put(entity, table);
