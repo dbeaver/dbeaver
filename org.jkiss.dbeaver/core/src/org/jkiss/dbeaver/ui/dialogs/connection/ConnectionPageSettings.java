@@ -11,7 +11,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
-import org.jkiss.dbeaver.ext.ui.IDataSourceEditorSite;
+import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
@@ -27,7 +27,7 @@ import java.util.Map;
  * OR with the extension that matches the expected one (mpe).
  */
 
-class ConnectionPageSettings extends WizardPage implements IDataSourceEditorSite
+class ConnectionPageSettings extends WizardPage implements IDataSourceConnectionEditorSite
 {
     static final Log log = LogFactory.getLog(DriverDescriptor.class);
 

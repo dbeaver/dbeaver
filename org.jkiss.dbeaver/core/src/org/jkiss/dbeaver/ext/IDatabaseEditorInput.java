@@ -5,16 +5,13 @@
 package org.jkiss.dbeaver.ext;
 
 import org.eclipse.ui.IEditorInput;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * IDatabaseEditorInput
  */
-public interface IDatabaseEditorInput extends IEditorInput {
-
-    DBPDataSource getDataSource();
+public interface IDatabaseEditorInput extends IEditorInput, IDataSourceProvider {
 
     DBNNode getTreeNode();
 

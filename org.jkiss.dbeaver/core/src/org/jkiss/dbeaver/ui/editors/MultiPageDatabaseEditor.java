@@ -18,7 +18,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.part.MultiPageEditorPart;
-import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.ui.IObjectEditorPart;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 /**
  * MultiPageDatabaseEditor
  */
-public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends MultiPageEditorPart implements IDataSourceEditor, IDBNListener
+public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends MultiPageEditorPart implements IDataSourceProvider, IDBNListener
 {
     static final Log log = LogFactory.getLog(MultiPageDatabaseEditor.class);
 

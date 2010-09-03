@@ -8,7 +8,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
-import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
@@ -51,8 +51,8 @@ public class ContentTextEditorPart extends BaseTextEditor implements IContentEdi
 
     public long getMaxContentLength()
     {
-        if (contentEditor instanceof IDataSourceEditor) {
-            return ((IDataSourceEditor)contentEditor).getDataSource().getContainer().getPreferenceStore().getInt(PrefConstants.RS_EDIT_MAX_TEXT_SIZE);
+        if (contentEditor instanceof IDataSourceProvider) {
+            return ((IDataSourceProvider)contentEditor).getDataSource().getContainer().getPreferenceStore().getInt(PrefConstants.RS_EDIT_MAX_TEXT_SIZE);
         }
         return 10 * 1024 * 1024;
     }

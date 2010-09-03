@@ -130,7 +130,7 @@ public class UIUtils {
 
     public static void dispose(Widget widget)
     {
-        if (widget != null && !widget.isDisposed()) {
+        if (widget != null) {
             widget.dispose();
         }
     }

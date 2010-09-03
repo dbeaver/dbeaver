@@ -45,6 +45,8 @@ import org.eclipse.ui.texteditor.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -79,7 +81,7 @@ import java.util.*;
  */
 public class SQLEditor extends BaseTextEditor
     implements
-        IResourceChangeListener, IDataSourceListener, ResultSetProvider, ISaveablePart2
+        IResourceChangeListener, IDataSourceProvider, IDataSourceContainerProvider, IDataSourceListener, ResultSetProvider, ISaveablePart2
 {
     static final Log log = LogFactory.getLog(SQLEditor.class);
 

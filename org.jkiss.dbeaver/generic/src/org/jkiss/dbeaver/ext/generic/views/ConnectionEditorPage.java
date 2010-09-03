@@ -17,7 +17,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
-import org.jkiss.dbeaver.ext.ui.IDataSourceEditorSite;
+import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.ui.controls.proptree.DriverPropertiesControl;
@@ -42,7 +42,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
     private static final String PATTERN_PORT = "{" + PROP_PORT + "}";
     private static final String PATTERN_DATABASE = "{" + PROP_DATABASE + "}";
 
-    private IDataSourceEditorSite site;
+    private IDataSourceConnectionEditorSite site;
     private Text hostText;
     private Text portText;
     private Text dbText;
@@ -278,7 +278,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
         return propsControl;
     }
 
-    public void setSite(IDataSourceEditorSite site)
+    public void setSite(IDataSourceConnectionEditorSite site)
     {
         this.site = site;
     }

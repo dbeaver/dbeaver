@@ -21,11 +21,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
-import org.jkiss.dbeaver.ext.ui.IDataSourceEditor;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
@@ -44,7 +42,7 @@ import java.util.List;
 /**
  * LOBEditor
  */
-public class ContentEditor extends MultiPageDatabaseEditor<ContentEditorInput> implements IDataSourceEditor, DBDValueEditor, IResourceChangeListener
+public class ContentEditor extends MultiPageDatabaseEditor<ContentEditorInput> implements IDataSourceProvider, DBDValueEditor, IResourceChangeListener
 {
     public static boolean openEditor(DBDValueController valueController, IContentEditorPart[] editorParts)
     {

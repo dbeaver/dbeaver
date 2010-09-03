@@ -227,7 +227,6 @@ class ImageViewCanvas extends Canvas {
 
 	/**
 	 * Reload image from a file
-	 * @param filename image file
 	 * @return swt image created from image file
 	 */
 	public Image loadImage(InputStream inputStream) {

@@ -2,15 +2,15 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.ui;
+package org.jkiss.dbeaver.ext;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 
 /**
- * DataSource user.
+ * DataSource provider.
  * May be editor, view or selection element
  */
-public interface IDataSourceEditor {
+public interface IDataSourceProvider {
 
     /**
      * Underlying datasource

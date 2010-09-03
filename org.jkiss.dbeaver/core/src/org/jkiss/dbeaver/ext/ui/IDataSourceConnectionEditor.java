@@ -11,7 +11,7 @@ import org.eclipse.jface.dialogs.IDialogPage;
  */
 public interface IDataSourceConnectionEditor extends IDialogPage
 {
-    void setSite(IDataSourceEditorSite site);
+    void setSite(IDataSourceConnectionEditorSite site);
 
     boolean isComplete();
 

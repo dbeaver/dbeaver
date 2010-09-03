@@ -158,4 +158,12 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, IMetaMode
         }
     }
 
+    @Override
+    public void dispose() {
+        if (itemControl != null) {
+            itemControl.dispose();
+            itemControl = null;
+        }
+        super.dispose();
+    }
 }

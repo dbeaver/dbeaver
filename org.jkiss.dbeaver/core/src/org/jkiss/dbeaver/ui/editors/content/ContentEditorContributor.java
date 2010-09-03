@@ -112,6 +112,10 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
             if (applyAction != null) {
                 applyAction.setEnabled(activeEditor.isDirty());
             }
+            if (loadAction != null) {
+                loadAction.setEnabled(!activeEditor.getEditorInput().isReadOnly());
+            }
+
         }
     }
 

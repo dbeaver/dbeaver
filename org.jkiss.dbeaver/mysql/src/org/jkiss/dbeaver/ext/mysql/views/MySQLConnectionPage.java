@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.Activator;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
-import org.jkiss.dbeaver.ext.ui.IDataSourceEditorSite;
+import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.controls.proptree.DriverPropertiesControl;
 
@@ -31,7 +31,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
 {
     static final Log log = LogFactory.getLog(MySQLConnectionPage.class);
 
-    private IDataSourceEditorSite site;
+    private IDataSourceConnectionEditorSite site;
     private Text hostText;
     private Text portText;
     private Text dbText;
@@ -190,7 +190,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         return addrGroup;
     }
 
-    public void setSite(IDataSourceEditorSite site)
+    public void setSite(IDataSourceConnectionEditorSite site)
     {
         this.site = site;
     }

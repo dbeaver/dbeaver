@@ -35,10 +35,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 /**
  * ContentEditorInput
@@ -222,10 +219,12 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput, I
         try {
             InputStream inputStream = new FileInputStream(extFile);
             try {
+/*
                 ResourceAttributes atts = contentFile.getResourceAttributes();
                 atts.setReadOnly(false);
                 contentFile.setResourceAttributes(atts);
-/*
+*/
+
                 File intFile = contentFile.getLocation().toFile();
                 OutputStream outputStream = new FileOutputStream(intFile);
                 try {
@@ -234,10 +233,10 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput, I
                 finally {
                     outputStream.close();
                 }
-*/
+
                 // Append zero empty content to trigger content refresh
-                contentFile.setContents(
-                    inputStream,//new ByteArrayInputStream(new byte[0]),
+                contentFile.appendContents(
+                    new ByteArrayInputStream(new byte[0]),
                     true,
                     false,
                     monitor);

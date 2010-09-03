@@ -4,14 +4,12 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 
 /**
  * ResultSetProvider
  */
-public interface ResultSetProvider {
-
-    DBPDataSource getDataSource();
+public interface ResultSetProvider extends IDataSourceProvider {
 
     boolean isConnected();
 

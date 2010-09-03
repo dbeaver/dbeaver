@@ -12,9 +12,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * IDatabaseObjectManager
  */
-public interface IDatabaseObjectManager<OBJECT_TYPE extends DBPObject> {
-
-    DBPDataSource getDataSource();
+public interface IDatabaseObjectManager<OBJECT_TYPE extends DBPObject> extends IDataSourceProvider {
 
     OBJECT_TYPE getObject();
 

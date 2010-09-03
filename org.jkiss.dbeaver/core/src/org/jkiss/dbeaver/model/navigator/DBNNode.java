@@ -109,6 +109,9 @@ public abstract class DBNNode
     /**
      * Refreshes node.
      * If refresh cannot be done in this level then refreshes parent node.
+     * Do not actually changes navigation tree. If some underlying object is refreshed it must fire DB model
+     * event which will cause actual tree nodes refresh. Underlying object could present multiple times in
+     * navigation model - each occurrence will be refreshed then.
      * @param monitor progress monitor
      * @return real refreshed node or null if nothing was refreshed
      * @throws DBException on any internal exception

@@ -8,9 +8,9 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 
 /**
- * IDataSourceEditorSite
+ * IDataSourceConnectionEditorSite
  */
-public interface IDataSourceEditorSite
+public interface IDataSourceConnectionEditorSite
 {
     DBPDriver getDriver();
 
