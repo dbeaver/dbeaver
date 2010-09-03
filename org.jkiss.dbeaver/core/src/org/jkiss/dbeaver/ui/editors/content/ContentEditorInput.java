@@ -226,6 +226,10 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput, I
         try {
             InputStream inputStream = new FileInputStream(extFile);
             try {
+                ResourceAttributes atts = contentFile.getResourceAttributes();
+                atts.setReadOnly(false);
+                contentFile.setResourceAttributes(atts);
+/*
                 File intFile = contentFile.getLocation().toFile();
                 OutputStream outputStream = new FileOutputStream(intFile);
                 try {
@@ -234,9 +238,10 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput, I
                 finally {
                     outputStream.close();
                 }
+*/
                 // Append zero empty content to trigger content refresh
-                contentFile.appendContents(
-                    new ByteArrayInputStream(new byte[0]),
+                contentFile.setContents(
+                    inputStream,//new ByteArrayInputStream(new byte[0]),
                     true,
                     false,
                     monitor);
