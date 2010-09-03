@@ -233,6 +233,11 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
      */
     public void dispose()
     {
+        if (manager != null) {
+            manager.dispose();
+            manager = null;
+        }
+
         IPreferenceStore store = HexConfig.getInstance().getPreferenceStore();
         store.removePropertyChangeListener(preferencesChangeListener);
 

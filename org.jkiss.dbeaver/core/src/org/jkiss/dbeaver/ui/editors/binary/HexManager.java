@@ -193,7 +193,13 @@ public class HexManager {
         return hexEditControl;
     }
 
-
+    void dispose()
+    {
+        hexEditControl.dispose();
+        if (content != null) {
+            content.dispose();
+        }
+    }
     /**
      * Add a listener to changes of the 'dirty', 'insert/overwrite', 'selection' and 'canUndo/canRedo'
      * status
@@ -218,8 +224,6 @@ public class HexManager {
      * Adds a long selection listener. Events sent to the listener have long start and end points.
      *
      * @param listener the listener
-     * @see HexEditControl.addLongSelectionListener(SelectionListener)
-     * @see StyledText#addSelectionListener(org.eclipse.swt.events.SelectionListener)
      */
     public void addLongSelectionListener(SelectionListener listener)
     {

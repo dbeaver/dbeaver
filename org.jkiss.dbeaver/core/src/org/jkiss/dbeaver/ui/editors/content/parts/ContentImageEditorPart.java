@@ -56,6 +56,7 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
             imageViewer = null;
         }
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        super.dispose();
     }
 
     public boolean isDirty() {
