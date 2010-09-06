@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.DataElementFactory;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -68,7 +69,9 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
     implements
     CommandStackListener,
     ISelectionListener,
-    IDatabaseObjectEditor<IDatabaseObjectManager<DBSEntityContainer>> {
+    IDatabaseObjectEditor<IDatabaseObjectManager<DBSEntityContainer>>,
+    IRefreshablePart
+{
     static final Log log = LogFactory.getLog(ERDEditor.class);
 
     private IDatabaseObjectManager<DBSEntityContainer> objectManager;
@@ -745,6 +748,10 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
     public DBPDataSource getDataSource() {
         return objectManager.getDataSource();
+    }
+
+    public void refreshPart(Object source) {
+        loadDiagram();
     }
 
     private class ProgressControl extends ProgressPageControl {

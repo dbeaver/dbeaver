@@ -65,11 +65,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             this.objectManager = new DefaultDatabaseObjectManager();
         }
 
-        try {
-            this.objectManager.init(getEditorInput().getDataSource(), databaseObject);
-        } catch (DBException e) {
-            log.error("Could not initialize object manager", e);
-        }
+        this.objectManager.init(getEditorInput().getDataSource(), databaseObject);
 
         // Add object editor page
         EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(databaseObject.getClass());
@@ -290,6 +286,11 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 
     protected void refreshContent(final DBNEvent event)
     {
+        // Reinit object manager
+        if (objectManager != null) {
+            this.objectManager.init(getEditorInput().getDataSource(), event.getNode().getObject());
+        }
+        // Refresh visual content in parts
         getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
             int pageCount = getPageCount();
             for (int i = 0; i < pageCount; i++) {

@@ -16,7 +16,7 @@ public interface IDatabaseObjectManager<OBJECT_TYPE extends DBPObject> extends I
 
     OBJECT_TYPE getObject();
 
-    void init(DBPDataSource dataSource, OBJECT_TYPE object) throws DBException;
+    void init(DBPDataSource dataSource, OBJECT_TYPE object);
 
     boolean supportsEdit();
 

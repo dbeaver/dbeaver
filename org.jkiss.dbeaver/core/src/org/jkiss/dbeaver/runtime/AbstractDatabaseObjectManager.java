@@ -27,7 +27,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBPObjec
     }
 
     @SuppressWarnings("unchecked")
-    public void init(DBPDataSource dataSource, OBJECT_TYPE object) throws DBException {
+    public void init(DBPDataSource dataSource, OBJECT_TYPE object) {
         if (object == null) {
             throw new IllegalArgumentException("Object can't be NULL");
         }

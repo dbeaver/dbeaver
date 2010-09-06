@@ -188,12 +188,6 @@ public abstract class DBNNode implements IActionFilter
             try {
                 model.fireNodeUpdate(this, node, DBNEvent.NodeChange.LOCK);
 
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-
                 if (DBNNode.this instanceof DBNTreeNode) {
                     try {
                         ((DBNTreeNode)DBNNode.this).reloadChildren(monitor);
