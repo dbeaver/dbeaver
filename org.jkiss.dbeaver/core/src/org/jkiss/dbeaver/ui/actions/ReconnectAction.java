@@ -4,39 +4,42 @@
 
 package org.jkiss.dbeaver.ui.actions;
 
+import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.swt.widgets.Display;
-import org.jkiss.dbeaver.DBException;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.runtime.jobs.ReconnectJob;
 
 public class ReconnectAction extends DataSourceAction
 {
     @Override
     protected void updateAction(IAction action) {
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(false);
-        action.setEnabled(dataSourceContainer != null && dataSourceContainer.isConnected());
+        if (action != null) {
+            DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(false);
+            action.setEnabled(dataSourceContainer != null && dataSourceContainer.isConnected());
+        }
     }
 
     public void run(IAction action)
     {
-        Display.getCurrent().asyncExec(new Runnable() {
-            public void run()
-            {
-                DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(false);
-                if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
-                    try {
-                        dataSourceContainer.invalidate(ReconnectAction.this);
-                    }
-                    catch (DBException ex) {
-                        DBeaverUtils.showErrorDialog(
-                            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                            "Disconnect", "Can't disconnect from '" + dataSourceContainer.getName() + "'", ex);
-                    }
-                }
+        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(false);
+        if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
+
+            if (!CommonUtils.isEmpty(Job.getJobManager().find(dataSourceContainer))) {
+                // Already connecting/disconnecting - just return
+                return;
             }
-        });
+
+            ReconnectJob reconnectJob = new ReconnectJob(dataSourceContainer.getDataSource());
+            reconnectJob.schedule();
+        }
+    }
+
+    public static void execute(DBSDataSourceContainer dataSourceContainer) {
+        ReconnectAction action = new ReconnectAction();
+        action.selectionChanged(null, new StructuredSelection(dataSourceContainer));
+        action.run(null);
     }
 
 }

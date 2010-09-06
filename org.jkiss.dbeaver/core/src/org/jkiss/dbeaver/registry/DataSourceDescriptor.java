@@ -8,9 +8,6 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
@@ -23,24 +20,23 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSListener;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectAction;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
-import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
-import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
-import org.jkiss.dbeaver.runtime.jobs.ReconnectJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionAuthDialog;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
-import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -174,12 +170,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
-        this.invalidate(this);
-/*
-        if (this.isConnected()) {
-            this.reconnect(monitor, this);
-        }
-*/
+        this.reconnect(monitor, false);
         return true;
     }
 
@@ -233,12 +224,19 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         return dataSource != null;
     }
 
-    public void connect(final Object source)
+    public void connect(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        connect(monitor, true);
+    }
+
+    void connect(DBRProgressMonitor monitor, boolean reflect)
         throws DBException
     {
         if (this.isConnected()) {
             return;
         }
+/*
         if (!CommonUtils.isEmpty(Job.getJobManager().find(this))) {
             // Already connecting/disconnecting - jsut return
             return;
@@ -248,10 +246,60 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         if (!this.isSavePassword()) {
             // Ask for password
             if (!askForPassword()) {
-                throw new DBException("Authentification canceled");
+                throw new DBException("Authentication canceled");
+            }
+        }
+*/
+
+        try {
+            dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
+
+            dataSource.initialize(monitor);
+            // Change connection properties
+
+            DBCExecutionContext context = dataSource.openContext(monitor, "Set session defaults ...");
+            try {
+                DBCTransactionManager txnManager = context.getTransactionManager();
+                boolean autoCommit = txnManager.isAutoCommit();
+                boolean newAutoCommit = getPreferenceStore().getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
+                if (autoCommit != newAutoCommit) {
+                    // Change auto-commit state
+                    txnManager.setAutoCommit(newAutoCommit);
+                }
+            }
+            catch (DBCException e) {
+                log.error("Can't set session auto-commit state", e);
+            }
+            finally {
+                context.close();
+            }
+
+            connectFailed = false;
+            connectTime = new Date();
+
+            if (reflect) {
+                getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
+                    DataSourceEvent.Action.CONNECT,
+                    DataSourceDescriptor.this,
+                    this);
+            }
+        } catch (Exception e) {
+            // Failed
+            connectFailed = true;
+            if (reflect) {
+                getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
+                    DataSourceEvent.Action.CONNECT_FAIL,
+                    DataSourceDescriptor.this,
+                    this);
+            }
+            if (e instanceof DBException) {
+                throw (DBException)e;
+            } else {
+                throw new DBException("Internal error connecting to " + getName(), e);
             }
         }
 
+/*
         ConnectJob connectJob = new ConnectJob(this);
         connectJob.addJobChangeListener(new JobChangeAdapter() {
             public void done(IJobChangeEvent event)
@@ -282,26 +330,52 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             }
         });
         connectJob.schedule();
+*/
     }
 
-    public void disconnect(final Object source)
+    public void disconnect(final DBRProgressMonitor monitor)
+        throws DBException
+    {
+        disconnect(monitor, true);
+    }
+
+    void disconnect(final DBRProgressMonitor monitor, boolean reflect)
         throws DBException
     {
         if (dataSource == null) {
             log.error("Datasource is not connected");
             return;
         }
-        if (!CommonUtils.isEmpty(Job.getJobManager().find(this))) {
-            // Already connecting/disconnecting - just return
-            return;
+
+        // First rollback active transaction
+        DBCExecutionContext context = getDataSource().openContext(monitor);
+        try {
+            if (context.isConnected() && !context.getTransactionManager().isAutoCommit()) {
+                monitor.subTask("Rollback active transaction");
+                context.getTransactionManager().rollback(null);
+            }
+        }
+        catch (Throwable e) {
+            log.warn("Could not rollback active transaction before disconnect", e);
+        }
+        finally {
+            context.close();
         }
 
-/*
-        if (!users.isEmpty()) {
-            log.info("Can't close datasource connection: there are " + users.size() + " active user(s)");
-            return;
+        // Close datasource
+        monitor.subTask("Disconnect datasource");
+        getDataSource().close(monitor);
+
+        dataSource = null;
+        connectTime = null;
+
+        if (reflect) {
+            getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
+                DataSourceEvent.Action.DISCONNECT,
+                this,
+                monitor);
         }
-*/
+/*
         DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress()
         {
             public void run(DBRProgressMonitor monitor)
@@ -323,17 +397,30 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                         getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
                             DataSourceEvent.Action.DISCONNECT,
                             DataSourceDescriptor.this,
-                            source);
+                            monitor);
                     }
                 });
                 disconnectJob.schedule();
             }
         });
+*/
     }
 
-    public void invalidate(final Object source)
+    public void reconnect(final DBRProgressMonitor monitor)
         throws DBException
     {
+        reconnect(monitor, true);
+    }
+
+    public void reconnect(final DBRProgressMonitor monitor, boolean reflect)
+        throws DBException
+    {
+        if (isConnected()) {
+            disconnect(monitor, reflect);
+        }
+        connect(monitor, reflect);
+
+/*
         if (dataSource == null) {
             //log.error("Datasource is not connected");
             return;
@@ -346,11 +433,12 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                     getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
                         DataSourceEvent.Action.INVALIDATE,
                         DataSourceDescriptor.this,
-                        source);
+                        monitor);
                 }
             }
         });
         reconnectJob.schedule();
+*/
     }
 
     public void acquire(DBPDataSourceUser user)
@@ -395,12 +483,14 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         return preferenceStore;
     }
 
+/*
     public void reconnect(DBRProgressMonitor monitor, Object source)
         throws DBException
     {
         this.disconnect(source);
         this.connect(source);
     }
+*/
 
     public void resetPassword()
     {
@@ -479,20 +569,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             };
         }*/
         return null;
-    }
-
-    public boolean askForPassword()
-    {
-        ConnectionAuthDialog auth = new ConnectionAuthDialog(UIUtils.getActiveShell(), this);
-        int result = auth.open();
-        if (result == IDialogConstants.OK_ID) {
-            if (isSavePassword()) {
-                // Update connection properties
-                getDriver().getProviderDescriptor().getRegistry().updateDataSource(this);
-            }
-            return true;
-        }
-        return false;
     }
 
     public boolean testAttribute(Object target, String name, String value)

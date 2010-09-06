@@ -95,8 +95,17 @@ public class ViewUtils
 
     public static DBSObject getSelectedObject(IStructuredSelection selection)
     {
-        DBNNode selectedNode = getSelectedNode(selection);
-        return selectedNode == null ? null : selectedNode.getObject();
+        if (selection.isEmpty()) {
+            return null;
+        }
+        Object selectedObject = selection.getFirstElement();
+        if (selectedObject instanceof DBNNode) {
+            return ((DBNNode) selectedObject).getObject();
+        } else if (selectedObject instanceof DBSObject) {
+            return (DBSObject) selectedObject;
+        } else {
+            return null;
+        }
     }
 
     public static void addContextMenu(final IMetaModelView metaModelView)

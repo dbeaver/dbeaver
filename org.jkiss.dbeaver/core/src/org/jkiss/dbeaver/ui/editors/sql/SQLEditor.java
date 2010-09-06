@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.ui.actions.ConnectAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementAction;
 import org.jkiss.dbeaver.ui.actions.sql.OpenSQLFileAction;
@@ -193,11 +194,7 @@ public class SQLEditor extends BaseTextEditor
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
             if (!dataSourceContainer.isConnected()) {
-                try {
-                    dataSourceContainer.connect(this);
-                } catch (DBException ex) {
-                    log.error(ex.getMessage());
-                }
+                ConnectAction.execute(dataSourceContainer);
             }
         }
         setPartName(getEditorInput().getName());

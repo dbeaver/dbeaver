@@ -19,6 +19,8 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPRegistry;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
@@ -27,6 +29,7 @@ import org.jkiss.dbeaver.utils.StringEncrypter;
 import org.xml.sax.Attributes;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -120,15 +123,19 @@ public class DataSourceRegistry implements DBPRegistry
 
     public void closeConnections()
     {
-        for (DataSourceDescriptor dataSource : dataSources) {
-            if (dataSource.isConnected()) {
-                try {
-                    dataSource.disconnect(this);
-                } catch (DBException ex) {
-                    log.error("Can't shutdown data source", ex);
+        DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                for (DataSourceDescriptor dataSource : dataSources) {
+                    if (dataSource.isConnected()) {
+                        try {
+                            dataSource.disconnect(monitor);
+                        } catch (Exception ex) {
+                            log.error("Can't shutdown data source", ex);
+                        }
+                    }
                 }
             }
-        }
+        });
     }
 
     public DBeaverCore getCore()

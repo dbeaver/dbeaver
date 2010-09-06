@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
 /**
@@ -51,21 +52,21 @@ public interface DBSDataSourceContainer extends DBSEntity
      * Connects to datasource.
      * This is async method and returns immediately.
      * Connection will be opened in separate job, so no progress monitor is required.
-     * @param source
+     * @param monitor
      * @throws DBException
      */
-    void connect(Object source) throws DBException;
+    void connect(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Disconnects from datasource.
      * This is async method and returns immediately.
      * Connection will be closed in separate job, so no progress monitor is required.
-     * @param source
+     * @param monitor
      * @throws DBException
      */
-    void disconnect(Object source) throws DBException;
+    void disconnect(DBRProgressMonitor monitor) throws DBException;
 
-    void invalidate(Object source) throws DBException;
+    void reconnect(DBRProgressMonitor monitor) throws DBException;
 
     void acquire(DBPDataSourceUser user);
 

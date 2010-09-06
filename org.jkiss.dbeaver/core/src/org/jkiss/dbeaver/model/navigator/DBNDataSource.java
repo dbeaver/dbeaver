@@ -34,6 +34,7 @@ public class DBNDataSource extends DBNTreeNode
     protected void dispose()
     {
         this.getModel().removeNode(this);
+/*
         if (this.dataSource.isConnected()) {
             try {
                 this.dataSource.disconnect(this);
@@ -42,6 +43,7 @@ public class DBNDataSource extends DBNTreeNode
                 log.error("Error disconnecting datasource", ex);
             }
         }
+*/
         this.dataSource = null;
         super.dispose();
     }
@@ -90,7 +92,7 @@ public class DBNDataSource extends DBNTreeNode
         throws DBException
     {
         if (!dataSource.isConnected()) {
-            dataSource.connect(this);
+            dataSource.connect(monitor);
         }
         return dataSource.isConnected();
     }
