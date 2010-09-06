@@ -21,7 +21,6 @@ public class DBNEvent extends RegistryEvent
     public enum NodeChange {
         LOAD,
         UNLOAD,
-        CHANGE,
         REFRESH,
         LOCK,
         UNLOCK,
@@ -33,7 +32,7 @@ public class DBNEvent extends RegistryEvent
 
     public DBNEvent(Object source, Action action, DBNNode node)
     {
-        this(source, action, NodeChange.CHANGE, node);
+        this(source, action, NodeChange.REFRESH, node);
         this.action = action;
         this.node = node;
     }

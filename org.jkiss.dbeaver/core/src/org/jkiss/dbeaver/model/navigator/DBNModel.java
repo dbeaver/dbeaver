@@ -281,7 +281,7 @@ public class DBNModel implements IDataSourceListener, DBSListener {
             {
                 DBNNode dbmNode = getNodeByObject(event.getDataSource());
                 if (dbmNode != null) {
-                    DBNEvent.NodeChange nodeChange = DBNEvent.NodeChange.CHANGE;
+                    DBNEvent.NodeChange nodeChange = DBNEvent.NodeChange.REFRESH;
                     switch (event.getAction()) {
                     case CONNECT: nodeChange = DBNEvent.NodeChange.LOAD; break;
                     case CONNECT_FAIL: nodeChange = DBNEvent.NodeChange.UNLOAD; break;
@@ -320,7 +320,7 @@ public class DBNModel implements IDataSourceListener, DBSListener {
             {
                 DBNNode dbmNode = getNodeByObject(object);
                 if (dbmNode != null) {
-                    DBNEvent.NodeChange nodeChange = DBNEvent.NodeChange.CHANGE;
+                    DBNEvent.NodeChange nodeChange = DBNEvent.NodeChange.REFRESH;
                     if (action == DBSObjectAction.REFRESHED) {
                         nodeChange = DBNEvent.NodeChange.REFRESH;
                     }

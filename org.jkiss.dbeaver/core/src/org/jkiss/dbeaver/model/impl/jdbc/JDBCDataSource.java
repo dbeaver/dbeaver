@@ -156,12 +156,12 @@ public abstract class JDBCDataSource
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCExecutionContext context = openContext(monitor, "Read dtabase metadata");
+        JDBCExecutionContext context = openContext(monitor, "Read database meta data");
         try {
             dataSourceInfo = new JDBCDataSourceInfo(
                 context.getMetaData());
         } catch (SQLException ex) {
-            throw new DBException("Error getting JDBC metadata", ex);
+            throw new DBException("Error getting JDBC meta data", ex);
         }
         finally {
             context.close();

@@ -200,7 +200,6 @@ public class DatabaseNavigatorView extends ViewPart
                                     viewer.collapseToLevel(event.getNode(), -1);
                                     viewer.refresh(event.getNode());
                                     break;
-                                case CHANGE:
                                 case REFRESH:
                                     getViewer().update(event.getNode(), null);
                                     break;
