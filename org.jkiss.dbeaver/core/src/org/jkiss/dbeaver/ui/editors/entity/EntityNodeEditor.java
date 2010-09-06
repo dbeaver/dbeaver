@@ -139,6 +139,9 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, IMetaMode
 
     public void refreshPart(Object source)
     {
+        if (!activated) {
+            return;
+        }
         // Check - do we need to load new content in editor
         // If this is DBM event then check node change type
         // UNLOAD usually means that connection was closed on connection's node is not removed but
@@ -152,9 +155,11 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, IMetaMode
                 loadNewData = false;
             }
         }
-        itemControl.clearData();
-        if (loadNewData) {
-            itemControl.fillData(metaNode);
+        if (!itemControl.isDisposed()) {
+            itemControl.clearData();
+            if (loadNewData) {
+                itemControl.fillData(metaNode);
+            }
         }
     }
 

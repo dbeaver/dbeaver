@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.IDBNListener;
 
 /**
@@ -43,7 +44,7 @@ public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEdito
 
     public void nodeChanged(final DBNEvent event)
     {
-        if (event.getNode() == getEditorInput().getTreeNode()) {
+        if (isValuableNode(event.getNode())) {
             if (event.getAction() == DBNEvent.Action.REMOVE) {
                 getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
                     IWorkbenchPage workbenchPage = getSite().getWorkbenchWindow().getActivePage();
@@ -52,11 +53,16 @@ public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEdito
                     }
                 }});
             } else if (event.getAction() == DBNEvent.Action.UPDATE) {
-                getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
+                if (event.getNodeChange() == DBNEvent.NodeChange.REFRESH || event.getNodeChange() == DBNEvent.NodeChange.CHANGE) {
                     refreshContent(event);
-                }});
+                }
             }
         }
+    }
+
+    protected boolean isValuableNode(DBNNode node)
+    {
+        return node == getEditorInput().getTreeNode();
     }
 
     protected void refreshContent(DBNEvent event)

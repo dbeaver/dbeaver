@@ -198,6 +198,9 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
     private ItemCell getCellByIndex(ItemRow row, int index)
     {
         TableColumn column = columns.get(index);
+        if (column.isDisposed()) {
+            return null;
+        }
         for (ItemCell cell : row.props) {
             if (cell.prop.getId().equals(column.getData())) {
                 return cell;
@@ -499,6 +502,9 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
 
 	class PaintListener implements Listener {
 		public void handleEvent(Event event) {
+            if (isDisposed()) {
+                return;
+            }
 			switch(event.type) {
 				case SWT.PaintItem: {
                     ItemRow row = itemMap.get(DBSObject.class.cast(event.item.getData()));

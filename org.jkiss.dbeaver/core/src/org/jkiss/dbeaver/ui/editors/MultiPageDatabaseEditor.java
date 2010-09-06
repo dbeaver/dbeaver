@@ -162,9 +162,9 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
                     }
                 }});
             } else if (event.getAction() == DBNEvent.Action.UPDATE) {
-                getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
+                if (event.getNodeChange() == DBNEvent.NodeChange.REFRESH || event.getNodeChange() == DBNEvent.NodeChange.CHANGE) {
                     refreshContent(event);
-                }});
+                }
             }
         }
     }

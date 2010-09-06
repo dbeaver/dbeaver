@@ -11,7 +11,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
 import org.jkiss.dbeaver.utils.ViewUtils;
@@ -51,4 +53,20 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
         return this;
     }
 
+    protected boolean isValuableNode(DBNNode node)
+    {
+        return node == getEditorInput().getTreeNode().getParentNode();
+    }
+
+    @Override
+    protected void refreshContent(DBNEvent event) {
+        getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
+
+            if (!itemControl.isDisposed()) {
+                itemControl.clearData();
+                itemControl.fillData();
+            }
+
+        }});
+    }
 }

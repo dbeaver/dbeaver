@@ -290,14 +290,16 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 
     protected void refreshContent(final DBNEvent event)
     {
-        int pageCount = getPageCount();
-        for (int i = 0; i < pageCount; i++) {
-            IWorkbenchPart part = getEditor(i);
-            if (part instanceof IRefreshablePart) {
-                ((IRefreshablePart)part).refreshPart(event);
+        getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
+            int pageCount = getPageCount();
+            for (int i = 0; i < pageCount; i++) {
+                IWorkbenchPart part = getEditor(i);
+                if (part instanceof IRefreshablePart) {
+                    ((IRefreshablePart)part).refreshPart(event);
+                }
             }
-        }
-        setTitleImage(getEditorInput().getImageDescriptor().createImage());
+            setTitleImage(getEditorInput().getImageDescriptor().createImage());
+        }});
     }
 
     public DBNModel getMetaModel()
