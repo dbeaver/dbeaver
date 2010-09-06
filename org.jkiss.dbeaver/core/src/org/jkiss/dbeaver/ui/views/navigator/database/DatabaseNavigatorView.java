@@ -99,10 +99,10 @@ public class DatabaseNavigatorView extends ViewPart
                     IStructuredSelection structSel = (IStructuredSelection)event.getSelection();
                     if (!structSel.isEmpty()) {
                         Object object = structSel.getFirstElement();
-                        if (object instanceof DBSObject) {
-                            String desc = ((DBSObject)object).getDescription();
+                        if (object instanceof DBNNode) {
+                            String desc = ((DBNNode)object).getObject().getDescription();
                             if (CommonUtils.isEmpty(desc)) {
-                                desc = ((DBSObject)object).getName();
+                                desc = ((DBNNode)object).getNodeName();
                             }
                             getViewSite().getActionBars().getStatusLineManager().setMessage(desc);
                         }
@@ -187,25 +187,26 @@ public class DatabaseNavigatorView extends ViewPart
                     }});
                 }
                 break;
-            case REFRESH:
+            case UPDATE:
                 asyncExec(new Runnable() { public void run() {
                     if (!viewer.getControl().isDisposed()) {
-                        DBSObject nodeObject = event.getNode().getObject();
-                        if (nodeObject != null) {
+                        if (event.getNode() != null) {
                             switch (event.getNodeChange()) {
-                                case LOADED:
-                                    viewer.expandToLevel(nodeObject, 1);
-                                    viewer.refresh(nodeObject);
+                                case LOAD:
+                                    viewer.expandToLevel(event.getNode(), 1);
+                                    viewer.refresh(event.getNode());
                                     break;
-                                case UNLOADED:
-                                    viewer.collapseToLevel(nodeObject, -1);
-                                    viewer.refresh(nodeObject);
+                                case UNLOAD:
+                                    viewer.collapseToLevel(event.getNode(), -1);
+                                    viewer.refresh(event.getNode());
                                     break;
-                                case CHANGED:
-                                    getViewer().update(nodeObject, null);
-                                    break;
+                                case CHANGE:
                                 case REFRESH:
-                                    viewer.refresh(nodeObject);
+                                    getViewer().update(event.getNode(), null);
+                                    break;
+                                case LOCK:
+                                case UNLOCK:
+                                    viewer.refresh(event.getNode());
                                     break;
                             }
                         } else {

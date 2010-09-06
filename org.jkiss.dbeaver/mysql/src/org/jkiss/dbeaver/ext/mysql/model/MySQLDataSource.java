@@ -141,20 +141,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         }
     }
 
-    public void refreshDataSource(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        this.activeCatalog = null;
-        this.catalogs = null;
-        this.users = null;
-
-        this.initialize(monitor);
-    }
-
     public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
-        return super.refreshEntity(monitor);
+        super.refreshEntity(monitor);
+
+        this.engines = null;
+        this.catalogs = null;
+        this.users = null;
+        this.activeCatalog = null;
+
+        this.initialize(monitor);
+
+        return true;
     }
 
     MySQLTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName)

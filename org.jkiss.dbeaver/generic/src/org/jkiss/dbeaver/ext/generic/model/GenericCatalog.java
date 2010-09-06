@@ -117,4 +117,11 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
             return GenericTable.class;
         }
     }
+
+    @Override
+    public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException {
+        super.refreshEntity(monitor);
+        this.schemas = null;
+        return true;
+    }
 }

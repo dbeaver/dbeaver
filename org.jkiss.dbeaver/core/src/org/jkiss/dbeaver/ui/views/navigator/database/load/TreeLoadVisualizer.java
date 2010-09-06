@@ -2,16 +2,16 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.runtime.load.tree;
+package org.jkiss.dbeaver.ui.views.navigator.database.load;
 
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * TreeLoadVisualizer
@@ -20,11 +20,11 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
 
     public static final Object[] EMPTY_ELEMENT_ARRAY = new Object[0];
 
-    private DBSObject parent;
+    private DBNNode parent;
     private TreeLoadNode placeHolder;
     private AbstractTreeViewer viewer;
 
-    public TreeLoadVisualizer(AbstractTreeViewer viewer, TreeLoadNode placeHolder, DBSObject parent)
+    public TreeLoadVisualizer(AbstractTreeViewer viewer, TreeLoadNode placeHolder, DBNNode parent)
     {
         this.viewer = viewer;
         this.placeHolder = placeHolder;
@@ -101,14 +101,12 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
 
     public static Object[] expandChildren(AbstractTreeViewer viewer, TreeLoadService service)
     {
-        DBSObject parent = service.getParent();
-        if (!(parent instanceof TreeLoadNode)) {
-            TreeLoadNode placeHolder = TreeLoadNode.createPlaceHolder(parent);
-            if (placeHolder != null && TreeLoadNode.canBeginLoading(parent)) {
-                TreeLoadVisualizer visualizer = new TreeLoadVisualizer(viewer, placeHolder, parent);
-                LoadingUtils.executeService(service, visualizer);
-                return new Object[]{placeHolder};
-            }
+        DBNNode parent = service.getParentNode();
+        TreeLoadNode placeHolder = TreeLoadNode.createPlaceHolder(parent);
+        if (placeHolder != null && TreeLoadNode.canBeginLoading(parent)) {
+            TreeLoadVisualizer visualizer = new TreeLoadVisualizer(viewer, placeHolder, parent);
+            LoadingUtils.executeService(service, visualizer);
+            return new Object[]{placeHolder};
         }
         return EMPTY_ELEMENT_ARRAY;
     }

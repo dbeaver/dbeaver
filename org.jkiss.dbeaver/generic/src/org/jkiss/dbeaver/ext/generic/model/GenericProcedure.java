@@ -60,12 +60,6 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         return columns;
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
-
     boolean isColumnsCached()
     {
         return columns != null;

@@ -27,7 +27,7 @@ public class ReconnectAction extends DataSourceAction
                 DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(false);
                 if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
                     try {
-                        dataSourceContainer.invalidate();
+                        dataSourceContainer.invalidate(ReconnectAction.this);
                     }
                     catch (DBException ex) {
                         DBeaverUtils.showErrorDialog(

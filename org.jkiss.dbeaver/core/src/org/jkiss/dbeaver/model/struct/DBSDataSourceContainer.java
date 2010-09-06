@@ -65,7 +65,7 @@ public interface DBSDataSourceContainer extends DBSEntity
      */
     void disconnect(Object source) throws DBException;
 
-    void invalidate() throws DBException;
+    void invalidate(Object source) throws DBException;
 
     void acquire(DBPDataSourceUser user);
 

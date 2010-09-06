@@ -141,14 +141,14 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, IMetaMode
     {
         // Check - do we need to load new content in editor
         // If this is DBM event then check node change type
-        // UNLOADED usually means that connection was closed on connection's node is not removed but
+        // UNLOAD usually means that connection was closed on connection's node is not removed but
         // is in "unloaded" state.
         // Without this check editor will try to reload it's content and thus will reopen just closed connection
         // (by calling getChildren() on DBNNode)
         boolean loadNewData = true;
         if (source instanceof DBNEvent) {
             DBNEvent.NodeChange nodeChange = ((DBNEvent) source).getNodeChange();
-            if (nodeChange == DBNEvent.NodeChange.UNLOADED) {
+            if (nodeChange == DBNEvent.NodeChange.UNLOAD) {
                 loadNewData = false;
             }
         }

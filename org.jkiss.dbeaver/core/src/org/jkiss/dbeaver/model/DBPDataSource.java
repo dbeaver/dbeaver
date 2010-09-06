@@ -53,13 +53,6 @@ public interface DBPDataSource extends DBPObject
     void initialize(DBRProgressMonitor monitor) throws DBException;
 
     /**
-     * Refresh data source
-     * @throws DBException on any DB error  @param monitor progress monitor
-     */
-    void refreshDataSource(DBRProgressMonitor monitor)
-        throws DBException;
-
-    /**
      * Closes datasource
      * @param monitor
      */

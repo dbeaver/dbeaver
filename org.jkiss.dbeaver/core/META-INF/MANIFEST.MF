@@ -111,7 +111,7 @@ Export-Package: net.sf.jkiss.utils,
    org.jkiss.dbeaver.runtime,
    org.jkiss.dbeaver.runtime.load,
    org.jkiss.dbeaver.model.runtime",
- org.jkiss.dbeaver.runtime.load.tree;
+ org.jkiss.dbeaver.ui.views.navigator.database.tree;
   uses:="org.jkiss.dbeaver.model.meta,
    org.jkiss.dbeaver.model.struct,
    org.jkiss.dbeaver.runtime.load,

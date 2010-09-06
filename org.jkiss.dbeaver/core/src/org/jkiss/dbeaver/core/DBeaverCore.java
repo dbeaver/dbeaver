@@ -20,6 +20,7 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -91,6 +92,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         propertiesAdapter = new DBeaverAdapterFactory();
         IAdapterManager mgr = Platform.getAdapterManager();
         mgr.registerAdapters(propertiesAdapter, DBPObject.class);
+        mgr.registerAdapters(propertiesAdapter, DBNNode.class);
 
         DBeaverIcons.initRegistry(plugin.getBundle());
 

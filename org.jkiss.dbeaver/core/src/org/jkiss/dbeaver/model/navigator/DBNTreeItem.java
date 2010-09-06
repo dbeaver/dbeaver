@@ -4,9 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
@@ -44,6 +42,13 @@ public class DBNTreeItem extends DBNTreeNode
         return meta;
     }
 
+    @Override
+    protected void reloadObject(DBRProgressMonitor monitor, DBSObject object) {
+        getModel().removeNode(this, false);
+        this.object = object;
+        getModel().addNode(this, false);
+    }
+
     public DBSObject getObject()
     {
         return object;
@@ -52,19 +57,6 @@ public class DBNTreeItem extends DBNTreeNode
     public Object getValueObject()
     {
         return object;
-    }
-
-    public DBNNode refreshNode(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (object instanceof DBSEntity && ((DBSEntity)object).refreshEntity(monitor)) {
-            this.reloadChildren(monitor);
-            return this;
-        } else if (this.getParentNode() != null) {
-            return this.getParentNode().refreshNode(monitor);
-        } else {
-            return null;
-        }
     }
 
     public Class<OpenObjectEditorAction> getDefaultAction()

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
 /**
  * DataSource action
@@ -137,12 +138,11 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
             return dataSource == null ? null : dataSource.getContainer();
         }
         if (selection instanceof IStructuredSelection) {
-            IStructuredSelection structSelection = (IStructuredSelection)selection;
-            Object editElement = structSelection.getFirstElement();
-            if (editElement instanceof DBSDataSourceContainer) {
-                return (DBSDataSourceContainer)editElement;
-            } else if (editElement instanceof DBSObject) {
-                DBPDataSource dataSource = ((DBSObject) editElement).getDataSource();
+            DBSObject selectedObject = ViewUtils.getSelectedObject((IStructuredSelection) selection);
+            if (selectedObject instanceof DBSDataSourceContainer) {
+                return (DBSDataSourceContainer)selectedObject;
+            } else if (selectedObject != null) {
+                DBPDataSource dataSource = selectedObject.getDataSource();
                 return dataSource == null ? null : dataSource.getContainer();
             }
         }
@@ -158,10 +158,9 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
             return ((IDataSourceProvider)activePart).getDataSource();
         }
         if (selection instanceof IStructuredSelection) {
-            IStructuredSelection structSelection = (IStructuredSelection)selection;
-            Object editElement = structSelection.getFirstElement();
-            if (editElement instanceof DBSObject) {
-                return ((DBSObject)editElement).getDataSource();
+            DBSObject selectedObject = ViewUtils.getSelectedObject((IStructuredSelection) selection);
+            if (selectedObject != null) {
+                return selectedObject.getDataSource();
             }
         }
         return null;

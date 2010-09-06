@@ -129,10 +129,4 @@ public class GenericIndex extends AbstractIndex
         columns.add(column);
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
-
 }

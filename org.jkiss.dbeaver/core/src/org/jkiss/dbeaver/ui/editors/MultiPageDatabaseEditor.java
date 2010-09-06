@@ -161,7 +161,7 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
                         workbenchPage.closeEditor(MultiPageDatabaseEditor.this, false);
                     }
                 }});
-            } else if (event.getAction() == DBNEvent.Action.REFRESH) {
+            } else if (event.getAction() == DBNEvent.Action.UPDATE) {
                 getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
                     refreshContent(event);
                 }});

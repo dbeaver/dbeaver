@@ -212,12 +212,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         return null;
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
-
 /*
     public String getTypeName()
     {

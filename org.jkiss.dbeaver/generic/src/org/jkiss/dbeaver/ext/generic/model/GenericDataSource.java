@@ -239,12 +239,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         }
     }
 
-    public void refreshDataSource(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        refreshEntity(monitor);
-    }
-
     public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {

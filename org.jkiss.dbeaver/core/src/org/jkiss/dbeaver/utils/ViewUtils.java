@@ -78,15 +78,25 @@ public class ViewUtils
         if (viewer == null) {
             return null;
         }
-        IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+        return getSelectedNode((IStructuredSelection)viewer.getSelection());
+    }
+
+    public static DBNNode getSelectedNode(IStructuredSelection selection)
+    {
         if (selection.isEmpty()) {
             return null;
         }
         Object selectedObject = selection.getFirstElement();
-        if (selectedObject instanceof DBSObject) {
-            return metaModelView.getMetaModel().getNodeByObject((DBSObject)selectedObject);
+        if (selectedObject instanceof DBNNode) {
+            return (DBNNode) selectedObject;
         }
         return null;
+    }
+
+    public static DBSObject getSelectedObject(IStructuredSelection selection)
+    {
+        DBNNode selectedNode = getSelectedNode(selection);
+        return selectedNode == null ? null : selectedNode.getObject();
     }
 
     public static void addContextMenu(final IMetaModelView metaModelView)

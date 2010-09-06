@@ -2,14 +2,14 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.runtime.load.tree;
+package org.jkiss.dbeaver.ui.views.navigator.database.load;
 
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.DBeaverIcons;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +22,7 @@ public class TreeLoadNode implements ILabelProvider {
 
     public static final Object LOADING_FAMILY = new Object();
 
-    private DBSObject object;
+    private DBNNode node;
     private String text;
     private String text1;
     private String text2;
@@ -31,7 +31,7 @@ public class TreeLoadNode implements ILabelProvider {
     private boolean disposed = false;
     private Image imgLoading1, imgLoading2, imgLoading3, imgLoading4;
 
-    public static synchronized TreeLoadNode createPlaceHolder(DBSObject parent)
+    public static synchronized TreeLoadNode createPlaceHolder(DBNNode parent)
     {
         TreeLoadNode node = null;
         if (!placeHolders.containsKey(parent)) {
@@ -40,9 +40,9 @@ public class TreeLoadNode implements ILabelProvider {
         return node;
     }
 
-    private TreeLoadNode(DBSObject object)
+    private TreeLoadNode(DBNNode node)
     {
-        this.object = object;
+        this.node = node;
         text = "Loading";
         text1 = text + "."; //$NON-NLS-1$
         text2 = text + ".."; //$NON-NLS-1$
@@ -53,9 +53,9 @@ public class TreeLoadNode implements ILabelProvider {
         imgLoading4 = DBeaverIcons.getImage(DBIcon.LOADING4);
     }
 
-    public DBSObject getObject()
+    public DBNNode getNode()
     {
-        return object;
+        return node;
     }
 
     public String getText(Object element)

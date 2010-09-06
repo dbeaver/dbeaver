@@ -51,7 +51,7 @@ public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEdito
                         workbenchPage.closeEditor(SinglePageDatabaseEditor.this, false);
                     }
                 }});
-            } else if (event.getAction() == DBNEvent.Action.REFRESH) {
+            } else if (event.getAction() == DBNEvent.Action.UPDATE) {
                 getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
                     refreshContent(event);
                 }});

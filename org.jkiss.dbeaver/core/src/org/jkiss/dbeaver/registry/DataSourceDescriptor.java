@@ -174,9 +174,12 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
+        this.invalidate(this);
+/*
         if (this.isConnected()) {
             this.reconnect(monitor, this);
         }
+*/
         return true;
     }
 
@@ -328,14 +331,25 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         });
     }
 
-    public void invalidate()
+    public void invalidate(final Object source)
         throws DBException
     {
         if (dataSource == null) {
-            log.error("Datasource is not connected");
+            //log.error("Datasource is not connected");
             return;
         }
         ReconnectJob reconnectJob = new ReconnectJob(dataSource);
+        reconnectJob.addJobChangeListener(new JobChangeAdapter() {
+            public void done(IJobChangeEvent event)
+            {
+                if (event.getResult().isOK()) {
+                    getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
+                        DataSourceEvent.Action.INVALIDATE,
+                        DataSourceDescriptor.this,
+                        source);
+                }
+            }
+        });
         reconnectJob.schedule();
     }
 

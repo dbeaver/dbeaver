@@ -164,6 +164,11 @@ public class DBNModel implements IDataSourceListener, DBSListener {
 
     void addNode(DBNNode node)
     {
+        addNode(node, true);
+    }
+
+    void addNode(DBNNode node, boolean reflect)
+    {
         Object obj = nodeMap.get(node.getObject());
         if (obj == null) {
             // New node
@@ -180,10 +185,17 @@ public class DBNModel implements IDataSourceListener, DBSListener {
             List<DBNNode> nodeList = (List<DBNNode>) obj;
             nodeList.add(node);
         }
-        this.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, node));
+        if (reflect) {
+            this.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, DBNEvent.NodeChange.LOAD, node));
+        }
     }
 
     void removeNode(DBNNode node)
+    {
+        removeNode(node, true);
+    }
+
+    void removeNode(DBNNode node, boolean reflect)
     {
         Object obj = nodeMap.get(node.getObject());
         boolean badNode = false;
@@ -209,7 +221,9 @@ public class DBNModel implements IDataSourceListener, DBSListener {
         if (badNode) {
             log.warn("Remove unregistered meta node object " + node.getObject().getName() + " (" + node.getObject().getClass().getName() + ")");
         } else {
-            this.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, node));
+            if (reflect) {
+                this.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, DBNEvent.NodeChange.UNLOAD, node));
+            }
         }
     }
 
@@ -229,9 +243,9 @@ public class DBNModel implements IDataSourceListener, DBSListener {
         }
     }
 
-    public void fireNodeRefresh(Object source, DBNNode node, DBNEvent.NodeChange nodeChange)
+    void fireNodeUpdate(Object source, DBNNode node, DBNEvent.NodeChange nodeChange)
     {
-        this.fireNodeEvent(new DBNEvent(source, DBNEvent.Action.REFRESH, nodeChange, node));
+        this.fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, nodeChange, node));
     }
 
     void fireNodeEvent(final DBNEvent event)
@@ -254,14 +268,8 @@ public class DBNModel implements IDataSourceListener, DBSListener {
             {
                 final DBNNode dbmNode = getNodeByObject(event.getDataSource());
                 if (dbmNode != null) {
-                    try {
-                        // Refresh with void monitor - this is disconnect event so
-                        // no database reoundtrips will occure, just UI refresh
-                        dbmNode.refreshNode(VoidProgressMonitor.INSTANCE);
-                    } catch (DBException e) {
-                        log.error(e);
-                    }
-                    fireNodeRefresh(event.getSource(), dbmNode, DBNEvent.NodeChange.UNLOADED);
+                    dbmNode.clearNode();
+                    fireNodeUpdate(event.getSource(), dbmNode, DBNEvent.NodeChange.UNLOAD);
                 }
                 event.getDataSource().removeListener(this);
                 break;
@@ -273,16 +281,25 @@ public class DBNModel implements IDataSourceListener, DBSListener {
             {
                 DBNNode dbmNode = getNodeByObject(event.getDataSource());
                 if (dbmNode != null) {
-                    DBNEvent.NodeChange nodeChange = DBNEvent.NodeChange.CHANGED;
+                    DBNEvent.NodeChange nodeChange = DBNEvent.NodeChange.CHANGE;
                     switch (event.getAction()) {
-                    case CONNECT: nodeChange = DBNEvent.NodeChange.LOADED; break;
-                    case CONNECT_FAIL: nodeChange = DBNEvent.NodeChange.UNLOADED; break;
+                    case CONNECT: nodeChange = DBNEvent.NodeChange.LOAD; break;
+                    case CONNECT_FAIL: nodeChange = DBNEvent.NodeChange.UNLOAD; break;
                     }
-                    fireNodeRefresh(
+                    fireNodeUpdate(
                         event.getSource(),
                         dbmNode, 
                         nodeChange);
                 }
+                break;
+            }
+            case INVALIDATE:
+            {
+                DBNNode dbmNode = getNodeByObject(event.getDataSource());
+                fireNodeUpdate(
+                    event.getSource(),
+                    dbmNode,
+                    DBNEvent.NodeChange.REFRESH);
                 break;
             }
         }
@@ -303,14 +320,15 @@ public class DBNModel implements IDataSourceListener, DBSListener {
             {
                 DBNNode dbmNode = getNodeByObject(object);
                 if (dbmNode != null) {
-                    DBNEvent.NodeChange nodeChange = DBNEvent.NodeChange.CHANGED;
+                    DBNEvent.NodeChange nodeChange = DBNEvent.NodeChange.CHANGE;
                     if (action == DBSObjectAction.REFRESHED) {
                         nodeChange = DBNEvent.NodeChange.REFRESH;
                     }
-                    fireNodeRefresh(this, dbmNode, nodeChange);
+                    fireNodeUpdate(this, dbmNode, nodeChange);
                 }
                 break;
             }
         }
     }
+
 }

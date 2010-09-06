@@ -17,7 +17,6 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -102,12 +101,13 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
             DBNNode node = model.findNode(object);
             if (node != null) {
                 try {
-                    node = node.refreshNode(monitor);
+                    node.refreshNode(monitor);
                 }
                 catch (DBException ex) {
                     log.error("Could not refresh tree node", ex);
                 }
             }
+/*
             if (node != null) {
                 final DBNNode refNode = node;
                 targetPart.getSite().getShell().getDisplay().asyncExec(new Runnable() {
@@ -117,6 +117,7 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
                     }
                 });
             }
+*/
         }
     }
 

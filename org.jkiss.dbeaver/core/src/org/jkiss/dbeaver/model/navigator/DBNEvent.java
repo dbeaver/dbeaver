@@ -14,15 +14,17 @@ public class DBNEvent extends RegistryEvent
     public enum Action
     {
         ADD,
-        REFRESH,
-        REMOVE
+        REMOVE,
+        UPDATE,
     }
 
     public enum NodeChange {
-        LOADED,
-        UNLOADED,
-        CHANGED,
-        REFRESH
+        LOAD,
+        UNLOAD,
+        CHANGE,
+        REFRESH,
+        LOCK,
+        UNLOCK,
     }
 
     private Action action;
@@ -31,7 +33,7 @@ public class DBNEvent extends RegistryEvent
 
     public DBNEvent(Object source, Action action, DBNNode node)
     {
-        this(source, action, NodeChange.CHANGED, node);
+        this(source, action, NodeChange.CHANGE, node);
         this.action = action;
         this.node = node;
     }

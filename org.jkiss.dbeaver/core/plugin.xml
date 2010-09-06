@@ -223,7 +223,7 @@
         <objectContribution
               adaptable="false"
               id="org.jkiss.dbeaver.core.dbsObjectContribution"
-              objectClass="org.jkiss.dbeaver.model.struct.DBSObject">
+              objectClass="org.jkiss.dbeaver.model.navigator.DBNNode">
            <action
                  class="org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction"
                  icon="/icons/tree/edit_item.png"
@@ -234,7 +234,12 @@
         <objectContribution
             adaptable="false"
             id="org.jkiss.dbeaver.core.dataSourceContribution"
-            objectClass="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+            objectClass="org.jkiss.dbeaver.model.navigator.DBNNode">
+            <filter
+                  name="targetType"
+                  value="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                
+            </filter>
             <action
                 class="org.jkiss.dbeaver.ui.actions.DeleteConnectionAction"
                 id="org.jkiss.dbeaver.ui.actions.DeleteConnectionAction"

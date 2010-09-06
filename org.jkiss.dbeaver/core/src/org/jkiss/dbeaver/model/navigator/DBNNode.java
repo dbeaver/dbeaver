@@ -7,25 +7,31 @@ package org.jkiss.dbeaver.model.navigator;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionDelegate;
+import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.AbstractJob;
 
 import java.util.List;
 
 /**
  * DBNNode
  */
-public abstract class DBNNode
+public abstract class DBNNode implements IActionFilter
 {
     static final Log log = LogFactory.getLog(DBNNode.class);
 
     private DBNModel model;
     private DBNNode parentNode;
+    private boolean locked;
 
     protected DBNNode(DBNModel model)
     {
@@ -58,6 +64,15 @@ public abstract class DBNNode
     public DBNNode getParentNode()
     {
         return parentNode;
+    }
+
+    void setParentNode(DBNNode parentNode)
+    {
+        this.parentNode = parentNode;
+    }
+
+    public boolean isLocked() {
+        return locked || parentNode != null && parentNode.isLocked();
     }
 
     public abstract DBSObject getObject();
@@ -106,6 +121,11 @@ public abstract class DBNNode
     
     public abstract List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)  throws DBException;
 
+    void clearNode()
+    {
+
+    }
+
     /**
      * Refreshes node.
      * If refresh cannot be done in this level then refreshes parent node.
@@ -116,7 +136,26 @@ public abstract class DBNNode
      * @return real refreshed node or null if nothing was refreshed
      * @throws DBException on any internal exception
      */
-    public abstract DBNNode refreshNode(DBRProgressMonitor monitor) throws DBException;
+    public DBNNode refreshNode(DBRProgressMonitor monitor) throws DBException
+    {
+        if (getObject() instanceof DBSEntity && ((DBSEntity)getObject()).refreshEntity(monitor)) {
+            refreshNodeContent(monitor);
+            return this;
+        } else if (this.getParentNode() != null) {
+            return this.getParentNode().refreshNode(monitor);
+        } else {
+            return null;
+        }
+    }
+
+    private void refreshNodeContent(final DBRProgressMonitor monitor)
+        throws DBException
+    {
+        if (model == null) {
+            return;
+        }
+        new RefreshJob("Refresh node " + getNodeName()).schedule();
+    }
 
     public abstract Class<? extends IActionDelegate> getDefaultAction();
 
@@ -133,5 +172,51 @@ public abstract class DBNNode
             result[i] = child.getObject();
         }
         return result;
+    }
+
+    private class RefreshJob extends AbstractJob {
+
+        protected RefreshJob(String name) {
+            super(name);
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            DBNNode node = DBNNode.this;
+            // Lock node and it's children
+            node.locked = true;
+            try {
+                model.fireNodeUpdate(this, node, DBNEvent.NodeChange.LOCK);
+
+                if (DBNNode.this instanceof DBNTreeNode) {
+                    try {
+                        ((DBNTreeNode)DBNNode.this).reloadChildren(monitor);
+                    } catch (DBException e) {
+                        log.error(e);
+                    }
+                }
+
+                model.fireNodeUpdate(this, node, DBNEvent.NodeChange.REFRESH);
+            } finally {
+                node.locked = false;
+
+                // Unlock node
+                model.fireNodeUpdate(this, node, DBNEvent.NodeChange.UNLOCK);
+            }
+
+            return Status.OK_STATUS;
+        }
+    }
+
+    public boolean testAttribute(Object target, String name, String value) {
+        if (name.equals("targetType")) {
+            try {
+                Class<?> targetClass = Class.forName(value);
+                return targetClass.isAssignableFrom(getObject().getClass());
+            } catch (ClassNotFoundException e) {
+                log.warn("Unknown target type: " + value);
+            }
+        }
+        return false;
     }
 }

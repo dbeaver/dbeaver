@@ -153,12 +153,6 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         return DBUtils.findObject(getTriggers(monitor), triggerName);
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
-
     @Property(name = "Row Count", viewable = true, order = 5)
     public long getRowCount()
     {

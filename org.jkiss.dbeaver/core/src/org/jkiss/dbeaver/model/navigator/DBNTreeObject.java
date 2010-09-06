@@ -4,16 +4,15 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorDescriptor;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.registry.tree.DBXTreeObject;
 import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
-import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * DBNTreeItem
@@ -55,6 +54,11 @@ public class DBNTreeObject extends DBNTreeNode implements DBSObject
         return meta;
     }
 
+    @Override
+    protected void reloadObject(DBRProgressMonitor monitor, DBSObject object) {
+        // do nothing
+    }
+
     public DBSObject getObject()
     {
         return this;
@@ -94,16 +98,6 @@ public class DBNTreeObject extends DBNTreeNode implements DBSObject
         return pathName.toString();
     }
 
-
-    public DBNNode refreshNode(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (this.getParentNode() != null) {
-            return this.getParentNode().refreshNode(monitor);
-        } else {
-            return null;
-        }
-    }
 
     public Class<OpenObjectEditorAction> getDefaultAction()
     {

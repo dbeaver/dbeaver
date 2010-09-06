@@ -25,4 +25,11 @@ public abstract class AbstractIndex implements DBSIndex
     public String getObjectId() {
         return getTable().getObjectId() + "." + getName();
     }
+
+    public boolean refreshEntity(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return false;
+    }
+
 }

@@ -41,7 +41,6 @@ public class PropertySourceAbstract implements IPropertySource
     /**
      * constructs property source
      * @param object object
-     * @param progressMonitor progress monitor. If null then no "lazy" properties will be extracted
      */
     public PropertySourceAbstract(Object object, boolean loadLazyProps)
     {

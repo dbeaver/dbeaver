@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -11,13 +12,14 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.load.tree.TreeLoadService;
-import org.jkiss.dbeaver.runtime.load.tree.TreeLoadVisualizer;
-import org.jkiss.dbeaver.runtime.load.tree.TreeLoadNode;
+import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadService;
+import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadVisualizer;
+import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 /**
  * DatabaseNavigatorContentProvider
@@ -50,11 +52,11 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
 
     public Object getParent(Object child)
     {
-        DBNNode node = view.getMetaModel().findNode(child);
+        DBNNode node = (DBNNode)child;//view.getMetaModel().findNode(child);
         if (node == null || node.getParentNode() == null) {
             return null;
         }
-        return node.getParentNode().getObject();
+        return node.getParentNode();//.getObject();
     }
 
     public Object[] getChildren(final Object parent)
@@ -62,28 +64,35 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
         if (parent instanceof TreeLoadNode) {
             return null;
         }
-        if (!(parent instanceof DBSObject)) {
+        if (!(parent instanceof DBNNode)) {
             log.error("Bad parent type: " + parent);
             return null;
         }
-        final DBNNode parentNode = view.getMetaModel().findNode(parent);
+        final DBNNode parentNode = (DBNNode)parent;//view.getMetaModel().findNode(parent);
+/*
         if (parentNode == null) {
-            log.error("Can't find parent node in model");
+            log.error("Can't find parent node '" + ((DBSObject) parent).getName() + "' in model");
             return EMPTY_CHILDREN;
         }
+*/
         if (!parentNode.hasNavigableChildren()) {
             return EMPTY_CHILDREN;
         }
         if (parentNode.isLazyNode()) {
             return TreeLoadVisualizer.expandChildren(
                 view.getViewer(),
-                new TreeLoadService("Loading", (DBSObject) parent, parentNode));
+                new TreeLoadService("Loading", parentNode));
         } else {
             try {
                 // Read children with null monitor cos' it's not a lazy node
                 // and no blocking prooccess will occure
-                return DBNNode.convertNodesToObjects(
-                    parentNode.getChildren(VoidProgressMonitor.INSTANCE));
+                List<? extends DBNNode> children = parentNode.getChildren(VoidProgressMonitor.INSTANCE);
+                if (CommonUtils.isEmpty(children)) {
+                    return new Object[0];
+                } else {
+                    return children.toArray();
+                }
+                //return DBNNode.convertNodesToObjects(children);
             }
             catch (Throwable ex) {
                 if (ex instanceof InvocationTargetException) {
@@ -109,8 +118,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
 
     public boolean hasChildren(Object parent)
     {
-        DBNNode node = view.getMetaModel().findNode(parent);
-        return node != null && node.hasNavigableChildren();
+        return parent instanceof DBNNode && ((DBNNode) parent).hasNavigableChildren();
     }
 
 /*

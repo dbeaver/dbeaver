@@ -124,10 +124,4 @@ public class MySQLIndex extends AbstractIndex
         columns.add(column);
     }
 
-    public boolean refreshEntity(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return false;
-    }
-
 }

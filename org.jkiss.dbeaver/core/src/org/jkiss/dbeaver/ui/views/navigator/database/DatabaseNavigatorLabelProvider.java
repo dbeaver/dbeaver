@@ -10,6 +10,7 @@ import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -31,12 +32,14 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     private DatabaseNavigatorView view;
     private Font normalFont;
     private Font defaultFont;
+    private Color lockedForeground;
 
     DatabaseNavigatorLabelProvider(DatabaseNavigatorView view)
     {
         this.view = view;
         this.normalFont = view.getViewer().getControl().getFont();
         this.defaultFont = UIUtils.makeBoldFont(normalFont);
+        this.lockedForeground = view.getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_GRAY);
     }
 
     @Override
@@ -51,11 +54,13 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
 
     public String getText(Object obj)
     {
-        String text = null;
+        String text;
         if (obj instanceof ILabelProvider) {
             text = ((ILabelProvider)obj).getText(obj);
+/*
         } else if (obj instanceof DBSObject) {
             text = ((DBSObject) obj).getName();
+*/
         } else if (obj instanceof DBNNode) {
             text = ((DBNNode) obj).getNodeName();
         } else {
@@ -72,9 +77,8 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         if (obj instanceof ILabelProvider) {
             return ((ILabelProvider)obj).getImage(obj);
         }
-        DBNNode node = view.getMetaModel().findNode(obj);
-        if (node != null) {
-            return node.getNodeIconDefault();
+        if (obj instanceof DBNNode) {
+            return ((DBNNode)obj).getNodeIconDefault();
         } else {
             return null;
         }
@@ -91,6 +95,9 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
 
     public Color getForeground(Object element)
     {
+        if (element instanceof DBNNode && ((DBNNode)element).isLocked()) {
+            return lockedForeground;
+        }
         return null;
     }
 
@@ -101,8 +108,8 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
 
     private boolean isDefaultElement(Object element)
     {
-        if (element instanceof DBSObject) {
-            DBSObject object = (DBSObject) element;
+        if (element instanceof DBNNode) {
+            DBSObject object = ((DBNNode) element).getObject();
             DBSEntitySelector activeContainer = DBUtils.queryParentInterface(
                 DBSEntitySelector.class, object);
             if (activeContainer != null) {

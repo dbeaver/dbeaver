@@ -77,13 +77,6 @@ public class DBNRoot extends DBNNode implements DBSObject
         return dataSources;
     }
 
-    public DBNNode refreshNode(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        // Nothing to do
-        return null;
-    }
-
     public Class<IActionDelegate> getDefaultAction()
     {
         return null;

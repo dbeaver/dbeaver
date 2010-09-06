@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
@@ -41,6 +40,11 @@ public class DBNTreeFolder extends DBNTreeNode implements DBSFolder
         return meta;
     }
 
+    @Override
+    protected void reloadObject(DBRProgressMonitor monitor, DBSObject object) {
+        // do nothing
+    }
+
     public DBSObject getObject()
     {
         return this;
@@ -73,15 +77,6 @@ public class DBNTreeFolder extends DBNTreeNode implements DBSFolder
     public DBPDataSource getDataSource()
     {
         return getParentObject() == null ? null : getParentObject().getDataSource();
-    }
-
-    public DBNNode refreshNode(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (this.getParentNode() == null) {
-            return this;
-        }
-        return this.getParentNode().refreshNode(monitor);
     }
 
     public Class<OpenObjectEditorAction> getDefaultAction()
