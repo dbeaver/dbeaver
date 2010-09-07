@@ -37,6 +37,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridEditor;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
@@ -70,7 +71,7 @@ public class Spreadsheet extends Composite implements Listener {
     private SpreadsheetSelectionProvider selectionProvider;
 
     private Clipboard clipboard;
-    private ActionInfo[] actionsInfo;
+    private UIUtils.ActionInfo[] actionsInfo;
 
     private Color foregroundNormal;
     private Color foregroundLines;
@@ -116,22 +117,22 @@ public class Spreadsheet extends Composite implements Listener {
 
         clipboard = new Clipboard(getDisplay());
 
-        actionsInfo = new ActionInfo[]{
-            new ActionInfo(new GridAction(IWorkbenchCommandConstants.EDIT_COPY) {
+        actionsInfo = new UIUtils.ActionInfo[]{
+            new UIUtils.ActionInfo(new GridAction(IWorkbenchCommandConstants.EDIT_COPY) {
                 public void run()
                 {
                     copySelectionToClipboard();
                 }
             }),
-            new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.LINE_START)),
-            new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.LINE_END)),
-            new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.TEXT_START)),
-            new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.TEXT_END)),
-            new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_LINE_START)),
-            new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_LINE_END)),
-            new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_TEXT_START)),
-            new ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_TEXT_END)),
-            new ActionInfo(new GridAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL) {
+            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.LINE_START)),
+            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.LINE_END)),
+            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.TEXT_START)),
+            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.TEXT_END)),
+            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_LINE_START)),
+            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_LINE_END)),
+            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_TEXT_START)),
+            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_TEXT_END)),
+            new UIUtils.ActionInfo(new GridAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL) {
                 public void run()
                 {
                     grid.selectAll();
@@ -392,10 +393,10 @@ public class Spreadsheet extends Composite implements Listener {
                 cancelInlineEditor();
                 break;
             case SWT.FocusIn:
-                registerActions(true);
+                UIUtils.registerPartActions(site, actionsInfo, true);
                 break;
             case SWT.FocusOut:
-                registerActions(false);
+                UIUtils.registerPartActions(site, actionsInfo, false);
                 break;
         }
     }
@@ -624,46 +625,10 @@ public class Spreadsheet extends Composite implements Listener {
         return grid.getColumnCount();
     }
 
-    private void registerActions(boolean register)
-    {
-        IHandlerService service = (IHandlerService) site.getService(IHandlerService.class);
-        for (ActionInfo actionInfo : actionsInfo) {
-            if (register) {
-                assert (actionInfo.handlerActivation == null);
-                ActionHandler handler = new ActionHandler(actionInfo.action);
-                actionInfo.handlerActivation = service.activateHandler(
-                    actionInfo.action.getActionDefinitionId(),
-                    handler);
-            } else {
-                assert (actionInfo.handlerActivation != null);
-                service.deactivateHandler(actionInfo.handlerActivation);
-                actionInfo.handlerActivation = null;
-            }
-            // TODO: want to remove but can't
-            // where one editor page have many controls each with its own behavior
-
-            if (register) {
-                site.getKeyBindingService().registerAction(actionInfo.action);
-            } else {
-                site.getKeyBindingService().unregisterAction(actionInfo.action);
-            }
-        }
-    }
-
     public void redrawGrid()
     {
         Rectangle bounds = grid.getBounds();
         grid.redraw(bounds.x, bounds.y, bounds.width, bounds.height, true);
-    }
-
-    private static class ActionInfo {
-        IAction action;
-        IHandlerActivation handlerActivation;
-
-        private ActionInfo(IAction action)
-        {
-            this.action = action;
-        }
     }
 
     private abstract class GridAction extends Action {

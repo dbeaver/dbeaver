@@ -21,7 +21,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -30,12 +29,12 @@ import org.jkiss.dbeaver.ext.ui.IRefreshableView;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.actions.DriverManagerAction;
 import org.jkiss.dbeaver.ui.actions.LinkEditorAction;
 import org.jkiss.dbeaver.ui.actions.NewConnectionAction;
-import org.jkiss.dbeaver.ui.actions.RefreshTreeAction;
+import org.jkiss.dbeaver.ui.actions.tree.CopyTreeAction;
+import org.jkiss.dbeaver.ui.actions.tree.RefreshTreeAction;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
@@ -49,6 +48,7 @@ public class DatabaseNavigatorView extends ViewPart
     private TreeViewer viewer;
     private DBNModel model;
     private RefreshTreeAction refreshAction;
+    private CopyTreeAction copyAction;
 
     public DatabaseNavigatorView()
     {
@@ -122,8 +122,12 @@ public class DatabaseNavigatorView extends ViewPart
         refreshAction = new RefreshTreeAction(this);
         refreshAction.setEnabled(true);
 
+        copyAction = new CopyTreeAction(this);
+        copyAction.setEnabled(true);
+        
         IActionBars actionBars = getViewSite().getActionBars();
-        actionBars.setGlobalActionHandler(ActionFactory.REFRESH.getId(), refreshAction);
+        actionBars.setGlobalActionHandler(refreshAction.getActionDefinitionId(), refreshAction);
+        actionBars.setGlobalActionHandler(copyAction.getActionDefinitionId(), copyAction);
 
         actionBars.updateActionBars();
 

@@ -8,15 +8,16 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Resource;
-import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
@@ -28,6 +29,16 @@ import java.text.NumberFormat;
  * UI Utils
  */
 public class UIUtils {
+
+    public static class ActionInfo {
+        IAction action;
+        IHandlerActivation handlerActivation;
+
+        public ActionInfo(IAction action)
+        {
+            this.action = action;
+        }
+    }
 
     public static final VerifyListener INTEGER_VERIFY_LISTENER = new VerifyListener() {
         public void verifyText(VerifyEvent e)
@@ -88,11 +99,6 @@ public class UIUtils {
             }
         });
         return item;
-    }
-
-    public static void createSeparator(ToolBar toolBar)
-    {
-        new ToolItem(toolBar, SWT.SEPARATOR);
     }
 
     public static TableColumn createTableColumn(Table table, int style, String text)
@@ -272,5 +278,32 @@ public class UIUtils {
             handlerService.deactivateHandler(handler);
         }
     }
+
+    public static void registerPartActions(IWorkbenchPartSite site, ActionInfo[] actionsInfo, boolean register)
+    {
+        IHandlerService service = (IHandlerService) site.getService(IHandlerService.class);
+        for (ActionInfo actionInfo : actionsInfo) {
+            if (register) {
+                assert (actionInfo.handlerActivation == null);
+                ActionHandler handler = new ActionHandler(actionInfo.action);
+                actionInfo.handlerActivation = service.activateHandler(
+                    actionInfo.action.getActionDefinitionId(),
+                    handler);
+            } else {
+                assert (actionInfo.handlerActivation != null);
+                service.deactivateHandler(actionInfo.handlerActivation);
+                actionInfo.handlerActivation = null;
+            }
+            // TODO: want to remove but can't
+            // where one editor page have many controls each with its own behavior
+
+            if (register) {
+                site.getKeyBindingService().registerAction(actionInfo.action);
+            } else {
+                site.getKeyBindingService().unregisterAction(actionInfo.action);
+            }
+        }
+    }
+
 
 }

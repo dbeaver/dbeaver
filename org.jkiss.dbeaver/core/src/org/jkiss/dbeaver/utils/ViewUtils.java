@@ -108,6 +108,19 @@ public class ViewUtils
         }
     }
 
+    public static String convertObjectToString(Object object)
+    {
+        String strValue;
+        if (object instanceof DBNNode) {
+            strValue = ((DBNNode)object).getNodeName();
+        } else if (object instanceof DBSObject) {
+            strValue = ((DBSObject)object).getName();
+        } else {
+            strValue = String.valueOf(object);
+        }
+        return strValue;
+    }
+
     public static void addContextMenu(final IMetaModelView metaModelView)
     {
         final PropertyDialogAction propertyDialogAction = new PropertyDialogAction(
@@ -265,15 +278,7 @@ public class ViewUtils
                         if (buf.length() > 0) {
                             buf.append(lineSeparator);
                         }
-                        String strValue;
-                        if (nextSelected instanceof DBNNode) {
-                            strValue = ((DBNNode)nextSelected).getNodeName();
-                        } else if (nextSelected instanceof DBSObject) {
-                            strValue = ((DBSObject)nextSelected).getName();
-                        } else {
-                            strValue = nextSelected.toString();
-                        }
-                        buf.append(strValue);
+                        buf.append(convertObjectToString(nextSelected));
                     }
                     event.data = buf.toString();
                 } else {

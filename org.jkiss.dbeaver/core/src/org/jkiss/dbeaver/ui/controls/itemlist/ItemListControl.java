@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.tree.CopyTreeAction;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.views.properties.PropertyAnnoDescriptor;
@@ -51,9 +52,11 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
     private TableViewer itemsViewer;
     private List<TableColumn> columns = new ArrayList<TableColumn>();
     private SortListener sortListener;
-    private Map<DBSObject, ItemRow> itemMap = new IdentityHashMap<DBSObject, ItemRow>();
+    private Map<DBNNode, ItemRow> itemMap = new IdentityHashMap<DBNNode, ItemRow>();
     private ISelectionProvider selectionProvider;
     private IDoubleClickListener doubleClickHandler;
+    private UIUtils.ActionInfo[] actionsInfo;
+    private Listener focusListener;
 
     public ItemListControl(
         Composite parent,
@@ -112,12 +115,37 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
                 itemsViewer.setSelection(selection);
             }
         };
+
+        actionsInfo = new UIUtils.ActionInfo[]{
+            new UIUtils.ActionInfo(new CopyTreeAction(workbenchPart)),
+        };
+
+        focusListener = new Listener() {
+            public void handleEvent(Event event) {
+                switch (event.type) {
+                case SWT.FocusIn:
+                    UIUtils.registerPartActions(getWorkbenchPart().getSite(), actionsInfo, true);
+                    break;
+                case SWT.FocusOut:
+                    UIUtils.registerPartActions(getWorkbenchPart().getSite(), actionsInfo, true);
+                    break;
+                }
+            }
+        };
+        itemsViewer.getTable().addListener(SWT.FocusIn, focusListener);
+        itemsViewer.getTable().addListener(SWT.FocusOut, focusListener);
+
+        ViewUtils.addContextMenu(this);
     }
 
     @Override
     public void dispose()
     {
-        itemsViewer.getControl().dispose();
+        if (!itemsViewer.getControl().isDisposed()) {
+            itemsViewer.getControl().removeListener(SWT.FocusIn, focusListener);
+            itemsViewer.getControl().removeListener(SWT.FocusOut, focusListener);
+            itemsViewer.getControl().dispose();
+        }
         super.dispose();
     }
 
@@ -230,8 +258,8 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
                 public int compare(Viewer viewer, Object e1, Object e2)
                 {
                     int result;
-                    ItemRow row1 = itemMap.get(DBSObject.class.cast(e1));
-                    ItemRow row2 = itemMap.get(DBSObject.class.cast(e2));
+                    ItemRow row1 = itemMap.get(DBNNode.class.cast(e1));
+                    ItemRow row2 = itemMap.get(DBNNode.class.cast(e2));
                     if (colIndex == 0) {
                         result = row1.object.getNodeName().compareToIgnoreCase(row2.object.getNodeName());
                     } else {
@@ -260,7 +288,7 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
     {
         public Image getColumnImage(Object element, int columnIndex)
         {
-            ItemRow row = itemMap.get(DBSObject.class.cast(element));
+            ItemRow row = itemMap.get(DBNNode.class.cast(element));
             if (columnIndex == 0) {
                 return row.object.getNodeIconDefault();
             }
@@ -275,7 +303,7 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
     
         public String getColumnText(Object element, int columnIndex)
         {
-            ItemRow row = itemMap.get(DBSObject.class.cast(element));
+            ItemRow row = itemMap.get(DBNNode.class.cast(element));
             if (columnIndex == 0) {
                 return row.object.getNodeName();
             }
@@ -349,11 +377,11 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
         {
             super.completeLoading(items);
 
-            List<DBSObject> objectList = new ArrayList<DBSObject>();
+            List<DBNNode> objectList = new ArrayList<DBNNode>();
             if (!CommonUtils.isEmpty(items)) {
                 for (DBNNode item : items) {
                     addRow(item);
-                    objectList.add(item.getObject());
+                    objectList.add(item);
                 }
             }
             if (itemMap.isEmpty()) {
@@ -382,7 +410,7 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
             }
         }
 
-        private DBSObject addRow(DBNNode item)
+        private void addRow(DBNNode item)
         {
             DBSObject itemObject = item.getObject();
             List<PropertyAnnoDescriptor> annoProps = null;
@@ -406,7 +434,7 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
                 if (!descriptor.isViewable()) {
                     continue;
                 }
-                // Add coulmn if nexxessary
+                // Add column if necessary
                 TableColumn propColumn = null;
                 for (TableColumn column : columns) {
                     if (descriptor.getId().equals(column.getData())) {
@@ -447,14 +475,12 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
                 }
             }
             ItemRow row = new ItemRow(item, cells);
-            itemMap.put(item.getObject(), row);
+            itemMap.put(item, row);
             //rows.add(row);
 
             if (itemMap.size() % 10 == 0) {
                 setInfo(itemMap.size() + " items");
             }
-
-            return item.getObject();
         }
 
         private class ValueLoadService extends AbstractLoadService<Object> {
@@ -507,7 +533,7 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
             }
 			switch(event.type) {
 				case SWT.PaintItem: {
-                    ItemRow row = itemMap.get(DBSObject.class.cast(event.item.getData()));
+                    ItemRow row = itemMap.get(DBNNode.class.cast(event.item.getData()));
                     ItemCell cell = row == null ? null : getCellByIndex(row, event.index);
                     if (cell != null && cell.value instanceof Boolean) {
                         if (((Boolean)cell.value)) {
@@ -522,4 +548,5 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
 			}
 		}
 	}
+
 }

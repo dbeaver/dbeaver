@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.actions;
+package org.jkiss.dbeaver.ui.actions.tree;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -10,10 +10,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IObjectActionDelegate;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ext.ui.IMetaModelView;
@@ -42,7 +39,7 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
         // Associate the action with a pre-defined command, to allow key bindings.
         //setActionDefinitionId(ActionFactory.REFRESH.getId());
         setText("Refresh");
-        setActionDefinitionId("org.eclipse.ui.file.refresh"); //$NON-NLS-1$
+        setActionDefinitionId(IWorkbenchCommandConstants.FILE_REFRESH); //$NON-NLS-1$
         setImageDescriptor(DBIcon.REFRESH.getImageDescriptor());
     }
 
