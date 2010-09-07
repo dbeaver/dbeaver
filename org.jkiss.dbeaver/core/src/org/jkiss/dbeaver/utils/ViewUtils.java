@@ -258,11 +258,22 @@ public class ViewUtils
                     String lineSeparator = CommonUtils.getLineSeparator();
                     StringBuilder buf = new StringBuilder();
                     for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {
-                        DBSObject nextSelected = (DBSObject)i.next();
+                        Object nextSelected = i.next();
+                        if (nextSelected == null) {
+                            continue;
+                        }
                         if (buf.length() > 0) {
                             buf.append(lineSeparator);
                         }
-                        buf.append(nextSelected.getName());
+                        String strValue;
+                        if (nextSelected instanceof DBNNode) {
+                            strValue = ((DBNNode)nextSelected).getNodeName();
+                        } else if (nextSelected instanceof DBSObject) {
+                            strValue = ((DBSObject)nextSelected).getName();
+                        } else {
+                            strValue = nextSelected.toString();
+                        }
+                        buf.append(strValue);
                     }
                     event.data = buf.toString();
                 } else {
