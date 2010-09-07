@@ -120,7 +120,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         fileMenu.add(exitAction);
 
         // Edit
-        editMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+        editMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         editMenu.add(new Separator(IWorkbenchActionConstants.FIND_EXT));
 
         //editMenu.add(ActionFactory.PROPERTIES);

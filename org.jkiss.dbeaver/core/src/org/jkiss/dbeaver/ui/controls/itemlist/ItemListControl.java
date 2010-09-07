@@ -16,7 +16,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertySource;
-import org.jkiss.dbeaver.ext.ui.IMetaModelView;
+import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.tree.CopyTreeAction;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.views.properties.PropertyAnnoDescriptor;
@@ -41,7 +40,7 @@ import java.util.List;
 /**
  * ItemListControl
  */
-public class ItemListControl extends ProgressPageControl implements IMetaModelView, IDoubleClickListener
+public class ItemListControl extends ProgressPageControl implements INavigatorModelView, IDoubleClickListener
 {
     static final Log log = LogFactory.getLog(ItemListControl.class);
 
@@ -55,8 +54,6 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
     private Map<DBNNode, ItemRow> itemMap = new IdentityHashMap<DBNNode, ItemRow>();
     private ISelectionProvider selectionProvider;
     private IDoubleClickListener doubleClickHandler;
-    private UIUtils.ActionInfo[] actionsInfo;
-    private Listener focusListener;
 
     public ItemListControl(
         Composite parent,
@@ -116,25 +113,6 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
             }
         };
 
-        actionsInfo = new UIUtils.ActionInfo[]{
-            new UIUtils.ActionInfo(new CopyTreeAction(workbenchPart)),
-        };
-
-        focusListener = new Listener() {
-            public void handleEvent(Event event) {
-                switch (event.type) {
-                case SWT.FocusIn:
-                    UIUtils.registerPartActions(getWorkbenchPart().getSite(), actionsInfo, true);
-                    break;
-                case SWT.FocusOut:
-                    UIUtils.registerPartActions(getWorkbenchPart().getSite(), actionsInfo, true);
-                    break;
-                }
-            }
-        };
-        itemsViewer.getTable().addListener(SWT.FocusIn, focusListener);
-        itemsViewer.getTable().addListener(SWT.FocusOut, focusListener);
-
         ViewUtils.addContextMenu(this);
     }
 
@@ -142,8 +120,6 @@ public class ItemListControl extends ProgressPageControl implements IMetaModelVi
     public void dispose()
     {
         if (!itemsViewer.getControl().isDisposed()) {
-            itemsViewer.getControl().removeListener(SWT.FocusIn, focusListener);
-            itemsViewer.getControl().removeListener(SWT.FocusOut, focusListener);
             itemsViewer.getControl().dispose();
         }
         super.dispose();

@@ -14,7 +14,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
-import org.jkiss.dbeaver.ext.ui.IMetaModelView;
+import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -37,7 +37,7 @@ import java.util.*;
 /**
  * EntityEditor
  */
-public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> implements IDBNListener, IMetaModelView
+public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> implements IDBNListener, INavigatorModelView
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
@@ -311,8 +311,8 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     public Viewer getViewer()
     {
         IWorkbenchPart activePart = getActiveEditor();
-        if (activePart instanceof IMetaModelView) {
-            return ((IMetaModelView)activePart).getViewer();
+        if (activePart instanceof INavigatorModelView) {
+            return ((INavigatorModelView)activePart).getViewer();
         }
         return null;
     }

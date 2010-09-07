@@ -799,5 +799,49 @@
           <propertyCategory category="core-properties"/>
        </propertyContributor>
     </extension>
+    <extension
+          point="org.eclipse.ui.handlers">
+       <handler
+             class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorCopyHandler"
+             commandId="org.eclipse.ui.edit.copy">
+           <activeWhen>
+               <with variable="activePart">
+                   <instanceof value="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
+               </with>
+              <!--with variable="selection">
+                   <iterate operator="and">
+                       <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+                   </iterate>
+               </with-->
+           </activeWhen>
+       </handler>
+    </extension>
+    <extension
+          point="org.eclipse.ui.menus">
+       <menuContribution
+             allPopups="false"
+             locationURI="menu:edit?before=additions">
+           <command
+                 commandId="org.eclipse.ui.edit.cut"
+                 label="Cut"
+                 style="push">
+           </command>
+          <command
+                commandId="org.eclipse.ui.edit.copy"
+                label="Copy"
+                style="push">
+          </command>
+           <command
+                 commandId="org.eclipse.ui.edit.paste"
+                 label="Paste"
+                 style="push">
+           </command>
+           <command
+                 commandId="org.eclipse.ui.edit.delete"
+                 label="Delete"
+                 style="push">
+           </command>
+       </menuContribution>
+    </extension>
 
 </plugin>

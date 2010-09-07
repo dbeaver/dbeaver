@@ -23,9 +23,9 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyDialogAction;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshableView;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
@@ -72,9 +72,9 @@ public class ViewUtils
         return null;
     }
 
-    public static DBNNode getSelectedNode(IMetaModelView metaModelView)
+    public static DBNNode getSelectedNode(INavigatorModelView navigatorModelView)
     {
-        Viewer viewer = metaModelView.getViewer();
+        Viewer viewer = navigatorModelView.getViewer();
         if (viewer == null) {
             return null;
         }
@@ -121,14 +121,14 @@ public class ViewUtils
         return strValue;
     }
 
-    public static void addContextMenu(final IMetaModelView metaModelView)
+    public static void addContextMenu(final INavigatorModelView navigatorModelView)
     {
         final PropertyDialogAction propertyDialogAction = new PropertyDialogAction(
-            metaModelView.getWorkbenchPart().getSite(),
-            metaModelView.getViewer());
+            navigatorModelView.getWorkbenchPart().getSite(),
+            navigatorModelView.getViewer());
 
         MenuManager menuMgr = new MenuManager();
-        Menu menu = menuMgr.createContextMenu(metaModelView.getViewer().getControl());
+        Menu menu = menuMgr.createContextMenu(navigatorModelView.getViewer().getControl());
         menu.addMenuListener(new MenuListener()
         {
             public void menuHidden(MenuEvent e)
@@ -138,7 +138,7 @@ public class ViewUtils
             public void menuShown(MenuEvent e)
             {
                 Menu m = (Menu)e.widget;
-                DBNNode dbmNode = ViewUtils.getSelectedNode(metaModelView);
+                DBNNode dbmNode = ViewUtils.getSelectedNode(navigatorModelView);
                 if (dbmNode != null) {
                     Class<? extends IActionDelegate> defaultActionClass = dbmNode.getDefaultAction();
                     if (defaultActionClass != null) {
@@ -171,7 +171,7 @@ public class ViewUtils
             public void menuAboutToShow(final IMenuManager manager)
             {
                 // Fill context menu
-                Viewer viewer = metaModelView.getViewer();
+                Viewer viewer = navigatorModelView.getViewer();
                 if (viewer == null) {
                     return;
                 }
@@ -185,7 +185,7 @@ public class ViewUtils
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
                 // Add "Set active object" menu
-                final DBNNode dbmNode = ViewUtils.getSelectedNode(metaModelView);
+                final DBNNode dbmNode = ViewUtils.getSelectedNode(navigatorModelView);
                 if (dbmNode instanceof DBNTreeNode && dbmNode.getObject() != null) {
                     final DBSEntitySelector activeContainer = DBUtils.queryParentInterface(
                         DBSEntitySelector.class, dbmNode.getObject());
@@ -213,7 +213,7 @@ public class ViewUtils
                                             DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
                                             text += " " + itemMeta.getPath();
                                         }
-                                        IAction action = makeAction(new SetActiveObjectAction(), metaModelView.getWorkbenchPart(), selection, text, null, null);
+                                        IAction action = makeAction(new SetActiveObjectAction(), navigatorModelView.getWorkbenchPart(), selection, text, null, null);
 
                                         manager.add(action);
                                     }
@@ -237,8 +237,8 @@ public class ViewUtils
                 }
 
                 // Add refresh button
-                if (!selection.isEmpty() && metaModelView instanceof IRefreshableView) {
-                    IRefreshableView rv = (IRefreshableView)metaModelView;
+                if (!selection.isEmpty() && navigatorModelView instanceof IRefreshableView) {
+                    IRefreshableView rv = (IRefreshableView) navigatorModelView;
                     if (rv.getRefreshAction() != null) {
                         manager.add(rv.getRefreshAction());
                     }
@@ -246,25 +246,25 @@ public class ViewUtils
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
-        if (metaModelView.getViewer() != null) {
-            metaModelView.getViewer().getControl().setMenu(menu);
-            metaModelView.getWorkbenchPart().getSite().registerContextMenu(menuMgr, metaModelView.getViewer());
+        if (navigatorModelView.getViewer() != null) {
+            navigatorModelView.getViewer().getControl().setMenu(menu);
+            navigatorModelView.getWorkbenchPart().getSite().registerContextMenu(menuMgr, navigatorModelView.getViewer());
         }
     }
 
-    public static void addDragAndDropSupport(final IMetaModelView metaModelView)
+    public static void addDragAndDropSupport(final INavigatorModelView navigatorModelView)
     {
         Transfer[] types = new Transfer[] {TextTransfer.getInstance()};
         int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
-        final DragSource source = new DragSource(metaModelView.getViewer().getControl(), operations);
+        final DragSource source = new DragSource(navigatorModelView.getViewer().getControl(), operations);
         source.setTransfer(types);
         source.addDragListener (new DragSourceListener() {
 
             private IStructuredSelection selection;
 
             public void dragStart(DragSourceEvent event) {
-                selection = (IStructuredSelection) metaModelView.getViewer().getSelection();
+                selection = (IStructuredSelection) navigatorModelView.getViewer().getSelection();
             }
             public void dragSetData (DragSourceEvent event) {
                 if (!selection.isEmpty()) {

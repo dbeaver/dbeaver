@@ -499,10 +499,12 @@ public class Spreadsheet extends Composite implements Listener {
             String text = contentLabelProvider.getText(pos);
             tdt.append(text == null ? "" : text);
         }
-        TextTransfer textTransfer = TextTransfer.getInstance();
-        clipboard.setContents(
-            new Object[]{tdt.toString()},
-            new Transfer[]{textTransfer});
+        if (tdt.length() > 0) {
+            TextTransfer textTransfer = TextTransfer.getInstance();
+            clipboard.setContents(
+                new Object[]{tdt.toString()},
+                new Transfer[]{textTransfer});
+        }
     }
 
     private void hookContextMenu()

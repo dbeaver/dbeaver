@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 /**
  * INavigatorView
  */
-public interface IMetaModelView
+public interface INavigatorModelView
 {
     DBNModel getMetaModel();
     

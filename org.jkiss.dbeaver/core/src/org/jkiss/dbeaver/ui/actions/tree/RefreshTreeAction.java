@@ -12,8 +12,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ext.ui.IMetaModelView;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -92,8 +92,8 @@ public class RefreshTreeAction extends Action implements IObjectActionDelegate
 
     private void refreshObject(DBRProgressMonitor monitor, Object object)
     {
-        if (this.targetPart instanceof IMetaModelView) {
-            IMetaModelView view = (IMetaModelView)this.targetPart;
+        if (this.targetPart instanceof INavigatorModelView) {
+            INavigatorModelView view = (INavigatorModelView)this.targetPart;
             final DBNModel model = view.getMetaModel();
             DBNNode node = model.findNode(object);
             if (node != null) {

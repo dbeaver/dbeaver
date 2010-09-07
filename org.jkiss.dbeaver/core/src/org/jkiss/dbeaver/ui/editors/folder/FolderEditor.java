@@ -10,7 +10,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.ext.ui.IMetaModelView;
+import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.utils.ViewUtils;
 /**
  * FolderEditor
  */
-public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> implements IMetaModelView
+public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> implements INavigatorModelView
 {
     static final Log log = LogFactory.getLog(FolderEditor.class);
 
