@@ -842,6 +842,15 @@
                  style="push">
            </command>
        </menuContribution>
+        <menuContribution
+              allPopups="false"
+              locationURI="menu:file?before=end">
+            <command
+                  commandId="org.eclipse.ui.file.refresh"
+                  label="Refresh"
+                  style="push">
+            </command>
+        </menuContribution>
     </extension>
 
 </plugin>

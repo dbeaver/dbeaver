@@ -116,7 +116,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         // File
         fileMenu.add(viewPreferencesAction);
-        fileMenu.add(new Separator());
+        editMenu.add(new Separator());
+        editMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+        fileMenu.add(new Separator("end"));
         fileMenu.add(exitAction);
 
         // Edit
