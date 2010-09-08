@@ -98,7 +98,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private IWorkbenchPartSite site;
     private ResultSetMode mode;
     private Spreadsheet spreadsheet;
-    private ResultSetProvider resultSetProvider;
+    private IResultSetProvider resultSetProvider;
     private ResultSetDataReciever dataReciever;
     private IThemeManager themeManager;
 
@@ -143,7 +143,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private Color backgroundModified;
     private Color foregroundNull;
 
-    public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
+    public ResultSetViewer(Composite parent, IWorkbenchPartSite site, IResultSetProvider resultSetProvider)
     {
         super();
         this.site = site;
@@ -441,7 +441,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         spreadsheet.layout(true, true);
     }
 
-    public ResultSetProvider getResultSetProvider()
+    public IResultSetProvider getResultSetProvider()
     {
         return resultSetProvider;
     }

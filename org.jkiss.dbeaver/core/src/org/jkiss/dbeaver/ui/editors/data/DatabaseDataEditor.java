@@ -8,6 +8,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
@@ -18,7 +20,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -26,12 +28,13 @@ import org.jkiss.dbeaver.utils.DBeaverUtils;
 /**
  * DatabaseDataEditor
  */
-public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManager<DBSDataContainer>> implements ResultSetProvider
+public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManager<DBSDataContainer>> implements IResultSetProvider
 {
     static final Log log = LogFactory.getLog(DatabaseDataEditor.class);
 
     private ResultSetViewer resultSetView;
     private boolean loaded = false;
+    private boolean running = false;
 
     public void createPartControl(Composite parent)
     {
@@ -74,7 +77,11 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
     }
 
     public boolean isRunning() {
-        return false;
+        return running;
+    }
+
+    public boolean isReadyToRun() {
+        return isConnected();
     }
 
     public DBSDataContainer getDataContainer()
@@ -89,7 +96,16 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
             return;
         }
 
-        new DataPumpJob(offset, maxRows).schedule();
+        DataPumpJob job = new DataPumpJob(offset, maxRows);
+        job.addJobChangeListener(new JobChangeAdapter() {
+            public void running(IJobChangeEvent event) {
+                running = true;
+            }
+            public void done(IJobChangeEvent event) {
+                running = false;
+            }
+        });
+        job.schedule();
     }
 
     private class DataPumpJob extends DataSourceJob {

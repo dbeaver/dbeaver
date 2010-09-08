@@ -4140,7 +4140,7 @@ public class LightGrid extends Canvas {
                 impliedFocusColumn = shiftSelectionAnchorColumn;
             }
         }
-
+        boolean ctrlPressed = ((e.stateMask & SWT.MOD1) != 0);
         switch (e.keyCode) {
             case SWT.ARROW_RIGHT:
                 {
@@ -4208,14 +4208,21 @@ public class LightGrid extends Canvas {
                 }
                 break;
             case SWT.HOME:
-
-                newSelection = impliedFocusItem;
+                if (ctrlPressed) {
+                    newSelection = 0;
+                } else {
+                    newSelection = impliedFocusItem;
+                }
                 newColumnFocus = getVisibleColumn_DegradeRight(displayOrderedColumns.get(0));
 
                 break;
             case SWT.END:
                 {
-                    newSelection = impliedFocusItem;
+                    if (ctrlPressed && getItemCount() > 0) {
+                        newSelection = getItemCount() - 1;
+                    } else {
+                        newSelection = impliedFocusItem;
+                    }
                     newColumnFocus = getVisibleColumn_DegradeLeft(displayOrderedColumns.get(displayOrderedColumns.size() - 1));
                 }
 
@@ -4273,7 +4280,7 @@ public class LightGrid extends Canvas {
             }
             showItem(newSelection);
 
-            if (e.stateMask != SWT.MOD1) {
+            //if (e.stateMask != SWT.MOD1) {
                 Event selEvent = updateCellSelection(new GridPos(indexOf(newColumnFocus), newSelection),
                                                      e.stateMask, false, false);
                 if (selEvent != null) {
@@ -4282,7 +4289,7 @@ public class LightGrid extends Canvas {
                     selEvent.keyCode = e.keyCode;
                     notifyListeners(SWT.Selection, selEvent);
                 }
-            }
+            //}
 
             redraw();
         }

@@ -7,13 +7,15 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 
 /**
- * ResultSetProvider
+ * IResultSetProvider
  */
-public interface ResultSetProvider extends IDataSourceProvider {
+public interface IResultSetProvider extends IDataSourceProvider {
 
     boolean isConnected();
 
     boolean isRunning();
+
+    boolean isReadyToRun();
 
     void extractResultSetData(int offset, int maxRows);
 

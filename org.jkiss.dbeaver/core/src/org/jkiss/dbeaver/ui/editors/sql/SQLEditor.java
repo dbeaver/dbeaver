@@ -61,7 +61,7 @@ import org.jkiss.dbeaver.ui.actions.ConnectAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementAction;
 import org.jkiss.dbeaver.ui.actions.sql.OpenSQLFileAction;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogViewer;
 import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
@@ -82,7 +82,7 @@ import java.util.*;
  */
 public class SQLEditor extends BaseTextEditor
     implements
-        IResourceChangeListener, IDataSourceProvider, IDataSourceContainerProvider, IDataSourceListener, ResultSetProvider, ISaveablePart2
+        IResourceChangeListener, IDataSourceProvider, IDataSourceContainerProvider, IDataSourceListener, IResultSetProvider, ISaveablePart2
 {
     static final Log log = LogFactory.getLog(SQLEditor.class);
 
@@ -662,15 +662,15 @@ public class SQLEditor extends BaseTextEditor
                 public void onStartJob()
                 {
                     curJobRunning = true;
-                    asyncExec(new Runnable() {
-                        public void run()
-                        {
-                            if (!isSingleQuery) {
+                    if (!isSingleQuery) {
+                        asyncExec(new Runnable() {
+                            public void run()
+                            {
                                 sashForm.setMaximizedControl(editorControl);
                                 ConsoleManager.writeMessage("Start script execution", ConsoleMessageType.COMMENT);
                             }
-                        }
-                    });
+                        });
+                    }
                 }
                 public void onStartQuery(final SQLStatementInfo query)
                 {
@@ -829,6 +829,10 @@ public class SQLEditor extends BaseTextEditor
 
     public boolean isRunning() {
         return curJobRunning;
+    }
+
+    public boolean isReadyToRun() {
+        return curJob != null && !curJobRunning;
     }
 
     public void extractResultSetData(int offset, int maxRows)
