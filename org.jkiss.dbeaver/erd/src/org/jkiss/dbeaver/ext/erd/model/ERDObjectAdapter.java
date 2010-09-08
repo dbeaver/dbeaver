@@ -5,7 +5,8 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.eclipse.gef.EditPart;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
  * Object adapter
@@ -16,8 +17,13 @@ public class ERDObjectAdapter implements IAdapterFactory {
     }
 
     public Object getAdapter(Object adaptableObject, Class adapterType) {
-        if (adapterType == DBNNode.class) {
-            return null;
+        if (adapterType == DBPNamedObject.class) {
+            if (adaptableObject instanceof EditPart) {
+                Object model = ((EditPart) adaptableObject).getModel();
+                if (model instanceof ERDObject) {
+                    return ((ERDObject)model).getObject();
+                }
+            }
         }
         return null;
     }

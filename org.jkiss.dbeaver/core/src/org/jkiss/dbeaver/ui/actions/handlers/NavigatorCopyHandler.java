@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.actions.handlers;
 
 import org.eclipse.core.commands.*;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.dnd.Clipboard;
@@ -13,6 +14,7 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.util.Iterator;
@@ -37,7 +39,8 @@ public class NavigatorCopyHandler extends AbstractHandler {
                         if (buf.length() > 0) {
                             buf.append('\n');
                         }
-                        buf.append(ViewUtils.convertObjectToString(iter.next()));
+                        Object adapted = Platform.getAdapterManager().getAdapter(iter.next(), DBPNamedObject.class);
+                        buf.append(ViewUtils.convertObjectToString(adapted));
                     }
                     if (buf.length() > 0) {
                         Clipboard clipboard = new Clipboard(workbenchWindow.getShell().getDisplay());
