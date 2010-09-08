@@ -25,7 +25,6 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
-import org.jkiss.dbeaver.ext.ui.IRefreshableView;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -33,12 +32,11 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.actions.DriverManagerAction;
 import org.jkiss.dbeaver.ui.actions.LinkEditorAction;
 import org.jkiss.dbeaver.ui.actions.NewConnectionAction;
-import org.jkiss.dbeaver.ui.actions.tree.RefreshTreeAction;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 public class DatabaseNavigatorView extends ViewPart
-    implements IDBNListener, INavigatorModelView, IRefreshableView, IDoubleClickListener
+    implements IDBNListener, INavigatorModelView, IDoubleClickListener
 {
     static final Log log = LogFactory.getLog(DatabaseNavigatorView.class);
 
@@ -46,25 +44,19 @@ public class DatabaseNavigatorView extends ViewPart
 
     private TreeViewer viewer;
     private DBNModel model;
-    private RefreshTreeAction refreshAction;
 
     public DatabaseNavigatorView()
     {
         super();
-        model = DBeaverCore.getInstance().getMetaModel();
+        model = DBeaverCore.getInstance().getNavigatorModel();
         model.addListener(this);
     }
 
-    /**
-     * We will set up a dummy model to initialize tree heararchy. In real
-     * code, you will connect to a real model and expose its hierarchy.
-     */
-    public DBNModel getMetaModel()
-    {
-        return model;
+    public DBNNode getRootNode() {
+        return model.getRoot();
     }
 
-    public TreeViewer getViewer()
+    public TreeViewer getNavigatorViewer()
     {
         return viewer;
     }
@@ -72,11 +64,6 @@ public class DatabaseNavigatorView extends ViewPart
     public IWorkbenchPart getWorkbenchPart()
     {
         return this;
-    }
-
-    public IAction getRefreshAction()
-    {
-        return refreshAction;
     }
 
     /**
@@ -88,7 +75,7 @@ public class DatabaseNavigatorView extends ViewPart
         this.viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
         this.viewer.setLabelProvider(new DatabaseNavigatorLabelProvider(this));
         this.viewer.setContentProvider(new DatabaseNavigatorContentProvider(this));
-        this.viewer.setInput(getMetaModel().getRoot());
+        this.viewer.setInput(model.getRoot());
         this.viewer.addSelectionChangedListener(
             new ISelectionChangedListener()
             {
@@ -115,18 +102,6 @@ public class DatabaseNavigatorView extends ViewPart
         ViewUtils.addDragAndDropSupport(this);
 
         getViewSite().setSelectionProvider(viewer);
-
-        // Add refresh action binding
-        refreshAction = new RefreshTreeAction(this);
-        refreshAction.setEnabled(true);
-
-        IActionBars actionBars = getViewSite().getActionBars();
-        actionBars.setGlobalActionHandler(refreshAction.getActionDefinitionId(), refreshAction);
-
-        actionBars.updateActionBars();
-
-        // Make toolbar
-        makeToolbar(actionBars);
     }
 
     private void makeToolbar(IActionBars actionBars) {
@@ -151,9 +126,6 @@ public class DatabaseNavigatorView extends ViewPart
             dropDownMenu.add(driverManagerAction);
             toolBar.add(driverManagerAction);
         }
-
-        dropDownMenu.add(refreshAction);
-        toolBar.add(refreshAction);
     }
 
     public void dispose()
@@ -199,7 +171,7 @@ public class DatabaseNavigatorView extends ViewPart
                                     viewer.refresh(event.getNode());
                                     break;
                                 case REFRESH:
-                                    getViewer().update(event.getNode(), null);
+                                    getNavigatorViewer().update(event.getNode(), null);
                                     break;
                                 case LOCK:
                                 case UNLOCK:

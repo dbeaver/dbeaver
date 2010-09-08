@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
@@ -75,6 +76,10 @@ public class ContentEditor extends MultiPageDatabaseEditor<ContentEditorInput> i
     //public static final long MAX_IMAGE_LENGTH = 10 * 1024 * 1024;
 
     static final Log log = LogFactory.getLog(ContentEditor.class);
+
+    public void refreshDatabaseContent(DBNEvent event) {
+
+    }
 
     static class ContentPartInfo {
         IContentEditorPart editorPart;

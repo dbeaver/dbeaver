@@ -17,9 +17,11 @@ import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 /**
  * AbstractDatabaseEditor
  */
-public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends EditorPart implements IDataSourceProvider
+public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends EditorPart implements IDatabaseEditor, IDataSourceProvider
 {
     static final Log log = LogFactory.getLog(AbstractDatabaseEditor.class);
+
+    private DatabaseEditorListener listener;
 
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
@@ -28,10 +30,13 @@ public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorI
         super.setInput(input);
         this.setPartName(input.getName());
         this.setTitleImage(input.getImageDescriptor().createImage());
+
+        listener = new DatabaseEditorListener(this);
     }
 
     public void dispose()
     {
+        listener.dispose();
         super.dispose();
     }
 

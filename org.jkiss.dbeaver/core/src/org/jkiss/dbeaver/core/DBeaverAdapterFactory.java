@@ -71,7 +71,7 @@ public class DBeaverAdapterFactory implements IAdapterFactory
 
                         public ImageDescriptor getImageDescriptor(Object object)
                         {
-                            final DBNNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject(dbObject);
+                            final DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dbObject);
                             if (node != null) {
                                 return ImageDescriptor.createFromImage(node.getNodeIconDefault());
                             } else {

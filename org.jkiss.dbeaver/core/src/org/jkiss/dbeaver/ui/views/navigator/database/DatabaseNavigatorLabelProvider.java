@@ -37,7 +37,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     DatabaseNavigatorLabelProvider(DatabaseNavigatorView view)
     {
         this.view = view;
-        this.normalFont = view.getViewer().getControl().getFont();
+        this.normalFont = view.getNavigatorViewer().getControl().getFont();
         this.defaultFont = UIUtils.makeBoldFont(normalFont);
         this.lockedForeground = view.getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_GRAY);
     }

@@ -25,7 +25,7 @@ public class OpenObjectEditorAction extends NavigatorAction
     public void run(IAction action)
     {
         DBNNode selectedNode = getSelectedNode();
-        if (selectedNode != null) {
+        if (selectedNode != null && !selectedNode.isLocked()) {
             openEntityEditor(selectedNode, null, getWindow());
         }
     }

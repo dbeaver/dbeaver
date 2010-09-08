@@ -22,23 +22,25 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.PropertyDialogAction;
+import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
-import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ext.ui.IRefreshableView;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.SetActiveObjectAction;
 
-import java.util.Iterator;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 
 /**
  * NavigatorUtils
@@ -74,7 +76,7 @@ public class ViewUtils
 
     public static DBNNode getSelectedNode(INavigatorModelView navigatorModelView)
     {
-        Viewer viewer = navigatorModelView.getViewer();
+        Viewer viewer = navigatorModelView.getNavigatorViewer();
         if (viewer == null) {
             return null;
         }
@@ -111,10 +113,8 @@ public class ViewUtils
     public static String convertObjectToString(Object object)
     {
         String strValue;
-        if (object instanceof DBNNode) {
-            strValue = ((DBNNode)object).getNodeName();
-        } else if (object instanceof DBSObject) {
-            strValue = ((DBSObject)object).getName();
+        if (object instanceof DBPNamedObject) {
+            strValue = ((DBPNamedObject)object).getName();
         } else {
             strValue = String.valueOf(object);
         }
@@ -125,10 +125,10 @@ public class ViewUtils
     {
         final PropertyDialogAction propertyDialogAction = new PropertyDialogAction(
             navigatorModelView.getWorkbenchPart().getSite(),
-            navigatorModelView.getViewer());
+            navigatorModelView.getNavigatorViewer());
 
         MenuManager menuMgr = new MenuManager();
-        Menu menu = menuMgr.createContextMenu(navigatorModelView.getViewer().getControl());
+        Menu menu = menuMgr.createContextMenu(navigatorModelView.getNavigatorViewer().getControl());
         menu.addMenuListener(new MenuListener()
         {
             public void menuHidden(MenuEvent e)
@@ -139,7 +139,7 @@ public class ViewUtils
             {
                 Menu m = (Menu)e.widget;
                 DBNNode dbmNode = ViewUtils.getSelectedNode(navigatorModelView);
-                if (dbmNode != null) {
+                if (dbmNode != null && !dbmNode.isLocked()) {
                     Class<? extends IActionDelegate> defaultActionClass = dbmNode.getDefaultAction();
                     if (defaultActionClass != null) {
                         // Dirty hack
@@ -171,7 +171,7 @@ public class ViewUtils
             public void menuAboutToShow(final IMenuManager manager)
             {
                 // Fill context menu
-                Viewer viewer = navigatorModelView.getViewer();
+                Viewer viewer = navigatorModelView.getNavigatorViewer();
                 if (viewer == null) {
                     return;
                 }
@@ -182,10 +182,15 @@ public class ViewUtils
                         PlatformUI.getWorkbench().getActiveWorkbenchWindow()));
                 }
 */
+                final DBNNode dbmNode = ViewUtils.getSelectedNode(navigatorModelView);
+                if (dbmNode.isLocked()) {
+                    //manager.
+                    return;
+                }
+
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
                 // Add "Set active object" menu
-                final DBNNode dbmNode = ViewUtils.getSelectedNode(navigatorModelView);
                 if (dbmNode instanceof DBNTreeNode && dbmNode.getObject() != null) {
                     final DBSEntitySelector activeContainer = DBUtils.queryParentInterface(
                         DBSEntitySelector.class, dbmNode.getObject());
@@ -237,18 +242,19 @@ public class ViewUtils
                 }
 
                 // Add refresh button
-                if (!selection.isEmpty() && navigatorModelView instanceof IRefreshableView) {
-                    IRefreshableView rv = (IRefreshableView) navigatorModelView;
-                    if (rv.getRefreshAction() != null) {
-                        manager.add(rv.getRefreshAction());
-                    }
-                }
+                manager.add(new CommandContributionItem(
+                    new CommandContributionItemParameter(
+                        navigatorModelView.getWorkbenchPart().getSite(),
+                        null,
+                        IWorkbenchCommandConstants.FILE_REFRESH,
+                        CommandContributionItem.STYLE_PUSH)
+                ));
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
-        if (navigatorModelView.getViewer() != null) {
-            navigatorModelView.getViewer().getControl().setMenu(menu);
-            navigatorModelView.getWorkbenchPart().getSite().registerContextMenu(menuMgr, navigatorModelView.getViewer());
+        if (navigatorModelView.getNavigatorViewer() != null) {
+            navigatorModelView.getNavigatorViewer().getControl().setMenu(menu);
+            navigatorModelView.getWorkbenchPart().getSite().registerContextMenu(menuMgr, navigatorModelView.getNavigatorViewer());
         }
     }
 
@@ -257,14 +263,14 @@ public class ViewUtils
         Transfer[] types = new Transfer[] {TextTransfer.getInstance()};
         int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
-        final DragSource source = new DragSource(navigatorModelView.getViewer().getControl(), operations);
+        final DragSource source = new DragSource(navigatorModelView.getNavigatorViewer().getControl(), operations);
         source.setTransfer(types);
         source.addDragListener (new DragSourceListener() {
 
             private IStructuredSelection selection;
 
             public void dragStart(DragSourceEvent event) {
-                selection = (IStructuredSelection) navigatorModelView.getViewer().getSelection();
+                selection = (IStructuredSelection) navigatorModelView.getNavigatorViewer().getSelection();
             }
             public void dragSetData (DragSourceEvent event) {
                 if (!selection.isEmpty()) {

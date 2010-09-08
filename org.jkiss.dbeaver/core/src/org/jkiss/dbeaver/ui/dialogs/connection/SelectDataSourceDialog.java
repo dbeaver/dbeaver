@@ -50,7 +50,7 @@ public class SelectDataSourceDialog extends Dialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        DBNRoot rootNode = DBeaverCore.getInstance().getMetaModel().getRoot();
+        DBNRoot rootNode = DBeaverCore.getInstance().getNavigatorModel().getRoot();
 
         ItemListControl dsList = new ItemListControl(group, SWT.BORDER, null, rootNode);
         gd = new GridData(GridData.FILL_BOTH);
@@ -58,7 +58,7 @@ public class SelectDataSourceDialog extends Dialog {
         gd.widthHint = 400;
         dsList.setLayoutData(gd);
         dsList.fillData();
-        dsList.getViewer().addSelectionChangedListener(new ISelectionChangedListener()
+        dsList.getNavigatorViewer().addSelectionChangedListener(new ISelectionChangedListener()
         {
             public void selectionChanged(SelectionChangedEvent event)
             {

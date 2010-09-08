@@ -12,7 +12,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
@@ -38,14 +37,13 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
         getSite().setSelectionProvider(itemControl.getSelectionProvider());
     }
 
-    public DBNModel getMetaModel()
-    {
-        return getEditorInput().getTreeNode().getModel();
+    public DBNNode getRootNode() {
+        return getEditorInput().getTreeNode();
     }
 
-    public Viewer getViewer()
+    public Viewer getNavigatorViewer()
     {
-        return itemControl.getViewer();
+        return itemControl.getNavigatorViewer();
     }
 
     public IWorkbenchPart getWorkbenchPart()
@@ -53,13 +51,7 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
         return this;
     }
 
-    protected boolean isValuableNode(DBNNode node)
-    {
-        return node == getEditorInput().getTreeNode().getParentNode();
-    }
-
-    @Override
-    protected void refreshContent(DBNEvent event) {
+    public void refreshDatabaseContent(DBNEvent event) {
         getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
 
             if (!itemControl.isDisposed()) {

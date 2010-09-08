@@ -15,6 +15,7 @@ import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -25,7 +26,7 @@ import java.util.List;
 /**
  * DBNNode
  */
-public abstract class DBNNode implements IActionFilter
+public abstract class DBNNode implements IActionFilter, DBPNamedObject
 {
     static final Log log = LogFactory.getLog(DBNNode.class);
 
@@ -138,6 +139,10 @@ public abstract class DBNNode implements IActionFilter
      */
     public DBNNode refreshNode(DBRProgressMonitor monitor) throws DBException
     {
+        if (isLocked()) {
+            log.warn("Attempt to refresh locked node '" + getNodeName() + "'");
+            return null;
+        }
         if (getObject() instanceof DBSEntity && ((DBSEntity)getObject()).refreshEntity(monitor)) {
             refreshNodeContent(monitor);
             return this;
@@ -206,6 +211,10 @@ public abstract class DBNNode implements IActionFilter
 
             return Status.OK_STATUS;
         }
+    }
+
+    public String getName() {
+        return getNodeName();
     }
 
     public boolean testAttribute(Object target, String name, String value) {

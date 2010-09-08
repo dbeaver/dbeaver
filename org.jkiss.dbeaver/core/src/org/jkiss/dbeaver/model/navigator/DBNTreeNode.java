@@ -262,6 +262,8 @@ public abstract class DBNTreeNode extends DBNNode {
                             // Refresh children recursive
                             oldChild.reloadChildren(monitor);
                         }
+                        getModel().fireNodeUpdate(this, oldChild, DBNEvent.NodeChange.REFRESH);
+
                         toList.add(oldChild);
                         added = true;
                         break;

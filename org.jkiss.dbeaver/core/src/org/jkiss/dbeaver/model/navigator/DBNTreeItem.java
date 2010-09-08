@@ -47,7 +47,6 @@ public class DBNTreeItem extends DBNTreeNode
         getModel().removeNode(this, false);
         this.object = object;
         getModel().addNode(this, false);
-        getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
     }
 
     public DBSObject getObject()

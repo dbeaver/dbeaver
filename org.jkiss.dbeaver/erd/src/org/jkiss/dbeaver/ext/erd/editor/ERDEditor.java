@@ -751,7 +751,9 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
     }
 
     public void refreshPart(Object source) {
-        loadDiagram();
+        if (isLoaded) {
+            loadDiagram();
+        }
     }
 
     private class ProgressControl extends ProgressPageControl {

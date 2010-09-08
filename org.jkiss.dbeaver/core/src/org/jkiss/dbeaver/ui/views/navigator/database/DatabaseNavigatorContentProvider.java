@@ -11,7 +11,6 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadService;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadVisualizer;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
@@ -52,7 +51,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
 
     public Object getParent(Object child)
     {
-        DBNNode node = (DBNNode)child;//view.getMetaModel().findNode(child);
+        DBNNode node = (DBNNode)child;//view.getNavigatorModel().findNode(child);
         if (node == null || node.getParentNode() == null) {
             return null;
         }
@@ -68,7 +67,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
             log.error("Bad parent type: " + parent);
             return null;
         }
-        final DBNNode parentNode = (DBNNode)parent;//view.getMetaModel().findNode(parent);
+        final DBNNode parentNode = (DBNNode)parent;//view.getNavigatorModel().findNode(parent);
 /*
         if (parentNode == null) {
             log.error("Can't find parent node '" + ((DBSObject) parent).getName() + "' in model");
@@ -80,7 +79,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
         }
         if (parentNode.isLazyNode()) {
             return TreeLoadVisualizer.expandChildren(
-                view.getViewer(),
+                view.getNavigatorViewer(),
                 new TreeLoadService("Loading", parentNode));
         } else {
             try {
@@ -107,8 +106,8 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                 view.getSite().getShell().getDisplay().asyncExec(new Runnable() {
                     public void run()
                     {
-                        view.getViewer().collapseToLevel(parent, 1);
-                        view.getViewer().refresh(parent);
+                        view.getNavigatorViewer().collapseToLevel(parent, 1);
+                        view.getNavigatorViewer().refresh(parent);
                     }
                 });
                 return EMPTY_CHILDREN;

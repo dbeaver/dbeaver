@@ -29,9 +29,11 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 /**
  * MultiPageDatabaseEditor
  */
-public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends MultiPageEditorPart implements IDataSourceProvider, IDBNListener
+public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends MultiPageEditorPart implements IDatabaseEditor, IDataSourceProvider
 {
     static final Log log = LogFactory.getLog(MultiPageDatabaseEditor.class);
+
+    private DatabaseEditorListener listener;
 
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
@@ -40,12 +42,12 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
         setPartName(input.getName());
         setTitleImage(input.getImageDescriptor().createImage());
 
-        DBeaverCore.getInstance().getMetaModel().addListener(this);
+        listener = new DatabaseEditorListener(this);
     }
 
     public void dispose()
     {
-        DBeaverCore.getInstance().getMetaModel().removeListener(this);
+        listener.dispose();
         super.dispose();
     }
 
@@ -142,36 +144,8 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
         }
     }
 
-    public IWorkbenchPart getWorkbenchPart()
-    {
-        return this;
-    }
-
     public DBPDataSource getDataSource() {
         return getEditorInput() == null ? null : getEditorInput().getDataSource();
-    }
-
-    public void nodeChanged(final DBNEvent event)
-    {
-        if (event.getNode() == getEditorInput().getTreeNode()) {
-            if (event.getAction() == DBNEvent.Action.REMOVE) {
-                getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
-                    IWorkbenchPage workbenchPage = getSite().getWorkbenchWindow().getActivePage();
-                    if (workbenchPage != null) {
-                        workbenchPage.closeEditor(MultiPageDatabaseEditor.this, false);
-                    }
-                }});
-            } else if (event.getAction() == DBNEvent.Action.UPDATE) {
-                if (event.getNodeChange() == DBNEvent.NodeChange.REFRESH) {
-                    refreshContent(event);
-                }
-            }
-        }
-    }
-
-    protected void refreshContent(DBNEvent event)
-    {
-
     }
 
 }

@@ -19,13 +19,14 @@ import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 
 import org.jkiss.dbeaver.ext.erd.model.ERDObject;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
  * An abstract EditPart implementation which is property aware and responds to
  * PropertyChangeEvents fired from the model
  * @author Serge Rieder
  */
-public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implements PropertyChangeListener
+public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implements PropertyChangeListener, DBPNamedObject
 {
 
 	/**
@@ -260,4 +261,11 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 	{
 	}
 
+    public String getName() {
+        Object model = getModel();
+        if (model instanceof ERDObject) {
+            return ((ERDObject)model).getObject().getName();
+        }
+        return String.valueOf(model);
+    }
 }

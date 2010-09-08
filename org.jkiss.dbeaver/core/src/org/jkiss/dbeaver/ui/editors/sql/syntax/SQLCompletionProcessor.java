@@ -346,7 +346,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             info.append("<br>");
         }
 
-        DBNNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject(monitor, child, true);
+        DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, child, true);
 /*
         return new ContextInformation(
                 node == null ? null : node.getNodeIconDefault(),

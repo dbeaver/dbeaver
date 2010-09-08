@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -249,6 +250,10 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
         }
         log.error("Bad datasource object: " + dataSource);
         return null;
+    }
+
+    public void refreshDatabaseContent(DBNEvent event) {
+
     }
 
     class SessionLabelProvider extends LabelProvider implements ITableLabelProvider, ITableFontProvider

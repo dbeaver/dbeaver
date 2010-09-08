@@ -219,7 +219,7 @@ public class DBNModel implements IDataSourceListener, DBSListener {
             }
         }
         if (badNode) {
-            log.warn("Remove unregistered meta node object " + node.getObject().getName() + " (" + node.getObject().getClass().getName() + ")");
+            log.warn("Remove unregistered meta node object " + node.getNodeName());
         } else {
             if (reflect) {
                 this.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, DBNEvent.NodeChange.UNLOAD, node));

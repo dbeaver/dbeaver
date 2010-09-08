@@ -7,6 +7,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
@@ -26,7 +27,7 @@ import java.lang.reflect.InvocationTargetException;
  * Provides base class support for model objects to participate in event handling framework
  * @author Serge Rieder
  */
-public abstract class ERDObject<OBJECT extends DBSObject> implements IPropertySource
+public abstract class ERDObject<OBJECT extends DBSObject> implements IPropertySource, IAdaptable
 {
 
 	public static final String CHILD = "CHILD";
@@ -105,7 +106,7 @@ public abstract class ERDObject<OBJECT extends DBSObject> implements IPropertySo
             public void run(DBRProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException
             {
-                DBNNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject(
+                DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
                     monitor,
                     object,
                     true
@@ -117,5 +118,8 @@ public abstract class ERDObject<OBJECT extends DBSObject> implements IPropertySo
         });
     }
 
+    public Object getAdapter(Class adapter) {
+        return null;
+    }
 }
 

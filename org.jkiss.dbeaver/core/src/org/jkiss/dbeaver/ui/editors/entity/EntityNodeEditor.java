@@ -19,7 +19,6 @@ import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IObjectEditorPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -93,14 +92,13 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
     {
     }
 
-    public DBNModel getMetaModel()
-    {
-        return node.getModel();
+    public DBNNode getRootNode() {
+        return node;
     }
 
-    public Viewer getViewer()
+    public Viewer getNavigatorViewer()
     {
-        return itemControl.getViewer();
+        return itemControl.getNavigatorViewer();
     }
 
     public IWorkbenchPart getWorkbenchPart()

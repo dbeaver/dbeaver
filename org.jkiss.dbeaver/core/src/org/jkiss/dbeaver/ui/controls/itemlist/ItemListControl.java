@@ -17,7 +17,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
@@ -81,13 +80,6 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
         super.createProgressPanel();
 
         sortListener = new SortListener();
-
-        TableColumn nameColumn = new TableColumn (table, SWT.NONE);
-        nameColumn.setText("Name");
-        nameColumn.setToolTipText("Name");
-        nameColumn.addListener(SWT.Selection, sortListener);
-
-        this.columns.add(nameColumn);
 
         // Make selection provider
         selectionProvider = new ISelectionProvider()
@@ -154,17 +146,11 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
         return selectionProvider;
     }
 
-    public DBNNode getNode()
-    {
+    public DBNNode getRootNode() {
         return node;
     }
 
-    public DBNModel getMetaModel()
-    {
-        return node.getModel();
-    }
-
-    public TableViewer getViewer()
+    public TableViewer getNavigatorViewer()
     {
         return itemsViewer;
     }
@@ -352,6 +338,13 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
         public void completeLoading(List<DBNNode> items)
         {
             super.completeLoading(items);
+
+            TableColumn nameColumn = new TableColumn (itemsViewer.getTable(), SWT.NONE);
+            nameColumn.setText("Name");
+            nameColumn.setToolTipText("Name");
+            nameColumn.addListener(SWT.Selection, sortListener);
+
+            ItemListControl.this.columns.add(nameColumn);
 
             List<DBNNode> objectList = new ArrayList<DBNNode>();
             if (!CommonUtils.isEmpty(items)) {

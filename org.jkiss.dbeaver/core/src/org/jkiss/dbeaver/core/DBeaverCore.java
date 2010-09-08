@@ -199,7 +199,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return jexlEngine;
     }
 
-    public DBNModel getMetaModel()
+    public DBNModel getNavigatorModel()
     {
         return metaModel;
     }

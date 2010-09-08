@@ -66,7 +66,7 @@ public class EntityHyperlink implements IHyperlink
             public void run(DBRProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException
             {
-                DBNNode node = DBeaverCore.getInstance().getMetaModel().getNodeByObject(
+                DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
                     monitor,
                     object,
                     true

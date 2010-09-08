@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
  */
 public interface DBPApplication
 {
-    DBNModel getMetaModel();
+    DBNModel getNavigatorModel();
 
     DBPRegistry getDataSourceRegistry();
 

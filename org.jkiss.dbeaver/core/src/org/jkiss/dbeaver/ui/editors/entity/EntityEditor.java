@@ -37,7 +37,7 @@ import java.util.*;
 /**
  * EntityEditor
  */
-public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> implements IDBNListener, INavigatorModelView
+public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> implements INavigatorModelView
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
@@ -284,7 +284,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         }
     }
 
-    protected void refreshContent(final DBNEvent event)
+    public void refreshDatabaseContent(final DBNEvent event)
     {
         // Reinit object manager
         if (objectManager != null) {
@@ -303,25 +303,33 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         }});
     }
 
-    public DBNModel getMetaModel()
-    {
-        return getEditorInput().getTreeNode().getModel();
+    public DBNNode getRootNode() {
+        return getEditorInput().getTreeNode();
     }
 
-    public Viewer getViewer()
+    public Viewer getNavigatorViewer()
     {
         IWorkbenchPart activePart = getActiveEditor();
         if (activePart instanceof INavigatorModelView) {
-            return ((INavigatorModelView)activePart).getViewer();
+            return ((INavigatorModelView)activePart).getNavigatorViewer();
         }
         return null;
+    }
+
+    public IWorkbenchPart getWorkbenchPart() {
+        return this;
     }
 
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySheetPage.class) {
             return new PropertyPageTabbed();
-        }
+        }/* else if (adapter == INavigatorModelView.class) {
+            IWorkbenchPart activePart = getActiveEditor();
+            if (activePart instanceof INavigatorModelView) {
+                return activePart;
+            }
+        }*/
         return super.getAdapter(adapter);
     }
 }

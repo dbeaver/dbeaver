@@ -376,10 +376,18 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                         default: defferability = DBSConstraintDefferability.UNKNOWN; break;
                     }
 
+                    if (pkTableName == null) {
+                        log.debug("Null PK table name");
+                        continue;
+                    }
                     String pkTableFullName = DBUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
                     GenericTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableSchema, pkTableName);
                     if (pkTable == null) {
                         log.warn("Can't find PK table " + pkTableFullName);
+                        continue;
+                    }
+                    if (fkTableName == null) {
+                        log.debug("Null FK table name");
                         continue;
                     }
                     String fkTableFullName = DBUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName);

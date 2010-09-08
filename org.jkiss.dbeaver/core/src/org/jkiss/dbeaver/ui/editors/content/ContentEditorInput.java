@@ -296,7 +296,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput, I
 
     public DBNNode getTreeNode() {
         if (treeNode == null) {
-            treeNode = DBeaverCore.getInstance().getMetaModel().findNode(valueController.getDataSource().getContainer());
+            treeNode = DBeaverCore.getInstance().getNavigatorModel().findNode(valueController.getDataSource().getContainer());
         }
         return treeNode;
     }
