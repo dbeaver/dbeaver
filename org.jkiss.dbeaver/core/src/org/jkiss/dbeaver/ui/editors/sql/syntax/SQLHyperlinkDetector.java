@@ -119,7 +119,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                         monitor.beginTask("Find tables", 1);
                         try {
                             final List<DBSTablePath> pathList = ((DBSStructureAssistant) editor.getDataSource()).findTableNames(
-                                monitor, checkWord, 2);
+                                monitor, checkWord, 10);
                             if (!pathList.isEmpty()) {
                                 for (DBSTablePath path : pathList) {
                                     DBSObject object = DBUtils.getTableByPath(monitor, (DBSEntityContainer) dataSource, path);

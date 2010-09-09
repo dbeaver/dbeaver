@@ -29,7 +29,7 @@ import java.util.*;
 /**
  * GenericCatalog
  */
-public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DBSStructureAssistant
+public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
 {
     static final Log log = LogFactory.getLog(MySQLCatalog.class);
 
@@ -141,11 +141,6 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource> implements DB
         throws DBException
     {
         return triggerCache.getObject(monitor, name);
-    }
-
-    public List<DBSTablePath> findTableNames(DBRProgressMonitor monitor, String tableMask, int maxResults) throws DBException
-    {
-        return getDataSource().findTableNames(monitor, tableMask, maxResults);
     }
 
     public Collection<MySQLTable> getChildren(DBRProgressMonitor monitor)

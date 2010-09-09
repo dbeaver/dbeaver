@@ -15,10 +15,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.jdbc.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectAction;
-import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -28,7 +25,7 @@ import java.util.List;
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends JDBCDataSource implements DBPDataSource, JDBCConnector, DBSEntitySelector
+public class GenericDataSource extends JDBCDataSource implements DBPDataSource, JDBCConnector, DBSEntitySelector, DBSStructureAssistant
 {
     static final Log log = LogFactory.getLog(GenericDataSource.class);
 
@@ -442,6 +439,57 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         }
         if (this.activeChild != null) {
             getContainer().fireEvent(DBSObjectAction.CHANGED, this.activeChild);
+        }
+    }
+
+    public List<DBSTablePath> findTableNames(DBRProgressMonitor monitor, String tableMask, int maxResults) throws DBException
+    {
+        JDBCUtils.startConnectionBlock(monitor, getDataSource(), "Looking for tables in '" + getName() + "'");
+
+        List<DBSTablePath> pathList = new ArrayList<DBSTablePath>();
+        JDBCExecutionContext context = getDataSource().openContext(monitor);
+        try {
+            JDBCDatabaseMetaData metaData = context.getMetaData();
+
+            // Make table mask uppercase
+            tableMask = tableMask.toUpperCase();
+
+            // Load tables
+            JDBCResultSet dbResult = metaData.getTables(
+                null,
+                null,
+                tableMask,
+                null);
+            try {
+                int tableNum = maxResults;
+                while (dbResult.next() && tableNum-- > 0) {
+
+                    String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
+                    String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
+                    String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
+                    String tableType = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_TYPE);
+                    String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
+
+                    pathList.add(
+                        new DBSTablePath(
+                            catalogName,
+                            schemaName,
+                            tableName,
+                            tableType,
+                            remarks));
+                }
+            }
+            finally {
+                dbResult.close();
+            }
+            return pathList;
+        }
+        catch (SQLException ex) {
+            throw new DBException(ex);
+        }
+        finally {
+            context.close();
+            JDBCUtils.endConnectionBlock(monitor);
         }
     }
 

@@ -8,23 +8,15 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSIndexType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
-import org.jkiss.dbeaver.model.struct.DBSProcedureType;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
-import org.jkiss.dbeaver.model.struct.DBSTablePath;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -34,7 +26,7 @@ import java.util.*;
 /**
  * GenericEntityContainer
  */
-public abstract class GenericEntityContainer implements DBSEntityContainer, DBSStructureAssistant
+public abstract class GenericEntityContainer implements DBSEntityContainer
 {
     static final Log log = LogFactory.getLog(GenericEntityContainer.class);
 
@@ -141,59 +133,6 @@ public abstract class GenericEntityContainer implements DBSEntityContainer, DBSS
         throws DBException
     {
         return procedureCache.getObjects(monitor);
-    }
-
-    public List<DBSTablePath> findTableNames(DBRProgressMonitor monitor, String tableMask, int maxResults) throws DBException
-    {
-        JDBCUtils.startConnectionBlock(monitor, getDataSource(), "Looking for tables in '" + getName() + "'");
-
-        List<DBSTablePath> pathList = new ArrayList<DBSTablePath>();
-        JDBCExecutionContext context = getDataSource().openContext(monitor);
-        try {
-            JDBCDatabaseMetaData metaData = context.getMetaData();
-            String catalogName = getCatalog() == null ? null : getCatalog().getName();
-            String schemaName = getSchema() == null ? null : getSchema().getName();
-
-            // Make table mask uppercase
-            tableMask = tableMask.toUpperCase();
-
-            // Load tables
-            JDBCResultSet dbResult = metaData.getTables(
-                catalogName,
-                schemaName,
-                tableMask,
-                null);
-            try {
-                int tableNum = maxResults;
-                while (dbResult.next() && tableNum-- > 0) {
-
-                    catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
-                    schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
-                    String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
-                    String tableType = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_TYPE);
-                    String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-
-                    pathList.add(
-                        new DBSTablePath(
-                            catalogName,
-                            schemaName,
-                            tableName,
-                            tableType,
-                            remarks));
-                }
-            }
-            finally {
-                dbResult.close();
-            }
-            return pathList;
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            context.close();
-            JDBCUtils.endConnectionBlock(monitor);
-        }
     }
 
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
