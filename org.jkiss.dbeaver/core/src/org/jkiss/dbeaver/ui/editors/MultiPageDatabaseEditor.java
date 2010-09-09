@@ -12,11 +12,7 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.ui.IObjectEditorPart;
@@ -75,19 +71,14 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
         return false;
     }
 
-    protected int getContainerStyle()
-    {
-        return SWT.TOP | SWT.FLAT | SWT.BORDER;
-    }
-
-    protected int getContainerMargin()
-    {
-        return 5;
-    }
-
     protected void createPages()
     {
         this.setContainerStyles();
+    }
+
+    @Override
+    protected void initializePageSwitching() {
+        super.initializePageSwitching();
     }
 
     private void setContainerStyles()
@@ -148,4 +139,8 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
         return getEditorInput() == null ? null : getEditorInput().getDataSource();
     }
 
+    public IEditorPart getActiveEditor()
+    {
+        return super.getActiveEditor();
+    }
 }

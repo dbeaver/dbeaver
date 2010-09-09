@@ -56,10 +56,9 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 		if (oldBounds.height != newBounds.height && newBounds.height != -1)
 			return null;
 
-		DiagramPart diagramPart = (DiagramPart) entityPart.getParent();
+		//DiagramPart diagramPart = (DiagramPart) entityPart.getParent();
 
-		EntityMoveCommand command = new EntityMoveCommand(entityPart, oldBounds.getCopy(), newBounds.getCopy());
-		return command;
+		return new EntityMoveCommand(entityPart, oldBounds.getCopy(), newBounds.getCopy());
 	}
 
 	/**

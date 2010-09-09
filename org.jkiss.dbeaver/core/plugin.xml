@@ -872,5 +872,14 @@
             </command>
         </menuContribution>
     </extension>
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+       <propertyTester
+             class="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
+             id="org.jkiss.dbeaver.databaseEditorPropertyTester"
+             namespace="org.jkiss.dbeaver.database.editor"
+             properties="active"
+             type="org.jkiss.dbeaver.ui.editors.IDatabaseEditor">
+       </propertyTester>
+    </extension>
 
 </plugin>

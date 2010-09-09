@@ -26,10 +26,13 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.EditorPart;
+import org.eclipse.ui.services.IEvaluationService;
+import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
@@ -39,13 +42,13 @@ import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 import org.jkiss.dbeaver.ext.erd.action.DiagramRefreshAction;
 import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
+import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
+import org.jkiss.dbeaver.ext.erd.dnd.DataElementFactory;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
-import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
-import org.jkiss.dbeaver.ext.erd.dnd.DataElementFactory;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -174,6 +177,12 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
      * <code>CommandStack </code> changes.
      */
     public void commandStackChanged(EventObject event) {
+        // Reevaluate properties
+        IEvaluationService service = (IEvaluationService) PlatformUI.getWorkbench().getService(IEvaluationService.class);
+        service.requestEvaluation(ERDEditorPropertyTester.NAMESPACE + "." + ERDEditorPropertyTester.PROP_CAN_UNDO);
+        service.requestEvaluation(ERDEditorPropertyTester.NAMESPACE + "." + ERDEditorPropertyTester.PROP_CAN_REDO);
+
+        // Update actions
         updateActions(stackActionIDs);
         setDirty(getCommandStack().isDirty());
     }
@@ -437,7 +446,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
     private GraphicalViewer createViewer(Composite parent) {
         StatusLineValidationMessageHandler validationMessageHandler = new StatusLineValidationMessageHandler(getEditorSite());
-        GraphicalViewer viewer = new ERDGraphicalViewer(validationMessageHandler);
+        GraphicalViewer viewer = new ERDGraphicalViewer(this, validationMessageHandler);
         viewer.createControl(parent);
 
         // configure the viewer

@@ -37,30 +37,45 @@
 
         </editor>
     </extension>
+
     <extension point="org.eclipse.core.runtime.adapters">
        <factory adaptableType="org.eclipse.gef.EditPart" class="org.jkiss.dbeaver.ext.erd.model.ERDObjectAdapter">
           <adapter type="org.jkiss.dbeaver.model.DBPNamedObject"/>
        </factory>
-        <factory adaptableType="org.eclipse.ui.IEditorPart" class="org.jkiss.dbeaver.ext.erd.model.ERDEditorAdapter">
+        <factory adaptableType="org.eclipse.swt.widgets.Control" class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorAdapter">
            <adapter type="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"/>
         </factory>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-       <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ext.erd.action.ERDUndoHandler">
-           <activeWhen>
-               <with variable="activePart">
-                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"/>
-               </with>
-           </activeWhen>
-       </handler>
-        <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.ext.erd.action.ERDRedoHandler">
+        <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ext.erd.action.ERDUndoHandler">
             <activeWhen>
-                <with variable="activePart">
-                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"/>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditor">
+                        <test property="org.jkiss.dbeaver.ext.erd.editor.canUndo"/>
+                    </adapt>
                 </with>
             </activeWhen>
         </handler>
+        <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.ext.erd.action.ERDRedoHandler">
+            <activeWhen>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditor">
+                        <test property="org.jkiss.dbeaver.ext.erd.editor.canRedo"/>
+                    </adapt>
+                </with>
+            </activeWhen>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+       <propertyTester
+             class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPropertyTester"
+             id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPropertyTester"
+             namespace="org.jkiss.dbeaver.ext.erd.editor"
+             properties="canUndo,canRedo"
+             type="org.jkiss.dbeaver.ext.erd.editor.ERDEditor">
+       </propertyTester>
     </extension>
 
 </plugin>

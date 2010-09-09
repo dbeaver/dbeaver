@@ -9,8 +9,13 @@ package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.gef.ui.parts.AbstractEditPartViewer;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
+import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.FocusEvent;
 
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 
 /**
@@ -21,19 +26,43 @@ import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 public class ERDGraphicalViewer extends ScrollingGraphicalViewer
 {
 
+    private ERDEditor editor;
 	private ValidationMessageHandler messageHandler;
 
 	/**
 	 * ValidationMessageHandler to receive messages
 	 * @param messageHandler message handler 
 	 */
-	public ERDGraphicalViewer(ValidationMessageHandler messageHandler)
+	public ERDGraphicalViewer(ERDEditor editor, ValidationMessageHandler messageHandler)
 	{
 		super();
+        this.editor = editor;
 		this.messageHandler = messageHandler;
 	}
 
-	/**
+    @Override
+    public void setControl(Control control)
+    {
+        super.setControl(control);
+
+        if (control != null) {
+            ERDEditorAdapter.mapControl(control, editor);
+            IFocusService fs = (IFocusService) PlatformUI.getWorkbench().getService(IFocusService.class);
+            fs.addFocusTracker(control, editor.getObjectManager().getObject().getObjectId() + "#" + this.hashCode());
+        }
+    }
+
+    @Override
+    protected void handleDispose(DisposeEvent e) {
+        if (getControl() != null) {
+            ERDEditorAdapter.unmapControl(getControl());
+            IFocusService fs = (IFocusService) PlatformUI.getWorkbench().getService(IFocusService.class);
+            fs.removeFocusTracker(getControl());
+        }
+        super.handleDispose(e);
+    }
+
+    /**
 	 * @return Returns the messageLabel.
 	 */
 	public ValidationMessageHandler getValidationHandler()

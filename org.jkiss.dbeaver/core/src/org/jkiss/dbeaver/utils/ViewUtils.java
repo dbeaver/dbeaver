@@ -183,7 +183,7 @@ public class ViewUtils
                 }
 */
                 final DBNNode dbmNode = ViewUtils.getSelectedNode(navigatorModelView);
-                if (dbmNode.isLocked()) {
+                if (dbmNode == null || dbmNode.isLocked()) {
                     //manager.
                     return;
                 }

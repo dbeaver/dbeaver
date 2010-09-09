@@ -9,7 +9,6 @@ package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
-
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
 /**
@@ -35,7 +34,7 @@ public class EntityMoveCommand extends Command
 
 	public void execute()
 	{
-		entityPart.modifyBounds(newBounds);
+        entityPart.modifyBounds(newBounds);
 	}
 
 	public void undo()
