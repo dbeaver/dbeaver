@@ -826,6 +826,18 @@
     </extension>
     <extension
           point="org.eclipse.ui.menus">
+        <menuContribution
+              allPopups="false"
+              locationURI="menu:edit?before=undoredo">
+            <command
+                  commandId="org.eclipse.ui.edit.undo"
+                  style="push">
+            </command>
+           <command
+                 commandId="org.eclipse.ui.edit.redo"
+                 style="push">
+           </command>
+        </menuContribution>
        <menuContribution
              allPopups="false"
              locationURI="menu:edit?before=additions">

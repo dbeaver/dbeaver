@@ -756,6 +756,16 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         }
     }
 
+    public boolean isUndoable()
+    {
+        return getCommandStack().canUndo();
+    }
+
+    public boolean isRedoable()
+    {
+        return getCommandStack().canRedo();
+    }
+    
     private class ProgressControl extends ProgressPageControl {
 
         private ToolBarManager toolBarManager;
