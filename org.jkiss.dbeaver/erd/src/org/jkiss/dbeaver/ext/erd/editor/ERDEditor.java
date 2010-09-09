@@ -843,6 +843,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 } else {
                     setInfo("Error");
                 }
+                getCommandStack().flush();
                 getGraphicalViewer().setContents(entityDiagram);
                 zoomCombo.setZoomManager(rootPart.getZoomManager());
                 toolBarManager.getControl().setEnabled(true);

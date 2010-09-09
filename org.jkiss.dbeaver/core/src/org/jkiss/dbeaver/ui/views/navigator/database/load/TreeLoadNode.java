@@ -22,7 +22,7 @@ public class TreeLoadNode implements ILabelProvider {
 
     public static final Object LOADING_FAMILY = new Object();
 
-    private DBNNode node;
+    private DBNNode parent;
     private String text;
     private String text1;
     private String text2;
@@ -40,9 +40,9 @@ public class TreeLoadNode implements ILabelProvider {
         return node;
     }
 
-    private TreeLoadNode(DBNNode node)
+    private TreeLoadNode(DBNNode parent)
     {
-        this.node = node;
+        this.parent = parent;
         text = "Loading";
         text1 = text + "."; //$NON-NLS-1$
         text2 = text + ".."; //$NON-NLS-1$
@@ -53,9 +53,9 @@ public class TreeLoadNode implements ILabelProvider {
         imgLoading4 = DBeaverIcons.getImage(DBIcon.LOADING4);
     }
 
-    public DBNNode getNode()
+    public DBNNode getParent()
     {
-        return node;
+        return parent;
     }
 
     public String getText(Object element)

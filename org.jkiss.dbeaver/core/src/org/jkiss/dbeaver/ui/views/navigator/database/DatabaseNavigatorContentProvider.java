@@ -51,11 +51,13 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
 
     public Object getParent(Object child)
     {
-        DBNNode node = (DBNNode)child;//view.getNavigatorModel().findNode(child);
-        if (node == null || node.getParentNode() == null) {
+        if (child instanceof DBNNode) {
+            return ((DBNNode)child).getParentNode();
+        } else if (child instanceof TreeLoadNode) {
+            return ((TreeLoadNode)child).getParent();
+        } else {
             return null;
         }
-        return node.getParentNode();//.getObject();
     }
 
     public Object[] getChildren(final Object parent)

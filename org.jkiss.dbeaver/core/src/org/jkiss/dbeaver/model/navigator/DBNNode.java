@@ -7,19 +7,15 @@ package org.jkiss.dbeaver.model.navigator;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.AbstractJob;
 
 import java.util.List;
 
@@ -46,7 +42,7 @@ public abstract class DBNNode implements IActionFilter
         this.parentNode = parentNode;
     }
 
-    public boolean isDisposed()
+    public final boolean isDisposed()
     {
         return model == null;
     }
@@ -57,22 +53,17 @@ public abstract class DBNNode implements IActionFilter
         this.parentNode = null;
     }
 
-    public DBNModel getModel()
+    public final DBNModel getModel()
     {
         return model;
     }
 
-    public DBNNode getParentNode()
+    public final DBNNode getParentNode()
     {
         return parentNode;
     }
 
-    void setParentNode(DBNNode parentNode)
-    {
-        this.parentNode = parentNode;
-    }
-
-    public boolean isLocked() {
+    public final boolean isLocked() {
         return locked || parentNode != null && parentNode.isLocked();
     }
 
@@ -86,7 +77,7 @@ public abstract class DBNNode implements IActionFilter
 
     public abstract Image getNodeIcon();
 
-    public Image getNodeIconDefault()
+    public final Image getNodeIconDefault()
     {
         Image image = getNodeIcon();
         if (image == null) {
@@ -159,58 +150,40 @@ public abstract class DBNNode implements IActionFilter
         if (model == null) {
             return;
         }
-        new RefreshJob("Refresh node " + getNodeName()).schedule();
+        this.locked = true;
+        try {
+            model.fireNodeUpdate(this, this, DBNEvent.NodeChange.LOCK);
+
+            if (DBNNode.this instanceof DBNTreeNode) {
+                try {
+                    ((DBNTreeNode)DBNNode.this).reloadChildren(monitor);
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
+
+            model.fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
+        } finally {
+            this.locked = false;
+
+            // Unlock node
+            model.fireNodeUpdate(this, this, DBNEvent.NodeChange.UNLOCK);
+        }
+        //new RefreshJob("Refresh node " + getNodeName()).schedule();
     }
 
     public abstract Class<? extends IActionDelegate> getDefaultAction();
 
     public abstract boolean isLazyNode();
 
-    public static Object[] convertNodesToObjects(List<? extends DBNNode> children)
+    public final boolean isChildOf(DBNNode node)
     {
-        if (CommonUtils.isEmpty(children)) {
-            return new Object[0];
-        }
-        Object[] result = new Object[children.size()];
-        for (int i = 0; i < children.size(); i++) {
-            DBNNode child = children.get(i);
-            result[i] = child.getObject();
-        }
-        return result;
-    }
-
-    private class RefreshJob extends AbstractJob {
-
-        protected RefreshJob(String name) {
-            super(name);
-        }
-
-        @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
-            DBNNode node = DBNNode.this;
-            // Lock node and it's children
-            node.locked = true;
-            try {
-                model.fireNodeUpdate(this, node, DBNEvent.NodeChange.LOCK);
-
-                if (DBNNode.this instanceof DBNTreeNode) {
-                    try {
-                        ((DBNTreeNode)DBNNode.this).reloadChildren(monitor);
-                    } catch (DBException e) {
-                        log.error(e);
-                    }
-                }
-
-                model.fireNodeUpdate(this, node, DBNEvent.NodeChange.REFRESH);
-            } finally {
-                node.locked = false;
-
-                // Unlock node
-                model.fireNodeUpdate(this, node, DBNEvent.NodeChange.UNLOCK);
+        for (DBNNode parent = getParentNode(); parent != null; parent = parent.getParentNode()) {
+            if (parent == node) {
+                return true;
             }
-
-            return Status.OK_STATUS;
         }
+        return false;
     }
 
     public boolean testAttribute(Object target, String name, String value) {
@@ -224,4 +197,5 @@ public abstract class DBNNode implements IActionFilter
         }
         return false;
     }
+
 }
