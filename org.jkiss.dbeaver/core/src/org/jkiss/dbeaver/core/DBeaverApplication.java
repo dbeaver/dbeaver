@@ -4,8 +4,10 @@
 
 package org.jkiss.dbeaver.core;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Listener;
@@ -20,6 +22,10 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+
 /**
  * This class controls all aspects of the application's execution
  */
@@ -32,6 +38,14 @@ public class DBeaverApplication implements IApplication
     public Object start(IApplicationContext context)
     {
         Display display = PlatformUI.createDisplay();
+
+        Location instanceLoc = Platform.getInstanceLocation();
+        try {
+            instanceLoc.set(new URL("file", null, getDefaultWorkspaceLocation().getAbsolutePath()), true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         try {
             int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
             if (returnCode == PlatformUI.RETURN_RESTART) {
@@ -49,6 +63,16 @@ public class DBeaverApplication implements IApplication
 */
             display.dispose();
         }
+    }
+
+    private File getDefaultWorkspaceLocation() {
+        String userHome = System.getProperty("user.home");
+        if (userHome == null) {
+            userHome = ".";
+        }
+        File userHomeDir = new File(userHome);
+        File workspaceDir = new File(userHomeDir, ".dbeaver-beta");
+        return workspaceDir;
     }
 
     /* (non-Javadoc)
