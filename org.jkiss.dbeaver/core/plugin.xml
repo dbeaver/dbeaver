@@ -241,11 +241,6 @@
                 
             </filter>
             <action
-                class="org.jkiss.dbeaver.ui.actions.DeleteConnectionAction"
-                id="org.jkiss.dbeaver.ui.actions.DeleteConnectionAction"
-                label="Delete Connection">
-            </action>
-            <action
                 class="org.jkiss.dbeaver.ui.actions.DisconnectAction"
                 icon="icons/sql/disconnect.png"
                 id="org.jkiss.dbeaver.ui.actions.DisconnectAction"
@@ -811,6 +806,16 @@
                </with>
            </activeWhen>
        </handler>
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorDeleteHandler">
+            <activeWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.DBPDeletableObject"/>
+                    </iterate>
+                </with>
+            </activeWhen>
+        </handler>
        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorRefreshHandler">
             <activeWhen>
                 <with variable="activePart">

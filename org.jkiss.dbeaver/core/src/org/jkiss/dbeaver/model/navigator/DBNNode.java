@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * DBNNode
  */
-public abstract class DBNNode implements IActionFilter, DBPNamedObject
+public abstract class DBNNode implements IActionFilter
 {
     static final Log log = LogFactory.getLog(DBNNode.class);
 
@@ -211,10 +211,6 @@ public abstract class DBNNode implements IActionFilter, DBPNamedObject
 
             return Status.OK_STATUS;
         }
-    }
-
-    public String getName() {
-        return getNodeName();
     }
 
     public boolean testAttribute(Object target, String name, String value) {

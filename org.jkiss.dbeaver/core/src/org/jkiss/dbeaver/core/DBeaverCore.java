@@ -18,6 +18,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.DBPApplication;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -25,6 +26,7 @@ import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
@@ -91,7 +93,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         // Register properties adapter
         propertiesAdapter = new DBeaverAdapterFactory();
         IAdapterManager mgr = Platform.getAdapterManager();
+        mgr.registerAdapters(propertiesAdapter, DBPNamedObject.class);
         mgr.registerAdapters(propertiesAdapter, DBPObject.class);
+        mgr.registerAdapters(propertiesAdapter, DBSObject.class);
         mgr.registerAdapters(propertiesAdapter, DBNNode.class);
 
         DBeaverIcons.initRegistry(plugin.getBundle());

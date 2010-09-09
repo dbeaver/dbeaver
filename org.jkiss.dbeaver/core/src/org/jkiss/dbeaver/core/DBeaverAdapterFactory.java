@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -21,7 +22,7 @@ import java.util.Map;
  */
 public class DBeaverAdapterFactory implements IAdapterFactory
 {
-    private static final Class<?>[] ADAPTER_LIST = { IPropertySource.class, IWorkbenchAdapter.class };
+    private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBPObject.class, DBSObject.class, IPropertySource.class, IWorkbenchAdapter.class };
 
     private Map<Object, IPropertySource> propertySourceCache = new Hashtable<Object, IPropertySource>();
 
@@ -37,8 +38,12 @@ public class DBeaverAdapterFactory implements IAdapterFactory
 
     public Object getAdapter(final Object adaptableObject, Class adapterType)
     {
-        if (adaptableObject instanceof DBPObject) {
-            if (adapterType == IPropertySource.class) {
+        if (adapterType == DBPNamedObject.class || adapterType == DBPObject.class || adapterType == DBSObject.class) {
+            if (adaptableObject instanceof DBNNode) {
+                return ((DBNNode)adaptableObject).getObject();
+            }
+        } else if (adapterType == IPropertySource.class) {
+            if (adaptableObject instanceof DBPObject) {
                 IPropertySource cached = propertySourceCache.get(adaptableObject);
                 if (cached != null) {
                     return cached;
@@ -56,38 +61,38 @@ public class DBeaverAdapterFactory implements IAdapterFactory
                     props.addProperty("desc", "Description", meta.getDescription());
                 }
                 return props;
-            } else if (adapterType == IWorkbenchAdapter.class) {
-                // Workbench adapter
-                if (adaptableObject instanceof DBSObject) {
-                    final DBSObject dbObject = (DBSObject)adaptableObject;
-                    return new IWorkbenchAdapter() {
+            }
+        } else if (adapterType == IWorkbenchAdapter.class) {
+            // Workbench adapter
+            if (adaptableObject instanceof DBSObject) {
+                final DBSObject dbObject = (DBSObject)adaptableObject;
+                return new IWorkbenchAdapter() {
 
-                        public Object[] getChildren(Object o)
-                        {
+                    public Object[] getChildren(Object o)
+                    {
+                        return null;
+                    }
+
+                    public ImageDescriptor getImageDescriptor(Object object)
+                    {
+                        final DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dbObject);
+                        if (node != null) {
+                            return ImageDescriptor.createFromImage(node.getNodeIconDefault());
+                        } else {
                             return null;
                         }
+                    }
 
-                        public ImageDescriptor getImageDescriptor(Object object)
-                        {
-                            final DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dbObject);
-                            if (node != null) {
-                                return ImageDescriptor.createFromImage(node.getNodeIconDefault());
-                            } else {
-                                return null;
-                            }
-                        }
+                    public String getLabel(Object o)
+                    {
+                        return dbObject.getName();
+                    }
 
-                        public String getLabel(Object o)
-                        {
-                            return dbObject.getName();
-                        }
-
-                        public Object getParent(Object o)
-                        {
-                            return dbObject.getParentObject();
-                        }
-                    };
-                }
+                    public Object getParent(Object o)
+                    {
+                        return dbObject.getParentObject();
+                    }
+                };
             }
         }
         return null;
