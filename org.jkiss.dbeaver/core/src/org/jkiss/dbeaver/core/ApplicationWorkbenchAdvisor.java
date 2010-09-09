@@ -71,12 +71,12 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
     public boolean preShutdown()
     {
-        saveAndCleanup();
-        // Disconnect all connections
-        if (DBeaverCore.getInstance() != null) {
-            DBeaverCore.getInstance().getDataSourceRegistry().closeConnections();
-            // Wait for all datasource jobs to finish
-            try {
+        try {
+            saveAndCleanup();
+            // Disconnect all connections
+            if (DBeaverCore.getInstance() != null) {
+                DBeaverCore.getInstance().getDataSourceRegistry().closeConnections();
+                // Wait for all datasource jobs to finish
                 getWorkbenchConfigurer().getWorkbench().getProgressService().run(false, false, new IRunnableWithProgress() {
                     public void run(IProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
@@ -84,12 +84,13 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                         Job.getJobManager().join(DBPDataSource.class, monitor);
                     }
                 });
-            } catch (InvocationTargetException e) {
-                log.error(e.getTargetException());
             }
-            catch (InterruptedException e) {
-                // do nothing
-            }
+        } catch (InvocationTargetException e) {
+            log.error(e.getTargetException());
+        }
+        catch (Throwable e) {
+            // do nothing
+            log.debug("Internal error during shutdown process", e);
         }
         return super.preShutdown();
     }
@@ -97,9 +98,14 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     public void postShutdown()
     {
         super.postShutdown();
-        // Dispose core
-        if (DBeaverCore.getInstance() != null) {
-            DBeaverCore.getInstance().dispose();
+
+        try {
+// Dispose core
+            if (DBeaverCore.getInstance() != null) {
+                DBeaverCore.getInstance().dispose();
+            }
+        } catch (Throwable e) {
+            log.debug("Internal error after shutdown process", e);
         }
     }
 
