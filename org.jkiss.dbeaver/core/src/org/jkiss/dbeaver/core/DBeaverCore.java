@@ -374,7 +374,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         setDefaultPreferenceValue(store, PrefConstants.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.STOP_ROLLBACK.name());
         setDefaultPreferenceValue(store, PrefConstants.SCRIPT_FETCH_RESULT_SETS, false);
 
-        setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_MAX_ROWS, 1000);
+        setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_MAX_ROWS, 200);
         setDefaultPreferenceValue(store, PrefConstants.STATEMENT_TIMEOUT, 10 * 1000);
 
         setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);

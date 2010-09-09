@@ -102,6 +102,8 @@ public class DatabaseNavigatorView extends ViewPart
         ViewUtils.addDragAndDropSupport(this);
 
         getViewSite().setSelectionProvider(viewer);
+
+        makeToolbar(getViewSite().getActionBars());
     }
 
     private void makeToolbar(IActionBars actionBars) {
