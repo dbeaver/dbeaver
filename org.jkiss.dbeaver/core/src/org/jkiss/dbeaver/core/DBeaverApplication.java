@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.core;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -42,7 +44,9 @@ public class DBeaverApplication implements IApplication
         Location instanceLoc = Platform.getInstanceLocation();
         try {
             instanceLoc.set(new URL("file", null, getDefaultWorkspaceLocation().getAbsolutePath()), true);
-        } catch (IOException e) {
+        } catch (Throwable e) {
+            // Just skip it
+            // Error may occur if -data parameter was specified at startup
             e.printStackTrace();
         }
 
