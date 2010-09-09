@@ -7,19 +7,18 @@ package org.jkiss.dbeaver.runtime;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * AbstractDatabaseObjectManager
  */
-public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBPObject> implements IDatabaseObjectManager<OBJECT_TYPE> {
+public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObject> implements IDatabaseObjectManager<OBJECT_TYPE> {
 
-    private DBPDataSource dataSource;
     private OBJECT_TYPE object;
 
     public DBPDataSource getDataSource() {
-        return dataSource;
+        return object.getDataSource();
     }
 
     public OBJECT_TYPE getObject() {
@@ -27,11 +26,10 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBPObjec
     }
 
     @SuppressWarnings("unchecked")
-    public void init(DBPDataSource dataSource, OBJECT_TYPE object) {
+    public void init(OBJECT_TYPE object) {
         if (object == null) {
             throw new IllegalArgumentException("Object can't be NULL");
         }
-        this.dataSource = dataSource;
         this.object = object;
     }
 

@@ -40,7 +40,10 @@ public class DatabaseEditorListener implements IDBNListener
                     }
                 }});
             } else if (event.getAction() == DBNEvent.Action.UPDATE) {
-                if (event.getNodeChange() == DBNEvent.NodeChange.REFRESH) {
+                if (event.getNodeChange() == DBNEvent.NodeChange.REFRESH ||
+                    event.getNodeChange() == DBNEvent.NodeChange.LOAD ||
+                    event.getNodeChange() == DBNEvent.NodeChange.UNLOAD)
+                {
                     databaseEditor.refreshDatabaseContent(event);
                 }
             }

@@ -6,17 +6,17 @@ package org.jkiss.dbeaver.ext;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * IDatabaseObjectManager
  */
-public interface IDatabaseObjectManager<OBJECT_TYPE extends DBPObject> extends IDataSourceProvider {
+public interface IDatabaseObjectManager<OBJECT_TYPE extends DBSObject> extends IDataSourceProvider {
 
     OBJECT_TYPE getObject();
 
-    void init(DBPDataSource dataSource, OBJECT_TYPE object);
+    void init(OBJECT_TYPE object);
 
     boolean supportsEdit();
 

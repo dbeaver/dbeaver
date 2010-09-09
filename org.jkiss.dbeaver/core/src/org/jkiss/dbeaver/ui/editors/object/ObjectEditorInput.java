@@ -17,7 +17,7 @@ public class ObjectEditorInput extends DatabaseEditorInput<DBNTreeObject>
 {
     public ObjectEditorInput(DBNTreeObject dbmNode)
     {
-        super(dbmNode.getDataSource(), dbmNode);
+        super(dbmNode);
     }
 
     public ImageDescriptor getImageDescriptor()

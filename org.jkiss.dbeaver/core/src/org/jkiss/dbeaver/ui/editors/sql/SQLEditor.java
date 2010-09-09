@@ -749,7 +749,7 @@ public class SQLEditor extends BaseTextEditor
         throws DBException
     {
         if (getDataSourceContainer() == null || !getDataSourceContainer().isConnected()) {
-            throw new DBException("Not connected to database");
+            throw new DBException("No active connection");
         }
     }
 

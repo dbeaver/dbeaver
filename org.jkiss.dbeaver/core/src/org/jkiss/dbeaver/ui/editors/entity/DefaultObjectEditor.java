@@ -21,6 +21,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
@@ -34,7 +35,7 @@ import java.util.List;
 /**
  * DefaultObjectEditor
  */
-public class DefaultObjectEditor extends EditorPart
+public class DefaultObjectEditor extends EditorPart implements IRefreshablePart
 {
     static final Log log = LogFactory.getLog(DefaultObjectEditor.class);
 
@@ -152,5 +153,11 @@ public class DefaultObjectEditor extends EditorPart
     public boolean isSaveAsAllowed()
     {
         return false;
+    }
+
+    public void refreshPart(Object source) {
+        if (properties != null) {
+            properties.refresh();
+        }
     }
 }

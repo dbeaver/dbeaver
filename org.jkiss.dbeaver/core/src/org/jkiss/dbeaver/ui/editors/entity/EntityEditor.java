@@ -65,7 +65,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             this.objectManager = new DefaultDatabaseObjectManager();
         }
 
-        this.objectManager.init(getEditorInput().getDataSource(), databaseObject);
+        this.objectManager.init(databaseObject);
 
         // Add object editor page
         EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(databaseObject.getClass());
@@ -190,7 +190,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                                 tabs.add(new TabInfo(node, child));
                             }
                         } catch (DBException e) {
-                            log.error("Can't add child items tab", e);
+                            log.debug("Can't add child items tab", e);
                         }
                     }
                 }
@@ -288,7 +288,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     {
         // Reinit object manager
         if (objectManager != null) {
-            this.objectManager.init(getEditorInput().getDataSource(), event.getNode().getObject());
+            this.objectManager.init(event.getNode().getObject());
         }
         // Refresh visual content in parts
         getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {

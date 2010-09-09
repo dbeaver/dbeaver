@@ -16,13 +16,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public abstract class DatabaseEditorInput<NODE extends DBNNode> implements IDatabaseEditorInput
 {
-    private DBPDataSource dataSource;
     private NODE node;
     private String defaultPageId;
 
-    protected DatabaseEditorInput(DBPDataSource dataSource, NODE node)
+    protected DatabaseEditorInput(NODE node)
     {
-        this.dataSource = dataSource;
         this.node = node;
     }
 
@@ -57,7 +55,8 @@ public abstract class DatabaseEditorInput<NODE extends DBNNode> implements IData
     }
 
     public DBPDataSource getDataSource() {
-        return dataSource;
+        DBSObject object = node.getObject();
+        return object == null ? null : object.getDataSource();
     }
 
     public NODE getTreeNode()
