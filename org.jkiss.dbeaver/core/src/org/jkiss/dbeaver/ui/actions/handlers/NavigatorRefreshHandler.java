@@ -74,7 +74,7 @@ public class NavigatorRefreshHandler extends AbstractHandler {
 
                     Set<DBNNode> refreshedSet = new HashSet<DBNNode>();
                     for (DBNNode node : refreshObjects) {
-                        if (node.isLocked()) {
+                        if (node.isDisposed() || node.isLocked()) {
                             // Skip locked nodes
                             continue;
                         }
