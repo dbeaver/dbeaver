@@ -806,7 +806,26 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 ZoomManager.FIT_HEIGHT,
                 ZoomManager.FIT_WIDTH
             };
-            zoomCombo = new ZoomComboContributionItem(ERDEditor.this.getSite().getPage(), zoomStrings);
+            // Init zoom combo with dummy part service (to prevent zoom disable on part change)
+            zoomCombo = new ZoomComboContributionItem(
+                    new IPartService() {
+                        public void addPartListener(IPartListener listener) {
+                        }
+
+                        public void addPartListener(IPartListener2 listener) {
+                        }
+                        public IWorkbenchPart getActivePart() {
+                            return ERDEditor.this;
+                        }
+                        public IWorkbenchPartReference getActivePartReference() {
+                            return null;
+                        }
+                        public void removePartListener(IPartListener listener) {
+                        }
+                        public void removePartListener(IPartListener2 listener) {
+                        }
+                    },
+                    zoomStrings);
             toolBarManager.add(zoomCombo);
 
             //toolBarManager.add(new UndoAction(ERDEditor.this));
