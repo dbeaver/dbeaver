@@ -48,10 +48,10 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.event.DataSourceEvent;
-import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
@@ -82,7 +82,7 @@ import java.util.*;
  */
 public class SQLEditor extends BaseTextEditor
     implements
-        IResourceChangeListener, IDataSourceProvider, IDataSourceContainerProvider, IDataSourceListener, IResultSetProvider, ISaveablePart2
+        IResourceChangeListener, IDataSourceProvider, IDataSourceContainerProvider, DBPEventListener, IResultSetProvider, ISaveablePart2
 {
     static final Log log = LogFactory.getLog(SQLEditor.class);
 
@@ -800,7 +800,7 @@ public class SQLEditor extends BaseTextEditor
         super.dispose();
     }
 
-    public void handleDataSourceEvent(final DataSourceEvent event)
+    public void handleDataSourceEvent(final DBPEvent event)
     {
         if (event.getDataSource() == getDataSourceContainer()) {
             getSite().getShell().getDisplay().asyncExec(

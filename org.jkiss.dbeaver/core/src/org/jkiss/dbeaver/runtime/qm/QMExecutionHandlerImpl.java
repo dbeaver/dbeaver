@@ -4,14 +4,14 @@
 
 package org.jkiss.dbeaver.runtime.qm;
 
+import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.registry.event.IDataSourceListener;
-import org.jkiss.dbeaver.registry.event.DataSourceEvent;
+import org.jkiss.dbeaver.model.DBPEvent;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import java.util.HashMap;
 /**
  * Query manager execution handler implementation
  */
-public class QMExecutionHandlerImpl implements QMExecutionHandler, IDataSourceListener {
+public class QMExecutionHandlerImpl implements QMExecutionHandler, DBPEventListener {
 
     private QMControllerImpl controller;
     private Map<DBPDataSource, QMDataSourceMetaInfo> dataSourcesInfo = new HashMap<DBPDataSource, QMDataSourceMetaInfo>();
@@ -87,7 +87,7 @@ public class QMExecutionHandlerImpl implements QMExecutionHandler, IDataSourceLi
         
     }
 
-    public void handleDataSourceEvent(DataSourceEvent event)
+    public void handleDataSourceEvent(DBPEvent event)
     {
         switch (event.getAction()) {
         case CONNECT:

@@ -4,13 +4,12 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import org.jkiss.dbeaver.registry.event.RegistryEvent;
+import java.util.EventObject;
 
 /**
- * DataSourceEvent
+ * DBPEvent
  */
-public class DBNEvent extends RegistryEvent
-{
+public class DBNEvent extends EventObject {
     public enum Action
     {
         ADD,

@@ -8,7 +8,6 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
@@ -24,15 +23,10 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSListener;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectAction;
-import org.jkiss.dbeaver.registry.event.DataSourceEvent;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionAuthDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
@@ -279,18 +273,16 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
             if (reflect) {
                 getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
-                    DataSourceEvent.Action.CONNECT,
-                    DataSourceDescriptor.this,
-                    this);
+                    DBPEvent.Action.CONNECT,
+                    DataSourceDescriptor.this);
             }
         } catch (Exception e) {
             // Failed
             connectFailed = true;
             if (reflect) {
                 getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
-                    DataSourceEvent.Action.CONNECT_FAIL,
-                    DataSourceDescriptor.this,
-                    this);
+                    DBPEvent.Action.CONNECT_FAIL,
+                    DataSourceDescriptor.this);
             }
             if (e instanceof DBException) {
                 throw (DBException)e;
@@ -317,13 +309,13 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                         getConnectionInfo().setUserPassword(oldPassword);
                     }
                     getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
-                        DataSourceEvent.Action.CONNECT,
+                        DBPEvent.Action.CONNECT,
                         DataSourceDescriptor.this,
                         source);
                 } else {
                     connectFailed = true;
                     getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
-                        DataSourceEvent.Action.CONNECT_FAIL,
+                        DBPEvent.Action.CONNECT_FAIL,
                         DataSourceDescriptor.this,
                         source);
                 }
@@ -371,9 +363,8 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
         if (reflect) {
             getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
-                DataSourceEvent.Action.DISCONNECT,
-                this,
-                monitor);
+                DBPEvent.Action.DISCONNECT,
+                this);
         }
 /*
         DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress()
@@ -395,7 +386,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                         dataSource = null;
                         connectTime = null;
                         getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
-                            DataSourceEvent.Action.DISCONNECT,
+                            DBPEvent.Action.DISCONNECT,
                             DataSourceDescriptor.this,
                             monitor);
                     }
@@ -419,26 +410,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             disconnect(monitor, reflect);
         }
         connect(monitor, reflect);
-
-/*
-        if (dataSource == null) {
-            //log.error("Datasource is not connected");
-            return;
-        }
-        ReconnectJob reconnectJob = new ReconnectJob(dataSource);
-        reconnectJob.addJobChangeListener(new JobChangeAdapter() {
-            public void done(IJobChangeEvent event)
-            {
-                if (event.getResult().isOK()) {
-                    getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
-                        DataSourceEvent.Action.INVALIDATE,
-                        DataSourceDescriptor.this,
-                        monitor);
-                }
-            }
-        });
-        reconnectJob.schedule();
-*/
     }
 
     public void acquire(DBPDataSourceUser user)

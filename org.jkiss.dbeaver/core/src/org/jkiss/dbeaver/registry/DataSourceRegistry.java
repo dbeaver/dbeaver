@@ -15,15 +15,13 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDriver;
-import org.jkiss.dbeaver.model.DBPRegistry;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.registry.event.DataSourceEvent;
-import org.jkiss.dbeaver.registry.event.IDataSourceListener;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.StringEncrypter;
 import org.xml.sax.Attributes;
@@ -47,7 +45,7 @@ public class DataSourceRegistry implements DBPRegistry
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<DataSourceProviderDescriptor>();
     private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();
     private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
-    private final List<IDataSourceListener> dataSourceListeners = new ArrayList<IDataSourceListener>();
+    private final List<DBPEventListener> dataSourceListeners = new ArrayList<DBPEventListener>();
 
     private StringEncrypter encrypter;
     private static final String PASSWORD_ENCRYPTION_KEY = "sdf@!#$verf^wv%6Fwe%$$#FFGwfsdefwfe135s$^H)dg";
@@ -223,20 +221,20 @@ public class DataSourceRegistry implements DBPRegistry
     {
         this.dataSources.add(dataSource);
         this.saveDataSources();
-        this.notifyDataSourceListeners(DataSourceEvent.Action.ADD, dataSource, this);
+        this.notifyDataSourceListeners(DBPEvent.Action.ADD, dataSource);
     }
 
     public void removeDataSource(DataSourceDescriptor dataSource)
     {
         this.dataSources.remove(dataSource);
         this.saveDataSources();
-        this.notifyDataSourceListeners(DataSourceEvent.Action.REMOVE, dataSource, this);
+        this.notifyDataSourceListeners(DBPEvent.Action.REMOVE, dataSource);
     }
 
     public void updateDataSource(DataSourceDescriptor dataSource)
     {
         this.saveDataSources();
-        this.notifyDataSourceListeners(DataSourceEvent.Action.CHANGE, dataSource, this);
+        this.notifyDataSourceListeners(DBPEvent.Action.CHANGE, dataSource);
     }
 
     public void flushConfig()
@@ -244,63 +242,48 @@ public class DataSourceRegistry implements DBPRegistry
         this.saveDataSources();
     }
 
-    public void addDataSourceListener(IDataSourceListener listener)
+    public void addDataSourceListener(DBPEventListener listener)
     {
         synchronized (dataSourceListeners) {
             dataSourceListeners.add(listener);
         }
     }
 
-    public boolean removeDataSourceListener(IDataSourceListener listener)
+    public boolean removeDataSourceListener(DBPEventListener listener)
     {
         synchronized (dataSourceListeners) {
             return dataSourceListeners.remove(listener);
         }
     }
 
-    void fireDataSourceEvent(
-        DataSourceEvent.Action action,
-        DataSourceDescriptor dataSource,
-        Object source)
-    {
-        notifyDataSourceListeners(action, dataSource, source);
-    }
-
     public void fireDataSourceEvent(
-        DataSourceEvent.Action action,
-        DBPDataSource dataSource,
-        Object source)
+        DBPEvent.Action action,
+        DBSDataSourceContainer dataSourceDescriptor)
     {
-        DataSourceDescriptor dataSourceDescriptor = getDataSource(dataSource);
-        if (dataSourceDescriptor == null) {
-            log.error("Bad data source parameter: " + dataSource);
-        } else {
-            notifyDataSourceListeners(action, dataSourceDescriptor, source);
-        }
+        notifyDataSourceListeners(action, (DataSourceDescriptor) dataSourceDescriptor);
     }
 
     private void notifyDataSourceListeners(
-        DataSourceEvent.Action action,
-        DataSourceDescriptor dataSource,
-        Object source)
+        DBPEvent.Action action,
+        DataSourceDescriptor dataSource)
     {
         if (dataSourceListeners.isEmpty()) {
             return;
         }
-        final DataSourceEvent event = new DataSourceEvent(source, action, dataSource);
-        final List<IDataSourceListener> listeners;
+        final DBPEvent event = new DBPEvent(action, dataSource);
+        final List<DBPEventListener> listeners;
         synchronized (dataSourceListeners) {
-            listeners = new ArrayList<IDataSourceListener>(dataSourceListeners);
+            listeners = new ArrayList<DBPEventListener>(dataSourceListeners);
         }
         //Display display = this.core.getWorkbench().getDisplay();
-        for (IDataSourceListener listener : listeners) {
+        for (DBPEventListener listener : listeners) {
             listener.handleDataSourceEvent(event);
         }
 /*
             display.asyncExec(
                 new Runnable() {
                     public void run() {
-                        for (IDataSourceListener listener : listeners) {
+                        for (DBPEventListener listener : listeners) {
                             listener.handleDataSourceEvent(event);
                         }
                     }

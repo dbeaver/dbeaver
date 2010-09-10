@@ -8,15 +8,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSListener;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectAction;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.event.DataSourceEvent;
-import org.jkiss.dbeaver.registry.event.IDataSourceListener;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.util.*;
 
@@ -29,7 +26,7 @@ import java.util.*;
  * It will work but some actions will not work well
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
-public class DBNModel implements IDataSourceListener, DBSListener {
+public class DBNModel implements DBPEventListener, DBSListener {
     static final Log log = LogFactory.getLog(DBNModel.class);
 
     private DataSourceRegistry registry;
@@ -255,7 +252,7 @@ public class DBNModel implements IDataSourceListener, DBSListener {
         }
     }
 
-    public void handleDataSourceEvent(DataSourceEvent event)
+    public void handleDataSourceEvent(DBPEvent event)
     {
         switch (event.getAction()) {
             case ADD:
@@ -269,7 +266,7 @@ public class DBNModel implements IDataSourceListener, DBSListener {
                 final DBNNode dbmNode = getNodeByObject(event.getDataSource());
                 if (dbmNode != null) {
                     dbmNode.clearNode();
-                    fireNodeUpdate(event.getSource(), dbmNode, DBNEvent.NodeChange.UNLOAD);
+                    fireNodeUpdate(this, dbmNode, DBNEvent.NodeChange.UNLOAD);
                 }
                 event.getDataSource().removeListener(this);
                 break;
@@ -287,19 +284,10 @@ public class DBNModel implements IDataSourceListener, DBSListener {
                     case CONNECT_FAIL: nodeChange = DBNEvent.NodeChange.UNLOAD; break;
                     }
                     fireNodeUpdate(
-                        event.getSource(),
+                        this,
                         dbmNode, 
                         nodeChange);
                 }
-                break;
-            }
-            case INVALIDATE:
-            {
-                DBNNode dbmNode = getNodeByObject(event.getDataSource());
-                fireNodeUpdate(
-                    event.getSource(),
-                    dbmNode,
-                    DBNEvent.NodeChange.REFRESH);
                 break;
             }
         }

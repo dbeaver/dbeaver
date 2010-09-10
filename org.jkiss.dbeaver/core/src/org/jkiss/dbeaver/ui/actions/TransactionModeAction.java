@@ -16,6 +16,7 @@ import org.eclipse.ui.IWorkbenchWindowPulldownDelegate2;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
 import org.jkiss.dbeaver.model.dbc.DBCException;
@@ -23,7 +24,6 @@ import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.event.DataSourceEvent;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
@@ -56,9 +56,8 @@ public class TransactionModeAction extends SessionAction implements IWorkbenchWi
                     }
                 });
                 DataSourceRegistry.getDefault().fireDataSourceEvent(
-                    DataSourceEvent.Action.CHANGE,
-                    dataSource,
-                    this);
+                    DBPEvent.Action.CHANGE,
+                    dataSource.getContainer());
             } else {
                 DBeaverUtils.showErrorDialog(getWindow().getShell(), "Auto-Commit", "No active database");
             }

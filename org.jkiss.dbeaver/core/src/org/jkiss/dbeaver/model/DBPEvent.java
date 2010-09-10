@@ -2,15 +2,15 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.registry.event;
+package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
 /**
- * DataSourceEvent
+ * DBPEvent
  */
-public class DataSourceEvent extends RegistryEvent
+public class DBPEvent
 {
     public enum Action
     {
@@ -20,7 +20,6 @@ public class DataSourceEvent extends RegistryEvent
         CONNECT,
         CONNECT_FAIL,
         DISCONNECT,
-        INVALIDATE,
 
         OBJECT_ADD,
         OBJECT_REMOVE,
@@ -35,28 +34,24 @@ public class DataSourceEvent extends RegistryEvent
     private Boolean enabled;
     private Object data;
 
-    public DataSourceEvent(Object source, Action action, DataSourceDescriptor dataSource)
+    public DBPEvent(Action action, DataSourceDescriptor dataSource)
     {
-        super(source);
         this.action = action;
         this.dataSource = dataSource;
     }
 
-    public DataSourceEvent(Object source, Action action, DBSObject object) {
-        super(source);
+    public DBPEvent(Action action, DBSObject object) {
         this.action = action;
         this.object = object;
     }
 
-    public DataSourceEvent(Object source, Action action, DBSObject object, boolean enabled) {
-        super(source);
+    public DBPEvent(Action action, DBSObject object, boolean enabled) {
         this.action = action;
         this.object = object;
         this.enabled = enabled;
     }
 
-    public DataSourceEvent(Object source, Action action, DBSObject object, Object data) {
-        super(source);
+    public DBPEvent(Action action, DBSObject object, Object data) {
         this.action = action;
         this.object = object;
         this.data = data;

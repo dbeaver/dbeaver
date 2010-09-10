@@ -16,37 +16,35 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.event.DataSourceEvent;
-import org.jkiss.dbeaver.registry.event.IDataSourceListener;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 /**
  * DataSource action
  */
-public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate, IActionDelegate2 {
+public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate, IObjectActionDelegate, IActionDelegate2, DBPEventListener {
 	private IWorkbenchWindow window;
     private ISelection selection;
     private IWorkbenchPart activePart;
     private IAction delegateAction;
-    private IDataSourceListener dataSourceListener;
     private boolean registered;
 
     /**
 	 * The constructor.
 	 */
 	public DataSourceAction() {
-        dataSourceListener = new IDataSourceListener() {
-            public void handleDataSourceEvent(DataSourceEvent event) {
-                if (delegateAction != null) {
-                    updateAction(delegateAction);
-                }
-            }
-        };
 	}
+
+    public void handleDataSourceEvent(DBPEvent event)
+    {
+        if (delegateAction != null) {
+            updateAction(delegateAction);
+        }
+    }
 
     public IWorkbenchWindow getWindow() {
         return window != null ?
@@ -94,7 +92,7 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
 	public void init(IWorkbenchWindow window) {
 		this.window = window;
         if (!registered) {
-            DataSourceRegistry.getDefault().addDataSourceListener(dataSourceListener);
+            DataSourceRegistry.getDefault().addDataSourceListener(this);
             registered = true;
         }
 	}
@@ -102,7 +100,7 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
 	public void init(IAction action) {
         this.delegateAction = action;
         if (!registered) {
-            DataSourceRegistry.getDefault().addDataSourceListener(dataSourceListener);
+            DataSourceRegistry.getDefault().addDataSourceListener(this);
             registered = true;
         }
 	}
@@ -118,7 +116,7 @@ public abstract class DataSourceAction implements IWorkbenchWindowActionDelegate
      * @see org.eclipse.ui.IWorkbenchWindowActionDelegate#dispose
      */
     public void dispose() {
-        DataSourceRegistry.getDefault().removeDataSourceListener(dataSourceListener);
+        DataSourceRegistry.getDefault().removeDataSourceListener(this);
         this.registered = false;
         this.window = null;
         this.selection = null;

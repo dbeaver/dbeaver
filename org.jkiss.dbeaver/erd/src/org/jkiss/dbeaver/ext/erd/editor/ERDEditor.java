@@ -26,13 +26,11 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.services.IEvaluationService;
-import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
@@ -806,7 +804,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 ZoomManager.FIT_HEIGHT,
                 ZoomManager.FIT_WIDTH
             };
-            // Init zoom combo with dummy part service (to prevent zoom disable on part change)
+            // Init zoom combo with dummy part service
+            // to prevent zoom disable on part change - as it is standalone zoom control, not global one
             zoomCombo = new ZoomComboContributionItem(
                     new IPartService() {
                         public void addPartListener(IPartListener listener) {

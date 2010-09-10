@@ -29,14 +29,11 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.event.DataSourceEvent;
-import org.jkiss.dbeaver.registry.event.IDataSourceListener;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.sql.*;
@@ -52,7 +49,7 @@ import java.util.List;
 /**
  * SQL Editor contributor
  */
-public class SQLEditorContributor extends TextEditorActionContributor implements IDataSourceListener, IPropertyChangeListener
+public class SQLEditorContributor extends TextEditorActionContributor implements DBPEventListener, IPropertyChangeListener
 {
     static final Log log = LogFactory.getLog(SQLEditorContributor.class);
 
@@ -495,7 +492,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         }
     }
 
-    public void handleDataSourceEvent(DataSourceEvent event)
+    public void handleDataSourceEvent(DBPEvent event)
     {
         SQLEditor editor = getEditor();
         if (editor != null) {
@@ -503,7 +500,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                 switch (event.getAction()) {
                     case CONNECT:
                     case DISCONNECT:
-                        //boolean isConnected = event.getAction() == DataSourceEvent.Action.CONNECT;
+                        //boolean isConnected = event.getAction() == DBPEvent.Action.CONNECT;
                         //enableActions(isConnected);
                         editor.getSite().getShell().getDisplay().asyncExec(
                             new Runnable() {
