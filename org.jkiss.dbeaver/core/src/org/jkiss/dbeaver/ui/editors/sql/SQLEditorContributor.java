@@ -496,21 +496,17 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
     {
         SQLEditor editor = getEditor();
         if (editor != null) {
-            if (event.getDataSource() == editor.getDataSourceContainer()) {
-                switch (event.getAction()) {
-                    case CONNECT:
-                    case DISCONNECT:
-                        //boolean isConnected = event.getAction() == DBPEvent.Action.CONNECT;
-                        //enableActions(isConnected);
-                        editor.getSite().getShell().getDisplay().asyncExec(
-                            new Runnable() {
-                                public void run() {
-                                    updateControls();
-                                }
-                            }
-                        );
-                        break;
-                }
+            if (event.getObject() == editor.getDataSourceContainer() &&
+                event.getAction() == DBPEvent.Action.OBJECT_UPDATE &&
+                event.getEnabled() != null)
+            {
+                editor.getSite().getShell().getDisplay().asyncExec(
+                    new Runnable() {
+                        public void run() {
+                            updateControls();
+                        }
+                    }
+                );
             }
         }
     }

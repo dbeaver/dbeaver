@@ -4,17 +4,18 @@
 
 package org.jkiss.dbeaver.runtime.qm;
 
-import org.jkiss.dbeaver.model.DBPEventListener;
-import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.dbc.DBCResultSet;
+import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
+import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Query manager execution handler implementation
@@ -22,7 +23,7 @@ import java.util.HashMap;
 public class QMExecutionHandlerImpl implements QMExecutionHandler, DBPEventListener {
 
     private QMControllerImpl controller;
-    private Map<DBPDataSource, QMDataSourceMetaInfo> dataSourcesInfo = new HashMap<DBPDataSource, QMDataSourceMetaInfo>();
+    private Map<DBSDataSourceContainer, QMDataSourceMetaInfo> dataSourcesInfo = new HashMap<DBSDataSourceContainer, QMDataSourceMetaInfo>();
 
     public QMExecutionHandlerImpl(QMControllerImpl controller)
     {
@@ -89,16 +90,12 @@ public class QMExecutionHandlerImpl implements QMExecutionHandler, DBPEventListe
 
     public void handleDataSourceEvent(DBPEvent event)
     {
-        switch (event.getAction()) {
-        case CONNECT:
-            dataSourcesInfo.put(event.getDataSource().getDataSource(), new QMDataSourceMetaInfo());
-            break;
-        case DISCONNECT:
-            dataSourcesInfo.remove(event.getDataSource().getDataSource());
-            break;
-        default:
-            // doesn't matter
-            break;
+        if (event.getObject() instanceof DBSDataSourceContainer && event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null) {
+            if (event.getEnabled()) {
+                dataSourcesInfo.put((DBSDataSourceContainer)event.getObject(), new QMDataSourceMetaInfo());
+            } else {
+                dataSourcesInfo.remove((DBSDataSourceContainer)event.getObject());
+            }
         }
     }
 

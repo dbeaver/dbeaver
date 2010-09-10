@@ -56,7 +56,7 @@ public class TransactionModeAction extends SessionAction implements IWorkbenchWi
                     }
                 });
                 DataSourceRegistry.getDefault().fireDataSourceEvent(
-                    DBPEvent.Action.CHANGE,
+                    DBPEvent.Action.OBJECT_UPDATE,
                     dataSource.getContainer());
             } else {
                 DBeaverUtils.showErrorDialog(getWindow().getShell(), "Auto-Commit", "No active database");

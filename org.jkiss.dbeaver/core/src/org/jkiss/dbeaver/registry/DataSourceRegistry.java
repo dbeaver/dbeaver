@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
@@ -221,20 +221,20 @@ public class DataSourceRegistry implements DBPRegistry
     {
         this.dataSources.add(dataSource);
         this.saveDataSources();
-        this.notifyDataSourceListeners(DBPEvent.Action.ADD, dataSource);
+        this.fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, dataSource);
     }
 
     public void removeDataSource(DataSourceDescriptor dataSource)
     {
         this.dataSources.remove(dataSource);
         this.saveDataSources();
-        this.notifyDataSourceListeners(DBPEvent.Action.REMOVE, dataSource);
+        this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
     }
 
     public void updateDataSource(DataSourceDescriptor dataSource)
     {
         this.saveDataSources();
-        this.notifyDataSourceListeners(DBPEvent.Action.CHANGE, dataSource);
+        this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
     }
 
     public void flushConfig()
@@ -258,19 +258,38 @@ public class DataSourceRegistry implements DBPRegistry
 
     public void fireDataSourceEvent(
         DBPEvent.Action action,
-        DBSDataSourceContainer dataSourceDescriptor)
+        DBSObject object)
     {
-        notifyDataSourceListeners(action, (DataSourceDescriptor) dataSourceDescriptor);
+        notifyDataSourceListeners(new DBPEvent(action, object));
+    }
+
+    public void fireDataSourceEvent(
+        DBPEvent.Action action,
+        DBSObject object,
+        boolean enabled)
+    {
+        notifyDataSourceListeners(new DBPEvent(action, object, enabled));
+    }
+
+    public void fireDataSourceEvent(
+        DBPEvent.Action action,
+        DBSObject object,
+        Object data)
+    {
+        notifyDataSourceListeners(new DBPEvent(action, object, data));
+    }
+
+    public void fireDataSourceEvent(DBPEvent event)
+    {
+        notifyDataSourceListeners(event);
     }
 
     private void notifyDataSourceListeners(
-        DBPEvent.Action action,
-        DataSourceDescriptor dataSource)
+        final DBPEvent event)
     {
         if (dataSourceListeners.isEmpty()) {
             return;
         }
-        final DBPEvent event = new DBPEvent(action, dataSource);
         final List<DBPEventListener> listeners;
         synchronized (dataSourceListeners) {
             listeners = new ArrayList<DBPEventListener>(dataSourceListeners);

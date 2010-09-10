@@ -11,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.dbc.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.dbc.DBCQueryTransformer;
@@ -259,10 +260,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         this.activeCatalog = (MySQLCatalog) child;
 
         if (oldChild != null) {
-            getContainer().fireEvent(DBSObjectAction.CHANGED, oldChild);
+            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, oldChild));
         }
         if (this.activeCatalog != null) {
-            getContainer().fireEvent(DBSObjectAction.CHANGED, this.activeCatalog);
+            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this.activeCatalog));
         }
     }
 

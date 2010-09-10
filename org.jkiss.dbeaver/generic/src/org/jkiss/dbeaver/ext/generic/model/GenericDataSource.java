@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -435,10 +436,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         this.activeChild = child;
 
         if (oldChild != null) {
-            getContainer().fireEvent(DBSObjectAction.CHANGED, oldChild);
+            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, oldChild));
         }
         if (this.activeChild != null) {
-            getContainer().fireEvent(DBSObjectAction.CHANGED, this.activeChild);
+            getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this.activeChild));
         }
     }
 

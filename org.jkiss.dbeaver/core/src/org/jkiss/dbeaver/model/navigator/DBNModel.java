@@ -255,33 +255,30 @@ public class DBNModel implements DBPEventListener, DBSListener {
     public void handleDataSourceEvent(DBPEvent event)
     {
         switch (event.getAction()) {
-            case ADD:
-                root.addDataSource(event.getDataSource());
-                break;
-            case REMOVE:
-                root.removeDataSource(event.getDataSource());
-                break;
-            case DISCONNECT:
-            {
-                final DBNNode dbmNode = getNodeByObject(event.getDataSource());
-                if (dbmNode != null) {
-                    dbmNode.clearNode();
-                    fireNodeUpdate(this, dbmNode, DBNEvent.NodeChange.UNLOAD);
+            case OBJECT_ADD:
+                if (event.getObject() instanceof DataSourceDescriptor) {
+                    root.addDataSource((DataSourceDescriptor)event.getObject());
                 }
-                event.getDataSource().removeListener(this);
                 break;
-            }
-            case CONNECT:
-                event.getDataSource().addListener(this);
-            case CHANGE:
-            case CONNECT_FAIL:
+            case OBJECT_REMOVE:
+                if (event.getObject() instanceof DataSourceDescriptor) {
+                    root.removeDataSource((DataSourceDescriptor)event.getObject());
+                }
+                break;
+            case OBJECT_UPDATE:
             {
-                DBNNode dbmNode = getNodeByObject(event.getDataSource());
+                DBNNode dbmNode = getNodeByObject(event.getObject());
                 if (dbmNode != null) {
-                    DBNEvent.NodeChange nodeChange = DBNEvent.NodeChange.REFRESH;
-                    switch (event.getAction()) {
-                    case CONNECT: nodeChange = DBNEvent.NodeChange.LOAD; break;
-                    case CONNECT_FAIL: nodeChange = DBNEvent.NodeChange.UNLOAD; break;
+                    DBNEvent.NodeChange nodeChange;
+                    Boolean enabled = event.getEnabled();
+                    if (enabled != null) {
+                        if (enabled) {
+                            nodeChange = DBNEvent.NodeChange.LOAD;
+                        } else {
+                            nodeChange = DBNEvent.NodeChange.UNLOAD;
+                        }
+                    } else {
+                        nodeChange = DBNEvent.NodeChange.REFRESH;
                     }
                     fireNodeUpdate(
                         this,

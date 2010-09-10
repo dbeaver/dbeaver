@@ -57,7 +57,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     private Date loginDate;
     private DataSourcePreferenceStore preferenceStore;
 
-    private final List<DBSListener> listeners = new ArrayList<DBSListener>();
     private DBPDataSource dataSource;
 
     private transient List<DBPDataSourceUser> users = new ArrayList<DBPDataSourceUser>();
@@ -82,10 +81,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
     public void dispose()
     {
-        if (!listeners.isEmpty()) {
-            log.warn("Data source container '" + this.getName() + "' listeners still registered [" + listeners.size() + "]");
-            listeners.clear();
-        }
         users.clear();
         iconNormal = null;
         if (iconConnected != null) {
@@ -273,15 +268,16 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
             if (reflect) {
                 getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
-                    DBPEvent.Action.CONNECT,
-                    DataSourceDescriptor.this);
+                    DBPEvent.Action.OBJECT_UPDATE,
+                    DataSourceDescriptor.this,
+                    true);
             }
         } catch (Exception e) {
             // Failed
             connectFailed = true;
             if (reflect) {
                 getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
-                    DBPEvent.Action.CONNECT_FAIL,
+                    DBPEvent.Action.OBJECT_UPDATE,
                     DataSourceDescriptor.this);
             }
             if (e instanceof DBException) {
@@ -363,8 +359,9 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
         if (reflect) {
             getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
-                DBPEvent.Action.DISCONNECT,
-                this);
+                DBPEvent.Action.OBJECT_UPDATE,
+                this,
+                false);
         }
 /*
         DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress()
@@ -422,31 +419,8 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         users.remove(user);
     }
 
-    public void addListener(DBSListener listener)
-    {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
-    }
-
-    public void removeListener(DBSListener listener)
-    {
-        synchronized (listeners) {
-            if (!listeners.remove(listener)) {
-                log.warn("Listener [" + listener + "] is not registered in data source container '" + this.getName() + "'");
-            }
-        }
-    }
-
-    public void fireEvent(DBSObjectAction action, DBSObject object)
-    {
-        List<DBSListener> listenersCopy;
-        synchronized (listeners) {
-            listenersCopy = new ArrayList<DBSListener>(listeners);
-        }
-        for (DBSListener listener : listenersCopy) {
-            listener.handleObjectEvent(action, object);
-        }
+    public void fireEvent(DBPEvent event) {
+        DataSourceRegistry.getDefault().fireDataSourceEvent(event);
     }
 
     public AbstractPreferenceStore getPreferenceStore()

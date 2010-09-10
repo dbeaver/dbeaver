@@ -802,17 +802,21 @@ public class SQLEditor extends BaseTextEditor
 
     public void handleDataSourceEvent(final DBPEvent event)
     {
-        if (event.getDataSource() == getDataSourceContainer()) {
+        if (event.getObject() == getDataSourceContainer()) {
             getSite().getShell().getDisplay().asyncExec(
                 new Runnable() {
                     public void run() {
                         switch (event.getAction()) {
-                            case DISCONNECT:
-                                closeSession();
-                            case CONNECT:
-                                refreshSyntax();
+                            case OBJECT_UPDATE:
+                                if (event.getEnabled() != null) {
+                                    if (event.getEnabled()) {
+                                        refreshSyntax();
+                                    } else {
+                                        closeSession();
+                                    }
+                                }
                                 break;
-                            case REMOVE:
+                            case OBJECT_REMOVE:
                                 getSite().getWorkbenchWindow().getActivePage().closeEditor(SQLEditor.this, false);
                                 break;
                         }

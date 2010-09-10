@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
 /**
  * DBPEvent
@@ -14,31 +13,16 @@ public class DBPEvent
 {
     public enum Action
     {
-        ADD,
-        CHANGE,
-        REMOVE,
-        CONNECT,
-        CONNECT_FAIL,
-        DISCONNECT,
-
         OBJECT_ADD,
+        OBJECT_UPDATE,
         OBJECT_REMOVE,
-        OBJECT_CHANGE,
-        OBJECT_REFRESH
     }
 
     private Action action;
-    private DataSourceDescriptor dataSource;
 
     private DBSObject object;
     private Boolean enabled;
     private Object data;
-
-    public DBPEvent(Action action, DataSourceDescriptor dataSource)
-    {
-        this.action = action;
-        this.dataSource = dataSource;
-    }
 
     public DBPEvent(Action action, DBSObject object) {
         this.action = action;
@@ -60,11 +44,6 @@ public class DBPEvent
     public Action getAction()
     {
         return action;
-    }
-
-    public DataSourceDescriptor getDataSource()
-    {
-        return dataSource;
     }
 
     public DBSObject getObject() {
