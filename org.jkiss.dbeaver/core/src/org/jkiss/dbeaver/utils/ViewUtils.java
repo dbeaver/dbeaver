@@ -12,6 +12,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
@@ -190,31 +191,25 @@ public class ViewUtils
                             // Extract active child with void monitor
                             // Otherwise context menu will be broken by GUI used by progress service
                             // TODO: do something with that and use real progress monitor
-                            new DBRRunnableWithProgress() {
-                                public void run(DBRProgressMonitor monitor)
-                                    throws InvocationTargetException
-                                {
-                                    DBSObject activeChild;
-                                    try {
-                                        activeChild = activeContainer.getActiveChild(monitor);
-                                    }
-                                    catch (DBException e) {
-                                        throw new InvocationTargetException(e);
-                                    }
-                                    if (activeChild != dbmNode.getObject()) {
-                                        DBNTreeNode treeNode = (DBNTreeNode)dbmNode;
-                                        DBXTreeNode nodeMeta = treeNode.getMeta();
-                                        String text = "Set active";
-                                        if (nodeMeta instanceof DBXTreeItem) {
-                                            DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
-                                            text += " " + itemMeta.getPath();
-                                        }
-                                        IAction action = makeAction(new SetActiveObjectAction(), navigatorModelView.getWorkbenchPart(), selection, text, null, null);
-
-                                        manager.add(action);
-                                    }
+                            DBSObject activeChild;
+                            try {
+                                activeChild = activeContainer.getActiveChild(VoidProgressMonitor.INSTANCE);
+                            }
+                            catch (DBException e) {
+                                throw new InvocationTargetException(e);
+                            }
+                            if (activeChild != dbmNode.getObject()) {
+                                DBNTreeNode treeNode = (DBNTreeNode)dbmNode;
+                                DBXTreeNode nodeMeta = treeNode.getMeta();
+                                String text = "Set active";
+                                if (nodeMeta instanceof DBXTreeItem) {
+                                    DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
+                                    text += " " + itemMeta.getPath();
                                 }
-                            }.run(VoidProgressMonitor.INSTANCE);
+                                IAction action = makeAction(new SetActiveObjectAction(), navigatorModelView.getWorkbenchPart(), selection, text, null, null);
+
+                                manager.add(action);
+                            }
                         } catch (InvocationTargetException e) {
                             log.warn(e.getTargetException());
                         }
