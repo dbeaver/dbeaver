@@ -272,22 +272,22 @@
 
         <key
                 commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"
-                schemeId="DBeaverKeyScheme"
+                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
                 sequence="CTRL+Enter">
         </key>
         <key
                 commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"
-                schemeId="DBeaverKeyScheme"
+                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
                 sequence="ALT+X">
         </key>
         <key
                 commandId="org.jkiss.dbeaver.core.openSQLEditor"
-                schemeId="DBeaverKeyScheme"
+                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
                 sequence="CTRL+ALT+E">
         </key>
         <key
                 commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"
-                schemeId="DBeaverKeyScheme"
+                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
                 sequence="CTRL+O">
         </key>
 

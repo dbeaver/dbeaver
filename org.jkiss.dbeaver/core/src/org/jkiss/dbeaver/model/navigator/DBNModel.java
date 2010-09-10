@@ -11,11 +11,14 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DBNModel.
@@ -26,7 +29,7 @@ import java.util.*;
  * It will work but some actions will not work well
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
-public class DBNModel implements DBPEventListener, DBSListener {
+public class DBNModel implements DBPEventListener {
     static final Log log = LogFactory.getLog(DBNModel.class);
 
     private DataSourceRegistry registry;
@@ -284,32 +287,6 @@ public class DBNModel implements DBPEventListener, DBSListener {
                         this,
                         dbmNode, 
                         nodeChange);
-                }
-                break;
-            }
-        }
-    }
-
-    public void handleObjectEvent(DBSObjectAction action, DBSObject object)
-    {
-        switch (action) {
-            case CREATED:
-                // TODO: Add new node to tree
-                break;
-            case DROPED:
-                // TODO: Remove node from tree
-                break;
-            case ALTERED:
-            case CHANGED:
-            case REFRESHED:
-            {
-                DBNNode dbmNode = getNodeByObject(object);
-                if (dbmNode != null) {
-                    DBNEvent.NodeChange nodeChange = DBNEvent.NodeChange.REFRESH;
-                    if (action == DBSObjectAction.REFRESHED) {
-                        nodeChange = DBNEvent.NodeChange.REFRESH;
-                    }
-                    fireNodeUpdate(this, dbmNode, nodeChange);
                 }
                 break;
             }
