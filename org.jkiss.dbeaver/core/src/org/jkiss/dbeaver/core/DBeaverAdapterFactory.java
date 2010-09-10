@@ -43,15 +43,12 @@ public class DBeaverAdapterFactory implements IAdapterFactory
                 return ((DBNNode)adaptableObject).getObject();
             }
         } else if (adapterType == IPropertySource.class) {
-            if (adaptableObject instanceof DBPObject) {
+            if (adaptableObject instanceof DBNNode) {
                 IPropertySource cached = propertySourceCache.get(adaptableObject);
                 if (cached != null) {
                     return cached;
                 }
-                DBPObject dbObject = (DBPObject) adaptableObject;
-                if (dbObject instanceof DBNNode) {
-                    dbObject = ((DBNNode)dbObject).getObject();
-                }
+                DBPObject dbObject = ((DBNNode)adaptableObject).getObject();
                 PropertyCollector props = new PropertyCollector(dbObject , true);
                 props.collectProperties();
                 if (props.isEmpty() && adaptableObject instanceof DBSObject) {
