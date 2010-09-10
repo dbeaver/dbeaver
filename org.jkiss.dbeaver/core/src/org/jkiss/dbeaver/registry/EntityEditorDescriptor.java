@@ -6,14 +6,14 @@ package org.jkiss.dbeaver.registry;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.IContributor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.DBeaverConstants;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * EntityEditorDescriptor
@@ -27,15 +27,15 @@ public class EntityEditorDescriptor extends AbstractDescriptor
 
     private String id;
     private String className;
-    private String objectType;
+    private List<String> objectTypes = new ArrayList<String>();
     private boolean main;
     private String name;
     private String description;
     private String position;
     private Image icon;
 
-    private Class objectClass;
-    private Class editorClass;
+    private List<Class<?>> objectClasses;
+    private Class<?> editorClass;
 
     EntityEditorDescriptor()
     {
@@ -46,7 +46,7 @@ public class EntityEditorDescriptor extends AbstractDescriptor
         });
         this.id = "default.object.editor";
         this.className = org.jkiss.dbeaver.ui.editors.entity.DefaultObjectEditor.class.getName();
-        this.objectType = DBSObject.class.getName();
+        this.objectTypes = new ArrayList<String>();
         this.main = true;
         this.name = "Properties";
         this.description = "Object properties";
@@ -60,7 +60,6 @@ public class EntityEditorDescriptor extends AbstractDescriptor
 
         this.id = config.getAttribute("id");
         this.className = config.getAttribute("class");
-        this.objectType = config.getAttribute("objectType");
         this.main = "true".equals(config.getAttribute("main"));
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
@@ -68,6 +67,22 @@ public class EntityEditorDescriptor extends AbstractDescriptor
         String iconPath = config.getAttribute("icon");
         if (!CommonUtils.isEmpty(iconPath)) {
             this.icon = iconToImage(iconPath);
+        }
+
+        {
+            String objectType = config.getAttribute("objectType");
+            if (objectType != null) {
+                objectTypes.add(objectType);
+            }
+        }
+        IConfigurationElement[] typesCfg = config.getChildren("objectType");
+        if (typesCfg != null) {
+            for (IConfigurationElement typeCfg : typesCfg) {
+                String objectType = typeCfg.getAttribute("name");
+                if (objectType != null) {
+                    objectTypes.add(objectType);
+                }
+            }
         }
     }
 
@@ -115,15 +130,27 @@ public class EntityEditorDescriptor extends AbstractDescriptor
 
     public boolean appliesToType(Class objectType)
     {
-        return this.getObjectClass() != null && this.getObjectClass().isAssignableFrom(objectType);
+        List<Class<?>> objectClasses = this.getObjectClasses();
+        for (Class<?> clazz : objectClasses) {
+            if (clazz.isAssignableFrom(objectType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    public Class getObjectClass()
+    public List<Class<?>> getObjectClasses()
     {
-        if (objectClass == null) {
-            objectClass = getObjectClass(objectType);
+        if (objectClasses == null) {
+            objectClasses = new ArrayList<Class<?>>();
+            for (String objectType : objectTypes) {
+                Class<?> objectClass = getObjectClass(objectType);
+                if (objectClass != null) {
+                    objectClasses.add(objectClass);
+                }
+            }
         }
-        return objectClass;
+        return objectClasses;
     }
 
     public Class getEditorClass()

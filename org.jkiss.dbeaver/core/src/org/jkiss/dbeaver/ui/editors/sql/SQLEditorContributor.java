@@ -28,15 +28,17 @@ import org.eclipse.ui.texteditor.StatusLineContributionItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.sql.*;
@@ -115,7 +117,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
 
     private void createActions()
     {
-        // Init staus line
+        // Init status line
         statusFields = new HashMap<StatusFieldDef, StatusLineContributionItem>(3);
         for (StatusFieldDef fieldDef : STATUS_FIELD_DEFS) {
             statusFields.put(
@@ -707,7 +709,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                                 if (newChild != null) {
                                     ((DBSEntitySelector)dataSource).setActiveChild(monitor, newChild);
                                 } else {
-                                    throw new DBException("Can't find database '" + newName + "'");
+                                    throw new DBException("Could not find database '" + newName + "'");
                                 }
                             }
                             catch (DBException e) {
@@ -719,7 +721,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                     throw new DBException("Active database change is not supported");
                 }
             } catch (DBException e) {
-                log.error("Error changing active databas" + e.getMessage());
+                log.error("Error changing active database" + e.getMessage());
             }
         }
     }

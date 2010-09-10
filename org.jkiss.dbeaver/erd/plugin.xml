@@ -28,13 +28,13 @@
         <editor
             id="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"
             class="org.jkiss.dbeaver.ext.erd.editor.ERDEditor"
-            objectType="org.jkiss.dbeaver.model.struct.DBSEntityContainer"
             main="false"
             label="Diagram"
             description="ERD Diagram"
             position="additions_end"
             icon="icons/erd.png">
-
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSEntityContainer"/>
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSTable"/>
         </editor>
     </extension>
 

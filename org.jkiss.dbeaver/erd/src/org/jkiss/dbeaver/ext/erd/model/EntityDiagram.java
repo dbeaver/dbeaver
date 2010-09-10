@@ -8,6 +8,7 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.List;
  * although ideally these should be in a separate model hiearchy 
  * @author Serge Rieder
  */
-public class EntityDiagram extends ERDObject<DBSEntityContainer>
+public class EntityDiagram extends ERDObject<DBSObject>
 {
 
 	private String name;
@@ -26,7 +27,7 @@ public class EntityDiagram extends ERDObject<DBSEntityContainer>
 	private boolean layoutManualDesired = true;
 	private boolean layoutManualAllowed = false;
 
-	public EntityDiagram(DBSEntityContainer container, String name)
+	public EntityDiagram(DBSObject container, String name)
 	{
 		super(container);
 		if (name == null)
