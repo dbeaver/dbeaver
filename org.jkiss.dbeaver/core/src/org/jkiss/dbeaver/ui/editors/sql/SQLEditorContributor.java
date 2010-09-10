@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
@@ -27,6 +28,8 @@ import org.eclipse.ui.texteditor.StatusLineContributionItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
@@ -730,15 +733,18 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         {
             public void widgetSelected(SelectionEvent e)
             {
-                String pageId = PrefPageSQLEditor.PAGE_ID;
-                PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
-                    shell,
-                    (DataSourceDescriptor) editor.getDataSourceContainer(),
-                    pageId,
-                    null,//new String[]{pageId},
-                    null);
-                if (propDialog != null) {
-                    propDialog.open();
+                DBNNode dsNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(editor.getDataSourceContainer());
+                if (dsNode instanceof IAdaptable) {
+                    String pageId = PrefPageSQLEditor.PAGE_ID;
+                    PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
+                        shell,
+                        (IAdaptable)dsNode,
+                        pageId,
+                        null,//new String[]{pageId},
+                        null);
+                    if (propDialog != null) {
+                        propDialog.open();
+                    }
                 }
             }
         });
