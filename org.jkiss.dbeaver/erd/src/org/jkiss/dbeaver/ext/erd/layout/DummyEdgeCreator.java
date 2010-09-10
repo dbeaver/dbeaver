@@ -36,10 +36,6 @@ public class DummyEdgeCreator
 
 	boolean cleanNextTime = false;
 
-	/**
-	 * @param clean
-	 *            next time
-	 */
 	public void visit(DirectedGraph g)
 	{
 		cleanNextTime = true;
@@ -63,7 +59,7 @@ public class DummyEdgeCreator
 	protected void setDummyEdges()
 	{
 
-		Node targetNode = null;
+		Node targetNode;
 
 		int nodeCount = nodeList.size();
 

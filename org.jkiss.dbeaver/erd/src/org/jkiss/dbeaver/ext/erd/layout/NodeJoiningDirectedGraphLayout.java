@@ -25,21 +25,15 @@ public class NodeJoiningDirectedGraphLayout extends DirectedGraphLayout
 	 */
 	public void visit(DirectedGraph graph)
 	{
-		
-		//System.out.println("Before Populate: Graph nodes: " + graph.nodes);
-		//System.out.println("Before Populate: Graph edges: " + graph.edges);				
-		
 		//add dummy edges so that graph does not fall over because some nodes
 		// are not in relationships
 		new DummyEdgeCreator().visit(graph);
 		
 		// create edges to join any isolated clusters
-		new ClusterEdgeCreator().visit(graph);	
-		
-		//System.out.println("After Populate: Graph nodes: " + graph.nodes);
-		//System.out.println("After Populate: Graph edges: " + graph.edges);	
-		
-		
+        // TODO: investigate - cluster edges makes diagram ugly
+        // TODO: what the reason to do it???
+		//new ClusterEdgeCreator().visit(graph);	
+
 		super.visit(graph);
 	}
 }
