@@ -64,8 +64,10 @@ public class DBeaverAdapterFactory implements IAdapterFactory
             }
         } else if (adapterType == IWorkbenchAdapter.class) {
             // Workbench adapter
-            if (adaptableObject instanceof DBSObject) {
-                final DBSObject dbObject = (DBSObject)adaptableObject;
+            if (adaptableObject instanceof DBSObject || adaptableObject instanceof DBNNode) {
+                final DBSObject dbObject = adaptableObject instanceof DBNNode ?
+                        ((DBNNode)adaptableObject).getObject() :
+                        (DBSObject)adaptableObject;
                 return new IWorkbenchAdapter() {
 
                     public Object[] getChildren(Object o)

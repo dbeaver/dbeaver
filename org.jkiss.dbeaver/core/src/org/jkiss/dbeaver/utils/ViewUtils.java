@@ -13,15 +13,12 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.dnd.*;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.eclipse.ui.dialogs.PropertyDialogAction;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.jkiss.dbeaver.DBException;
@@ -123,9 +120,10 @@ public class ViewUtils
 
     public static void addContextMenu(final INavigatorModelView navigatorModelView)
     {
-        final PropertyDialogAction propertyDialogAction = new PropertyDialogAction(
-            navigatorModelView.getWorkbenchPart().getSite(),
-            navigatorModelView.getNavigatorViewer());
+        if (navigatorModelView.getWorkbenchPart() == null) {
+            // No menu for such views (e.g. control embedded in some dialog)
+            return;
+        }
 
         MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(navigatorModelView.getNavigatorViewer().getControl());
@@ -157,13 +155,6 @@ public class ViewUtils
                         }
                     }
                 }
-            }
-        });
-        menu.addDisposeListener(new DisposeListener()
-        {
-            public void widgetDisposed(DisposeEvent e)
-            {
-                propertyDialogAction.dispose();
             }
         });
         menuMgr.addMenuListener(new IMenuListener()
@@ -236,8 +227,15 @@ public class ViewUtils
                 // Add properties button
                 if (!selection.isEmpty()) {
                     if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {
-                        propertyDialogAction.selectionChanged(selection);
-                        manager.add(propertyDialogAction);
+                        //propertyDialogAction.selectionChanged(selection);
+                        //manager.add(propertyDialogAction);
+                        manager.add(new CommandContributionItem(
+                            new CommandContributionItemParameter(
+                                navigatorModelView.getWorkbenchPart().getSite(),
+                                null,
+                                IWorkbenchCommandConstants.FILE_PROPERTIES,
+                                CommandContributionItem.STYLE_PUSH)
+                        ));
                     }
                 }
 

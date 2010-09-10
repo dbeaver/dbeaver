@@ -6,10 +6,12 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDeletableObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -21,7 +23,7 @@ import org.jkiss.dbeaver.ui.actions.EditConnectionAction;
 /**
  * DBNDataSource
  */
-public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject
+public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject, IAdaptable
 {
     static final Log log = LogFactory.getLog(DBNDataSource.class);
 
@@ -118,5 +120,14 @@ public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject
                 }
             }
         });
+    }
+
+    public Object getAdapter(Class adapter) {
+        if (adapter == DBNDataSource.class) {
+            return this;
+        } else if (DBSDataSourceContainer.class.isAssignableFrom(adapter)) {
+            return dataSource;
+        }
+        return null;
     }
 }

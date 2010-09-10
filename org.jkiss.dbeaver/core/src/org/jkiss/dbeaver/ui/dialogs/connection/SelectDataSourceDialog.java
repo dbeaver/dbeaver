@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNRoot;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -67,8 +68,14 @@ public class SelectDataSourceDialog extends Dialog {
                     dataSource = null;
                     getButton(IDialogConstants.OK_ID).setEnabled(false);
                 } else {
-                    dataSource = (DataSourceDescriptor) selection.getFirstElement();
-                    getButton(IDialogConstants.OK_ID).setEnabled(true);
+                    Object selNode = selection.getFirstElement();
+                    if (selNode instanceof DBNDataSource) {
+                        dataSource = ((DBNDataSource) selNode).getObject();
+                        getButton(IDialogConstants.OK_ID).setEnabled(true);
+                    } else {
+                        dataSource = null;
+                        getButton(IDialogConstants.OK_ID).setEnabled(false);
+                    }
                 }
             }
         });

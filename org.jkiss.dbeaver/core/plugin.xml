@@ -8,209 +8,637 @@
 <plugin>
     <extension-point id="org.jkiss.dbeaver.dataSourceProvider" name="DataSource provider"
                      schema="schema/org.jkiss.dbeaver.dataSourceProvider.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.databaseEditor" name="Custom Entity Editor" schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.databaseEditor" name="Custom Entity Editor"
+                     schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider"
+                     schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
+    <extension
+            point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+                base-type="org.eclipse.core.runtime.text"
+                default-charset="utf-8"
+                file-extensions="sql"
+                id="org.jkiss.dbeaver.core.content-type-sql"
+                name="SQL"
+                priority="normal">
+        </content-type>
+    </extension>
 
     <extension id="application" point="org.eclipse.core.runtime.applications">
         <application
-              visible="true">
+                visible="true">
             <run
-                class="org.jkiss.dbeaver.core.DBeaverApplication">
+                    class="org.jkiss.dbeaver.core.DBeaverApplication">
             </run>
         </application>
     </extension>
-    <extension point="org.eclipse.ui.perspectives">
-        <perspective
-            name="DBeaver Perspective"
-            class="org.jkiss.dbeaver.core.DBeaverPerspective"
-            id="org.jkiss.dbeaver.core.perspective">
-        </perspective>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
+                id="org.jkiss.dbeaver.databaseEditorPropertyTester"
+                namespace="org.jkiss.dbeaver.database.editor"
+                properties="active"
+                type="org.jkiss.dbeaver.ui.editors.IDatabaseEditor">
+        </propertyTester>
     </extension>
     <extension point="org.eclipse.ui.views">
         <view
-            allowMultiple="false"
-            category="org.jkiss.dbeaver.core.category"
-            class="org.jkiss.dbeaver.ui.views.console.ConsoleView"
-            icon="icons/properties.png"
-            id="org.jkiss.dbeaver.core.consoleView"
-            name="SQL Console">
+                allowMultiple="false"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.views.console.ConsoleView"
+                icon="icons/properties.png"
+                id="org.jkiss.dbeaver.core.consoleView"
+                name="SQL Console">
         </view>
         <view
-            allowMultiple="false"
-            category="org.jkiss.dbeaver.core.category"
-            class="org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView"
-            icon="icons/database_navigator.png"
-            id="org.jkiss.dbeaver.core.databaseNavigator"
-            name="Database Navigator">
+                allowMultiple="false"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView"
+                icon="icons/database_navigator.png"
+                id="org.jkiss.dbeaver.core.databaseNavigator"
+                name="Database Navigator">
         </view>
         <view
-            allowMultiple="false"
-            category="org.jkiss.dbeaver.core.category"
-            class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView"
-            icon="icons/projects.png"
-            id="org.jkiss.dbeaver.core.projectNavigator"
-            name="Projects">
+                allowMultiple="false"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView"
+                icon="icons/projects.png"
+                id="org.jkiss.dbeaver.core.projectNavigator"
+                name="Projects">
         </view>
 
         <category
-            id="org.jkiss.dbeaver.core.category"
-            name="DBeaver Core Category">
+                id="org.jkiss.dbeaver.core.category"
+                name="DBeaver Core Category">
         </category>
-    </extension>
-    <extension point="org.eclipse.ui.editors">
-        <editor
-            name="SQL Editor"
-            extensions="sql"
-            icon="icons/sql/sql_script.png"
-            contributorClass="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributor"
-            class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"
-            id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-            <contentTypeBinding
-                contentTypeId="org.jkiss.dbeaver.core.content-type-sql">
-            </contentTypeBinding>
-        </editor>
-        <editor
-            name="Folder Editor"
-            icon="icons/properties.png"
-            contributorClass="org.jkiss.dbeaver.ui.editors.folder.FolderEditorContributor"
-            class="org.jkiss.dbeaver.ui.editors.folder.FolderEditor"
-            id="org.jkiss.dbeaver.ui.editors.folder.FolderEditor">
-        </editor>
-        <editor
-            name="Entity Editor"
-            icon="icons/properties.png"
-            contributorClass="org.jkiss.dbeaver.ui.editors.entity.EntityEditorContributor"
-            class="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"
-            id="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
-        </editor>
-        <editor
-            name="Large Object Editor"
-            icon="icons/sql/types/lob.png"
-            contributorClass="org.jkiss.dbeaver.ui.editors.content.ContentEditorContributor"
-            class="org.jkiss.dbeaver.ui.editors.content.ContentEditor"
-            id="org.jkiss.dbeaver.ui.editors.content.ContentEditor">
-        </editor>
-    </extension>
-    <extension
-        point="org.eclipse.ui.commands">
-        <command
-            description="Driver Manager"
-            id="org.jkiss.dbeaver.core.editDrivers"
-            name="Driver Manager">
-        </command>
-        <command
-            description="New Connection Wizard"
-            id="org.jkiss.dbeaver.core.newConnection"
-            name="New Connection">
-        </command>
-        <command
-            description="Delete Connection"
-            id="org.jkiss.dbeaver.core.deleteConnection"
-            name="Delete Connection">
-        </command>
-        <command
-            description="Open SQL Editor"
-            id="org.jkiss.dbeaver.core.openSQLEditor"
-            name="Open SQL Editor">
-        </command>
-        <command
-            description="Connect"
-            id="org.jkiss.dbeaver.core.connect"
-            name="Connect">
-        </command>
-        <command
-            description="Disconnect"
-            id="org.jkiss.dbeaver.core.disconnect"
-            name="Disconnect">
-        </command>
-        <command
-            description="Execute Statement"
-            id="org.jkiss.dbeaver.ui.editors.sql.run.statement"
-            name="Execute SQL Statement">
-        </command>
-        <command
-            description="Execute Script"
-            id="org.jkiss.dbeaver.ui.editors.sql.run.script"
-            name="Execute SQL Script">
-        </command>
-        <command
-            description="Commit"
-            id="org.jkiss.dbeaver.ui.editors.sql.commit"
-            name="Commit changes in SQL Session">
-        </command>
-        <command
-            description="Rollback"
-            id="org.jkiss.dbeaver.ui.editors.sql.rollback"
-            name="Rollback changes in SQL Session">
-        </command>
-        <command
-            description="Load from file"
-            id="org.jkiss.dbeaver.ui.editors.sql.open.file"
-            name="Load SQL script">
-        </command>
-    </extension>
-    <extension
-        point="org.eclipse.ui.bindings">
-        <key
-            commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="CTRL+Enter">
-        </key>
-        <key
-            commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="ALT+X">
-        </key>
-        <key
-              commandId="org.jkiss.dbeaver.core.openSQLEditor"
-              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-              sequence="CTRL+ALT+E">
-        </key>
-        <key
-              commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"
-              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-              sequence="CTRL+O">
-        </key>
     </extension>
 
     <extension
-        id="product"
-        point="org.eclipse.core.runtime.products">
+            point="org.eclipse.ui.actionSets">
+        <actionSet
+                id="org.jkiss.dbeaver.core.dataSourceActionSet"
+                label="DataSource actions"
+                visible="true">
+
+            <menu id="dataSourceMenu" label="Database">
+                <separator name="driverGroup">
+                </separator>
+                <separator name="connectionGroup">
+                </separator>
+                <separator name="toolsGroup">
+                </separator>
+                <separator name="sessionGroup">
+                </separator>
+            </menu>
+            <action
+                    class="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
+                    icon="/icons/database_connect.png"
+                    id="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
+                    label="New Connection"
+                    menubarPath="dataSourceMenu/driverGroup"
+                    tooltip="Create New Connection">
+            </action>
+            <action
+                    class="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
+                    icon="/icons/driver_manager.png"
+                    id="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
+                    label="Driver Manager"
+                    menubarPath="dataSourceMenu/driverGroup"
+                    tooltip="Open Driver Manager">
+            </action>
+
+            <action
+                    class="org.jkiss.dbeaver.ui.actions.DisconnectAction"
+                    icon="icons/sql/disconnect.png"
+                    id="org.jkiss.dbeaver.ui.actions.DisconnectAction"
+                    label="Disconnect"
+                    menubarPath="dataSourceMenu/connectionGroup"
+                    toolbarPath="connectionGroup"
+                    tooltip="Disconnect from database">
+            </action>
+            <action
+                    class="org.jkiss.dbeaver.ui.actions.ReconnectAction"
+                    icon="icons/sql/reconnect.png"
+                    id="org.jkiss.dbeaver.ui.actions.ReconnectAction"
+                    label="Reconnect"
+                    menubarPath="dataSourceMenu/connectionGroup"
+                    toolbarPath="connectionGroup"
+                    tooltip="Invalidate connection">
+            </action>
+            <action
+                    class="org.jkiss.dbeaver.ui.actions.ConnectAction"
+                    icon="icons/sql/connect.png"
+                    id="org.jkiss.dbeaver.ui.actions.ConnectAction"
+                    label="Connect"
+                    menubarPath="dataSourceMenu/connectionGroup"
+                    toolbarPath="connectionGroup"
+                    tooltip="Connect to database">
+            </action>
+
+            <action
+                    class="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
+                    definitionId="org.jkiss.dbeaver.core.openSQLEditor"
+                    icon="/icons/sql/sql_script.png"
+                    id="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
+                    label="Open SQL Editor"
+                    menubarPath="dataSourceMenu/toolsGroup"
+                    toolbarPath="toolsGroup"
+                    tooltip="Open SQL Editor">
+            </action>
+
+            <action
+                    class="org.jkiss.dbeaver.ui.actions.TransactionModeAction"
+                    icon="/icons/sql/txn_config.png"
+                    id="org.jkiss.dbeaver.ui.actions.TransactionModeAction"
+                    label="Transactions mode"
+                    menubarPath="dataSourceMenu/sessionGroup"
+                    style="pulldown"
+                    toolbarPath="sessionGroup"
+                    tooltip="Transactions mode">
+            </action>
+            <action
+                    class="org.jkiss.dbeaver.ui.actions.RollbackAction"
+                    icon="/icons/sql/rollback.png"
+                    id="org.jkiss.dbeaver.ui.actions.RollbackAction"
+                    label="Rollback changes"
+                    menubarPath="dataSourceMenu/sessionGroup"
+                    toolbarPath="sessionGroup"
+                    tooltip="Rollback changes">
+            </action>
+            <action
+                    class="org.jkiss.dbeaver.ui.actions.CommitAction"
+                    icon="/icons/sql/commit.png"
+                    id="org.jkiss.dbeaver.ui.actions.CommitAction"
+                    label="Commit changes"
+                    menubarPath="dataSourceMenu/sessionGroup"
+                    toolbarPath="sessionGroup"
+                    tooltip="Commit changes">
+            </action>
+
+        </actionSet>
+    </extension>
+
+    <extension
+            point="org.eclipse.ui.handlers">
+        <handler commandId="org.eclipse.ui.edit.copy"
+                 class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorCopyHandler">
+            <activeWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.DBPNamedObject"/>
+                    </iterate>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.delete"
+                 class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorDeleteHandler">
+            <activeWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.DBPDeletableObject"/>
+                    </iterate>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.file.refresh"
+                 class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorRefreshHandler">
+            <activeWhen>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
+                </with>
+            </activeWhen>
+        </handler>
+    </extension>
+
+    <extension
+            point="org.eclipse.ui.menus">
+        <menuContribution
+                allPopups="false"
+                locationURI="menu:edit?before=undoredo">
+            <command
+                    commandId="org.eclipse.ui.edit.undo"
+                    style="push">
+            </command>
+            <command
+                    commandId="org.eclipse.ui.edit.redo"
+                    style="push">
+            </command>
+        </menuContribution>
+        <menuContribution
+                allPopups="false"
+                locationURI="menu:edit?before=additions">
+            <command
+                    commandId="org.eclipse.ui.edit.cut"
+                    label="Cut"
+                    style="push">
+            </command>
+            <command
+                    commandId="org.eclipse.ui.edit.copy"
+                    label="Copy"
+                    style="push">
+            </command>
+            <command
+                    commandId="org.eclipse.ui.edit.paste"
+                    label="Paste"
+                    style="push">
+            </command>
+            <command
+                    commandId="org.eclipse.ui.edit.delete"
+                    label="Delete"
+                    style="push">
+            </command>
+        </menuContribution>
+        <menuContribution
+                allPopups="false"
+                locationURI="menu:file?before=end">
+            <command
+                    commandId="org.eclipse.ui.file.refresh"
+                    label="Refresh"
+                    style="push">
+            </command>
+        </menuContribution>
+    </extension>
+
+    <extension point="org.eclipse.ui.bindings">
+        <scheme
+                description="DBeaver accelerators"
+                id="DBeaverKeyScheme"
+                name="DBeaver"
+                parentId="org.eclipse.ui.defaultAcceleratorConfiguration">
+        </scheme>
+
+        <key
+                commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+Enter">
+        </key>
+        <key
+                commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"
+                schemeId="DBeaverKeyScheme"
+                sequence="ALT+X">
+        </key>
+        <key
+                commandId="org.jkiss.dbeaver.core.openSQLEditor"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+ALT+E">
+        </key>
+        <key
+                commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+O">
+        </key>
+
+        <key
+                commandId="org.eclipse.ui.navigate.showInQuickMenu"
+                contextId="org.eclipse.ui.contexts.window"
+                schemeId="DBeaverKeyScheme"
+                sequence="Alt+F1">
+        </key>
+        <key
+                commandId="org.eclipse.ui.navigate.backwardHistory"
+                contextId="org.eclipse.ui.contexts.window"
+                schemeId="DBeaverKeyScheme"
+                sequence="ALT+CTRL+ARROW_LEFT">
+        </key>
+        <key
+                commandId="org.eclipse.ui.navigate.forwardHistory"
+                contextId="org.eclipse.ui.contexts.window"
+                schemeId="DBeaverKeyScheme"
+                sequence="ALT+CTRL+ARROW_RIGHT">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.text.gotoLastEditPosition"
+                contextId="org.eclipse.ui.contexts.window"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+SHIFT+BS">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.text.goto.line"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+G">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.findNext"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="F3">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.findPrevious"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="SHIFT+F3">
+        </key>
+        <key
+                commandId="org.eclipse.ui.navigate.openResource"
+                contextId="org.eclipse.ui.contexts.window"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+SHIFT+N">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.text.moveLineDown"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+SHIFT+ARROW_DOWN">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.text.moveLineUp"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+SHIFT+ARROW_UP">
+        </key>
+        <key
+                commandId="org.eclipse.ui.file.newQuickMenu"
+                contextId="org.eclipse.ui.contexts.window"
+                schemeId="DBeaverKeyScheme"
+                sequence="ALT+INSERT">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.text.copyLineUp"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+D">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.text.delete.line"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+Y">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.redo"
+                contextId="org.eclipse.ui.contexts.window"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+SHIFT+Z">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.text.join.lines"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+SHIFT+J">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.findIncremental"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="ALT+F3">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.text.folding.expand"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+=">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.text.folding.expand_all"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+SHIFT+=">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.text.folding.expand_all"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+SHIFT+NUMPAD_ADD">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.text.folding.collapse"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+-">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.text.folding.collapse_all"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+SHIFT+-">
+        </key>
+        <key
+                commandId="org.eclipse.ui.edit.text.folding.collapse_all"
+                contextId="org.eclipse.ui.textEditorScope"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+SHIFT+NUMPAD_SUBTRACT">
+        </key>
+        <key
+                commandId="org.eclipse.ui.window.preferences"
+                contextId="org.eclipse.ui.contexts.window"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+ALT+S">
+        </key>
+        <key
+                commandId="org.eclipse.ui.window.resetPerspective"
+                contextId="org.eclipse.ui.contexts.window"
+                schemeId="DBeaverKeyScheme"
+                sequence="SHIFT+F12">
+        </key>
+        <key
+                commandId="org.eclipse.ui.window.maximizePart"
+                contextId="org.eclipse.ui.contexts.window"
+                schemeId="DBeaverKeyScheme"
+                sequence="CTRL+SHIFT+F12">
+        </key>
+    </extension>
+    <extension
+            point="org.eclipse.ui.contexts">
+        <context
+                id="org.jkiss.dbeaver.core.navigationContext"
+                name="Navigation context">
+        </context>
+    </extension>
+    <extension
+            point="org.eclipse.ui.commands">
+        <command
+                description="Driver Manager"
+                id="org.jkiss.dbeaver.core.editDrivers"
+                name="Driver Manager">
+        </command>
+        <command
+                description="New Connection Wizard"
+                id="org.jkiss.dbeaver.core.newConnection"
+                name="New Connection">
+        </command>
+        <command
+                description="Delete Connection"
+                id="org.jkiss.dbeaver.core.deleteConnection"
+                name="Delete Connection">
+        </command>
+        <command
+                description="Open SQL Editor"
+                id="org.jkiss.dbeaver.core.openSQLEditor"
+                name="Open SQL Editor">
+        </command>
+        <command
+                description="Connect"
+                id="org.jkiss.dbeaver.core.connect"
+                name="Connect">
+        </command>
+        <command
+                description="Disconnect"
+                id="org.jkiss.dbeaver.core.disconnect"
+                name="Disconnect">
+        </command>
+        <command
+                description="Execute Statement"
+                id="org.jkiss.dbeaver.ui.editors.sql.run.statement"
+                name="Execute SQL Statement">
+        </command>
+        <command
+                description="Execute Script"
+                id="org.jkiss.dbeaver.ui.editors.sql.run.script"
+                name="Execute SQL Script">
+        </command>
+        <command
+                description="Commit"
+                id="org.jkiss.dbeaver.ui.editors.sql.commit"
+                name="Commit changes in SQL Session">
+        </command>
+        <command
+                description="Rollback"
+                id="org.jkiss.dbeaver.ui.editors.sql.rollback"
+                name="Rollback changes in SQL Session">
+        </command>
+        <command
+                description="Load from file"
+                id="org.jkiss.dbeaver.ui.editors.sql.open.file"
+                name="Load SQL script">
+        </command>
+    </extension>
+
+    <extension point="org.eclipse.ui.popupMenus">
+        <objectContribution
+                adaptable="false"
+                id="org.jkiss.dbeaver.core.dbsObjectContribution"
+                objectClass="org.jkiss.dbeaver.model.navigator.DBNNode">
+            <action
+                    class="org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction"
+                    icon="/icons/tree/edit_item.png"
+                    id="org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction"
+                    label="Edit Object">
+            </action>
+        </objectContribution>
+        <objectContribution
+                adaptable="false"
+                id="org.jkiss.dbeaver.core.dataSourceContribution"
+                objectClass="org.jkiss.dbeaver.model.navigator.DBNNode">
+            <filter
+                    name="targetType"
+                    value="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+
+            </filter>
+            <action
+                    class="org.jkiss.dbeaver.ui.actions.DisconnectAction"
+                    icon="icons/sql/disconnect.png"
+                    id="org.jkiss.dbeaver.ui.actions.DisconnectAction"
+                    label="Disconnect">
+                <enablement>
+                    <objectState name="connected" value="true"/>
+                </enablement>
+            </action>
+            <action
+                    class="org.jkiss.dbeaver.ui.actions.ConnectAction"
+                    icon="icons/sql/connect.png"
+                    id="org.jkiss.dbeaver.ui.actions.ConnectAction"
+                    label="Connect">
+                <enablement>
+                    <objectState name="connected" value="false"/>
+                </enablement>
+            </action>
+            <action
+                    class="org.jkiss.dbeaver.ui.actions.EditConnectionAction"
+                    id="org.jkiss.dbeaver.ui.actions.EditConnectionAction"
+                    label="Edit Connection"
+                    icon="icons/tree/edit_item.png">
+            </action>
+            <action
+                    class="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
+                    id="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
+                    label="SQL Editor"
+                    icon="icons/sql/sql_script.png">
+            </action>
+        </objectContribution>
+    </extension>
+    <extension point="org.eclipse.ui.perspectives">
+        <perspective
+                name="DBeaver Perspective"
+                class="org.jkiss.dbeaver.core.DBeaverPerspective"
+                id="org.jkiss.dbeaver.core.perspective">
+        </perspective>
+    </extension>
+    <extension point="org.eclipse.ui.editors">
+        <editor
+                name="SQL Editor"
+                extensions="sql"
+                icon="icons/sql/sql_script.png"
+                contributorClass="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributor"
+                class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"
+                id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+            <contentTypeBinding
+                    contentTypeId="org.jkiss.dbeaver.core.content-type-sql">
+            </contentTypeBinding>
+        </editor>
+        <editor
+                name="Folder Editor"
+                icon="icons/properties.png"
+                contributorClass="org.jkiss.dbeaver.ui.editors.folder.FolderEditorContributor"
+                class="org.jkiss.dbeaver.ui.editors.folder.FolderEditor"
+                id="org.jkiss.dbeaver.ui.editors.folder.FolderEditor">
+        </editor>
+        <editor
+                name="Entity Editor"
+                icon="icons/properties.png"
+                contributorClass="org.jkiss.dbeaver.ui.editors.entity.EntityEditorContributor"
+                class="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"
+                id="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
+        </editor>
+        <editor
+                name="Large Object Editor"
+                icon="icons/sql/types/lob.png"
+                contributorClass="org.jkiss.dbeaver.ui.editors.content.ContentEditorContributor"
+                class="org.jkiss.dbeaver.ui.editors.content.ContentEditor"
+                id="org.jkiss.dbeaver.ui.editors.content.ContentEditor">
+        </editor>
+    </extension>
+
+    <extension id="product" point="org.eclipse.core.runtime.products">
         <product
-              application="org.jkiss.dbeaver.core.application"
-              description="Universal Database Manager"
-              name="DBeaver">
+                application="org.jkiss.dbeaver.core.application"
+                description="Universal Database Manager"
+                name="DBeaver">
             <property
-                name="aboutText"
-                value="DBeaver - Universal Database Manager">
+                    name="aboutText"
+                    value="DBeaver - Universal Database Manager">
             </property>
             <property
-                name="windowImages"
-                value="icons/dbeaver.png">
+                    name="windowImages"
+                    value="icons/dbeaver.png">
             </property>
             <property
-                name="aboutImage"
-                value="product_lg.gif">
+                    name="aboutImage"
+                    value="product_lg.gif">
             </property>
             <property
-                name="appName"
-                value="DBeaver">
+                    name="appName"
+                    value="DBeaver">
             </property>
             <property
-                name="startupForegroundColor"
-                value="000000">
+                    name="startupForegroundColor"
+                    value="000000">
             </property>
             <property
-                name="startupMessageRect"
-                value="25,25,200,15">
+                    name="startupMessageRect"
+                    value="25,25,200,15">
             </property>
             <property
-                name="startupProgressRect"
-                value="25,45,150,15">
+                    name="startupProgressRect"
+                    value="25,45,150,15">
             </property>
             <property
-                name="preferenceCustomization"
-                value="plugin_customization.ini">
+                    name="preferenceCustomization"
+                    value="plugin_customization.ini">
             </property>
             <property name="preferenceCustomization"
                       value="plugin_customization.ini">
@@ -218,132 +646,56 @@
         </product>
     </extension>
 
-    <extension
-        point="org.eclipse.ui.popupMenus">
-        <objectContribution
-              adaptable="false"
-              id="org.jkiss.dbeaver.core.dbsObjectContribution"
-              objectClass="org.jkiss.dbeaver.model.navigator.DBNNode">
-           <action
-                 class="org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction"
-                 icon="/icons/tree/edit_item.png"
-                 id="org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction"
-                 label="Edit Object">
-           </action>
-        </objectContribution>
-        <objectContribution
-            adaptable="false"
-            id="org.jkiss.dbeaver.core.dataSourceContribution"
-            objectClass="org.jkiss.dbeaver.model.navigator.DBNNode">
-            <filter
-                  name="targetType"
-                  value="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
-                
-            </filter>
-            <action
-                class="org.jkiss.dbeaver.ui.actions.DisconnectAction"
-                icon="icons/sql/disconnect.png"
-                id="org.jkiss.dbeaver.ui.actions.DisconnectAction"
-                label="Disconnect">
-                <enablement>
-                    <objectState name="connected" value="true"/>
-                </enablement>
-            </action>
-            <action
-                class="org.jkiss.dbeaver.ui.actions.ConnectAction"
-                icon="icons/sql/connect.png"
-                id="org.jkiss.dbeaver.ui.actions.ConnectAction"
-                label="Connect">
-                <enablement>
-                    <objectState name="connected" value="false"/>
-                </enablement>
-            </action>
-            <action
-                class="org.jkiss.dbeaver.ui.actions.EditConnectionAction"
-                id="org.jkiss.dbeaver.ui.actions.EditConnectionAction"
-                label="Edit Connection"
-                icon="icons/tree/edit_item.png">
-            </action>
-            <action
-                class="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
-                id="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
-                label="SQL Editor"
-                icon="icons/sql/sql_script.png">
-            </action>
-        </objectContribution>
-    </extension>
-    <extension
-        point="org.eclipse.ui.contexts">
-        <context
-            id="org.jkiss.dbeaver.core.navigationContext"
-            name="Navigation context">
-        </context>
-    </extension>
-    <extension
-        point="org.eclipse.core.contenttype.contentTypes">
-        <content-type
-            base-type="org.eclipse.core.runtime.text"
-            default-charset="utf-8"
-            file-extensions="sql"
-            id="org.jkiss.dbeaver.core.content-type-sql"
-            name="SQL"
-            priority="normal">
-        </content-type>
-    </extension>
-
     <extension point="org.eclipse.ui.preferencePages">
         <page
-            id="org.jkiss.dbeaver.preferences.main"
-            class="org.jkiss.dbeaver.ui.preferences.PrefPageMain"
-            name="Database Management">
+                id="org.jkiss.dbeaver.preferences.main"
+                class="org.jkiss.dbeaver.ui.preferences.PrefPageMain"
+                name="Database Management">
         </page>
         <page
-            id="org.jkiss.dbeaver.preferences.main.common"
-            class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon"
-            name="Common"
-            category="org.jkiss.dbeaver.preferences.main">
+                id="org.jkiss.dbeaver.preferences.main.common"
+                class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon"
+                name="Common"
+                category="org.jkiss.dbeaver.preferences.main">
         </page>
         <page
-            id="org.jkiss.dbeaver.preferences.main.sqleditor"
-            class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor"
-            name="SQL Editor"
-            category="org.jkiss.dbeaver.preferences.main">
+                id="org.jkiss.dbeaver.preferences.main.sqleditor"
+                class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor"
+                name="SQL Editor"
+                category="org.jkiss.dbeaver.preferences.main">
         </page>
         <page
-            id="org.jkiss.dbeaver.preferences.main.contenteditor"
-            class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor"
-            name="Content Editor"
-            category="org.jkiss.dbeaver.preferences.main">
+                id="org.jkiss.dbeaver.preferences.main.contenteditor"
+                class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor"
+                name="Content Editor"
+                category="org.jkiss.dbeaver.preferences.main">
         </page>
         <page
-              category="org.eclipse.ui.preferencePages.Editors"
-              class="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
-              id="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
-              name="Binary Editor">
+                category="org.eclipse.ui.preferencePages.Editors"
+                class="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
+                id="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
+                name="Binary Editor">
         </page>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
         <page
-              adaptable="true"
-              class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon"
-              id="org.jkiss.dbeaver.preferences.main.common"
-              name="Common Settings"
-              objectClass="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon"
+                id="org.jkiss.dbeaver.preferences.main.common"
+                name="Common Settings"
+                objectClass="org.jkiss.dbeaver.model.navigator.DBNDataSource">
         </page>
-       <page
-             adaptable="true"
-             class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor"
-             id="org.jkiss.dbeaver.preferences.main.sqleditor"
-             name="SQL Editor"
-             objectClass="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
-       </page>
         <page
-              adaptable="true"
-              class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor"
-              id="org.jkiss.dbeaver.preferences.main.contenteditor"
-              name="Content Editor"
-              objectClass="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor"
+                id="org.jkiss.dbeaver.preferences.main.sqleditor"
+                name="SQL Editor"
+                objectClass="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+        </page>
+        <page
+                class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor"
+                id="org.jkiss.dbeaver.preferences.main.contenteditor"
+                name="Content Editor"
+                objectClass="org.jkiss.dbeaver.model.navigator.DBNDataSource">
         </page>
     </extension>
 
@@ -352,287 +704,136 @@
                  class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory"/>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-        <editor
-            id="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"
-            class="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"
-            objectType="org.jkiss.dbeaver.model.struct.DBSDataContainer"
-            main="false"
-            label="Data"
-            description="Table data"
-            position="additions_start"
-            icon="icons/sql/sql_table.png">
-
-        </editor>
+    <extension point="org.eclipse.ui.views.properties.tabbed.propertyContributor">
+        <propertyContributor
+                contributorId="org.jkiss.dbeaver.core.propertyViewContributor"
+                tabDescriptorProvider="org.jkiss.dbeaver.ui.views.properties.PropertyTabDescriptorProvider">
+            <propertyCategory category="core-properties"/>
+        </propertyContributor>
     </extension>
 
     <extension point="org.eclipse.ui.themes">
         <themeElementCategory
-            label="SQL Editor"
-            id="org.jkiss.dbeaver.ui.presentation.sql">
+                label="SQL Editor"
+                id="org.jkiss.dbeaver.ui.presentation.sql">
             <description>
                 SQL Editor
             </description>
         </themeElementCategory>
         <fontDefinition
-            label="ResultSet grid font"
-            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-            id="org.jkiss.dbeaver.sql.resultset.font">
+                label="ResultSet grid font"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.resultset.font">
             <description>The grid font is used for result set cells, header and rows number.</description>
         </fontDefinition>
         <colorDefinition
-            label="ResultSet selection background"
-            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-            id="org.jkiss.dbeaver.sql.resultset.color.selection.background"
-            value="COLOR_LIST_SELECTION">
+                label="ResultSet selection background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.resultset.color.selection.background"
+                value="COLOR_LIST_SELECTION">
             <description>Selection background</description>
-		</colorDefinition>        
+        </colorDefinition>
         <colorDefinition
-            label="ResultSet selection foreground"
-            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-            id="org.jkiss.dbeaver.sql.resultset.color.selection.foreground"
-            value="COLOR_LIST_SELECTION_TEXT">
+                label="ResultSet selection foreground"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.resultset.color.selection.foreground"
+                value="COLOR_LIST_SELECTION_TEXT">
             <description>Selection foreground</description>
         </colorDefinition>
         <colorDefinition
-            label="SQL keyword color"
-            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-            id="org.jkiss.dbeaver.sql.editor.color.keyword.foreground"
-            value="COLOR_DARK_RED">
+                label="SQL keyword color"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.editor.color.keyword.foreground"
+                value="COLOR_DARK_RED">
             <description>SQL keyword color</description>
         </colorDefinition>
         <colorDefinition
-            label="SQL datatype color"
-            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-            id="org.jkiss.dbeaver.sql.editor.color.datatype.foreground"
-            value="COLOR_DARK_BLUE">
+                label="SQL datatype color"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.editor.color.datatype.foreground"
+                value="COLOR_DARK_BLUE">
             <description>SQL datatype color</description>
         </colorDefinition>
         <colorDefinition
-            label="SQL string color"
-            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-            id="org.jkiss.dbeaver.sql.editor.color.string.foreground"
-            value="COLOR_DARK_GREEN">
+                label="SQL string color"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.editor.color.string.foreground"
+                value="COLOR_DARK_GREEN">
             <description>SQL string color</description>
         </colorDefinition>
         <colorDefinition
-            label="SQL number color"
-            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-            id="org.jkiss.dbeaver.sql.editor.color.number.foreground"
-            value="COLOR_BLUE">
+                label="SQL number color"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.editor.color.number.foreground"
+                value="COLOR_BLUE">
             <description>SQL number color</description>
         </colorDefinition>
         <colorDefinition
-            label="SQL comment color"
-            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-            id="org.jkiss.dbeaver.sql.editor.color.comment.foreground"
-            value="COLOR_DARK_GRAY">
+                label="SQL comment color"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.editor.color.comment.foreground"
+                value="COLOR_DARK_GRAY">
             <description>SQL comment color</description>
         </colorDefinition>
         <colorDefinition
-            label="SQL delimiter foreground"
-            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-            id="org.jkiss.dbeaver.sql.editor.color.delimiter.foreground"
-            value="COLOR_RED">
+                label="SQL delimiter foreground"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.editor.color.delimiter.foreground"
+                value="COLOR_RED">
             <description>SQL statement delimiter foreground</description>
         </colorDefinition>
         <colorDefinition
-            label="SQL text foreground"
-            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-            id="org.jkiss.dbeaver.sql.editor.color.text.foreground"
-            value="COLOR_BLACK">
+                label="SQL text foreground"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.editor.color.text.foreground"
+                value="COLOR_BLACK">
             <description>SQL text foreground</description>
         </colorDefinition>
         <colorDefinition
-            label="SQL text background"
-            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-            id="org.jkiss.dbeaver.sql.editor.color.text.background"
-            value="COLOR_WHITE">
+                label="SQL text background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.editor.color.text.background"
+                value="COLOR_WHITE">
             <description>SQL text background</description>
         </colorDefinition>
     </extension>
 
-    <extension point="org.eclipse.ui.bindings">
-       <scheme
-             description="DBeaver accelerators"
-             id="DBeaverKeyScheme"
-             name="DBeaver"
-             parentId="org.eclipse.ui.defaultAcceleratorConfiguration">
-       </scheme>
-       <key
-             commandId="org.eclipse.ui.navigate.showInQuickMenu"
-             contextId="org.eclipse.ui.contexts.window"
-             schemeId="DBeaverKeyScheme"
-             sequence="Alt+F1">
-       </key>
-       <key
-             commandId="org.eclipse.ui.navigate.backwardHistory"
-             contextId="org.eclipse.ui.contexts.window"
-             schemeId="DBeaverKeyScheme"
-             sequence="ALT+CTRL+ARROW_LEFT">
-       </key>
-       <key
-             commandId="org.eclipse.ui.navigate.forwardHistory"
-             contextId="org.eclipse.ui.contexts.window"
-             schemeId="DBeaverKeyScheme"
-             sequence="ALT+CTRL+ARROW_RIGHT">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.text.gotoLastEditPosition"
-             contextId="org.eclipse.ui.contexts.window"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+SHIFT+BS">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.text.goto.line"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+G">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.findNext"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="F3">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.findPrevious"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="SHIFT+F3">
-       </key>
-       <key
-             commandId="org.eclipse.ui.navigate.openResource"
-             contextId="org.eclipse.ui.contexts.window"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+SHIFT+N">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.text.moveLineDown"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+SHIFT+ARROW_DOWN">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.text.moveLineUp"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+SHIFT+ARROW_UP">
-       </key>
-       <key
-             commandId="org.eclipse.ui.file.newQuickMenu"
-             contextId="org.eclipse.ui.contexts.window"
-             schemeId="DBeaverKeyScheme"
-             sequence="ALT+INSERT">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.text.copyLineUp"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+D">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.text.delete.line"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+Y">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.redo"
-             contextId="org.eclipse.ui.contexts.window"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+SHIFT+Z">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.text.join.lines"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+SHIFT+J">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.findIncremental"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="ALT+F3">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.text.folding.expand"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+=">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.text.folding.expand_all"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+SHIFT+=">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.text.folding.expand_all"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+SHIFT+NUMPAD_ADD">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.text.folding.collapse"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+-">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.text.folding.collapse_all"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+SHIFT+-">
-       </key>
-       <key
-             commandId="org.eclipse.ui.edit.text.folding.collapse_all"
-             contextId="org.eclipse.ui.textEditorScope"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+SHIFT+NUMPAD_SUBTRACT">
-       </key>
-       <key
-             commandId="org.eclipse.ui.window.preferences"
-             contextId="org.eclipse.ui.contexts.window"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+ALT+S">
-       </key>
-       <key
-             commandId="org.eclipse.ui.window.resetPerspective"
-             contextId="org.eclipse.ui.contexts.window"
-             schemeId="DBeaverKeyScheme"
-             sequence="SHIFT+F12">
-       </key>
-       <key
-             commandId="org.eclipse.ui.window.maximizePart"
-             contextId="org.eclipse.ui.contexts.window"
-             schemeId="DBeaverKeyScheme"
-             sequence="CTRL+SHIFT+F12">
-       </key>
+    <extension point="org.eclipse.ui.editors.templates">
+        <include file="schema/editor-templates.xml">
+        </include>
     </extension>
 
-    <extension point="org.eclipse.ui.editors.templates">
-       <include file="schema/editor-templates.xml">
-       </include>
+    <extension point="org.eclipse.ui.splashHandlers">
+        <splashHandler
+                class="org.jkiss.dbeaver.ui.splash.DBeaverSplashHandler"
+                id="org.jkiss.dbeaver.ui.splash.interactive">
+        </splashHandler>
+        <splashHandlerProductBinding
+                productId="org.jkiss.dbeaver.core.product"
+                splashId="org.jkiss.dbeaver.ui.splash.interactive">
+        </splashHandlerProductBinding>
     </extension>
-    <extension
-          point="org.eclipse.ui.splashHandlers">
-       <splashHandler
-             class="org.jkiss.dbeaver.ui.splash.DBeaverSplashHandler"
-             id="org.jkiss.dbeaver.ui.splash.interactive">
-       </splashHandler>
-       <splashHandlerProductBinding
-             productId="org.jkiss.dbeaver.core.product"
-             splashId="org.jkiss.dbeaver.ui.splash.interactive">
-       </splashHandlerProductBinding>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor
+                id="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"
+                class="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"
+                objectType="org.jkiss.dbeaver.model.struct.DBSDataContainer"
+                main="false"
+                label="Data"
+                description="Table data"
+                position="additions_start"
+                icon="icons/sql/sql_table.png">
+
+        </editor>
     </extension>
-    <extension
-          point="org.jkiss.dbeaver.dataTypeProvider">
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
-            class="org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStandardDataTypeProvider"
-            description="Standard JDBC data types provider"
-            id="org.jkiss.dbeaver.core.standardDataTypeProvider"
-            label="Standard JDBC data types provider">
+                class="org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStandardDataTypeProvider"
+                description="Standard JDBC data types provider"
+                id="org.jkiss.dbeaver.core.standardDataTypeProvider"
+                label="Standard JDBC data types provider">
             <type standard="BIT"/>
             <type standard="TINYINT"/>
             <type standard="SMALLINT"/>
@@ -669,7 +870,7 @@
             <type standard="REF"/>
             <type standard="DATALINK"/>
             -->
-            
+
             <type standard="BOOLEAN"/>
             <type standard="ROWID"/>
             <type standard="NCHAR"/>
@@ -679,207 +880,8 @@
             <!--
             <type standard="SQLXML"/>
             -->
-          
+
         </provider>
-    </extension>
-    <extension
-          point="org.eclipse.ui.actionSets">
-        <actionSet
-            id="org.jkiss.dbeaver.core.dataSourceActionSet"
-            label="DataSource actions"
-            visible="true">
-
-            <menu id="dataSourceMenu" label="Database">
-                <separator name="driverGroup">
-                </separator>
-                <separator name="connectionGroup">
-                </separator>
-                <separator name="toolsGroup">
-                </separator>
-                <separator name="sessionGroup">
-                </separator>
-            </menu>
-            <action
-                  class="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
-                  icon="/icons/database_connect.png"
-                  id="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
-                  label="New Connection"
-                  menubarPath="dataSourceMenu/driverGroup"
-                  tooltip="Create New Connection">
-            </action>
-            <action
-                 class="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
-                 icon="/icons/driver_manager.png"
-                 id="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
-                 label="Driver Manager"
-                 menubarPath="dataSourceMenu/driverGroup"
-                 tooltip="Open Driver Manager">
-            </action>
-
-            <action
-                  class="org.jkiss.dbeaver.ui.actions.DisconnectAction"
-                  icon="icons/sql/disconnect.png"
-                  id="org.jkiss.dbeaver.ui.actions.DisconnectAction"
-                  label="Disconnect"
-                  menubarPath="dataSourceMenu/connectionGroup"
-                  toolbarPath="connectionGroup"
-                  tooltip="Disconnect from database">
-            </action>
-            <action
-                  class="org.jkiss.dbeaver.ui.actions.ReconnectAction"
-                  icon="icons/sql/reconnect.png"
-                  id="org.jkiss.dbeaver.ui.actions.ReconnectAction"
-                  label="Reconnect"
-                  menubarPath="dataSourceMenu/connectionGroup"
-                  toolbarPath="connectionGroup"
-                  tooltip="Invalidate connection">
-            </action>
-            <action
-                  class="org.jkiss.dbeaver.ui.actions.ConnectAction"
-                  icon="icons/sql/connect.png"
-                  id="org.jkiss.dbeaver.ui.actions.ConnectAction"
-                  label="Connect"
-                  menubarPath="dataSourceMenu/connectionGroup"
-                  toolbarPath="connectionGroup"
-                  tooltip="Connect to database">
-            </action>
-
-            <action
-                  class="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
-                  definitionId="org.jkiss.dbeaver.core.openSQLEditor"
-                  icon="/icons/sql/sql_script.png"
-                  id="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
-                  label="Open SQL Editor"
-                  menubarPath="dataSourceMenu/toolsGroup"
-                  toolbarPath="toolsGroup"
-                  tooltip="Open SQL Editor">
-            </action>
-
-            <action
-                  class="org.jkiss.dbeaver.ui.actions.TransactionModeAction"
-                  icon="/icons/sql/txn_config.png"
-                  id="org.jkiss.dbeaver.ui.actions.TransactionModeAction"
-                  label="Transactions mode"
-                  menubarPath="dataSourceMenu/sessionGroup"
-                  style="pulldown"
-                  toolbarPath="sessionGroup"
-                  tooltip="Transactions mode">
-            </action>
-            <action
-                 class="org.jkiss.dbeaver.ui.actions.RollbackAction"
-                 icon="/icons/sql/rollback.png"
-                 id="org.jkiss.dbeaver.ui.actions.RollbackAction"
-                 label="Rollback changes"
-                 menubarPath="dataSourceMenu/sessionGroup"
-                 toolbarPath="sessionGroup"
-                 tooltip="Rollback changes">
-            </action>
-            <action
-                 class="org.jkiss.dbeaver.ui.actions.CommitAction"
-                 icon="/icons/sql/commit.png"
-                 id="org.jkiss.dbeaver.ui.actions.CommitAction"
-                 label="Commit changes"
-                 menubarPath="dataSourceMenu/sessionGroup"
-                 toolbarPath="sessionGroup"
-                 tooltip="Commit changes">
-            </action>
-
-       </actionSet>
-    </extension>
-    <extension
-          point="org.eclipse.ui.views.properties.tabbed.propertyContributor">
-       <propertyContributor
-             contributorId="org.jkiss.dbeaver.core.propertyViewContributor"
-             tabDescriptorProvider="org.jkiss.dbeaver.ui.views.properties.PropertyTabDescriptorProvider">
-          <propertyCategory category="core-properties"/>
-       </propertyContributor>
-    </extension>
-    <extension
-          point="org.eclipse.ui.handlers">
-       <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorCopyHandler">
-           <activeWhen>
-               <with variable="selection">
-                   <count value="+"/>
-                   <iterate operator="and">
-                       <adapt type="org.jkiss.dbeaver.model.DBPNamedObject"/>
-                   </iterate>
-               </with>
-           </activeWhen>
-       </handler>
-        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorDeleteHandler">
-            <activeWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.DBPDeletableObject"/>
-                    </iterate>
-                </with>
-            </activeWhen>
-        </handler>
-       <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorRefreshHandler">
-            <activeWhen>
-                <with variable="activePart">
-                    <adapt type="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
-                </with>
-            </activeWhen>
-       </handler>
-    </extension>
-    <extension
-          point="org.eclipse.ui.menus">
-        <menuContribution
-              allPopups="false"
-              locationURI="menu:edit?before=undoredo">
-            <command
-                  commandId="org.eclipse.ui.edit.undo"
-                  style="push">
-            </command>
-           <command
-                 commandId="org.eclipse.ui.edit.redo"
-                 style="push">
-           </command>
-        </menuContribution>
-       <menuContribution
-             allPopups="false"
-             locationURI="menu:edit?before=additions">
-           <command
-                 commandId="org.eclipse.ui.edit.cut"
-                 label="Cut"
-                 style="push">
-           </command>
-          <command
-                commandId="org.eclipse.ui.edit.copy"
-                label="Copy"
-                style="push">
-          </command>
-           <command
-                 commandId="org.eclipse.ui.edit.paste"
-                 label="Paste"
-                 style="push">
-           </command>
-           <command
-                 commandId="org.eclipse.ui.edit.delete"
-                 label="Delete"
-                 style="push">
-           </command>
-       </menuContribution>
-        <menuContribution
-              allPopups="false"
-              locationURI="menu:file?before=end">
-            <command
-                  commandId="org.eclipse.ui.file.refresh"
-                  label="Refresh"
-                  style="push">
-            </command>
-        </menuContribution>
-    </extension>
-    <extension point="org.eclipse.core.expressions.propertyTesters">
-       <propertyTester
-             class="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
-             id="org.jkiss.dbeaver.databaseEditorPropertyTester"
-             namespace="org.jkiss.dbeaver.database.editor"
-             properties="active"
-             type="org.jkiss.dbeaver.ui.editors.IDatabaseEditor">
-       </propertyTester>
     </extension>
 
 </plugin>

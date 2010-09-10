@@ -248,6 +248,11 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
             .containsKey(name));
     }
 
+    public boolean isSet(String name)
+    {
+        return properties.containsKey(name);
+    }
+
     public boolean needsSaving()
     {
         return dirty;
@@ -317,7 +322,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     public void setValue(String name, double value)
     {
         double oldValue = getDouble(properties, false, false, name);
-        if (oldValue != value) {
+        if (oldValue != value || !isSet(name)) {
             setValue(properties, name, value);
             dirty = true;
             firePropertyChangeEvent(name, oldValue, value);
@@ -327,7 +332,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     public void setValue(String name, float value)
     {
         float oldValue = getFloat(properties, false, false, name);
-        if (oldValue != value) {
+        if (oldValue != value || !isSet(name)) {
             setValue(properties, name, value);
             dirty = true;
             firePropertyChangeEvent(name, oldValue, value);
@@ -337,7 +342,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     public void setValue(String name, int value)
     {
         int oldValue = getInt(properties, false, false, name);
-        if (oldValue != value) {
+        if (oldValue != value || !isSet(name)) {
             setValue(properties, name, value);
             dirty = true;
             firePropertyChangeEvent(name, oldValue, value);
@@ -347,7 +352,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     public void setValue(String name, long value)
     {
         long oldValue = getLong(properties, false, false, name);
-        if (oldValue != value) {
+        if (oldValue != value || !isSet(name)) {
             setValue(properties, name, value);
             dirty = true;
             firePropertyChangeEvent(name, oldValue, value);
@@ -357,7 +362,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     public void setValue(String name, String value)
     {
         String oldValue = getString(properties, false, false, name);
-        if (oldValue == null || !oldValue.equals(value)) {
+        if (oldValue == null || !oldValue.equals(value) || !isSet(name)) {
             setValue(properties, name, value);
             dirty = true;
             firePropertyChangeEvent(name, oldValue, value);
@@ -367,7 +372,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     public void setValue(String name, boolean value)
     {
         boolean oldValue = getBoolean(properties, false, false, name);
-        if (oldValue != value) {
+        if (oldValue != value || !isSet(name)) {
             setValue(properties, name, value);
             dirty = true;
             firePropertyChangeEvent(name, oldValue ? Boolean.TRUE

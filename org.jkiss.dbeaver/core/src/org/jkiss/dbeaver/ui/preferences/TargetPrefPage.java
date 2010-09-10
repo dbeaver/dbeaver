@@ -9,7 +9,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.preference.PreferenceDialog;
@@ -29,12 +28,10 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
-
-import java.io.IOException;
 
 /**
  * TargetPrefPage
@@ -43,7 +40,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 {
     static final Log log = LogFactory.getLog(TargetPrefPage.class);
 
-    private DataSourceDescriptor dataSource;
+    private DBNDataSource dsNode;
     private Composite parentComposite;
     private Button dataSourceSettingsButton;
     private Control configurationBlockControl;
@@ -56,7 +53,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     public final boolean isDataSourcePreferencePage()
     {
-        return dataSource != null;
+        return dsNode != null;
     }
 
     protected abstract boolean hasDataSourceSpecificOptions(DataSourceDescriptor project);
@@ -73,7 +70,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     public DataSourceDescriptor getDataSource()
     {
-        return dataSource;
+        return dsNode.getObject();
     }
 
     public void init(IWorkbench workbench)
@@ -82,12 +79,12 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     public IAdaptable getElement()
     {
-        return dataSource;
+        return dsNode;
     }
 
     public void setElement(IAdaptable element)
     {
-        dataSource = (DataSourceDescriptor) element.getAdapter(DBSDataSourceContainer.class);
+        dsNode = (DBNDataSource) element.getAdapter(DBNDataSource.class);
     }
 
     protected Label createDescriptionLabel(Composite parent)
@@ -154,7 +151,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
         {
             IPreferenceStore store = useDataSourceSettings() ?
-                dataSource.getPreferenceStore() :
+                getDataSource().getPreferenceStore() :
                 DBeaverCore.getInstance().getGlobalPreferenceStore();
             loadPreferences(store);
         }
@@ -268,7 +265,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
     public final boolean performOk()
     {
         IPreferenceStore store = isDataSourcePreferencePage() ?
-            dataSource.getPreferenceStore() :
+            getDataSource().getPreferenceStore() :
             DBeaverCore.getInstance().getGlobalPreferenceStore();
         if (isDataSourcePreferencePage() && !useDataSourceSettings()) {
             // Just delete datasource specific settings
