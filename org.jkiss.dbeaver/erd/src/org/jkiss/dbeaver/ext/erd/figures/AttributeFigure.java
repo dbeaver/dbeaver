@@ -14,6 +14,7 @@ import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Insets;
+import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 
 /**
  * Figure used to hold the column labels
@@ -22,7 +23,7 @@ import org.eclipse.draw2d.geometry.Insets;
 public class AttributeFigure extends Figure
 {
 
-	public AttributeFigure()
+	public AttributeFigure(ERDTable table)
 	{
 		FlowLayout layout = new FlowLayout();
 		layout.setMinorAlignment(FlowLayout.ALIGN_LEFTTOP);
@@ -30,7 +31,11 @@ public class AttributeFigure extends Figure
 		layout.setHorizontal(false);
 		setLayoutManager(layout);
 		setBorder(new ColumnFigureBorder());
-		setBackgroundColor(ColorConstants.tooltipBackground);
+        if (table.isPrimary()) {
+            setBackgroundColor(EntityFigure.primaryTableColor);
+        } else {
+		    setBackgroundColor(ColorConstants.tooltipBackground);
+        }
 		setForegroundColor(ColorConstants.blue);
 		setOpaque(true);
 	}

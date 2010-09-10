@@ -34,6 +34,8 @@ public class ERDTable extends ERDObject<DBSTable>
 	private List<ERDAssociation> primaryKeyRelationships = new ArrayList<ERDAssociation>();
 	private List<ERDAssociation> foreignKeyRelationships = new ArrayList<ERDAssociation>();
 
+    private boolean primary = false;
+
     public ERDTable(DBSTable dbsTable) {
         super(dbsTable);
     }
@@ -150,6 +152,14 @@ public class ERDTable extends ERDObject<DBSTable>
 	{
 		return primaryKeyRelationships;
 	}
+
+    public boolean isPrimary() {
+        return primary;
+    }
+
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
+    }
 
 	public String toString()
 	{

@@ -320,88 +320,106 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         DBSObject dbObject = getEntityContainer();
         entityDiagram = new EntityDiagram(dbObject, dbObject.getName());
 
-        // Cache structure
-        if (dbObject instanceof DBSEntityContainer) {
-            DBSEntityContainer entityContainer = (DBSEntityContainer) dbObject;
-            entityContainer.cacheStructure(monitor, DBSEntityContainer.STRUCT_ENTITIES | DBSEntityContainer.STRUCT_ASSOCIATIONS | DBSEntityContainer.STRUCT_ATTRIBUTES);
-            // Load entities
-            Map<DBSObject, ERDTable> tableMap = new HashMap<DBSObject, ERDTable>();
-            Collection<? extends DBSObject> entities = entityContainer.getChildren(monitor);
-            for (DBSObject entity : entities) {
-                if (entity instanceof DBSTable) {
-                    DBSTable dbsTable = (DBSTable)entity;
-                    ERDTable table = new ERDTable(dbsTable);
+        Collection<DBSTable> tables = collectDatabaseTables(monitor, dbObject);
 
-                    try {
-                        List<DBSTableColumn> idColumns = DBUtils.getBestTableIdentifier(monitor, dbsTable);
-
-                        Collection<? extends DBSTableColumn> columns = dbsTable.getColumns(monitor);
-                        for (DBSTableColumn column : columns) {
-                            ERDTableColumn c1 = new ERDTableColumn(column, idColumns.contains(column));
-                            table.addColumn(c1);
-                        }
-                    } catch (DBException e) {
-                        // just skip this problematic columns
-                        log.debug("Could not load entity '" + entity.getName() + "'columns", e);
-                    }
-                    entityDiagram.addTable(table);
-                    tableMap.put(entity, table);
-                }
+        // Load entities
+        Map<DBSTable, ERDTable> tableMap = new HashMap<DBSTable, ERDTable>();
+        for (DBSTable table : tables) {
+            ERDTable erdTable = new ERDTable(table);
+            if (table == dbObject) {
+                erdTable.setPrimary(true);
             }
-
-            // Load relations
-            for (DBSObject entity : entities) {
-                if (entity instanceof DBSTable) {
-                    ERDTable table1 = tableMap.get(entity);
-                    try {
-                        Set<DBSTableColumn> fkColumns = new HashSet<DBSTableColumn>();
-                        // Make associations
-                        Collection<? extends DBSForeignKey> fks = ((DBSTable) entity).getForeignKeys(monitor);
-                        for (DBSForeignKey fk : fks) {
-                            fkColumns.addAll(DBUtils.getTableColumns(monitor, fk));
-                            ERDTable table2 = tableMap.get(fk.getReferencedKey().getTable());
-                            if (table2 == null) {
-                                log.warn("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
-                            } else {
-                                if (table1 != table2) {
-                                    new ERDAssociation(fk, table2, table1);
-                                }
-                            }
-                        }
-
-                        // Mark column's fk flag
-                        for (ERDTableColumn column : table1.getColumns()) {
-                            if (fkColumns.contains(column.getObject())) {
-                                column.setInForeignKey(true);
-                            }
-                        }
-
-                    } catch (DBException e) {
-                        log.warn("Could not load entity '" + entity.getName() + "' foreign keys", e);
-                    }
-                }
-            }
-        } else if (dbObject instanceof DBSTable) {
-            DBSTable dbsTable = (DBSTable) dbObject;
-            ERDTable table = new ERDTable(dbsTable);
 
             try {
-                List<DBSTableColumn> idColumns = DBUtils.getBestTableIdentifier(monitor, dbsTable);
+                List<DBSTableColumn> idColumns = DBUtils.getBestTableIdentifier(monitor, table);
 
-                Collection<? extends DBSTableColumn> columns = dbsTable.getColumns(monitor);
+                Collection<? extends DBSTableColumn> columns = table.getColumns(monitor);
                 for (DBSTableColumn column : columns) {
                     ERDTableColumn c1 = new ERDTableColumn(column, idColumns.contains(column));
-                    table.addColumn(c1);
+                    erdTable.addColumn(c1);
                 }
             } catch (DBException e) {
                 // just skip this problematic columns
-                log.debug("Could not load table '" + dbsTable.getName() + "'columns", e);
+                log.debug("Could not load table '" + table.getName() + "'columns", e);
             }
+            entityDiagram.addTable(erdTable);
+            tableMap.put(table, erdTable);
+        }
 
-            entityDiagram.addTable(table);
+        // Load relations
+        for (DBSTable table : tables) {
+            ERDTable table1 = tableMap.get(table);
+            try {
+                Set<DBSTableColumn> fkColumns = new HashSet<DBSTableColumn>();
+                // Make associations
+                Collection<? extends DBSForeignKey> fks = table.getForeignKeys(monitor);
+                for (DBSForeignKey fk : fks) {
+                    fkColumns.addAll(DBUtils.getTableColumns(monitor, fk));
+                    ERDTable table2 = tableMap.get(fk.getReferencedKey().getTable());
+                    if (table2 == null) {
+                        log.warn("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
+                    } else {
+                        if (table1 != table2) {
+                            new ERDAssociation(fk, table2, table1);
+                        }
+                    }
+                }
+
+                // Mark column's fk flag
+                for (ERDTableColumn column : table1.getColumns()) {
+                    if (fkColumns.contains(column.getObject())) {
+                        column.setInForeignKey(true);
+                    }
+                }
+
+            } catch (DBException e) {
+                log.warn("Could not load table '" + table.getName() + "' foreign keys", e);
+            }
         }
 
         return entityDiagram;
+    }
+
+    private Collection<DBSTable> collectDatabaseTables(DBRProgressMonitor monitor, DBSObject root) throws DBException {
+        Set<DBSTable> result = new HashSet<DBSTable>();
+        
+        // Cache structure
+        if (root instanceof DBSEntityContainer) {
+            DBSEntityContainer entityContainer = (DBSEntityContainer) root;
+            entityContainer.cacheStructure(monitor, DBSEntityContainer.STRUCT_ENTITIES | DBSEntityContainer.STRUCT_ASSOCIATIONS | DBSEntityContainer.STRUCT_ATTRIBUTES);
+            Collection<? extends DBSObject> entities = entityContainer.getChildren(monitor);
+            for (DBSObject entity : entities) {
+                if (entity instanceof DBSTable) {
+                    result.add((DBSTable)entity);
+                }
+            }
+
+        } else if (root instanceof DBSTable) {
+            DBSTable rootTable = (DBSTable) root;
+            result.add(rootTable);
+            try {
+                Collection<? extends DBSForeignKey> fks = rootTable.getForeignKeys(monitor);
+                if (fks != null) {
+                    for (DBSForeignKey fk : fks) {
+                        result.add(fk.getReferencedKey().getTable());
+                    }
+                }
+            } catch (DBException e) {
+                log.warn("Could not load table foreign keys", e);
+            }
+            try {
+                Collection<? extends DBSForeignKey> refs = rootTable.getReferences(monitor);
+                if (refs != null) {
+                    for (DBSForeignKey ref : refs) {
+                        result.add(ref.getTable());
+                    }
+                }
+            } catch (DBException e) {
+                log.warn("Could not load table references", e);
+            }
+        }
+
+        return result;
     }
 
     private void loadContentFromFile(IFileEditorInput input) {
@@ -784,16 +802,6 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         }
     }
 
-    public boolean isUndoable()
-    {
-        return getCommandStack().canUndo();
-    }
-
-    public boolean isRedoable()
-    {
-        return getCommandStack().canRedo();
-    }
-    
     private class ProgressControl extends ProgressPageControl {
 
         private ToolBarManager toolBarManager;

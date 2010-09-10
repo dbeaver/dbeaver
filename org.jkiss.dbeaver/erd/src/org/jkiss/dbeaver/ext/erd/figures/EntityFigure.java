@@ -24,15 +24,16 @@ import org.jkiss.dbeaver.ui.DBIcon;
 public class EntityFigure extends Figure
 {
 
-	public static Color tableColor = new Color(null, 255, 255, 206);
+    public static Color primaryTableColor = new Color(null, 255, 226, 255);
 
     private ERDTable table;
-	private AttributeFigure attributeFigure = new AttributeFigure();
+	private AttributeFigure attributeFigure;
 	private EditableLabel nameLabel;
 
 	public EntityFigure(ERDTable table)
 	{
         this.table = table;
+        attributeFigure = new AttributeFigure(table);
         nameLabel = new EditableLabel(table.getObject().getName());
         nameLabel.setIcon(table.getObject().isView() ? DBIcon.TREE_VIEW.getImage() : DBIcon.TREE_TABLE.getImage());
         nameLabel.setForegroundColor(ColorConstants.black);
@@ -42,7 +43,11 @@ public class EntityFigure extends Figure
 		layout.setStretchMinorAxis(true);
 		setLayoutManager(layout);
 		setBorder(new LineBorder(ColorConstants.black, 1));
-		setBackgroundColor(tableColor);
+        if (table.isPrimary()) {
+            setBackgroundColor(primaryTableColor);
+        } else {
+		    setBackgroundColor(ColorConstants.tooltipBackground);
+        }
 		setForegroundColor(ColorConstants.black);
 		setOpaque(true);
 
