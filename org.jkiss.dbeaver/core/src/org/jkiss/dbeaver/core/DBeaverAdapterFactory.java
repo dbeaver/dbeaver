@@ -64,10 +64,8 @@ public class DBeaverAdapterFactory implements IAdapterFactory
             }
         } else if (adapterType == IWorkbenchAdapter.class) {
             // Workbench adapter
-            if (adaptableObject instanceof DBSObject || adaptableObject instanceof DBNNode) {
-                final DBSObject dbObject = adaptableObject instanceof DBNNode ?
-                        ((DBNNode)adaptableObject).getObject() :
-                        (DBSObject)adaptableObject;
+            if (adaptableObject instanceof DBNNode) {
+                final DBNNode node = (DBNNode)adaptableObject;
                 return new IWorkbenchAdapter() {
 
                     public Object[] getChildren(Object o)
@@ -77,22 +75,17 @@ public class DBeaverAdapterFactory implements IAdapterFactory
 
                     public ImageDescriptor getImageDescriptor(Object object)
                     {
-                        final DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dbObject);
-                        if (node != null) {
-                            return ImageDescriptor.createFromImage(node.getNodeIconDefault());
-                        } else {
-                            return null;
-                        }
+                        return ImageDescriptor.createFromImage(node.getNodeIconDefault());
                     }
 
                     public String getLabel(Object o)
                     {
-                        return dbObject.getName();
+                        return node.getNodeName();
                     }
 
                     public Object getParent(Object o)
                     {
-                        return dbObject.getParentObject();
+                        return node.getParentNode();
                     }
                 };
             }
