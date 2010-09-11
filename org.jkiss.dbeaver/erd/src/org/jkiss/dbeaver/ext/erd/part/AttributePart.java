@@ -59,7 +59,7 @@ public class AttributePart extends PropertyAwarePart
         } else if (column.isInForeignKey()) {
             editableLabel.setFont(diagramPart.getItalicFont());
         } else {
-            editableLabel.setFont(diagramPart.getNormalFont());
+            //editableLabel.setFont(diagramPart.getNormalFont());
         }
         return editableLabel;
     }

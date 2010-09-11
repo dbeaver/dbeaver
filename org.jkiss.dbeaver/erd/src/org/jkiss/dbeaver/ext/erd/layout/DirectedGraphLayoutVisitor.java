@@ -157,7 +157,7 @@ public class DirectedGraphLayoutVisitor
 		NodeList nodes = e.vNodes;
 
 		PolylineConnection conn = (PolylineConnection) connectionPart.getConnectionFigure();
-		conn.setTargetDecoration(new PolygonDecoration());
+		//conn.setTargetDecoration(new PolygonDecoration());
 		if (nodes != null)
 		{
 			List<AbsoluteBendpoint> bends = new ArrayList<AbsoluteBendpoint>();
@@ -166,6 +166,8 @@ public class DirectedGraphLayoutVisitor
 				Node vn = nodes.getNode(i);
 				int x = vn.x;
 				int y = vn.y;
+                bends.add(new AbsoluteBendpoint(x, y));
+/*
 				if (e.isFeedback())
 				{
 					bends.add(new AbsoluteBendpoint(x, y + vn.height));
@@ -177,6 +179,7 @@ public class DirectedGraphLayoutVisitor
 					bends.add(new AbsoluteBendpoint(x, y));
 					bends.add(new AbsoluteBendpoint(x, y + vn.height));
 				}
+*/
 			}
 			conn.setRoutingConstraint(bends);
 		}

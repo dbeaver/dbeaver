@@ -4,18 +4,12 @@
 
 package org.jkiss.dbeaver.ext.erd.part;
 
-import java.beans.PropertyChangeEvent;
-import java.util.EventObject;
-import java.util.Iterator;
-import java.util.List;
-
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.commands.CommandStackListener;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
@@ -25,6 +19,11 @@ import org.jkiss.dbeaver.ext.erd.layout.GraphLayoutManager;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.DiagramContainerEditPolicy;
 import org.jkiss.dbeaver.ui.UIUtils;
+
+import java.beans.PropertyChangeEvent;
+import java.util.EventObject;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Edit part for Schema object, and uses a SchemaDiagram figure as
@@ -73,9 +72,20 @@ public class DiagramPart extends PropertyAwarePart
 	 */
 	public void deactivate()
 	{
+        resetFonts();
 		getViewer().getEditDomain().getCommandStack().removeCommandStackListener(stackListener);
 		super.deactivate();
 	}
+
+    public void resetFonts() {
+        UIUtils.dispose(boldFont);
+        UIUtils.dispose(italicFont);
+        UIUtils.dispose(boldItalicFont);
+        normalFont = null;
+        boldFont = null;
+        italicFont = null;
+        boldItalicFont = null;
+    }
 
 	protected IFigure createFigure()
 	{
@@ -99,7 +109,7 @@ public class DiagramPart extends PropertyAwarePart
 
     public Font getNormalFont() {
         if (normalFont == null) {
-            normalFont = UIUtils.modifyFontHeight(getViewer().getControl().getFont(), 8);
+            normalFont = getViewer().getControl().getFont();
         }
         return normalFont;
     }
@@ -275,8 +285,12 @@ public class DiagramPart extends PropertyAwarePart
         if ((getViewer().getControl().getStyle() & SWT.MIRRORED ) == 0)
             cLayer.setAntialias(SWT.ON);
 
-        AutomaticRouter router = new FanRouter();
-        router.setNextRouter(new BendpointConnectionRouter());
+        FanRouter router = new FanRouter();
+        router.setSeparation(15);
+        //router.setNextRouter(new BendpointConnectionRouter());
+        router.setNextRouter(new ShortestPathConnectionRouter(getFigure()));
+        //router.setNextRouter(new ManhattanConnectionRouter());
+        //router.setNextRouter(new BendpointConnectionRouter());
         cLayer.setConnectionRouter(router);
 
         Animation.run(400);

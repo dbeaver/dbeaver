@@ -293,7 +293,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
     }
 
     public DiagramPart getDiagramPart() {
-        return (DiagramPart)rootPart.getContents();
+        return rootPart == null ? null : (DiagramPart)rootPart.getContents();
     }
 
     /**

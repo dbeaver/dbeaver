@@ -33,7 +33,7 @@ public class DummyEdgePart
 	{
 		PolylineConnection conn = new PolylineConnection();
 		conn.setConnectionRouter(new BendpointConnectionRouter());
-        conn.setVisible(false);
+        conn.setVisible(true);
 		return conn;
 	}
 	

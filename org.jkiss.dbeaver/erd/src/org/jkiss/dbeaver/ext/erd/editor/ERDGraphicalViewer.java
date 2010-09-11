@@ -9,25 +9,34 @@ package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.gef.ui.parts.AbstractEditPartViewer;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.FocusEvent;
 
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.swt.IFocusService;
+import org.eclipse.ui.themes.ITheme;
+import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
+import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
+import org.jkiss.dbeaver.ui.ThemeConstants;
 
 /**
  * GraphicalViewer which also knows about ValidationMessageHandler to output
  * error messages to
  * @author Serge Rieder
  */
-public class ERDGraphicalViewer extends ScrollingGraphicalViewer
+public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPropertyChangeListener
 {
 
     private ERDEditor editor;
 	private ValidationMessageHandler messageHandler;
+    private IThemeManager themeManager;
 
 	/**
 	 * ValidationMessageHandler to receive messages
@@ -38,6 +47,9 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer
 		super();
         this.editor = editor;
 		this.messageHandler = messageHandler;
+
+        themeManager = editor.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
+        themeManager.addPropertyChangeListener(this);
 	}
 
     @Override
@@ -49,11 +61,16 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer
             ERDEditorAdapter.mapControl(control, editor);
             IFocusService fs = (IFocusService) PlatformUI.getWorkbench().getService(IFocusService.class);
             fs.addFocusTracker(control, editor.getObjectManager().getObject().getObjectId() + "#" + this.hashCode());
+
+            applyThemeSettings();
         }
     }
 
     @Override
     protected void handleDispose(DisposeEvent e) {
+        if (themeManager != null) {
+            themeManager.removePropertyChangeListener(this);
+        }
         if (getControl() != null) {
             ERDEditorAdapter.unmapControl(getControl());
             IFocusService fs = (IFocusService) PlatformUI.getWorkbench().getService(IFocusService.class);
@@ -85,5 +102,31 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer
 		//call reset on the MessageHandler itself
 		messageHandler.reset();
 	}
+
+    public void propertyChange(PropertyChangeEvent event)
+    {
+        if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME)
+            || event.getProperty().equals("org.jkiss.dbeaver.erd.diagram.font"))
+        {
+            applyThemeSettings();
+        }
+    }
+
+    private void applyThemeSettings()
+    {
+        ITheme currentTheme = themeManager.getCurrentTheme();
+        Font erdFont = currentTheme.getFontRegistry().get("org.jkiss.dbeaver.erd.diagram.font");
+        if (erdFont != null) {
+            this.getControl().setFont(erdFont);
+        }
+        editor.refreshDiagram();
+/*
+        DiagramPart diagramPart = editor.getDiagramPart();
+        if (diagramPart != null) {
+            diagramPart.resetFonts();
+            diagramPart.refresh();
+        }
+*/
+    }
 
 }

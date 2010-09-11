@@ -32,11 +32,13 @@ public class AttributeFigure extends Figure
 		setLayoutManager(layout);
 		setBorder(new ColumnFigureBorder());
         if (table.isPrimary()) {
-            setBackgroundColor(EntityFigure.primaryTableColor);
+            //setBackgroundColor(EntityFigure.primaryTableColor);
         } else {
-		    setBackgroundColor(ColorConstants.tooltipBackground);
+		    //setBackgroundColor(ColorConstants.tooltipBackground);
         }
-		setForegroundColor(ColorConstants.blue);
+        setBackgroundColor(ColorConstants.white);
+		setForegroundColor(ColorConstants.black);
+
 		setOpaque(true);
 	}
 

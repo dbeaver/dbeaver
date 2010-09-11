@@ -39,6 +39,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
     private TableCache tableCache = new TableCache();
     private ProceduresCache proceduresCache = new ProceduresCache();
     private TriggerCache triggerCache = new TriggerCache();
+    private boolean constraintsCached = false;
 
     public MySQLCatalog(MySQLDataSource dataSource, String catalogName)
     {
@@ -185,6 +186,9 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
     void loadConstraints(DBRProgressMonitor monitor, MySQLTable forTable)
         throws DBException
     {
+        if (constraintsCached) {
+            return;
+        }
         if (forTable == null) {
             tableCache.getObjects(monitor);
         }
@@ -312,6 +316,9 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
         }
         finally {
             context.close();
+        }
+        if (forTable == null) {
+            constraintsCached = true;
         }
     }
 

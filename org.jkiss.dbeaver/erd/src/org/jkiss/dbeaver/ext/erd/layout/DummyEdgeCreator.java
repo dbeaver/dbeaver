@@ -26,15 +26,15 @@ import org.eclipse.draw2d.graph.NodeList;
 public class DummyEdgeCreator
 {
 
-	NodeList nodeList;
-	EdgeList edgeList;
-	DirectedGraph graph;
+	private NodeList nodeList;
+	private EdgeList edgeList;
+	private DirectedGraph graph;
 
-	List<Edge> edgesAdded;
-	NodeList candidateList;
-	int targetNodeIndex;
+	private List<Edge> edgesAdded;
+	private NodeList candidateList;
+	private int targetNodeIndex;
 
-	boolean cleanNextTime = false;
+	private boolean cleanNextTime = false;
 
 	public void visit(DirectedGraph g)
 	{
@@ -58,16 +58,9 @@ public class DummyEdgeCreator
 
 	protected void setDummyEdges()
 	{
-
-		Node targetNode;
-
-		int nodeCount = nodeList.size();
-
-		boolean addedEdge = false;
-
 		//if node count is only one then we don't have to worry about whether
 		// the nodes are connected
-		if (nodeCount > 1)
+		if (nodeList.size() > 1)
 		{
 			for (Iterator iter = nodeList.iterator(); iter.hasNext();)
 			{
@@ -77,11 +70,8 @@ public class DummyEdgeCreator
 				// in one already
 				if (sourceNode.outgoing.size() == 0 && sourceNode.incoming.size() == 0)
 				{
-
-					targetNode = findTargetNode(sourceNode);
-					Edge edge = newDummyEdge(targetNode, sourceNode);
-					edgesAdded.add(edge);
-
+					Node targetNode = findTargetNode(sourceNode);
+					edgesAdded.add(newDummyEdge(targetNode, sourceNode));
 				}
 			}
 		}
@@ -92,14 +82,10 @@ public class DummyEdgeCreator
 	 */
 	private Edge newDummyEdge(Node targetNode, Node sourceNode)
 	{
-		boolean addedEdge;
-		DummyEdgePart edgePart = new DummyEdgePart();
-		Edge edge = new Edge(edgePart, sourceNode, targetNode);
+		//DummyEdgePart edgePart = new DummyEdgePart();
+		Edge edge = new Edge(null, sourceNode, targetNode);
 		edge.weight = 2;
 		edgeList.add(edge);
-
-		targetNode = sourceNode;
-		addedEdge = true;
 		return edge;
 	}
 

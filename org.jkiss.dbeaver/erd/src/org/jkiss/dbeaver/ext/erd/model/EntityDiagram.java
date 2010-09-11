@@ -7,7 +7,6 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
@@ -38,19 +37,19 @@ public class EntityDiagram extends ERDObject<DBSObject>
 	public void addTable(ERDTable table)
 	{
 		tables.add(table);
-		firePropertyChange(CHILD, null, table);
+		//firePropertyChange(CHILD, null, table);
 	}
 
 	public void addTable(ERDTable table, int i)
 	{
 		tables.add(i, table);
-		firePropertyChange(CHILD, null, table);
+		//firePropertyChange(CHILD, null, table);
 	}
 
 	public void removeTable(ERDTable table)
 	{
 		tables.remove(table);
-		firePropertyChange(CHILD, table, null);
+		//firePropertyChange(CHILD, table, null);
 	}
 
     /**

@@ -7,9 +7,13 @@
  */
 package org.jkiss.dbeaver.ext.erd.command;
 
+import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
+import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
+
+import java.util.List;
 
 /**
  * Command to move the bounds of an existing table. Only used with
@@ -34,6 +38,14 @@ public class EntityMoveCommand extends Command
 
 	public void execute()
 	{
+/*
+        List tcList = entityPart.getTargetConnections();
+        for (Object tc : tcList) {
+            AssociationPart as = (AssociationPart)tc ;
+            PolylineConnection pc = (PolylineConnection) as.getFigure();
+            pc.getConnectionRouter().route(pc);
+        }
+*/
         entityPart.modifyBounds(newBounds);
 	}
 
