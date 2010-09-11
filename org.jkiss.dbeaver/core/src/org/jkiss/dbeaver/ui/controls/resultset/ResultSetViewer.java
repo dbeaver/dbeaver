@@ -41,6 +41,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
@@ -186,6 +187,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         });
 
         applyThemeSettings();
+
+        {
+            final IFocusService focusService = (IFocusService) site.getService(IFocusService.class);
+            focusService.addFocusTracker(spreadsheet, "org.jkiss.dbeaver.ui.resultset.grid");
+            spreadsheet.addDisposeListener(new DisposeListener() {
+                public void widgetDisposed(DisposeEvent e) {
+                    focusService.removeFocusTracker(spreadsheet);
+                }
+            });
+        }
     }
 
     private void updateGridCursor()

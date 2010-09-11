@@ -12,6 +12,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -24,6 +26,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridEditor;
@@ -112,6 +115,7 @@ public class Spreadsheet extends Composite implements Listener {
                     copySelectionToClipboard();
                 }
             }),
+
             new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.LINE_START)),
             new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.LINE_END)),
             new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.TEXT_START)),
@@ -120,6 +124,7 @@ public class Spreadsheet extends Composite implements Listener {
             new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_LINE_END)),
             new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_TEXT_START)),
             new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_TEXT_END)),
+
             new UIUtils.ActionInfo(new GridAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL) {
                 public void run()
                 {
@@ -234,6 +239,7 @@ public class Spreadsheet extends Composite implements Listener {
             }
             newPos.col = newCol;
         }
+
         setCursor(newPos, keepSelection);
     }
 
@@ -346,6 +352,30 @@ public class Spreadsheet extends Composite implements Listener {
         grid.setRowLabelProvider(rowLabelProvider);
     }
 
+
+/*
+    private void initContextHandling() {
+        ((IContextService) site.getService(IContextService.class)).activateContext("org.jkiss.dbeaver.ui.spreadsheet.grid.context", new Expression() {
+            @Override
+            public void collectExpressionInfo(ExpressionInfo info) {
+                super.collectExpressionInfo(info);
+                info.addVariableNameAccess(ISources.ACTIVE_FOCUS_CONTROL_NAME);
+            }
+
+            @Override
+            public EvaluationResult evaluate(IEvaluationContext context)
+                throws CoreException {
+                if (context.getVariable(ISources.ACTIVE_FOCUS_CONTROL_NAME) == grid) {
+                    return EvaluationResult.TRUE;
+                }
+                return EvaluationResult.FALSE;
+            }
+
+        });
+    }
+*/
+
+
     public void dispose()
     {
         this.clearGrid();
@@ -381,6 +411,7 @@ public class Spreadsheet extends Composite implements Listener {
                 cancelInlineEditor();
                 break;
             case SWT.FocusIn:
+                //grid.forceFocus();
                 UIUtils.registerPartActions(site, actionsInfo, true);
                 break;
             case SWT.FocusOut:
@@ -641,16 +672,30 @@ public class Spreadsheet extends Composite implements Listener {
             Event event = new Event();
             event.doit = true;
             String actionId = getActionDefinitionId();
-            boolean keepSelection = (event.stateMask & SWT.SHIFT) != 0;
-            if (actionId.equals(ITextEditorActionDefinitionIds.LINE_START) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_LINE_START)) {
-                shiftCursor(-grid.getColumnCount(), 0, keepSelection);
-            } else if (actionId.equals(ITextEditorActionDefinitionIds.LINE_END) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_LINE_END)) {
-                shiftCursor(grid.getColumnCount(), 0, keepSelection);
-            } else if (actionId.equals(ITextEditorActionDefinitionIds.TEXT_START) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_TEXT_START)) {
-                shiftCursor(-grid.getColumnCount(), -grid.getItemCount(), keepSelection);
-            } else if (actionId.equals(ITextEditorActionDefinitionIds.TEXT_END) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_TEXT_END)) {
-                shiftCursor(grid.getColumnCount(), grid.getItemCount(), keepSelection);
+            if (actionId.equals(ITextEditorActionDefinitionIds.LINE_START)) {
+                event.keyCode = SWT.HOME;
+            } else if (actionId.equals(ITextEditorActionDefinitionIds.SELECT_LINE_START)) {
+                event.keyCode = SWT.HOME;
+                event.stateMask = SWT.MOD2;
+            } else if (actionId.equals(ITextEditorActionDefinitionIds.LINE_END)) {
+                event.keyCode = SWT.END;
+            } else if (actionId.equals(ITextEditorActionDefinitionIds.SELECT_LINE_END)) {
+                event.keyCode = SWT.END;
+                event.stateMask = SWT.MOD2;
+            } else if (actionId.equals(ITextEditorActionDefinitionIds.TEXT_START)) {
+                event.keyCode = SWT.HOME;
+                event.stateMask = SWT.MOD1;
+            } else if (actionId.equals(ITextEditorActionDefinitionIds.SELECT_TEXT_START)) {
+                event.keyCode = SWT.HOME;
+                event.stateMask = SWT.MOD1 | SWT.MOD2;
+            } else if (actionId.equals(ITextEditorActionDefinitionIds.TEXT_END)) {
+                event.keyCode = SWT.END;
+                event.stateMask = SWT.MOD1;
+            } else if (actionId.equals(ITextEditorActionDefinitionIds.SELECT_TEXT_END)) {
+                event.keyCode = SWT.END;
+                event.stateMask = SWT.MOD1 | SWT.MOD2;
             }
+            grid.onKeyDown(event);
         }
     }
 
