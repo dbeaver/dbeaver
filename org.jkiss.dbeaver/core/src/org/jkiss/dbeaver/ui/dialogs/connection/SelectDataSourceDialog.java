@@ -17,7 +17,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNRoot;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 
 import java.util.List;
@@ -29,13 +28,11 @@ import java.util.List;
  */
 public class SelectDataSourceDialog extends Dialog {
 
-    private DataSourceRegistry registry;
     private DataSourceDescriptor dataSource = null;
 
     private SelectDataSourceDialog(Shell parentShell)
     {
         super(parentShell);
-        this.registry = DataSourceRegistry.getDefault();
     }
 
     protected boolean isResizable()
@@ -55,9 +52,10 @@ public class SelectDataSourceDialog extends Dialog {
 
         ItemListControl dsList = new ItemListControl(group, SWT.BORDER, null, rootNode);
         gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 200;
-        gd.widthHint = 400;
+        gd.heightHint = 300;
+        gd.widthHint = 300;
         dsList.setLayoutData(gd);
+        dsList.setLoadProperties(false);
         dsList.fillData();
         dsList.getNavigatorViewer().addSelectionChangedListener(new ISelectionChangedListener()
         {

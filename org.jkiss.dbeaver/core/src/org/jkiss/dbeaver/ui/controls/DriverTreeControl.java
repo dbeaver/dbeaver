@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,11 +31,6 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
     public DriverTreeControl(Composite parent)
     {
         super(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-    }
-
-    public void initDrivers(Object site)
-    {
-        initDrivers(site, null);
     }
 
     public void initDrivers(Object site, List<DataSourceProviderDescriptor> providers)
@@ -84,7 +80,18 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         public Object[] getChildren(Object parent)
         {
             if (parent instanceof DataSourceRegistry) {
-                return providers.toArray();
+                List<Object> children = new ArrayList<Object>();
+                for (DataSourceProviderDescriptor provider : providers) {
+                    List<DriverDescriptor> drivers = provider.getEnabledDrivers();
+                    if (drivers.isEmpty()) {
+                        // skip
+                    } else if (drivers.size() == 1) {
+                        children.add(drivers.get(0));
+                    } else {
+                        children.add(provider);
+                    }
+                }
+                return children.toArray();
             } else if (parent instanceof DataSourceProviderDescriptor) {
                 return ((DataSourceProviderDescriptor) parent).getEnabledDrivers().toArray();
             } else {

@@ -29,6 +29,7 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -243,12 +244,15 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
             // Select datasource
             DataSourceDescriptor dataSource = SelectDataSourceDialog.selectDataSource(getShell());
             if (dataSource != null) {
-                prefDialog = PreferencesUtil.createPropertyDialogOn(
-                    getShell(),
-                    dataSource,
-                    getPropertyPageID(),
-                    null,//new String[]{getPropertyPageID()},
-                    null);
+                DBNNode dsNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSource);
+                if (dsNode instanceof DBNDataSource) {
+                    prefDialog = PreferencesUtil.createPropertyDialogOn(
+                        getShell(),
+                        (DBNDataSource)dsNode,
+                        getPropertyPageID(),
+                        null,//new String[]{getPropertyPageID()},
+                        null);
+                }
             }
         }
         if (prefDialog != null) {

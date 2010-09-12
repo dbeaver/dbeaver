@@ -46,7 +46,7 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
     private final static Object LOADING_VALUE = new Object();
 
     private DBNNode node;
-
+    private boolean loadProperties;
     private TableViewer itemsViewer;
     private List<TableColumn> columns = new ArrayList<TableColumn>();
     private SortListener sortListener;
@@ -62,6 +62,7 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
     {
         super(parent, style, workbenchPart);
         this.node = node;
+        this.loadProperties = true;
 
         this.setLayout(new GridLayout(1, true));
 
@@ -106,6 +107,14 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
         };
 
         ViewUtils.addContextMenu(this);
+    }
+
+    public boolean isLoadProperties() {
+        return loadProperties;
+    }
+
+    public void setLoadProperties(boolean loadProperties) {
+        this.loadProperties = loadProperties;
     }
 
     @Override
@@ -382,65 +391,70 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
         private void addRow(DBNNode item)
         {
             DBSObject itemObject = item.getObject();
+
             List<PropertyAnnoDescriptor> annoProps = null;
-            if (itemObject instanceof IAdaptable) {
-                IPropertySource propertySource = (IPropertySource)((IAdaptable)itemObject).getAdapter(IPropertySource.class);
-                if (propertySource != null) {
-                    annoProps = PropertyAnnoDescriptor.extractProperties(propertySource);
+            if (loadProperties) {
+                if (itemObject instanceof IAdaptable) {
+                    IPropertySource propertySource = (IPropertySource)((IAdaptable)itemObject).getAdapter(IPropertySource.class);
+                    if (propertySource != null) {
+                        annoProps = PropertyAnnoDescriptor.extractProperties(propertySource);
+                    }
                 }
-            }
-            if (annoProps == null) {
-                annoProps = PropertyAnnoDescriptor.extractAnnotations(itemObject);
+                if (annoProps == null) {
+                    annoProps = PropertyAnnoDescriptor.extractAnnotations(itemObject);
+                }
             }
 
             List<ItemCell> cells = new ArrayList<ItemCell>();
-            for (PropertyAnnoDescriptor descriptor : annoProps) {
-                // Check control is disposed
-                if (isDisposed()) {
-                    break;
-                }
-                // Skip unviewable items
-                if (!descriptor.isViewable()) {
-                    continue;
-                }
-                // Add column if necessary
-                TableColumn propColumn = null;
-                for (TableColumn column : columns) {
-                    if (descriptor.getId().equals(column.getData())) {
-                        propColumn = column;
+            if (annoProps != null) {
+                for (PropertyAnnoDescriptor descriptor : annoProps) {
+                    // Check control is disposed
+                    if (isDisposed()) {
                         break;
                     }
-                }
-                if (propColumn == null) {
-                    propColumn = new TableColumn(itemsViewer.getTable(), SWT.NONE);
-                    propColumn.setText(descriptor.getDisplayName());
-                    propColumn.setToolTipText(descriptor.getDescription());
-                    propColumn.setData(descriptor.getId());
-                    propColumn.addListener(SWT.Selection, sortListener);
+                    // Skip unviewable items
+                    if (!descriptor.isViewable()) {
+                        continue;
+                    }
+                    // Add column if necessary
+                    TableColumn propColumn = null;
+                    for (TableColumn column : columns) {
+                        if (descriptor.getId().equals(column.getData())) {
+                            propColumn = column;
+                            break;
+                        }
+                    }
+                    if (propColumn == null) {
+                        propColumn = new TableColumn(itemsViewer.getTable(), SWT.NONE);
+                        propColumn.setText(descriptor.getDisplayName());
+                        propColumn.setToolTipText(descriptor.getDescription());
+                        propColumn.setData(descriptor.getId());
+                        propColumn.addListener(SWT.Selection, sortListener);
 
-                    ItemListControl.this.columns.add(propColumn);
-                }
-                // Read property value
-                Object value;
-                if (descriptor.isLazy()) {
-                    value = LOADING_VALUE;
-                } else {
-                    try {
-                        value = descriptor.readValue(itemObject, null);
+                        ItemListControl.this.columns.add(propColumn);
                     }
-                    catch (IllegalAccessException e) {
-                        log.error(e);
-                        continue;
+                    // Read property value
+                    Object value;
+                    if (descriptor.isLazy()) {
+                        value = LOADING_VALUE;
+                    } else {
+                        try {
+                            value = descriptor.readValue(itemObject, null);
+                        }
+                        catch (IllegalAccessException e) {
+                            log.error(e);
+                            continue;
+                        }
+                        catch (InvocationTargetException e) {
+                            log.error(e.getTargetException());
+                            continue;
+                        }
                     }
-                    catch (InvocationTargetException e) {
-                        log.error(e.getTargetException());
-                        continue;
+                    ItemCell cell = new ItemCell(item, descriptor, value);
+                    cells.add(cell);
+                    if (descriptor.isLazy()) {
+                        lazyItems.add(cell);
                     }
-                }
-                ItemCell cell = new ItemCell(item, descriptor, value);
-                cells.add(cell);
-                if (descriptor.isLazy()) {
-                    lazyItems.add(cell);
                 }
             }
             ItemRow row = new ItemRow(item, cells);

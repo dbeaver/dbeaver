@@ -30,6 +30,7 @@ import java.util.List;
 public class DriverManagerDialog extends Dialog implements ISelectionChangedListener, IDoubleClickListener {
 
     private DataSourceProviderDescriptor selectedProvider;
+    private DataSourceProviderDescriptor onlyManagableProvider;
     private DriverDescriptor selectedDriver;
 
     private Button newButton;
@@ -49,6 +50,23 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
 
     protected Control createDialogArea(Composite parent)
     {
+        List<DataSourceProviderDescriptor> provders = DataSourceRegistry.getDefault().getDataSourceProviders();
+        {
+            DataSourceProviderDescriptor manProvider = null;
+            for (DataSourceProviderDescriptor provider : provders) {
+                if (provider.isDriversManagable()) {
+                    if (manProvider != null) {
+                        manProvider = null;
+                        break;
+                    }
+                    manProvider = provider;
+                }
+            }
+            if (manProvider != null) {
+                onlyManagableProvider = manProvider;
+            }
+        }
+
         getShell().setText("Driver Manager");
         getShell().setImage(DBeaverActivator.getImageDescriptor("/icons/driver_manager.png").createImage());
 
@@ -62,7 +80,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
 
         {
             treeControl = new DriverTreeControl(group);
-            treeControl.initDrivers(this);
+            treeControl.initDrivers(this, provders);
         }
         {
             Composite buttonBar = new Composite(group, SWT.TOP);
@@ -163,17 +181,21 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
 
     private void updateButtons()
     {
-        newButton.setEnabled(selectedProvider != null && selectedProvider.isDriversManagable());
+        newButton.setEnabled(onlyManagableProvider != null || (selectedProvider != null && selectedProvider.isDriversManagable()));
         editButton.setEnabled(selectedDriver != null);
         deleteButton.setEnabled(selectedDriver != null && selectedDriver.getProviderDescriptor().isDriversManagable());
     }
 
     private void createDriver()
     {
-        if (selectedProvider != null) {
-            EditDriverDialog dialog = new EditDriverDialog(getShell(), selectedProvider);
+        if (onlyManagableProvider != null || selectedProvider != null) {
+            DataSourceProviderDescriptor provider = selectedProvider;
+            if (provider == null || !provider.isDriversManagable()) {
+                provider = onlyManagableProvider;
+            }
+            EditDriverDialog dialog = new EditDriverDialog(getShell(), provider);
             if (dialog.open() == IDialogConstants.OK_ID) {
-                treeControl.refresh(selectedProvider);
+                treeControl.refresh(provider);
             }
         }
     }
