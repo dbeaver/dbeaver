@@ -406,48 +406,71 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
 
         if (!CommonUtils.isEmpty(driver.getSampleURL())) {
             isCustom = false;
+            Set<String> availableProperties = new HashSet<String>();
             String sampleURL = driver.getSampleURL();
             int offsetPos = 0;
             for (; ;) {
-                int divPos = sampleURL.indexOf('[', offsetPos);
+                int divPos = sampleURL.indexOf('{', offsetPos);
                 if (divPos == -1) {
                     break;
                 }
-                int divPos2 = sampleURL.indexOf(']', divPos);
+                int divPos2 = sampleURL.indexOf('}', divPos);
                 if (divPos2 == -1) {
                     setErrorMessage("Bad sample URL: " + sampleURL);
                     break;
+                }
+                String propName = sampleURL.substring(divPos + 1, divPos2);
+                boolean isOptional = false;
+                int optDiv1 = sampleURL.lastIndexOf('[', divPos);
+                int optDiv1c = sampleURL.lastIndexOf(']', divPos);
+                int optDiv2 = sampleURL.indexOf(']', divPos2);
+                int optDiv2c = sampleURL.indexOf('[', divPos2);
+                if (optDiv1 != -1 && optDiv2 != -1 && (optDiv1c == -1 || optDiv1c < optDiv1) && (optDiv2c == -1 || optDiv2c > optDiv2)) {
+                    divPos = optDiv1;
+                    divPos2 = optDiv2;
+                    isOptional = true;
                 }
                 if (divPos > offsetPos) {
                     urlComponents.add(sampleURL.substring(offsetPos, divPos));
                 }
                 urlComponents.add(sampleURL.substring(divPos, divPos2 + 1));
+                availableProperties.add(propName);
+                if (!isOptional) {
+                    requiredProperties.add(propName);
+                }
                 offsetPos = divPos2 + 1;
             }
             if (offsetPos < sampleURL.length() - 1) {
                 urlComponents.add(sampleURL.substring(offsetPos));
             }
+/*
             // Check for required parts
             for (String component : urlComponents) {
-                if (!component.startsWith("[")) {
-                    int divPos = component.indexOf('{');
-                    if (divPos != -1) {
-                        int divPos2 = component.indexOf('}', divPos);
-                        if (divPos2 != -1) {
-                            String propName = component.substring(divPos + 1, divPos2);
+                boolean isRequired = !component.startsWith("[");
+                int divPos = component.indexOf('{');
+                if (divPos != -1) {
+                    int divPos2 = component.indexOf('}', divPos);
+                    if (divPos2 != -1) {
+                        String propName = component.substring(divPos + 1, divPos2);
+                        availableProperties.add(propName);
+                        if (isRequired) {
                             requiredProperties.add(propName);
                         }
                     }
                 }
             }
+*/
+            hostText.setEnabled(availableProperties.contains(PROP_HOST));
+            portText.setEnabled(availableProperties.contains(PROP_PORT));
+            dbText.setEnabled(availableProperties.contains(PROP_DATABASE));
+            urlText.setEnabled(false);
         } else {
             isCustom = true;
+            hostText.setEnabled(false);
+            portText.setEnabled(false);
+            dbText.setEnabled(false);
+            urlText.setEnabled(true);
         }
-
-        hostText.setEditable(!isCustom);
-        portText.setEditable(!isCustom);
-        dbText.setEditable(!isCustom);
-        urlText.setEditable(isCustom);
     }
 
     private void evaluateURL()
