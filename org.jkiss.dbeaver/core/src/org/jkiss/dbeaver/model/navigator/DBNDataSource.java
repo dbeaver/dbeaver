@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.ConnectAction;
 import org.jkiss.dbeaver.ui.actions.DisconnectAction;
 import org.jkiss.dbeaver.ui.actions.EditConnectionAction;
 
@@ -99,7 +100,8 @@ public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject, IA
         throws DBException
     {
         if (!dataSource.isConnected()) {
-            dataSource.connect(monitor);
+            ConnectAction.execute(dataSource);
+            //dataSource.connect(monitor);
         }
         return dataSource.isConnected();
     }

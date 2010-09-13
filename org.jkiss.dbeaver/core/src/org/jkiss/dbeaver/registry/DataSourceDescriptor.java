@@ -278,7 +278,8 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             if (reflect) {
                 getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
                     DBPEvent.Action.OBJECT_UPDATE,
-                    DataSourceDescriptor.this);
+                    DataSourceDescriptor.this,
+                    false);
             }
             if (e instanceof DBException) {
                 throw (DBException)e;

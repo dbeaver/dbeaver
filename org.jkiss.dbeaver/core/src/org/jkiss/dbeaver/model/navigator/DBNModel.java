@@ -279,6 +279,8 @@ public class DBNModel implements DBPEventListener {
                             nodeChange = DBNEvent.NodeChange.LOAD;
                         } else {
                             nodeChange = DBNEvent.NodeChange.UNLOAD;
+                            // Clear unloaded node
+                            dbmNode.clearNode();
                         }
                     } else {
                         nodeChange = DBNEvent.NodeChange.REFRESH;

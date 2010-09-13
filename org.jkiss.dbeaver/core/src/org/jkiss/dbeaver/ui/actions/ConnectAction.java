@@ -12,6 +12,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
@@ -42,7 +43,11 @@ public class ConnectAction extends DataSourceAction
             if (!dataSourceContainer.isSavePassword()) {
                 // Ask for password
                 if (!askForPassword(dataSourceContainer)) {
-                    return;//throw new DBException("Authentication canceled");
+                    dataSourceContainer.getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
+                        DBPEvent.Action.OBJECT_UPDATE,
+                        dataSourceContainer,
+                        false);
+                    return;
                 }
             }
 
