@@ -700,7 +700,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
                     dataSource instanceof DBSEntitySelector &&
                     ((DBSEntitySelector)dataSource).supportsActiveChildChange())
                 {
-                    DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
+                    DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
                         public void run(DBRProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException
                         {

@@ -27,7 +27,7 @@ public class SetActiveObjectAction extends NavigatorAction
         if (selectedNode != null) {
             final DBSEntitySelector activeContainer = DBUtils.queryParentInterface(
                 DBSEntitySelector.class, selectedNode.getObject());
-            DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
+            DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {

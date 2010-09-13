@@ -82,7 +82,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             // It's a table query
             // Use database information (only we are connected, of course)
             if (editor.getDataSourceContainer().isConnected()) {
-                DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
+                DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {

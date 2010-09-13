@@ -34,19 +34,19 @@ public class EntityDiagram extends ERDObject<DBSObject>
 		this.name = name;
 	}
 
-	public void addTable(ERDTable table)
+	public synchronized void addTable(ERDTable table)
 	{
 		tables.add(table);
 		//firePropertyChange(CHILD, null, table);
 	}
 
-	public void addTable(ERDTable table, int i)
+	public synchronized void addTable(ERDTable table, int i)
 	{
 		tables.add(i, table);
 		//firePropertyChange(CHILD, null, table);
 	}
 
-	public void removeTable(ERDTable table)
+	public synchronized void removeTable(ERDTable table)
 	{
 		tables.remove(table);
 		//firePropertyChange(CHILD, table, null);
@@ -55,7 +55,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
     /**
 	 * @return the Tables for the current schema
 	 */
-	public List getTables()
+	public synchronized List getTables()
 	{
 		return tables;
 	}

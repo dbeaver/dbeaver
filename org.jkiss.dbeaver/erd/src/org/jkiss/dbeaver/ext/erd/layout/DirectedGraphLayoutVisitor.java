@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
@@ -34,6 +36,7 @@ import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
  */
 public class DirectedGraphLayoutVisitor
 {
+    static final Log log = LogFactory.getLog(DirectedGraphLayoutVisitor.class);
 
 	Map<EditPart, Object> partToNodesMap;
 	DirectedGraph graph;
@@ -111,6 +114,10 @@ public class DirectedGraphLayoutVisitor
 		GraphAnimation.recordInitialState((Connection) connectionPart.getFigure());
 		Node source = (Node)partToNodesMap.get(connectionPart.getSource());
 		Node target = (Node)partToNodesMap.get(connectionPart.getTarget());
+        if (source == null || target == null) {
+            log.warn("Source or target node not found");
+            return;
+        }
 		Edge e = new Edge(connectionPart, source, target);
         e.setPadding(10);
 		e.weight = 2;

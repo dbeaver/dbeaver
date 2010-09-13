@@ -30,6 +30,7 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
     static final Log log = LogFactory.getLog(MultiPageDatabaseEditor.class);
 
     private DatabaseEditorListener listener;
+    private int activePageIndex = -1;
 
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
@@ -111,6 +112,7 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
     protected void pageChange(int newPageIndex)
     {
         deactivateEditor();
+        this.activePageIndex = newPageIndex;
         super.pageChange(newPageIndex);
         activateEditor();
     }
@@ -118,10 +120,11 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
     protected final void deactivateEditor()
     {
         // Deactivate the nested services from the last active service locator.
-        final int pageIndex = getActivePage();
-        final IWorkbenchPart part = getEditor(pageIndex);
-        if (part instanceof IObjectEditorPart) {
-            ((IObjectEditorPart) part).deactivatePart();
+        if (activePageIndex >= 0) {
+            final IWorkbenchPart part = getEditor(activePageIndex);
+            if (part instanceof IObjectEditorPart) {
+                ((IObjectEditorPart) part).deactivatePart();
+            }
         }
     }
 

@@ -109,25 +109,8 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
     public void activatePart()
     {
         if (!activated) {
-            try {
-                DBeaverUtils.run(
-                    getSite().getWorkbenchWindow(),
-                    false,
-                    false,
-                    new DBRRunnableWithProgress() {
-                        public void run(DBRProgressMonitor monitor)
-                            throws InvocationTargetException, InterruptedException
-                        {
-                            itemControl.fillData(metaNode);
-                        }
-                    }
-                );
-            } catch (InvocationTargetException e) {
-                log.error(e.getTargetException());
-            } catch (InterruptedException e) {
-                // do nothing
-            }
             activated = true;
+            itemControl.fillData(metaNode);
         }
     }
 

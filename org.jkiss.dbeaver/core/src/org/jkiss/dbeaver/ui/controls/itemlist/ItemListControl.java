@@ -8,8 +8,12 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -24,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -53,6 +58,8 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
     private Map<DBNNode, ItemRow> itemMap = new IdentityHashMap<DBNNode, ItemRow>();
     private ISelectionProvider selectionProvider;
     private IDoubleClickListener doubleClickHandler;
+
+    private LoadingJob<List<DBNNode>> loadingJob;
 
     public ItemListControl(
         Composite parent,
@@ -107,6 +114,15 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
         };
 
         ViewUtils.addContextMenu(this);
+
+        itemsViewer.getControl().addDisposeListener(new DisposeListener() {
+            public void widgetDisposed(DisposeEvent e) {
+                if (loadingJob != null) {
+                    loadingJob.cancel();
+                    loadingJob = null;
+                }
+            }
+        });
     }
 
     public boolean isLoadProperties() {
@@ -145,9 +161,19 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
 
     public void fillData(DBXTreeNode metaNode)
     {
-        LoadingUtils.executeService(
+        if (loadingJob != null) {
+            // Don't do it twice
+            return;
+        }
+        loadingJob = LoadingUtils.executeService(
             new ItemLoadService(metaNode),
             new ItemsLoadVisualizer());
+        loadingJob.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                loadingJob = null;
+            }
+        });
     }
 
     public ISelectionProvider getSelectionProvider()
@@ -316,6 +342,9 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
                     return items;
                 }
                 for (DBNNode item : children) {
+                    if (getProgressMonitor().isCanceled()) {
+                        break;
+                    }
                     if (item instanceof DBNTreeFolder) {
                         continue;
                     }
@@ -348,7 +377,11 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
         {
             super.completeLoading(items);
 
-            TableColumn nameColumn = new TableColumn (itemsViewer.getTable(), SWT.NONE);
+            Table table = itemsViewer.getTable();
+            if (table.isDisposed()) {
+                return;
+            }
+            TableColumn nameColumn = new TableColumn (table, SWT.NONE);
             nameColumn.setText("Name");
             nameColumn.setToolTipText("Name");
             nameColumn.addListener(SWT.Selection, sortListener);
@@ -368,7 +401,6 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
                 setInfo(itemMap.size() + " items");
             }
 
-            Table table = itemsViewer.getTable();
             if (!table.isDisposed()) {
                 table.setRedraw(false);
 
@@ -477,7 +509,7 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
             {
                 for (ItemCell item : lazyItems) {
                     // Check control is disposed
-                    if (isDisposed()) {
+                    if (isDisposed() || getProgressMonitor().isCanceled()) {
                         break;
                     }
                     // Extract value with progress monitor

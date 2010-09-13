@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -17,6 +18,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.progress.IProgressService;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -247,10 +249,17 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return propertiesAdapter;
     }
 
-    public void runAndWait(boolean fork, boolean cancelable, final DBRRunnableWithProgress runnable)
+    public void runAndWait(final DBRRunnableWithProgress runnable)
     {
         try {
-            this.getWorkbench().getProgressService().run(fork, cancelable, new IRunnableWithProgress() {
+            IRunnableContext runnableContext;
+            IWorkbenchWindow workbenchWindow = getWorkbench().getActiveWorkbenchWindow();
+            if (workbenchWindow != null) {
+                runnableContext = new ProgressMonitorDialog(getWorkbench().getActiveWorkbenchWindow().getShell());
+            } else {
+                runnableContext = this.getWorkbench().getProgressService();
+            }
+            runnableContext.run(true, true, new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {

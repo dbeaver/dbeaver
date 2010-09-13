@@ -81,10 +81,12 @@ public class LoadingUtils {
         return null;
     }
 
-    public static <RESULT> void executeService(
+    public static <RESULT> LoadingJob<RESULT> executeService(
         ILoadService<RESULT> loadingService,
         ILoadVisualizer<RESULT> visualizer)
     {
-        new LoadingJob<RESULT>(loadingService, visualizer).schedule();
+        LoadingJob<RESULT> job = new LoadingJob<RESULT>(loadingService, visualizer);
+        job.schedule();
+        return job;
     }
 }

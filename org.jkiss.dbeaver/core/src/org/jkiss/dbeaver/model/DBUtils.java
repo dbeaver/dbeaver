@@ -289,7 +289,7 @@ public final class DBUtils {
                 }
             }
         }
-        if (identifiers.isEmpty()) {
+        if (identifiers.isEmpty() && !table.isView()) {
             // Check indexes only if no unique constraints found
             try {
                 Collection<? extends DBSIndex> indexes = table.getIndexes(monitor);
@@ -305,21 +305,25 @@ public final class DBUtils {
             }
         }
 
-        // Find PK or unique key
-        DBSConstraint uniqueId = null;
-        DBSIndex uniqueIndex = null;
-        for (DBSObject id : identifiers) {
-            if (id instanceof DBSConstraint) {
-                if (((DBSConstraint)id).getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
-                    return getTableColumns(monitor, (DBSConstraint)id);
-                } else if (((DBSConstraint)id).getConstraintType().isUnique()) {
-                    uniqueId = (DBSConstraint)id;
+        if (!identifiers.isEmpty()) {
+            // Find PK or unique key
+            DBSConstraint uniqueId = null;
+            DBSIndex uniqueIndex = null;
+            for (DBSObject id : identifiers) {
+                if (id instanceof DBSConstraint) {
+                    if (((DBSConstraint)id).getConstraintType() == DBSConstraintType.PRIMARY_KEY) {
+                        return getTableColumns(monitor, (DBSConstraint)id);
+                    } else if (((DBSConstraint)id).getConstraintType().isUnique()) {
+                        uniqueId = (DBSConstraint)id;
+                    }
+                } else {
+                    uniqueIndex = (DBSIndex)id;
                 }
-            } else {
-                uniqueIndex = (DBSIndex)id;
             }
+            return uniqueId != null ? getTableColumns(monitor, uniqueId) : uniqueIndex != null ? getTableColumns(monitor, uniqueIndex) : Collections.<DBSTableColumn>emptyList();
+        } else {
+            return Collections.emptyList();
         }
-        return uniqueId != null ? getTableColumns(monitor, uniqueId) : uniqueIndex != null ? getTableColumns(monitor, uniqueIndex) : Collections.<DBSTableColumn>emptyList();
     }
 
     public static List<DBSTableColumn> getTableColumns(DBRProgressMonitor monitor, DBSConstraint constraint)

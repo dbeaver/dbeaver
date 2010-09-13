@@ -38,7 +38,7 @@ public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<IDatabaseObject
     public void activatePart()
     {
         final StringBuilder ddl = new StringBuilder();
-        DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
+        DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
             public void run(DBRProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException
             {

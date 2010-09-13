@@ -840,7 +840,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         final Object[] cells = new Object[metaColumns.length];
         if (copyCurrent) {
             final int currentRowNumber = rowNum;
-            DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
+            DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {

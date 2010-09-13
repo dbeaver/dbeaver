@@ -101,7 +101,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         addContributions(EntityEditorDescriptor.POSITION_START);
 
         final List<TabInfo> tabs = new ArrayList<TabInfo>();
-        DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress() {
+        DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
             public void run(DBRProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException
             {
@@ -171,6 +171,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             if (children != null) {
                 for (DBNNode child : children) {
                     if (child instanceof DBNTreeFolder) {
+                        monitor.subTask("Add folder '" + child.getNodeName() + "'");
                         tabs.add(new TabInfo(child));
                     }
                 }
@@ -187,6 +188,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                     if (child instanceof DBXTreeItem) {
                         try {
                             if (!((DBXTreeItem)child).isOptional() || treeNode.hasChildren(monitor, child)) {
+                                monitor.subTask("Add node '" + node.getNodeName() + "'");
                                 tabs.add(new TabInfo(node, child));
                             }
                         } catch (DBException e) {

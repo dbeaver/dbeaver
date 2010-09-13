@@ -12,6 +12,7 @@ import org.eclipse.gef.LayerConstants;
 import org.eclipse.gef.commands.CommandStackListener;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
 import org.jkiss.dbeaver.ext.erd.layout.DelegatingLayoutManager;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
@@ -280,9 +281,14 @@ public class DiagramPart extends PropertyAwarePart
 
     @Override
     protected void refreshVisuals() {
+        Control control = getViewer().getControl();
+        if (control == null || control.isDisposed()) {
+            return;
+        }
+
         Animation.markBegin();
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
-        if ((getViewer().getControl().getStyle() & SWT.MIRRORED ) == 0)
+        if ((control.getStyle() & SWT.MIRRORED ) == 0)
             cLayer.setAntialias(SWT.ON);
 
         FanRouter router = new FanRouter();

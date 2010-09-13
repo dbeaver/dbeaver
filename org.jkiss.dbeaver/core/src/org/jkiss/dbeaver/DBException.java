@@ -34,7 +34,7 @@ public class DBException extends Exception
 
     public DBException(Throwable cause)
     {
-        super(cause.getMessage(), cause);
+        super(cause instanceof SQLException ? makeMessage((SQLException) cause) : cause.getMessage(), cause);
     }
 
     public DBException(SQLException ex)

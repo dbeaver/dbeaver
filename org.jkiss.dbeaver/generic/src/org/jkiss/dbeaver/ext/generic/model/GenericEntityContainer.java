@@ -292,8 +292,8 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                     // but other DBs (and logically it's correct) do not want quote chars in this query
                     // so let's fix it in oracle plugin
                     forParent == null ? null : forParent.getName(), //DBUtils.getQuotedIdentifier(getDataSource(), forTable.getName()),
-                    false,
-                    false).getStatement();
+                    true,
+                    true).getStatement();
         }
 
         protected GenericIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, GenericTable parent, String indexName)

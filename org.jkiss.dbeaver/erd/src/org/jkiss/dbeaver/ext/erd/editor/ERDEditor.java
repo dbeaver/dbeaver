@@ -4,10 +4,13 @@
 
 package org.jkiss.dbeaver.ext.erd.editor;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.gef.*;
 import org.eclipse.gef.commands.CommandStack;
@@ -27,6 +30,7 @@ import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.EditorPart;
@@ -55,6 +59,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 
@@ -76,7 +81,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
     static final Log log = LogFactory.getLog(ERDEditor.class);
 
     private IDatabaseObjectManager<DBSObject> objectManager;
-    private EntityDiagram entityDiagram;
+    //private EntityDiagram entityDiagram;
 
     private ProgressControl progressControl;
 
@@ -122,6 +127,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
     private boolean isReadOnly;
     private boolean isLoaded;
+
+    private LoadingJob<EntityDiagram> diagramLoadingJob;
 
     /**
      * No-arg constructor
@@ -186,6 +193,10 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
     }
 
     public void dispose() {
+        if (diagramLoadingJob != null) {
+            diagramLoadingJob.cancel();
+            diagramLoadingJob = null;
+        }
         if (progressControl != null && !progressControl.isDisposed()) {
             progressControl.dispose();
         }
@@ -232,7 +243,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             ObjectOutputStream objectOut = new ObjectOutputStream(out);
-            objectOut.writeObject(entityDiagram);
+            objectOut.writeObject(getDiagram());
             objectOut.close();
             IEditorInput input = getEditorInput();
             if (input instanceof IFileEditorInput) {
@@ -289,7 +300,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
      * @return an instance of <code>Schema</code>
      */
     public EntityDiagram getDiagram() {
-        return entityDiagram;
+        return (EntityDiagram) getGraphicalViewer().getContents();
     }
 
     public DiagramPart getDiagramPart() {
@@ -307,24 +318,27 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         } else {
             // Setup empty schema for now
             // Actual data will be loaded later in activatePart
-            entityDiagram = new EntityDiagram(null, "empty");
         }
     }
 
     private EntityDiagram loadFromDatabase(DBRProgressMonitor monitor)
-        throws DBException {
-        if (getEntityContainer() == null) {
+        throws DBException
+    {
+        if (getSourceObject() == null) {
             log.error("Database object must be entity container to render ERD diagram");
             return null;
         }
-        DBSObject dbObject = getEntityContainer();
-        entityDiagram = new EntityDiagram(dbObject, dbObject.getName());
+        DBSObject dbObject = getSourceObject();
+        EntityDiagram diagram = new EntityDiagram(dbObject, dbObject.getName());
 
         Collection<DBSTable> tables = collectDatabaseTables(monitor, dbObject);
 
         // Load entities
         Map<DBSTable, ERDTable> tableMap = new HashMap<DBSTable, ERDTable>();
         for (DBSTable table : tables) {
+            if (monitor.isCanceled()) {
+                break;
+            }
             ERDTable erdTable = new ERDTable(table);
             if (table == dbObject) {
                 erdTable.setPrimary(true);
@@ -334,20 +348,25 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 List<DBSTableColumn> idColumns = DBUtils.getBestTableIdentifier(monitor, table);
 
                 Collection<? extends DBSTableColumn> columns = table.getColumns(monitor);
-                for (DBSTableColumn column : columns) {
-                    ERDTableColumn c1 = new ERDTableColumn(column, idColumns.contains(column));
-                    erdTable.addColumn(c1);
+                if (!CommonUtils.isEmpty(columns)) {
+                    for (DBSTableColumn column : columns) {
+                        ERDTableColumn c1 = new ERDTableColumn(column, idColumns.contains(column));
+                        erdTable.addColumn(c1);
+                    }
                 }
             } catch (DBException e) {
                 // just skip this problematic columns
                 log.debug("Could not load table '" + table.getName() + "'columns", e);
             }
-            entityDiagram.addTable(erdTable);
+            diagram.addTable(erdTable);
             tableMap.put(table, erdTable);
         }
 
         // Load relations
         for (DBSTable table : tables) {
+            if (monitor.isCanceled()) {
+                break;
+            }
             ERDTable table1 = tableMap.get(table);
             try {
                 Set<DBSTableColumn> fkColumns = new HashSet<DBSTableColumn>();
@@ -377,7 +396,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             }
         }
 
-        return entityDiagram;
+        return diagram;
     }
 
     private Collection<DBSTable> collectDatabaseTables(DBRProgressMonitor monitor, DBSObject root) throws DBException {
@@ -407,6 +426,9 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             } catch (DBException e) {
                 log.warn("Could not load table foreign keys", e);
             }
+            if (monitor.isCanceled()) {
+                return result;
+            }
             try {
                 Collection<? extends DBSForeignKey> refs = rootTable.getReferences(monitor);
                 if (refs != null) {
@@ -423,6 +445,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
     }
 
     private void loadContentFromFile(IFileEditorInput input) {
+/*
         IFile file = input.getFile();
         try {
             setPartName(file.getName());
@@ -435,6 +458,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             log.error("Error loading diagram from file '" + file.getFullPath().toString() + "'", e);
             entityDiagram = getContent();
         }
+*/
     }
 
     /**
@@ -472,8 +496,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         hookGraphicalViewer();
         initializeGraphicalViewer();
 
-        // Set initial contents
-        viewer.setContents(entityDiagram);
+        // Set initial (empty) contents
+        viewer.setContents(new EntityDiagram(null, "empty"));
 
         // Set context menu
         ContextMenuProvider provider = new ERDEditorContextMenuProvider(this, getActionRegistry());
@@ -688,9 +712,13 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         return new EntityDiagram(null, "Schema");//ContentCreator().getContent();
     }
 
-    DBSObject getEntityContainer()
+    DBSObject getSourceObject()
     {
         return objectManager.getObject();
+    }
+
+    public boolean isLoaded() {
+        return isLoaded;
     }
 
     public IDatabaseObjectManager<DBSObject> getObjectManager() {
@@ -710,18 +738,27 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
     }
 
     public void deactivatePart() {
-
     }
 
     public void refreshDiagram()
     {
-        loadDiagram();
+        if (isLoaded) {
+            loadDiagram();
+        }
     }
 
-    private void loadDiagram()
+    private synchronized void loadDiagram()
     {
-        LoadingUtils.executeService(
-            new AbstractLoadService<EntityDiagram>("Load schema") {
+        DBSObject object = getSourceObject();
+        if (object == null) {
+            return;
+        }
+        if (diagramLoadingJob != null) {
+            // Do not start new one while old is running
+            return;
+        }
+        diagramLoadingJob = LoadingUtils.executeService(
+            new AbstractLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'") {
                 public EntityDiagram evaluate()
                     throws InvocationTargetException, InterruptedException {
                     try {
@@ -735,6 +772,12 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 }
             },
             progressControl.createLoadVisualizer());
+        diagramLoadingJob.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                diagramLoadingJob = null;
+            }
+        });
     }
 
     public PaletteRoot createPaletteRoot() {
@@ -885,6 +928,11 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             @Override
             public void completeLoading(EntityDiagram entityDiagram) {
                 super.completeLoading(entityDiagram);
+                Control control = getGraphicalViewer().getControl();
+                if (control == null || control.isDisposed()) {
+                    return;
+                }
+
                 if (entityDiagram != null) {
                     setInfo(entityDiagram.getEntityCount() + " objects");
                 } else {

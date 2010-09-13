@@ -47,7 +47,7 @@ public class ERDTable extends ERDObject<DBSTable>
 			throw new IllegalArgumentException("Column already present");
 		}
 		columns.add(column);
-		firePropertyChange(CHILD, null, column);
+		//firePropertyChange(CHILD, null, column);
 	}
 
 	public void addColumn(ERDTableColumn column, int index)
@@ -57,20 +57,20 @@ public class ERDTable extends ERDObject<DBSTable>
 			throw new IllegalArgumentException("Column already present");
 		}
 		columns.add(index, column);
-		firePropertyChange(CHILD, null, column);
+		//firePropertyChange(CHILD, null, column);
 	}
 
 	public void removeColumn(ERDTableColumn column)
 	{
 		columns.remove(column);
-		firePropertyChange(CHILD, column, null);
+		//firePropertyChange(CHILD, column, null);
 	}
 
 	public void switchColumn(ERDTableColumn column, int index)
 	{
 		columns.remove(column);
 		columns.add(index, column);
-		firePropertyChange(REORDER, this, column);
+		//firePropertyChange(REORDER, this, column);
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class ERDTable extends ERDObject<DBSTable>
 	public void addForeignKeyRelationship(ERDAssociation table)
 	{
 		foreignKeyRelationships.add(table);
-		firePropertyChange(OUTPUT, null, table);
+		//firePropertyChange(OUTPUT, null, table);
 	}
 
 	/**
@@ -105,7 +105,7 @@ public class ERDTable extends ERDObject<DBSTable>
 	public void addPrimaryKeyRelationship(ERDAssociation table)
 	{
 		primaryKeyRelationships.add(table);
-		firePropertyChange(INPUT, null, table);
+		//firePropertyChange(INPUT, null, table);
 	}
 
 	/**
@@ -117,7 +117,7 @@ public class ERDTable extends ERDObject<DBSTable>
 	public void removeForeignKeyRelationship(ERDAssociation table)
 	{
 		foreignKeyRelationships.remove(table);
-		firePropertyChange(OUTPUT, table, null);
+		//firePropertyChange(OUTPUT, table, null);
 	}
 
 	/**
@@ -129,7 +129,7 @@ public class ERDTable extends ERDObject<DBSTable>
 	public void removePrimaryKeyRelationship(ERDAssociation table)
 	{
 		primaryKeyRelationships.remove(table);
-		firePropertyChange(INPUT, table, null);
+		//firePropertyChange(INPUT, table, null);
 	}
 
 	public List<ERDTableColumn> getColumns()
