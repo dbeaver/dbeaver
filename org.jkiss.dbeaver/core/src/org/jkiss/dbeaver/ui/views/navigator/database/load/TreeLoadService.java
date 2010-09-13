@@ -5,9 +5,8 @@
 package org.jkiss.dbeaver.ui.views.navigator.database.load;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -15,13 +14,13 @@ import java.util.List;
 /**
  * TreeLoadService
  */
-public class TreeLoadService extends AbstractLoadService<Object[]> {
+public class TreeLoadService extends DatabaseLoadService<Object[]> {
 
     private DBNNode parentNode;
 
     public TreeLoadService(String serviceName, DBNNode parentNode)
     {
-        super(serviceName);
+        super(serviceName, parentNode);
         this.parentNode = parentNode;
     }
 

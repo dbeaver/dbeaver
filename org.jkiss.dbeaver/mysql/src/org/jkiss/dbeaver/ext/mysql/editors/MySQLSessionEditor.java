@@ -4,17 +4,21 @@
 
 package org.jkiss.dbeaver.ext.mysql.editors;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
@@ -24,7 +28,7 @@ import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
+import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -35,8 +39,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
-import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * MySQLSessionEditor
@@ -158,7 +160,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
     private void refreshSessions()
     {
         LoadingUtils.executeService(
-            new AbstractLoadService<List<SessionInfo>>("Load active session list") {
+            new DatabaseLoadService<List<SessionInfo>>("Load active session list", getDataSource()) {
                 public List<SessionInfo> evaluate()
                     throws InvocationTargetException, InterruptedException
                 {
@@ -210,7 +212,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
         }
 
         LoadingUtils.executeService(
-            new AbstractLoadService<SessionInfo>("Kill " + (killConnection ? ("session " + session.pid) : ("query " + session.info))) {
+            new DatabaseLoadService<SessionInfo>("Kill " + (killConnection ? ("session " + session.pid) : ("query " + session.info)), getDataSource()) {
                 public SessionInfo evaluate()
                     throws InvocationTargetException, InterruptedException
                 {

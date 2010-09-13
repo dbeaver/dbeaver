@@ -31,8 +31,6 @@ public class ConnectJob extends AbstractJob
     {
         super("Connect to " + container.getName());
         setUser(true);
-        //setProperty(IProgressConstants.KEEP_PROPERTY, Boolean.TRUE);
-        setProperty(IProgressConstants.KEEPONE_PROPERTY, Boolean.TRUE);
         this.container = container;
     }
 

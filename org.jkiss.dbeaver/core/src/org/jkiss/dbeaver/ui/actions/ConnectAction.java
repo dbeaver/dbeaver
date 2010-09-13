@@ -34,7 +34,7 @@ public class ConnectAction extends DataSourceAction
         final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getDataSourceContainer(false);
         if (dataSourceContainer != null && !dataSourceContainer.isConnected()) {
 
-            if (!CommonUtils.isEmpty(Job.getJobManager().find(this))) {
+            if (!CommonUtils.isEmpty(Job.getJobManager().find(dataSourceContainer))) {
                 // Already connecting/disconnecting - jsut return
                 return;
             }

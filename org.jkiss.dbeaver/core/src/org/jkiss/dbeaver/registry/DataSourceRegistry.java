@@ -13,6 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
@@ -126,6 +127,9 @@ public class DataSourceRegistry implements DBPRegistry
                 for (DataSourceDescriptor dataSource : dataSources) {
                     if (dataSource.isConnected()) {
                         try {
+                            // Cancel al jobs
+                            Job.getJobManager().cancel(dataSource.getDataSource());
+                            // Disconnect
                             dataSource.disconnect(monitor);
                         } catch (Exception ex) {
                             log.error("Can't shutdown data source", ex);

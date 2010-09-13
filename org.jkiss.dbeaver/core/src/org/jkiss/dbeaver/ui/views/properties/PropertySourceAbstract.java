@@ -15,6 +15,7 @@ import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
@@ -152,6 +153,10 @@ public class PropertySourceAbstract implements IPropertySource
                     throw new InvocationTargetException(ex);
                 }
             }
+        }
+
+        public Object getFamily() {
+            return object instanceof DBSObject ? ((DBSObject)object).getDataSource() : object;
         }
     }
 

@@ -32,7 +32,7 @@ public class DisconnectAction extends DataSourceAction
                 return;
             }
 
-            DisconnectJob disconnectJob = new DisconnectJob(dataSourceContainer.getDataSource());
+            DisconnectJob disconnectJob = new DisconnectJob((DataSourceDescriptor) dataSourceContainer);
             disconnectJob.schedule();
         }
 /*

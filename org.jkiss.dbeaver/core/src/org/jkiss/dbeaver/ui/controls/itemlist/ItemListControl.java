@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
-import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
+import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -322,13 +322,13 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
 
     }
 
-    private class ItemLoadService extends AbstractLoadService<List<DBNNode>> {
+    private class ItemLoadService extends DatabaseLoadService<List<DBNNode>> {
 
         private DBXTreeNode metaNode;
 
         protected ItemLoadService(DBXTreeNode metaNode)
         {
-            super("Loading items");
+            super("Loading items", node);
             this.metaNode = metaNode;
         }
 
@@ -498,10 +498,10 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
             }
         }
 
-        private class ValueLoadService extends AbstractLoadService<Object> {
+        private class ValueLoadService extends DatabaseLoadService<Object> {
             public ValueLoadService()
             {
-                super("Load item values");
+                super("Load item values", node);
             }
 
             public Object evaluate()

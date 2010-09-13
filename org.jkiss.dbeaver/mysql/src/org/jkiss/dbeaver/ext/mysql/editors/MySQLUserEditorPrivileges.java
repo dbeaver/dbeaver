@@ -14,7 +14,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegesPairList;
-import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
+import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -84,7 +84,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     {
         try {
             LoadingUtils.executeService(
-                new AbstractLoadService<Map<String, Map<String, Boolean>>>("Load catalog privileges") {
+                new DatabaseLoadService<Map<String, Map<String, Boolean>>>("Load catalog privileges", getUser().getDataSource()) {
                     public Map<String, Map<String, Boolean>> evaluate()
                         throws InvocationTargetException, InterruptedException
                     {

@@ -24,4 +24,5 @@ public interface ILoadService<RESULT> {
 
     boolean cancel() throws InvocationTargetException;
 
+    Object getFamily();
 }

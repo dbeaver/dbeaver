@@ -68,7 +68,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
 
     public boolean belongsTo(Object family)
     {
-        return family == LOADING_FAMILY;
+        return family == loadingService.getFamily();
     }
 
     protected void canceling()

@@ -8,38 +8,45 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**
  * DisconnectJob
  */
-public class DisconnectJob extends DataSourceJob
+public class DisconnectJob extends AbstractJob
 {
     static final Log log = LogFactory.getLog(DisconnectJob.class);
 
+    private DataSourceDescriptor container;
+
     public DisconnectJob(
-        DBPDataSource dataSource)
+        DataSourceDescriptor container)
     {
-        super("Disconnect from " + dataSource.getContainer().getName(), null, dataSource);
+        super("Disconnect from " + container.getName());
+        setUser(true);
+        this.container = container;
     }
 
     protected IStatus run(DBRProgressMonitor monitor)
     {
         try {
-            DataSourceDescriptor descriptor = (DataSourceDescriptor)getDataSource().getContainer();
-
-            descriptor.disconnect(monitor);
+            container.disconnect(monitor);
 
             return Status.OK_STATUS;
         }
         catch (Exception ex) {
             return DBeaverUtils.makeExceptionStatus(
-                "Error disconnecting from datasource '" + getDataSource().getContainer().getName() + "'",
+                "Error disconnecting from datasource '" + container.getName() + "'",
                 ex);
         }
+    }
+
+    public boolean belongsTo(Object family)
+    {
+        return container == family;
     }
 
     protected void canceling()

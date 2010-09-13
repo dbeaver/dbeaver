@@ -17,8 +17,6 @@ import org.jkiss.dbeaver.utils.DBeaverUtils;
  */
 public class ReconnectJob extends DataSourceJob
 {
-    static final Log log = LogFactory.getLog(ReconnectJob.class);
-
     public ReconnectJob(
         DBPDataSource dataSource)
     {

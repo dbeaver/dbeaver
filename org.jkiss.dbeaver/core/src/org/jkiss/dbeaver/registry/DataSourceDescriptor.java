@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
@@ -336,11 +337,26 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             return;
         }
 
+        monitor.beginTask("Disconnect from '" + getName() + "'", 3);
+
+        // Join all running jobs of the same family
+        monitor.subTask("Waiting for all active tasks to finish");
+        try {
+            // Cancel all currently running jobs
+            Job.getJobManager().cancel(dataSource);
+
+            Job.getJobManager().join(dataSource, monitor.getNestedMonitor());
+        } catch (Exception e) {
+            // do nothing
+            log.debug(e);
+        }
+        monitor.worked(1);
+
         // First rollback active transaction
+        monitor.subTask("Rollback active transaction");
         DBCExecutionContext context = getDataSource().openContext(monitor);
         try {
             if (context.isConnected() && !context.getTransactionManager().isAutoCommit()) {
-                monitor.subTask("Rollback active transaction");
                 context.getTransactionManager().rollback(null);
             }
         }
@@ -350,10 +366,14 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         finally {
             context.close();
         }
+        monitor.worked(1);
 
         // Close datasource
-        monitor.subTask("Disconnect datasource");
+        monitor.subTask("Close connection");
         getDataSource().close(monitor);
+        monitor.worked(1);
+
+        monitor.done();
 
         dataSource = null;
         connectTime = null;
