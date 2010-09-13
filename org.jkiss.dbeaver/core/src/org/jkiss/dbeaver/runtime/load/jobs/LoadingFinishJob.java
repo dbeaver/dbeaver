@@ -19,7 +19,7 @@ class LoadingFinishJob<RESULT> extends AbstractUIJob {
 
     public LoadingFinishJob(ILoadVisualizer<RESULT> visualizer, RESULT result, Throwable error)
     {
-        super("Remove load load placeholder");
+        super("Finish loading job");
         this.visualizer = visualizer;
         this.result = result;
         this.error = error;
