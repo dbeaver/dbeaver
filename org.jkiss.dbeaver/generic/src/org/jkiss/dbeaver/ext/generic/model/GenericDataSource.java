@@ -285,7 +285,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         return container.getTable(monitor, tableName);
     }
 
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
+    public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getCatalogs())) {
@@ -299,7 +299,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         }
     }
 
-    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
+    public DBSEntity getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getCatalogs())) {
@@ -313,7 +313,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         }
     }
 
-    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
+    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(catalogs)) {
@@ -511,7 +511,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
             return GenericDataSource.this.getContainer();
         }
 
-        public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException {
+        public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor) throws DBException {
             return GenericTable.class;
         }
 

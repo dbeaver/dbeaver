@@ -135,13 +135,13 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         return procedureCache.getObjects(monitor);
     }
 
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
+    public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         return getTables(monitor);
     }
 
-    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
+    public DBSEntity getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         return DBUtils.findObject(getChildren(monitor), childName);

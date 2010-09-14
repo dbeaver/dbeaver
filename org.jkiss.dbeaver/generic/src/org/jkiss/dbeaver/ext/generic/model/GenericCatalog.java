@@ -9,6 +9,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.DBUtils;
 
@@ -88,7 +89,7 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
         return getDataSource().getContainer();
     }
 
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
+    public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getSchemas(monitor))) {
@@ -98,7 +99,7 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
         }
     }
 
-    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
+    public DBSEntity getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getSchemas(monitor))) {
@@ -108,7 +109,7 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
         }
     }
 
-    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
+    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getSchemas(monitor))) {

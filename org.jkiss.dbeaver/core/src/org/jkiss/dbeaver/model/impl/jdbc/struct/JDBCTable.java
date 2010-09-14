@@ -18,8 +18,10 @@ import org.jkiss.dbeaver.model.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -43,6 +45,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     public int getSupportedFeatures()
     {
         return DATA_INSERT | DATA_UPDATE | DATA_DELETE;
+    }
+
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException {
+        return getColumns(monitor);
+    }
+
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException {
+        return getColumn(monitor, childName);
     }
 
     public int readData(DBCExecutionContext context, DBDDataReciever dataReciever, int firstRow, int maxRows)

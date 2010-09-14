@@ -171,19 +171,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         return catalog.getTable(monitor, tableName);
     }
 
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
+    public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         return getCatalogs();
     }
 
-    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
+    public DBSEntity getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         return getCatalog(childName);
     }
 
-    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
+    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
         return MySQLCatalog.class;

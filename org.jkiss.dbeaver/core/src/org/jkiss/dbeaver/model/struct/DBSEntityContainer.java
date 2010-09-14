@@ -34,7 +34,7 @@ public interface DBSEntityContainer extends DBSObject
      * @throws DBException on any DB error
      * @param monitor progress monitor
      */
-    Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets child object by its name.
@@ -44,7 +44,7 @@ public interface DBSEntityContainer extends DBSObject
      * @throws DBException on any DB error
      * @return child object or null
      */
-    DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException;
+    DBSEntity getChild(DBRProgressMonitor monitor, String childName) throws DBException;
 
     /**
      * Gets type of child elements.
@@ -52,7 +52,7 @@ public interface DBSEntityContainer extends DBSObject
      * @return type of child objects
      * @throws org.jkiss.dbeaver.DBException on error
      */
-    Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException;
+    Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Caches all underlying structure contents.

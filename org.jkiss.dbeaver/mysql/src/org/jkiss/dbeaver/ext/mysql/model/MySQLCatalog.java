@@ -156,7 +156,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
         return getTable(monitor, childName);
     }
 
-    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
+    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
         return MySQLTable.class;
