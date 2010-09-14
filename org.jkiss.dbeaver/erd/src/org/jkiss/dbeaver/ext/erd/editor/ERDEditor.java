@@ -28,6 +28,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -39,6 +40,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
@@ -52,9 +54,11 @@ import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
@@ -83,8 +87,6 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
     static final Log log = LogFactory.getLog(ERDEditor.class);
 
     private IDatabaseObjectManager<DBSObject> objectManager;
-    //private EntityDiagram entityDiagram;
-
     private ProgressControl progressControl;
 
     /**
@@ -846,6 +848,24 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             loadDiagram();
         }
     }
+
+/*
+    public DBNNode getRootNode() {
+        IEditorInput editorInput = getEditorInput();
+        if (editorInput instanceof IDatabaseEditorInput) {
+            return ((IDatabaseEditorInput)editorInput).getTreeNode();
+        }
+        return null;
+    }
+
+    public Viewer getNavigatorViewer() {
+        return null;
+    }
+
+    public IWorkbenchPart getWorkbenchPart() {
+        return this;
+    }
+*/
 
     private class ProgressControl extends ProgressPageControl {
 
