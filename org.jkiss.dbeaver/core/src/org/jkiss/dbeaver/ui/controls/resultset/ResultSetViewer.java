@@ -11,15 +11,13 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.IColorProvider;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -715,6 +713,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             });
         }
 
+        // Menus from value handler
         try {
             manager.add(new Separator());
             metaColumns[columnIndex].getValueHandler().fillContextMenu(manager, valueController);
@@ -722,6 +721,21 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         catch (Exception e) {
             log.error(e);
         }
+
+        // Export and other utility methods
+        manager.add(new Separator());
+        manager.add(new Action("Export ... ", DBIcon.EXPORT.getImageDescriptor()) {
+            @Override
+            public void run()
+            {
+                ResultSetExportWizard wizard = new ResultSetExportWizard();
+                wizard.init(site.getWorkbenchWindow().getWorkbench(), getSelection());
+                WizardDialog dialog = new WizardDialog(site.getShell(), wizard);
+                dialog.open();
+
+            }
+        });
+
     }
 
     private void showCurrentRows()
@@ -750,7 +764,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     {
     }
 
-    public ISelection getSelection()
+    public IStructuredSelection getSelection()
     {
         return new StructuredSelection(spreadsheet.getSelection().toArray());
     }
