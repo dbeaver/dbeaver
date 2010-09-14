@@ -380,7 +380,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                     fkColumns.addAll(DBUtils.getTableColumns(monitor, fk));
                     ERDTable table2 = tableMap.get(fk.getReferencedKey().getTable());
                     if (table2 == null) {
-                        log.warn("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
+                        //log.warn("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
                     } else {
                         if (table1 != table2) {
                             new ERDAssociation(fk, table2, table1);

@@ -378,7 +378,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         IPreferenceStore store = getGlobalPreferenceStore();
 
         // Common
-        setDefaultPreferenceValue(store, PrefConstants.DEFAULT_AUTO_COMMIT, false);
+        setDefaultPreferenceValue(store, PrefConstants.DEFAULT_AUTO_COMMIT, true);
         setDefaultPreferenceValue(store, PrefConstants.QUERY_ROLLBACK_ON_ERROR, true);
 
         // SQL execution
