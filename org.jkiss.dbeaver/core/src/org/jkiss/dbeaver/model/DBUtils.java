@@ -289,7 +289,7 @@ public final class DBUtils {
                 }
             }
         }
-        if (identifiers.isEmpty() && !table.isView()) {
+        if (identifiers.isEmpty()) {
             // Check indexes only if no unique constraints found
             try {
                 Collection<? extends DBSIndex> indexes = table.getIndexes(monitor);

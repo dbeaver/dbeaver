@@ -122,6 +122,9 @@ public class JDBCTableMetaData implements DBCTableMetaData {
     public DBCTableIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException
     {
+        if (table.isView()) {
+            return null;
+        }
         if (identifiers == null) {
             // Load identifiers
             identifiers = new ArrayList<JDBCTableIdentifier>();
@@ -152,7 +155,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
                     }
                 }
             }
-            if (identifiers.isEmpty() && !table.isView()) {
+            if (identifiers.isEmpty()) {
                 // Check indexes only if no unique constraints found
                 Collection<? extends DBSIndex> indexes = table.getIndexes(monitor);
                 if (!CommonUtils.isEmpty(indexes)) {
