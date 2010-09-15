@@ -5,8 +5,6 @@
 package org.jkiss.dbeaver.ui.controls.proptree;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.ToolTip;
@@ -24,6 +22,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.prop.DBPProperty;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
+import org.jkiss.dbeaver.registry.PropertyDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.*;
@@ -306,10 +305,14 @@ public class EditablePropertiesControl extends Composite {
     private String getPropertyValue(DBPProperty prop)
     {
         Object propValue = propValues.get(prop.getName());
-        if (propValue != null) {
-            return propValue.toString();
+        if (propValue == null) {
+            propValue = prop.getDefaultValue();
         }
-        return String.valueOf(prop.getDefaultValue());
+        if (propValue != null) {
+            return String.valueOf(propValue);
+        } else {
+            return "";
+        }
     }
 
     private boolean isPropertyChanged(DBPProperty prop)
@@ -326,6 +329,17 @@ public class EditablePropertiesControl extends Composite {
         }
         propValues.put(propName, text);
         propsTree.update(prop, null);
+    }
+
+    protected void handlePropertyCreate(PropertyDescriptor newProp, Object newValue) {
+        propValues.put(newProp.getName(), newValue);
+        propsTree.refresh(newProp.getGroup());
+        propsTree.expandToLevel(newProp.getGroup(), 1);
+    }
+
+    protected void handlePropertyRemove(DBPProperty prop) {
+        propValues.remove(prop.getName());
+        propsTree.refresh(prop.getGroup());
     }
 
     class PropsContentProvider implements IStructuredContentProvider, ITreeContentProvider

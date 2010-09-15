@@ -520,10 +520,10 @@ public class DataSourceRegistry implements DBPRegistry
                 xml.addAttribute("password", encPassword);
             }
             if (connectionInfo.getProperties() != null) {
-                for (Map.Entry<String, String> entry : connectionInfo.getProperties().entrySet()) {
+                for (Map.Entry<String, Object> entry : connectionInfo.getProperties().entrySet()) {
                     xml.startElement("property");
                     xml.addAttribute("name", entry.getKey());
-                    xml.addAttribute("value", entry.getValue());
+                    xml.addAttribute("value", String.valueOf(entry.getValue()));
                     xml.endElement();
                 }
             }

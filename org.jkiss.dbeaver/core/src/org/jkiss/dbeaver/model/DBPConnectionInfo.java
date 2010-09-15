@@ -19,7 +19,7 @@ public class DBPConnectionInfo implements DBPObject
     private String userName;
     private String userPassword;
     private String url;
-    private Map<String, String> properties = new HashMap<String, String>();
+    private Map<String, Object> properties = new HashMap<String, Object>();
 
 /*
 	public DBPConnectionInfo(DBPDriver driver)
@@ -93,14 +93,14 @@ public class DBPConnectionInfo implements DBPObject
         this.userPassword = userPassword;
     }
 
-    public Map<String, String> getProperties()
+    public Map<String, Object> getProperties()
     {
         return properties;
     }
 
-    public void setProperties(Map<String, String> properties)
+    public void setProperties(Map<String, Object> properties)
     {
-        this.properties = new HashMap<String, String>();
+        this.properties = new HashMap<String, Object>();
         this.properties.putAll(properties);
     }
 }
