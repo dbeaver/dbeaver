@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.dbeaver.model.prop.DBPProperty;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class PropertyGroupDescriptor implements DBPPropertyGroup
 
     private String name;
     private String description;
-    private List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
+    private List<DBPProperty> properties = new ArrayList<DBPProperty>();
 
     public PropertyGroupDescriptor(IConfigurationElement config)
     {
@@ -27,8 +28,18 @@ public class PropertyGroupDescriptor implements DBPPropertyGroup
         this.description = config.getAttribute("description");
         IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.PROPERTY_TAG);
         for (IConfigurationElement prop : propElements) {
-            properties.add(new PropertyDescriptor(this, prop));
+            addProperty(new PropertyDescriptor(this, prop));
         }
+    }
+
+    public PropertyGroupDescriptor(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    public void addProperty(DBPProperty property)
+    {
+        properties.add(property);
     }
 
     public String getName()
@@ -41,7 +52,7 @@ public class PropertyGroupDescriptor implements DBPPropertyGroup
         return description;
     }
 
-    public List<PropertyDescriptor> getProperties()
+    public List<DBPProperty> getProperties()
     {
         return properties;
     }

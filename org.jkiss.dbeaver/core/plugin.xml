@@ -884,5 +884,15 @@
 
         </provider>
     </extension>
+    <extension
+          point="org.jkiss.dbeaver.dataExportProvider">
+       <export
+             class="org.jkiss.dbeaver.ui.controls.resultset.export.DataExporterCSV"
+             description="Export to CSV file"
+             icon="icons/misc/csv.png"
+             id="org.jkiss.dbeaver.core.dataExport.csv"
+             label="CSV">
+       </export>
+    </extension>
 
 </plugin>

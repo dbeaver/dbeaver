@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class DataExporterDescriptor extends AbstractDescriptor
 {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataExporter";
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataExportProvider";
 
     private String id;
     private String className;

@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.prop.DBPProperty;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
+import org.jkiss.dbeaver.registry.PropertyGroupDescriptor;
 
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
@@ -66,27 +67,14 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
             return null;
         }
 
-        final List<DBPProperty> result = new ArrayList<DBPProperty>();
-        DBPPropertyGroup propGroup = new DBPPropertyGroup() {
-            public String getName() {
-                return "Driver properties";
-            }
-
-            public String getDescription() {
-                return "JDBC Driver Properties";
-            }
-
-            public List<? extends DBPProperty> getProperties() {
-                return result;
-            }
-        };
+        PropertyGroupDescriptor propGroup = new PropertyGroupDescriptor("Driver properties", "JDBC Driver Properties");
         for (DriverPropertyInfo desc : propDescs) {
             if (DBConstants.PROPERTY_USER.equals(desc.name) || DBConstants.PROPERTY_PASSWORD.equals(desc.name)) {
                 // Skip user/password properties
                 continue;
             }
             desc.value = getConnectionPropertyDefaultValue(desc.name, desc.value);
-            result.add(new JDBCConnectionProperty(propGroup, desc));
+            propGroup.addProperty(new JDBCConnectionProperty(propGroup, desc));
         }
         return propGroup;
     }

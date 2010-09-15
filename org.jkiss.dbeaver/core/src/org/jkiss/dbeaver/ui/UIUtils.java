@@ -134,6 +134,25 @@ public class UIUtils {
         }
     }
 
+    public static void maxTreeColumnsWidth(Tree tree)
+    {
+        int columnCount = tree.getColumnCount();
+        if (columnCount > 0) {
+            int totalWidth = 0;
+            for (TreeColumn tc : tree.getColumns()) {
+                tc.pack();
+                totalWidth += tc.getWidth();
+            }
+            if (totalWidth < tree.getClientArea().width) {
+                int extraSpace = tree.getClientArea().width - totalWidth;
+                extraSpace /= columnCount;
+                for (TreeColumn tc : tree.getColumns()) {
+                    tc.setWidth(tc.getWidth() + extraSpace);
+                }
+            }
+        }
+    }
+
     public static void dispose(Widget widget)
     {
         if (widget != null) {
