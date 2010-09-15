@@ -20,11 +20,15 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.prop.DBPProperty;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 import org.jkiss.dbeaver.registry.PropertyDescriptor;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.text.Collator;
 import java.util.*;
 import java.util.List;
 
@@ -60,7 +64,7 @@ public class EditablePropertiesControl extends Composite {
         initPropTree();
     }
 
-    public void loadProperties(List<DBPPropertyGroup> propertyGroups, Map<String, Object> propertyValues)
+    public void loadProperties(List<? extends DBPPropertyGroup> propertyGroups, Map<String, Object> propertyValues)
     {
         propValues.clear();
         originalValues.clear();
@@ -70,7 +74,13 @@ public class EditablePropertiesControl extends Composite {
         }
 
         if (propsTree != null) {
-            propsTree.setInput(propertyGroups);
+            Object root;
+            if (propertyGroups.size() == 1) {
+                root = propertyGroups.get(0);
+            } else {
+                root = propertyGroups;
+            }
+            propsTree.setInput(root);
             propsTree.expandAll();
             for (TreeColumn column : propsTree.getTree().getColumns()) {
                 column.pack();
@@ -137,6 +147,7 @@ public class EditablePropertiesControl extends Composite {
         column.getColumn().setMoveable(true);
         column.getColumn().setText("Name");
         column.setLabelProvider(labelProvider);
+        column.getColumn().addListener(SWT.Selection, new SortListener());
 
 
         column = new TreeViewerColumn(propsTree, SWT.NONE);
@@ -145,6 +156,18 @@ public class EditablePropertiesControl extends Composite {
         column.getColumn().setText("Value");
         column.setLabelProvider(labelProvider);
 
+
+        /*
+                List<? extends DBPProperty> props = ((DBPPropertyGroup) parent).getProperties();
+                Collections.sort(props, new Comparator<DBPProperty>() {
+                    public int compare(DBPProperty o1, DBPProperty o2)
+                    {
+                        return o1.getName().compareTo(o2.getName());
+                    }
+                });
+                return props.toArray();
+
+        */
         registerEditor();
         registerContextMenu();
     }
@@ -375,14 +398,7 @@ public class EditablePropertiesControl extends Composite {
                 return ((List) parent).toArray();
             } else if (parent instanceof DBPPropertyGroup) {
                 // Sort props by name
-                List<? extends DBPProperty> props = ((DBPPropertyGroup) parent).getProperties();
-                Collections.sort(props, new Comparator<DBPProperty>() {
-                    public int compare(DBPProperty o1, DBPProperty o2)
-                    {
-                        return o1.getName().compareTo(o2.getName());
-                    }
-                });
-                return props.toArray();
+                return ((DBPPropertyGroup) parent).getProperties().toArray();
             } else {
                 return new Object[0];
             }
@@ -439,6 +455,11 @@ public class EditablePropertiesControl extends Composite {
             boolean changed = false;
             if (element instanceof DBPProperty) {
                 changed = isPropertyChanged((DBPProperty)element);
+/*
+                if (((DBPProperty)element).isRequired() && cell.getColumnIndex() == 0) {
+                    cell.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_WARN_TSK));
+                }
+*/
             }
             if (changed) {
                 cell.setFont(boldFont);
@@ -447,6 +468,44 @@ public class EditablePropertiesControl extends Composite {
             }
         }
 
+    }
+
+    private class SortListener implements Listener
+    {
+        int sortDirection = SWT.DOWN;
+        TreeColumn prevColumn = null;
+
+        public void handleEvent(Event e) {
+            Control oldEditor = treeEditor.getEditor();
+            if (oldEditor != null) oldEditor.dispose();
+
+            Collator collator = Collator.getInstance(Locale.getDefault());
+            TreeColumn column = (TreeColumn)e.widget;
+            Tree tree = propsTree.getTree();
+            if (prevColumn == column) {
+                // Set reverse order
+                sortDirection = (sortDirection == SWT.UP ? SWT.DOWN : SWT.UP);
+            }
+            prevColumn = column;
+            tree.setSortColumn(column);
+            tree.setSortDirection(sortDirection);
+
+            propsTree.setSorter(new ViewerSorter(collator) {
+                public int compare(Viewer viewer, Object e1, Object e2)
+                {
+                    int mul = (sortDirection == SWT.UP ? 1 : -1);
+                    int result;
+                    if (e1 instanceof DBPProperty && e2 instanceof DBPProperty) {
+                        result = ((DBPProperty)e1).getName().compareTo(((DBPProperty)e2).getName());
+                    } else if (e1 instanceof DBPPropertyGroup && e2 instanceof DBPPropertyGroup) {
+                        result = ((DBPPropertyGroup)e1).getName().compareTo(((DBPPropertyGroup)e2).getName());
+                    } else {
+                        result = 0;
+                    }
+                    return result * mul;
+                }
+            });
+        }
     }
 
 }

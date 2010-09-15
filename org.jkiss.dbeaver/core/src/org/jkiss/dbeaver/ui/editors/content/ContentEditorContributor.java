@@ -8,15 +8,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.action.ControlContribution;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IStatusLineManager;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Combo;
@@ -24,19 +17,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.SimpleAction;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.Charset;
-import java.util.SortedMap;
 
 /**
  * LOB Editor contributor
@@ -163,28 +155,13 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         {
             protected Control createControl(Composite parent)
             {
-                encodingCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
-                encodingCombo.setVisibleItemCount(30);
-                SortedMap<String,Charset> charsetMap = Charset.availableCharsets();
-                int index = 0;
                 String curCharset = null;
                 try {
                     curCharset = getEditor().getEditorInput().getFile().getCharset();
                 } catch (CoreException e) {
                     log.error(e);
                 }
-                int defIndex = -1;
-                for (String csName : charsetMap.keySet()) {
-                    Charset charset = charsetMap.get(csName);
-                    encodingCombo.add(charset.displayName());
-                    if (charset.displayName().equalsIgnoreCase(curCharset)) {
-                        defIndex = index;
-                    }
-                    index++;
-                }
-                if (defIndex >= 0) {
-                    encodingCombo.select(defIndex);
-                }
+                encodingCombo = UIUtils.createEncodingCombo(parent, curCharset);
                 encodingCombo.setToolTipText("Content Encoding");
                 encodingCombo.addSelectionListener(new SelectionAdapter() {
                     @Override

@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.registry;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.ext.IResultSetExporter;
+import org.jkiss.dbeaver.ui.export.IDataExporter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +24,7 @@ public class DataExporterDescriptor extends AbstractDescriptor
     private List<String> sourceTypes = new ArrayList<String>();
     private String name;
     private String description;
+    private String fileExtension;
     private Image icon;
     private List<PropertyGroupDescriptor> propertyGroups = new ArrayList<PropertyGroupDescriptor>();
 
@@ -37,6 +38,7 @@ public class DataExporterDescriptor extends AbstractDescriptor
         this.className = config.getAttribute("class");
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
+        this.fileExtension = config.getAttribute("extension");
         String iconPath = config.getAttribute("icon");
         if (!CommonUtils.isEmpty(iconPath)) {
             this.icon = iconToImage(iconPath);
@@ -73,9 +75,18 @@ public class DataExporterDescriptor extends AbstractDescriptor
         return description;
     }
 
+    public String getFileExtension()
+    {
+        return fileExtension;
+    }
+
     public Image getIcon()
     {
         return icon;
+    }
+
+    public List<PropertyGroupDescriptor> getPropertyGroups() {
+        return propertyGroups;
     }
 
     public boolean appliesToType(Class objectType)
@@ -100,14 +111,14 @@ public class DataExporterDescriptor extends AbstractDescriptor
         return exporterClass;
     }
 
-    public IResultSetExporter createExporter()
+    public IDataExporter createExporter()
     {
         Class clazz = getExporterClass();
         if (clazz == null) {
             return null;
         }
         try {
-            return (IResultSetExporter)clazz.newInstance();
+            return (IDataExporter)clazz.newInstance();
         } catch (Exception ex) {
             log.error("Error instantiating data exporter '" + className + "'", ex);
             return null;

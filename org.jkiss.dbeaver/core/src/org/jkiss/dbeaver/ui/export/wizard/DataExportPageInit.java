@@ -2,11 +2,12 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.controls.resultset.export;
+package org.jkiss.dbeaver.ui.export.wizard;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -22,12 +23,12 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import java.util.Collection;
 import java.util.List;
 
-class ResultSetExportPageInit extends WizardDataTransferPage {
+class DataExportPageInit extends WizardDataTransferPage {
 
     private TableViewer exporterTable;
 
-    ResultSetExportPageInit() {
-        super("Choose export type");
+    DataExportPageInit() {
+        super("Export type");
         setTitle("Export type");
         setDescription("Choose export type");
         setPageComplete(false);
@@ -88,6 +89,23 @@ class ResultSetExportPageInit extends WizardDataTransferPage {
 
         loadExporters();
 
+        exporterTable.getTable().addSelectionListener(new SelectionListener() {
+            public void widgetSelected(SelectionEvent e) {
+                final IStructuredSelection selection = (IStructuredSelection)exporterTable.getSelection();
+                DataExporterDescriptor exporter;
+                if (!selection.isEmpty()) {
+                    exporter = (DataExporterDescriptor)selection.getFirstElement();
+                } else {
+                    exporter = null;
+                }
+                ((DataExportWizard)getWizard()).setSelectedExporter(exporter);
+                updatePageCompletion();
+            }
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+                getWizard().getContainer().showPage(getWizard().getNextPage(DataExportPageInit.this));
+            }
+        });
         setControl(composite);
 
         UIUtils.packColumns(exporterTable.getTable());
@@ -95,13 +113,18 @@ class ResultSetExportPageInit extends WizardDataTransferPage {
     }
 
     private void loadExporters() {
-        ResultSetExportWizard wizard = (ResultSetExportWizard)getWizard();
+        DataExportWizard wizard = (DataExportWizard)getWizard();
         IResultSetProvider resultSetProvider = wizard.getResultSetProvider();
         DBPObject rsSource = resultSetProvider.getResultSetSource();
 
         DataExportersRegistry registry = DBeaverCore.getInstance().getDataExportersRegistry();
         List<DataExporterDescriptor> exporters = registry.getDataExporters(rsSource == null ? Object.class : rsSource.getClass());
         exporterTable.setInput(exporters);
+    }
+
+    @Override
+    public boolean isPageComplete() {
+        return ((DataExportWizard)getWizard()).getSelectedExporter() != null;
     }
 
 }

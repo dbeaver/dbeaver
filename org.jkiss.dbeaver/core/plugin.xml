@@ -887,11 +887,17 @@
     <extension
           point="org.jkiss.dbeaver.dataExportProvider">
        <export
-             class="org.jkiss.dbeaver.ui.controls.resultset.export.DataExporterCSV"
-             description="Export to CSV file"
+             class="org.jkiss.dbeaver.ui.export.impl.DataExporterCSV"
+             description="Export to CSV file(s)"
+             extension="csv"
              icon="icons/misc/csv.png"
              id="org.jkiss.dbeaver.core.dataExport.csv"
              label="CSV">
+           <propertyGroup label="General">
+               <property label="Delimiter" type="string" description="Columns delimiter" defaultValue="," required="true"/>
+               <property label="Header" type="string" description="CSV header settings" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
+               <property label="Characters escape" type="string" description="Bad characters escaping model (surrounded with quotes or escaped with '\' character)" defaultValue="quotes" required="true" validValues="quotes,escape"/>
+           </propertyGroup>
        </export>
     </extension>
 

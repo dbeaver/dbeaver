@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.controls.resultset.export;
+package org.jkiss.dbeaver.ui.export.wizard;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -12,18 +12,20 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.wizards.datatransfer.DataTransferMessages;
 import org.jkiss.dbeaver.ext.IResultSetProvider;
+import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 
-public class ResultSetExportWizard extends Wizard implements IExportWizard {
+public class DataExportWizard extends Wizard implements IExportWizard {
 
-    private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "ResultSetExportWizard";
+    private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "DataExportWizard";
 
     private IResultSetProvider resultSetProvider;
-    private ResultSetExportPageInit mainPage;
+    private DataExportPageInit mainPage;
+    private DataExporterDescriptor selectedExporter;
 
     /**
      * Creates a wizard for exporting workspace resources to a zip file.
      */
-    public ResultSetExportWizard(IResultSetProvider resultSetProvider) {
+    public DataExportWizard(IResultSetProvider resultSetProvider) {
         this.resultSetProvider = resultSetProvider;
         IDialogSettings workbenchSettings = WorkbenchPlugin.getDefault().getDialogSettings();
         IDialogSettings section = workbenchSettings.getSection(RS_EXPORT_WIZARD_DIALOG_SETTINGS);//$NON-NLS-1$
@@ -39,9 +41,10 @@ public class ResultSetExportWizard extends Wizard implements IExportWizard {
 
     public void addPages() {
         super.addPages();
-        mainPage = new ResultSetExportPageInit();
+        mainPage = new DataExportPageInit();
         addPage(mainPage);
-        addPage(new ResultSetExportPageSettings());
+        addPage(new DataExportPageSettings());
+        addPage(new DataExportPageOutput());
     }
 
     /* (non-Javadoc)
@@ -54,5 +57,13 @@ public class ResultSetExportWizard extends Wizard implements IExportWizard {
 
     public boolean performFinish() {
         return true;
+    }
+
+    public DataExporterDescriptor getSelectedExporter() {
+        return selectedExporter;
+    }
+
+    public void setSelectedExporter(DataExporterDescriptor selectedExporter) {
+        this.selectedExporter = selectedExporter;
     }
 }

@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.prop.DBPProperty;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
@@ -25,6 +26,9 @@ public class PropertyGroupDescriptor implements DBPPropertyGroup
     public PropertyGroupDescriptor(IConfigurationElement config)
     {
         this.name = config.getAttribute("label");
+        if (CommonUtils.isEmpty(this.name)) {
+            this.name = "<undefined>";
+        }
         this.description = config.getAttribute("description");
         IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.PROPERTY_TAG);
         for (IConfigurationElement prop : propElements) {

@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.window.IShellProvider;
@@ -23,7 +24,9 @@ import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.services.IServiceLocator;
 
+import java.nio.charset.Charset;
 import java.text.NumberFormat;
+import java.util.SortedMap;
 
 /**
  * UI Utils
@@ -324,5 +327,25 @@ public class UIUtils {
         }
     }
 
+    public static Combo createEncodingCombo(Composite parent, String curCharset)
+    {
+        Combo encodingCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
+        encodingCombo.setVisibleItemCount(30);
+        SortedMap<String,Charset> charsetMap = Charset.availableCharsets();
+        int index = 0;
+        int defIndex = -1;
+        for (String csName : charsetMap.keySet()) {
+            Charset charset = charsetMap.get(csName);
+            encodingCombo.add(charset.displayName());
+            if (charset.displayName().equalsIgnoreCase(curCharset)) {
+                defIndex = index;
+            }
+            index++;
+        }
+        if (defIndex >= 0) {
+            encodingCombo.select(defIndex);
+        }
+        return encodingCombo;
+    }
 
 }
