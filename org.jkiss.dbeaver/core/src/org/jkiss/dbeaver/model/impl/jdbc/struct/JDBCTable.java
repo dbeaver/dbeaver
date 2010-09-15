@@ -8,7 +8,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
-import org.jkiss.dbeaver.model.data.DBDDataReciever;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.dbc.*;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
@@ -55,7 +55,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return getColumn(monitor, childName);
     }
 
-    public int readData(DBCExecutionContext context, DBDDataReciever dataReciever, int firstRow, int maxRows)
+    public int readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int firstRow, int maxRows)
         throws DBException
     {
         if (!(context instanceof JDBCExecutionContext)) {
@@ -92,7 +92,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 return 0;
             }
             try {
-                dataReciever.fetchStart(context.getProgressMonitor(), dbResult);
+                dataReceiver.fetchStart(context.getProgressMonitor(), dbResult);
                 fetchStarted = true;
 
                 int rowCount = 0;
@@ -101,7 +101,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                         // Fetch not more than max rows
                         break;
                     }
-                    dataReciever.fetchRow(context.getProgressMonitor(), dbResult);
+                    dataReceiver.fetchRow(context.getProgressMonitor(), dbResult);
                     rowCount++;
                 }
                 return rowCount;
@@ -113,12 +113,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         finally {
             dbStat.close();
             if (fetchStarted) {
-                dataReciever.fetchEnd(context.getProgressMonitor());
+                dataReceiver.fetchEnd(context.getProgressMonitor());
             }
         }
     }
 
-    public int insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReciever keysReciever)
+    public int insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReceiver keysReceiver)
         throws DBException
     {
         readRequiredMeta(context.getProgressMonitor());
@@ -150,7 +150,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         query.append(")");
 
         // Execute
-        DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, keysReciever != null);
+        DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, keysReceiver != null);
         try {
             dbStat.setDataContainer(this);
 
@@ -167,8 +167,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             // Execute statement
             dbStat.executeStatement();
             int rowCount = dbStat.getUpdateRowCount();
-            if (keysReciever != null) {
-                readKeys(context, dbStat, keysReciever);
+            if (keysReceiver != null) {
+                readKeys(context, dbStat, keysReceiver);
             }
             return rowCount;
         }
@@ -182,7 +182,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         DBCExecutionContext context,
         List<DBDColumnValue> keyColumns,
         List<DBDColumnValue> updateColumns,
-        DBDDataReciever keysReciever)
+        DBDDataReceiver keysReceiver)
         throws DBException
     {
         readRequiredMeta(context.getProgressMonitor());
@@ -206,7 +206,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
 
         // Execute
-        DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, keysReciever != null);
+        DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, keysReceiver != null);
         try {
             dbStat.setDataContainer(this);
 
@@ -223,8 +223,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             // Execute statement
             dbStat.executeStatement();
             int rowCount = dbStat.getUpdateRowCount();
-            if (keysReciever != null) {
-                readKeys(context, dbStat, keysReciever);
+            if (keysReceiver != null) {
+                readKeys(context, dbStat, keysReceiver);
             }
             return rowCount;
         }
@@ -270,7 +270,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
-    private void readKeys(DBCExecutionContext context, DBCStatement dbStat, DBDDataReciever keysReciever)
+    private void readKeys(DBCExecutionContext context, DBCStatement dbStat, DBDDataReceiver keysReceiver)
         throws DBCException
     {
         DBCResultSet dbResult;
@@ -284,14 +284,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             return;
         }
         try {
-            keysReciever.fetchStart(context.getProgressMonitor(), dbResult);
+            keysReceiver.fetchStart(context.getProgressMonitor(), dbResult);
             try {
                 while (dbResult.nextRow()) {
-                    keysReciever.fetchRow(context.getProgressMonitor(), dbResult);
+                    keysReceiver.fetchRow(context.getProgressMonitor(), dbResult);
                 }
             }
             finally {
-                keysReciever.fetchEnd(context.getProgressMonitor());
+                keysReceiver.fetchEnd(context.getProgressMonitor());
             }
         }
         finally {

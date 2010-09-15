@@ -10,7 +10,7 @@ import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
-import org.jkiss.dbeaver.model.data.DBDDataReciever;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
@@ -25,9 +25,9 @@ import java.util.Map;
 /**
  * Data pump for SQL queries
  */
-class ResultSetDataReciever implements DBDDataReciever {
+class ResultSetDataReceiver implements DBDDataReceiver {
 
-    static final Log log = LogFactory.getLog(ResultSetDataReciever.class);
+    static final Log log = LogFactory.getLog(ResultSetDataReceiver.class);
 
     private ResultSetViewer resultSetViewer;
     private Display display;
@@ -39,7 +39,7 @@ class ResultSetDataReciever implements DBDDataReciever {
 
     Map<DBCColumnMetaData, List<DBCException>> errors = new HashMap<DBCColumnMetaData, List<DBCException>>();
 
-    ResultSetDataReciever(ResultSetViewer resultSetViewer)
+    ResultSetDataReceiver(ResultSetViewer resultSetViewer)
     {
         this.resultSetViewer = resultSetViewer;
         this.display = resultSetViewer.getControl().getShell().getDisplay();

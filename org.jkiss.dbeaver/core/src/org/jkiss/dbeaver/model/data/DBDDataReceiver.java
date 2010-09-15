@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  * Used to recieve some resultset data.
  * Resultset can be a result of some query execution, cursor returned from stored procedure, generated keys result set, etc.
  */
-public interface DBDDataReciever {
+public interface DBDDataReceiver {
 
     void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet)
         throws DBCException;

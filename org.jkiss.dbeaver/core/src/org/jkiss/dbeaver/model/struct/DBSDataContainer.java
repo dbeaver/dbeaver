@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
-import org.jkiss.dbeaver.model.data.DBDDataReciever;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public interface DBSDataContainer extends DBSObject {
 
     int readData(
         DBCExecutionContext context,
-        DBDDataReciever dataReciever,
+        DBDDataReceiver dataReceiver,
         int firstRow,
         int maxRows)
         throws DBException;
@@ -35,14 +35,14 @@ public interface DBSDataContainer extends DBSObject {
     int insertData(
         DBCExecutionContext context,
         List<DBDColumnValue> columns,
-        DBDDataReciever keysReciever)
+        DBDDataReceiver keysReceiver)
         throws DBException;
 
     int updateData(
         DBCExecutionContext context,
         List<DBDColumnValue> keyColumns,
         List<DBDColumnValue> updateColumns,
-        DBDDataReciever keysReciever)
+        DBDDataReceiver keysReceiver)
         throws DBException;
 
     int deleteData(

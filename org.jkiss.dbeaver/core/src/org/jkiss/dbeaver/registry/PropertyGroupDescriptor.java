@@ -5,35 +5,28 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.model.DBPDriverPropertyGroup;
+import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * DriverPropertyDescriptor
+ * PropertyGroupDescriptor
  */
-public class DriverPropertyGroupDescriptor implements DBPDriverPropertyGroup
+public class PropertyGroupDescriptor implements DBPPropertyGroup
 {
-    private DriverDescriptor driver;
     private String name;
     private String description;
-    private List<DriverPropertyDescriptor> properties = new ArrayList<DriverPropertyDescriptor>();
+    private List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
 
-    public DriverPropertyGroupDescriptor(DriverDescriptor driver, IConfigurationElement config)
+    public PropertyGroupDescriptor(IConfigurationElement config)
     {
-        this.driver = driver;
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
         IConfigurationElement[] propElements = config.getChildren("property");
         for (IConfigurationElement prop : propElements) {
-            properties.add(new DriverPropertyDescriptor(this, prop));
+            properties.add(new PropertyDescriptor(this, prop));
         }
-    }
-
-    public DriverDescriptor getDriver()
-    {
-        return driver;
     }
 
     public String getName()
@@ -46,7 +39,7 @@ public class DriverPropertyGroupDescriptor implements DBPDriverPropertyGroup
         return description;
     }
 
-    public List<DriverPropertyDescriptor> getProperties()
+    public List<PropertyDescriptor> getProperties()
     {
         return properties;
     }

@@ -2,12 +2,12 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.prop;
 
 /**
- * DBPDriver
+ * DBPProperty
  */
-public interface DBPDriverProperty
+public interface DBPProperty
 {
     public enum PropertyType
     {
@@ -15,17 +15,19 @@ public interface DBPDriverProperty
         BOOLEAN,
         INTEGER,
         NUMERIC,
+        RESOURCE,
     }
 
-    DBPDriverPropertyGroup getGroup();
+    DBPPropertyGroup getGroup();
 
     String getName();
 
     String getDescription();
 
-    String getDefaultValue();
-
     PropertyType getType();
 
-    String[] getValidValues();
+    Object getDefaultValue();
+
+    Object[] getValidValues();
+
 }

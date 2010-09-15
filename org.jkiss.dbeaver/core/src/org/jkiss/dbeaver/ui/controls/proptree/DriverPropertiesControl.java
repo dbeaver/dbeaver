@@ -17,18 +17,17 @@ import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.prop.DBPProperty;
+import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.*;
@@ -43,23 +42,22 @@ public class DriverPropertiesControl extends Composite {
 
     private TreeViewer propsTree;
     private TreeEditor treeEditor;
-    private List<DBPDriverPropertyGroup> propertyGroups = null;
-    private DBPDriverPropertyGroup driverProvidedProperties;
-    private DBPDriverPropertyGroup customProperties;
-    private boolean showDriverProperties = true;
+    private List<DBPPropertyGroup> propertyGroups = null;
+    private DBPPropertyGroup driverProvidedProperties;
+    private DBPPropertyGroup customProperties;
 
     private Map<String, String> originalValues = new TreeMap<String, String>();
     private Map<String, String> propValues = new TreeMap<String, String>();
 
     private Font boldFont;
-    private Color colorBlue;
+    //private Color colorBlue;
     private Clipboard clipboard;
 
     public DriverPropertiesControl(Composite parent, int style)
     {
         super(parent, style);
 
-        colorBlue = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);
+        //colorBlue = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);
         clipboard = new Clipboard(getDisplay());
 
         GridLayout gl = new GridLayout(1, false);
@@ -70,26 +68,6 @@ public class DriverPropertiesControl extends Composite {
         this.setLayoutData(gd);
 
         initPropTree();
-    }
-
-    public List<DBPDriverPropertyGroup> getPropertyGroups()
-    {
-        return propertyGroups;
-    }
-
-    public void setPropertyGroups(List<DBPDriverPropertyGroup> propertyGroups)
-    {
-        this.propertyGroups = propertyGroups;
-    }
-
-    public boolean isShowDriverProperties()
-    {
-        return showDriverProperties;
-    }
-
-    public void setShowDriverProperties(boolean showDriverProperties)
-    {
-        this.showDriverProperties = showDriverProperties;
     }
 
     public void loadProperties(DBPDriver driver, DBPConnectionInfo connectionInfo)
@@ -138,6 +116,33 @@ public class DriverPropertiesControl extends Composite {
         treeControl.setHeaderVisible(true);
         treeControl.setLinesVisible(true);
 
+        treeControl.addKeyListener(new KeyListener() {
+            public void keyPressed(KeyEvent e)
+            {
+                if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) {
+                    e.doit = false;
+                } else if (e.keyCode == SWT.ESC) {
+                    e.doit = false;
+                }
+            }
+            public void keyReleased(KeyEvent e)
+            {
+            }
+        });
+
+        Combo tmpCombo = new Combo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
+        final int comboHeight = tmpCombo.getBounds().height;
+        tmpCombo.dispose();
+
+        treeControl.addListener(SWT.MeasureItem, new Listener() {
+            public void handleEvent(Event event) {
+                Rectangle rect = ((TreeItem) event.item).getBounds();
+                event.width = rect.width;
+                event.height = comboHeight;
+            }
+        });
+
+
         this.boldFont = UIUtils.makeBoldFont(treeControl.getFont());
 
         ColumnViewerToolTipSupport.enableFor(propsTree, ToolTip.NO_RECREATE);
@@ -147,6 +152,7 @@ public class DriverPropertiesControl extends Composite {
         column.getColumn().setMoveable(true);
         column.getColumn().setText("Name");
         column.setLabelProvider(labelProvider);
+
 
         column = new TreeViewerColumn(propsTree, SWT.NONE);
         column.getColumn().setWidth(120);
@@ -167,8 +173,17 @@ public class DriverPropertiesControl extends Composite {
         treeEditor.grabHorizontal = true;
         treeEditor.minimumWidth = 50;
 
-        treeControl.addSelectionListener(new SelectionAdapter() {
+        treeControl.addSelectionListener(new SelectionListener() {
+
+            public void widgetDefaultSelected(SelectionEvent e) {
+                showEditor(e, true);
+            }
+
             public void widgetSelected(SelectionEvent e) {
+                showEditor(e, false);
+            }
+
+            public void showEditor(SelectionEvent e, boolean isDef) {
                 // Clean up any previous editor control
                 Control oldEditor = treeEditor.getEditor();
                 if (oldEditor != null) oldEditor.dispose();
@@ -178,9 +193,9 @@ public class DriverPropertiesControl extends Composite {
                 if (item == null) {
                     return;
                 }
-                if (item.getData() instanceof DBPDriverProperty) {
-                    final DBPDriverProperty prop = (DBPDriverProperty)item.getData();
-                    String[] validValues = prop.getValidValues();
+                if (item.getData() instanceof DBPProperty) {
+                    final DBPProperty prop = (DBPProperty)item.getData();
+                    Object[] validValues = prop.getValidValues();
                     Control newEditor;
                     if (validValues == null) {
                         Text text = new Text(treeControl, SWT.BORDER);
@@ -198,7 +213,7 @@ public class DriverPropertiesControl extends Composite {
                         Combo control = new Combo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
                         int selIndex = -1;
                         for (int i = 0; i < validValues.length; i++) {
-                            String value =  validValues[i];
+                            String value =  String.valueOf(validValues[i]);
                             control.add(value);
                             if (value.equals(item.getText(1))) {
                                 selIndex = i;
@@ -215,6 +230,10 @@ public class DriverPropertiesControl extends Composite {
                             }
                         });
                         newEditor = control;
+                    }
+                    if (isDef) {
+                        // Selected by mouse
+                        newEditor.setFocus();
                     }
                     treeEditor.setEditor(newEditor, item, 1);
                 }
@@ -236,8 +255,8 @@ public class DriverPropertiesControl extends Composite {
                         return;
                     }
                     final Object object = selection.getFirstElement();
-                    if (object instanceof DBPDriverProperty) {
-                        final DBPDriverProperty prop = (DBPDriverProperty)object;
+                    if (object instanceof DBPProperty) {
+                        final DBPProperty prop = (DBPProperty)object;
                         final String propName = prop.getName();
                         manager.add(new Action("Copy value") {
                             @Override
@@ -278,7 +297,7 @@ public class DriverPropertiesControl extends Composite {
                     boolean isCustom = false;
                     if (object instanceof CustomPropertyGroup) {
                         isCustom = true;
-                    } else if (object instanceof DBPDriverProperty && ((DBPDriverProperty)object).getGroup() instanceof CustomPropertyGroup) {
+                    } else if (object instanceof DBPProperty && ((DBPProperty)object).getGroup() instanceof CustomPropertyGroup) {
                         isCustom = true;
                     }
                     if (isCustom) {
@@ -288,11 +307,11 @@ public class DriverPropertiesControl extends Composite {
                                 addNewProperty(object);
                             }
                         });
-                        if (object instanceof DBPDriverProperty) {
+                        if (object instanceof DBPProperty) {
                             manager.add(new Action("Remove property") {
                                 @Override
                                 public void run() {
-                                    removeProperty((DBPDriverProperty)object);
+                                    removeProperty((DBPProperty)object);
                                 }
                             });
                         }
@@ -309,8 +328,8 @@ public class DriverPropertiesControl extends Composite {
 
     private void addNewProperty(Object parent) {
         CustomPropertyGroup customGroup = null;
-        if (parent instanceof DBPDriverProperty && ((DBPDriverProperty)parent).getGroup() instanceof CustomPropertyGroup) {
-            customGroup = (CustomPropertyGroup)((DBPDriverProperty)parent).getGroup();
+        if (parent instanceof DBPProperty && ((DBPProperty)parent).getGroup() instanceof CustomPropertyGroup) {
+            customGroup = (CustomPropertyGroup)((DBPProperty)parent).getGroup();
         } else if (parent instanceof CustomPropertyGroup) {
             customGroup = (CustomPropertyGroup)parent;
         }
@@ -328,7 +347,7 @@ public class DriverPropertiesControl extends Composite {
         }
     }
 
-    private void removeProperty(DBPDriverProperty prop) {
+    private void removeProperty(DBPProperty prop) {
         CustomPropertyGroup customGroup = null;
         if (prop.getGroup() instanceof CustomPropertyGroup) {
             customGroup = (CustomPropertyGroup)prop.getGroup();
@@ -341,14 +360,12 @@ public class DriverPropertiesControl extends Composite {
 
     }
 
-    private List<DBPDriverPropertyGroup> getAllPropertyGroups(DBPDriver driver, boolean includeCustom) {
-        List<DBPDriverPropertyGroup> groups = new ArrayList<DBPDriverPropertyGroup>();
+    private List<DBPPropertyGroup> getAllPropertyGroups(DBPDriver driver, boolean includeCustom) {
+        List<DBPPropertyGroup> groups = new ArrayList<DBPPropertyGroup>();
         if (propertyGroups != null) {
             groups.addAll(propertyGroups);
         }
-        if (showDriverProperties) {
-            groups.addAll(driver.getPropertyGroups());
-        }
+        groups.addAll(driver.getPropertyGroups());
         if (driverProvidedProperties != null) {
             groups.add(driverProvidedProperties);
         }
@@ -358,25 +375,22 @@ public class DriverPropertiesControl extends Composite {
         return groups;
     }
 
-    private String getPropertyValue(DBPDriverProperty prop)
+    private String getPropertyValue(DBPProperty prop)
     {
         Object propValue = propValues.get(prop.getName());
         if (propValue != null) {
             return propValue.toString();
         }
-        return prop.getDefaultValue();
+        return String.valueOf(prop.getDefaultValue());
     }
 
-    private boolean isPropertyChanged(DBPDriverProperty prop)
+    private boolean isPropertyChanged(DBPProperty prop)
     {
         Object propValue = propValues.get(prop.getName());
-        if (propValue != null && !CommonUtils.equalObjects(propValue, prop.getDefaultValue())) {
-            return true;
-        }
-        return false;
+        return propValue != null && !CommonUtils.equalObjects(propValue, prop.getDefaultValue());
     }
 
-    private void changeProperty(DBPDriverProperty prop, String text)
+    private void changeProperty(DBPProperty prop, String text)
     {
         String propName = prop.getName();
         if (!originalValues.containsKey(propName) && propValues.containsKey(propName)) {
@@ -391,7 +405,7 @@ public class DriverPropertiesControl extends Composite {
         try {
             List<DBPConnectionProperty> propInfos = driver.getDataSourceProvider().getConnectionProperties(driver, connectionInfo);
             if (!CommonUtils.isEmpty(propInfos)) {
-                driverProvidedProperties = new DriverProvidedPropertyGroup(driver, propInfos);
+                driverProvidedProperties = new DriverProvidedPropertyGroup(propInfos);
             }
         } catch (DBException e) {
             log.warn("Can't load driver properties", e);
@@ -405,9 +419,9 @@ public class DriverPropertiesControl extends Composite {
 
         // Collect all driver (and all other) properties
         Set<String> propNames = new TreeSet<String>();
-        List<DBPDriverPropertyGroup> allGroups = getAllPropertyGroups(driver, false);
-        for (DBPDriverPropertyGroup group : allGroups) {
-            for (DBPDriverProperty prop : group.getProperties()) {
+        List<DBPPropertyGroup> allGroups = getAllPropertyGroups(driver, false);
+        for (DBPPropertyGroup group : allGroups) {
+            for (DBPProperty prop : group.getProperties()) {
                 propNames.add(prop.getName());
             }
         }
@@ -418,7 +432,7 @@ public class DriverPropertiesControl extends Composite {
                 customNames.add(propName.toString());
             }
         }
-        customProperties = new CustomPropertyGroup(driver, customNames);
+        customProperties = new CustomPropertyGroup(customNames);
     }
 
     class PropsContentProvider implements IStructuredContentProvider, ITreeContentProvider
@@ -438,10 +452,10 @@ public class DriverPropertiesControl extends Composite {
 
         public Object getParent(Object child)
         {
-            if (child instanceof DBPDriverPropertyGroup) {
-                return ((DBPDriverPropertyGroup) child).getDriver();
-            } else if (child instanceof DBPDriverProperty) {
-                return ((DBPDriverProperty) child).getGroup();
+            if (child instanceof DBPPropertyGroup) {
+                return propsTree.getInput();
+            } else if (child instanceof DBPProperty) {
+                return ((DBPProperty) child).getGroup();
             } else {
                 return null;
             }
@@ -452,11 +466,11 @@ public class DriverPropertiesControl extends Composite {
             if (parent instanceof DBPDriver) {
                 // Add all available property groups
                 return getAllPropertyGroups((DBPDriver) parent, true).toArray();
-            } else if (parent instanceof DBPDriverPropertyGroup) {
+            } else if (parent instanceof DBPPropertyGroup) {
                 // Sort props by name
-                List<? extends DBPDriverProperty> props = ((DBPDriverPropertyGroup) parent).getProperties();
-                Collections.sort(props, new Comparator<DBPDriverProperty>() {
-                    public int compare(DBPDriverProperty o1, DBPDriverProperty o2)
+                List<? extends DBPProperty> props = ((DBPPropertyGroup) parent).getProperties();
+                Collections.sort(props, new Comparator<DBPProperty>() {
+                    public int compare(DBPProperty o1, DBPProperty o2)
                     {
                         return o1.getName().compareTo(o2.getName());
                     }
@@ -479,16 +493,16 @@ public class DriverPropertiesControl extends Composite {
         public String getText(Object obj, int columnIndex)
         {
             if (columnIndex == 0) {
-                if (obj instanceof DBPDriverPropertyGroup) {
-                    return ((DBPDriverPropertyGroup) obj).getName();
-                } else if (obj instanceof DBPDriverProperty) {
-                    return ((DBPDriverProperty) obj).getName();
+                if (obj instanceof DBPPropertyGroup) {
+                    return ((DBPPropertyGroup) obj).getName();
+                } else if (obj instanceof DBPProperty) {
+                    return ((DBPProperty) obj).getName();
                 } else {
                     return obj.toString();
                 }
             } else {
-                if (obj instanceof DBPDriverProperty) {
-                    return getPropertyValue((DBPDriverProperty) obj);
+                if (obj instanceof DBPProperty) {
+                    return getPropertyValue((DBPProperty) obj);
                 } else {
                     return "";
                 }
@@ -497,10 +511,10 @@ public class DriverPropertiesControl extends Composite {
 
         public String getToolTipText(Object obj)
         {
-            if (obj instanceof DBPDriverPropertyGroup) {
-                return ((DBPDriverPropertyGroup) obj).getDescription();
-            } else if (obj instanceof DBPDriverProperty) {
-                return ((DBPDriverProperty) obj).getDescription();
+            if (obj instanceof DBPPropertyGroup) {
+                return ((DBPPropertyGroup) obj).getDescription();
+            } else if (obj instanceof DBPProperty) {
+                return ((DBPProperty) obj).getDescription();
             } else {
                 return obj.toString();
             }
@@ -517,9 +531,9 @@ public class DriverPropertiesControl extends Composite {
             cell.setText(getText(element, cell.getColumnIndex()));
             boolean changed = false;
             boolean custom = false;
-            if (element instanceof DBPDriverProperty) {
-                changed = isPropertyChanged((DBPDriverProperty)element);
-                custom = ((DBPDriverProperty)element).getGroup() instanceof CustomPropertyGroup;
+            if (element instanceof DBPProperty) {
+                changed = isPropertyChanged((DBPProperty)element);
+                custom = ((DBPProperty)element).getGroup() instanceof CustomPropertyGroup;
             }
             if (changed) {
                 cell.setFont(boldFont);
@@ -533,22 +547,22 @@ public class DriverPropertiesControl extends Composite {
 
     }
 
-    private class DriverPropertyImpl implements DBPDriverProperty {
-        private final DBPDriverPropertyGroup group;
+    private class DriverPropertyImpl implements DBPProperty {
+        private final DBPPropertyGroup group;
         private DBPConnectionProperty propInfo;
         private String name;
 
-        public DriverPropertyImpl(DBPDriverPropertyGroup group, DBPConnectionProperty propInfo) {
+        public DriverPropertyImpl(DBPPropertyGroup group, DBPConnectionProperty propInfo) {
             this.group = group;
             this.propInfo = propInfo;
         }
 
-        private DriverPropertyImpl(DBPDriverPropertyGroup group, String name) {
+        private DriverPropertyImpl(DBPPropertyGroup group, String name) {
             this.group = group;
             this.name = name;
         }
 
-        public DBPDriverPropertyGroup getGroup()
+        public DBPPropertyGroup getGroup()
         {
             return group;
         }
@@ -584,22 +598,15 @@ public class DriverPropertiesControl extends Composite {
         }
     }
 
-    private class DriverProvidedPropertyGroup implements DBPDriverPropertyGroup
+    private class DriverProvidedPropertyGroup implements DBPPropertyGroup
     {
-        private DBPDriver driver;
         private final List<DBPConnectionProperty> propInfos;
-        private List<DBPDriverProperty> propList;
+        private List<DBPProperty> propList;
 
-        public DriverProvidedPropertyGroup(DBPDriver driver, List<DBPConnectionProperty> propInfos)
+        public DriverProvidedPropertyGroup(List<DBPConnectionProperty> propInfos)
         {
-            this.driver = driver;
             this.propInfos = propInfos;
             this.propList = null;
-        }
-
-        public DBPDriver getDriver()
-        {
-            return driver;
         }
 
         public String getName()
@@ -612,15 +619,15 @@ public class DriverPropertiesControl extends Composite {
             return "Driver Properties";
         }
 
-        public List<? extends DBPDriverProperty> getProperties()
+        public List<? extends DBPProperty> getProperties()
         {
             if (propList == null) {
-                propList = new ArrayList<DBPDriverProperty>();
+                propList = new ArrayList<DBPProperty>();
                 for (final DBPConnectionProperty propInfo : propInfos) {
                     if (DBConstants.PROPERTY_USER.equals(propInfo.getName()) || DBConstants.PROPERTY_PASSWORD.equals(propInfo.getName())) {
                         continue;
                     }
-                    DBPDriverProperty prop = new DriverPropertyImpl(this, propInfo);
+                    DBPProperty prop = new DriverPropertyImpl(this, propInfo);
                     propList.add(prop);
                 }
             }
@@ -628,25 +635,18 @@ public class DriverPropertiesControl extends Composite {
         }
     }
 
-    private class CustomPropertyGroup implements DBPDriverPropertyGroup
+    private class CustomPropertyGroup implements DBPPropertyGroup
     {
-        private DBPDriver driver;
-        private List<DBPDriverProperty> propList;
+        private List<DBPProperty> propList;
 
-        public CustomPropertyGroup(DBPDriver driver, Set<String> propNames)
+        public CustomPropertyGroup(Set<String> propNames)
         {
-            this.driver = driver;
-            this.propList = new ArrayList<DBPDriverProperty>();
+            this.propList = new ArrayList<DBPProperty>();
             if (propNames != null) {
                 for (String name : propNames) {
                     propList.add(new DriverPropertyImpl(this, name));
                 }
             }
-        }
-
-        public DBPDriver getDriver()
-        {
-            return driver;
         }
 
         public String getName()
@@ -659,7 +659,7 @@ public class DriverPropertiesControl extends Composite {
             return "User Properties";
         }
 
-        public List<? extends DBPDriverProperty> getProperties()
+        public List<? extends DBPProperty> getProperties()
         {
             return propList;
         }
@@ -668,7 +668,7 @@ public class DriverPropertiesControl extends Composite {
             propList.add(new DriverPropertyImpl(this, name));
         }
 
-        public void removeProperty(DBPDriverProperty prop) {
+        public void removeProperty(DBPProperty prop) {
             propList.remove(prop);
         }
     }

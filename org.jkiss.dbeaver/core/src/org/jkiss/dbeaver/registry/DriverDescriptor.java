@@ -40,7 +40,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean modified;
     private boolean disabled;
     private List<DriverLibraryDescriptor> libraries = new ArrayList<DriverLibraryDescriptor>();
-    private List<DriverPropertyGroupDescriptor> propertyGroups = new ArrayList<DriverPropertyGroupDescriptor>();
+    private List<PropertyGroupDescriptor> propertyGroups = new ArrayList<PropertyGroupDescriptor>();
     private List<DriverCustomQueryDescriptor> customQueries = new ArrayList<DriverCustomQueryDescriptor>();
 
     private Class driverClass;
@@ -93,7 +93,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         IConfigurationElement[] propElements = config.getChildren("propertyGroup");
         for (IConfigurationElement prop : propElements) {
-            propertyGroups.add(new DriverPropertyGroupDescriptor(this, prop));
+            propertyGroups.add(new PropertyGroupDescriptor(prop));
         }
 
         IConfigurationElement[] queryElements = config.getChildren("query");
@@ -312,7 +312,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    public List<DriverPropertyGroupDescriptor> getPropertyGroups()
+    public List<PropertyGroupDescriptor> getPropertyGroups()
     {
         return propertyGroups;
     }

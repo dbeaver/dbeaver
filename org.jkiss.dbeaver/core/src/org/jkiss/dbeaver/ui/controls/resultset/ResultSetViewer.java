@@ -33,6 +33,7 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
+import org.jkiss.dbeaver.ext.IResultSetProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -71,7 +72,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private ResultSetMode mode;
     private Spreadsheet spreadsheet;
     private IResultSetProvider resultSetProvider;
-    private ResultSetDataReciever dataReciever;
+    private ResultSetDataReceiver dataReciever;
     private IThemeManager themeManager;
 
     // columns
@@ -140,7 +141,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         createStatusBar(spreadsheet);
         changeMode(ResultSetMode.GRID);
         this.resultSetProvider = resultSetProvider;
-        this.dataReciever = new ResultSetDataReciever(this);
+        this.dataReciever = new ResultSetDataReceiver(this);
 
         this.themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
         this.themeManager.addPropertyChangeListener(this);
@@ -741,7 +742,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     {
     }
 
-    public DBDDataReciever getDataReciever() {
+    public DBDDataReceiver getDataReciever() {
         return dataReciever;
     }
 
@@ -1594,7 +1595,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             if (monitor.isCanceled()) break;
                             DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
                             try {
-                                insertCount += dataContainer.insertData(context, statement.keyColumns, new KeyDataReciever(statement));
+                                insertCount += dataContainer.insertData(context, statement.keyColumns, new KeyDataReceiver(statement));
                                 processStatementChanges(statement);
                             }
                             catch (DBException e) {
@@ -1607,7 +1608,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                             if (monitor.isCanceled()) break;
                             DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
                             try {
-                                this.updateCount += dataContainer.updateData(context, statement.keyColumns, statement.updateColumns, new KeyDataReciever(statement));
+                                this.updateCount += dataContainer.updateData(context, statement.keyColumns, statement.updateColumns, new KeyDataReceiver(statement));
                                 processStatementChanges(statement);
                             }
                             catch (DBException e) {
@@ -1656,9 +1657,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
-    private class KeyDataReciever implements DBDDataReciever {
+    private class KeyDataReceiver implements DBDDataReceiver {
         DataStatementInfo statement;
-        public KeyDataReciever(DataStatementInfo statement)
+        public KeyDataReceiver(DataStatementInfo statement)
         {
             this.statement = statement;
         }

@@ -13,7 +13,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDDataReciever;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
@@ -40,7 +40,7 @@ public class SQLQueryJob extends DataSourceJob
     //private static final int DEFAULT_MAX_ROWS = 500;
 
     private List<SQLStatementInfo> queries;
-    private DBDDataReciever dataReciever;
+    private DBDDataReceiver dataReceiver;
 
     private SQLScriptCommitType commitType;
     private SQLScriptErrorHandling errorHandling;
@@ -59,14 +59,14 @@ public class SQLQueryJob extends DataSourceJob
         String name,
         DBPDataSource dataSource,
         List<SQLStatementInfo> queries,
-        DBDDataReciever dataReciever)
+        DBDDataReceiver dataReceiver)
     {
         super(
             name,
             DBIcon.SQL_SCRIPT_EXECUTE.getImageDescriptor(),
             dataSource);
         this.queries = queries;
-        this.dataReciever = dataReciever;
+        this.dataReceiver = dataReceiver;
 
         {
             // Read config form preference store
@@ -78,9 +78,9 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    public void setDataReciever(DBDDataReciever dataReciever)
+    public void setDataReciever(DBDDataReceiver dataReceiver)
     {
-        this.dataReciever = dataReciever;
+        this.dataReceiver = dataReceiver;
     }
 
     public void setResultSetLimit(int offset, int maxRows)
@@ -327,7 +327,7 @@ public class SQLQueryJob extends DataSourceJob
     private void fetchQueryData(SQLQueryResult result, DBCExecutionContext context)
         throws DBCException
     {
-        if (dataReciever == null) {
+        if (dataReceiver == null) {
             // No data pump - skip fetching stage
             return;
         }
@@ -337,7 +337,7 @@ public class SQLQueryJob extends DataSourceJob
         if (resultSet != null) {
             int rowCount = 0;
 
-            dataReciever.fetchStart(context.getProgressMonitor(), resultSet);
+            dataReceiver.fetchStart(context.getProgressMonitor(), resultSet);
 
             try {
 
@@ -348,7 +348,7 @@ public class SQLQueryJob extends DataSourceJob
                         monitor.subTask(rowCount + " rows fetched");
                     }
 
-                    dataReciever.fetchRow(monitor, resultSet);
+                    dataReceiver.fetchRow(monitor, resultSet);
                 }
             }
             finally {
@@ -356,7 +356,7 @@ public class SQLQueryJob extends DataSourceJob
             }
 
             try {
-                dataReciever.fetchEnd(monitor);
+                dataReceiver.fetchEnd(monitor);
             } catch (DBCException e) {
                 log.error("Error while handling end of result set fetch");
             }

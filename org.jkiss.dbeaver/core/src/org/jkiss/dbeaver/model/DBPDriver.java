@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 
 import java.sql.Driver;
 import java.util.List;
@@ -33,7 +34,7 @@ public interface DBPDriver extends DBPObject
 
     boolean supportsDriverProperties();
 
-    List<? extends DBPDriverPropertyGroup> getPropertyGroups();
+    List<? extends DBPPropertyGroup> getPropertyGroups();
 
     List<? extends DBPDriverCustomQuery> getCustomQueries();
 

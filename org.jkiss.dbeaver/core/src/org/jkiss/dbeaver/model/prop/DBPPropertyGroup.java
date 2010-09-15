@@ -2,21 +2,19 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.prop;
 
 import java.util.List;
 
 /**
  * DBPDriver
  */
-public interface DBPDriverPropertyGroup
+public interface DBPPropertyGroup
 {
-    DBPDriver getDriver();
-
     String getName();
 
     String getDescription();
 
-    List<? extends DBPDriverProperty> getProperties();
+    List<? extends DBPProperty> getProperties();
 
 }

@@ -7,28 +7,28 @@ package org.jkiss.dbeaver.registry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.model.DBPDriverProperty;
+import org.jkiss.dbeaver.model.prop.DBPProperty;
 
 /**
- * DriverPropertyDescriptor
+ * PropertyDescriptor
  */
-public class DriverPropertyDescriptor implements DBPDriverProperty
+public class PropertyDescriptor implements DBPProperty
 {
 
-    static final Log log = LogFactory.getLog(DriverPropertyDescriptor.class);
+    static final Log log = LogFactory.getLog(PropertyDescriptor.class);
 
-    private DriverPropertyGroupDescriptor group;
+    private PropertyGroupDescriptor group;
     private String name;
     private String description;
     private String defaultValue;
-    private PropertyType type;
+    private DBPProperty.PropertyType type;
+    private String[] validValues;
 
-    public DriverPropertyDescriptor(DriverPropertyGroupDescriptor group, IConfigurationElement config)
+    public PropertyDescriptor(PropertyGroupDescriptor group, IConfigurationElement config)
     {
         this.group = group;
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
-        this.defaultValue = config.getAttribute("defaultValue");
         String typeString = config.getAttribute("type");
         if (typeString == null) {
             type = PropertyType.STRING;
@@ -41,9 +41,14 @@ public class DriverPropertyDescriptor implements DBPDriverProperty
                 type = PropertyType.STRING;
             }
         }
+        this.defaultValue = config.getAttribute("defaultValue");
+        String valueList = config.getAttribute("validValues");
+        if (valueList != null) {
+            validValues = valueList.split(",");
+        }
     }
 
-    public DriverPropertyGroupDescriptor getGroup()
+    public PropertyGroupDescriptor getGroup()
     {
         return group;
     }
@@ -70,6 +75,7 @@ public class DriverPropertyDescriptor implements DBPDriverProperty
 
     public String[] getValidValues()
     {
-        return null;
+        return validValues;
     }
+
 }

@@ -51,7 +51,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.data.DBDDataReciever;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
@@ -63,7 +63,7 @@ import org.jkiss.dbeaver.ui.actions.ConnectAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementAction;
 import org.jkiss.dbeaver.ui.actions.sql.OpenSQLFileAction;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetProvider;
+import org.jkiss.dbeaver.ext.IResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogViewer;
 import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
@@ -840,7 +840,7 @@ public class SQLEditor extends BaseTextEditor
         return curJob != null && !curJobRunning;
     }
 
-    public void extractResultSetData(DBDDataReciever dataReciever, int offset, int maxRows)
+    public void extractResultSetData(DBDDataReceiver dataReceiver, int offset, int maxRows)
     {
         if (curJobRunning) {
             DBeaverUtils.showErrorDialog(
@@ -850,7 +850,7 @@ public class SQLEditor extends BaseTextEditor
             return;
         }
         if (curJob != null) {
-            curJob.setDataReciever(dataReciever);
+            curJob.setDataReciever(dataReceiver);
             curJob.setResultSetLimit(offset, maxRows);
             curJob.schedule();
         }

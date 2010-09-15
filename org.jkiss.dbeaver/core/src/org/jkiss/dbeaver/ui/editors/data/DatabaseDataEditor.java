@@ -13,16 +13,16 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
+import org.jkiss.dbeaver.ext.IResultSetProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.data.DBDDataReciever;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -90,14 +90,14 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
         return getObjectManager().getObject();
     }
 
-    public void extractResultSetData(DBDDataReciever dataReciever, int offset, int maxRows)
+    public void extractResultSetData(DBDDataReceiver dataReceiver, int offset, int maxRows)
     {
         if (getDataSource() == null) {
             DBeaverUtils.showErrorDialog(getSite().getShell(), "Not Connected", "Not Connected");
             return;
         }
 
-        DataPumpJob job = new DataPumpJob(dataReciever, offset, maxRows);
+        DataPumpJob job = new DataPumpJob(dataReceiver, offset, maxRows);
         job.addJobChangeListener(new JobChangeAdapter() {
             public void running(IJobChangeEvent event) {
                 running = true;
@@ -111,14 +111,14 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
 
     private class DataPumpJob extends DataSourceJob {
 
-        private DBDDataReciever dataReciever;
+        private DBDDataReceiver dataReceiver;
         private int offset;
         private int maxRows;
 
-        protected DataPumpJob(DBDDataReciever dataReciever, int offset, int maxRows)
+        protected DataPumpJob(DBDDataReceiver dataReceiver, int offset, int maxRows)
         {
             super("Pump data from " + getDataContainer().getName(), DBIcon.SQL_EXECUTE.getImageDescriptor(), DatabaseDataEditor.this.getDataSource());
-            this.dataReciever = dataReciever;
+            this.dataReceiver = dataReceiver;
             this.offset = offset;
             this.maxRows = maxRows;
         }
@@ -131,7 +131,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
             try {
                 int rowCount = getDataContainer().readData(
                     context,
-                    dataReciever,
+                        dataReceiver,
                     offset,
                     maxRows);
                 if (rowCount > 0) {
