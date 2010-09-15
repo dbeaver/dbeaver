@@ -91,7 +91,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             libraries.add(new DriverLibraryDescriptor(this, lib));
         }
 
-        IConfigurationElement[] propElements = config.getChildren("propertyGroup");
+        IConfigurationElement[] propElements = config.getChildren(PropertyGroupDescriptor.PROPERTY_GROUP_TAG);
         for (IConfigurationElement prop : propElements) {
             propertyGroups.add(new PropertyGroupDescriptor(prop));
         }

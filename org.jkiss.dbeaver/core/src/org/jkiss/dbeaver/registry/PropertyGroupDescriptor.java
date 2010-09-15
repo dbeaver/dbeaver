@@ -15,6 +15,8 @@ import java.util.List;
  */
 public class PropertyGroupDescriptor implements DBPPropertyGroup
 {
+    public static final String PROPERTY_GROUP_TAG = "propertyGroup";
+
     private String name;
     private String description;
     private List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
@@ -23,7 +25,7 @@ public class PropertyGroupDescriptor implements DBPPropertyGroup
     {
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
-        IConfigurationElement[] propElements = config.getChildren("property");
+        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.PROPERTY_TAG);
         for (IConfigurationElement prop : propElements) {
             properties.add(new PropertyDescriptor(this, prop));
         }

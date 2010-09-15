@@ -18,7 +18,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.progress.IProgressService;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.DataExportersRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
@@ -40,8 +40,8 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -69,6 +69,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private DBNModel metaModel;
     private QMControllerImpl queryManager;
     private JexlEngine jexlEngine;
+    private DataExportersRegistry dataExportersRegistry;
 
     public static DBeaverCore getInstance()
     {
@@ -104,12 +105,16 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
         this.workspace = ResourcesPlugin.getWorkspace();
         this.rootPath = Platform.getLocation();
-        this.dataSourceRegistry = new DataSourceRegistry(this, Platform.getExtensionRegistry());
-        this.editorsRegistry = new EntityEditorsRegistry(Platform.getExtensionRegistry());
+
+        IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
+        this.dataSourceRegistry = new DataSourceRegistry(this, extensionRegistry);
+        this.editorsRegistry = new EntityEditorsRegistry(extensionRegistry);
+        this.dataExportersRegistry = new DataExportersRegistry(extensionRegistry);
+
         this.metaModel = new DBNModel(dataSourceRegistry);
         this.queryManager = new QMControllerImpl(dataSourceRegistry);
         // Make default project
-        defaultProject = this.workspace.getRoot().getProject(DEFAULT_PROJECT_NAME);
+        this.defaultProject = this.workspace.getRoot().getProject(DEFAULT_PROJECT_NAME);
 
         try {
             PlatformUI.getWorkbench().getProgressService().run(false, false, new IRunnableWithProgress() {
@@ -223,6 +228,11 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public EntityEditorsRegistry getEditorsRegistry()
     {
         return editorsRegistry;
+    }
+
+    public DataExportersRegistry getDataExportersRegistry()
+    {
+        return dataExportersRegistry;
     }
 
     public IWorkbench getWorkbench()

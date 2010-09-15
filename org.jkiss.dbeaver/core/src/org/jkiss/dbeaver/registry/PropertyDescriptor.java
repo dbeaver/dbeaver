@@ -17,6 +17,8 @@ public class PropertyDescriptor implements DBPProperty
 
     static final Log log = LogFactory.getLog(PropertyDescriptor.class);
 
+    public static final String PROPERTY_TAG = "property";
+
     private PropertyGroupDescriptor group;
     private String name;
     private String description;
