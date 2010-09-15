@@ -8,6 +8,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.prop.DBPProperty;
+import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
@@ -33,7 +35,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
 
     }
 
-    public List<DBPConnectionProperty> getConnectionProperties(
+    public DBPPropertyGroup getConnectionProperties(
         DBPDriver driver,
         DBPConnectionInfo connectionInfo)
         throws DBException
@@ -46,7 +48,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
         }
     }
 
-    private List<DBPConnectionProperty> readDriverProperties(
+    private DBPPropertyGroup readDriverProperties(
         DBPConnectionInfo connectionInfo,
         Driver driver)
         throws DBException
@@ -64,12 +66,29 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
             return null;
         }
 
-        List<DBPConnectionProperty> result = new ArrayList<DBPConnectionProperty>();
+        final List<DBPProperty> result = new ArrayList<DBPProperty>();
+        DBPPropertyGroup propGroup = new DBPPropertyGroup() {
+            public String getName() {
+                return "Driver properties";
+            }
+
+            public String getDescription() {
+                return "JDBC Driver Properties";
+            }
+
+            public List<? extends DBPProperty> getProperties() {
+                return result;
+            }
+        };
         for (DriverPropertyInfo desc : propDescs) {
+            if (DBConstants.PROPERTY_USER.equals(desc.name) || DBConstants.PROPERTY_PASSWORD.equals(desc.name)) {
+                // Skip user/password properties
+                continue;
+            }
             desc.value = getConnectionPropertyDefaultValue(desc.name, desc.value);
-            result.add(new JDBCConnectionProperty(desc));
+            result.add(new JDBCConnectionProperty(propGroup, desc));
         }
-        return result;
+        return propGroup;
     }
 
     protected String getConnectionPropertyDefaultValue(String name, String value)

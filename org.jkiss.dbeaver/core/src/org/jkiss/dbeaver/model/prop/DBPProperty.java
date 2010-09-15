@@ -26,6 +26,8 @@ public interface DBPProperty
 
     PropertyType getType();
 
+    boolean isRequired();
+
     Object getDefaultValue();
 
     Object[] getValidValues();

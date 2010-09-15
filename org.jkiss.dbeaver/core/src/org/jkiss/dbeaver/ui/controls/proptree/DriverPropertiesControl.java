@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.prop.DBPProperty;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
+import org.jkiss.dbeaver.registry.PropertyDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.*;
@@ -268,12 +269,13 @@ public class DriverPropertiesControl extends Composite {
                             }
                         });
                         if (isPropertyChanged(prop)) {
+                            final boolean isCustom = prop.getGroup() instanceof CustomPropertyGroup;
                             manager.add(new Action("Reset value") {
                                 @Override
                                 public void run() {
                                     if (originalValues.containsKey(propName)) {
                                         propValues.put(propName, originalValues.get(propName));
-                                    } else {
+                                    } else if (!isCustom) {
                                         propValues.remove(propName);
                                     }
                                     propsTree.update(prop, null);
@@ -281,15 +283,17 @@ public class DriverPropertiesControl extends Composite {
                                     if (oldEditor != null) oldEditor.dispose();
                                 }
                             });
-                            manager.add(new Action("Reset value to default") {
-                                @Override
-                                public void run() {
-                                    propValues.remove(propName);
-                                    propsTree.update(prop, null);
-                                    Control oldEditor = treeEditor.getEditor();
-                                    if (oldEditor != null) oldEditor.dispose();
-                                }
-                            });
+                            if (!isCustom) {
+                                manager.add(new Action("Reset value to default") {
+                                    @Override
+                                    public void run() {
+                                        propValues.remove(propName);
+                                        propsTree.update(prop, null);
+                                        Control oldEditor = treeEditor.getEditor();
+                                        if (oldEditor != null) oldEditor.dispose();
+                                    }
+                                });
+                            }
                         }
                         manager.add(new Separator());
                     }
@@ -403,10 +407,7 @@ public class DriverPropertiesControl extends Composite {
     private void loadDriverProperties(DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
         try {
-            List<DBPConnectionProperty> propInfos = driver.getDataSourceProvider().getConnectionProperties(driver, connectionInfo);
-            if (!CommonUtils.isEmpty(propInfos)) {
-                driverProvidedProperties = new DriverProvidedPropertyGroup(propInfos);
-            }
+            driverProvidedProperties = driver.getDataSourceProvider().getConnectionProperties(driver, connectionInfo);
         } catch (DBException e) {
             log.warn("Can't load driver properties", e);
         }
@@ -547,94 +548,6 @@ public class DriverPropertiesControl extends Composite {
 
     }
 
-    private class DriverPropertyImpl implements DBPProperty {
-        private final DBPPropertyGroup group;
-        private DBPConnectionProperty propInfo;
-        private String name;
-
-        public DriverPropertyImpl(DBPPropertyGroup group, DBPConnectionProperty propInfo) {
-            this.group = group;
-            this.propInfo = propInfo;
-        }
-
-        private DriverPropertyImpl(DBPPropertyGroup group, String name) {
-            this.group = group;
-            this.name = name;
-        }
-
-        public DBPPropertyGroup getGroup()
-        {
-            return group;
-        }
-
-        public String getName()
-        {
-            return propInfo == null ? name : propInfo.getName();
-        }
-
-        public void setName(String name)
-        {
-            this.name = name;
-        }
-
-        public String getDescription()
-        {
-            return propInfo == null ? null : propInfo.getDescription();
-        }
-
-        public String getDefaultValue()
-        {
-            return propInfo == null ? null : propInfo.getValue();
-        }
-
-        public PropertyType getType()
-        {
-            return PropertyType.STRING;
-        }
-
-        public String[] getValidValues()
-        {
-            return propInfo == null ? null : propInfo.getChoices();
-        }
-    }
-
-    private class DriverProvidedPropertyGroup implements DBPPropertyGroup
-    {
-        private final List<DBPConnectionProperty> propInfos;
-        private List<DBPProperty> propList;
-
-        public DriverProvidedPropertyGroup(List<DBPConnectionProperty> propInfos)
-        {
-            this.propInfos = propInfos;
-            this.propList = null;
-        }
-
-        public String getName()
-        {
-            return "Driver Properties";
-        }
-
-        public String getDescription()
-        {
-            return "Driver Properties";
-        }
-
-        public List<? extends DBPProperty> getProperties()
-        {
-            if (propList == null) {
-                propList = new ArrayList<DBPProperty>();
-                for (final DBPConnectionProperty propInfo : propInfos) {
-                    if (DBConstants.PROPERTY_USER.equals(propInfo.getName()) || DBConstants.PROPERTY_PASSWORD.equals(propInfo.getName())) {
-                        continue;
-                    }
-                    DBPProperty prop = new DriverPropertyImpl(this, propInfo);
-                    propList.add(prop);
-                }
-            }
-            return propList;
-        }
-    }
-
     private class CustomPropertyGroup implements DBPPropertyGroup
     {
         private List<DBPProperty> propList;
@@ -644,7 +557,7 @@ public class DriverPropertiesControl extends Composite {
             this.propList = new ArrayList<DBPProperty>();
             if (propNames != null) {
                 for (String name : propNames) {
-                    propList.add(new DriverPropertyImpl(this, name));
+                    propList.add(new PropertyDescriptor(this, name, null, DBPProperty.PropertyType.STRING, false, null, null));
                 }
             }
         }
@@ -665,7 +578,7 @@ public class DriverPropertiesControl extends Composite {
         }
 
         public void addProperty(String name) {
-            propList.add(new DriverPropertyImpl(this, name));
+            propList.add(new PropertyDescriptor(this, name, null, DBPProperty.PropertyType.STRING, false, null, null));
         }
 
         public void removeProperty(DBPProperty prop) {

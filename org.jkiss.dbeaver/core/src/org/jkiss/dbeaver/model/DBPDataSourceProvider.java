@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.prop.DBPProperty;
+import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -19,8 +21,9 @@ public interface DBPDataSourceProvider
 
     void close();
 
-    List<DBPConnectionProperty> getConnectionProperties(
-        DBPDriver driver, DBPConnectionInfo connectionInfo)
+    DBPPropertyGroup getConnectionProperties(
+        DBPDriver driver,
+        DBPConnectionInfo connectionInfo)
         throws DBException;
 
     DBPDataSource openDataSource(

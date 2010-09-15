@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.prop.DBPProperty;
+import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 
 /**
  * PropertyDescriptor
@@ -19,11 +20,12 @@ public class PropertyDescriptor implements DBPProperty
 
     public static final String PROPERTY_TAG = "property";
 
-    private PropertyGroupDescriptor group;
+    private DBPPropertyGroup group;
     private String name;
     private String description;
-    private String defaultValue;
     private DBPProperty.PropertyType type;
+    private boolean required;
+    private String defaultValue;
     private String[] validValues;
 
     public PropertyDescriptor(PropertyGroupDescriptor group, IConfigurationElement config)
@@ -31,6 +33,7 @@ public class PropertyDescriptor implements DBPProperty
         this.group = group;
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
+        this.required = "true".equals(config.getAttribute("required"));
         String typeString = config.getAttribute("type");
         if (typeString == null) {
             type = PropertyType.STRING;
@@ -50,7 +53,17 @@ public class PropertyDescriptor implements DBPProperty
         }
     }
 
-    public PropertyGroupDescriptor getGroup()
+    public PropertyDescriptor(DBPPropertyGroup group, String name, String description, PropertyType type, boolean required, String defaultValue, String[] validValues) {
+        this.group = group;
+        this.name = name;
+        this.description = description;
+        this.type = type;
+        this.required = required;
+        this.defaultValue = defaultValue;
+        this.validValues = validValues;
+    }
+
+    public DBPPropertyGroup getGroup()
     {
         return group;
     }
@@ -73,6 +86,11 @@ public class PropertyDescriptor implements DBPProperty
     public PropertyType getType()
     {
         return type;
+    }
+
+    public boolean isRequired()
+    {
+        return required;
     }
 
     public String[] getValidValues()
