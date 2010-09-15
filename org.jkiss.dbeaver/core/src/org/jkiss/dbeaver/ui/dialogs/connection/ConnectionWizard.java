@@ -25,6 +25,9 @@ import java.lang.reflect.InvocationTargetException;
 
 public abstract class ConnectionWizard extends Wizard implements INewWizard
 {
+    protected ConnectionWizard() {
+        setNeedsProgressMonitor(true);
+    }
 
     public boolean performFinish()
     {

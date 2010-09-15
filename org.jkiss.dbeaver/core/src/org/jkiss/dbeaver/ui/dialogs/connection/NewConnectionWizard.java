@@ -46,7 +46,6 @@ public class NewConnectionWizard extends ConnectionWizard
     {
         super();
         setWindowTitle("Create new connection");
-        setNeedsProgressMonitor(true);
         this.window = window;
         this.registry = DataSourceRegistry.getDefault();
     }

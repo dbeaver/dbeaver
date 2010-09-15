@@ -35,7 +35,6 @@ public class EditConnectionWizard extends ConnectionWizard
         this.dataSource = dataSource;
         this.oldData = this.dataSource.getConnectionInfo();
         setWindowTitle("Edit connection");
-        setNeedsProgressMonitor(true);
     }
 
     public ConnectionPageFinal getPageFinal()
