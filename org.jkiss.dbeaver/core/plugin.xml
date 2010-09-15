@@ -12,6 +12,7 @@
                      schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider"
                      schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataExportProvider" name="Data Export Provider" schema="schema/org.jkiss.dbeaver.dataExportProvider.exsd"/>
     <extension
             point="org.eclipse.core.contenttype.contentTypes">
         <content-type

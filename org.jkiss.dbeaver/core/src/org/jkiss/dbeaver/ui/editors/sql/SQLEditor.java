@@ -50,6 +50,8 @@ import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.data.DBDDataReciever;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
@@ -826,9 +828,8 @@ public class SQLEditor extends BaseTextEditor
         }
     }
 
-    public boolean isConnected()
-    {
-        return getDataSourceContainer() != null && getDataSourceContainer().isConnected();
+    public DBPObject getResultSetSource() {
+        return curJob == null ? null : curJob.getDataSource();
     }
 
     public boolean isRunning() {
@@ -839,16 +840,17 @@ public class SQLEditor extends BaseTextEditor
         return curJob != null && !curJobRunning;
     }
 
-    public void extractResultSetData(int offset, int maxRows)
+    public void extractResultSetData(DBDDataReciever dataReciever, int offset, int maxRows)
     {
         if (curJobRunning) {
             DBeaverUtils.showErrorDialog(
                 getSite().getShell(),
-                "Can't refresh",
-                "Can't refresh resultset - another query is beng executed");
+                "Could not execute",
+                "Could not execute resultset - another query is beng executed");
             return;
         }
         if (curJob != null) {
+            curJob.setDataReciever(dataReciever);
             curJob.setResultSetLimit(offset, maxRows);
             curJob.schedule();
         }

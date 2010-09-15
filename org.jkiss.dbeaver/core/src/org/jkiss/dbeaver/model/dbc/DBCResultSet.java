@@ -4,10 +4,12 @@
 
 package org.jkiss.dbeaver.model.dbc;
 
+import org.jkiss.dbeaver.model.DBPObject;
+
 /**
  * DBCResultSet
  */
-public interface DBCResultSet
+public interface DBCResultSet extends DBPObject
 {
     DBCExecutionContext getContext();
 

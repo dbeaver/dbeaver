@@ -11,33 +11,21 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.themes.ITheme;
@@ -47,43 +35,28 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDColumnBinding;
-import org.jkiss.dbeaver.model.data.DBDColumnValue;
-import org.jkiss.dbeaver.model.data.DBDDataReciever;
-import org.jkiss.dbeaver.model.data.DBDRowController;
-import org.jkiss.dbeaver.model.data.DBDValue;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditor;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.data.DBDValueListener;
-import org.jkiss.dbeaver.model.data.DBDValueLocator;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
-import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
+import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.dbc.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.DBSManipulationType;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
-import java.util.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.List;
 
 /**
  * ResultSetViewer
@@ -220,7 +193,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             itemPrevious.setEnabled(isVisible && !isFirst);
             itemNext.setEnabled(isVisible && !isLast);
             itemLast.setEnabled(isVisible && !isLast);
-            itemRefresh.setEnabled(resultSetProvider != null && resultSetProvider.isConnected());
+            itemRefresh.setEnabled(resultSetProvider != null && resultSetProvider.getDataSource() != null);
         }
 
         boolean validPosition;
@@ -453,11 +426,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     public IResultSetProvider getResultSetProvider()
     {
         return resultSetProvider;
-    }
-
-    public ResultSetDataReciever getDataReciever()
-    {
-        return dataReciever;
     }
 
     public void dispose()
@@ -724,7 +692,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         // Export and other utility methods
         manager.add(new Separator());
-        manager.add(new Action("Export ... ", DBIcon.EXPORT.getImageDescriptor()) {
+        manager.add(new Action("Export Resultset ... ", DBIcon.EXPORT.getImageDescriptor()) {
             @Override
             public void run()
             {
@@ -773,13 +741,17 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     {
     }
 
+    public DBDDataReciever getDataReciever() {
+        return dataReciever;
+    }
+
     public void refresh()
     {
         this.closeEditors();
         this.clearData();
         this.clearResultsView();
         if (resultSetProvider != null) {
-            resultSetProvider.extractResultSetData(0, getSegmentMaxRows());
+            resultSetProvider.extractResultSetData(dataReciever, 0, getSegmentMaxRows());
         }
         updateGridCursor();
     }
@@ -792,7 +764,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (resultSetProvider != null && !resultSetProvider.isRunning()) {
             dataReciever.setHasMoreData(false);
             dataReciever.setNextSegmentRead(true);
-            resultSetProvider.extractResultSetData(curRows.size(), getSegmentMaxRows());
+            resultSetProvider.extractResultSetData(dataReciever, curRows.size(), getSegmentMaxRows());
         }
     }
 

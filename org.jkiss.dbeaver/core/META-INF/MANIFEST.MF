@@ -104,6 +104,5 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.5.0",
  org.eclipse.core.expressions,
  org.eclipse.swt,
  org.eclipse.jface,
- org.eclipse.ui.workbench,
- org.eclipse.ui.navigator;bundle-version="3.5.0"
+ org.eclipse.ui.workbench
 Bundle-Vendor: Serge Rieder

@@ -4,10 +4,12 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.DBPObject;
+
 /**
  * DBDvalue
  */
-public interface DBDValue {
+public interface DBDValue extends DBPObject {
 
     boolean isNull();
 

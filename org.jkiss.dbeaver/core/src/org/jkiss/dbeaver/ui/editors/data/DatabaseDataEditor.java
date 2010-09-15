@@ -14,6 +14,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.data.DBDDataReciever;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -71,9 +73,8 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
         return getDataContainer().getDataSource();
     }
 
-    public boolean isConnected()
-    {
-        return getDataContainer() != null && getDataContainer().getDataSource().getContainer().isConnected();
+    public DBPObject getResultSetSource() {
+        return getDataContainer();
     }
 
     public boolean isRunning() {
@@ -81,7 +82,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
     }
 
     public boolean isReadyToRun() {
-        return isConnected();
+        return getDataSource() != null;
     }
 
     public DBSDataContainer getDataContainer()
@@ -89,14 +90,14 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
         return getObjectManager().getObject();
     }
 
-    public void extractResultSetData(int offset, int maxRows)
+    public void extractResultSetData(DBDDataReciever dataReciever, int offset, int maxRows)
     {
-        if (!isConnected()) {
+        if (getDataSource() == null) {
             DBeaverUtils.showErrorDialog(getSite().getShell(), "Not Connected", "Not Connected");
             return;
         }
 
-        DataPumpJob job = new DataPumpJob(offset, maxRows);
+        DataPumpJob job = new DataPumpJob(dataReciever, offset, maxRows);
         job.addJobChangeListener(new JobChangeAdapter() {
             public void running(IJobChangeEvent event) {
                 running = true;
@@ -110,12 +111,14 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
 
     private class DataPumpJob extends DataSourceJob {
 
+        private DBDDataReciever dataReciever;
         private int offset;
         private int maxRows;
 
-        protected DataPumpJob(int offset, int maxRows)
+        protected DataPumpJob(DBDDataReciever dataReciever, int offset, int maxRows)
         {
             super("Pump data from " + getDataContainer().getName(), DBIcon.SQL_EXECUTE.getImageDescriptor(), DatabaseDataEditor.this.getDataSource());
+            this.dataReciever = dataReciever;
             this.offset = offset;
             this.maxRows = maxRows;
         }
@@ -128,7 +131,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
             try {
                 int rowCount = getDataContainer().readData(
                     context,
-                    resultSetView.getDataReciever(),
+                    dataReciever,
                     offset,
                     maxRows);
                 if (rowCount > 0) {

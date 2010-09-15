@@ -5,18 +5,20 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.data.DBDDataReciever;
 
 /**
  * IResultSetProvider
  */
 public interface IResultSetProvider extends IDataSourceProvider {
 
-    boolean isConnected();
+    DBPObject getResultSetSource();
 
     boolean isRunning();
 
     boolean isReadyToRun();
 
-    void extractResultSetData(int offset, int maxRows);
+    void extractResultSetData(DBDDataReciever dataReciever, int offset, int maxRows);
 
 }

@@ -4,13 +4,14 @@
 
 package org.jkiss.dbeaver.model.dbc;
 
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DBCStatement
  */
-public interface DBCStatement extends DBRBlockingObject
+public interface DBCStatement extends DBPObject, DBRBlockingObject
 {
 
     /**

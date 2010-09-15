@@ -78,6 +78,11 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
+    public void setDataReciever(DBDDataReciever dataReciever)
+    {
+        this.dataReciever = dataReciever;
+    }
+
     public void setResultSetLimit(int offset, int maxRows)
     {
         this.rsOffset = offset;
