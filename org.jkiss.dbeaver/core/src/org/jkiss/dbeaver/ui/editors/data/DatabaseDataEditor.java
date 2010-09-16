@@ -6,10 +6,6 @@ package org.jkiss.dbeaver.ui.editors.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
@@ -18,14 +14,10 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**
  * DatabaseDataEditor
@@ -77,10 +69,6 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
         return getDataContainer();
     }
 
-    public boolean isRunning() {
-        return running;
-    }
-
     public boolean isReadyToRun() {
         return getDataSource() != null;
     }
@@ -90,80 +78,12 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
         return getObjectManager().getObject();
     }
 
-    public void startDataExtraction(DBDDataReceiver dataReceiver, int offset, int maxRows)
-    {
-        if (getDataSource() == null) {
-            DBeaverUtils.showErrorDialog(getSite().getShell(), "Not Connected", "Not Connected");
-            return;
-        }
-
-        DataPumpJob job = new DataPumpJob(dataReceiver, offset, maxRows);
-        job.addJobChangeListener(new JobChangeAdapter() {
-            public void running(IJobChangeEvent event) {
-                running = true;
-            }
-            public void done(IJobChangeEvent event) {
-                running = false;
-            }
-        });
-        job.schedule();
-    }
-
     public void extractData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int offset, int maxRows) throws DBException {
         getDataContainer().readData(
             context,
             dataReceiver,
             offset,
             maxRows);
-    }
-
-    private class DataPumpJob extends DataSourceJob {
-
-        private DBDDataReceiver dataReceiver;
-        private int offset;
-        private int maxRows;
-
-        protected DataPumpJob(DBDDataReceiver dataReceiver, int offset, int maxRows)
-        {
-            super("Pump data from " + getDataContainer().getName(), DBIcon.SQL_EXECUTE.getImageDescriptor(), DatabaseDataEditor.this.getDataSource());
-            this.dataReceiver = dataReceiver;
-            this.offset = offset;
-            this.maxRows = maxRows;
-        }
-
-        protected IStatus run(DBRProgressMonitor monitor)
-        {
-            String statusMessage = null;
-            boolean hasErrors = false;
-            DBCExecutionContext context = getDataSource().openContext(monitor, "Read '" + getDataContainer().getName() + "' data");
-            try {
-                extractData(
-                    context,
-                    dataReceiver,
-                    offset,
-                    maxRows);
-            }
-            catch (DBException e) {
-                statusMessage = e.getMessage();
-                hasErrors = true;
-                log.error(e);
-            }
-            finally {
-                context.close();
-            }
-
-            if (hasErrors) {
-                // Set status
-                final String message = statusMessage;
-                getSite().getShell().getDisplay().syncExec(new Runnable() {
-                    public void run()
-                    {
-                        resultSetView.setStatus(message, true);
-                    }
-                });
-            }
-            return Status.OK_STATUS;
-        }
     }
 
 }

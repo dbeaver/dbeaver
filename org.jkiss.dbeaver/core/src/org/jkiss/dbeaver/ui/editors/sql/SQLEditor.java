@@ -657,7 +657,7 @@ public class SQLEditor extends BaseTextEditor
                 isSingleQuery ? "Execute query" : "Execute script",
                 getDataSource(),
                 queries,
-                resultsView.getDataReciever());
+                resultsView.getDataReceiver());
             job.addQueryListener(new ISQLQueryListener() {
                 public void onStartJob()
                 {
@@ -831,28 +831,8 @@ public class SQLEditor extends BaseTextEditor
         return curJob == null ? null : curJob.getLastQuery();
     }
 
-    public boolean isRunning() {
-        return curJobRunning;
-    }
-
     public boolean isReadyToRun() {
         return curJob != null && !curJobRunning;
-    }
-
-    public void startDataExtraction(DBDDataReceiver dataReceiver, int offset, int maxRows)
-    {
-        if (curJobRunning) {
-            DBeaverUtils.showErrorDialog(
-                getSite().getShell(),
-                "Could not execute",
-                "Could not execute resultset - another query is beng executed");
-            return;
-        }
-        if (curJob != null) {
-            curJob.setDataReciever(dataReceiver);
-            curJob.setResultSetLimit(offset, maxRows);
-            curJob.schedule();
-        }
     }
 
     public void extractData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int offset, int maxRows) throws DBException {

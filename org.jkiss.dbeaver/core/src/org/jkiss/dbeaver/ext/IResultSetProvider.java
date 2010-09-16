@@ -22,25 +22,10 @@ public interface IResultSetProvider extends IDataSourceProvider {
     DBPNamedObject getResultSetSource();
 
     /**
-     * Checks that this result set provider is already running
-     * @return true or false
-     */
-    boolean isRunning();
-
-    /**
      * Checks that this provider is ready to extract data
      * @return true if ready
      */
     boolean isReadyToRun();
-
-    /**
-     * Says data provider to start data extraction to specified data receiver.
-     * Implementor usually starts new job which pumps data to receiver.
-     * @param dataReceiver data receiver
-     * @param offset first row number
-     * @param maxRows number of rows
-     */
-    void startDataExtraction(DBDDataReceiver dataReceiver, int offset, int maxRows);
 
     /**
      * Extracts data to specified receiver.

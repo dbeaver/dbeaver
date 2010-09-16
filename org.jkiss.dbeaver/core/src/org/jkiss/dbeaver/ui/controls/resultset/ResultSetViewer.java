@@ -9,6 +9,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -49,10 +51,10 @@ import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
-import org.jkiss.dbeaver.ui.export.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.dbeaver.ui.export.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
@@ -73,7 +75,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private ResultSetMode mode;
     private Spreadsheet spreadsheet;
     private IResultSetProvider resultSetProvider;
-    private ResultSetDataReceiver dataReciever;
+    private ResultSetDataReceiver dataReceiver;
     private IThemeManager themeManager;
 
     // columns
@@ -117,6 +119,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private Color backgroundModified;
     private Color foregroundNull;
 
+    private ResultSetDataPumpJob dataPumpJob;
+    private boolean dataPumpRunning;
+
     public ResultSetViewer(Composite parent, IWorkbenchPartSite site, IResultSetProvider resultSetProvider)
     {
         super();
@@ -142,7 +147,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         createStatusBar(spreadsheet);
         changeMode(ResultSetMode.GRID);
         this.resultSetProvider = resultSetProvider;
-        this.dataReciever = new ResultSetDataReceiver(this);
+        this.dataReceiver = new ResultSetDataReceiver(this);
 
         this.themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
         this.themeManager.addPropertyChangeListener(this);
@@ -758,8 +763,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     {
     }
 
-    public DBDDataReceiver getDataReciever() {
-        return dataReciever;
+    public DBDDataReceiver getDataReceiver() {
+        return dataReceiver;
     }
 
     public void refresh()
@@ -767,21 +772,21 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.closeEditors();
         this.clearData();
         this.clearResultsView();
-        if (resultSetProvider != null) {
-            resultSetProvider.startDataExtraction(dataReciever, 0, getSegmentMaxRows());
+        if (resultSetProvider != null && resultSetProvider.isReadyToRun() && !dataPumpRunning) {
+            runDataPump(0, getSegmentMaxRows());
         }
         updateGridCursor();
     }
 
     synchronized void readNextSegment()
     {
-        if (!dataReciever.isHasMoreData()) {
+        if (!dataReceiver.isHasMoreData()) {
             return;
         }
-        if (resultSetProvider != null && !resultSetProvider.isRunning()) {
-            dataReciever.setHasMoreData(false);
-            dataReciever.setNextSegmentRead(true);
-            resultSetProvider.startDataExtraction(dataReciever, curRows.size(), getSegmentMaxRows());
+        if (resultSetProvider != null && resultSetProvider.isReadyToRun() && !dataPumpRunning) {
+            dataReceiver.setHasMoreData(false);
+            dataReceiver.setNextSegmentRead(true);
+            runDataPump(curRows.size(), getSegmentMaxRows());
         }
     }
 
@@ -792,6 +797,25 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
         IPreferenceStore preferenceStore = resultSetProvider.getDataSource().getContainer().getPreferenceStore();
         return preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
+    }
+
+    private synchronized void runDataPump(int offset, int maxRows)
+    {
+        if (dataPumpJob == null) {
+            dataPumpJob = new ResultSetDataPumpJob(this);
+            dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
+                @Override
+                public void done(IJobChangeEvent event) {
+                    dataPumpRunning = false;
+                }
+            });
+        } else if (dataPumpRunning) {
+            return;
+        }
+        dataPumpJob.setOffset(offset);
+        dataPumpJob.setMaxRows(maxRows);
+        dataPumpJob.schedule();
+        dataPumpRunning = true;
     }
 
     private void clearData()
@@ -1800,7 +1824,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 valueHandler = metaColumns[cell.col].getValueHandler();
             }
 
-            if (dataReciever.isHasMoreData() && rowNum == curRows.size() - 1) {
+            if (dataReceiver.isHasMoreData() && rowNum == curRows.size() - 1) {
                 readNextSegment();
             }
 
