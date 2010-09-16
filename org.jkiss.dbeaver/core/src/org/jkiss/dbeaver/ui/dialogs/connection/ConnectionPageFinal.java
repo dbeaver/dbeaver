@@ -14,6 +14,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.ext.ui.IEmbeddedPart;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -24,7 +25,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
  * OR with the extension that matches the expected one (mpe).
  */
 
-class ConnectionPageFinal extends WizardPage
+class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
 {
     private ConnectionWizard wizard;
     private DataSourceDescriptor dataSource;
@@ -47,7 +48,7 @@ class ConnectionPageFinal extends WizardPage
         this.dataSource = dataSource;
     }
 
-    void activate()
+    public void activatePart()
     {
         if (testButton != null) {
             ConnectionPageSettings settings = wizard.getPageSettings();
@@ -65,6 +66,9 @@ class ConnectionPageFinal extends WizardPage
             savePasswordCheck.setSelection(dataSource.isSavePassword());
             showSystemObjects.setSelection(dataSource.isShowSystemObjects());
         }
+    }
+
+    public void deactivatePart() {
     }
 
     public void createControl(Composite parent)

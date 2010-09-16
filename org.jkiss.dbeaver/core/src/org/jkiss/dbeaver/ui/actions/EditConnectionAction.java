@@ -7,7 +7,8 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.jface.action.IAction;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
+import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
 
 public class EditConnectionAction extends DataSourceAction
 {
@@ -18,9 +19,9 @@ public class EditConnectionAction extends DataSourceAction
     {
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(false);
         if (dataSourceContainer instanceof DataSourceDescriptor) {
-            EditConnectionDialog dialog = new EditConnectionDialog(
+            ConnectionDialog dialog = new ConnectionDialog(
                 getWindow(),
-                (DataSourceDescriptor)dataSourceContainer);
+                new EditConnectionWizard((DataSourceDescriptor)dataSourceContainer));
             dialog.open();
         }
     }

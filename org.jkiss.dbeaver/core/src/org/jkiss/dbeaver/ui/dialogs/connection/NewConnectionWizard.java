@@ -42,7 +42,7 @@ public class NewConnectionWizard extends ConnectionWizard
      * Constructor for SampleNewWizard.
      * @param window
      */
-    NewConnectionWizard(IWorkbenchWindow window)
+    public NewConnectionWizard(IWorkbenchWindow window)
     {
         super();
         setWindowTitle("Create new connection");

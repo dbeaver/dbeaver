@@ -8,8 +8,8 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
-import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionDialog;
-
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
+import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 
 public class NewConnectionAction implements IWorkbenchWindowActionDelegate
 {
@@ -19,7 +19,7 @@ public class NewConnectionAction implements IWorkbenchWindowActionDelegate
     public void run(IAction action)
     {
         if (window != null) {
-            NewConnectionDialog dialog = new NewConnectionDialog(window);
+            ConnectionDialog dialog = new ConnectionDialog(window, new NewConnectionWizard(window));
             dialog.open();
         }
     }

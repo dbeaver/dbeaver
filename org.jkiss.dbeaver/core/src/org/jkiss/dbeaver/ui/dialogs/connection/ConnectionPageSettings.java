@@ -12,6 +12,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
+import org.jkiss.dbeaver.ext.ui.IEmbeddedPart;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
@@ -27,7 +28,7 @@ import java.util.Map;
  * OR with the extension that matches the expected one (mpe).
  */
 
-class ConnectionPageSettings extends WizardPage implements IDataSourceConnectionEditorSite
+class ConnectionPageSettings extends WizardPage implements IDataSourceConnectionEditorSite, IEmbeddedPart
 {
     static final Log log = LogFactory.getLog(DriverDescriptor.class);
 
@@ -72,13 +73,13 @@ class ConnectionPageSettings extends WizardPage implements IDataSourceConnection
         super.setVisible(visible);
     }
 
-    void activate()
+    public void activatePart()
     {
         setMessage(getDriver().getName() + " connection settings");
         //this.editor.loadSettings();
     }
 
-    void deactivate()
+    public void deactivatePart()
     {
         if (this.connectionEditor != null) {
             this.connectionEditor.saveSettings();

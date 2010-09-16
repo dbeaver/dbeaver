@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ui.export.wizard;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -17,8 +16,9 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
-class DataExportPageOutput extends WizardPage {
+class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
 
     private static final String PATTERN_TABLE = "{table}";
     private static final String PATTERN_TIMESTAMP = "{timestamp}";

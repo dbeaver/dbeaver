@@ -10,14 +10,14 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.dialogs.WizardDataTransferPage;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 import java.util.TreeMap;
 
-class DataExportPageSettings extends WizardDataTransferPage {
+class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
 
     private static final int EXTRACT_TYPE_SINGLE_QUERY = 0;
     private static final int EXTRACT_TYPE_SEGMENTS = 1;
@@ -47,15 +47,6 @@ class DataExportPageSettings extends WizardDataTransferPage {
         setTitle("Settings");
         setDescription("Set export settings");
         setPageComplete(false);
-    }
-
-    @Override
-    protected boolean allowNewContainerName() {
-        return false;
-    }
-
-    public void handleEvent(Event event) {
-
     }
 
     public void createControl(Composite parent) {
@@ -145,12 +136,10 @@ class DataExportPageSettings extends WizardDataTransferPage {
     }
 
     @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
-        if (visible && !initialized) {
+    public void activatePart() {
+        if (!initialized) {
             initialized = true;
-            DataExportWizard wizard = (DataExportWizard)getWizard();
-            DataExporterDescriptor exporter = wizard.getSelectedExporter();
+            DataExporterDescriptor exporter = getWizard().getSelectedExporter();
             propsEditor.loadProperties(exporter.getPropertyGroups(), new TreeMap<String, Object>());
 
             segmentSizeText.setText(String.valueOf(DEFAULT_SEGMENT_SIZE));

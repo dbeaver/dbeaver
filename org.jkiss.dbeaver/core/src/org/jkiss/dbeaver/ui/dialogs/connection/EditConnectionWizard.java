@@ -29,7 +29,7 @@ public class EditConnectionWizard extends ConnectionWizard
     /**
      * Constructor for SampleNewWizard.
      */
-    EditConnectionWizard(DataSourceDescriptor dataSource)
+    public EditConnectionWizard(DataSourceDescriptor dataSource)
     {
         super();
         this.dataSource = dataSource;

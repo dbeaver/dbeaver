@@ -4,32 +4,20 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.jface.dialogs.IPageChangingListener;
-import org.eclipse.jface.dialogs.PageChangingEvent;
-import org.eclipse.jface.wizard.IWizardContainer;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 /**
  * NewConnectionDialog
  */
-public class ConnectionDialog<CONTAINER extends IWizardContainer> extends WizardDialog
+public class ConnectionDialog extends ActiveWizardDialog
 {
-    private IWorkbenchWindow window;
 
     public ConnectionDialog(IWorkbenchWindow window, ConnectionWizard wizard)
     {
         super(window.getShell(), wizard);
-        this.window = window;
 
-        getWizard().init(this.window.getWorkbench(), null);
-        this.addPageChangingListener(new IPageChangingListener()
-        {
-            public void handlePageChanging(PageChangingEvent event)
-            {
-                getWizard().changePage(event.getCurrentPage(), event.getTargetPage());
-            }
-        });
+        getWizard().init(window.getWorkbench(), null);
     }
 
     protected ConnectionWizard getWizard()
@@ -37,8 +25,4 @@ public class ConnectionDialog<CONTAINER extends IWizardContainer> extends Wizard
         return (ConnectionWizard) super.getWizard();
     }
 
-    public IWorkbenchWindow getWindow()
-    {
-        return window;
-    }
 }

@@ -113,18 +113,4 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
         }
     }
 
-    public void changePage(Object currentPage, Object targetPage)
-    {
-        if (currentPage instanceof ConnectionPageSettings) {
-            ((ConnectionPageSettings) currentPage).deactivate();
-        }
-
-        if (targetPage instanceof ConnectionPageFinal) {
-            ((ConnectionPageFinal) targetPage).activate();
-        }
-        if (targetPage instanceof ConnectionPageSettings) {
-            ((ConnectionPageSettings) targetPage).activate();
-        }
-    }
-
 }

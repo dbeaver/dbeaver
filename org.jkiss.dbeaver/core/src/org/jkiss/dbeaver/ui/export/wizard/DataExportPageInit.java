@@ -11,19 +11,18 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.ui.dialogs.WizardDataTransferPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IResultSetProvider;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.registry.DataExportersRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 import java.util.Collection;
 import java.util.List;
 
-class DataExportPageInit extends WizardDataTransferPage {
+class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
 
     private TableViewer exporterTable;
 
@@ -32,15 +31,6 @@ class DataExportPageInit extends WizardDataTransferPage {
         setTitle("Export type");
         setDescription("Choose export type");
         setPageComplete(false);
-    }
-
-    @Override
-    protected boolean allowNewContainerName() {
-        return false;
-    }
-
-    public void handleEvent(Event event) {
-
     }
 
     public void createControl(Composite parent) {
@@ -98,7 +88,7 @@ class DataExportPageInit extends WizardDataTransferPage {
                 } else {
                     exporter = null;
                 }
-                ((DataExportWizard)getWizard()).setSelectedExporter(exporter);
+                getWizard().setSelectedExporter(exporter);
                 updatePageCompletion();
             }
             public void widgetDefaultSelected(SelectionEvent e) {
@@ -115,8 +105,7 @@ class DataExportPageInit extends WizardDataTransferPage {
     }
 
     private void loadExporters() {
-        DataExportWizard wizard = (DataExportWizard)getWizard();
-        IResultSetProvider resultSetProvider = wizard.getResultSetProvider();
+        IResultSetProvider resultSetProvider = getWizard().getResultSetProvider();
         DBPObject rsSource = resultSetProvider.getResultSetSource();
 
         DataExportersRegistry registry = DBeaverCore.getInstance().getDataExportersRegistry();
@@ -125,8 +114,8 @@ class DataExportPageInit extends WizardDataTransferPage {
     }
 
     @Override
-    public boolean isPageComplete() {
-        return ((DataExportWizard)getWizard()).getSelectedExporter() != null;
+    protected boolean determinePageCompletion() {
+        return getWizard().getSelectedExporter() != null;
     }
 
 }

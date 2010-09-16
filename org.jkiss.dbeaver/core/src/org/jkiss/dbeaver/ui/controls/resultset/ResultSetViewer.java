@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.export.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
@@ -700,7 +701,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             {
                 DataExportWizard wizard = new DataExportWizard(getResultSetProvider());
                 wizard.init(site.getWorkbenchWindow().getWorkbench(), getSelection());
-                WizardDialog dialog = new WizardDialog(site.getShell(), wizard);
+                ActiveWizardDialog dialog = new ActiveWizardDialog(site.getShell(), wizard);
                 dialog.open();
             }
         });
