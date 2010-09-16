@@ -4,12 +4,14 @@
 
 package org.jkiss.dbeaver.runtime.sql;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 import java.util.List;
 
 /**
  * SQLScriptLine
  */
-public class SQLStatementInfo {
+public class SQLStatementInfo implements DBPNamedObject {
 
     private String query;
     private List<SQLStatementParameter> parameters;
@@ -80,6 +82,10 @@ public class SQLStatementInfo {
     @Override
     public String toString()
     {
+        return query;
+    }
+
+    public String getName() {
         return query;
     }
 }

@@ -43,6 +43,7 @@ public class DataExportWizard extends Wizard implements IExportWizard {
         addPage(new DataExportPageInit());
         addPage(new DataExportPageSettings());
         addPage(new DataExportPageOutput());
+        addPage(new DataExportPageFinal());
     }
 
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {

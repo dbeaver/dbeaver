@@ -47,10 +47,7 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPEventListener;
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -828,8 +825,8 @@ public class SQLEditor extends BaseTextEditor
         }
     }
 
-    public DBPObject getResultSetSource() {
-        return curJob == null ? null : curJob.getDataSource();
+    public DBPNamedObject getResultSetSource() {
+        return curJob == null ? null : curJob.getLastQuery();
     }
 
     public boolean isRunning() {

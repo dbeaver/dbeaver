@@ -13,6 +13,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
@@ -76,6 +77,11 @@ public class SQLQueryJob extends DataSourceJob
             this.fetchResultSets = (queries.size() == 1);
             this.rsMaxRows = preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
         }
+    }
+
+    public SQLStatementInfo getLastQuery()
+    {
+        return queries.isEmpty() ? null : queries.get(0);
     }
 
     public void setDataReciever(DBDDataReceiver dataReceiver)

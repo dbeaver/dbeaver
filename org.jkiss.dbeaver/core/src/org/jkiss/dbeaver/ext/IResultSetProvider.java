@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 
@@ -16,7 +17,7 @@ public interface IResultSetProvider extends IDataSourceProvider {
      * Source object of result set
      * @return source object or null
      */
-    DBPObject getResultSetSource();
+    DBPNamedObject getResultSetSource();
 
     /**
      * Checks that this result set provider is already running

@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.IResultSetProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -73,7 +73,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
         return getDataContainer().getDataSource();
     }
 
-    public DBPObject getResultSetSource() {
+    public DBPNamedObject getResultSetSource() {
         return getDataContainer();
     }
 

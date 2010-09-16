@@ -26,6 +26,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
     private Button compressCheckbox;
     private Text threadsNumText;
     private Button rowCountCheckbox;
+    private Button showFolderCheckbox;
 
     DataExportPageOutput() {
         super("Output");
@@ -113,7 +114,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
         {
             Group generalSettings = UIUtils.createControlGroup(composite, "Progress", 2, GridData.FILL_HORIZONTAL, 0);
 
-            UIUtils.createControlLabel(generalSettings, "Maximum threads");
+            Label threadsNumLabel = UIUtils.createControlLabel(generalSettings, "Maximum threads");
             threadsNumText = new Text(generalSettings, SWT.BORDER);
             threadsNumText.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e) {
@@ -124,11 +125,22 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                     }
                 }
             });
+            if (getWizard().getSettings().getDataProviders().size() < 2) {
+                threadsNumLabel.setEnabled(false);
+                threadsNumText.setEnabled(false);
+            }
 
             rowCountCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Select row count", true);
             rowCountCheckbox.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e) {
                     getWizard().getSettings().setQueryRowCount(rowCountCheckbox.getSelection());
+                }
+            });
+
+            showFolderCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Open output folder at end", true);
+            showFolderCheckbox.addSelectionListener(new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e) {
+                    getWizard().getSettings().setOpenFolderOnFinish(showFolderCheckbox.getSelection());
                 }
             });
         }
@@ -147,6 +159,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
         rowCountCheckbox.setSelection(exportSettings.isQueryRowCount());
         compressCheckbox.setSelection(exportSettings.isCompressResults());
         encodingCombo.setText(exportSettings.getOutputEncoding());
+        showFolderCheckbox.setSelection(exportSettings.isOpenFolderOnFinish());
 
         updatePageCompletion();
     }

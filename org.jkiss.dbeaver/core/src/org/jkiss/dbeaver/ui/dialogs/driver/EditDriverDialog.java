@@ -514,7 +514,7 @@ public class EditDriverDialog extends Dialog
                         }
                         JarEntry current = (JarEntry) e.nextElement();
                         String fileName = current.getName();
-                        if (fileName.endsWith(".class")) {
+                        if (fileName.endsWith(".class") && fileName.indexOf("$") == -1) {
                             String className = fileName.replaceAll("/", ".").replace(".class", "");
                             monitor.subTask(className);
                             try {

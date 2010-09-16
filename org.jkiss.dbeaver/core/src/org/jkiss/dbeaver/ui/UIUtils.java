@@ -106,53 +106,59 @@ public class UIUtils {
 
     public static TableColumn createTableColumn(Table table, int style, String text)
     {
-        TableColumn column = new TableColumn(table, style);
-        column.setText(text);
-        return column;
+        table.setRedraw(false);
+        try {
+            TableColumn column = new TableColumn(table, style);
+            column.setText(text);
+            return column;
+        } finally {
+            table.setRedraw(true);
+        }
     }
 
     public static void packColumns(Table table)
     {
-        for (TableColumn column : table.getColumns()) {
-            column.pack();
+        table.setRedraw(false);
+        try {
+            int totalWidth = 0;
+            for (TableColumn column : table.getColumns()) {
+                column.pack();
+                totalWidth += column.getWidth();
+            }
+            if (totalWidth > table.getClientArea().width) {
+                int extraSpace = totalWidth - table.getClientArea().width;
+                for (TableColumn tc : table.getColumns()) {
+                    double ratio = (double) tc.getWidth() / totalWidth;
+                    tc.setWidth((int) (tc.getWidth() - extraSpace * ratio));
+                }
+            }
+        } finally {
+            table.setRedraw(true);
         }
     }
 
     public static void maxTableColumnsWidth(Table table)
     {
-        int columnCount = table.getColumnCount();
-        if (columnCount > 0) {
-            int totalWidth = 0;
-            for (TableColumn tc : table.getColumns()) {
-                tc.pack();
-                totalWidth += tc.getWidth();
-            }
-            if (totalWidth < table.getClientArea().width) {
-                int extraSpace = table.getClientArea().width - totalWidth;
-                extraSpace /= columnCount;
+        table.setRedraw(false);
+        try {
+            int columnCount = table.getColumnCount();
+            if (columnCount > 0) {
+                int totalWidth = 0;
                 for (TableColumn tc : table.getColumns()) {
-                    tc.setWidth(tc.getWidth() + extraSpace);
+                    tc.pack();
+                    totalWidth += tc.getWidth();
+                }
+                if (totalWidth < table.getClientArea().width) {
+                    int extraSpace = table.getClientArea().width - totalWidth;
+                    extraSpace /= columnCount;
+                    for (TableColumn tc : table.getColumns()) {
+                        tc.setWidth(tc.getWidth() + extraSpace);
+                    }
                 }
             }
         }
-    }
-
-    public static void maxTreeColumnsWidth(Tree tree)
-    {
-        int columnCount = tree.getColumnCount();
-        if (columnCount > 0) {
-            int totalWidth = 0;
-            for (TreeColumn tc : tree.getColumns()) {
-                tc.pack();
-                totalWidth += tc.getWidth();
-            }
-            if (totalWidth < tree.getClientArea().width) {
-                int extraSpace = tree.getClientArea().width - totalWidth;
-                extraSpace /= columnCount;
-                for (TreeColumn tc : tree.getColumns()) {
-                    tc.setWidth(tc.getWidth() + extraSpace);
-                }
-            }
+        finally {
+            table.setRedraw(true);
         }
     }
 

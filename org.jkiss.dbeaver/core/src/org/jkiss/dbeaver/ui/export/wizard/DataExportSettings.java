@@ -1,12 +1,20 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui.export.wizard;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IResultSetProvider;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.prop.DBPProperty;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +63,7 @@ public class DataExportSettings {
 
     private boolean compressResults = false;
     private boolean queryRowCount = true;
+    private boolean openFolderOnFinish = true;
     private int maxJobCount = DEFAULT_THREADS_NUM;
 
     private Map<DataExporterDescriptor, Map<String,Object>> exporterPropsHistory = new HashMap<DataExporterDescriptor, Map<String, Object>>();
@@ -189,6 +198,16 @@ public class DataExportSettings {
         this.queryRowCount = queryRowCount;
     }
 
+    public boolean isOpenFolderOnFinish()
+    {
+        return openFolderOnFinish;
+    }
+
+    public void setOpenFolderOnFinish(boolean openFolderOnFinish)
+    {
+        this.openFolderOnFinish = openFolderOnFinish;
+    }
+
     public int getMaxJobCount()
     {
         return maxJobCount;
@@ -199,6 +218,39 @@ public class DataExportSettings {
         if (maxJobCount > 0) {
             this.maxJobCount = maxJobCount;
         }
+    }
+
+    public File makeOutputFile(DBPNamedObject source)
+    {
+        File dir = new File(outputFolder);
+        String fileName = processTemplate(stripObjectName(source.getName())) + "." + dataExporter.getFileExtension();
+        return new File(dir, fileName);
+    }
+
+    private String processTemplate(String tableName)
+    {
+        String timeStamp = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
+        return outputFilePattern.replaceAll("\\{table\\}", tableName).replaceAll("\\{timestamp\\}", timeStamp);
+    }
+
+    private static String stripObjectName(String name)
+    {
+        StringBuilder result = new StringBuilder();
+        boolean lastUnd = false;
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (Character.isJavaIdentifierPart(c)) {
+                result.append(c);
+                lastUnd = false;
+            } else if (!lastUnd) {
+                result.append('_');
+                lastUnd = true;
+            }
+            if (result.length() >= 64) {
+                break;
+            }
+        }
+        return result.toString();
     }
 
     public void loadFrom(IDialogSettings dialogSettings)
@@ -256,6 +308,9 @@ public class DataExportSettings {
         } catch (NumberFormatException e) {
             maxJobCount = DEFAULT_THREADS_NUM;
         }
+        if (dialogSettings.get("openFolderOnFinish") != null) {
+            openFolderOnFinish = dialogSettings.getBoolean("openFolderOnFinish");
+        }
 
         IDialogSettings[] expSections = dialogSettings.getSections();
         if (expSections != null && expSections.length > 0) {
@@ -297,6 +352,7 @@ public class DataExportSettings {
         dialogSettings.put("compressResults", compressResults);
         dialogSettings.put("queryRowCount", queryRowCount);
         dialogSettings.put("maxJobCount", maxJobCount);
+        dialogSettings.put("openFolderOnFinish", openFolderOnFinish);
 
         for (DataExporterDescriptor exp : exporterPropsHistory.keySet()) {
             IDialogSettings expSettings = dialogSettings.getSection(exp.getName());
