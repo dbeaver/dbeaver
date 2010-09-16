@@ -43,4 +43,27 @@ public class DataExportersRegistry {
         return editors;
     }
 
+    /**
+     * Returns data exporter which supports ALL specified object types
+     * @param objectTypes object types
+     * @return list of editors
+     */
+    public List<DataExporterDescriptor> getDataExporters(List<Class> objectTypes)
+    {
+        List<DataExporterDescriptor> editors = new ArrayList<DataExporterDescriptor>();
+        for (DataExporterDescriptor descriptor : dataExporters) {
+            boolean supports = true;
+            for (Class objectType : objectTypes) {
+                if (!descriptor.appliesToType(objectType)) {
+                    supports = false;
+                    break;
+                }
+            }
+            if (supports) {
+                editors.add(descriptor);
+            }
+        }
+        return editors;
+    }
+
 }

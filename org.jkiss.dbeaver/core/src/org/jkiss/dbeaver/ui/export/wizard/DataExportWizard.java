@@ -12,21 +12,17 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.wizards.datatransfer.DataTransferMessages;
 import org.jkiss.dbeaver.ext.IResultSetProvider;
-import org.jkiss.dbeaver.registry.DataExporterDescriptor;
+
+import java.util.List;
 
 public class DataExportWizard extends Wizard implements IExportWizard {
 
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "DataExportWizard";
 
-    private IResultSetProvider resultSetProvider;
-    private DataExportPageInit mainPage;
-    private DataExporterDescriptor selectedExporter;
+    private DataExportSettings settings;
 
-    /**
-     * Creates a wizard for exporting workspace resources to a zip file.
-     */
-    public DataExportWizard(IResultSetProvider resultSetProvider) {
-        this.resultSetProvider = resultSetProvider;
+    public DataExportWizard(List<IResultSetProvider> resultSetProviders) {
+        this.settings = new DataExportSettings(resultSetProviders);
         IDialogSettings workbenchSettings = WorkbenchPlugin.getDefault().getDialogSettings();
         IDialogSettings section = workbenchSettings.getSection(RS_EXPORT_WIZARD_DIALOG_SETTINGS);//$NON-NLS-1$
         if (section == null) {
@@ -35,14 +31,14 @@ public class DataExportWizard extends Wizard implements IExportWizard {
         setDialogSettings(section);
     }
 
-    public IResultSetProvider getResultSetProvider() {
-        return resultSetProvider;
+    public DataExportSettings getSettings()
+    {
+        return settings;
     }
 
     public void addPages() {
         super.addPages();
-        mainPage = new DataExportPageInit();
-        addPage(mainPage);
+        addPage(new DataExportPageInit());
         addPage(new DataExportPageSettings());
         addPage(new DataExportPageOutput());
     }
@@ -59,11 +55,4 @@ public class DataExportWizard extends Wizard implements IExportWizard {
         return true;
     }
 
-    public DataExporterDescriptor getSelectedExporter() {
-        return selectedExporter;
-    }
-
-    public void setSelectedExporter(DataExporterDescriptor selectedExporter) {
-        this.selectedExporter = selectedExporter;
-    }
 }

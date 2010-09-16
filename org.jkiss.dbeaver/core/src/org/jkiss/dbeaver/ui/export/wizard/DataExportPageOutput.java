@@ -20,11 +20,6 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
 
-    private static final String PATTERN_TABLE = "{table}";
-    private static final String PATTERN_TIMESTAMP = "{timestamp}";
-
-    private static final int DEfAULT_THREADS_NUM = 5;
-
     private Combo encodingCombo;
     private Text directoryText;
     private Text fileNameText;
@@ -57,7 +52,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                 directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 directoryText.addModifyListener(new ModifyListener() {
                     public void modifyText(ModifyEvent e) {
-                        validateParameters();
+                        updatePageCompletion();
                     }
                 });
 
@@ -83,23 +78,21 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
 
             UIUtils.createControlLabel(generalSettings, "File name pattern");
             fileNameText = new Text(generalSettings, SWT.BORDER);
-            fileNameText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1));
-            fileNameText.setText(PATTERN_TABLE + "-" + PATTERN_TIMESTAMP);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            fileNameText.setLayoutData(gd);
             fileNameText.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e) {
-                    validateParameters();
+                    updatePageCompletion();
                 }
             });
 
             UIUtils.createControlLabel(generalSettings, "Encoding");
-            encodingCombo = UIUtils.createEncodingCombo(generalSettings, System.getProperty("file.encoding"));
+            encodingCombo = UIUtils.createEncodingCombo(generalSettings, getWizard().getSettings().getOutputEncoding());
             encodingCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1));
 
             compressCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Compress", false);
             compressCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1));
-
-            // select count
-            // maximum threads
         }
 
         {
@@ -107,24 +100,38 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
 
             UIUtils.createControlLabel(generalSettings, "Maximum threads");
             threadsNumText = new Text(generalSettings, SWT.BORDER);
-            threadsNumText.setText(String.valueOf(DEfAULT_THREADS_NUM));
             rowCountCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Select row count", true);
         }
 
         setControl(composite);
 
-        validateParameters();
     }
 
-    private void validateParameters() {
+    @Override
+    public void activatePart()
+    {
+        DataExportSettings exportSettings = getWizard().getSettings();
+        directoryText.setText(exportSettings.getOutputFolder());
+        fileNameText.setText(exportSettings.getOutputFilePattern());
+        threadsNumText.setText(String.valueOf(exportSettings.getMaxJobCount()));
+        rowCountCheckbox.setSelection(exportSettings.isQueryRowCount());
+        compressCheckbox.setSelection(exportSettings.isCompressResults());
+        encodingCombo.setText(exportSettings.getOutputEncoding());
+
+        updatePageCompletion();
+    }
+
+    @Override
+    protected boolean determinePageCompletion()
+    {
         boolean valid = true;
-        if (directoryText == null || CommonUtils.isEmpty(directoryText.getText())) {
+        if (CommonUtils.isEmpty(getWizard().getSettings().getOutputFolder())) {
             valid = false;
         }
-        if (fileNameText == null || CommonUtils.isEmpty(fileNameText.getText())) {
+        if (CommonUtils.isEmpty(getWizard().getSettings().getOutputFilePattern())) {
             valid = false;
         }
-        setPageComplete(valid);
+        return valid;
     }
 
 }

@@ -699,7 +699,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             @Override
             public void run()
             {
-                DataExportWizard wizard = new DataExportWizard(getResultSetProvider());
+                DataExportWizard wizard = new DataExportWizard(
+                    Collections.singletonList(getResultSetProvider()));
                 wizard.init(site.getWorkbenchWindow().getWorkbench(), getSelection());
                 ActiveWizardDialog dialog = new ActiveWizardDialog(site.getShell(), wizard);
                 dialog.open();

@@ -13,12 +13,12 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IResultSetProvider;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.registry.DataExportersRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -88,7 +88,7 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
                 } else {
                     exporter = null;
                 }
-                getWizard().setSelectedExporter(exporter);
+                getWizard().getSettings().setDataExporter(exporter);
                 updatePageCompletion();
             }
             public void widgetDefaultSelected(SelectionEvent e) {
@@ -105,17 +105,20 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
     }
 
     private void loadExporters() {
-        IResultSetProvider resultSetProvider = getWizard().getResultSetProvider();
-        DBPObject rsSource = resultSetProvider.getResultSetSource();
+        List<IResultSetProvider> dataProviders = getWizard().getSettings().getDataProviders();
+        List<Class> rsSources = new ArrayList<Class>();
+        for (IResultSetProvider provider : dataProviders) {
+            rsSources.add(provider.getResultSetSource().getClass());
+        }
 
         DataExportersRegistry registry = DBeaverCore.getInstance().getDataExportersRegistry();
-        List<DataExporterDescriptor> exporters = registry.getDataExporters(rsSource == null ? Object.class : rsSource.getClass());
+        List<DataExporterDescriptor> exporters = registry.getDataExporters(rsSources);
         exporterTable.setInput(exporters);
     }
 
     @Override
     protected boolean determinePageCompletion() {
-        return getWizard().getSelectedExporter() != null;
+        return getWizard().getSettings().getDataExporter() != null;
     }
 
 }

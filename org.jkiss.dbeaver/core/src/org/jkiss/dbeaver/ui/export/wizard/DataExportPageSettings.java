@@ -15,8 +15,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
-import java.util.TreeMap;
-
 class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
 
     private static final int EXTRACT_TYPE_SINGLE_QUERY = 0;
@@ -29,8 +27,6 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
     private static final int LOB_ENCODING_BASE64 = 0;
     private static final int LOB_ENCODING_HEX = 1;
     private static final int LOB_ENCODING_BINARY = 2;
-
-    private static final int DEFAULT_SEGMENT_SIZE = 100000;
 
     private EditablePropertiesControl propsEditor;
     private Combo lobExtractType;
@@ -75,21 +71,12 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                 rowsExtractType.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        int selectionIndex = rowsExtractType.getSelectionIndex();
-                        if (selectionIndex == EXTRACT_TYPE_SEGMENTS) {
-                            segmentSizeLabel.setVisible(true);
-                            segmentSizeText.setVisible(true);
-                        } else {
-                            segmentSizeLabel.setVisible(false);
-                            segmentSizeText.setVisible(false);
-                        }
+                        updatePageCompletion();
                     }
                 });
 
                 segmentSizeLabel = UIUtils.createControlLabel(generalSettings, "Segment size");
                 segmentSizeText = new Text(generalSettings, SWT.BORDER);
-                segmentSizeLabel.setVisible(false);
-                segmentSizeText.setVisible(false);
             }
 
             {
@@ -102,14 +89,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                 lobExtractType.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        int selectionIndex = lobExtractType.getSelectionIndex();
-                        if (selectionIndex == EXTRACT_LOB_INLINE) {
-                            lobEncodingLabel.setVisible(true);
-                            lobEncodingCombo.setVisible(true);
-                        } else {
-                            lobEncodingLabel.setVisible(false);
-                            lobEncodingCombo.setVisible(false);
-                        }
+                        updatePageCompletion();
                     }
                 });
 
@@ -119,8 +99,6 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                     "Base64",
                     "Hex",
                     "Binary" });
-                lobEncodingLabel.setVisible(false);
-                lobEncodingCombo.setVisible(false);
             }
         }
 
@@ -137,22 +115,50 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
 
     @Override
     public void activatePart() {
-        if (!initialized) {
-            initialized = true;
-            DataExporterDescriptor exporter = getWizard().getSelectedExporter();
-            propsEditor.loadProperties(exporter.getPropertyGroups(), new TreeMap<String, Object>());
+        DataExportSettings exportSettings = getWizard().getSettings();
+        DataExporterDescriptor exporter = exportSettings.getDataExporter();
+        propsEditor.loadProperties(exporter.getPropertyGroups(), exportSettings.getExtractorProperties());
 
-            segmentSizeText.setText(String.valueOf(DEFAULT_SEGMENT_SIZE));
-            rowsExtractType.select(EXTRACT_TYPE_SINGLE_QUERY);
-            lobExtractType.select(EXTRACT_LOB_SKIP);
-            lobEncodingCombo.select(LOB_ENCODING_HEX);
-
-            validateParameters();
+        segmentSizeText.setText(String.valueOf(exportSettings.getSegmentSize()));
+        switch (exportSettings.getExtractType()) {
+            case SINGLE_QUERY: rowsExtractType.select(EXTRACT_TYPE_SINGLE_QUERY); break;
+            case SEGMENTS: rowsExtractType.select(EXTRACT_TYPE_SEGMENTS); break;
         }
+        switch (exportSettings.getLobExtractType()) {
+            case SKIP: lobExtractType.select(EXTRACT_LOB_SKIP); break;
+            case FILES: lobExtractType.select(EXTRACT_LOB_FILES); break;
+            case INLINE: lobExtractType.select(EXTRACT_LOB_INLINE); break;
+        }
+        switch (exportSettings.getLobEncoding()) {
+            case BASE64: lobEncodingCombo.select(LOB_ENCODING_BASE64); break;
+            case HEX: lobEncodingCombo.select(LOB_ENCODING_HEX); break;
+            case BINARY: lobEncodingCombo.select(LOB_ENCODING_BINARY); break;
+        }
+
+        updatePageCompletion();
     }
 
-    private void validateParameters() {
-        setPageComplete(true);
-    }
+    @Override
+    protected boolean determinePageCompletion()
+    {
+        int selectionIndex = rowsExtractType.getSelectionIndex();
+        if (selectionIndex == EXTRACT_TYPE_SEGMENTS) {
+            segmentSizeLabel.setVisible(true);
+            segmentSizeText.setVisible(true);
+        } else {
+            segmentSizeLabel.setVisible(false);
+            segmentSizeText.setVisible(false);
+        }
 
+        selectionIndex = lobExtractType.getSelectionIndex();
+        if (selectionIndex == EXTRACT_LOB_INLINE) {
+            lobEncodingLabel.setVisible(true);
+            lobEncodingCombo.setVisible(true);
+        } else {
+            lobEncodingLabel.setVisible(false);
+            lobEncodingCombo.setVisible(false);
+        }
+
+        return true;
+    }
 }
