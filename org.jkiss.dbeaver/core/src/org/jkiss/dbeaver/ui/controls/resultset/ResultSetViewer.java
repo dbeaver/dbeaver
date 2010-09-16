@@ -79,14 +79,14 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     // columns
     private DBDColumnBinding[] metaColumns;
     // Data
-    private final List<Object[]> curRows = new ArrayList<Object[]>();
+    private List<Object[]> curRows = new ArrayList<Object[]>();
     // Current row number (for record mode)
     private int curRowNum = -1;
     private boolean singleSourceCells;
 
     // Edited rows and cells
-    private final Set<RowInfo> addedRows = new TreeSet<RowInfo>();
-    private final Set<RowInfo> removedRows = new TreeSet<RowInfo>();
+    private Set<RowInfo> addedRows = new TreeSet<RowInfo>();
+    private Set<RowInfo> removedRows = new TreeSet<RowInfo>();
     private Map<CellInfo, Object> editedValues = new HashMap<CellInfo, Object>();
 
     private Label statusLabel;
@@ -514,6 +514,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         statusLabel.setText(status);
     }
 
+    public void setExecutionTime(long executionTime)
+    {
+        statusLabel.setText(statusLabel.getText() + " - " + executionTime + "ms");
+    }
+
     public void setColumnsInfo(DBDColumnBinding[] metaColumns)
     {
         this.metaColumns = metaColumns;
@@ -545,12 +550,22 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
 
         this.initResultSet();
+
+        String statusMessage;
+        if (rows.size() > 0) {
+            statusMessage = rows.size() + " row(s)";
+        } else {
+            statusMessage = "No data";
+        }
+        setStatus(statusMessage, false);
     }
 
     public void appendData(List<Object[]> rows)
     {
         curRows.addAll(rows);
         refreshSpreadsheet(true);
+
+        setStatus(curRows.size() + " rows (+" + rows.size() + ")", false);
     }
 
     private void clearResultsView()
@@ -783,12 +798,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     {
         // Refresh all rows
         this.releaseAll();
-        this.curRows.clear();
+        this.curRows = new ArrayList<Object[]>();
         this.curRowNum = 0;
 
-        this.editedValues.clear();
-        this.addedRows.clear();
-        this.removedRows.clear();
+        this.editedValues = new HashMap<CellInfo, Object>();
+        this.addedRows = new TreeSet<RowInfo>();
+        this.removedRows = new TreeSet<RowInfo>();
     }
 
     private void applyChanges()

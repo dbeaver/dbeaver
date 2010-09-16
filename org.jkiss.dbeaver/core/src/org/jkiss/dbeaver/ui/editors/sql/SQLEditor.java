@@ -692,23 +692,24 @@ public class SQLEditor extends BaseTextEditor
                         public void run()
                         {
                             if (result.getError() == null) {
-                                String status;
                                 if (result.getRowCount() != null) {
+                                    // No status message for selected rows - this info is set by RS viewer itself
+/*
                                     status = result.getRowCount() + " row(s) fetched";
                                     if (result.getRowOffset() != null) {
                                         status += " (" + result.getRowOffset() + " - " + (result.getRowOffset() + result.getRowCount()) + ")";
                                     }
+*/
                                 } else if (result.getUpdateCount() != null) {
                                     if (result.getUpdateCount() == 0) {
-                                        status = "No rows updated";
+                                        setStatus("No rows updated", ConsoleMessageType.INFO);
                                     } else {
-                                        status = String.valueOf(result.getUpdateCount()) + " row(s) updated";
+                                        setStatus(String.valueOf(result.getUpdateCount()) + " row(s) updated", ConsoleMessageType.INFO);
                                     }
                                 } else {
-                                    status = "Statement executed";
+                                    setStatus("Statement executed", ConsoleMessageType.INFO);
                                 }
-                                status += " (" + result.getQueryTime() + " ms)";
-                                setStatus(status, ConsoleMessageType.INFO);
+                                resultsView.setExecutionTime(result.getQueryTime());
                             } else {
                                 setStatus(result.getError().getMessage(), ConsoleMessageType.ERROR);
                             }

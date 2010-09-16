@@ -133,22 +133,11 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 }
 
                 // Check for more data
-                if (rows.size() >= resultSetViewer.getSegmentMaxRows()) {
-                    hasMoreData = true;
-                } else {
-                    hasMoreData = false;
-                }
+                hasMoreData = rows.size() >= resultSetViewer.getSegmentMaxRows();
                 nextSegmentRead = false;
 
                 errors.clear();
-
-                String statusMessage;
-                if (rows.size() > 0) {
-                    statusMessage = rows.size() + " row(s)";
-                } else {
-                    statusMessage = "No data";
-                }
-                resultSetViewer.setStatus(statusMessage, false);
+                rows = new ArrayList<Object[]>();
             }
         });
     }
