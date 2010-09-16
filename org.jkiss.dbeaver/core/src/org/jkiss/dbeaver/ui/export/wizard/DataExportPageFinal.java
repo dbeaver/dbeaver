@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.ui.export.wizard;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -43,11 +45,17 @@ class DataExportPageFinal extends ActiveWizardPage<DataExportWizard> {
             resultTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             resultTable.setHeaderVisible(true);
             resultTable.setLinesVisible(true);
+            resultTable.addControlListener(new ControlAdapter() {
+                @Override
+                public void controlResized(ControlEvent e) {
+                    UIUtils.packColumns(resultTable);
+                }
+            });
 
             TableColumn columnTable = new TableColumn(resultTable, SWT.LEFT);
             columnTable.setText("Table");
 
-            TableColumn columnOutput = new TableColumn(resultTable, SWT.RIGHT);
+            TableColumn columnOutput = new TableColumn(resultTable, SWT.LEFT);
             columnOutput.setText("Output");
 
             UIUtils.packColumns(resultTable);

@@ -42,6 +42,14 @@ public interface DBPDataSource extends DBPObject
     DBCExecutionContext openContext(DBRProgressMonitor monitor, String task);
 
     /**
+     * Opens new isolated execution context.
+     * @param monitor progress monitor
+     * @param task task description
+     * @return execution context
+     */
+    DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String task);
+
+    /**
      * checks connection is alive and reconnects if needed.
      *
      * @throws org.jkiss.dbeaver.DBException on any error

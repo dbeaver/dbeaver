@@ -44,10 +44,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     private String queryGetActiveDB;
     private String querySetActiveDB;
 
-    public GenericDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
+    public GenericDataSource(DBSDataSourceContainer container)
         throws DBException
     {
-        super(monitor, container);
+        super(container);
         this.queryGetActiveDB = container.getDriver().getCustomQuery(QUERY_GET_ACTIVE_DB);
         this.querySetActiveDB = container.getDriver().getCustomQuery(QUERY_SET_ACTIVE_DB);
     }

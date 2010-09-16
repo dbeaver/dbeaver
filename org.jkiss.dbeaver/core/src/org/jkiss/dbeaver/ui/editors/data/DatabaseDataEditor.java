@@ -90,7 +90,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
         return getObjectManager().getObject();
     }
 
-    public void extractResultSetData(DBDDataReceiver dataReceiver, int offset, int maxRows)
+    public void startDataExtraction(DBDDataReceiver dataReceiver, int offset, int maxRows)
     {
         if (getDataSource() == null) {
             DBeaverUtils.showErrorDialog(getSite().getShell(), "Not Connected", "Not Connected");
@@ -109,6 +109,14 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
         job.schedule();
     }
 
+    public void extractData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int offset, int maxRows) throws DBException {
+        getDataContainer().readData(
+            context,
+            dataReceiver,
+            offset,
+            maxRows);
+    }
+
     private class DataPumpJob extends DataSourceJob {
 
         private DBDDataReceiver dataReceiver;
@@ -125,20 +133,15 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
 
         protected IStatus run(DBRProgressMonitor monitor)
         {
-            String statusMessage;
+            String statusMessage = null;
             boolean hasErrors = false;
             DBCExecutionContext context = getDataSource().openContext(monitor, "Read '" + getDataContainer().getName() + "' data");
             try {
-                int rowCount = getDataContainer().readData(
+                extractData(
                     context,
-                        dataReceiver,
+                    dataReceiver,
                     offset,
                     maxRows);
-                if (rowCount > 0) {
-                    statusMessage = rowCount + " row(s)";
-                } else {
-                    statusMessage = "Empty resultset";
-                }
             }
             catch (DBException e) {
                 statusMessage = e.getMessage();
@@ -149,14 +152,13 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
                 context.close();
             }
 
-            {
+            if (hasErrors) {
                 // Set status
                 final String message = statusMessage;
-                final boolean isError = hasErrors;
                 getSite().getShell().getDisplay().syncExec(new Runnable() {
                     public void run()
                     {
-                        resultSetView.setStatus(message, isError);
+                        resultSetView.setStatus(message, true);
                     }
                 });
             }

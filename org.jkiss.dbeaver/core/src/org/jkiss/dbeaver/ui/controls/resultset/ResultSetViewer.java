@@ -16,7 +16,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -754,7 +753,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.clearData();
         this.clearResultsView();
         if (resultSetProvider != null) {
-            resultSetProvider.extractResultSetData(dataReciever, 0, getSegmentMaxRows());
+            resultSetProvider.startDataExtraction(dataReciever, 0, getSegmentMaxRows());
         }
         updateGridCursor();
     }
@@ -767,7 +766,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (resultSetProvider != null && !resultSetProvider.isRunning()) {
             dataReciever.setHasMoreData(false);
             dataReciever.setNextSegmentRead(true);
-            resultSetProvider.extractResultSetData(dataReciever, curRows.size(), getSegmentMaxRows());
+            resultSetProvider.startDataExtraction(dataReciever, curRows.size(), getSegmentMaxRows());
         }
     }
 

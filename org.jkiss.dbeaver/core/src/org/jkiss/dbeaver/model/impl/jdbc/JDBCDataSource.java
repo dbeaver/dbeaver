@@ -7,11 +7,14 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IProduct;
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.dbc.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.dbc.DBCQueryTransformer;
@@ -24,10 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.SQLException;
-import java.sql.DriverManager;
+import java.sql.*;
 import java.util.Properties;
 
 /**
@@ -48,14 +48,14 @@ public abstract class JDBCDataSource
 
     protected DBPDataSourceInfo dataSourceInfo;
 
-    public JDBCDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
+    public JDBCDataSource(DBSDataSourceContainer container)
         throws DBException
     {
         this.container = container;
-        this.connection = openConnection(monitor);
+        this.connection = openConnection();
     }
 
-    protected Connection openConnection(DBRProgressMonitor monitor)
+    protected Connection openConnection()
         throws DBException
     {
         // It MUST be a JDBC driver
@@ -94,6 +94,19 @@ public abstract class JDBCDataSource
             if (connection == null) {
                 throw new DBException("Null connection returned");
             }
+
+            {
+                // Provide client info
+                IProduct product = Platform.getProduct();
+                if (product != null) {
+                    String appName = "DBeaver " + product.getDefiningBundle().getVersion().toString();
+                    try {
+                        connection.setClientInfo("ApplicationName", appName);
+                    } catch (Throwable e) {
+                        // just ignore
+                    }
+                }
+            }
             return connection;
         }
         catch (SQLException ex) {
@@ -116,6 +129,18 @@ public abstract class JDBCDataSource
         return connection;
     }
 
+    public Connection openIsolatedConnection() throws SQLException {
+        try {
+            return openConnection();
+        } catch (DBException e) {
+            if (e.getCause() instanceof SQLException) {
+                throw (SQLException)e.getCause();
+            } else {
+                throw new SQLException("Could not open isolated connection", e);
+            }
+        }
+    }
+
     public JDBCExecutionContext openContext(DBRProgressMonitor monitor)
     {
         return openContext(monitor, null);
@@ -126,7 +151,11 @@ public abstract class JDBCDataSource
         if (connection == null) {
             throw new IllegalStateException("Not connected to database");
         }
-        return new ConnectionManagable(this, monitor, taskTitle);
+        return new ConnectionManagable(this, monitor, taskTitle, false);
+    }
+
+    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String taskTitle) {
+        return new ConnectionManagable(this, monitor, taskTitle, true);
     }
 
     public DBSDataSourceContainer getContainer()
@@ -143,13 +172,13 @@ public abstract class JDBCDataSource
         throws DBException
     {
         if (connection == null) {
-            connection = openConnection(monitor);
+            connection = openConnection();
             return;
         }
 
         if (!JDBCUtils.isConnectionAlive(connection)) {
             close(monitor);
-            connection = openConnection(monitor);
+            connection = openConnection();
         }
     }
 

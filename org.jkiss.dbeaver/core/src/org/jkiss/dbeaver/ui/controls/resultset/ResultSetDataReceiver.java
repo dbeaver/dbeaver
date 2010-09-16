@@ -141,6 +141,14 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 nextSegmentRead = false;
 
                 errors.clear();
+
+                String statusMessage;
+                if (rows.size() > 0) {
+                    statusMessage = rows.size() + " row(s)";
+                } else {
+                    statusMessage = "No data";
+                }
+                resultSetViewer.setStatus(statusMessage, false);
             }
         });
     }

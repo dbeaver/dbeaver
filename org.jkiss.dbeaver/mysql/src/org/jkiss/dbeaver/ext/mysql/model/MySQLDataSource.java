@@ -26,7 +26,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
 import java.lang.reflect.Field;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -44,10 +45,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
     private List<MySQLUser> users;
     private MySQLCatalog activeCatalog;
 
-    public MySQLDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
+    public MySQLDataSource(DBSDataSourceContainer container)
         throws DBException
     {
-        super(monitor, container);
+        super(container);
     }
 
     protected Properties getInternalConnectionProperties()
@@ -318,8 +319,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
     }
 
     @Override
-    protected Connection openConnection(DBRProgressMonitor monitor) throws DBException {
-        ConnectionImpl mysqlConnection = (ConnectionImpl)super.openConnection(monitor);
+    protected Connection openConnection() throws DBException {
+        ConnectionImpl mysqlConnection = (ConnectionImpl)super.openConnection();
 
         // Fix "errorMessageEncoding" error. Dirty hack.
         // characterSetMetadata -> errorMessageEncoding

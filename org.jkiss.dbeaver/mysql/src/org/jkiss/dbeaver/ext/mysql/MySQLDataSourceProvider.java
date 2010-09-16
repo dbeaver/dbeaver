@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.mysql;
 
 import org.jkiss.dbeaver.DBException;
@@ -41,7 +45,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider {
         DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
-        return new MySQLDataSource(monitor, container);
+        return new MySQLDataSource(container);
     }
 
 }

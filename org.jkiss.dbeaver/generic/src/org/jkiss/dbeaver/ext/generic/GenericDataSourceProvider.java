@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.generic;
 
 import org.jkiss.dbeaver.DBException;
@@ -18,7 +22,7 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
         DBSDataSourceContainer container)
         throws DBException
     {
-        return new GenericDataSource(monitor, container);
+        return new GenericDataSource(container);
     }
 
 }

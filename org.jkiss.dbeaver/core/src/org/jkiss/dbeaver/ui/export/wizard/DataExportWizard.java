@@ -13,6 +13,7 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.wizards.datatransfer.DataTransferMessages;
 import org.jkiss.dbeaver.ext.IResultSetProvider;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DataExportWizard extends Wizard implements IExportWizard {
@@ -52,8 +53,22 @@ public class DataExportWizard extends Wizard implements IExportWizard {
     }
 
     public boolean performFinish() {
+        // Save settings
         getSettings().saveTo(getDialogSettings());
+
+        // Run export jobs
+        executeJobs();
+
+        // Done
         return true;
+    }
+
+    private void executeJobs() {
+        // Just schedule jobs for all data providers
+        for (IResultSetProvider dataProvider : settings.getDataProviders()) {
+            DataExportJob job = new DataExportJob(dataProvider, settings);
+            job.schedule();
+        }
     }
 
 }

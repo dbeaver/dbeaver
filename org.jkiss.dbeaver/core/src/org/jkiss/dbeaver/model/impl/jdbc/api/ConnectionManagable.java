@@ -49,19 +49,35 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
 
     static final Log log = LogFactory.getLog(ConnectionManagable.class);
 
-    private DBPDataSource dataSource;
-    private Connection original;
+    private JDBCConnector connector;
     private DBRProgressMonitor monitor;
     private String taskTitle;
+    private boolean isolated;
+    private Connection isolatedConnection;
 
-    public ConnectionManagable(JDBCConnector connector, DBRProgressMonitor monitor, String taskTitle)
+    public ConnectionManagable(JDBCConnector connector, DBRProgressMonitor monitor, String taskTitle, boolean isolated)
     {
-        this.dataSource = connector.getDataSource();
-        this.original = connector.getConnection();
+        this.connector = connector;
         this.monitor = monitor;
         this.taskTitle = taskTitle;
+        this.isolated = isolated;
+        this.isolatedConnection = null;
+
         if (taskTitle != null) {
             monitor.startBlock(this, taskTitle);
+        }
+    }
+
+    private Connection getConnection()
+        throws SQLException
+    {
+        if (isolated) {
+            if (isolatedConnection == null) {
+                isolatedConnection = connector.openIsolatedConnection();
+            }
+            return isolatedConnection;
+        } else {
+            return connector.getConnection();
         }
     }
 
@@ -72,7 +88,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
 
     public DBPDataSource getDataSource()
     {
-        return dataSource;
+        return connector.getDataSource();
     }
 
     public boolean isConnected() {
@@ -138,49 +154,49 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     public JDBCStatement createStatement()
         throws SQLException
     {
-        return makeStatement(original.createStatement());
+        return makeStatement(getConnection().createStatement());
     }
 
     public JDBCPreparedStatement prepareStatement(String sql)
         throws SQLException
     {
-        return new PreparedStatementManagable(this, original.prepareStatement(sql), sql);
+        return new PreparedStatementManagable(this, getConnection().prepareStatement(sql), sql);
     }
 
     public JDBCCallableStatement prepareCall(String sql)
         throws SQLException
     {
-        return new CallableStatementManagable(this, original.prepareCall(sql), sql);
+        return new CallableStatementManagable(this, getConnection().prepareCall(sql), sql);
     }
 
     public String nativeSQL(String sql)
         throws SQLException
     {
-        return original.nativeSQL(sql);
+        return getConnection().nativeSQL(sql);
     }
 
     public void setAutoCommit(boolean autoCommit)
         throws SQLException
     {
-        original.setAutoCommit(autoCommit);
+        getConnection().setAutoCommit(autoCommit);
     }
 
     public boolean getAutoCommit()
         throws SQLException
     {
-        return original.getAutoCommit();
+        return getConnection().getAutoCommit();
     }
 
     public void commit()
         throws SQLException
     {
-        original.commit();
+        getConnection().commit();
     }
 
     public void rollback()
         throws SQLException
     {
-        original.rollback();
+        getConnection().rollback();
     }
 
     public void close()
@@ -189,76 +205,83 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         if (taskTitle != null) {
             monitor.endBlock();
         }
-        // do nothing
-        // closing of context doesn't close real connection
-        //original.close();
-        //log.warn("Close of execution context is obsolete");
+        if (isolatedConnection != null) {
+            try {
+                isolatedConnection.close();
+            } catch (SQLException e) {
+                log.error("Error closing isolated connection", e);
+            }
+            isolatedConnection = null;
+        } else {
+            // do nothing
+            // closing of context doesn't close real connection
+        }
     }
 
     public boolean isClosed()
         throws SQLException
     {
-        return original.isClosed();
+        return getConnection().isClosed();
     }
 
     public JDBCDatabaseMetaData getMetaData()
         throws SQLException
     {
-        return new DatabaseMetaDataManagable(this, original.getMetaData());
+        return new DatabaseMetaDataManagable(this, getConnection().getMetaData());
     }
 
     public void setReadOnly(boolean readOnly)
         throws SQLException
     {
-        original.setReadOnly(readOnly);
+        getConnection().setReadOnly(readOnly);
     }
 
     public boolean isReadOnly()
         throws SQLException
     {
-        return original.isReadOnly();
+        return getConnection().isReadOnly();
     }
 
     public void setCatalog(String catalog)
         throws SQLException
     {
-        original.setCatalog(catalog);
+        getConnection().setCatalog(catalog);
     }
 
     public String getCatalog()
         throws SQLException
     {
-        return original.getCatalog();
+        return getConnection().getCatalog();
     }
 
     public void setTransactionIsolation(int level)
         throws SQLException
     {
-        original.setTransactionIsolation(level);
+        getConnection().setTransactionIsolation(level);
     }
 
     public int getTransactionIsolation()
         throws SQLException
     {
-        return original.getTransactionIsolation();
+        return getConnection().getTransactionIsolation();
     }
 
     public SQLWarning getWarnings()
         throws SQLException
     {
-        return original.getWarnings();
+        return getConnection().getWarnings();
     }
 
     public void clearWarnings()
         throws SQLException
     {
-        original.clearWarnings();
+        getConnection().clearWarnings();
     }
 
     public Statement createStatement(int resultSetType, int resultSetConcurrency)
         throws SQLException
     {
-        return original.createStatement(resultSetType, resultSetConcurrency);
+        return getConnection().createStatement(resultSetType, resultSetConcurrency);
     }
 
     public JDBCPreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency)
@@ -266,50 +289,50 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     {
         return new PreparedStatementManagable(
             this,
-            original.prepareStatement(sql, resultSetType, resultSetConcurrency),
+            getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency),
             sql);
     }
 
     public JDBCCallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency)
         throws SQLException
     {
-        return new CallableStatementManagable(this, original.prepareCall(sql, resultSetType, resultSetConcurrency), sql);
+        return new CallableStatementManagable(this, getConnection().prepareCall(sql, resultSetType, resultSetConcurrency), sql);
     }
 
     public Map<String, Class<?>> getTypeMap()
         throws SQLException
     {
-        return original.getTypeMap();
+        return getConnection().getTypeMap();
     }
 
     public void setTypeMap(Map<String, Class<?>> map)
         throws SQLException
     {
-        original.setTypeMap(map);
+        getConnection().setTypeMap(map);
     }
 
     public void setHoldability(int holdability)
         throws SQLException
     {
-        original.setHoldability(holdability);
+        getConnection().setHoldability(holdability);
     }
 
     public int getHoldability()
         throws SQLException
     {
-        return original.getHoldability();
+        return getConnection().getHoldability();
     }
 
     public Savepoint setSavepoint()
         throws SQLException
     {
-        return original.setSavepoint();
+        return getConnection().setSavepoint();
     }
 
     public Savepoint setSavepoint(String name)
         throws SQLException
     {
-        return original.setSavepoint(name);
+        return getConnection().setSavepoint(name);
     }
 
     public void rollback(Savepoint savepoint)
@@ -318,7 +341,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         if (savepoint instanceof SavepointManagable) {
             savepoint = ((SavepointManagable)savepoint).getOriginal();
         }
-        original.rollback(savepoint);
+        getConnection().rollback(savepoint);
     }
 
     public void releaseSavepoint(Savepoint savepoint)
@@ -327,13 +350,13 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         if (savepoint instanceof SavepointManagable) {
             savepoint = ((SavepointManagable)savepoint).getOriginal();
         }
-        original.releaseSavepoint(savepoint);
+        getConnection().releaseSavepoint(savepoint);
     }
 
     public JDBCStatement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability)
         throws SQLException
     {
-        return makeStatement(original.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
+        return makeStatement(getConnection().createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
     }
 
     public JDBCPreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
@@ -341,7 +364,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     {
         return new PreparedStatementManagable(
             this,
-            original.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
+            getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
             sql);
     }
 
@@ -350,111 +373,127 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     {
         return new CallableStatementManagable(
             this,
-            original.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
+            getConnection().prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
             sql);
     }
 
     public JDBCPreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
         throws SQLException
     {
-        return new PreparedStatementManagable(this, original.prepareStatement(sql, autoGeneratedKeys), sql);
+        return new PreparedStatementManagable(this, getConnection().prepareStatement(sql, autoGeneratedKeys), sql);
     }
 
     public JDBCPreparedStatement prepareStatement(String sql, int[] columnIndexes)
         throws SQLException
     {
-        return new PreparedStatementManagable(this, original.prepareStatement(sql, columnIndexes), sql);
+        return new PreparedStatementManagable(this, getConnection().prepareStatement(sql, columnIndexes), sql);
     }
 
     public JDBCPreparedStatement prepareStatement(String sql, String[] columnNames)
         throws SQLException
     {
-        return new PreparedStatementManagable(this, original.prepareStatement(sql, columnNames), sql);
+        return new PreparedStatementManagable(this, getConnection().prepareStatement(sql, columnNames), sql);
     }
 
     public Clob createClob()
         throws SQLException
     {
-        return original.createClob();
+        return getConnection().createClob();
     }
 
     public Blob createBlob()
         throws SQLException
     {
-        return original.createBlob();
+        return getConnection().createBlob();
     }
 
     public NClob createNClob()
         throws SQLException
     {
-        return original.createNClob();
+        return getConnection().createNClob();
     }
 
     public SQLXML createSQLXML()
         throws SQLException
     {
-        return original.createSQLXML();
+        return getConnection().createSQLXML();
     }
 
     public boolean isValid(int timeout)
         throws SQLException
     {
-        return original.isValid(timeout);
+        return getConnection().isValid(timeout);
     }
 
     public void setClientInfo(String name, String value)
         throws SQLClientInfoException
     {
-        original.setClientInfo(name, value);
+        try {
+            getConnection().setClientInfo(name, value);
+        } catch (SQLException e) {
+            if (e instanceof SQLClientInfoException) {
+                throw (SQLClientInfoException)e;
+            } else {
+                throw new SQLClientInfoException();
+            }
+        }
     }
 
     public void setClientInfo(Properties properties)
         throws SQLClientInfoException
     {
-        original.setClientInfo(properties);
+        try {
+            getConnection().setClientInfo(properties);
+        } catch (SQLException e) {
+            if (e instanceof SQLClientInfoException) {
+                throw (SQLClientInfoException)e;
+            } else {
+                throw new SQLClientInfoException();
+            }
+        }
     }
 
     public String getClientInfo(String name)
         throws SQLException
     {
-        return original.getClientInfo(name);
+        return getConnection().getClientInfo(name);
     }
 
     public Properties getClientInfo()
         throws SQLException
     {
-        return original.getClientInfo();
+        return getConnection().getClientInfo();
     }
 
     public Array createArrayOf(String typeName, Object[] elements)
         throws SQLException
     {
-        return original.createArrayOf(typeName, elements);
+        return getConnection().createArrayOf(typeName, elements);
     }
 
     public Struct createStruct(String typeName, Object[] attributes)
         throws SQLException
     {
-        return original.createStruct(typeName, attributes);
+        return getConnection().createStruct(typeName, attributes);
     }
 
     public <T> T unwrap(Class<T> iface)
         throws SQLException
     {
-        return original.unwrap(iface);
+        return getConnection().unwrap(iface);
     }
 
     public boolean isWrapperFor(Class<?> iface)
         throws SQLException
     {
-        return original.isWrapperFor(iface);
+        return getConnection().isWrapperFor(iface);
     }
 
     public void cancelBlock()
         throws DBException
     {
         try {
-            original.close();
+            getConnection().close();
         }
         catch (SQLException e) {
             throw new DBCException("Could not close connection", e);
@@ -515,7 +554,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
 
         public boolean supportsSavepoints()
         {
-            return dataSource.getInfo().supportsSavepoints();
+            return getDataSource().getInfo().supportsSavepoints();
         }
 
         public DBCSavepoint setSavepoint(String name)

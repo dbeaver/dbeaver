@@ -140,7 +140,7 @@ public class SQLQueryJob extends DataSourceJob
                     // Execute query
                     SQLStatementInfo query = queries.get(queryNum);
 
-                    boolean runNext = executeSingleQuery(context, query);
+                    boolean runNext = executeSingleQuery(context, query, true);
                     if (!runNext) {
                         // Ask to continue
                         if (lastError != null) {
@@ -252,13 +252,15 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeSingleQuery(DBCExecutionContext context, SQLStatementInfo query)
+    private boolean executeSingleQuery(DBCExecutionContext context, SQLStatementInfo query, boolean fireEvents)
     {
         lastError = null;
 
-        // Notify query start
-        for (ISQLQueryListener listener : queryListeners) {
-            listener.onStartQuery(query);
+        if (fireEvents) {
+            // Notify query start
+            for (ISQLQueryListener listener : queryListeners) {
+                listener.onStartQuery(query);
+            }
         }
 
         long startTime = System.currentTimeMillis();
@@ -266,7 +268,7 @@ public class SQLQueryJob extends DataSourceJob
         SQLQueryResult result = new SQLQueryResult(query);
         try {
             // Prepare statement
-            boolean isScript = queries.size() > 1;
+            //boolean isScript = queries.size() > 1;
             curStatement = context.prepareStatement(sqlQuery, false, false, false);
             curStatement.setLimit(rsOffset, rsMaxRows);
             if (rsOffset > 0) {
@@ -318,9 +320,12 @@ public class SQLQueryJob extends DataSourceJob
             lastError = ex;
         }
         result.setQueryTime(System.currentTimeMillis() - startTime);
-        // Notify query end
-        for (ISQLQueryListener listener : queryListeners) {
-            listener.onEndQuery(result);
+
+        if (fireEvents) {
+            // Notify query end
+            for (ISQLQueryListener listener : queryListeners) {
+                listener.onEndQuery(result);
+            }
         }
 
         if (result.getError() != null && errorHandling != SQLScriptErrorHandling.IGNORE) {
@@ -387,6 +392,18 @@ public class SQLQueryJob extends DataSourceJob
                 }
                 statementCanceled = true;
             }
+        }
+    }
+
+    public void extractData(DBCExecutionContext context)
+        throws DBException
+    {
+        if (queries.size() != 1) {
+            throw new DBException("Invalid state of SQL Query job");
+        }
+        boolean result = executeSingleQuery(context, queries.get(0), false);
+        if (!result && lastError != null) {
+            throw new DBException(lastError);
         }
     }
 

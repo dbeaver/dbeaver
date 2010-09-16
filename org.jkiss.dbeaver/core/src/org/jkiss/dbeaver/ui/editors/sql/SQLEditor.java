@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
@@ -837,7 +838,7 @@ public class SQLEditor extends BaseTextEditor
         return curJob != null && !curJobRunning;
     }
 
-    public void extractResultSetData(DBDDataReceiver dataReceiver, int offset, int maxRows)
+    public void startDataExtraction(DBDDataReceiver dataReceiver, int offset, int maxRows)
     {
         if (curJobRunning) {
             DBeaverUtils.showErrorDialog(
@@ -850,6 +851,14 @@ public class SQLEditor extends BaseTextEditor
             curJob.setDataReciever(dataReceiver);
             curJob.setResultSetLimit(offset, maxRows);
             curJob.schedule();
+        }
+    }
+
+    public void extractData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int offset, int maxRows) throws DBException {
+        if (curJob != null) {
+            curJob.setDataReciever(dataReceiver);
+            curJob.setResultSetLimit(offset, maxRows);
+            curJob.extractData(context);
         }
     }
 

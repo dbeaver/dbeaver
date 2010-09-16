@@ -224,6 +224,9 @@ public class DataExportSettings {
     {
         File dir = new File(outputFolder);
         String fileName = processTemplate(stripObjectName(source.getName())) + "." + dataExporter.getFileExtension();
+        if (compressResults) {
+            fileName += ".zip";
+        }
         return new File(dir, fileName);
     }
 
