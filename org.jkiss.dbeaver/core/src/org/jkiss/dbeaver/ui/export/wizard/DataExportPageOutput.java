@@ -52,6 +52,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                 directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 directoryText.addModifyListener(new ModifyListener() {
                     public void modifyText(ModifyEvent e) {
+                        getWizard().getSettings().setOutputFolder(directoryText.getText());
                         updatePageCompletion();
                     }
                 });
@@ -83,6 +84,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
             fileNameText.setLayoutData(gd);
             fileNameText.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e) {
+                    getWizard().getSettings().setOutputFilePattern(fileNameText.getText());
                     updatePageCompletion();
                 }
             });
@@ -90,9 +92,22 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
             UIUtils.createControlLabel(generalSettings, "Encoding");
             encodingCombo = UIUtils.createEncodingCombo(generalSettings, getWizard().getSettings().getOutputEncoding());
             encodingCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1));
+            encodingCombo.addModifyListener(new ModifyListener() {
+                public void modifyText(ModifyEvent e) {
+                    int index = encodingCombo.getSelectionIndex();
+                    if (index >= 0) {
+                        getWizard().getSettings().setOutputEncoding(encodingCombo.getItem(index));
+                    }
+                }
+            });
 
             compressCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Compress", false);
             compressCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1));
+            compressCheckbox.addSelectionListener(new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e) {
+                    getWizard().getSettings().setCompressResults(compressCheckbox.getSelection());
+                }
+            });
         }
 
         {
@@ -100,7 +115,22 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
 
             UIUtils.createControlLabel(generalSettings, "Maximum threads");
             threadsNumText = new Text(generalSettings, SWT.BORDER);
+            threadsNumText.addModifyListener(new ModifyListener() {
+                public void modifyText(ModifyEvent e) {
+                    try {
+                        getWizard().getSettings().setMaxJobCount(Integer.parseInt(threadsNumText.getText()));
+                    } catch (NumberFormatException e1) {
+                        // do nothing
+                    }
+                }
+            });
+
             rowCountCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Select row count", true);
+            rowCountCheckbox.addSelectionListener(new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e) {
+                    getWizard().getSettings().setQueryRowCount(rowCountCheckbox.getSelection());
+                }
+            });
         }
 
         setControl(composite);

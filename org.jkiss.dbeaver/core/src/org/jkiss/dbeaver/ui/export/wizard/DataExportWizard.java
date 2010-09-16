@@ -29,6 +29,8 @@ public class DataExportWizard extends Wizard implements IExportWizard {
 			section = workbenchSettings.addNewSection(RS_EXPORT_WIZARD_DIALOG_SETTINGS);//$NON-NLS-1$
 		}
         setDialogSettings(section);
+
+        settings.loadFrom(section);
     }
 
     public DataExportSettings getSettings()
@@ -43,15 +45,13 @@ public class DataExportWizard extends Wizard implements IExportWizard {
         addPage(new DataExportPageOutput());
     }
 
-    /* (non-Javadoc)
-     * Method declared on IWorkbenchWizard.
-     */
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
         setWindowTitle(DataTransferMessages.DataTransfer_export);
         setNeedsProgressMonitor(true);
     }
 
     public boolean performFinish() {
+        getSettings().saveTo(getDialogSettings());
         return true;
     }
 

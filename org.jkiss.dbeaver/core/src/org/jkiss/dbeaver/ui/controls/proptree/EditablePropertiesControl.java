@@ -20,12 +20,9 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.prop.DBPProperty;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 import org.jkiss.dbeaver.registry.PropertyDescriptor;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.text.Collator;
@@ -86,10 +83,36 @@ public class EditablePropertiesControl extends Composite {
                 column.pack();
             }
         }
+        disposeOldEditor();
     }
 
     public Map<String, Object> getProperties() {
         return propValues;
+    }
+
+    public Map<String, Object> getPropertiesWithDefaults() {
+        Map<String, Object> allValues = new HashMap<String, Object>(propValues);
+        Object root = propsTree.getInput();
+        if (root instanceof DBPPropertyGroup) {
+            addDefaultValues((DBPPropertyGroup)root, allValues);
+        } else if (root instanceof Collection) {
+            for (Object group : (Collection)root) {
+                if (group instanceof DBPPropertyGroup) {
+                    addDefaultValues((DBPPropertyGroup)group, allValues);
+                }
+            }
+
+        }
+        return allValues;
+    }
+
+    private void addDefaultValues(DBPPropertyGroup propertyGroup, Map<String, Object> values)
+    {
+        for (DBPProperty property : propertyGroup.getProperties()) {
+            if (!values.containsKey(property.getName()) && property.getDefaultValue() != null) {
+                values.put(property.getName(), property.getDefaultValue());
+            }
+        }
     }
 
     private void initPropTree()
@@ -172,6 +195,12 @@ public class EditablePropertiesControl extends Composite {
         registerContextMenu();
     }
 
+    private void disposeOldEditor()
+    {
+        Control oldEditor = treeEditor.getEditor();
+        if (oldEditor != null) oldEditor.dispose();
+    }
+
     private void registerEditor() {
         // Make an editor
         final Tree treeControl = propsTree.getTree();
@@ -193,8 +222,7 @@ public class EditablePropertiesControl extends Composite {
 
             public void showEditor(SelectionEvent e, boolean isDef) {
                 // Clean up any previous editor control
-                Control oldEditor = treeEditor.getEditor();
-                if (oldEditor != null) oldEditor.dispose();
+                disposeOldEditor();
 
                 // Identify the selected row
                 TreeItem item = (TreeItem)e.item;
@@ -286,8 +314,7 @@ public class EditablePropertiesControl extends Composite {
                                         propValues.remove(propName);
                                     }
                                     propsTree.update(prop, null);
-                                    Control oldEditor = treeEditor.getEditor();
-                                    if (oldEditor != null) oldEditor.dispose();
+                                    disposeOldEditor();
                                 }
                             });
                             if (!isCustom) {
@@ -296,8 +323,7 @@ public class EditablePropertiesControl extends Composite {
                                     public void run() {
                                         propValues.remove(propName);
                                         propsTree.update(prop, null);
-                                        Control oldEditor = treeEditor.getEditor();
-                                        if (oldEditor != null) oldEditor.dispose();
+                                        disposeOldEditor();
                                     }
                                 });
                             }
@@ -476,8 +502,7 @@ public class EditablePropertiesControl extends Composite {
         TreeColumn prevColumn = null;
 
         public void handleEvent(Event e) {
-            Control oldEditor = treeEditor.getEditor();
-            if (oldEditor != null) oldEditor.dispose();
+            disposeOldEditor();
 
             Collator collator = Collator.getInstance(Locale.getDefault());
             TreeColumn column = (TreeColumn)e.widget;

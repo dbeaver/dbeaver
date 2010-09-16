@@ -66,4 +66,13 @@ public class DataExportersRegistry {
         return editors;
     }
 
+    public DataExporterDescriptor getDataExporter(String id)
+    {
+        for (DataExporterDescriptor descriptor : dataExporters) {
+            if (descriptor.getId().equals(id)) {
+                return descriptor;
+            }
+        }
+        return null;
+    }
 }

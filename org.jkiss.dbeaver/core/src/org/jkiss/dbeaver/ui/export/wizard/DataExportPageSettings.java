@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.ui.export.wizard;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -71,12 +73,27 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                 rowsExtractType.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
+                        DataExportSettings exportSettings = getWizard().getSettings();
+                        switch (rowsExtractType.getSelectionIndex()) {
+                            case EXTRACT_TYPE_SEGMENTS: exportSettings.setExtractType(DataExportSettings.ExtractType.SEGMENTS); break;
+                            case EXTRACT_TYPE_SINGLE_QUERY: exportSettings.setExtractType(DataExportSettings.ExtractType.SINGLE_QUERY); break;
+                        }
                         updatePageCompletion();
                     }
                 });
 
                 segmentSizeLabel = UIUtils.createControlLabel(generalSettings, "Segment size");
                 segmentSizeText = new Text(generalSettings, SWT.BORDER);
+                segmentSizeText.addModifyListener(new ModifyListener() {
+                    public void modifyText(ModifyEvent e)
+                    {
+                        try {
+                            getWizard().getSettings().setSegmentSize(Integer.parseInt(segmentSizeText.getText()));
+                        } catch (NumberFormatException e1) {
+                            // just skip it
+                        }
+                    }
+                });
             }
 
             {
@@ -89,6 +106,12 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                 lobExtractType.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
+                        DataExportSettings exportSettings = getWizard().getSettings();
+                        switch (lobExtractType.getSelectionIndex()) {
+                            case EXTRACT_LOB_SKIP: exportSettings.setLobExtractType(DataExportSettings.LobExtractType.SKIP); break;
+                            case EXTRACT_LOB_FILES: exportSettings.setLobExtractType(DataExportSettings.LobExtractType.FILES); break;
+                            case EXTRACT_LOB_INLINE: exportSettings.setLobExtractType(DataExportSettings.LobExtractType.INLINE); break;
+                        }
                         updatePageCompletion();
                     }
                 });
@@ -99,6 +122,17 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                     "Base64",
                     "Hex",
                     "Binary" });
+                lobEncodingCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        DataExportSettings exportSettings = getWizard().getSettings();
+                        switch (lobEncodingCombo.getSelectionIndex()) {
+                            case LOB_ENCODING_BASE64: exportSettings.setLobEncoding(DataExportSettings.LobEncoding.BASE64); break;
+                            case LOB_ENCODING_HEX: exportSettings.setLobEncoding(DataExportSettings.LobEncoding.HEX); break;
+                            case LOB_ENCODING_BINARY: exportSettings.setLobEncoding(DataExportSettings.LobEncoding.BINARY); break;
+                        }
+                    }
+                });
             }
         }
 
@@ -136,6 +170,13 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
         }
 
         updatePageCompletion();
+    }
+
+    @Override
+    public void deactivatePart()
+    {
+        getWizard().getSettings().setExtractorProperties(propsEditor.getPropertiesWithDefaults());
+        super.deactivatePart();
     }
 
     @Override

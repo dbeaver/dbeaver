@@ -887,11 +887,11 @@
     <extension
           point="org.jkiss.dbeaver.dataExportProvider">
        <export
+             id="org.jkiss.dbeaver.core.dataExport.csv"
              class="org.jkiss.dbeaver.ui.export.impl.DataExporterCSV"
              description="Export to CSV file(s)"
              extension="csv"
              icon="icons/misc/csv.png"
-             id="org.jkiss.dbeaver.core.dataExport.csv"
              label="CSV">
            <propertyGroup label="General">
                <property label="Delimiter" type="string" description="Columns delimiter" defaultValue="," required="true"/>
@@ -899,6 +899,20 @@
                <property label="Characters escape" type="string" description="Bad characters escaping model (surrounded with quotes or escaped with '\' character)" defaultValue="quotes" required="true" validValues="quotes,escape"/>
            </propertyGroup>
        </export>
+        <export
+              id="org.jkiss.dbeaver.core.dataExport.sql"
+              class="org.jkiss.dbeaver.ui.export.impl.DataExporterSQL"
+              description="Export to SQL INSERT statements"
+              extension="sql"
+              icon="icons/misc/sql.png"
+              label="SQL">
+            <propertyGroup label="General">
+                <property label="Escape character" type="string" description="Character which escapes single quote character" defaultValue="\" required="true"/>
+                <property label="Date format" type="string" description="Date columns format" defaultValue="yyyy-MM-dd" required="true"/>
+                <property label="Time format" type="string" description="Time columns format" defaultValue="hh:mm:ss" required="true"/>
+                <property label="Timestamp format" type="string" description="Time columns format" defaultValue="yyyy-MM-dd hh:mm:ss" required="true"/>
+            </propertyGroup>
+        </export>
     </extension>
 
 </plugin>

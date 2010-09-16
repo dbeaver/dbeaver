@@ -102,6 +102,12 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
 
         UIUtils.packColumns(exporterTable.getTable());
         UIUtils.maxTableColumnsWidth(exporterTable.getTable());
+
+        DataExporterDescriptor exporter = getWizard().getSettings().getDataExporter();
+        if (exporter != null) {
+            exporterTable.setSelection(new StructuredSelection(exporter));
+        }
+        updatePageCompletion();
     }
 
     private void loadExporters() {
