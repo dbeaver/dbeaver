@@ -702,7 +702,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 wizard.init(site.getWorkbenchWindow().getWorkbench(), getSelection());
                 WizardDialog dialog = new WizardDialog(site.getShell(), wizard);
                 dialog.open();
-
             }
         });
 

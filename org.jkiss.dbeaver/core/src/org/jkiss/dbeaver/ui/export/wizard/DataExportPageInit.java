@@ -103,7 +103,9 @@ class DataExportPageInit extends WizardDataTransferPage {
             }
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
-                getWizard().getContainer().showPage(getWizard().getNextPage(DataExportPageInit.this));
+                if (isPageComplete()) {
+                    getWizard().getContainer().showPage(getWizard().getNextPage(DataExportPageInit.this));
+                }
             }
         });
         setControl(composite);
