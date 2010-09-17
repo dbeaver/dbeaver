@@ -6,22 +6,25 @@ package org.jkiss.dbeaver.ui.export.impl;
 
 import org.jkiss.dbeaver.DBException;
 
-import java.util.List;
+import java.io.IOException;
 
 /**
  * SQL Exporter
  */
 public class DataExporterSQL extends DataExporterAbstract {
 
-    public void exportHeader() throws DBException {
+    public void exportHeader() throws DBException, IOException
+    {
 
     }
 
-    public void exportRow(List<String> rows) throws DBException {
+    public void exportRow(Object[] row) throws DBException, IOException
+    {
 
     }
 
-    public void exportFooter() throws DBException {
+    public void exportFooter() throws DBException, IOException
+    {
 
     }
 

@@ -11,6 +11,8 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IResultSetProvider;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
@@ -93,7 +95,8 @@ public class DataExportJob extends AbstractJob {
         private IDataExporter dataExporter;
         private OutputStream outputStream;
         private PrintWriter writer;
-        private List<DBCColumnMetaData> metaColumns = new ArrayList<DBCColumnMetaData>();
+        private List<DBDColumnBinding> metaColumns = new ArrayList<DBDColumnBinding>();
+        private Object[] row;
 
         private ExporterSite(IResultSetProvider dataProvider)
         {
@@ -110,7 +113,7 @@ public class DataExportJob extends AbstractJob {
             return settings.getExtractorProperties();
         }
 
-        public List<DBCColumnMetaData> getColumns()
+        public List<DBDColumnBinding> getColumns()
         {
             return metaColumns;
         }
@@ -127,21 +130,50 @@ public class DataExportJob extends AbstractJob {
 
         public void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet) throws DBCException
         {
+            // Prepare columns
             List<DBCColumnMetaData> columns = resultSet.getResultSetMetaData().getColumns();
             for (DBCColumnMetaData column : columns) {
-                //column.get
+                DBDColumnBinding columnBinding = DBUtils.getColumnBinding(dataProvider.getDataSource(), column);
+                metaColumns.add(columnBinding);
             }
-            //dataExporter.exportHeader();
+            row = new Object[metaColumns.size()];
+
+            try {
+                dataExporter.exportHeader();
+            } catch (DBException e) {
+                log.warn("Error while exporting table header", e);
+            } catch (IOException e) {
+                throw new DBCException("IO error", e);
+            }
         }
 
         public void fetchRow(DBRProgressMonitor monitor, DBCResultSet resultSet) throws DBCException
         {
-            //dataExporter.exportRow();
+            try {
+                // Get values
+                for (int i = 0; i < metaColumns.size(); i++) {
+                    DBDColumnBinding column = metaColumns.get(i);
+                    Object value = column.getValueHandler().getValueObject(monitor, resultSet, column.getColumn(), i);
+                    row[i] = value;
+                }
+                // Export row
+                dataExporter.exportRow(row);
+            } catch (DBException e) {
+                log.warn("Error while exporting table row", e);
+            } catch (IOException e) {
+                throw new DBCException("IO error", e);
+            }
         }
 
         public void fetchEnd(DBRProgressMonitor monitor) throws DBCException
         {
-            //dataExporter.exportFooter();
+            try {
+                dataExporter.exportFooter();
+            } catch (DBException e) {
+                log.warn("Error while exporting table footer", e);
+            } catch (IOException e) {
+                throw new DBCException("IO error", e);
+            }
         }
 
         public void makeExport(DBCExecutionContext context)

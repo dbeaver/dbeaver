@@ -27,6 +27,11 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
     public static final DBCDefaultValueHandler INSTANCE = new DBCDefaultValueHandler();
 
 
+    public Class getValueObjectType()
+    {
+        return Object.class;
+    }
+
     public Object getValueObject(DBRProgressMonitor monitor, DBCResultSet resultSet, DBSColumnBase column,
                                  int columnIndex) throws DBCException
     {

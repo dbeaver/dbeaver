@@ -22,6 +22,15 @@ import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 public interface DBDValueHandler 
 {
     /**
+     * Gets value object's type.
+     * May return base interface of object's type -
+     * it is not required to return exact implementation class
+     * (moreover it may be unknown before certin value is extracted)
+     * @return value object type
+     */
+    Class getValueObjectType();
+
+    /**
      * Extracts object from result set
      * @param monitor progress monitor
      * @param resultSet result set
@@ -92,7 +101,7 @@ public interface DBDValueHandler
 
     /**
      * Fills value's custom properties
-     * @param propertySource proprty source
+     * @param propertySource property source
      * @param controller value controller
      */
     void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller);

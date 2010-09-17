@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ui.export;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -21,7 +21,7 @@ public interface IDataExporterSite {
 
     Map<String, Object> getProperties();
 
-    List<DBCColumnMetaData> getColumns();
+    List<DBDColumnBinding> getColumns();
 
     OutputStream getOutputStream();
 

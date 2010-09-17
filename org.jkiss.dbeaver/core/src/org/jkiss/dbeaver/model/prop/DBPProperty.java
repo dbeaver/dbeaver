@@ -20,6 +20,8 @@ public interface DBPProperty
 
     DBPPropertyGroup getGroup();
 
+    String getId();
+
     String getName();
 
     String getDescription();

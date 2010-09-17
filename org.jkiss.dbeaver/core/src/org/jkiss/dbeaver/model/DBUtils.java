@@ -117,8 +117,10 @@ public final class DBUtils {
         }
     }
 
-    public static DBSObject findNestedObject(DBRProgressMonitor monitor, DBSEntityContainer parent,
-                                             List<String> names
+    public static DBSObject findNestedObject(
+        DBRProgressMonitor monitor,
+        DBSEntityContainer parent,
+        List<String> names
     )
         throws DBException
     {

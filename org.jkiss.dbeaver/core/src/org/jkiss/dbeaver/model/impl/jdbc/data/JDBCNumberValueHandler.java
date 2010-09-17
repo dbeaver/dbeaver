@@ -160,6 +160,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    public Class getValueObjectType()
+    {
+        return Number.class;
+    }
+
     public Object copyValueObject(DBRProgressMonitor monitor, Object value)
         throws DBCException
     {

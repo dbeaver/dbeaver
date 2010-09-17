@@ -368,7 +368,7 @@ public class DataExportSettings {
                     exporterPropsHistory.put(exporter, expProps);
                     for (DBPPropertyGroup group : exporter.getPropertyGroups()) {
                         for (DBPProperty prop : group.getProperties()) {
-                            String value = expSection.get(prop.getName());
+                            String value = expSection.get(prop.getId());
                             if (value != null) {
                                 expProps.put(prop.getName(), value);
                             }

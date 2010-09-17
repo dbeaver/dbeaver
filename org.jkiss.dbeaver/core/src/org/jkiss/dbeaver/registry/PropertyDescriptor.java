@@ -21,6 +21,7 @@ public class PropertyDescriptor implements DBPProperty
     public static final String PROPERTY_TAG = "property";
 
     private DBPPropertyGroup group;
+    private String id;
     private String name;
     private String description;
     private DBPProperty.PropertyType type;
@@ -31,6 +32,7 @@ public class PropertyDescriptor implements DBPProperty
     public PropertyDescriptor(PropertyGroupDescriptor group, IConfigurationElement config)
     {
         this.group = group;
+        this.id = config.getAttribute("id");
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
         this.required = "true".equals(config.getAttribute("required"));
@@ -53,8 +55,9 @@ public class PropertyDescriptor implements DBPProperty
         }
     }
 
-    public PropertyDescriptor(DBPPropertyGroup group, String name, String description, PropertyType type, boolean required, String defaultValue, String[] validValues) {
+    public PropertyDescriptor(DBPPropertyGroup group, String id, String name, String description, PropertyType type, boolean required, String defaultValue, String[] validValues) {
         this.group = group;
+        this.id = id;
         this.name = name;
         this.description = description;
         this.type = type;
@@ -66,6 +69,11 @@ public class PropertyDescriptor implements DBPProperty
     public DBPPropertyGroup getGroup()
     {
         return group;
+    }
+
+    public String getId()
+    {
+        return id;
     }
 
     public String getName()

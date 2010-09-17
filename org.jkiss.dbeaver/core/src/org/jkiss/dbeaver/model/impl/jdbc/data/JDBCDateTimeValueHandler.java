@@ -142,6 +142,11 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    public Class getValueObjectType()
+    {
+        return Date.class;
+    }
+
     public Object copyValueObject(DBRProgressMonitor monitor, Object value)
         throws DBCException
     {

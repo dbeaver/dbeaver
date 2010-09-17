@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.export;
 
 import org.jkiss.dbeaver.DBException;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -17,13 +18,13 @@ public interface IDataExporter {
         throws DBException;
 
     void exportHeader()
-        throws DBException;
+        throws DBException, IOException;
 
-    void exportRow(List<String> rows)
-        throws DBException;
+    void exportRow(Object[] row)
+        throws DBException, IOException;
 
     void exportFooter()
-        throws DBException;
+        throws DBException, IOException;
 
     void dispose();
 

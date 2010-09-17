@@ -120,6 +120,11 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    public Class getValueObjectType()
+    {
+        return MySQLTypeEnum.class;
+    }
+
     public Object copyValueObject(DBRProgressMonitor monitor, Object value)
         throws DBCException
     {

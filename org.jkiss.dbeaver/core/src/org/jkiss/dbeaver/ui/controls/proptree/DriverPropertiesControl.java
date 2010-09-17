@@ -169,7 +169,7 @@ public class DriverPropertiesControl extends EditablePropertiesControl {
             this.propList = new ArrayList<DBPProperty>();
             if (propNames != null) {
                 for (String name : propNames) {
-                    propList.add(new PropertyDescriptor(this, name, null, DBPProperty.PropertyType.STRING, false, null, null));
+                    propList.add(new PropertyDescriptor(this, name, name, null, DBPProperty.PropertyType.STRING, false, null, null));
                 }
             }
         }
@@ -190,7 +190,7 @@ public class DriverPropertiesControl extends EditablePropertiesControl {
         }
 
         public PropertyDescriptor addProperty(String name) {
-            PropertyDescriptor prop = new PropertyDescriptor(this, name, null, DBPProperty.PropertyType.STRING, false, null, null);
+            PropertyDescriptor prop = new PropertyDescriptor(this, name, name, null, DBPProperty.PropertyType.STRING, false, null, null);
             propList.add(prop);
             return prop;
         }

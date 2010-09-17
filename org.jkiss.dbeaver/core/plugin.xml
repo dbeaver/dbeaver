@@ -894,9 +894,9 @@
              icon="icons/misc/csv.png"
              label="CSV">
            <propertyGroup label="General">
-               <property label="Delimiter" type="string" description="Columns delimiter" defaultValue="," required="true"/>
-               <property label="Header" type="string" description="CSV header settings" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
-               <property label="Characters escape" type="string" description="Bad characters escaping model (surrounded with quotes or escaped with '\' character)" defaultValue="quotes" required="true" validValues="quotes,escape"/>
+               <property id="delimiter" label="Delimiter" type="string" description="Columns delimiter" defaultValue="," required="true"/>
+               <property id="header" label="Header" type="string" description="CSV header settings" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
+               <property id="escape" label="Characters escape" type="string" description="Bad characters escaping model (surrounded with quotes or escaped with '\' character)" defaultValue="quotes" required="true" validValues="quotes,escape"/>
            </propertyGroup>
        </export>
         <export
@@ -907,10 +907,8 @@
               icon="icons/misc/sql.png"
               label="SQL">
             <propertyGroup label="General">
-                <property label="Escape character" type="string" description="Character which escapes single quote character" defaultValue="\" required="true"/>
-                <property label="Date format" type="string" description="Date columns format" defaultValue="yyyy-MM-dd" required="true"/>
-                <property label="Time format" type="string" description="Time columns format" defaultValue="hh:mm:ss" required="true"/>
-                <property label="Timestamp format" type="string" description="Time columns format" defaultValue="yyyy-MM-dd hh:mm:ss" required="true"/>
+                <property id="escape" label="Escape character" type="string" description="Character which escapes single quote character" defaultValue="\" required="true"/>
+                <property id="rowsInStatement" label="Data rows per statement" type="numeric" description="Number of data rows per single insert statement" defaultValue="10" required="true"/>
             </propertyGroup>
         </export>
     </extension>

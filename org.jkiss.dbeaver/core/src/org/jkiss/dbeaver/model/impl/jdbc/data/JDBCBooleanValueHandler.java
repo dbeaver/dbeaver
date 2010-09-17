@@ -47,6 +47,11 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    public Class getValueObjectType()
+    {
+        return Boolean.class;
+    }
+
     public Object copyValueObject(DBRProgressMonitor monitor, Object value)
         throws DBCException
     {

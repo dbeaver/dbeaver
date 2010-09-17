@@ -109,8 +109,8 @@ public class EditablePropertiesControl extends Composite {
     private void addDefaultValues(DBPPropertyGroup propertyGroup, Map<String, Object> values)
     {
         for (DBPProperty property : propertyGroup.getProperties()) {
-            if (!values.containsKey(property.getName()) && property.getDefaultValue() != null) {
-                values.put(property.getName(), property.getDefaultValue());
+            if (!values.containsKey(property.getId()) && property.getDefaultValue() != null) {
+                values.put(property.getId(), property.getDefaultValue());
             }
         }
     }
@@ -293,7 +293,7 @@ public class EditablePropertiesControl extends Composite {
                     final Object object = selection.getFirstElement();
                     if (object instanceof DBPProperty) {
                         final DBPProperty prop = (DBPProperty)object;
-                        final String propName = prop.getName();
+                        final String propId = prop.getId();
                         manager.add(new Action("Copy value") {
                             @Override
                             public void run() {
@@ -308,10 +308,10 @@ public class EditablePropertiesControl extends Composite {
                             manager.add(new Action("Reset value") {
                                 @Override
                                 public void run() {
-                                    if (originalValues.containsKey(propName)) {
-                                        propValues.put(propName, originalValues.get(propName));
+                                    if (originalValues.containsKey(propId)) {
+                                        propValues.put(propId, originalValues.get(propId));
                                     } else if (!isCustom) {
-                                        propValues.remove(propName);
+                                        propValues.remove(propId);
                                     }
                                     propsTree.update(prop, null);
                                     disposeOldEditor();
@@ -321,7 +321,7 @@ public class EditablePropertiesControl extends Composite {
                                 manager.add(new Action("Reset value to default") {
                                     @Override
                                     public void run() {
-                                        propValues.remove(propName);
+                                        propValues.remove(propId);
                                         propsTree.update(prop, null);
                                         disposeOldEditor();
                                     }
@@ -353,7 +353,7 @@ public class EditablePropertiesControl extends Composite {
 
     private String getPropertyValue(DBPProperty prop)
     {
-        Object propValue = propValues.get(prop.getName());
+        Object propValue = propValues.get(prop.getId());
         if (propValue == null) {
             propValue = prop.getDefaultValue();
         }
@@ -366,28 +366,28 @@ public class EditablePropertiesControl extends Composite {
 
     private boolean isPropertyChanged(DBPProperty prop)
     {
-        Object propValue = propValues.get(prop.getName());
+        Object propValue = propValues.get(prop.getId());
         return propValue != null && !CommonUtils.equalObjects(propValue, prop.getDefaultValue());
     }
 
     private void changeProperty(DBPProperty prop, String text)
     {
-        String propName = prop.getName();
-        if (!originalValues.containsKey(propName) && propValues.containsKey(propName)) {
-            originalValues.put(propName, propValues.get(propName));
+        String propId = prop.getId();
+        if (!originalValues.containsKey(propId) && propValues.containsKey(propId)) {
+            originalValues.put(propId, propValues.get(propId));
         }
-        propValues.put(propName, text);
+        propValues.put(propId, text);
         propsTree.update(prop, null);
     }
 
     protected void handlePropertyCreate(PropertyDescriptor newProp, Object newValue) {
-        propValues.put(newProp.getName(), newValue);
+        propValues.put(newProp.getId(), newValue);
         propsTree.refresh(newProp.getGroup());
         propsTree.expandToLevel(newProp.getGroup(), 1);
     }
 
     protected void handlePropertyRemove(DBPProperty prop) {
-        propValues.remove(prop.getName());
+        propValues.remove(prop.getId());
         propsTree.refresh(prop.getGroup());
     }
 

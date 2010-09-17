@@ -73,6 +73,11 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    public Class getValueObjectType()
+    {
+        return String.class;
+    }
+
     public Object copyValueObject(DBRProgressMonitor monitor, Object value)
         throws DBCException
     {

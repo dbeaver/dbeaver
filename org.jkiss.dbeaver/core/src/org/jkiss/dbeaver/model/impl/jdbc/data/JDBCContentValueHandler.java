@@ -98,8 +98,12 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    protected void bindParameter(DBRProgressMonitor monitor, PreparedStatement statement, DBSTypedObject paramType,
-                                 int paramIndex, Object value)
+    protected void bindParameter(
+        DBRProgressMonitor monitor,
+        PreparedStatement statement,
+        DBSTypedObject paramType,
+        int paramIndex,
+        Object value)
         throws DBCException, SQLException
     {
         if (value instanceof JDBCContentAbstract) {
@@ -107,6 +111,11 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         } else {
             throw new DBCException("Unsupported value type: " + value);
         }
+    }
+
+    public Class getValueObjectType()
+    {
+        return DBDContent.class;
     }
 
     public Object copyValueObject(DBRProgressMonitor monitor, Object value)

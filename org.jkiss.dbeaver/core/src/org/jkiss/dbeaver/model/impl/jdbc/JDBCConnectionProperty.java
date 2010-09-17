@@ -22,6 +22,11 @@ public class JDBCConnectionProperty implements DBPProperty {
         return group;
     }
 
+    public String getId()
+    {
+        return info.name;
+    }
+
     public String getName() {
         return info.name;
     }
