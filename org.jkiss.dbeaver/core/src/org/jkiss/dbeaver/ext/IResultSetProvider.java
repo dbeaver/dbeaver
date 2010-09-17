@@ -33,8 +33,9 @@ public interface IResultSetProvider extends IDataSourceProvider {
      * @param dataReceiver data receiver
      * @param offset first row number
      * @param maxRows number of rows
+     * @return number of extracted rows
      */
-    void extractData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int offset, int maxRows)
+    int extractData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int offset, int maxRows)
         throws DBException;
 
 }

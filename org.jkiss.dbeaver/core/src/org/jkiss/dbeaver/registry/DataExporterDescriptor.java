@@ -111,17 +111,12 @@ public class DataExporterDescriptor extends AbstractDescriptor
         return exporterClass;
     }
 
-    public IDataExporter createExporter()
+    public IDataExporter createExporter() throws IllegalAccessException, InstantiationException
     {
         Class clazz = getExporterClass();
         if (clazz == null) {
             return null;
         }
-        try {
-            return (IDataExporter)clazz.newInstance();
-        } catch (Exception ex) {
-            log.error("Error instantiating data exporter '" + className + "'", ex);
-            return null;
-        }
+        return (IDataExporter)clazz.newInstance();
     }
 }

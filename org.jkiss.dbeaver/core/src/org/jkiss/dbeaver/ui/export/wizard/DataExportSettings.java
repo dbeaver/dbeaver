@@ -255,10 +255,15 @@ public class DataExportSettings {
         }
     }
 
+    public String getOutputFileName(DBPNamedObject source)
+    {
+        return processTemplate(stripObjectName(source.getName())) + "." + dataExporter.getFileExtension();
+    }
+
     public File makeOutputFile(DBPNamedObject source)
     {
         File dir = new File(outputFolder);
-        String fileName = processTemplate(stripObjectName(source.getName())) + "." + dataExporter.getFileExtension();
+        String fileName = getOutputFileName(source);
         if (compressResults) {
             fileName += ".zip";
         }

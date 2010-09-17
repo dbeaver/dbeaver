@@ -835,11 +835,13 @@ public class SQLEditor extends BaseTextEditor
         return curJob != null && !curJobRunning;
     }
 
-    public void extractData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int offset, int maxRows) throws DBException {
+    public int extractData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int offset, int maxRows) throws DBException {
         if (curJob != null) {
             curJob.setDataReciever(dataReceiver);
             curJob.setResultSetLimit(offset, maxRows);
-            curJob.extractData(context);
+            return curJob.extractData(context);
+        } else {
+            return 0;
         }
     }
 

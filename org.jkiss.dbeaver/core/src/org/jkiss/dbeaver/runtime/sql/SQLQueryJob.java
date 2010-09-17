@@ -13,13 +13,8 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
-import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
+import org.jkiss.dbeaver.model.dbc.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -48,6 +43,7 @@ public class SQLQueryJob extends DataSourceJob
     private boolean fetchResultSets;
     private int rsOffset;
     private int rsMaxRows;
+    private int rowCount;
 
     private DBCStatement curStatement;
     //private boolean statementCancel = false;
@@ -87,6 +83,11 @@ public class SQLQueryJob extends DataSourceJob
     public void setDataReciever(DBDDataReceiver dataReceiver)
     {
         this.dataReceiver = dataReceiver;
+    }
+
+    public boolean hasLimits()
+    {
+        return rsOffset >= 0 && rsMaxRows > 0;
     }
 
     public void setResultSetLimit(int offset, int maxRows)
@@ -270,9 +271,11 @@ public class SQLQueryJob extends DataSourceJob
             // Prepare statement
             //boolean isScript = queries.size() > 1;
             curStatement = context.prepareStatement(sqlQuery, false, false, false);
-            curStatement.setLimit(rsOffset, rsMaxRows);
-            if (rsOffset > 0) {
-                result.setRowOffset(rsOffset);
+            if (hasLimits()) {
+                curStatement.setLimit(rsOffset, rsMaxRows);
+                if (rsOffset > 0) {
+                    result.setRowOffset(rsOffset);
+                }
             }
 
             // Bind parameters
@@ -346,13 +349,13 @@ public class SQLQueryJob extends DataSourceJob
         monitor.subTask("Fetch result set");
         DBCResultSet resultSet = curStatement.openResultSet();
         if (resultSet != null) {
-            int rowCount = 0;
+            rowCount = 0;
 
             dataReceiver.fetchStart(context.getProgressMonitor(), resultSet);
 
             try {
 
-                while (rowCount < rsMaxRows && resultSet.nextRow()) {
+                while ((!hasLimits() || rowCount < rsMaxRows) && resultSet.nextRow()) {
                     rowCount++;
 
                     if (rowCount % 10 == 0) {
@@ -395,7 +398,7 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    public void extractData(DBCExecutionContext context)
+    public int extractData(DBCExecutionContext context)
         throws DBException
     {
         if (queries.size() != 1) {
@@ -405,6 +408,7 @@ public class SQLQueryJob extends DataSourceJob
         if (!result && lastError != null) {
             throw new DBException(lastError);
         }
+        return rowCount;
     }
 
 }

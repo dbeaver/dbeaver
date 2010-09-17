@@ -78,8 +78,8 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
         return getObjectManager().getObject();
     }
 
-    public void extractData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int offset, int maxRows) throws DBException {
-        getDataContainer().readData(
+    public int extractData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int offset, int maxRows) throws DBException {
+        return getDataContainer().readData(
             context,
             dataReceiver,
             offset,

@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.export;
 
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 
 import java.io.OutputStream;
@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public interface IDataExporterSite {
 
-    DBPObject getSource();
+    DBPNamedObject getSource();
 
     Map<String, Object> getProperties();
 

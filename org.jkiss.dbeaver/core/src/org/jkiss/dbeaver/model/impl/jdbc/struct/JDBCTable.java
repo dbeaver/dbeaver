@@ -61,17 +61,19 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         if (!(context instanceof JDBCExecutionContext)) {
             throw new IllegalArgumentException("Bad execution context");
         }
+        boolean hasLimits = firstRow >= 0 && maxRows > 0;
+
         JDBCExecutionContext jdbcContext = (JDBCExecutionContext)context;
         readRequiredMeta(context.getProgressMonitor());
 
         DBCQueryTransformer limitTransformer = null;
-        if (getDataSource() instanceof DBCQueryTransformProvider) {
+        if (hasLimits && getDataSource() instanceof DBCQueryTransformProvider) {
             limitTransformer = ((DBCQueryTransformProvider) getDataSource()).createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
         }
         boolean scrollWithQuery = limitTransformer != null;
 
         String query = "SELECT * FROM " + getFullQualifiedName();
-        if (scrollWithQuery) {
+        if (hasLimits && scrollWithQuery) {
             limitTransformer.setParameters(firstRow, maxRows);
             query = limitTransformer.transformQueryString(query);
         }
@@ -79,10 +81,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         JDBCStatement dbStat = jdbcContext.prepareStatement(query, false, false, false);
         try {
             dbStat.setDataContainer(this);
-            if (!scrollWithQuery) {
-                dbStat.setLimit(firstRow, maxRows);
-            } else {
-                limitTransformer.transformStatement(dbStat, 0);
+            if (hasLimits) {
+                if (!scrollWithQuery) {
+                    dbStat.setLimit(firstRow, maxRows);
+                } else {
+                    limitTransformer.transformStatement(dbStat, 0);
+                }
             }
             if (!dbStat.executeStatement()) {
                 return 0;
