@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.export.wizard;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.swt.program.Program;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IResultSetProvider;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -45,7 +46,7 @@ public class DataExportSettings {
     private static final String PATTERN_TABLE = "{table}";
     private static final String PATTERN_TIMESTAMP = "{timestamp}";
 
-    private static final int DEFAULT_THREADS_NUM = 5;
+    private static final int DEFAULT_THREADS_NUM = 1;
 
     private List<IResultSetProvider> dataProviders;
     private DataExporterDescriptor dataExporter;
@@ -62,11 +63,14 @@ public class DataExportSettings {
     private String outputEncoding = System.getProperty("file.encoding");
 
     private boolean compressResults = false;
+    private boolean openNewConnections = true;
     private boolean queryRowCount = true;
     private boolean openFolderOnFinish = true;
     private int maxJobCount = DEFAULT_THREADS_NUM;
 
     private Map<DataExporterDescriptor, Map<String,Object>> exporterPropsHistory = new HashMap<DataExporterDescriptor, Map<String, Object>>();
+
+    private transient int curProviderNum = 0;
 
     public DataExportSettings(List<IResultSetProvider> dataProviders)
     {
@@ -76,6 +80,27 @@ public class DataExportSettings {
     public List<IResultSetProvider> getDataProviders()
     {
         return dataProviders;
+    }
+
+    public synchronized IResultSetProvider acquireDataProvider()
+    {
+        if (curProviderNum >= dataProviders.size()) {
+            return null;
+        }
+        IResultSetProvider result = dataProviders.get(curProviderNum);
+
+        curProviderNum++;
+        if (curProviderNum == dataProviders.size()) {
+            // Last one
+            if (openFolderOnFinish) {
+                DBeaverCore.getDisplay().asyncExec(new Runnable() {
+                    public void run() {
+                        Program.launch(outputFolder);
+                    }
+                });
+            }
+        }
+        return result;
     }
 
     public DataExporterDescriptor getDataExporter()
@@ -198,6 +223,16 @@ public class DataExportSettings {
         this.queryRowCount = queryRowCount;
     }
 
+    public boolean isOpenNewConnections()
+    {
+        return openNewConnections;
+    }
+
+    public void setOpenNewConnections(boolean openNewConnections)
+    {
+        this.openNewConnections = openNewConnections;
+    }
+
     public boolean isOpenFolderOnFinish()
     {
         return openFolderOnFinish;
@@ -303,6 +338,9 @@ public class DataExportSettings {
         if (dialogSettings.get("compressResults") != null) {
             compressResults = dialogSettings.getBoolean("compressResults");
         }
+        if (dialogSettings.get("openNewConnections") != null) {
+            openNewConnections = dialogSettings.getBoolean("openNewConnections");
+        }
         if (dialogSettings.get("queryRowCount") != null) {
             queryRowCount = dialogSettings.getBoolean("queryRowCount");
         }
@@ -353,6 +391,7 @@ public class DataExportSettings {
         dialogSettings.put("outputEncoding", outputEncoding);
 
         dialogSettings.put("compressResults", compressResults);
+        dialogSettings.put("openNewConnections", openNewConnections);
         dialogSettings.put("queryRowCount", queryRowCount);
         dialogSettings.put("maxJobCount", maxJobCount);
         dialogSettings.put("openFolderOnFinish", openFolderOnFinish);

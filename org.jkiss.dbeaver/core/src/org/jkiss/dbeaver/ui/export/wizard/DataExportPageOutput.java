@@ -20,11 +20,18 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
 
+    private static final int EXTRACT_TYPE_SINGLE_QUERY = 0;
+    private static final int EXTRACT_TYPE_SEGMENTS = 1;
+
     private Combo encodingCombo;
     private Text directoryText;
     private Text fileNameText;
     private Button compressCheckbox;
-    private Text threadsNumText;
+    private Spinner threadsNumText;
+    private Combo rowsExtractType;
+    private Label segmentSizeLabel;
+    private Text segmentSizeText;
+    private Button newConnectionCheckbox;
     private Button rowCountCheckbox;
     private Button showFolderCheckbox;
 
@@ -112,10 +119,12 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
         }
 
         {
-            Group generalSettings = UIUtils.createControlGroup(composite, "Progress", 2, GridData.FILL_HORIZONTAL, 0);
+            Group generalSettings = UIUtils.createControlGroup(composite, "Progress", 4, GridData.FILL_HORIZONTAL, 0);
 
             Label threadsNumLabel = UIUtils.createControlLabel(generalSettings, "Maximum threads");
-            threadsNumText = new Text(generalSettings, SWT.BORDER);
+            threadsNumText = new Spinner(generalSettings, SWT.BORDER);
+            threadsNumText.setMinimum(1);
+            threadsNumText.setMaximum(10);
             threadsNumText.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e) {
                     try {
@@ -129,6 +138,49 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                 threadsNumLabel.setEnabled(false);
                 threadsNumText.setEnabled(false);
             }
+            threadsNumText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+
+            {
+                UIUtils.createControlLabel(generalSettings, "Extract type");
+                rowsExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
+                rowsExtractType.setItems(new String[] {
+                    "Single query",
+                    "By segments" });
+                rowsExtractType.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        DataExportSettings exportSettings = getWizard().getSettings();
+                        switch (rowsExtractType.getSelectionIndex()) {
+                            case EXTRACT_TYPE_SEGMENTS: exportSettings.setExtractType(DataExportSettings.ExtractType.SEGMENTS); break;
+                            case EXTRACT_TYPE_SINGLE_QUERY: exportSettings.setExtractType(DataExportSettings.ExtractType.SINGLE_QUERY); break;
+                        }
+                        updatePageCompletion();
+                    }
+                });
+
+                segmentSizeLabel = UIUtils.createControlLabel(generalSettings, "Segment size");
+                segmentSizeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
+                segmentSizeText = new Text(generalSettings, SWT.BORDER);
+                segmentSizeText.addModifyListener(new ModifyListener() {
+                    public void modifyText(ModifyEvent e)
+                    {
+                        try {
+                            getWizard().getSettings().setSegmentSize(Integer.parseInt(segmentSizeText.getText()));
+                        } catch (NumberFormatException e1) {
+                            // just skip it
+                        }
+                    }
+                });
+                segmentSizeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
+            }
+
+            newConnectionCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Open new connection(s)", true);
+            newConnectionCheckbox.addSelectionListener(new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e) {
+                    getWizard().getSettings().setOpenNewConnections(newConnectionCheckbox.getSelection());
+                }
+            });
+            newConnectionCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
             rowCountCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Select row count", true);
             rowCountCheckbox.addSelectionListener(new SelectionAdapter() {
@@ -136,6 +188,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                     getWizard().getSettings().setQueryRowCount(rowCountCheckbox.getSelection());
                 }
             });
+            rowCountCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
             showFolderCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Open output folder at end", true);
             showFolderCheckbox.addSelectionListener(new SelectionAdapter() {
@@ -143,6 +196,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                     getWizard().getSettings().setOpenFolderOnFinish(showFolderCheckbox.getSelection());
                 }
             });
+            showFolderCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
         }
 
         setControl(composite);
@@ -155,11 +209,18 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
         DataExportSettings exportSettings = getWizard().getSettings();
         directoryText.setText(exportSettings.getOutputFolder());
         fileNameText.setText(exportSettings.getOutputFilePattern());
-        threadsNumText.setText(String.valueOf(exportSettings.getMaxJobCount()));
+        threadsNumText.setSelection(exportSettings.getMaxJobCount());
+        newConnectionCheckbox.setSelection(exportSettings.isOpenNewConnections());
         rowCountCheckbox.setSelection(exportSettings.isQueryRowCount());
         compressCheckbox.setSelection(exportSettings.isCompressResults());
         encodingCombo.setText(exportSettings.getOutputEncoding());
         showFolderCheckbox.setSelection(exportSettings.isOpenFolderOnFinish());
+
+        segmentSizeText.setText(String.valueOf(exportSettings.getSegmentSize()));
+        switch (exportSettings.getExtractType()) {
+            case SINGLE_QUERY: rowsExtractType.select(EXTRACT_TYPE_SINGLE_QUERY); break;
+            case SEGMENTS: rowsExtractType.select(EXTRACT_TYPE_SEGMENTS); break;
+        }
 
         updatePageCompletion();
     }
@@ -167,6 +228,15 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
     @Override
     protected boolean determinePageCompletion()
     {
+        int selectionIndex = rowsExtractType.getSelectionIndex();
+        if (selectionIndex == EXTRACT_TYPE_SEGMENTS) {
+            segmentSizeLabel.setVisible(true);
+            segmentSizeText.setVisible(true);
+        } else {
+            segmentSizeLabel.setVisible(false);
+            segmentSizeText.setVisible(false);
+        }
+
         boolean valid = true;
         if (CommonUtils.isEmpty(getWizard().getSettings().getOutputFolder())) {
             valid = false;

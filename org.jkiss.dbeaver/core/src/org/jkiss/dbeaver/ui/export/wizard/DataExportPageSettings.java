@@ -19,9 +19,6 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
 
-    private static final int EXTRACT_TYPE_SINGLE_QUERY = 0;
-    private static final int EXTRACT_TYPE_SEGMENTS = 1;
-
     private static final int EXTRACT_LOB_SKIP = 0;
     private static final int EXTRACT_LOB_FILES = 1;
     private static final int EXTRACT_LOB_INLINE = 2;
@@ -32,9 +29,6 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
 
     private EditablePropertiesControl propsEditor;
     private Combo lobExtractType;
-    private Label segmentSizeLabel;
-    private Text segmentSizeText;
-    private Combo rowsExtractType;
     private Label lobEncodingLabel;
     private Combo lobEncodingCombo;
 
@@ -63,38 +57,6 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
             gl = new GridLayout(4, false);
             generalSettings.setLayout(gl);
             generalSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            {
-                UIUtils.createControlLabel(generalSettings, "Extract type");
-                rowsExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
-                rowsExtractType.setItems(new String[] {
-                    "Single query",
-                    "By segments" });
-                rowsExtractType.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        DataExportSettings exportSettings = getWizard().getSettings();
-                        switch (rowsExtractType.getSelectionIndex()) {
-                            case EXTRACT_TYPE_SEGMENTS: exportSettings.setExtractType(DataExportSettings.ExtractType.SEGMENTS); break;
-                            case EXTRACT_TYPE_SINGLE_QUERY: exportSettings.setExtractType(DataExportSettings.ExtractType.SINGLE_QUERY); break;
-                        }
-                        updatePageCompletion();
-                    }
-                });
-
-                segmentSizeLabel = UIUtils.createControlLabel(generalSettings, "Segment size");
-                segmentSizeText = new Text(generalSettings, SWT.BORDER);
-                segmentSizeText.addModifyListener(new ModifyListener() {
-                    public void modifyText(ModifyEvent e)
-                    {
-                        try {
-                            getWizard().getSettings().setSegmentSize(Integer.parseInt(segmentSizeText.getText()));
-                        } catch (NumberFormatException e1) {
-                            // just skip it
-                        }
-                    }
-                });
-            }
 
             {
                 UIUtils.createControlLabel(generalSettings, "LOBs");
@@ -153,11 +115,6 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
         DataExporterDescriptor exporter = exportSettings.getDataExporter();
         propsEditor.loadProperties(exporter.getPropertyGroups(), exportSettings.getExtractorProperties());
 
-        segmentSizeText.setText(String.valueOf(exportSettings.getSegmentSize()));
-        switch (exportSettings.getExtractType()) {
-            case SINGLE_QUERY: rowsExtractType.select(EXTRACT_TYPE_SINGLE_QUERY); break;
-            case SEGMENTS: rowsExtractType.select(EXTRACT_TYPE_SEGMENTS); break;
-        }
         switch (exportSettings.getLobExtractType()) {
             case SKIP: lobExtractType.select(EXTRACT_LOB_SKIP); break;
             case FILES: lobExtractType.select(EXTRACT_LOB_FILES); break;
@@ -182,16 +139,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
     @Override
     protected boolean determinePageCompletion()
     {
-        int selectionIndex = rowsExtractType.getSelectionIndex();
-        if (selectionIndex == EXTRACT_TYPE_SEGMENTS) {
-            segmentSizeLabel.setVisible(true);
-            segmentSizeText.setVisible(true);
-        } else {
-            segmentSizeLabel.setVisible(false);
-            segmentSizeText.setVisible(false);
-        }
-
-        selectionIndex = lobExtractType.getSelectionIndex();
+        int selectionIndex = lobExtractType.getSelectionIndex();
         if (selectionIndex == EXTRACT_LOB_INLINE) {
             lobEncodingLabel.setVisible(true);
             lobEncodingCombo.setVisible(true);

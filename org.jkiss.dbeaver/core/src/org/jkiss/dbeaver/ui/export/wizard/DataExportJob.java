@@ -21,20 +21,13 @@ import org.jkiss.dbeaver.utils.DBeaverUtils;
  */
 public class DataExportJob extends AbstractJob implements DBDDataReceiver {
 
-    private IResultSetProvider dataProvider;
     private DataExportSettings settings;
 
-    public DataExportJob(IResultSetProvider dataProvider, DataExportSettings settings) {
-        super("Export data from \"" + dataProvider.getResultSetSource().getName() + "\"");
-        this.dataProvider = dataProvider;
+    public DataExportJob(DataExportSettings settings) {
+        super("Export data");
         this.settings = settings;
 
         setUser(true);
-    }
-
-    public IResultSetProvider getDataProvider()
-    {
-        return dataProvider;
     }
 
     @Override
@@ -45,18 +38,34 @@ public class DataExportJob extends AbstractJob implements DBDDataReceiver {
     @Override
     protected IStatus run(DBRProgressMonitor monitor) {
 
-        DBCExecutionContext context = dataProvider.getDataSource().openIsolatedContext(monitor, "Export data");
+        for (;;) {
+            IResultSetProvider dataProvider = settings.acquireDataProvider();
+            if (dataProvider == null) {
+                break;
+            }
+            extractData(monitor, dataProvider);
+        }
+
+        return Status.OK_STATUS;
+    }
+
+    private void extractData(DBRProgressMonitor monitor, IResultSetProvider dataProvider)
+    {
+        setName("Export data from \"" + dataProvider.getResultSetSource().getName() + "\"");
+
+        String contextTask = "Export data";
+        DBCExecutionContext context = settings.isOpenNewConnections() ?
+            dataProvider.getDataSource().openIsolatedContext(monitor, contextTask) :
+            dataProvider.getDataSource().openContext(monitor, contextTask);
         try {
 
             dataProvider.extractData(context, this, 0, 200000);
 
         } catch (DBException e) {
-            return DBeaverUtils.makeExceptionStatus("Error while exporting data", e);
+            new DataExportErrorJob(e).schedule();
         } finally {
             context.close();
         }
-
-        return Status.OK_STATUS;
     }
 
     public void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet) throws DBCException {

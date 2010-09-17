@@ -64,10 +64,13 @@ public class DataExportWizard extends Wizard implements IExportWizard {
     }
 
     private void executeJobs() {
-        // Just schedule jobs for all data providers
-        for (IResultSetProvider dataProvider : settings.getDataProviders()) {
-            DataExportJob job = new DataExportJob(dataProvider, settings);
-            job.schedule();
+        // Schedule jobs for data providers
+        int totalJobs = settings.getDataProviders().size();
+        if (totalJobs > settings.getMaxJobCount()) {
+            totalJobs = settings.getMaxJobCount();
+        }
+        for (int i = 0; i < totalJobs; i++) {
+            new DataExportJob(settings).schedule();
         }
     }
 
