@@ -298,6 +298,7 @@ public class DataExportSettings {
 
     public void loadFrom(IDialogSettings dialogSettings)
     {
+        DataExporterDescriptor dataExporter = null;
         String expId = dialogSettings.get("exporter");
         if (expId != null) {
             dataExporter = DBeaverCore.getInstance().getDataExportersRegistry().getDataExporter(expId);
@@ -370,13 +371,14 @@ public class DataExportSettings {
                         for (DBPProperty prop : group.getProperties()) {
                             String value = expSection.get(prop.getId());
                             if (value != null) {
-                                expProps.put(prop.getName(), value);
+                                expProps.put(prop.getId(), value);
                             }
                         }
                     }
                 }
             }
         }
+        setDataExporter(dataExporter);
     }
 
     public void saveTo(IDialogSettings dialogSettings)
