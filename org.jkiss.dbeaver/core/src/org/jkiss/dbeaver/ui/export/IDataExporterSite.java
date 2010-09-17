@@ -7,8 +7,7 @@ package org.jkiss.dbeaver.ui.export;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 
@@ -26,5 +25,7 @@ public interface IDataExporterSite {
     OutputStream getOutputStream();
 
     PrintWriter getWriter();
+
+    Reader makeBinaryReader(InputStream stream);
 
 }

@@ -17,6 +17,7 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
 
@@ -24,6 +25,8 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
     private static final int EXTRACT_TYPE_SEGMENTS = 1;
 
     private Combo encodingCombo;
+    private Label encodingBOMLabel;
+    private Button encodingBOMCheckbox;
     private Text directoryText;
     private Text fileNameText;
     private Button compressCheckbox;
@@ -53,11 +56,13 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Group generalSettings = UIUtils.createControlGroup(composite, "General", 3, GridData.FILL_HORIZONTAL, 0);
+            Group generalSettings = UIUtils.createControlGroup(composite, "General", 5, GridData.FILL_HORIZONTAL, 0);
             {
                 UIUtils.createControlLabel(generalSettings, "Directory");
                 directoryText = new Text(generalSettings, SWT.BORDER | SWT.READ_ONLY);
-                directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.horizontalSpan = 3;
+                directoryText.setLayoutData(gd);
                 directoryText.addModifyListener(new ModifyListener() {
                     public void modifyText(ModifyEvent e) {
                         getWizard().getSettings().setOutputFolder(directoryText.getText());
@@ -88,7 +93,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
             UIUtils.createControlLabel(generalSettings, "File name pattern");
             fileNameText = new Text(generalSettings, SWT.BORDER);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
+            gd.horizontalSpan = 4;
             fileNameText.setLayoutData(gd);
             fileNameText.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e) {
@@ -97,20 +102,32 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                 }
             });
 
-            UIUtils.createControlLabel(generalSettings, "Encoding");
-            encodingCombo = UIUtils.createEncodingCombo(generalSettings, getWizard().getSettings().getOutputEncoding());
-            encodingCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1));
-            encodingCombo.addModifyListener(new ModifyListener() {
-                public void modifyText(ModifyEvent e) {
-                    int index = encodingCombo.getSelectionIndex();
-                    if (index >= 0) {
-                        getWizard().getSettings().setOutputEncoding(encodingCombo.getItem(index));
+            {
+                UIUtils.createControlLabel(generalSettings, "Encoding");
+                encodingCombo = UIUtils.createEncodingCombo(generalSettings, getWizard().getSettings().getOutputEncoding());
+                //encodingCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 1, 1));
+                encodingCombo.addModifyListener(new ModifyListener() {
+                    public void modifyText(ModifyEvent e) {
+                        int index = encodingCombo.getSelectionIndex();
+                        if (index >= 0) {
+                            getWizard().getSettings().setOutputEncoding(encodingCombo.getItem(index));
+                        }
+                        updatePageCompletion();
                     }
-                }
-            });
+                });
+                encodingBOMLabel = UIUtils.createControlLabel(generalSettings, "Insert BOM");
+                encodingBOMCheckbox = new Button(generalSettings, SWT.CHECK);
+                encodingBOMCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 1, 1));
+                encodingBOMCheckbox.addSelectionListener(new SelectionAdapter() {
+                    public void widgetSelected(SelectionEvent e) {
+                        getWizard().getSettings().setOutputEncodingBOM(encodingBOMCheckbox.getSelection());
+                    }
+                });
+                new Label(generalSettings, SWT.NONE);
+            }
 
             compressCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Compress", false);
-            compressCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 2, 1));
+            compressCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 4, 1));
             compressCheckbox.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e) {
                     getWizard().getSettings().setCompressResults(compressCheckbox.getSelection());
@@ -214,6 +231,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
         rowCountCheckbox.setSelection(exportSettings.isQueryRowCount());
         compressCheckbox.setSelection(exportSettings.isCompressResults());
         encodingCombo.setText(exportSettings.getOutputEncoding());
+        encodingBOMCheckbox.setSelection(exportSettings.isOutputEncodingBOM());
         showFolderCheckbox.setSelection(exportSettings.isOpenFolderOnFinish());
 
         segmentSizeText.setText(String.valueOf(exportSettings.getSegmentSize()));
@@ -235,6 +253,15 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
         } else {
             segmentSizeLabel.setVisible(false);
             segmentSizeText.setVisible(false);
+        }
+        selectionIndex = encodingCombo.getSelectionIndex();
+        String encoding = encodingCombo.getItem(selectionIndex);
+        if (ContentUtils.getCharsetBOM(encoding) == null) {
+            encodingBOMLabel.setEnabled(false);
+            encodingBOMCheckbox.setEnabled(false);
+        } else {
+            encodingBOMLabel.setEnabled(true);
+            encodingBOMCheckbox.setEnabled(true);
         }
 
         boolean valid = true;

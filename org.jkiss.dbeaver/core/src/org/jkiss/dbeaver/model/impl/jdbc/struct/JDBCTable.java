@@ -101,7 +101,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
                 int rowCount = 0;
                 while (dbResult.nextRow()) {
-                    if (rowCount >= maxRows) {
+                    if (hasLimits && rowCount >= maxRows) {
                         // Fetch not more than max rows
                         break;
                     }

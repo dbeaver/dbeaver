@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.export;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,13 +18,13 @@ public interface IDataExporter {
     void init(IDataExporterSite site)
         throws DBException;
 
-    void exportHeader()
+    void exportHeader(DBRProgressMonitor monitor)
         throws DBException, IOException;
 
-    void exportRow(Object[] row)
+    void exportRow(DBRProgressMonitor monitor, Object[] row)
         throws DBException, IOException;
 
-    void exportFooter()
+    void exportFooter(DBRProgressMonitor monitor)
         throws DBException, IOException;
 
     void dispose();

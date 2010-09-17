@@ -61,6 +61,7 @@ public class DataExportSettings {
     private String outputFolder = System.getProperty("user.home");
     private String outputFilePattern = PATTERN_TABLE + "_" + PATTERN_TIMESTAMP;
     private String outputEncoding = System.getProperty("file.encoding");
+    private boolean outputEncodingBOM = true;
 
     private boolean compressResults = false;
     private boolean openNewConnections = true;
@@ -203,6 +204,16 @@ public class DataExportSettings {
         this.outputEncoding = outputEncoding;
     }
 
+    public boolean isOutputEncodingBOM()
+    {
+        return outputEncodingBOM;
+    }
+
+    public void setOutputEncodingBOM(boolean outputEncodingBOM)
+    {
+        this.outputEncodingBOM = outputEncodingBOM;
+    }
+
     public boolean isCompressResults()
     {
         return compressResults;
@@ -340,6 +351,9 @@ public class DataExportSettings {
         if (dialogSettings.get("outputEncoding") != null) {
             outputEncoding = dialogSettings.get("outputEncoding");
         }
+        if (dialogSettings.get("outputEncodingBOM") != null) {
+            outputEncodingBOM = dialogSettings.getBoolean("outputEncodingBOM");
+        }
 
         if (dialogSettings.get("compressResults") != null) {
             compressResults = dialogSettings.getBoolean("compressResults");
@@ -396,6 +410,7 @@ public class DataExportSettings {
         dialogSettings.put("outputFolder", outputFolder);
         dialogSettings.put("outputFilePattern", outputFilePattern);
         dialogSettings.put("outputEncoding", outputEncoding);
+        dialogSettings.put("outputEncodingBOM", outputEncodingBOM);
 
         dialogSettings.put("compressResults", compressResults);
         dialogSettings.put("openNewConnections", openNewConnections);

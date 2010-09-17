@@ -29,6 +29,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Content manipulation utilities
@@ -39,6 +41,23 @@ public class ContentUtils {
 
     static final Log log = LogFactory.getLog(ContentUtils.class);
     public static final String DEFAULT_FILE_CHARSET = "UTF-8";
+
+    private static final Map<String, byte[]> BOM_MAP = new HashMap<String, byte[]>();
+
+    static {
+        BOM_MAP.put("UTF-8", new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF} );
+        BOM_MAP.put("UTF-16", new byte[] {(byte) 0xFE, (byte) 0xFF} );
+        BOM_MAP.put("UTF-16BE", new byte[] {(byte) 0xFE, (byte) 0xFF} );
+        BOM_MAP.put("UTF-16LE", new byte[] {(byte) 0xFF, (byte) 0xFE} );
+        BOM_MAP.put("UTF-32", new byte[] { 0x0, 0x0, (byte) 0xFE, (byte) 0xFF} );
+        BOM_MAP.put("UTF-32BE", new byte[] { 0x0, 0x0, (byte) 0xFE, (byte) 0xFF} );
+        BOM_MAP.put("UTF-32LE", new byte[] { (byte) 0xFE, (byte) 0xFF, 0x0, 0x0} );
+    }
+
+    public static byte[] getCharsetBOM(String charsetName)
+    {
+        return BOM_MAP.get(charsetName.toUpperCase());
+    }
 
     public static IFile createTempContentFile(DBRProgressMonitor monitor, String fileName)
         throws IOException

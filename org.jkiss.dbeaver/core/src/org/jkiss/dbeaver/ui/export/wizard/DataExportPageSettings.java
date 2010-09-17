@@ -32,8 +32,6 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
     private Label lobEncodingLabel;
     private Combo lobEncodingCombo;
 
-    private boolean initialized = false;
-
     DataExportPageSettings() {
         super("Settings");
         setTitle("Settings");

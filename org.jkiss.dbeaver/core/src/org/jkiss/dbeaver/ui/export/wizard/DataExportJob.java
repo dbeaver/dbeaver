@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.ui.export.IDataExporter;
 import org.jkiss.dbeaver.ui.export.IDataExporterSite;
+import org.jkiss.dbeaver.ui.export.encoders.BinaryStreamReader;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
@@ -128,18 +129,30 @@ public class DataExportJob extends AbstractJob {
             return writer;
         }
 
+        public Reader makeBinaryReader(InputStream stream)
+        {
+            return new BinaryStreamReader(stream);
+        }
+
         public void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet) throws DBCException
         {
             // Prepare columns
             List<DBCColumnMetaData> columns = resultSet.getResultSetMetaData().getColumns();
             for (DBCColumnMetaData column : columns) {
                 DBDColumnBinding columnBinding = DBUtils.getColumnBinding(dataProvider.getDataSource(), column);
+/*
+                if (settings.getLobExtractType() == DataExportSettings.LobExtractType.SKIP &&
+                    DBDContent.class.isAssignableFrom(columnBinding.getValueHandler().getValueObjectType()))
+                {
+
+                }
+*/
                 metaColumns.add(columnBinding);
             }
             row = new Object[metaColumns.size()];
 
             try {
-                dataExporter.exportHeader();
+                dataExporter.exportHeader(monitor);
             } catch (DBException e) {
                 log.warn("Error while exporting table header", e);
             } catch (IOException e) {
@@ -157,7 +170,7 @@ public class DataExportJob extends AbstractJob {
                     row[i] = value;
                 }
                 // Export row
-                dataExporter.exportRow(row);
+                dataExporter.exportRow(monitor, row);
             } catch (DBException e) {
                 log.warn("Error while exporting table row", e);
             } catch (IOException e) {
@@ -168,7 +181,7 @@ public class DataExportJob extends AbstractJob {
         public void fetchEnd(DBRProgressMonitor monitor) throws DBCException
         {
             try {
-                dataExporter.exportFooter();
+                dataExporter.exportFooter(monitor);
             } catch (DBException e) {
                 log.warn("Error while exporting table footer", e);
             } catch (IOException e) {
@@ -199,6 +212,15 @@ public class DataExportJob extends AbstractJob {
                 this.writer = new PrintWriter(new OutputStreamWriter(this.outputStream, settings.getOutputEncoding()), true);
 
                 try {
+                    // Check for BOM
+                    if (settings.isOutputEncodingBOM()) {
+                        byte[] bom = ContentUtils.getCharsetBOM(settings.getOutputEncoding());
+                        if (bom != null) {
+                            outputStream.write(bom);
+                            outputStream.flush();
+                        }
+                    }
+
                     // init exporter
                     dataExporter.init(this);
 

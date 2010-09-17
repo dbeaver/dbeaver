@@ -144,7 +144,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             return;
         }
         DBSEntityContainer sc = (DBSEntityContainer) dataSource;
-        DBSObject childObject = null;
+        DBSObject childObject = sc;
         List<String> tokens = wordDetector.splitWordPart();
 
         String lastToken = null;
