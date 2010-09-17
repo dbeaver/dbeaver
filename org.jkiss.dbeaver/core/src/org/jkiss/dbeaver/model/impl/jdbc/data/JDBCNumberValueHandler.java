@@ -11,6 +11,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -23,6 +24,7 @@ import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.NumberFormat;
 
 /**
  * JDBC number value handler
@@ -34,6 +36,19 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     static final Log log = LogFactory.getLog(JDBCNumberValueHandler.class);
 
     private static final int MAX_NUMBER_LENGTH = 100;
+
+    private NumberFormat numberFormat;
+
+    public JDBCNumberValueHandler()
+    {
+        numberFormat = NumberFormat.getNumberInstance();
+    }
+
+    @Override
+    public String getValueDisplayString(DBSTypedObject column, Object value)
+    {
+        return value == null ? DBConstants.NULL_VALUE_LABEL : numberFormat.format(value);
+    }
 
     protected Object getColumnValue(DBRProgressMonitor monitor, ResultSet resultSet, DBSColumnBase column,
                                     int columnIndex)

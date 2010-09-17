@@ -71,6 +71,7 @@ public class DataExportSettings {
 
     private Map<DataExporterDescriptor, Map<String,Object>> exporterPropsHistory = new HashMap<DataExporterDescriptor, Map<String, Object>>();
 
+    private transient boolean folderOpened = false;
     private transient int curProviderNum = 0;
 
     public DataExportSettings(List<IResultSetProvider> dataProviders)
@@ -86,21 +87,20 @@ public class DataExportSettings {
     public synchronized IResultSetProvider acquireDataProvider()
     {
         if (curProviderNum >= dataProviders.size()) {
-            return null;
-        }
-        IResultSetProvider result = dataProviders.get(curProviderNum);
-
-        curProviderNum++;
-        if (curProviderNum == dataProviders.size()) {
-            // Last one
-            if (openFolderOnFinish) {
+            if (!folderOpened) {
+                // Last one
+                folderOpened = true;
                 DBeaverCore.getDisplay().asyncExec(new Runnable() {
                     public void run() {
                         Program.launch(outputFolder);
                     }
                 });
             }
+            return null;
         }
+        IResultSetProvider result = dataProviders.get(curProviderNum);
+
+        curProviderNum++;
         return result;
     }
 
