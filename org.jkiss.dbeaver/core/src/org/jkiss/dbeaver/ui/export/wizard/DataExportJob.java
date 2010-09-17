@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ui.export.IDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -92,6 +93,7 @@ public class DataExportJob extends AbstractJob {
         private IDataExporter dataExporter;
         private OutputStream outputStream;
         private PrintWriter writer;
+        private List<DBCColumnMetaData> metaColumns = new ArrayList<DBCColumnMetaData>();
 
         private ExporterSite(IResultSetProvider dataProvider)
         {
@@ -110,7 +112,7 @@ public class DataExportJob extends AbstractJob {
 
         public List<DBCColumnMetaData> getColumns()
         {
-            return null;
+            return metaColumns;
         }
 
         public OutputStream getOutputStream()
@@ -125,6 +127,10 @@ public class DataExportJob extends AbstractJob {
 
         public void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet) throws DBCException
         {
+            List<DBCColumnMetaData> columns = resultSet.getResultSetMetaData().getColumns();
+            for (DBCColumnMetaData column : columns) {
+                //column.get
+            }
             //dataExporter.exportHeader();
         }
 
