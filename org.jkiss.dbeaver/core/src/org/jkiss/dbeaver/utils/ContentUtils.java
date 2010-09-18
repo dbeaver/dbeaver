@@ -54,9 +54,33 @@ public class ContentUtils {
         BOM_MAP.put("UTF-32LE", new byte[] { (byte) 0xFE, (byte) 0xFF, 0x0, 0x0} );
     }
 
+    static final char[] HEX_CHAR_TABLE = {
+      '0', '1', '2', '3',
+      '4', '5', '6', '7',
+      '8', '9', 'a', 'b',
+      'c', 'd', 'e', 'f'
+    };
+
     public static byte[] getCharsetBOM(String charsetName)
     {
         return BOM_MAP.get(charsetName.toUpperCase());
+    }
+
+    public static void writeByteAsHex(Writer out, byte b) throws IOException
+    {
+        int v = b & 0xFF;
+        out.write(HEX_CHAR_TABLE[v >>> 4]);
+        out.write(HEX_CHAR_TABLE[v & 0xF]);
+    }
+
+    public static void writeBytesAsHex(Writer out, byte[] buf, int off, int len) throws IOException
+    {
+        for (int i = 0; i < len; i++) {
+            byte b = buf[off + i];
+            int v = b & 0xFF;
+            out.write(HEX_CHAR_TABLE[v >>> 4]);
+            out.write(HEX_CHAR_TABLE[v & 0xF]);
+        }
     }
 
     public static IFile createTempContentFile(DBRProgressMonitor monitor, String fileName)

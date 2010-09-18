@@ -116,6 +116,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                     }
                 });
                 encodingBOMLabel = UIUtils.createControlLabel(generalSettings, "Insert BOM");
+                encodingBOMLabel.setToolTipText("BOM (Byte-Order-Mark) used for Unicode charsets and required by some software (like MS Excel). In the same time it is not supported by some other software. ");
                 encodingBOMCheckbox = new Button(generalSettings, SWT.CHECK);
                 encodingBOMCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 1, 1));
                 encodingBOMCheckbox.addSelectionListener(new SelectionAdapter() {

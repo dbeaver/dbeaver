@@ -44,8 +44,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         numberFormat = NumberFormat.getNumberInstance();
     }
 
+    /**
+     * NumberFormat is not thread safe thus this method is synchronized.
+     */
     @Override
-    public String getValueDisplayString(DBSTypedObject column, Object value)
+    public synchronized String getValueDisplayString(DBSTypedObject column, Object value)
     {
         return value == null ? DBConstants.NULL_VALUE_LABEL : numberFormat.format(value);
     }

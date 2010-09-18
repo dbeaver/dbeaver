@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ui.export.wizard;
 
+import net.sf.jkiss.utils.Base64;
+import net.sf.jkiss.utils.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
@@ -22,7 +24,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.ui.export.IDataExporter;
 import org.jkiss.dbeaver.ui.export.IDataExporterSite;
-import org.jkiss.dbeaver.ui.export.encoders.BinaryStreamReader;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
@@ -129,9 +130,34 @@ public class DataExportJob extends AbstractJob {
             return writer;
         }
 
-        public Reader makeBinaryReader(InputStream stream)
+        public void writeBinaryData(InputStream stream, long streamLength) throws IOException
         {
-            return new BinaryStreamReader(stream);
+            switch (settings.getLobEncoding()) {
+                case BASE64:
+                {
+                    writer.flush();
+                    Base64.encode(stream, (int) streamLength, writer);
+                    break;
+                }
+                case HEX:
+                {
+                    writer.write("0x");
+                    byte[] buffer = new byte[5000];
+                    for (;;) {
+                        int count = stream.read(buffer);
+                        if (count <= 0) {
+                            break;
+                        }
+                        ContentUtils.writeBytesAsHex(writer, buffer, 0, count);
+                    }
+                    break;
+                }
+                default:
+                    // Binary stream
+                    writer.flush();
+                    IOUtils.copyStream(stream, outputStream, 5000);
+                    break;
+            }
         }
 
         public void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet) throws DBCException
