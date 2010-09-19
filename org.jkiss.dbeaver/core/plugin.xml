@@ -75,21 +75,8 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <command
-                description="Driver Manager"
-                id="org.jkiss.dbeaver.core.editDrivers"
-                name="Driver Manager">
-        </command>
-        <command
-                description="New Connection Wizard"
-                id="org.jkiss.dbeaver.core.newConnection"
-                name="New Connection">
-        </command>
-        <command
-                description="Delete Connection"
-                id="org.jkiss.dbeaver.core.deleteConnection"
-                name="Delete Connection">
-        </command>
+        <command id="org.jkiss.dbeaver.core.driver.manager" name="Driver Manager" description="Driver Manager"/>
+        <command id="org.jkiss.dbeaver.core.new.connection" name="New Connection" description="New Connection Wizard"/>
         <command
                 description="Open SQL Editor"
                 id="org.jkiss.dbeaver.core.openSQLEditor"
@@ -136,12 +123,11 @@
                 name="Export data">
         </command>
     </extension>
-    <extension
-          point="org.eclipse.ui.commandImages">
-       <image
-             commandId="org.jkiss.dbeaver.core.export.data"
-             icon="icons/file/export.png">
-       </image>
+
+    <extension point="org.eclipse.ui.commandImages">
+       <image commandId="org.jkiss.dbeaver.core.export.data" icon="icons/file/export.png"/>
+       <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="icons/driver_manager.png"/>
+       <image commandId="org.jkiss.dbeaver.core.new.connection" icon="icons/database_connect.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.actionSets">
@@ -160,22 +146,6 @@
                 <separator name="sessionGroup">
                 </separator>
             </menu>
-            <action
-                    class="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
-                    icon="/icons/database_connect.png"
-                    id="org.jkiss.dbeaver.ui.actions.NewConnectionAction"
-                    label="New Connection"
-                    menubarPath="dataSourceMenu/driverGroup"
-                    tooltip="Create New Connection">
-            </action>
-            <action
-                    class="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
-                    icon="/icons/driver_manager.png"
-                    id="org.jkiss.dbeaver.ui.actions.DriverManagerAction"
-                    label="Driver Manager"
-                    menubarPath="dataSourceMenu/driverGroup"
-                    tooltip="Open Driver Manager">
-            </action>
 
             <action
                     class="org.jkiss.dbeaver.ui.actions.DisconnectAction"
@@ -285,15 +255,10 @@
                     </iterate>
                 </with>
             </enabledWhen>
-            <!--activeWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-                    </iterate>
-                </with>
-            </activeWhen-->
         </handler>
+
+        <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.handlers.DriverManagerHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.handlers.NewConnectionHandler"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -315,6 +280,12 @@
                <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=driverGroup">
+            <command commandId="org.jkiss.dbeaver.core.driver.manager" style="push"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection" style="push"/>
+        </menuContribution>
+
     </extension>
 
     <extension point="org.eclipse.ui.bindings">

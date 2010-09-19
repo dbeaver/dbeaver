@@ -1,0 +1,25 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
+package org.jkiss.dbeaver.ui.actions.handlers;
+
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
+import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
+
+public class NewConnectionHandler extends AbstractHandler {
+
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+
+        IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
+        ConnectionDialog dialog = new ConnectionDialog(window, new NewConnectionWizard(window));
+        dialog.open();
+
+        return null;
+    }
+}

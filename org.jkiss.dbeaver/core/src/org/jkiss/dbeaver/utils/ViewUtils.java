@@ -22,6 +22,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
+import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -119,6 +120,15 @@ public class ViewUtils
         return strValue;
     }
 
+    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId)
+    {
+        return new CommandContributionItem(new CommandContributionItemParameter(
+            serviceLocator,
+            null,
+            commandId,
+            CommandContributionItem.STYLE_PUSH));
+    }
+
     public static void addContextMenu(final INavigatorModelView navigatorModelView)
     {
         if (navigatorModelView.getWorkbenchPart() == null) {
@@ -168,12 +178,7 @@ public class ViewUtils
                     return;
                 }
                 final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-/*
-                if (selection.isEmpty()) {
-                    manager.add(new NewConnectionAction(
-                        PlatformUI.getWorkbench().getActiveWorkbenchWindow()));
-                }
-*/
+
                 final DBNNode dbmNode = ViewUtils.getSelectedNode(navigatorModelView);
                 if (dbmNode == null || dbmNode.isLocked()) {
                     //manager.
@@ -224,24 +229,12 @@ public class ViewUtils
                     if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {
                         //propertyDialogAction.selectionChanged(selection);
                         //manager.add(propertyDialogAction);
-                        manager.add(new CommandContributionItem(
-                            new CommandContributionItemParameter(
-                                navigatorModelView.getWorkbenchPart().getSite(),
-                                null,
-                                IWorkbenchCommandConstants.FILE_PROPERTIES,
-                                CommandContributionItem.STYLE_PUSH)
-                        ));
+                        manager.add(makeCommandContribution(navigatorModelView.getWorkbenchPart().getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES));
                     }
                 }
 
                 // Add refresh button
-                manager.add(new CommandContributionItem(
-                    new CommandContributionItemParameter(
-                        navigatorModelView.getWorkbenchPart().getSite(),
-                        null,
-                        IWorkbenchCommandConstants.FILE_REFRESH,
-                        CommandContributionItem.STYLE_PUSH)
-                ));
+                manager.add(makeCommandContribution(navigatorModelView.getWorkbenchPart().getSite(), IWorkbenchCommandConstants.FILE_REFRESH));
             }
         });
         menuMgr.setRemoveAllWhenShown(true);

@@ -12,20 +12,16 @@ import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.IWorkbenchPreferenceConstants;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.*;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.part.EditorInputTransfer;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.NewConnectionAction;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
+import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 {
@@ -100,9 +96,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
             // Open New Connection wizard
             Display.getCurrent().asyncExec(new Runnable() {
                 public void run() {
-                    NewConnectionAction action = new NewConnectionAction();
-                    action.init(getWindowConfigurer().getWindow());
-                    action.run(null);
+                    IWorkbenchWindow window = getWindowConfigurer().getWindow();
+                    ConnectionDialog dialog = new ConnectionDialog(window, new NewConnectionWizard(window));
+                    dialog.open();
                 }
             });
         }

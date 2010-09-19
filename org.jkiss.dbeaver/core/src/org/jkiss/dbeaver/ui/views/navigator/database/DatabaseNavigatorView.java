@@ -21,12 +21,10 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.actions.DriverManagerAction;
+import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.LinkEditorAction;
-import org.jkiss.dbeaver.ui.actions.NewConnectionAction;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
@@ -105,19 +103,14 @@ public class DatabaseNavigatorView extends ViewPart
         IMenuManager dropDownMenu = actionBars.getMenuManager();
         IToolBarManager toolBar = actionBars.getToolBarManager();
 
-
-        {
-            IAction driverManagerAction = ViewUtils.makeAction(new DriverManagerAction(), this, null, "Open Driver Manager", DBIcon.ACTION_DRIVER_MANAGER.getImageDescriptor(), null);
-            dropDownMenu.add(driverManagerAction);
-            toolBar.add(driverManagerAction);
-        }
-        {
-            IAction driverManagerAction = ViewUtils.makeAction(new NewConnectionAction(), this, null, "New Connection", DBIcon.ACTION_NEW_CONNECTION.getImageDescriptor(), null);
-            dropDownMenu.add(driverManagerAction);
-            toolBar.add(driverManagerAction);
-        }
+        dropDownMenu.add(ViewUtils.makeCommandContribution(getSite(), ICommandIds.CMD_DRIVER_MANAGER));
+        dropDownMenu.add(ViewUtils.makeCommandContribution(getSite(), ICommandIds.CMD_NEW_CONNECTION));
         dropDownMenu.add(new Separator());
+
+        toolBar.add(ViewUtils.makeCommandContribution(getSite(), ICommandIds.CMD_DRIVER_MANAGER));
+        toolBar.add(ViewUtils.makeCommandContribution(getSite(), ICommandIds.CMD_NEW_CONNECTION));
         toolBar.add(new Separator());
+        
         {
             IAction driverManagerAction = ViewUtils.makeAction(new LinkEditorAction(this), this, null, "Link with Editor", DBIcon.ACTION_LINK_TO_EDITOR.getImageDescriptor(), null);
             dropDownMenu.add(driverManagerAction);
