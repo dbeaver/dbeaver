@@ -136,7 +136,7 @@ public class DataExportJob extends AbstractJob {
                 case BASE64:
                 {
                     writer.flush();
-                    Base64.encode(stream, (int) streamLength, writer);
+                    Base64.encode(stream, streamLength, writer);
                     break;
                 }
                 case HEX:
