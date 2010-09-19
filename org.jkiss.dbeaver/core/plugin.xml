@@ -266,7 +266,7 @@
                             <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
                         </iterate>
                     </with>
-                    <with variable="activeEditor">
+                    <with variable="activePart">
                         <adapt type="org.jkiss.dbeaver.ext.IDataSourceProvider"/>
                     </with>
                 </or>
