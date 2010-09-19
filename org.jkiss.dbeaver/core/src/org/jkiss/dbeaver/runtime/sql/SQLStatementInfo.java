@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * SQLScriptLine
  */
-public class SQLStatementInfo implements DBPNamedObject {
+public class SQLStatementInfo {
 
     private String query;
     private List<SQLStatementParameter> parameters;
@@ -85,7 +85,4 @@ public class SQLStatementInfo implements DBPNamedObject {
         return query;
     }
 
-    public String getName() {
-        return query;
-    }
 }

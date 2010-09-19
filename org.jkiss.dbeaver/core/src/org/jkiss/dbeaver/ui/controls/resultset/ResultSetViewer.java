@@ -34,7 +34,6 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
-import org.jkiss.dbeaver.ext.IResultSetProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -74,7 +73,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private IWorkbenchPartSite site;
     private ResultSetMode mode;
     private Spreadsheet spreadsheet;
-    private IResultSetProvider resultSetProvider;
+    private DBSDataContainer dataContainer;
     private ResultSetDataReceiver dataReceiver;
     private IThemeManager themeManager;
 
@@ -122,7 +121,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private ResultSetDataPumpJob dataPumpJob;
     private boolean dataPumpRunning;
 
-    public ResultSetViewer(Composite parent, IWorkbenchPartSite site, IResultSetProvider resultSetProvider)
+    public ResultSetViewer(Composite parent, IWorkbenchPartSite site, DBSDataContainer dataContainer)
     {
         super();
         this.site = site;
@@ -146,7 +145,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         createStatusBar(spreadsheet);
         changeMode(ResultSetMode.GRID);
-        this.resultSetProvider = resultSetProvider;
+        this.dataContainer = dataContainer;
         this.dataReceiver = new ResultSetDataReceiver(this);
 
         this.themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
@@ -200,7 +199,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             itemPrevious.setEnabled(isVisible && !isFirst);
             itemNext.setEnabled(isVisible && !isLast);
             itemLast.setEnabled(isVisible && !isLast);
-            itemRefresh.setEnabled(resultSetProvider != null && resultSetProvider.getDataSource() != null);
+            itemRefresh.setEnabled(dataContainer != null && dataContainer.getDataSource() != null);
         }
 
         boolean validPosition;
@@ -430,9 +429,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         spreadsheet.layout(true, true);
     }
 
-    public IResultSetProvider getResultSetProvider()
+    public DBSDataContainer getDataContainer()
     {
-        return resultSetProvider;
+        return dataContainer;
     }
 
     public void dispose()
@@ -719,7 +718,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             public void run()
             {
                 DataExportWizard wizard = new DataExportWizard(
-                    Collections.singletonList(getResultSetProvider()));
+                    Collections.singletonList(getDataContainer()));
                 wizard.init(site.getWorkbenchWindow().getWorkbench(), getSelection());
                 ActiveWizardDialog dialog = new ActiveWizardDialog(site.getShell(), wizard);
                 dialog.open();
@@ -772,7 +771,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.closeEditors();
         this.clearData();
         this.clearResultsView();
-        if (resultSetProvider != null && resultSetProvider.isReadyToRun() && !dataPumpRunning) {
+        if (dataContainer != null && !dataPumpRunning) {
             runDataPump(0, getSegmentMaxRows());
         }
         updateGridCursor();
@@ -783,7 +782,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
-        if (resultSetProvider != null && resultSetProvider.isReadyToRun() && !dataPumpRunning) {
+        if (dataContainer != null && !dataPumpRunning) {
             dataReceiver.setHasMoreData(false);
             dataReceiver.setNextSegmentRead(true);
             runDataPump(curRows.size(), getSegmentMaxRows());
@@ -792,10 +791,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     int getSegmentMaxRows()
     {
-        if (resultSetProvider == null) {
+        if (dataContainer == null) {
             return 0;
         }
-        IPreferenceStore preferenceStore = resultSetProvider.getDataSource().getContainer().getPreferenceStore();
+        IPreferenceStore preferenceStore = dataContainer.getDataSource().getContainer().getPreferenceStore();
         return preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
     }
 
@@ -1052,7 +1051,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public DBPDataSource getDataSource()
         {
-            return resultSetProvider.getDataSource();
+            return dataContainer.getDataSource();
         }
 
         public DBDRowController getRow() {
@@ -1554,7 +1553,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
             protected DataUpdaterJob(DBDValueListener listener)
             {
-                super("Update data", DBIcon.SQL_EXECUTE.getImageDescriptor(), resultSetProvider.getDataSource());
+                super("Update data", DBIcon.SQL_EXECUTE.getImageDescriptor(), dataContainer.getDataSource());
                 this.listener = listener;
             }
 
@@ -1717,7 +1716,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             List<DBCColumnMetaData> keyColumns = rsMeta.getColumns();
             for (int i = 0; i < keyColumns.size(); i++) {
                 DBCColumnMetaData keyColumn = keyColumns.get(i);
-                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(resultSetProvider.getDataSource(), keyColumn);
+                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(dataContainer.getDataSource(), keyColumn);
                 Object keyValue = valueHandler.getValueObject(monitor, resultSet, keyColumn, i);
                 boolean updated = false;
                 if (!CommonUtils.isEmpty(keyColumn.getName())) {

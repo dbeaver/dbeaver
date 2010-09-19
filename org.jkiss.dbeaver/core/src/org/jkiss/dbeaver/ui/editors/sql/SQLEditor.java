@@ -47,10 +47,15 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
@@ -61,7 +66,6 @@ import org.jkiss.dbeaver.ui.actions.ConnectAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementAction;
 import org.jkiss.dbeaver.ui.actions.sql.OpenSQLFileAction;
-import org.jkiss.dbeaver.ext.IResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogViewer;
 import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
@@ -82,7 +86,7 @@ import java.util.*;
  */
 public class SQLEditor extends BaseTextEditor
     implements
-        IResourceChangeListener, IDataSourceProvider, IDataSourceContainerProvider, DBPEventListener, IResultSetProvider, ISaveablePart2
+        IResourceChangeListener, IDataSourceProvider, IDataSourceContainerProvider, DBPEventListener, ISaveablePart2
 {
     static final Log log = LogFactory.getLog(SQLEditor.class);
 
@@ -112,12 +116,13 @@ public class SQLEditor extends BaseTextEditor
 
     private SQLQueryJob curJob;
     private boolean curJobRunning;
+    private DataContainer dataContainer;
 
     private static Image imgDataGrid;
     private static Image imgExplainPlan;
     private static Image imgLog;
 
-    {
+    static {
         imgDataGrid = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage();
         imgExplainPlan = DBeaverActivator.getImageDescriptor("/icons/sql/page_explain_plan.png").createImage();
         imgLog = DBeaverActivator.getImageDescriptor("/icons/sql/page_error.png").createImage();
@@ -129,6 +134,7 @@ public class SQLEditor extends BaseTextEditor
         setDocumentProvider(new SQLDocumentProvider());
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
         DataSourceRegistry.getDefault().addDataSourceListener(this);
+        dataContainer = new DataContainer();
     }
 
     public DBPDataSource getDataSource()
@@ -230,7 +236,7 @@ public class SQLEditor extends BaseTextEditor
             });
             resultTabs.setSimple(true);
 
-            resultsView = new ResultSetViewer(resultTabs, getSite(), this);
+            resultsView = new ResultSetViewer(resultTabs, getSite(), dataContainer);
 
             planView = new ExplainPlanViewer(resultTabs);
             logViewer = new SQLLogViewer(resultTabs);
@@ -827,24 +833,6 @@ public class SQLEditor extends BaseTextEditor
         }
     }
 
-    public DBPNamedObject getResultSetSource() {
-        return curJob == null ? null : curJob.getLastQuery();
-    }
-
-    public boolean isReadyToRun() {
-        return curJob != null && !curJobRunning;
-    }
-
-    public int extractData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int offset, int maxRows) throws DBException {
-        if (curJob != null) {
-            curJob.setDataReciever(dataReceiver);
-            curJob.setResultSetLimit(offset, maxRows);
-            return curJob.extractData(context);
-        } else {
-            return 0;
-        }
-    }
-
     public synchronized void updateFoldingStructure(int offset, int length, List<Position> positions)
     {
         if (curAnnotations == null) {
@@ -946,4 +934,65 @@ public class SQLEditor extends BaseTextEditor
             getDocument().set(newContent);
         }
     }
+
+    private class DataContainer implements DBSDataContainer {
+
+        public int getSupportedFeatures()
+        {
+            return 0;
+        }
+
+        public int readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int firstRow, int maxRows) throws DBException
+        {
+            if (curJob != null) {
+                curJob.setDataReciever(dataReceiver);
+                curJob.setResultSetLimit(firstRow, maxRows);
+                return curJob.extractData(context);
+            } else {
+                return 0;
+            }
+        }
+
+        public int insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReceiver keysReceiver) throws DBException
+        {
+            throw new DBException("Not Implemented");
+        }
+
+        public int updateData(DBCExecutionContext context, List<DBDColumnValue> keyColumns, List<DBDColumnValue> updateColumns, DBDDataReceiver keysReceiver) throws DBException
+        {
+            throw new DBException("Not Implemented");
+        }
+
+        public int deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns) throws DBException
+        {
+            throw new DBException("Not Implemented");
+        }
+
+        public String getObjectId()
+        {
+            return getName();
+        }
+
+        public String getDescription()
+        {
+            return "SQL Editor";
+        }
+
+        public DBSObject getParentObject()
+        {
+            return getDataSourceContainer();
+        }
+
+        public DBPDataSource getDataSource()
+        {
+            return SQLEditor.this.getDataSource();
+        }
+
+        public String getName()
+        {
+            return curJob == null ? null :
+                curJob.getLastQuery() == null ? null : curJob.getLastQuery().getQuery();
+        }
+    }
+
 }

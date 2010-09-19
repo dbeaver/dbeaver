@@ -10,8 +10,7 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ext.IResultSetProvider;
-import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
@@ -68,12 +67,11 @@ class DataExportPageFinal extends ActiveWizardPage<DataExportWizard> {
     public void activatePart()
     {
         resultTable.removeAll();
-        List<IResultSetProvider> dataProviders = getWizard().getSettings().getDataProviders();
-        for (IResultSetProvider provider : dataProviders) {
-            DBPNamedObject source = provider.getResultSetSource();
+        List<DBSDataContainer> dataProviders = getWizard().getSettings().getDataProviders();
+        for (DBSDataContainer provider : dataProviders) {
             TableItem item = new TableItem(resultTable, SWT.NONE);
-            item.setText(0, source.getName());
-            File outputFile = getWizard().getSettings().makeOutputFile(source);
+            item.setText(0, provider.getName());
+            File outputFile = getWizard().getSettings().makeOutputFile(provider);
             item.setText(1, outputFile.getAbsolutePath());
             if (outputFile.exists()) {
                 item.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_RED));

@@ -19,7 +19,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
     private int maxRows;
 
     protected ResultSetDataPumpJob(ResultSetViewer resultSetViewer) {
-        super("Read data", DBIcon.SQL_EXECUTE.getImageDescriptor(), resultSetViewer.getResultSetProvider().getDataSource());
+        super("Read data", DBIcon.SQL_EXECUTE.getImageDescriptor(), resultSetViewer.getDataContainer().getDataSource());
         this.resultSetViewer = resultSetViewer;
     }
 
@@ -36,9 +36,9 @@ class ResultSetDataPumpJob extends DataSourceJob {
     protected IStatus run(DBRProgressMonitor monitor) {
         String statusMessage = null;
         boolean hasErrors = false;
-        DBCExecutionContext context = getDataSource().openContext(monitor, "Read data from '" + resultSetViewer.getResultSetProvider().getResultSetSource().getName() + "'");
+        DBCExecutionContext context = getDataSource().openContext(monitor, "Read data from '" + resultSetViewer.getDataContainer().getName() + "'");
         try {
-            resultSetViewer.getResultSetProvider().extractData(
+            resultSetViewer.getDataContainer().readData(
                 context,
                 resultSetViewer.getDataReceiver(),
                 offset,

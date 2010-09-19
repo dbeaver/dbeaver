@@ -4,27 +4,17 @@
 
 package org.jkiss.dbeaver.ui.editors.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
-import org.jkiss.dbeaver.ext.IResultSetProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
 /**
  * DatabaseDataEditor
  */
-public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManager<DBSDataContainer>> implements IResultSetProvider
+public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManager<DBSDataContainer>>
 {
-    static final Log log = LogFactory.getLog(DatabaseDataEditor.class);
 
     private ResultSetViewer resultSetView;
     private boolean loaded = false;
@@ -32,7 +22,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
 
     public void createPartControl(Composite parent)
     {
-        resultSetView = new ResultSetViewer(parent, getSite(), this);
+        resultSetView = new ResultSetViewer(parent, getSite(), getDataContainer());
     }
 
     public void activatePart()
@@ -45,45 +35,11 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
 
     public void deactivatePart()
     {
-/*
-        if (curSession != null) {
-            try {
-                curSession.close();
-            } catch (DBCException ex) {
-                log.error("Error closing session", ex);
-            }
-            curSession = null;
-        }
-*/
-    }
-
-    public DBSDataSourceContainer getDataSourceContainer() {
-        return getDataContainer().getDataSource().getContainer();
-    }
-
-    public DBPDataSource getDataSource() {
-        return getDataContainer().getDataSource();
-    }
-
-    public DBPNamedObject getResultSetSource() {
-        return getDataContainer();
-    }
-
-    public boolean isReadyToRun() {
-        return getDataSource() != null;
     }
 
     public DBSDataContainer getDataContainer()
     {
         return getObjectManager().getObject();
-    }
-
-    public int extractData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int offset, int maxRows) throws DBException {
-        return getDataContainer().readData(
-            context,
-            dataReceiver,
-            offset,
-            maxRows);
     }
 
 }

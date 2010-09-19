@@ -11,9 +11,8 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.wizards.datatransfer.DataTransferMessages;
-import org.jkiss.dbeaver.ext.IResultSetProvider;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class DataExportWizard extends Wizard implements IExportWizard {
@@ -22,8 +21,8 @@ public class DataExportWizard extends Wizard implements IExportWizard {
 
     private DataExportSettings settings;
 
-    public DataExportWizard(List<IResultSetProvider> resultSetProviders) {
-        this.settings = new DataExportSettings(resultSetProviders);
+    public DataExportWizard(List<DBSDataContainer> dataContainers) {
+        this.settings = new DataExportSettings(dataContainers);
         IDialogSettings workbenchSettings = WorkbenchPlugin.getDefault().getDialogSettings();
         IDialogSettings section = workbenchSettings.getSection(RS_EXPORT_WIZARD_DIALOG_SETTINGS);//$NON-NLS-1$
         if (section == null) {

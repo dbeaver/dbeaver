@@ -11,7 +11,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IResultSetProvider;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
@@ -22,6 +21,7 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.ui.export.IDataExporter;
 import org.jkiss.dbeaver.ui.export.IDataExporterSite;
@@ -62,7 +62,7 @@ public class DataExportJob extends AbstractJob {
     {
 
         for (; ;) {
-            IResultSetProvider dataProvider = settings.acquireDataProvider();
+            DBSDataContainer dataProvider = settings.acquireDataProvider();
             if (dataProvider == null) {
                 break;
             }
@@ -72,9 +72,9 @@ public class DataExportJob extends AbstractJob {
         return Status.OK_STATUS;
     }
 
-    private void extractData(DBRProgressMonitor monitor, IResultSetProvider dataProvider)
+    private void extractData(DBRProgressMonitor monitor, DBSDataContainer dataProvider)
     {
-        setName("Export data from \"" + dataProvider.getResultSetSource().getName() + "\"");
+        setName("Export data from \"" + dataProvider.getName() + "\"");
 
         String contextTask = "Export data";
         DBCExecutionContext context = settings.isOpenNewConnections() ?
@@ -96,7 +96,7 @@ public class DataExportJob extends AbstractJob {
 
         private static final String LOB_DIRECTORY_NAME = "files";
 
-        private IResultSetProvider dataProvider;
+        private DBSDataContainer dataProvider;
         private IDataExporter dataExporter;
         private OutputStream outputStream;
         private PrintWriter writer;
@@ -106,14 +106,14 @@ public class DataExportJob extends AbstractJob {
         private long lobCount;
         private File outputFile;
 
-        private ExporterSite(IResultSetProvider dataProvider)
+        private ExporterSite(DBSDataContainer dataProvider)
         {
             this.dataProvider = dataProvider;
         }
 
         public DBPNamedObject getSource()
         {
-            return dataProvider.getResultSetSource();
+            return dataProvider;
         }
 
         public Map<String, Object> getProperties()
@@ -302,13 +302,13 @@ public class DataExportJob extends AbstractJob {
                     // Perform export
                     if (settings.getExtractType() == DataExportSettings.ExtractType.SINGLE_QUERY) {
                         // Just do it in single query
-                        this.dataProvider.extractData(context, this, -1, -1);
+                        this.dataProvider.readData(context, this, -1, -1);
                     } else {
                         // Read all data by segments
                         int offset = 0;
                         int segmentSize = settings.getSegmentSize();
                         for (;;) {
-                            int rowCount = this.dataProvider.extractData(context, this, offset, segmentSize);
+                            int rowCount = this.dataProvider.readData(context, this, offset, segmentSize);
                             if (rowCount < segmentSize) {
                                 // Done
                                 break;

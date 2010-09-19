@@ -12,7 +12,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IResultSetProvider;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.registry.DataExportersRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -111,10 +111,10 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
     }
 
     private void loadExporters() {
-        List<IResultSetProvider> dataProviders = getWizard().getSettings().getDataProviders();
+        List<DBSDataContainer> dataProviders = getWizard().getSettings().getDataProviders();
         List<Class> rsSources = new ArrayList<Class>();
-        for (IResultSetProvider provider : dataProviders) {
-            rsSources.add(provider.getResultSetSource().getClass());
+        for (DBSDataContainer provider : dataProviders) {
+            rsSources.add(provider.getClass());
         }
 
         DataExportersRegistry registry = DBeaverCore.getInstance().getDataExportersRegistry();

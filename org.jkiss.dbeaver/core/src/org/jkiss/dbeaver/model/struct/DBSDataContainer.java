@@ -21,7 +21,6 @@ public interface DBSDataContainer extends DBSObject {
     public static final int DATA_INSERT         = 1;
     public static final int DATA_UPDATE         = 2;
     public static final int DATA_DELETE         = 4;
-    public static final int DATA_READ_SEGMENT   = 8;
 
     int getSupportedFeatures();
 
