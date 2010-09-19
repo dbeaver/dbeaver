@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.ext.IResultSetProvider;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
@@ -93,12 +94,17 @@ public class DataExportJob extends AbstractJob {
 
     private class ExporterSite implements IDataExporterSite, DBDDataReceiver {
 
+        private static final String LOB_DIRECTORY_NAME = "files";
+
         private IResultSetProvider dataProvider;
         private IDataExporter dataExporter;
         private OutputStream outputStream;
         private PrintWriter writer;
         private List<DBDColumnBinding> metaColumns = new ArrayList<DBDColumnBinding>();
         private Object[] row;
+        private File lobDirectory;
+        private long lobCount;
+        private File outputFile;
 
         private ExporterSite(IResultSetProvider dataProvider)
         {
@@ -193,6 +199,24 @@ public class DataExportJob extends AbstractJob {
                 for (int i = 0; i < metaColumns.size(); i++) {
                     DBDColumnBinding column = metaColumns.get(i);
                     Object value = column.getValueHandler().getValueObject(monitor, resultSet, column.getColumn(), i);
+                    if (value instanceof DBDContent) {
+                        // Check for binary type export
+                        if (!ContentUtils.isTextContent((DBDContent)value)) {
+                            switch (settings.getLobExtractType()) {
+                                case SKIP:
+                                    // Set it it null
+                                    value = null;
+                                    break;
+                                case INLINE:
+                                    // Just pass content to exporter
+                                    break;
+                                case FILES:
+                                    // Save content to file and pass file reference to exporter
+                                    value = saveContentToFile(monitor, (DBDContent)value);
+                                    break;
+                            }
+                        }
+                    }
                     row[i] = value;
                 }
                 // Export row
@@ -215,6 +239,23 @@ public class DataExportJob extends AbstractJob {
             }
         }
 
+        private File saveContentToFile(DBRProgressMonitor monitor, DBDContent content)
+            throws IOException, DBCException
+        {
+            if (lobDirectory == null) {
+                lobDirectory = new File(settings.getOutputFolder(), LOB_DIRECTORY_NAME);
+                if (!lobDirectory.exists()) {
+                    if (!lobDirectory.mkdir()) {
+                        throw new IOException("Could not create directory for LOB files: " + lobDirectory.getAbsolutePath());
+                    }
+                }
+            }
+            lobCount++;
+            File lobFile = new File(lobDirectory, outputFile.getName() + "-" + lobCount + ".data");
+            ContentUtils.saveContentToFile(content.getContents(monitor).getContentStream(), lobFile, monitor);
+            return lobFile;
+        }
+
         public void makeExport(DBCExecutionContext context)
             throws DBException, IOException
         {
@@ -226,7 +267,7 @@ public class DataExportJob extends AbstractJob {
             }
 
             // Open output streams
-            File outputFile = settings.makeOutputFile(getSource());
+            outputFile = settings.makeOutputFile(getSource());
             this.outputStream = new FileOutputStream(outputFile);
             try {
                 ZipOutputStream zipStream = null;
