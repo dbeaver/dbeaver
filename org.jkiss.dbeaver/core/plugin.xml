@@ -12,7 +12,8 @@
                      schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider"
                      schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataExportProvider" name="Data Export Provider" schema="schema/org.jkiss.dbeaver.dataExportProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataExportProvider" name="Data Export Provider"
+                     schema="schema/org.jkiss.dbeaver.dataExportProvider.exsd"/>
     <extension
             point="org.eclipse.core.contenttype.contentTypes">
         <content-type
@@ -69,14 +70,81 @@
                 name="Projects">
         </view>
 
-        <category
-                id="org.jkiss.dbeaver.core.category"
-                name="DBeaver Core Category">
+        <category id="org.jkiss.dbeaver.core.category" name="DBeaver Core Category">
         </category>
     </extension>
 
+    <extension point="org.eclipse.ui.commands">
+        <command
+                description="Driver Manager"
+                id="org.jkiss.dbeaver.core.editDrivers"
+                name="Driver Manager">
+        </command>
+        <command
+                description="New Connection Wizard"
+                id="org.jkiss.dbeaver.core.newConnection"
+                name="New Connection">
+        </command>
+        <command
+                description="Delete Connection"
+                id="org.jkiss.dbeaver.core.deleteConnection"
+                name="Delete Connection">
+        </command>
+        <command
+                description="Open SQL Editor"
+                id="org.jkiss.dbeaver.core.openSQLEditor"
+                name="Open SQL Editor">
+        </command>
+        <command
+                description="Connect"
+                id="org.jkiss.dbeaver.core.connect"
+                name="Connect">
+        </command>
+        <command
+                description="Disconnect"
+                id="org.jkiss.dbeaver.core.disconnect"
+                name="Disconnect">
+        </command>
+        <command
+                description="Execute Statement"
+                id="org.jkiss.dbeaver.ui.editors.sql.run.statement"
+                name="Execute SQL Statement">
+        </command>
+        <command
+                description="Execute Script"
+                id="org.jkiss.dbeaver.ui.editors.sql.run.script"
+                name="Execute SQL Script">
+        </command>
+        <command
+                description="Commit"
+                id="org.jkiss.dbeaver.ui.editors.sql.commit"
+                name="Commit changes in SQL Session">
+        </command>
+        <command
+                description="Rollback"
+                id="org.jkiss.dbeaver.ui.editors.sql.rollback"
+                name="Rollback changes in SQL Session">
+        </command>
+        <command
+                description="Load from file"
+                id="org.jkiss.dbeaver.ui.editors.sql.open.file"
+                name="Load SQL script">
+        </command>
+        <command
+                description="Export data to file(s)"
+                id="org.jkiss.dbeaver.core.export.data"
+                name="Export data">
+        </command>
+    </extension>
     <extension
-            point="org.eclipse.ui.actionSets">
+          point="org.eclipse.ui.commandImages">
+       <image
+             commandId="org.jkiss.dbeaver.core.export.data"
+             icon="icons/file/export.png">
+       </image>
+    </extension>
+
+    <extension point="org.eclipse.ui.actionSets">
         <actionSet
                 id="org.jkiss.dbeaver.core.dataSourceActionSet"
                 label="DataSource actions"
@@ -180,10 +248,8 @@
         </actionSet>
     </extension>
 
-    <extension
-            point="org.eclipse.ui.handlers">
-        <handler commandId="org.eclipse.ui.edit.copy"
-                 class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorCopyHandler">
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorCopyHandler">
             <activeWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -193,8 +259,7 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.edit.delete"
-                 class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorDeleteHandler">
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorDeleteHandler">
             <activeWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -204,61 +269,50 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.file.refresh"
-                 class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorRefreshHandler">
+        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorRefreshHandler">
             <activeWhen>
                 <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
                 </with>
             </activeWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.export.data" class="org.jkiss.dbeaver.ui.export.handlers.DataExportHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+            <!--activeWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+                    </iterate>
+                </with>
+            </activeWhen-->
+        </handler>
     </extension>
 
-    <extension
-            point="org.eclipse.ui.menus">
-        <menuContribution
-                allPopups="false"
-                locationURI="menu:edit?before=undoredo">
-            <command
-                    commandId="org.eclipse.ui.edit.undo"
-                    style="push">
-            </command>
-            <command
-                    commandId="org.eclipse.ui.edit.redo"
-                    style="push">
-            </command>
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="menu:edit?before=undoredo">
+            <command commandId="org.eclipse.ui.edit.undo" style="push"/>
+            <command commandId="org.eclipse.ui.edit.redo" style="push"/>
         </menuContribution>
-        <menuContribution
-                allPopups="false"
-                locationURI="menu:edit?before=additions">
-            <command
-                    commandId="org.eclipse.ui.edit.cut"
-                    label="Cut"
-                    style="push">
-            </command>
-            <command
-                    commandId="org.eclipse.ui.edit.copy"
-                    label="Copy"
-                    style="push">
-            </command>
-            <command
-                    commandId="org.eclipse.ui.edit.paste"
-                    label="Paste"
-                    style="push">
-            </command>
-            <command
-                    commandId="org.eclipse.ui.edit.delete"
-                    label="Delete"
-                    style="push">
-            </command>
+        <menuContribution allPopups="false" locationURI="menu:edit?before=additions">
+            <command commandId="org.eclipse.ui.edit.cut" style="push"/>
+            <command commandId="org.eclipse.ui.edit.copy" style="push"/>
+            <command commandId="org.eclipse.ui.edit.paste" style="push"/>
+            <command commandId="org.eclipse.ui.edit.delete" style="push"/>
         </menuContribution>
-        <menuContribution
-                allPopups="false"
-                locationURI="menu:file?before=end">
-            <command
-                    commandId="org.eclipse.ui.file.refresh"
-                    label="Refresh"
-                    style="push">
+        <menuContribution allPopups="false" locationURI="menu:file?before=end">
+            <command commandId="org.eclipse.ui.file.refresh" style="push"/>
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+            <command commandId="org.jkiss.dbeaver.core.export.data" style="push">
+               <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>
     </extension>
@@ -449,64 +503,6 @@
                 id="org.jkiss.dbeaver.core.navigationContext"
                 name="Navigation context">
         </context>
-    </extension>
-    <extension
-            point="org.eclipse.ui.commands">
-        <command
-                description="Driver Manager"
-                id="org.jkiss.dbeaver.core.editDrivers"
-                name="Driver Manager">
-        </command>
-        <command
-                description="New Connection Wizard"
-                id="org.jkiss.dbeaver.core.newConnection"
-                name="New Connection">
-        </command>
-        <command
-                description="Delete Connection"
-                id="org.jkiss.dbeaver.core.deleteConnection"
-                name="Delete Connection">
-        </command>
-        <command
-                description="Open SQL Editor"
-                id="org.jkiss.dbeaver.core.openSQLEditor"
-                name="Open SQL Editor">
-        </command>
-        <command
-                description="Connect"
-                id="org.jkiss.dbeaver.core.connect"
-                name="Connect">
-        </command>
-        <command
-                description="Disconnect"
-                id="org.jkiss.dbeaver.core.disconnect"
-                name="Disconnect">
-        </command>
-        <command
-                description="Execute Statement"
-                id="org.jkiss.dbeaver.ui.editors.sql.run.statement"
-                name="Execute SQL Statement">
-        </command>
-        <command
-                description="Execute Script"
-                id="org.jkiss.dbeaver.ui.editors.sql.run.script"
-                name="Execute SQL Script">
-        </command>
-        <command
-                description="Commit"
-                id="org.jkiss.dbeaver.ui.editors.sql.commit"
-                name="Commit changes in SQL Session">
-        </command>
-        <command
-                description="Rollback"
-                id="org.jkiss.dbeaver.ui.editors.sql.rollback"
-                name="Rollback changes in SQL Session">
-        </command>
-        <command
-                description="Load from file"
-                id="org.jkiss.dbeaver.ui.editors.sql.open.file"
-                name="Load SQL script">
-        </command>
     </extension>
 
     <extension point="org.eclipse.ui.popupMenus">
@@ -885,31 +881,39 @@
         </provider>
     </extension>
     <extension
-          point="org.jkiss.dbeaver.dataExportProvider">
-       <export
-             id="org.jkiss.dbeaver.core.dataExport.csv"
-             class="org.jkiss.dbeaver.ui.export.impl.DataExporterCSV"
-             description="Export to CSV file(s)"
-             extension="csv"
-             icon="icons/misc/csv.png"
-             label="CSV">
-           <propertyGroup label="General">
-               <property id="delimiter" label="Delimiter" type="string" description="Columns delimiter" defaultValue="," required="true"/>
-               <property id="header" label="Header" type="string" description="CSV header settings" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
-               <property id="escape" label="Characters escape" type="string" description="Bad characters escaping model (surrounded with quotes or escaped with '\' character)" defaultValue="quotes" required="true" validValues="quotes,escape"/>
-           </propertyGroup>
-       </export>
+            point="org.jkiss.dbeaver.dataExportProvider">
         <export
-              id="org.jkiss.dbeaver.core.dataExport.sql"
-              class="org.jkiss.dbeaver.ui.export.impl.DataExporterSQL"
-              description="Export to SQL INSERT statements"
-              extension="sql"
-              icon="icons/misc/sql.png"
-              label="SQL">
+                id="org.jkiss.dbeaver.core.dataExport.csv"
+                class="org.jkiss.dbeaver.ui.export.impl.DataExporterCSV"
+                description="Export to CSV file(s)"
+                extension="csv"
+                icon="icons/misc/csv.png"
+                label="CSV">
+            <propertyGroup label="General">
+                <property id="delimiter" label="Delimiter" type="string" description="Columns delimiter"
+                          defaultValue="," required="true"/>
+                <property id="header" label="Header" type="string" description="CSV header settings" defaultValue="top"
+                          required="true" validValues="none,top,bottom,both"/>
+                <property id="escape" label="Characters escape" type="string"
+                          description="Bad characters escaping model (surrounded with quotes or escaped with '\' character)"
+                          defaultValue="quotes" required="true" validValues="quotes,escape"/>
+            </propertyGroup>
+        </export>
+        <export
+                id="org.jkiss.dbeaver.core.dataExport.sql"
+                class="org.jkiss.dbeaver.ui.export.impl.DataExporterSQL"
+                description="Export to SQL INSERT statements"
+                extension="sql"
+                icon="icons/misc/sql.png"
+                label="SQL">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSTable"/>
             <propertyGroup label="General">
-                <property id="escape" label="Escape character" type="string" description="Character which escapes single quote character" defaultValue="\" required="true"/>
-                <property id="rowsInStatement" label="Data rows per statement" type="numeric" description="Number of data rows per single insert statement" defaultValue="10" required="true"/>
+                <property id="escape" label="Escape character" type="string"
+                          description="Character which escapes single quote character" defaultValue="\"
+                          required="true"/>
+                <property id="rowsInStatement" label="Data rows per statement" type="numeric"
+                          description="Number of data rows per single insert statement" defaultValue="10"
+                          required="true"/>
             </propertyGroup>
         </export>
     </extension>

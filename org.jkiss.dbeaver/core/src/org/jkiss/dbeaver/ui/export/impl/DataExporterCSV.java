@@ -137,8 +137,8 @@ public class DataExporterCSV extends DataExporterAbstract {
     private void writeCellValue(String value, boolean quote)
     {
         // check for needed quote
-        if (!quote) {
-            if (value.indexOf(delimiter) != -1 || value.indexOf(rowDelimiter) != -1) {
+        if (!quote && !value.isEmpty()) {
+            if (Character.isDigit(value.charAt(0)) || value.indexOf(delimiter) != -1 || value.indexOf(rowDelimiter) != -1) {
                 quote = true;
             }
         }

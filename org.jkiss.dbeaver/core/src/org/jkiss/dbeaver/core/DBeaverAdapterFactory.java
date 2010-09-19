@@ -11,6 +11,7 @@ import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 
@@ -22,7 +23,7 @@ import java.util.Map;
  */
 public class DBeaverAdapterFactory implements IAdapterFactory
 {
-    private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBPObject.class, DBSObject.class, IPropertySource.class, IWorkbenchAdapter.class };
+    private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBPObject.class, DBSObject.class, DBSDataContainer.class, IPropertySource.class, IWorkbenchAdapter.class };
 
     private Map<Object, IPropertySource> propertySourceCache = new Hashtable<Object, IPropertySource>();
 
@@ -38,9 +39,12 @@ public class DBeaverAdapterFactory implements IAdapterFactory
 
     public Object getAdapter(final Object adaptableObject, Class adapterType)
     {
-        if (adapterType == DBPNamedObject.class || adapterType == DBPObject.class || adapterType == DBSObject.class) {
+        if (DBPObject.class.isAssignableFrom(adapterType)) {
             if (adaptableObject instanceof DBNNode) {
-                return ((DBNNode)adaptableObject).getObject();
+                DBSObject object = ((DBNNode) adaptableObject).getObject();
+                if (object != null && adapterType.isAssignableFrom(object.getClass())) {
+                    return object;
+                }
             }
         } else if (adapterType == IPropertySource.class) {
             DBPObject dbObject = null;

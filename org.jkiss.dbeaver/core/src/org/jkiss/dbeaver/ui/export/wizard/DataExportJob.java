@@ -100,7 +100,7 @@ public class DataExportJob extends AbstractJob {
         private IDataExporter dataExporter;
         private OutputStream outputStream;
         private PrintWriter writer;
-        private List<DBDColumnBinding> metaColumns = new ArrayList<DBDColumnBinding>();
+        private List<DBDColumnBinding> metaColumns;
         private Object[] row;
         private File lobDirectory;
         private long lobCount;
@@ -174,6 +174,7 @@ public class DataExportJob extends AbstractJob {
         public void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet) throws DBCException
         {
             // Prepare columns
+            metaColumns = new ArrayList<DBDColumnBinding>();
             List<DBCColumnMetaData> columns = resultSet.getResultSetMetaData().getColumns();
             for (DBCColumnMetaData column : columns) {
                 DBDColumnBinding columnBinding = DBUtils.getColumnBinding(dataProvider.getDataSource(), column);
@@ -227,7 +228,7 @@ public class DataExportJob extends AbstractJob {
                 // Export row
                 dataExporter.exportRow(monitor, row);
             } catch (DBException e) {
-                log.warn("Error while exporting table row", e);
+                throw new DBCException("Error while exporting table row", e);
             } catch (IOException e) {
                 throw new DBCException("IO error", e);
             }

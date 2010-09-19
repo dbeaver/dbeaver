@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataExportersRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -99,6 +100,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         mgr.registerAdapters(propertiesAdapter, DBPNamedObject.class);
         mgr.registerAdapters(propertiesAdapter, DBPObject.class);
         mgr.registerAdapters(propertiesAdapter, DBSObject.class);
+        mgr.registerAdapters(propertiesAdapter, DBSDataContainer.class);
         mgr.registerAdapters(propertiesAdapter, DBNNode.class);
 
         DBeaverIcons.initRegistry(plugin.getBundle());

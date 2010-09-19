@@ -40,7 +40,9 @@ public class NavigatorCopyHandler extends AbstractHandler {
                             buf.append('\n');
                         }
                         Object adapted = Platform.getAdapterManager().getAdapter(iter.next(), DBPNamedObject.class);
-                        buf.append(ViewUtils.convertObjectToString(adapted));
+                        if (adapted != null) {
+                            buf.append(ViewUtils.convertObjectToString(adapted));
+                        }
                     }
                     if (buf.length() > 0) {
                         Clipboard clipboard = new Clipboard(workbenchWindow.getShell().getDisplay());

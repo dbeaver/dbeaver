@@ -64,7 +64,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         boolean hasLimits = firstRow >= 0 && maxRows > 0;
 
         JDBCExecutionContext jdbcContext = (JDBCExecutionContext)context;
-        readRequiredMeta(context.getProgressMonitor());
+        DBRProgressMonitor monitor = context.getProgressMonitor();
+        readRequiredMeta(monitor);
 
         DBCQueryTransformer limitTransformer = null;
         if (hasLimits && getDataSource() instanceof DBCQueryTransformProvider) {
@@ -78,7 +79,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             query = limitTransformer.transformQueryString(query);
         }
         boolean fetchStarted = false;
-        context.getProgressMonitor().subTask("Fetch table data");
+        monitor.subTask("Fetch table data");
         JDBCStatement dbStat = jdbcContext.prepareStatement(query, false, false, false);
         try {
             dbStat.setDataContainer(this);
@@ -97,20 +98,19 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 return 0;
             }
             try {
-                dataReceiver.fetchStart(context.getProgressMonitor(), dbResult);
+                dataReceiver.fetchStart(monitor, dbResult);
                 fetchStarted = true;
 
                 int rowCount = 0;
                 while (dbResult.nextRow()) {
-                    if (hasLimits && rowCount >= maxRows) {
+                    if (monitor.isCanceled() || (hasLimits && rowCount >= maxRows)) {
                         // Fetch not more than max rows
                         break;
                     }
-                    dataReceiver.fetchRow(context.getProgressMonitor(), dbResult);
+                    dataReceiver.fetchRow(monitor, dbResult);
                     rowCount++;
-                    context.getProgressMonitor().done();
                     if (rowCount % 100 == 0) {
-                        context.getProgressMonitor().subTask(rowCount + " rows fetched");
+                        monitor.subTask(rowCount + " rows fetched");
                     }
 
                 }
@@ -123,9 +123,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         finally {
             dbStat.close();
             if (fetchStarted) {
-                dataReceiver.fetchEnd(context.getProgressMonitor());
+                dataReceiver.fetchEnd(monitor);
             }
-            context.getProgressMonitor().done();
+            monitor.done();
         }
     }
 
