@@ -77,6 +77,7 @@
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.core.driver.manager" name="Driver Manager" description="Driver Manager"/>
         <command id="org.jkiss.dbeaver.core.new.connection" name="New Connection" description="New Connection Wizard"/>
+        <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="Link with Editor" description="Link with Editor"/>
         <command
                 description="Open SQL Editor"
                 id="org.jkiss.dbeaver.core.openSQLEditor"
@@ -125,9 +126,10 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-       <image commandId="org.jkiss.dbeaver.core.export.data" icon="icons/file/export.png"/>
-       <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="icons/driver_manager.png"/>
-       <image commandId="org.jkiss.dbeaver.core.new.connection" icon="icons/database_connect.png"/>
+        <image commandId="org.jkiss.dbeaver.core.export.data" icon="icons/file/export.png"/>
+        <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="icons/driver_manager.png"/>
+        <image commandId="org.jkiss.dbeaver.core.new.connection" icon="icons/database_connect.png"/>
+        <image commandId="org.jkiss.dbeaver.core.navigator.linkeditor" icon="icons/link_to_editor.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.actionSets">
@@ -259,9 +261,17 @@
 
         <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.handlers.DriverManagerHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.handlers.NewConnectionHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.navigator.linkeditor" class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorLinkEditorHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.IDatabaseEditor"/>
+                </with>
+            </enabledWhen>
+        </handler>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
+        <!-- Edit menu -->
         <menuContribution allPopups="false" locationURI="menu:edit?before=undoredo">
             <command commandId="org.eclipse.ui.edit.undo" style="push"/>
             <command commandId="org.eclipse.ui.edit.redo" style="push"/>
@@ -272,18 +282,38 @@
             <command commandId="org.eclipse.ui.edit.paste" style="push"/>
             <command commandId="org.eclipse.ui.edit.delete" style="push"/>
         </menuContribution>
+
+        <!-- Refresh -->
         <menuContribution allPopups="false" locationURI="menu:file?before=end">
             <command commandId="org.eclipse.ui.file.refresh" style="push"/>
         </menuContribution>
+
+        <!-- Database menu -->
+        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=driverGroup">
+            <command commandId="org.jkiss.dbeaver.core.driver.manager" style="push"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection" style="push"/>
+        </menuContribution>
+
+        <!-- Database Navigator menu & toolbar -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.databaseNavigator">
+            <command commandId="org.jkiss.dbeaver.core.driver.manager" style="push"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection" style="push"/>
+            <separator name="additions" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor" style="push"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.databaseNavigator">
+            <command commandId="org.jkiss.dbeaver.core.driver.manager" style="push"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection" style="push"/>
+            <separator name="additions" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor" style="push"/>
+        </menuContribution>
+
+        <!-- Data Export -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
             <command commandId="org.jkiss.dbeaver.core.export.data" style="push">
                <visibleWhen checkEnabled="true"/>
             </command>
-        </menuContribution>
-
-        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=driverGroup">
-            <command commandId="org.jkiss.dbeaver.core.driver.manager" style="push"/>
-            <command commandId="org.jkiss.dbeaver.core.new.connection" style="push"/>
         </menuContribution>
 
     </extension>

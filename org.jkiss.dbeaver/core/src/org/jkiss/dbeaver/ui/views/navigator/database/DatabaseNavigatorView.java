@@ -7,14 +7,9 @@ package org.jkiss.dbeaver.ui.views.navigator.database;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
@@ -22,9 +17,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.ui.actions.LinkEditorAction;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
@@ -95,27 +87,6 @@ public class DatabaseNavigatorView extends ViewPart
         ViewUtils.addDragAndDropSupport(this);
 
         getViewSite().setSelectionProvider(viewer);
-
-        makeToolbar(getViewSite().getActionBars());
-    }
-
-    private void makeToolbar(IActionBars actionBars) {
-        IMenuManager dropDownMenu = actionBars.getMenuManager();
-        IToolBarManager toolBar = actionBars.getToolBarManager();
-
-        dropDownMenu.add(ViewUtils.makeCommandContribution(getSite(), ICommandIds.CMD_DRIVER_MANAGER));
-        dropDownMenu.add(ViewUtils.makeCommandContribution(getSite(), ICommandIds.CMD_NEW_CONNECTION));
-        dropDownMenu.add(new Separator());
-
-        toolBar.add(ViewUtils.makeCommandContribution(getSite(), ICommandIds.CMD_DRIVER_MANAGER));
-        toolBar.add(ViewUtils.makeCommandContribution(getSite(), ICommandIds.CMD_NEW_CONNECTION));
-        toolBar.add(new Separator());
-        
-        {
-            IAction driverManagerAction = ViewUtils.makeAction(new LinkEditorAction(this), this, null, "Link with Editor", DBIcon.ACTION_LINK_TO_EDITOR.getImageDescriptor(), null);
-            dropDownMenu.add(driverManagerAction);
-            toolBar.add(driverManagerAction);
-        }
     }
 
     public void dispose()
