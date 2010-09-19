@@ -26,6 +26,8 @@ public interface IDataExporterSite {
 
     PrintWriter getWriter();
 
+    void flush() throws IOException;
+
     void writeBinaryData(InputStream stream, long streamLength) throws IOException;
 
 }

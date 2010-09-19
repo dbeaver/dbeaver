@@ -78,6 +78,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             query = limitTransformer.transformQueryString(query);
         }
         boolean fetchStarted = false;
+        context.getProgressMonitor().subTask("Fetch table data");
         JDBCStatement dbStat = jdbcContext.prepareStatement(query, false, false, false);
         try {
             dbStat.setDataContainer(this);
@@ -107,6 +108,11 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     }
                     dataReceiver.fetchRow(context.getProgressMonitor(), dbResult);
                     rowCount++;
+                    context.getProgressMonitor().done();
+                    if (rowCount % 100 == 0) {
+                        context.getProgressMonitor().subTask(rowCount + " rows fetched");
+                    }
+
                 }
                 return rowCount;
             }
@@ -119,6 +125,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             if (fetchStarted) {
                 dataReceiver.fetchEnd(context.getProgressMonitor());
             }
+            context.getProgressMonitor().done();
         }
     }
 

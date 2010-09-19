@@ -136,12 +136,18 @@ public class DataExportJob extends AbstractJob {
             return writer;
         }
 
+        public void flush() throws IOException
+        {
+            writer.flush();
+            outputStream.flush();
+        }
+
         public void writeBinaryData(InputStream stream, long streamLength) throws IOException
         {
+            flush();
             switch (settings.getLobEncoding()) {
                 case BASE64:
                 {
-                    writer.flush();
                     Base64.encode(stream, streamLength, writer);
                     break;
                 }
@@ -160,7 +166,6 @@ public class DataExportJob extends AbstractJob {
                 }
                 default:
                     // Binary stream
-                    writer.flush();
                     IOUtils.copyStream(stream, outputStream, 5000);
                     break;
             }
@@ -268,7 +273,9 @@ public class DataExportJob extends AbstractJob {
 
             // Open output streams
             outputFile = settings.makeOutputFile(getSource());
-            this.outputStream = new FileOutputStream(outputFile);
+            this.outputStream = new BufferedOutputStream(
+                new FileOutputStream(outputFile),
+                10000);
             try {
                 ZipOutputStream zipStream = null;
                 if (settings.isCompressResults()) {
@@ -310,6 +317,11 @@ public class DataExportJob extends AbstractJob {
                     }
 
                 } finally {
+                    try {
+                        this.flush();
+                    } catch (IOException e) {
+                        log.debug(e);
+                    }
                     // Dispose exporter
                     dataExporter.dispose();
                     dataExporter = null;
@@ -328,7 +340,7 @@ public class DataExportJob extends AbstractJob {
                         }
                     }
                     if (this.writer != null) {
-                        this.writer.flush();
+                        ContentUtils.close(this.writer);
                         this.writer = null;
                     }
                 }
