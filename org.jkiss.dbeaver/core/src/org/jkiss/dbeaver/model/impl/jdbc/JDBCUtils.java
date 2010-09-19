@@ -302,13 +302,13 @@ public class JDBCUtils
         }
     }
 
-    public static void scrollResultSet(ResultSet dbResult, int offset)
+    public static void scrollResultSet(ResultSet dbResult, long offset)
         throws SQLException
     {
         // Scroll to first row
         boolean scrolled = false;
         try {
-            scrolled = dbResult.absolute(offset);
+            scrolled = dbResult.absolute((int) offset);
         } catch (SQLException e) {
             // Seems to be not supported
             log.debug(e);
@@ -318,7 +318,7 @@ public class JDBCUtils
         }
         if (!scrolled) {
             // Just fetch first 'firstRow' rows
-            for (int i = 1; i <= offset; i++) {
+            for (long i = 1; i <= offset; i++) {
                 try {
                     dbResult.next();
                 } catch (SQLException e) {

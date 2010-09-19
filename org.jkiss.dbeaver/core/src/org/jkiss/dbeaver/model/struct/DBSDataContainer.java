@@ -24,27 +24,27 @@ public interface DBSDataContainer extends DBSObject {
 
     int getSupportedFeatures();
 
-    int readData(
+    long readData(
         DBCExecutionContext context,
         DBDDataReceiver dataReceiver,
-        int firstRow,
-        int maxRows)
+        long firstRow,
+        long maxRows)
         throws DBException;
 
-    int insertData(
+    long insertData(
         DBCExecutionContext context,
         List<DBDColumnValue> columns,
         DBDDataReceiver keysReceiver)
         throws DBException;
 
-    int updateData(
+    long updateData(
         DBCExecutionContext context,
         List<DBDColumnValue> keyColumns,
         List<DBDColumnValue> updateColumns,
         DBDDataReceiver keysReceiver)
         throws DBException;
 
-    int deleteData(
+    long deleteData(
         DBCExecutionContext context,
         List<DBDColumnValue> keyColumns)
         throws DBException;

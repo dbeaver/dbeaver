@@ -56,7 +56,7 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
 
     void close();
 
-    void setLimit(int offset, int limit) throws DBCException;
+    void setLimit(long offset, long limit) throws DBCException;
 
     /**
      * Statement data container.

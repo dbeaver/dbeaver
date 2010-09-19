@@ -41,9 +41,9 @@ public class SQLQueryJob extends DataSourceJob
     private SQLScriptCommitType commitType;
     private SQLScriptErrorHandling errorHandling;
     private boolean fetchResultSets;
-    private int rsOffset;
-    private int rsMaxRows;
-    private int rowCount;
+    private long rsOffset;
+    private long rsMaxRows;
+    private long rowCount;
 
     private DBCStatement curStatement;
     //private boolean statementCancel = false;
@@ -90,7 +90,7 @@ public class SQLQueryJob extends DataSourceJob
         return rsOffset >= 0 && rsMaxRows > 0;
     }
 
-    public void setResultSetLimit(int offset, int maxRows)
+    public void setResultSetLimit(long offset, long maxRows)
     {
         this.rsOffset = offset;
         this.rsMaxRows = maxRows;
@@ -298,7 +298,7 @@ public class SQLQueryJob extends DataSourceJob
                 if (hasResultSet && fetchResultSets) {
                     fetchQueryData(result, context);
                 }
-                int updateCount = curStatement.getUpdateRowCount();
+                long updateCount = curStatement.getUpdateRowCount();
                 if (updateCount >= 0) {
                     result.setUpdateCount(updateCount);
                 }
@@ -398,7 +398,7 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    public int extractData(DBCExecutionContext context)
+    public long extractData(DBCExecutionContext context)
         throws DBException
     {
         if (queries.size() != 1) {

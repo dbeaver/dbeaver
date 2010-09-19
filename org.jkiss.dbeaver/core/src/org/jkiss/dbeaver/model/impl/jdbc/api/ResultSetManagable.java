@@ -43,8 +43,8 @@ public class ResultSetManagable implements JDBCResultSet {
 
     private PreparedStatementManagable statement;
     private ResultSet original;
-    private int rowsFetched;
-    private int maxRows = -1;
+    private long rowsFetched;
+    private long maxRows = -1;
 
     public ResultSetManagable(PreparedStatementManagable statement, ResultSet original)
     {
@@ -100,7 +100,7 @@ public class ResultSetManagable implements JDBCResultSet {
         return new JDBCResultSetMetaData(this);
     }
 
-    public void setMaxRows(int maxRows) {
+    public void setMaxRows(long maxRows) {
         this.maxRows = maxRows;
     }
 

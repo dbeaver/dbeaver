@@ -305,10 +305,10 @@ public class DataExportJob extends AbstractJob {
                         this.dataProvider.readData(context, this, -1, -1);
                     } else {
                         // Read all data by segments
-                        int offset = 0;
+                        long offset = 0;
                         int segmentSize = settings.getSegmentSize();
                         for (;;) {
-                            int rowCount = this.dataProvider.readData(context, this, offset, segmentSize);
+                            long rowCount = this.dataProvider.readData(context, this, offset, segmentSize);
                             if (rowCount < segmentSize) {
                                 // Done
                                 break;

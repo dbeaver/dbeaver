@@ -942,7 +942,7 @@ public class SQLEditor extends BaseTextEditor
             return 0;
         }
 
-        public int readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int firstRow, int maxRows) throws DBException
+        public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, long firstRow, long maxRows) throws DBException
         {
             if (curJob != null) {
                 curJob.setDataReciever(dataReceiver);
@@ -953,17 +953,17 @@ public class SQLEditor extends BaseTextEditor
             }
         }
 
-        public int insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReceiver keysReceiver) throws DBException
+        public long insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReceiver keysReceiver) throws DBException
         {
             throw new DBException("Not Implemented");
         }
 
-        public int updateData(DBCExecutionContext context, List<DBDColumnValue> keyColumns, List<DBDColumnValue> updateColumns, DBDDataReceiver keysReceiver) throws DBException
+        public long updateData(DBCExecutionContext context, List<DBDColumnValue> keyColumns, List<DBDColumnValue> updateColumns, DBDDataReceiver keysReceiver) throws DBException
         {
             throw new DBException("Not Implemented");
         }
 
-        public int deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns) throws DBException
+        public long deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns) throws DBException
         {
             throw new DBException("Not Implemented");
         }

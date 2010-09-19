@@ -45,7 +45,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return DATA_INSERT | DATA_UPDATE | DATA_DELETE;
     }
 
-    public int readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int firstRow, int maxRows)
+    public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, long firstRow, long maxRows)
         throws DBException
     {
         if (!(context instanceof JDBCExecutionContext)) {
@@ -98,7 +98,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 dataReceiver.fetchStart(monitor, dbResult);
                 fetchStarted = true;
 
-                int rowCount = 0;
+                long rowCount = 0;
                 while (dbResult.nextRow()) {
                     if (monitor.isCanceled() || (hasLimits && rowCount >= maxRows)) {
                         // Fetch not more than max rows
@@ -126,7 +126,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
-    public int insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReceiver keysReceiver)
+    public long insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReceiver keysReceiver)
         throws DBException
     {
         readRequiredMeta(context.getProgressMonitor());
@@ -174,7 +174,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
             // Execute statement
             dbStat.executeStatement();
-            int rowCount = dbStat.getUpdateRowCount();
+            long rowCount = dbStat.getUpdateRowCount();
             if (keysReceiver != null) {
                 readKeys(context, dbStat, keysReceiver);
             }
@@ -186,7 +186,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     }
 
-    public int updateData(
+    public long updateData(
         DBCExecutionContext context,
         List<DBDColumnValue> keyColumns,
         List<DBDColumnValue> updateColumns,
@@ -230,7 +230,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
             // Execute statement
             dbStat.executeStatement();
-            int rowCount = dbStat.getUpdateRowCount();
+            long rowCount = dbStat.getUpdateRowCount();
             if (keysReceiver != null) {
                 readKeys(context, dbStat, keysReceiver);
             }
@@ -241,7 +241,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
-    public int deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns)
+    public long deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns)
         throws DBException
     {
         readRequiredMeta(context.getProgressMonitor());

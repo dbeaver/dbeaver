@@ -32,8 +32,8 @@ public abstract class StatementManagable implements JDBCStatement {
     private String description;
     private DBCQueryPurpose queryPurpose;
     //private boolean blockStarted = false;
-    private int rsOffset = -1;
-    private int rsMaxRows = -1;
+    private long rsOffset = -1;
+    private long rsMaxRows = -1;
 
     private DBSObject dataContainer;
 
@@ -164,18 +164,18 @@ public abstract class StatementManagable implements JDBCStatement {
         }
     }
 
-    public void setLimit(int offset, int limit) throws DBCException
+    public void setLimit(long offset, long limit) throws DBCException
     {
         try {
             if (offset <= 0) {
                 // Just set max row num
-                getOriginal().setMaxRows(limit);
+                getOriginal().setMaxRows((int)limit);
                 this.rsMaxRows = limit;
             } else {
                 // Remember limit values - we'll use them in resultset fetch routine
                 this.rsOffset = offset;
                 this.rsMaxRows = limit;
-                getOriginal().setMaxRows(offset + limit);
+                getOriginal().setMaxRows( (int)(offset + limit));
             }
         }
         catch (SQLException e) {

@@ -12,9 +12,9 @@ public class SQLQueryResult
     private SQLStatementInfo statement;
     //private DBCResultSetMetaData metaData;
     //private List<Object[]> rows;
-    private Integer rowOffset;
-    private Integer rowCount;
-    private Integer updateCount;
+    private Long rowOffset;
+    private Long rowCount;
+    private Long updateCount;
     private Throwable error;
     private long queryTime;
 
@@ -46,30 +46,30 @@ public class SQLQueryResult
 
 */
 
-    public Integer getRowOffset() {
+    public Long getRowOffset() {
         return rowOffset;
     }
 
-    public void setRowOffset(Integer rowOffset) {
+    public void setRowOffset(Long rowOffset) {
         this.rowOffset = rowOffset;
     }
 
-    public Integer getRowCount()
+    public Long getRowCount()
     {
         return rowCount;
     }
 
-    public void setRowCount(Integer rowCount)
+    public void setRowCount(Long rowCount)
     {
         this.rowCount = rowCount;
     }
 
-    public Integer getUpdateCount()
+    public Long getUpdateCount()
     {
         return updateCount;
     }
 
-    public void setUpdateCount(Integer updateCount)
+    public void setUpdateCount(Long updateCount)
     {
         this.updateCount = updateCount;
     }
