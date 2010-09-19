@@ -78,10 +78,7 @@
         <command id="org.jkiss.dbeaver.core.driver.manager" name="Driver Manager" description="Driver Manager"/>
         <command id="org.jkiss.dbeaver.core.new.connection" name="New Connection" description="New Connection Wizard"/>
         <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="Link with Editor" description="Link with Editor"/>
-        <command
-                description="Open SQL Editor"
-                id="org.jkiss.dbeaver.core.openSQLEditor"
-                name="Open SQL Editor">
+        <command id="org.jkiss.dbeaver.core.new.sql.editor" name="Open SQL Editor" description="Open SQL Editor">
         </command>
         <command
                 description="Connect"
@@ -130,6 +127,8 @@
         <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="icons/driver_manager.png"/>
         <image commandId="org.jkiss.dbeaver.core.new.connection" icon="icons/database_connect.png"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.linkeditor" icon="icons/link_to_editor.png"/>
+        
+        <image commandId="org.jkiss.dbeaver.core.new.sql.editor" icon="icons/sql/sql_script.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.actionSets">
@@ -175,17 +174,6 @@
                     menubarPath="dataSourceMenu/connectionGroup"
                     toolbarPath="connectionGroup"
                     tooltip="Connect to database">
-            </action>
-
-            <action
-                    class="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
-                    definitionId="org.jkiss.dbeaver.core.openSQLEditor"
-                    icon="/icons/sql/sql_script.png"
-                    id="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
-                    label="Open SQL Editor"
-                    menubarPath="dataSourceMenu/toolsGroup"
-                    toolbarPath="toolsGroup"
-                    tooltip="Open SQL Editor">
             </action>
 
             <action
@@ -268,50 +256,80 @@
                 </with>
             </enabledWhen>
         </handler>
+
+        <handler commandId="org.jkiss.dbeaver.core.new.sql.editor" class="org.jkiss.dbeaver.ui.actions.sql.OpenSQLEditorHandler">
+            <enabledWhen>
+                <or>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+                        </iterate>
+                    </with>
+                    <with variable="activeEditor">
+                        <adapt type="org.jkiss.dbeaver.ext.IDataSourceProvider"/>
+                    </with>
+                </or>
+            </enabledWhen>
+        </handler>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
         <!-- Edit menu -->
         <menuContribution allPopups="false" locationURI="menu:edit?before=undoredo">
-            <command commandId="org.eclipse.ui.edit.undo" style="push"/>
-            <command commandId="org.eclipse.ui.edit.redo" style="push"/>
+            <command commandId="org.eclipse.ui.edit.undo"/>
+            <command commandId="org.eclipse.ui.edit.redo"/>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="menu:edit?before=additions">
-            <command commandId="org.eclipse.ui.edit.cut" style="push"/>
-            <command commandId="org.eclipse.ui.edit.copy" style="push"/>
-            <command commandId="org.eclipse.ui.edit.paste" style="push"/>
-            <command commandId="org.eclipse.ui.edit.delete" style="push"/>
+            <command commandId="org.eclipse.ui.edit.cut"/>
+            <command commandId="org.eclipse.ui.edit.copy"/>
+            <command commandId="org.eclipse.ui.edit.paste"/>
+            <command commandId="org.eclipse.ui.edit.delete"/>
         </menuContribution>
 
         <!-- Refresh -->
         <menuContribution allPopups="false" locationURI="menu:file?before=end">
-            <command commandId="org.eclipse.ui.file.refresh" style="push"/>
+            <command commandId="org.eclipse.ui.file.refresh"/>
         </menuContribution>
 
         <!-- Database menu -->
         <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=driverGroup">
-            <command commandId="org.jkiss.dbeaver.core.driver.manager" style="push"/>
-            <command commandId="org.jkiss.dbeaver.core.new.connection" style="push"/>
+            <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=toolsGroup">
+            <command commandId="org.jkiss.dbeaver.core.new.sql.editor"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar">
+            <toolbar id="tools" label="Tools">
+                <command commandId="org.jkiss.dbeaver.core.new.sql.editor"/>
+            </toolbar>
         </menuContribution>
 
         <!-- Database Navigator menu & toolbar -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.databaseNavigator">
-            <command commandId="org.jkiss.dbeaver.core.driver.manager" style="push"/>
-            <command commandId="org.jkiss.dbeaver.core.new.connection" style="push"/>
+            <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection"/>
             <separator name="additions" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor" style="push"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.databaseNavigator">
-            <command commandId="org.jkiss.dbeaver.core.driver.manager" style="push"/>
-            <command commandId="org.jkiss.dbeaver.core.new.connection" style="push"/>
+            <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection"/>
             <separator name="additions" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor" style="push"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.core.databaseNavigator">
+            <command commandId="org.jkiss.dbeaver.core.new.sql.editor"/>
         </menuContribution>
 
         <!-- Data Export -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-            <command commandId="org.jkiss.dbeaver.core.export.data" style="push">
+            <command commandId="org.jkiss.dbeaver.core.export.data">
                <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>
@@ -337,9 +355,9 @@
                 sequence="ALT+X">
         </key>
         <key
-                commandId="org.jkiss.dbeaver.core.openSQLEditor"
+                commandId="org.jkiss.dbeaver.core.new.sql.editor"
                 schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-                sequence="CTRL+ALT+E">
+                sequence="CTRL+ALT+Q">
         </key>
         <key
                 commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"
@@ -550,12 +568,6 @@
                     id="org.jkiss.dbeaver.ui.actions.EditConnectionAction"
                     label="Edit Connection"
                     icon="icons/tree/edit_item.png">
-            </action>
-            <action
-                    class="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
-                    id="org.jkiss.dbeaver.ui.actions.OpenSQLEditorAction"
-                    label="SQL Editor"
-                    icon="icons/sql/sql_script.png">
             </action>
         </objectContribution>
     </extension>

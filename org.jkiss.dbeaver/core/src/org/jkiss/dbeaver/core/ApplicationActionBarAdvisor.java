@@ -162,6 +162,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         helpMenu.add(ViewUtils.makeAction(aboutAction, null, null, "About", null, null));
     }
 
+
     protected void fillCoolBar(ICoolBarManager coolBar)
     {
         //IToolBarManager toolbar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);

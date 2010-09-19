@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
 
 public class OpenObjectEditorAction extends NavigatorAction
 {
-    static final Log log = LogFactory.getLog(OpenSQLEditorAction.class);
+    static final Log log = LogFactory.getLog(OpenObjectEditorAction.class);
 
     public void run(IAction action)
     {
