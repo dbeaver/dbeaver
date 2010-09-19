@@ -158,7 +158,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
             }
             threadsNumText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
-            {
+            if (false) {
                 UIUtils.createControlLabel(generalSettings, "Extract type");
                 rowsExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
                 rowsExtractType.setItems(new String[] {
@@ -235,10 +235,12 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
         encodingBOMCheckbox.setSelection(exportSettings.isOutputEncodingBOM());
         showFolderCheckbox.setSelection(exportSettings.isOpenFolderOnFinish());
 
-        segmentSizeText.setText(String.valueOf(exportSettings.getSegmentSize()));
-        switch (exportSettings.getExtractType()) {
-            case SINGLE_QUERY: rowsExtractType.select(EXTRACT_TYPE_SINGLE_QUERY); break;
-            case SEGMENTS: rowsExtractType.select(EXTRACT_TYPE_SEGMENTS); break;
+        if (segmentSizeText != null) {
+            segmentSizeText.setText(String.valueOf(exportSettings.getSegmentSize()));
+            switch (exportSettings.getExtractType()) {
+                case SINGLE_QUERY: rowsExtractType.select(EXTRACT_TYPE_SINGLE_QUERY); break;
+                case SEGMENTS: rowsExtractType.select(EXTRACT_TYPE_SEGMENTS); break;
+            }
         }
 
         updatePageCompletion();
@@ -247,15 +249,17 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
     @Override
     protected boolean determinePageCompletion()
     {
-        int selectionIndex = rowsExtractType.getSelectionIndex();
-        if (selectionIndex == EXTRACT_TYPE_SEGMENTS) {
-            segmentSizeLabel.setVisible(true);
-            segmentSizeText.setVisible(true);
-        } else {
-            segmentSizeLabel.setVisible(false);
-            segmentSizeText.setVisible(false);
+        if (rowsExtractType != null) {
+            int selectionIndex = rowsExtractType.getSelectionIndex();
+            if (selectionIndex == EXTRACT_TYPE_SEGMENTS) {
+                segmentSizeLabel.setVisible(true);
+                segmentSizeText.setVisible(true);
+            } else {
+                segmentSizeLabel.setVisible(false);
+                segmentSizeText.setVisible(false);
+            }
         }
-        selectionIndex = encodingCombo.getSelectionIndex();
+        int selectionIndex = encodingCombo.getSelectionIndex();
         String encoding = encodingCombo.getItem(selectionIndex);
         if (ContentUtils.getCharsetBOM(encoding) == null) {
             encodingBOMLabel.setEnabled(false);

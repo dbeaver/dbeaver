@@ -389,6 +389,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
     public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
             return new QueryTransformerLimit();
+        } else if (type == DBCQueryTransformType.FETCH_ALL_TABLE) {
+            return new QueryTransformerFetchAll();
         }
         return super.createQueryTransformer(type);    //To change body of overridden methods use File | Settings | File Templates.
     }

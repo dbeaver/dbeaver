@@ -18,10 +18,8 @@ import org.jkiss.dbeaver.model.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -47,14 +45,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return DATA_INSERT | DATA_UPDATE | DATA_DELETE;
     }
 
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException {
-        return getColumns(monitor);
-    }
-
-    public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException {
-        return getColumn(monitor, childName);
-    }
-
     public int readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, int firstRow, int maxRows)
         throws DBException
     {
@@ -67,16 +57,21 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         DBRProgressMonitor monitor = context.getProgressMonitor();
         readRequiredMeta(monitor);
 
-        DBCQueryTransformer limitTransformer = null;
-        if (hasLimits && getDataSource() instanceof DBCQueryTransformProvider) {
-            limitTransformer = ((DBCQueryTransformProvider) getDataSource()).createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
+        DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
+        if (getDataSource() instanceof DBCQueryTransformProvider) {
+            if (hasLimits) {
+                limitTransformer = ((DBCQueryTransformProvider) getDataSource()).createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
+            } else {
+                fetchAllTransformer = ((DBCQueryTransformProvider) getDataSource()).createQueryTransformer(DBCQueryTransformType.FETCH_ALL_TABLE);
+            }
         }
-        boolean scrollWithQuery = limitTransformer != null;
 
         String query = "SELECT * FROM " + getFullQualifiedName();
-        if (hasLimits && scrollWithQuery) {
+        if (hasLimits && limitTransformer != null) {
             limitTransformer.setParameters(firstRow, maxRows);
             query = limitTransformer.transformQueryString(query);
+        } else if (fetchAllTransformer != null) {
+            query = fetchAllTransformer.transformQueryString(query);
         }
         boolean fetchStarted = false;
         monitor.subTask("Fetch table data");
@@ -84,11 +79,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         try {
             dbStat.setDataContainer(this);
             if (hasLimits) {
-                if (!scrollWithQuery) {
+                if (limitTransformer == null) {
                     dbStat.setLimit(firstRow, maxRows);
                 } else {
                     limitTransformer.transformStatement(dbStat, 0);
                 }
+            } else if (fetchAllTransformer != null) {
+                fetchAllTransformer.transformStatement(dbStat, 0);
             }
             if (!dbStat.executeStatement()) {
                 return 0;

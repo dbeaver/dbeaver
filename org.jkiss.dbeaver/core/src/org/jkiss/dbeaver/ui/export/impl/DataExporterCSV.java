@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -118,7 +119,12 @@ public class DataExporterCSV extends DataExporterAbstract {
                 }
             } else {
                 String stringValue = column.getValueHandler().getValueDisplayString(column.getColumn(), row[i]);
-                writeCellValue(stringValue, false);
+                boolean quote = false;
+                if (!stringValue.isEmpty() && !(row[i] instanceof Number) && !(row[i] instanceof Date) && Character.isDigit(stringValue.charAt(0))) {
+                    // Quote string values which starts from number
+                    quote = true;
+                }
+                writeCellValue(stringValue, quote);
             }
             if (i < row.length - 1) {
                 writeDelimiter();
@@ -138,7 +144,7 @@ public class DataExporterCSV extends DataExporterAbstract {
     {
         // check for needed quote
         if (!quote && !value.isEmpty()) {
-            if (Character.isDigit(value.charAt(0)) || value.indexOf(delimiter) != -1 || value.indexOf(rowDelimiter) != -1) {
+            if (value.indexOf(delimiter) != -1 || value.indexOf(rowDelimiter) != -1) {
                 quote = true;
             }
         }

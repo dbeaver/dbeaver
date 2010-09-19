@@ -9,6 +9,7 @@ package org.jkiss.dbeaver.model.dbc;
  */
 public enum DBCQueryTransformType {
 
+    FETCH_ALL_TABLE,
     RESULT_SET_LIMIT,
     ORDER_BY
     
