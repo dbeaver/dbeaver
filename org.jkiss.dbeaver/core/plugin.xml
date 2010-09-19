@@ -37,6 +37,13 @@
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
+                class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
+                id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
+                namespace="org.jkiss.dbeaver.core.datasource"
+                properties="connected"
+                type="org.jkiss.dbeaver.ext.IDataSourceContainerProvider">
+        </propertyTester>
+        <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
                 id="org.jkiss.dbeaver.databaseEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.database.editor"
@@ -78,18 +85,10 @@
         <command id="org.jkiss.dbeaver.core.driver.manager" name="Driver Manager" description="Driver Manager"/>
         <command id="org.jkiss.dbeaver.core.new.connection" name="New Connection" description="New Connection Wizard"/>
         <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="Link with Editor" description="Link with Editor"/>
-        <command id="org.jkiss.dbeaver.core.new.sql.editor" name="Open SQL Editor" description="Open SQL Editor">
-        </command>
-        <command
-                description="Connect"
-                id="org.jkiss.dbeaver.core.connect"
-                name="Connect">
-        </command>
-        <command
-                description="Disconnect"
-                id="org.jkiss.dbeaver.core.disconnect"
-                name="Disconnect">
-        </command>
+        <command id="org.jkiss.dbeaver.core.new.sql.editor" name="Open SQL Editor" description="Open SQL Editor"/>
+        <command id="org.jkiss.dbeaver.core.connect" name="Connect" description="Connect to database"/>
+        <command id="org.jkiss.dbeaver.core.disconnect" name="Disconnect" description="Disconnect from database"/>
+        <command id="org.jkiss.dbeaver.core.invalidate" name="Invalidate" description="Invalidate database connection"/>
         <command
                 description="Execute Statement"
                 id="org.jkiss.dbeaver.ui.editors.sql.run.statement"
@@ -127,7 +126,10 @@
         <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="icons/driver_manager.png"/>
         <image commandId="org.jkiss.dbeaver.core.new.connection" icon="icons/database_connect.png"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.linkeditor" icon="icons/link_to_editor.png"/>
-        
+
+        <image commandId="org.jkiss.dbeaver.core.connect" icon="icons/sql/connect.png"/>
+        <image commandId="org.jkiss.dbeaver.core.invalidate" icon="icons/sql/reconnect.png"/>
+        <image commandId="org.jkiss.dbeaver.core.disconnect" icon="icons/sql/disconnect.png"/>
         <image commandId="org.jkiss.dbeaver.core.new.sql.editor" icon="icons/sql/sql_script.png"/>
     </extension>
 
@@ -257,6 +259,26 @@
             </enabledWhen>
         </handler>
 
+        <handler commandId="org.jkiss.dbeaver.core.connect" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler">
+            <enabledWhen>
+                <or>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.ext.IDataSourceContainerProvider">
+                                <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                    <with variable="activePart">
+                        <adapt type="org.jkiss.dbeaver.ext.IDataSourceContainerProvider">
+                            <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
+                        </adapt>
+                    </with>
+                </or>
+            </enabledWhen>
+        </handler>
+
         <handler commandId="org.jkiss.dbeaver.core.new.sql.editor" class="org.jkiss.dbeaver.ui.actions.sql.OpenSQLEditorHandler">
             <enabledWhen>
                 <or>
@@ -303,7 +325,8 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar">
-            <toolbar id="tools" label="Tools">
+            <toolbar id="database" label="Database Toolbar">
+                <command commandId="org.jkiss.dbeaver.core.connect"/>
                 <command commandId="org.jkiss.dbeaver.core.new.sql.editor"/>
             </toolbar>
         </menuContribution>

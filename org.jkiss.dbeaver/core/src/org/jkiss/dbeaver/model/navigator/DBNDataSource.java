@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPDeletableObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -24,7 +25,7 @@ import org.jkiss.dbeaver.ui.actions.EditConnectionAction;
 /**
  * DBNDataSource
  */
-public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject, IAdaptable
+public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject, IAdaptable, IDataSourceContainerProvider
 {
     static final Log log = LogFactory.getLog(DBNDataSource.class);
 
@@ -132,4 +133,10 @@ public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject, IA
         }
         return null;
     }
+
+    public DBSDataSourceContainer getDataSourceContainer()
+    {
+        return dataSource;
+    }
+
 }

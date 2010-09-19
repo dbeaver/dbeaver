@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -23,7 +24,7 @@ import java.util.Map;
  */
 public class DBeaverAdapterFactory implements IAdapterFactory
 {
-    private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBPObject.class, DBSObject.class, DBSDataContainer.class, IPropertySource.class, IWorkbenchAdapter.class };
+    private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBPObject.class, DBSObject.class, DBSDataContainer.class, IDataSourceContainerProvider.class, IPropertySource.class, IWorkbenchAdapter.class };
 
     private Map<Object, IPropertySource> propertySourceCache = new Hashtable<Object, IPropertySource>();
 
@@ -45,6 +46,12 @@ public class DBeaverAdapterFactory implements IAdapterFactory
                 if (object != null && adapterType.isAssignableFrom(object.getClass())) {
                     return object;
                 }
+            }
+        } else if (adapterType == IDataSourceContainerProvider.class) {
+            if (adaptableObject instanceof IDataSourceContainerProvider) {
+                return adaptableObject;
+            } else {
+                return null;
             }
         } else if (adapterType == IPropertySource.class) {
             DBPObject dbObject = null;
