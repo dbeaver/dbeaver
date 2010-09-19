@@ -953,6 +953,11 @@ public class SQLEditor extends BaseTextEditor
             }
         }
 
+        public long readDataCount(DBCExecutionContext context) throws DBException
+        {
+            throw new DBException("Not Implemented");
+        }
+
         public long insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReceiver keysReceiver) throws DBException
         {
             throw new DBException("Not Implemented");

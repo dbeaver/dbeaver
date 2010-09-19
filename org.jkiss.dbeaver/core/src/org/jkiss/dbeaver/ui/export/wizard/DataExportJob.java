@@ -265,6 +265,8 @@ public class DataExportJob extends AbstractJob {
         public void makeExport(DBCExecutionContext context)
             throws DBException, IOException
         {
+            DBRProgressMonitor monitor = context.getProgressMonitor();
+
             // Create exporter
             try {
                 dataExporter = settings.getDataExporter().createExporter();
@@ -296,8 +298,17 @@ public class DataExportJob extends AbstractJob {
                         }
                     }
 
+                    long totalRows = 0;
+                    if (settings.isQueryRowCount() && (dataProvider.getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
+                        monitor.beginTask("Retrieve row count", 1);
+                        totalRows = dataProvider.readDataCount(context);
+                        monitor.done();
+                    }
+
                     // init exporter
                     dataExporter.init(this);
+
+                    monitor.beginTask("Export table data", (int)totalRows);
 
                     // Perform export
                     if (settings.getExtractType() == DataExportSettings.ExtractType.SINGLE_QUERY) {
@@ -344,6 +355,7 @@ public class DataExportJob extends AbstractJob {
                         ContentUtils.close(this.writer);
                         this.writer = null;
                     }
+                    monitor.done();
                 }
             } finally {
                 ContentUtils.close(outputStream);

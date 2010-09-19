@@ -358,8 +358,9 @@ public class SQLQueryJob extends DataSourceJob
                 while ((!hasLimits() || rowCount < rsMaxRows) && resultSet.nextRow()) {
                     rowCount++;
 
-                    if (rowCount % 10 == 0) {
+                    if (rowCount % 100 == 0) {
                         monitor.subTask(rowCount + " rows fetched");
+                        monitor.worked(100);
                     }
 
                     dataReceiver.fetchRow(monitor, resultSet);

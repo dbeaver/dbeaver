@@ -488,9 +488,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     static boolean isColumnReadOnly(DBDColumnBinding column)
     {
-        return
-            column.getValueLocator() == null ||
-            !(column.getValueLocator().getTable() instanceof DBSDataContainer);
+        if (column.getValueLocator() == null || !(column.getValueLocator().getTable() instanceof DBSDataContainer)) {
+            return true;
+        }
+        DBSDataContainer dataContainer = (DBSDataContainer) column.getValueLocator().getTable();
+        return (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_UPDATE) == 0;
     }
 
     public int getRowsCount()

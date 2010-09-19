@@ -18,9 +18,10 @@ import java.util.List;
  */
 public interface DBSDataContainer extends DBSObject {
 
-    public static final int DATA_INSERT         = 1;
-    public static final int DATA_UPDATE         = 2;
-    public static final int DATA_DELETE         = 4;
+    public static final int DATA_COUNT          = 1;
+    public static final int DATA_INSERT         = 2;
+    public static final int DATA_UPDATE         = 4;
+    public static final int DATA_DELETE         = 8;
 
     int getSupportedFeatures();
 
@@ -29,6 +30,10 @@ public interface DBSDataContainer extends DBSObject {
         DBDDataReceiver dataReceiver,
         long firstRow,
         long maxRows)
+        throws DBException;
+
+    long readDataCount(
+        DBCExecutionContext context)
         throws DBException;
 
     long insertData(

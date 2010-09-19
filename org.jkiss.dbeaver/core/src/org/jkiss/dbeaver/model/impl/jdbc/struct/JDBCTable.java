@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +43,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     public int getSupportedFeatures()
     {
-        return DATA_INSERT | DATA_UPDATE | DATA_DELETE;
+        return DATA_COUNT | DATA_INSERT | DATA_UPDATE | DATA_DELETE;
     }
 
     public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, long firstRow, long maxRows)
@@ -108,6 +109,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     rowCount++;
                     if (rowCount % 100 == 0) {
                         monitor.subTask(rowCount + " rows fetched");
+                        monitor.worked(100);
                     }
 
                 }
@@ -122,7 +124,46 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             if (fetchStarted) {
                 dataReceiver.fetchEnd(monitor);
             }
-            monitor.done();
+        }
+    }
+
+    public long readDataCount(DBCExecutionContext context) throws DBException
+    {
+        if (!(context instanceof JDBCExecutionContext)) {
+            throw new IllegalArgumentException("Bad execution context");
+        }
+        JDBCExecutionContext jdbcContext = (JDBCExecutionContext)context;
+        DBRProgressMonitor monitor = context.getProgressMonitor();
+
+        String query = "SELECT COUNT(*) FROM " + getFullQualifiedName();
+        monitor.subTask("Fetch table row count");
+        JDBCStatement dbStat = jdbcContext.prepareStatement(query, false, false, false);
+        try {
+            dbStat.setDataContainer(this);
+            if (!dbStat.executeStatement()) {
+                return 0;
+            }
+            JDBCResultSet dbResult = dbStat.openResultSet();
+            if (dbResult == null) {
+                return 0;
+            }
+            try {
+                if (dbResult.nextRow()) {
+                    try {
+                        return dbResult.getLong(1);
+                    } catch (SQLException e) {
+                        throw new DBException(e);
+                    }
+                } else {
+                    return 0;
+                }
+            }
+            finally {
+                dbResult.close();
+            }
+        }
+        finally {
+            dbStat.close();
         }
     }
 
