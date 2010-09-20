@@ -36,7 +36,7 @@ public class QMExecutionHandlerImpl implements QMExecutionHandler, DBPEventListe
 
     public void handleTransactionCommit(DBCExecutionContext context)
     {
-        // Notify other navigator
+        // Notify other handlers
         for (QMExecutionHandler handler : controller.getHandlers()) {
             handler.handleTransactionCommit(context);
         }

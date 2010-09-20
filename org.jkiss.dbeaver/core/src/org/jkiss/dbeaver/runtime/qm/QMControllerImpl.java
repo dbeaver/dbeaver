@@ -28,7 +28,7 @@ public class QMControllerImpl implements QMController {
     public void dispose()
     {
         if (!handlers.isEmpty()) {
-            log.warn("Some QM navigator are still registered: " + handlers);
+            log.warn("Some QM handlers are still registered: " + handlers);
             handlers.clear();
         }
       	defaultHandler.dispose();
