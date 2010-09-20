@@ -78,6 +78,7 @@
         <command id="org.jkiss.dbeaver.core.driver.manager" name="Driver Manager" description="Driver Manager"/>
         <command id="org.jkiss.dbeaver.core.new.connection" name="New Connection" description="New Connection Wizard"/>
         <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="Link with Editor" description="Link with Editor"/>
+        <command id="org.jkiss.dbeaver.core.navigator.set.active" name="Link with Editor" description="Link with Editor"/>
         <command id="org.jkiss.dbeaver.core.connect" name="Connect" description="Connect to database"/>
         <command id="org.jkiss.dbeaver.core.disconnect" name="Disconnect" description="Disconnect from database"/>
         <command id="org.jkiss.dbeaver.core.invalidate" name="Invalidate" description="Invalidate database connection"/>
