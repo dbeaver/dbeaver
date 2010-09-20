@@ -16,7 +16,6 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
@@ -156,27 +155,12 @@ public class DatabaseNavigatorView extends ViewPart
         if (dbmNode == null) {
             return;
         }
-        ViewUtils.runAction(dbmNode.getDefaultAction(), this, this.viewer.getSelection());
+        ViewUtils.runCommand(dbmNode.getDefaultCommandId(), this);
     }
 
     private DBNNode getSelectedNode()
     {
         return ViewUtils.getSelectedNode(this);
-    }
-
-    public DBSDataSourceContainer getSelectedDataSourceContainer()
-    {
-        DBNNode selectedNode = getSelectedNode();
-        if (selectedNode == null) {
-            return null;
-        }
-
-        for (DBNNode curNode = selectedNode; curNode != null; curNode = curNode.getParentNode()) {
-            if (curNode.getObject() instanceof DBSDataSourceContainer) {
-                return (DBSDataSourceContainer)curNode.getObject();
-            }
-        }
-        return null;
     }
 
     private void asyncExec(Runnable runnable)

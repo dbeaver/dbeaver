@@ -16,7 +16,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorOpenObjectHandler;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 
 import java.beans.PropertyChangeListener;
@@ -112,7 +112,7 @@ public abstract class ERDObject<OBJECT extends DBSObject> implements IPropertySo
                     true
                 );
                 if (node != null) {
-                    OpenObjectEditorAction.openEntityEditor(node, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                    NavigatorOpenObjectHandler.openEntityEditor(node, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                 }
             }
         });

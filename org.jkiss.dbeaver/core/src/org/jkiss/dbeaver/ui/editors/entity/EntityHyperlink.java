@@ -7,14 +7,14 @@ package org.jkiss.dbeaver.ui.editors.entity;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorOpenObjectHandler;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -72,7 +72,7 @@ public class EntityHyperlink implements IHyperlink
                     true
                 );
                 if (node != null) {
-                    OpenObjectEditorAction.openEntityEditor(node, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                    NavigatorOpenObjectHandler.openEntityEditor(node, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                 }
             }
         });

@@ -7,19 +7,24 @@ package org.jkiss.dbeaver.utils;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.NotEnabledException;
+import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.services.IServiceLocator;
@@ -29,8 +34,6 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
@@ -149,8 +152,8 @@ public class ViewUtils
                 Menu m = (Menu)e.widget;
                 DBNNode dbmNode = ViewUtils.getSelectedNode(navigatorModelView);
                 if (dbmNode != null && !dbmNode.isLocked()) {
-                    Class<? extends IActionDelegate> defaultActionClass = dbmNode.getDefaultAction();
-                    if (defaultActionClass != null) {
+                    String defaultCommandId = dbmNode.getDefaultCommandId();
+                    if (defaultCommandId != null) {
                         // Dirty hack
                         // Get contribution item from menu item and check it's ID
                         // In DBeaver all action's IDs are equals to action class names
@@ -159,7 +162,7 @@ public class ViewUtils
                             Object itemData = item.getData();
                             if (itemData instanceof IContributionItem) {
                                 String contribId = ((IContributionItem)itemData).getId();
-                                if (contribId != null && contribId.equals(defaultActionClass.getName())) {
+                                if (contribId != null && contribId.equals(defaultCommandId)) {
                                     m.setDefaultItem(item);
                                 }
                             }
@@ -295,17 +298,14 @@ public class ViewUtils
         }
     }
 
-    public static void runAction(Class<? extends IActionDelegate> actionClass, IWorkbenchPart part, ISelection selection)
+    public static void runCommand(String commandId, IWorkbenchPart part)
     {
-        if (actionClass != null) {
+        if (commandId != null) {
+            IHandlerService handlerService = (IHandlerService) part.getSite().getService(IHandlerService.class);
             try {
-                final IActionDelegate actionDelegate = actionClass.newInstance();
-                IAction actionImpl = makeAction(actionDelegate, part, selection, actionDelegate.getClass().getName(), null, null);
-                actionImpl.run();
-            } catch (InstantiationException e) {
-                log.error("Could not instantiate action delegate", e);
-            } catch (IllegalAccessException e) {
-                log.error(e);
+                handlerService.executeCommand(commandId, null);
+            } catch (Exception e) {
+                log.error("Could not execute command '" + commandId + "'", e);
             }
         }
     }

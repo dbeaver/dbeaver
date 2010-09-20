@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.IActionDelegate;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -76,7 +75,7 @@ public class DBNRoot extends DBNNode implements DBSObject
         return dataSources;
     }
 
-    public Class<IActionDelegate> getDefaultAction()
+    public String getDefaultCommandId()
     {
         return null;
     }

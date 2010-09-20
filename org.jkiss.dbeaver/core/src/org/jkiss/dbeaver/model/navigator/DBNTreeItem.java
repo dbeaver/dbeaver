@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.model.navigator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
-import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
+import org.jkiss.dbeaver.ui.ICommandIds;
 
 /**
  * DBNTreeItem
@@ -59,9 +59,9 @@ public class DBNTreeItem extends DBNTreeNode
         return object;
     }
 
-    public Class<OpenObjectEditorAction> getDefaultAction()
+    public String getDefaultCommandId()
     {
-        return OpenObjectEditorAction.class;
+        return ICommandIds.CMD_OPEN_OBJECT;
     }
 
 }

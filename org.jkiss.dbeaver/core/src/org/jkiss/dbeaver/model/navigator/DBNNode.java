@@ -172,7 +172,7 @@ public abstract class DBNNode implements IActionFilter
         //new RefreshJob("Refresh node " + getNodeName()).schedule();
     }
 
-    public abstract Class<? extends IActionDelegate> getDefaultAction();
+    public abstract String getDefaultCommandId();
 
     public abstract boolean isLazyNode();
 

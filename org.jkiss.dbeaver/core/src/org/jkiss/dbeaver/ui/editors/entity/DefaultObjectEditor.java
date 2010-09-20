@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorOpenObjectHandler;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageStandard;
 
 import java.util.ArrayList;
@@ -86,7 +86,7 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart
                     {
                         public void widgetSelected(SelectionEvent e)
                         {
-                            OpenObjectEditorAction.openEntityEditor(treeNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                            NavigatorOpenObjectHandler.openEntityEditor(treeNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                         }
                     });
                     objectLink.setToolTipText("Open '" + treeNode.getNodeName() + "' viewer");
@@ -102,7 +102,7 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart
             GridData gd = new GridData(GridData.FILL_BOTH);
             propsGroup.setLayoutData(gd);
 
-            DBSObject itemObject = entityInput.getDatabaseObject();
+            DBNNode itemObject = entityInput.getTreeNode();
             //final PropertyCollector propertyCollector = new PropertyCollector(itemObject);
             //List<PropertyAnnoDescriptor> annoProps = PropertyAnnoDescriptor.extractAnnotations(itemObject);
 

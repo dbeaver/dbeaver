@@ -2,13 +2,18 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.actions;
+package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.IAction;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeObject;
@@ -18,16 +23,19 @@ import org.jkiss.dbeaver.ui.editors.folder.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.folder.FolderEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
 
-public class OpenObjectEditorAction extends NavigatorAction
-{
-    static final Log log = LogFactory.getLog(OpenObjectEditorAction.class);
+public class NavigatorOpenObjectHandler extends AbstractHandler {
 
-    public void run(IAction action)
-    {
-        DBNNode selectedNode = getSelectedNode();
-        if (selectedNode != null && !selectedNode.isLocked()) {
-            openEntityEditor(selectedNode, null, getWindow());
+    static final Log log = LogFactory.getLog(NavigatorOpenObjectHandler.class);
+
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        final ISelection selection = HandlerUtil.getCurrentSelection(event);
+
+        if (selection instanceof IStructuredSelection) {
+            final IStructuredSelection structSelection = (IStructuredSelection)selection;
+            DBNNode node = (DBNNode)structSelection.getFirstElement();
+            openEntityEditor(node, null, HandlerUtil.getActiveWorkbenchWindow(event));
         }
+        return null;
     }
 
     public static void openEntityEditor(DBNNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
@@ -63,5 +71,6 @@ public class OpenObjectEditorAction extends NavigatorAction
             log.error("Can't open editor", ex);
         }
     }
+
 
 }

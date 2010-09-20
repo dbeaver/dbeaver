@@ -13,6 +13,8 @@ package org.jkiss.dbeaver.ui;
  */
 public final class ICommandIds
 {
+    public static final String CMD_OPEN_OBJECT = "org.jkiss.dbeaver.core.open.object";
+    public static final String CMD_EDIT_CONNECTION = "org.jkiss.dbeaver.core.edit.connection";
     public static final String CMD_EXECUTE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.statement";
     public static final String CMD_EXECUTE_SCRIPT = "org.jkiss.dbeaver.ui.editors.sql.run.script";
     public static final String CMD_OPEN_FILE = "org.jkiss.dbeaver.ui.editors.sql.open.file";

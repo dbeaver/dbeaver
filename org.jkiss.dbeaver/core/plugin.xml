@@ -78,15 +78,16 @@
         <command id="org.jkiss.dbeaver.core.driver.manager" name="Driver Manager" description="Driver Manager"/>
         <command id="org.jkiss.dbeaver.core.new.connection" name="New Connection" description="New Connection Wizard"/>
         <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="Link with Editor" description="Link with Editor"/>
-        <command id="org.jkiss.dbeaver.core.new.sql.editor" name="Open SQL Editor" description="Open SQL Editor"/>
         <command id="org.jkiss.dbeaver.core.connect" name="Connect" description="Connect to database"/>
         <command id="org.jkiss.dbeaver.core.disconnect" name="Disconnect" description="Disconnect from database"/>
         <command id="org.jkiss.dbeaver.core.invalidate" name="Invalidate" description="Invalidate database connection"/>
         <command id="org.jkiss.dbeaver.core.commit" name="Commit changes" description="Commit changes in SQL Session"/>
         <command id="org.jkiss.dbeaver.core.rollback" name="Rollback changes" description="Rollback changes in SQL Session"/>
-        <command id="org.jkiss.dbeaver.core.txn.autocommit" name="Transactional mode" description="Changes transactional mode of active session">
-            <!--state id="org.eclipse.ui.commands.toggleState" class="org.eclipse.ui.handlers.RegistryToggleState:true"/-->
-        </command>
+        <command id="org.jkiss.dbeaver.core.txn.autocommit" name="Transactional mode" description="Changes transactional mode of active session"/>
+
+        <command id="org.jkiss.dbeaver.core.edit.connection" name="Edit Connection" description="Open connection editor dialog"/>
+        <command id="org.jkiss.dbeaver.core.new.sql.editor" name="Open SQL Editor" description="Open SQL Editor"/>
+        <command id="org.jkiss.dbeaver.core.open.object" name="Edit Object" description="Open object editor"/>
         <command
                 description="Execute Statement"
                 id="org.jkiss.dbeaver.ui.editors.sql.run.statement"
@@ -121,7 +122,10 @@
         <image commandId="org.jkiss.dbeaver.core.commit" icon="icons/sql/commit.png"/>
         <image commandId="org.jkiss.dbeaver.core.rollback" icon="icons/sql/rollback.png"/>
         <image commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_config.png"/>
+        <image commandId="org.jkiss.dbeaver.core.edit.connection" icon="icons/tree/edit_item.png"/>
+
         <image commandId="org.jkiss.dbeaver.core.new.sql.editor" icon="icons/sql/sql_script.png"/>
+        <image commandId="org.jkiss.dbeaver.core.open.object" icon="icons/tree/edit_item.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -258,6 +262,28 @@
             </activeWhen>
         </handler>
 
+        <handler commandId="org.jkiss.dbeaver.core.edit.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceEditHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+
+        <handler commandId="org.jkiss.dbeaver.core.open.object" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorOpenObjectHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+
         <handler commandId="org.jkiss.dbeaver.core.new.sql.editor" class="org.jkiss.dbeaver.ui.actions.sql.OpenSQLEditorHandler">
             <enabledWhen>
                 <or>
@@ -343,6 +369,11 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.core.databaseNavigator">
+            <command commandId="org.jkiss.dbeaver.core.open.object"/>
+            <command commandId="org.jkiss.dbeaver.core.edit.connection">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+
             <separator name="connection" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.connect">
                <visibleWhen>
@@ -570,34 +601,6 @@
         </context>
     </extension>
 
-    <extension point="org.eclipse.ui.popupMenus">
-        <objectContribution
-                adaptable="false"
-                id="org.jkiss.dbeaver.core.dbsObjectContribution"
-                objectClass="org.jkiss.dbeaver.model.navigator.DBNNode">
-            <action
-                    class="org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction"
-                    icon="/icons/tree/edit_item.png"
-                    id="org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction"
-                    label="Edit Object">
-            </action>
-        </objectContribution>
-        <objectContribution
-                adaptable="false"
-                id="org.jkiss.dbeaver.core.dataSourceContribution"
-                objectClass="org.jkiss.dbeaver.model.navigator.DBNNode">
-            <filter
-                    name="targetType"
-                    value="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
-            </filter>
-            <action
-                    class="org.jkiss.dbeaver.ui.actions.EditConnectionAction"
-                    id="org.jkiss.dbeaver.ui.actions.EditConnectionAction"
-                    label="Edit Connection"
-                    icon="icons/tree/edit_item.png">
-            </action>
-        </objectContribution>
-    </extension>
     <extension point="org.eclipse.ui.perspectives">
         <perspective
                 name="DBeaver Perspective"

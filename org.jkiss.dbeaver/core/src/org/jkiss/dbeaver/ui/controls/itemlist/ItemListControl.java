@@ -216,7 +216,7 @@ public class ItemListControl extends ProgressPageControl implements INavigatorMo
             if (dbmNode == null) {
                 return;
             }
-            ViewUtils.runAction(dbmNode.getDefaultAction(), workbenchPart, itemsViewer.getSelection());
+            ViewUtils.runCommand(dbmNode.getDefaultCommandId(), workbenchPart);
         }
     }
 

@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
@@ -17,8 +15,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.EditConnectionAction;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
 
@@ -27,8 +25,6 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
  */
 public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject, IAdaptable, IDataSourceContainerProvider
 {
-    static final Log log = LogFactory.getLog(DBNDataSource.class);
-
     private DataSourceDescriptor dataSource;
     private DBXTreeNode treeRoot;
 
@@ -77,9 +73,9 @@ public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject, IA
         return dataSource.getDescription();
     }
 
-    public Class<EditConnectionAction> getDefaultAction()
+    public String getDefaultCommandId()
     {
-        return EditConnectionAction.class;
+        return ICommandIds.CMD_EDIT_CONNECTION;
     }
 
     public boolean isLazyNode()

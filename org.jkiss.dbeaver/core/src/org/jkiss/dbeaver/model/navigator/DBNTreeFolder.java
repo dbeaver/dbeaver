@@ -9,7 +9,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
-import org.jkiss.dbeaver.ui.actions.OpenObjectEditorAction;
+import org.jkiss.dbeaver.ui.ICommandIds;
 
 /**
  * DBNTreeFolder
@@ -79,9 +79,9 @@ public class DBNTreeFolder extends DBNTreeNode implements DBSFolder
         return getParentObject() == null ? null : getParentObject().getDataSource();
     }
 
-    public Class<OpenObjectEditorAction> getDefaultAction()
+    public String getDefaultCommandId()
     {
-        return OpenObjectEditorAction.class;
+        return ICommandIds.CMD_OPEN_OBJECT;
     }
 
     public String getItemsType()
