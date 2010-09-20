@@ -13,6 +13,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.dbc.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -267,16 +268,16 @@ public class SQLQueryJob extends DataSourceJob
         long startTime = System.currentTimeMillis();
         String sqlQuery = query.getQuery();
         SQLQueryResult result = new SQLQueryResult(query);
+        if (rsOffset > 0) {
+            result.setRowOffset(rsOffset);
+        }
+        if (rsMaxRows > 0) {
+            result.setRowCount(rsMaxRows);
+        }
+
         try {
             // Prepare statement
-            //boolean isScript = queries.size() > 1;
-            curStatement = context.prepareStatement(sqlQuery, false, false, false);
-            if (hasLimits()) {
-                curStatement.setLimit(rsOffset, rsMaxRows);
-                if (rsOffset > 0) {
-                    result.setRowOffset(rsOffset);
-                }
-            }
+            curStatement = DBUtils.prepareSelectQuery(context, sqlQuery, rsOffset, rsMaxRows);
 
             // Bind parameters
             if (!CommonUtils.isEmpty(query.getParameters())) {

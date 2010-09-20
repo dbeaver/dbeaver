@@ -13,9 +13,10 @@ import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
+import org.jkiss.dbeaver.model.dbc.*;
 import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
@@ -346,6 +347,45 @@ public final class DBUtils {
             columns.add(column.getTableColumn());
         }
         return columns;
+    }
+
+    public static DBCStatement prepareSelectQuery(
+        DBCExecutionContext context,
+        String query,
+        long offset,
+        long maxRows) throws DBCException
+    {
+        boolean hasLimits = offset >= 0 && maxRows > 0;
+
+        DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
+        if (context.getDataSource() instanceof DBCQueryTransformProvider) {
+            if (hasLimits) {
+                limitTransformer = ((DBCQueryTransformProvider) context.getDataSource()).createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
+            } else {
+                fetchAllTransformer = ((DBCQueryTransformProvider) context.getDataSource()).createQueryTransformer(DBCQueryTransformType.FETCH_ALL_TABLE);
+            }
+        }
+
+        if (hasLimits && limitTransformer != null) {
+            limitTransformer.setParameters(offset, maxRows);
+            query = limitTransformer.transformQueryString(query);
+        } else if (fetchAllTransformer != null) {
+            query = fetchAllTransformer.transformQueryString(query);
+        }
+
+        DBCStatement dbStat = context.prepareStatement(query, false, false, false);
+
+        if (hasLimits) {
+            if (limitTransformer == null) {
+                dbStat.setLimit(offset, maxRows);
+            } else {
+                limitTransformer.transformStatement(dbStat, 0);
+            }
+        } else if (fetchAllTransformer != null) {
+            fetchAllTransformer.transformStatement(dbStat, 0);
+        }
+
+        return dbStat;
     }
 
     private static class RefColumnFinder implements DBRRunnableWithProgress {

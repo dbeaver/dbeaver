@@ -15,6 +15,7 @@ class QueryTransformerLimit implements DBCQueryTransformer {
 
     private Object offset;
     private Object length;
+    private boolean limitSet;
 
     public void setParameters(Object... parameters) {
         this.offset = parameters[0];
@@ -22,10 +23,18 @@ class QueryTransformerLimit implements DBCQueryTransformer {
     }
 
     public String transformQueryString(String query) throws DBCException {
-        return query + " LIMIT " + offset + ", " + length;
+        if (query.toUpperCase().indexOf("LIMIT") != -1) {
+            limitSet = false;
+        } else {
+            query = query + " LIMIT " + offset + ", " + length;
+            limitSet = true;
+        }
+        return query;
     }
 
     public void transformStatement(DBCStatement statement, int parameterIndex) throws DBCException {
-
+        if (!limitSet) {
+            statement.setLimit(((Number)offset).longValue(), ((Number)length).longValue());
+        }
     }
 }

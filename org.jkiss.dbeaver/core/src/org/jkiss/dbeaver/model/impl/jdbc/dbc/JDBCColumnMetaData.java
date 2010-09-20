@@ -107,7 +107,11 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
 
         if (!hasData) {
             this.nullable = metaData.isNullable(index) > 0;
-            this.displaySize = metaData.getColumnDisplaySize(index);
+            try {
+                this.displaySize = metaData.getColumnDisplaySize(index);
+            } catch (SQLException e) {
+                this.displaySize = 0;
+            }
             this.catalogName = metaData.getCatalogName(index);
             this.schemaName = metaData.getSchemaName(index);
             this.tableName = metaData.getTableName(index);
@@ -119,7 +123,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
             try {
                 this.precision = metaData.getPrecision(index);
             } catch (Exception e) {
-                // NumberFormatException occured in Oracle on BLOB columns
+                // NumberFormatException occurred in Oracle on BLOB columns
                 this.precision = 0;
             }
             try {

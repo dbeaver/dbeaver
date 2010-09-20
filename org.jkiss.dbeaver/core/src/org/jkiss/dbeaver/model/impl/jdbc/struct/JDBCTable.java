@@ -54,44 +54,19 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
         boolean hasLimits = firstRow >= 0 && maxRows > 0;
 
-        JDBCExecutionContext jdbcContext = (JDBCExecutionContext)context;
         DBRProgressMonitor monitor = context.getProgressMonitor();
         readRequiredMeta(monitor);
 
-        DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
-        if (getDataSource() instanceof DBCQueryTransformProvider) {
-            if (hasLimits) {
-                limitTransformer = ((DBCQueryTransformProvider) getDataSource()).createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
-            } else {
-                fetchAllTransformer = ((DBCQueryTransformProvider) getDataSource()).createQueryTransformer(DBCQueryTransformType.FETCH_ALL_TABLE);
-            }
-        }
-
         String query = "SELECT * FROM " + getFullQualifiedName();
-        if (hasLimits && limitTransformer != null) {
-            limitTransformer.setParameters(firstRow, maxRows);
-            query = limitTransformer.transformQueryString(query);
-        } else if (fetchAllTransformer != null) {
-            query = fetchAllTransformer.transformQueryString(query);
-        }
         boolean fetchStarted = false;
         monitor.subTask("Fetch table data");
-        JDBCStatement dbStat = jdbcContext.prepareStatement(query, false, false, false);
+        DBCStatement dbStat = DBUtils.prepareSelectQuery(context, query, firstRow, maxRows);
         try {
             dbStat.setDataContainer(this);
-            if (hasLimits) {
-                if (limitTransformer == null) {
-                    dbStat.setLimit(firstRow, maxRows);
-                } else {
-                    limitTransformer.transformStatement(dbStat, 0);
-                }
-            } else if (fetchAllTransformer != null) {
-                fetchAllTransformer.transformStatement(dbStat, 0);
-            }
             if (!dbStat.executeStatement()) {
                 return 0;
             }
-            JDBCResultSet dbResult = dbStat.openResultSet();
+            DBCResultSet dbResult = dbStat.openResultSet();
             if (dbResult == null) {
                 return 0;
             }
