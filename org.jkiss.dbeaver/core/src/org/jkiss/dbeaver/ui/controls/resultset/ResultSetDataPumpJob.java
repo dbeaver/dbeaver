@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 class ResultSetDataPumpJob extends DataSourceJob {
 
@@ -34,8 +35,8 @@ class ResultSetDataPumpJob extends DataSourceJob {
     }
 
     protected IStatus run(DBRProgressMonitor monitor) {
-        String statusMessage = null;
         boolean hasErrors = false;
+        Throwable error = null;
         DBCExecutionContext context = getDataSource().openContext(monitor, "Read data from '" + resultSetViewer.getDataContainer().getName() + "'");
         try {
             resultSetViewer.getDataContainer().readData(
@@ -45,7 +46,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
                 maxRows);
         }
         catch (DBException e) {
-            statusMessage = e.getMessage();
+            error = e;
             hasErrors = true;
         }
         finally {
@@ -54,10 +55,15 @@ class ResultSetDataPumpJob extends DataSourceJob {
 
         if (hasErrors) {
             // Set status
-            final String message = statusMessage;
+            final Throwable err = error;
             resultSetViewer.getControl().getDisplay().syncExec(new Runnable() {
                 public void run() {
-                    resultSetViewer.setStatus(message, true);
+                    resultSetViewer.setStatus(err.getMessage(), true);
+                    DBeaverUtils.showErrorDialog(
+                        resultSetViewer.getControl().getShell(),
+                        "Error executing query",
+                        null,
+                        err);
                 }
             });
         }

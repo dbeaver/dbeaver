@@ -90,7 +90,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private Set<RowInfo> removedRows = new TreeSet<RowInfo>();
     private Map<CellInfo, Object> editedValues = new HashMap<CellInfo, Object>();
 
-    private Label statusLabel;
+    private Text statusLabel;
 
     private ToolItem itemAccept;
     private ToolItem itemReject;
@@ -273,7 +273,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         gl.marginHeight = 0;
         statusBar.setLayout(gl);
         
-        statusLabel = new Label(statusBar, SWT.NONE);
+        statusLabel = new Text(statusBar, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         statusLabel.setLayoutData(gd);
 
