@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.DBException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 
 import java.sql.Connection;
 import java.sql.Statement;
@@ -179,6 +180,9 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         throws SQLException
     {
         getConnection().setAutoCommit(autoCommit);
+
+        // Fire transactional mode change
+        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
     }
 
     public boolean getAutoCommit()

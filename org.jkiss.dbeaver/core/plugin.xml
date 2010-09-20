@@ -6,16 +6,12 @@
   -->
 
 <plugin>
-    <extension-point id="org.jkiss.dbeaver.dataSourceProvider" name="DataSource provider"
-                     schema="schema/org.jkiss.dbeaver.dataSourceProvider.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.databaseEditor" name="Custom Entity Editor"
-                     schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider"
-                     schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataExportProvider" name="Data Export Provider"
-                     schema="schema/org.jkiss.dbeaver.dataExportProvider.exsd"/>
-    <extension
-            point="org.eclipse.core.contenttype.contentTypes">
+    <extension-point id="org.jkiss.dbeaver.dataSourceProvider" name="DataSource provider" schema="schema/org.jkiss.dbeaver.dataSourceProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.databaseEditor" name="Custom Entity Editor" schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataExportProvider" name="Data Export Provider" schema="schema/org.jkiss.dbeaver.dataExportProvider.exsd"/>
+
+    <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
                 base-type="org.eclipse.core.runtime.text"
                 default-charset="utf-8"
@@ -27,11 +23,8 @@
     </extension>
 
     <extension id="application" point="org.eclipse.core.runtime.applications">
-        <application
-                visible="true">
-            <run
-                    class="org.jkiss.dbeaver.core.DBeaverApplication">
-            </run>
+        <application visible="true">
+            <run class="org.jkiss.dbeaver.core.DBeaverApplication"/>
         </application>
     </extension>
 
@@ -40,7 +33,7 @@
                 class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
                 namespace="org.jkiss.dbeaver.core.datasource"
-                properties="connected"
+                properties="connected,transactional"
                 type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
         </propertyTester>
         <propertyTester
@@ -89,6 +82,8 @@
         <command id="org.jkiss.dbeaver.core.connect" name="Connect" description="Connect to database"/>
         <command id="org.jkiss.dbeaver.core.disconnect" name="Disconnect" description="Disconnect from database"/>
         <command id="org.jkiss.dbeaver.core.invalidate" name="Invalidate" description="Invalidate database connection"/>
+        <command id="org.jkiss.dbeaver.core.commit" name="Commit changes" description="Commit changes in SQL Session"/>
+        <command id="org.jkiss.dbeaver.core.rollback" name="Rollback changes" description="Rollback changes in SQL Session"/>
         <command
                 description="Execute Statement"
                 id="org.jkiss.dbeaver.ui.editors.sql.run.statement"
@@ -98,16 +93,6 @@
                 description="Execute Script"
                 id="org.jkiss.dbeaver.ui.editors.sql.run.script"
                 name="Execute SQL Script">
-        </command>
-        <command
-                description="Commit"
-                id="org.jkiss.dbeaver.ui.editors.sql.commit"
-                name="Commit changes in SQL Session">
-        </command>
-        <command
-                description="Rollback"
-                id="org.jkiss.dbeaver.ui.editors.sql.rollback"
-                name="Rollback changes in SQL Session">
         </command>
         <command
                 description="Load from file"
@@ -130,6 +115,8 @@
         <image commandId="org.jkiss.dbeaver.core.connect" icon="icons/sql/connect.png"/>
         <image commandId="org.jkiss.dbeaver.core.invalidate" icon="icons/sql/reconnect.png"/>
         <image commandId="org.jkiss.dbeaver.core.disconnect" icon="icons/sql/disconnect.png"/>
+        <image commandId="org.jkiss.dbeaver.core.commit" icon="icons/sql/commit.png"/>
+        <image commandId="org.jkiss.dbeaver.core.rollback" icon="icons/sql/rollback.png"/>
         <image commandId="org.jkiss.dbeaver.core.new.sql.editor" icon="icons/sql/sql_script.png"/>
     </extension>
 
@@ -148,24 +135,6 @@
                     style="pulldown"
                     toolbarPath="sessionGroup"
                     tooltip="Transactions mode">
-            </action>
-            <action
-                    class="org.jkiss.dbeaver.ui.actions.RollbackAction"
-                    icon="/icons/sql/rollback.png"
-                    id="org.jkiss.dbeaver.ui.actions.RollbackAction"
-                    label="Rollback changes"
-                    menubarPath="dataSourceMenu/sessionGroup"
-                    toolbarPath="sessionGroup"
-                    tooltip="Rollback changes">
-            </action>
-            <action
-                    class="org.jkiss.dbeaver.ui.actions.CommitAction"
-                    icon="/icons/sql/commit.png"
-                    id="org.jkiss.dbeaver.ui.actions.CommitAction"
-                    label="Commit changes"
-                    menubarPath="dataSourceMenu/sessionGroup"
-                    toolbarPath="sessionGroup"
-                    tooltip="Commit changes">
             </action>
 
         </actionSet>
@@ -277,6 +246,24 @@
                 </or>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.commit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCommitHandler">
+            <enabledWhen>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                        <test property="org.jkiss.dbeaver.core.datasource.transactional" value="true"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.rollback" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceRollbackHandler">
+            <enabledWhen>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                        <test property="org.jkiss.dbeaver.core.datasource.transactional" value="true"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.new.sql.editor" class="org.jkiss.dbeaver.ui.actions.sql.OpenSQLEditorHandler">
             <enabledWhen>
@@ -325,6 +312,8 @@
             <separator name="tools" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.new.sql.editor"/>
             <separator name="session" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.commit"/>
+            <command commandId="org.jkiss.dbeaver.core.rollback"/>
         </menuContribution>
 
         <!-- Database toolbar -->
@@ -335,6 +324,9 @@
                 <command commandId="org.jkiss.dbeaver.core.disconnect"/>
                 <separator name="tools" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.new.sql.editor"/>
+                <separator name="session" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.core.commit"/>
+                <command commandId="org.jkiss.dbeaver.core.rollback"/>
             </toolbar>
         </menuContribution>
 
