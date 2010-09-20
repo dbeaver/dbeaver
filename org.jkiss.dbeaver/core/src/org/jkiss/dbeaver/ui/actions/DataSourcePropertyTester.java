@@ -33,7 +33,7 @@ public class DataSourcePropertyTester extends PropertyTester
         return false;
     }
 
-    public static void fireProperty—hange(String propName)
+    public static void firePropertyChange(String propName)
     {
         IEvaluationService service = (IEvaluationService) PlatformUI.getWorkbench().getService(IEvaluationService.class);
         service.requestEvaluation(NAMESPACE + "." + propName);

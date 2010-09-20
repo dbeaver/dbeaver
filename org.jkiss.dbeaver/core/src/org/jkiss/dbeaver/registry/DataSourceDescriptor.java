@@ -461,7 +461,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
     private void firePropertyChange()
     {
-        DataSourcePropertyTester.fireProperty—hange(DataSourcePropertyTester.PROP_CONNECTED);
+        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
     }
 
 }
