@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.actions.handlers;
+package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.core.commands.*;
 import org.eclipse.core.runtime.Platform;
@@ -12,7 +12,6 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.utils.ViewUtils;

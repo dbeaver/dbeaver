@@ -172,7 +172,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorCopyHandler">
+        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorCopyHandler">
             <activeWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -182,7 +182,7 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorDeleteHandler">
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorDeleteHandler">
             <activeWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -192,7 +192,7 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorRefreshHandler">
+        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorRefreshHandler">
             <activeWhen>
                 <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
@@ -210,9 +210,9 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.handlers.DriverManagerHandler"/>
-        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.handlers.NewConnectionHandler"/>
-        <handler commandId="org.jkiss.dbeaver.core.navigator.linkeditor" class="org.jkiss.dbeaver.ui.actions.handlers.NavigatorLinkEditorHandler">
+        <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.navigator.DriverManagerHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.navigator.NewConnectionHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.navigator.linkeditor" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorLinkEditorHandler">
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.IDatabaseEditor"/>

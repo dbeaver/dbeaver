@@ -73,7 +73,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             List<DBCColumnMetaData> rsColumns = metaData.getColumns();
             columnsCount = rsColumns.size();
 
-            // Determine type handlers for all columns
+            // Determine type navigator for all columns
             DBPDataSource dataSource = resultSet.getContext().getDataSource();
 
             // Extrat column info

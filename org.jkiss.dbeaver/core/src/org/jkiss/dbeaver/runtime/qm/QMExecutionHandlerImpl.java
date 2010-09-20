@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.runtime.qm;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
@@ -37,7 +36,7 @@ public class QMExecutionHandlerImpl implements QMExecutionHandler, DBPEventListe
 
     public void handleTransactionCommit(DBCExecutionContext context)
     {
-        // Notify other handlers
+        // Notify other navigator
         for (QMExecutionHandler handler : controller.getHandlers()) {
             handler.handleTransactionCommit(context);
         }
