@@ -23,7 +23,8 @@ class QueryTransformerLimit implements DBCQueryTransformer {
     }
 
     public String transformQueryString(String query) throws DBCException {
-        if (query.toUpperCase().indexOf("LIMIT") != -1) {
+        String testQuery = query.toUpperCase().trim();
+        if (!testQuery.startsWith("SELECT") || testQuery.indexOf("LIMIT") != -1) {
             limitSet = false;
         } else {
             query = query + " LIMIT " + offset + ", " + length;

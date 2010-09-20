@@ -271,9 +271,9 @@ public class SQLQueryJob extends DataSourceJob
         if (rsOffset > 0) {
             result.setRowOffset(rsOffset);
         }
-        if (rsMaxRows > 0) {
-            result.setRowCount(rsMaxRows);
-        }
+        //if (rsMaxRows > 0) {
+        //    result.setRowCount(rsMaxRows);
+        //}
 
         try {
             // Prepare statement
@@ -406,7 +406,7 @@ public class SQLQueryJob extends DataSourceJob
         if (queries.size() != 1) {
             throw new DBException("Invalid state of SQL Query job");
         }
-        boolean result = executeSingleQuery(context, queries.get(0), false);
+        boolean result = executeSingleQuery(context, queries.get(0), true);
         if (!result && lastError != null) {
             throw new DBException(lastError);
         }
