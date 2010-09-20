@@ -2,8 +2,9 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.model.IWorkbenchAdapter;
@@ -12,7 +13,6 @@ import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -23,9 +23,9 @@ import java.util.Hashtable;
 import java.util.Map;
 
 /**
- * DBeaverAdapterFactory
+ * Navigator AdapterFactory
  */
-public class DBeaverAdapterFactory implements IAdapterFactory
+public class DBNAdapterFactory implements IAdapterFactory
 {
     private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBPObject.class, DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class, IPropertySource.class, IWorkbenchAdapter.class };
 
@@ -43,41 +43,35 @@ public class DBeaverAdapterFactory implements IAdapterFactory
 
     public Object getAdapter(Object adaptableObject, Class adapterType)
     {
-        if (adapterType == DBSDataSourceContainer.class) {
-            if (adaptableObject instanceof DBSDataSourceContainer) {
-                return adaptableObject;
-            }
-            if (adaptableObject instanceof IDataSourceContainerProvider) {
-                return ((IDataSourceContainerProvider)adaptableObject).getDataSourceContainer();
-            }
-            if (adaptableObject instanceof IDatabaseEditor) {
-                adaptableObject = ((IDatabaseEditor)adaptableObject).getEditorInput().getTreeNode();
-            }
-            if (adaptableObject instanceof DBNNode) {
-                DBSObject object = ((DBNNode) adaptableObject).getObject();
-                if (object == null) {
-                    return null;
-                }
-                if (object instanceof DBSDataSourceContainer) {
-                    return object;
-                }
-                DBPDataSource dataSource = object.getDataSource();
-                return dataSource == null ? null : dataSource.getContainer();
-            }
+        if (!(adaptableObject instanceof DBNNode)) {
             return null;
+        }
+        final DBNNode node = (DBNNode) adaptableObject;
+        if (adapterType == DBSDataSourceContainer.class) {
+            if (node instanceof DBNDataSource) {
+                return ((DBNDataSource)node).getDataSourceContainer();
+            }
+            DBSObject object = node.getObject();
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof DBSDataSourceContainer) {
+                return object;
+            }
+            DBPDataSource dataSource = object.getDataSource();
+            return dataSource == null ? null : dataSource.getContainer();
         } else if (DBPObject.class.isAssignableFrom(adapterType)) {
-            if (adaptableObject instanceof DBNNode) {
-                DBSObject object = ((DBNNode) adaptableObject).getObject();
-                if (object != null && adapterType.isAssignableFrom(object.getClass())) {
-                    return object;
-                }
+            DBSObject object = node.getObject();
+            if (object != null && adapterType.isAssignableFrom(object.getClass())) {
+                return object;
             }
         } else if (adapterType == IPropertySource.class) {
-            DBPObject dbObject = null;
-            if (adaptableObject instanceof DBPObject) {
-                dbObject = (DBPObject)adaptableObject;
-            } else if (adaptableObject instanceof DBNNode) {
-                dbObject = ((DBNNode)adaptableObject).getObject();
+            DBPObject dbObject = node.getObject();
+            if (dbObject instanceof IAdaptable) {
+                Object adapter = ((IAdaptable) dbObject).getAdapter(adapterType);
+                if (adapter != null) {
+                    return adapter;
+                }
             }
             if (dbObject != null) {
                 IPropertySource cached = propertySourceCache.get(dbObject);
@@ -96,31 +90,28 @@ public class DBeaverAdapterFactory implements IAdapterFactory
             }
         } else if (adapterType == IWorkbenchAdapter.class) {
             // Workbench adapter
-            if (adaptableObject instanceof DBNNode) {
-                final DBNNode node = (DBNNode)adaptableObject;
-                return new IWorkbenchAdapter() {
+            return new IWorkbenchAdapter() {
 
-                    public Object[] getChildren(Object o)
-                    {
-                        return null;
-                    }
+                public Object[] getChildren(Object o)
+                {
+                    return null;
+                }
 
-                    public ImageDescriptor getImageDescriptor(Object object)
-                    {
-                        return ImageDescriptor.createFromImage(node.getNodeIconDefault());
-                    }
+                public ImageDescriptor getImageDescriptor(Object object)
+                {
+                    return ImageDescriptor.createFromImage(node.getNodeIconDefault());
+                }
 
-                    public String getLabel(Object o)
-                    {
-                        return node.getNodeName();
-                    }
+                public String getLabel(Object o)
+                {
+                    return node.getNodeName();
+                }
 
-                    public Object getParent(Object o)
-                    {
-                        return node.getParentNode();
-                    }
-                };
-            }
+                public Object getParent(Object o)
+                {
+                    return node.getParentNode();
+                }
+            };
         }
         return null;
     }

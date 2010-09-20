@@ -240,12 +240,12 @@ public class PropertySourceAbstract implements IPropertySource
             Object curObject = pageStandard.getCurrentObject();
             // Refresh only if current property sheet object is the same as for collector
             if (curObject == object) {
-                DBeaverCore.getInstance().getPropertiesAdapter().addToCache(object, PropertySourceAbstract.this);
+                DBeaverCore.getInstance().getNavigatorModel().getNodesAdapter().addToCache(object, PropertySourceAbstract.this);
                 try {
                     pageStandard.refresh();
                 }
                 finally {
-                    DBeaverCore.getInstance().getPropertiesAdapter().removeFromCache(object);
+                    DBeaverCore.getInstance().getNavigatorModel().getNodesAdapter().removeFromCache(object);
                 }
             }
         }

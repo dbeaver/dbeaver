@@ -20,16 +20,11 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.DBPApplication;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataExportersRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
@@ -37,6 +32,7 @@ import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -59,7 +55,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     private static DBeaverCore instance;
     private DBeaverActivator plugin;
-    private DBeaverAdapterFactory propertiesAdapter;
+    private DatabaseEditorAdapterFactory editorsAdapter;
     //private DBeaverProgressProvider progressProvider;
     private IWorkspace workspace;
     private IWorkbench workbench;
@@ -96,14 +92,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         jexlEngine = new JexlEngine();
 
         // Register properties adapter
-        propertiesAdapter = new DBeaverAdapterFactory();
+        editorsAdapter = new DatabaseEditorAdapterFactory();
         IAdapterManager mgr = Platform.getAdapterManager();
-        mgr.registerAdapters(propertiesAdapter, DBPNamedObject.class);
-        mgr.registerAdapters(propertiesAdapter, DBPObject.class);
-        mgr.registerAdapters(propertiesAdapter, DBSObject.class);
-        mgr.registerAdapters(propertiesAdapter, DBSDataContainer.class);
-        mgr.registerAdapters(propertiesAdapter, DBNNode.class);
-        mgr.registerAdapters(propertiesAdapter, IWorkbenchPart.class);
+        mgr.registerAdapters(editorsAdapter, IWorkbenchPart.class);
 
         DBeaverIcons.initRegistry(plugin.getBundle());
 
@@ -177,7 +168,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.dataSourceRegistry.dispose();
 
         // Unregister properties adapter
-        Platform.getAdapterManager().unregisterAdapters(propertiesAdapter);
+        Platform.getAdapterManager().unregisterAdapters(editorsAdapter);
 
         //progressProvider.shutdown();
         //progressProvider = null;
@@ -258,9 +249,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         plugin.savePluginPreferences();
     }
 
-    public DBeaverAdapterFactory getPropertiesAdapter()
+    public DatabaseEditorAdapterFactory getEditorsAdapter()
     {
-        return propertiesAdapter;
+        return editorsAdapter;
     }
 
     public void runAndWait(final DBRRunnableWithProgress runnable)

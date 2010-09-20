@@ -6,14 +6,22 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IAdapterManager;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.gmf.runtime.common.ui.action.actions.global.ClipboardManager;
+import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +44,7 @@ public class DBNModel implements DBPEventListener {
     private DBNRoot root;
     private List<IDBNListener> listeners = new ArrayList<IDBNListener>();
     private Map<DBSObject, Object> nodeMap = new HashMap<DBSObject, Object>();
+    private DBNAdapterFactory nodesAdapter;
 
     //private static Map<DataSourceRegistry, DBNModel> modelMap = new HashMap<DataSourceRegistry, DBNModel>();
 
@@ -48,10 +57,15 @@ public class DBNModel implements DBPEventListener {
         }
 
         this.registry.addDataSourceListener(this);
+
+        nodesAdapter = new DBNAdapterFactory();
+        IAdapterManager mgr = Platform.getAdapterManager();
+        mgr.registerAdapters(nodesAdapter, DBNNode.class);
     }
 
     public void dispose()
     {
+        Platform.getAdapterManager().unregisterAdapters(nodesAdapter);
         this.registry.removeDataSourceListener(this);
         this.root.dispose();
         this.nodeMap.clear();
@@ -71,6 +85,11 @@ public class DBNModel implements DBPEventListener {
     public DataSourceRegistry getRegistry()
     {
         return registry;
+    }
+
+    public DBNAdapterFactory getNodesAdapter()
+    {
+        return nodesAdapter;
     }
 
     public DBNRoot getRoot()
