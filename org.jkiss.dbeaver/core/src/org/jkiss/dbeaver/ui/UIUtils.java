@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ui;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.commands.ActionHandler;
@@ -32,6 +34,8 @@ import java.util.SortedMap;
  * UI Utils
  */
 public class UIUtils {
+
+    static final Log log = LogFactory.getLog(UIUtils.class);
 
     public static class ActionInfo {
         IAction action;
@@ -335,6 +339,12 @@ public class UIUtils {
 
     public static Combo createEncodingCombo(Composite parent, String curCharset)
     {
+        if (curCharset == null) {
+            curCharset = System.getProperty("file.encoding");
+            if (curCharset == null) {
+                curCharset = "UTF-8";
+            }
+        }
         Combo encodingCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
         encodingCombo.setVisibleItemCount(30);
         SortedMap<String,Charset> charsetMap = Charset.availableCharsets();
@@ -346,10 +356,19 @@ public class UIUtils {
             if (charset.displayName().equalsIgnoreCase(curCharset)) {
                 defIndex = index;
             }
+            if (defIndex < 0) {
+                for (String alias : charset.aliases()) {
+                    if (alias.equalsIgnoreCase(curCharset)) {
+                        defIndex = index;
+                    }
+                }
+            }
             index++;
         }
         if (defIndex >= 0) {
             encodingCombo.select(defIndex);
+        } else {
+            log.warn("Charset '" + curCharset + "' is not recognized");
         }
         return encodingCombo;
     }

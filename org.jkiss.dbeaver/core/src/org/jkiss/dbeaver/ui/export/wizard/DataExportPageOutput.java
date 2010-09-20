@@ -260,8 +260,11 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
             }
         }
         int selectionIndex = encodingCombo.getSelectionIndex();
-        String encoding = encodingCombo.getItem(selectionIndex);
-        if (ContentUtils.getCharsetBOM(encoding) == null) {
+        String encoding = null;
+        if (selectionIndex >= 0) {
+            encoding = encodingCombo.getItem(selectionIndex);
+        }
+        if (encoding == null || ContentUtils.getCharsetBOM(encoding) == null) {
             encodingBOMLabel.setEnabled(false);
             encodingBOMCheckbox.setEnabled(false);
         } else {
