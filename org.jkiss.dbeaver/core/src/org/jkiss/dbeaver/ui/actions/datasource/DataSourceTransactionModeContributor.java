@@ -103,7 +103,7 @@ public class DataSourceTransactionModeContributor extends ContributionItem
 
     private DBPDataSource getDataSource()
     {
-        IWorkbenchPart activePart = DBeaverCore.getActiveWorkbenchWindow().getActivePage().getActivePart();
+        IWorkbenchPart activePart = DBeaverCore.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         DBSDataSourceContainer container = DataSourceHandler.getDataSourceContainer(activePart);
         return container == null ? null : container.getDataSource();
     }

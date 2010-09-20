@@ -232,7 +232,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.commit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCommitHandler">
             <activeWhen>
-                <with variable="activePart">
+                <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
                         <test property="org.jkiss.dbeaver.core.datasource.transactional" value="true"/>
                     </adapt>
@@ -241,7 +241,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.rollback" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceRollbackHandler">
             <activeWhen>
-                <with variable="activePart">
+                <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
                         <test property="org.jkiss.dbeaver.core.datasource.transactional" value="true"/>
                     </adapt>
@@ -250,7 +250,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.txn.autocommit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeHandler">
             <activeWhen>
-                <with variable="activePart">
+                <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
                         <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
                     </adapt>
@@ -307,7 +307,9 @@
             <separator name="session" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.commit"/>
             <command commandId="org.jkiss.dbeaver.core.rollback"/>
-            <command commandId="org.jkiss.dbeaver.core.txn.autocommit" style="pulldown" id="transactionModeMenu"/>
+            <menu label="Transaction mode" commandId="org.jkiss.dbeaver.core.txn.autocommit">
+                <dynamic id="org.jkiss.dbeaver.core.menu.txn.isolation" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeContributor"/>
+            </menu>
         </menuContribution>
 
         <!-- Database toolbar -->
