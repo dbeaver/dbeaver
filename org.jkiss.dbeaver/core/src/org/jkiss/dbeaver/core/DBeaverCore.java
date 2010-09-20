@@ -16,6 +16,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.DBPApplication;
@@ -102,6 +103,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         mgr.registerAdapters(propertiesAdapter, DBSObject.class);
         mgr.registerAdapters(propertiesAdapter, DBSDataContainer.class);
         mgr.registerAdapters(propertiesAdapter, DBNNode.class);
+        mgr.registerAdapters(propertiesAdapter, IWorkbenchPart.class);
 
         DBeaverIcons.initRegistry(plugin.getBundle());
 

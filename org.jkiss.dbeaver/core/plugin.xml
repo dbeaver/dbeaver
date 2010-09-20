@@ -41,7 +41,7 @@
                 id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
                 namespace="org.jkiss.dbeaver.core.datasource"
                 properties="connected"
-                type="org.jkiss.dbeaver.ext.IDataSourceContainerProvider">
+                type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
         </propertyTester>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
@@ -139,45 +139,6 @@
                 label="DataSource actions"
                 visible="true">
 
-            <menu id="dataSourceMenu" label="Database">
-                <separator name="driverGroup">
-                </separator>
-                <separator name="connectionGroup">
-                </separator>
-                <separator name="toolsGroup">
-                </separator>
-                <separator name="sessionGroup">
-                </separator>
-            </menu>
-
-            <action
-                    class="org.jkiss.dbeaver.ui.actions.DisconnectAction"
-                    icon="icons/sql/disconnect.png"
-                    id="org.jkiss.dbeaver.ui.actions.DisconnectAction"
-                    label="Disconnect"
-                    menubarPath="dataSourceMenu/connectionGroup"
-                    toolbarPath="connectionGroup"
-                    tooltip="Disconnect from database">
-            </action>
-            <action
-                    class="org.jkiss.dbeaver.ui.actions.ReconnectAction"
-                    icon="icons/sql/reconnect.png"
-                    id="org.jkiss.dbeaver.ui.actions.ReconnectAction"
-                    label="Reconnect"
-                    menubarPath="dataSourceMenu/connectionGroup"
-                    toolbarPath="connectionGroup"
-                    tooltip="Invalidate connection">
-            </action>
-            <action
-                    class="org.jkiss.dbeaver.ui.actions.ConnectAction"
-                    icon="icons/sql/connect.png"
-                    id="org.jkiss.dbeaver.ui.actions.ConnectAction"
-                    label="Connect"
-                    menubarPath="dataSourceMenu/connectionGroup"
-                    toolbarPath="connectionGroup"
-                    tooltip="Connect to database">
-            </action>
-
             <action
                     class="org.jkiss.dbeaver.ui.actions.TransactionModeAction"
                     icon="/icons/sql/txn_config.png"
@@ -265,14 +226,52 @@
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.ext.IDataSourceContainerProvider">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
                                 <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
                             </adapt>
                         </iterate>
                     </with>
                     <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.ext.IDataSourceContainerProvider">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
                             <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
+                        </adapt>
+                    </with>
+                </or>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.disconnect" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler">
+            <enabledWhen>
+                <or>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                                <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                    <with variable="activePart">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                            <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
+                        </adapt>
+                    </with>
+                </or>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.invalidate" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler">
+            <enabledWhen>
+                <or>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                                <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                    <with variable="activePart">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                            <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
                         </adapt>
                     </with>
                 </or>
@@ -315,18 +314,26 @@
         </menuContribution>
 
         <!-- Database menu -->
-        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=driverGroup">
+        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu">
+            <separator name="driverGroup" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
             <command commandId="org.jkiss.dbeaver.core.new.connection"/>
-        </menuContribution>
-
-        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=toolsGroup">
+            <separator name="connection" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.connect"/>
+            <command commandId="org.jkiss.dbeaver.core.invalidate"/>
+            <command commandId="org.jkiss.dbeaver.core.disconnect"/>
+            <separator name="tools" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.new.sql.editor"/>
+            <separator name="session" visible="true"/>
         </menuContribution>
 
+        <!-- Database toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar">
             <toolbar id="database" label="Database Toolbar">
                 <command commandId="org.jkiss.dbeaver.core.connect"/>
+                <command commandId="org.jkiss.dbeaver.core.invalidate"/>
+                <command commandId="org.jkiss.dbeaver.core.disconnect"/>
+                <separator name="tools" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.new.sql.editor"/>
             </toolbar>
         </menuContribution>
@@ -347,6 +354,28 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.core.databaseNavigator">
+            <separator name="connection" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.connect">
+               <visibleWhen>
+                   <with variable="selection">
+                       <count value="+"/>
+                       <iterate operator="and">
+                           <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                       </iterate>
+                   </with>
+               </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.disconnect">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+            <separator name="tools" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.new.sql.editor"/>
         </menuContribution>
 
@@ -566,26 +595,7 @@
             <filter
                     name="targetType"
                     value="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
-
             </filter>
-            <action
-                    class="org.jkiss.dbeaver.ui.actions.DisconnectAction"
-                    icon="icons/sql/disconnect.png"
-                    id="org.jkiss.dbeaver.ui.actions.DisconnectAction"
-                    label="Disconnect">
-                <enablement>
-                    <objectState name="connected" value="true"/>
-                </enablement>
-            </action>
-            <action
-                    class="org.jkiss.dbeaver.ui.actions.ConnectAction"
-                    icon="icons/sql/connect.png"
-                    id="org.jkiss.dbeaver.ui.actions.ConnectAction"
-                    label="Connect">
-                <enablement>
-                    <objectState name="connected" value="false"/>
-                </enablement>
-            </action>
             <action
                     class="org.jkiss.dbeaver.ui.actions.EditConnectionAction"
                     id="org.jkiss.dbeaver.ui.actions.EditConnectionAction"

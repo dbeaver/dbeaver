@@ -18,9 +18,9 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.ConnectAction;
-import org.jkiss.dbeaver.ui.actions.DisconnectAction;
 import org.jkiss.dbeaver.ui.actions.EditConnectionAction;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
 
 /**
  * DBNDataSource
@@ -101,7 +101,7 @@ public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject, IA
         throws DBException
     {
         if (!dataSource.isConnected()) {
-            ConnectAction.execute(dataSource);
+            DataSourceConnectHandler.execute(dataSource);
             //dataSource.connect(monitor);
         }
         return dataSource.isConnected();
@@ -117,7 +117,7 @@ public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject, IA
                 {
                     // Then delete it
                     if (dataSource.isConnected()) {
-                        DisconnectAction.execute(dataSource);
+                        DataSourceDisconnectHandler.execute(dataSource);
                     }
                     DataSourceRegistry.getDefault().removeDataSource(dataSource);
                 }

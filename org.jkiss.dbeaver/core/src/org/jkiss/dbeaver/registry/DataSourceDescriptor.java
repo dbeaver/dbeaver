@@ -16,18 +16,16 @@ import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBPDataSourceUser;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
+import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
@@ -41,7 +39,7 @@ import java.util.Random;
 /**
  * DataSourceDescriptor
  */
-public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImageProvider, IAdaptable, IActionFilter
+public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImageProvider, IAdaptable
 {
     static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
 
@@ -226,20 +224,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         if (this.isConnected()) {
             return;
         }
-/*
-        if (!CommonUtils.isEmpty(Job.getJobManager().find(this))) {
-            // Already connecting/disconnecting - jsut return
-            return;
-        }
-        final String oldName = this.getConnectionInfo().getUserName();
-        final String oldPassword = this.getConnectionInfo().getUserPassword();
-        if (!this.isSavePassword()) {
-            // Ask for password
-            if (!askForPassword()) {
-                throw new DBException("Authentication canceled");
-            }
-        }
-*/
 
         try {
             dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
@@ -272,6 +256,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                     DBPEvent.Action.OBJECT_UPDATE,
                     DataSourceDescriptor.this,
                     true);
+                firePropertyChange();
             }
         } catch (Exception e) {
             // Failed
@@ -288,39 +273,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                 throw new DBException("Internal error connecting to " + getName(), e);
             }
         }
-
-/*
-        ConnectJob connectJob = new ConnectJob(this);
-        connectJob.addJobChangeListener(new JobChangeAdapter() {
-            public void done(IJobChangeEvent event)
-            {
-                if (event.getResult().isOK()) {
-                    connectFailed = false;
-                    connectTime = new Date();
-                    DataSourceDescriptor.this.dataSource = ((ConnectJob)event.getJob()).getDataSource();
-                    if (DataSourceDescriptor.this.dataSource == null) {
-                        log.error("Null datasource returned from connector");
-                    }
-                    if (!isSavePassword()) {
-                        // Rest password back to null
-                        getConnectionInfo().setUserName(oldName);
-                        getConnectionInfo().setUserPassword(oldPassword);
-                    }
-                    getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
-                        DBPEvent.Action.CONNECT,
-                        DataSourceDescriptor.this,
-                        source);
-                } else {
-                    connectFailed = true;
-                    getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
-                        DBPEvent.Action.CONNECT_FAIL,
-                        DataSourceDescriptor.this,
-                        source);
-                }
-            }
-        });
-        connectJob.schedule();
-*/
     }
 
     public void disconnect(final DBRProgressMonitor monitor)
@@ -383,36 +335,8 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                 DBPEvent.Action.OBJECT_UPDATE,
                 this,
                 false);
+            firePropertyChange();
         }
-/*
-        DBeaverCore.getInstance().runAndWait(true, true, new DBRRunnableWithProgress()
-        {
-            public void run(DBRProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException
-            {
-                try {
-                    Job.getJobManager().join(dataSource, monitor.getNestedMonitor());
-                } catch (Exception e) {
-                    log.error(e);
-                    return;
-                }
-
-                DisconnectJob disconnectJob = new DisconnectJob(dataSource);
-                disconnectJob.addJobChangeListener(new JobChangeAdapter() {
-                    public void done(IJobChangeEvent event)
-                    {
-                        dataSource = null;
-                        connectTime = null;
-                        getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
-                            DBPEvent.Action.DISCONNECT,
-                            DataSourceDescriptor.this,
-                            monitor);
-                    }
-                });
-                disconnectJob.schedule();
-            }
-        });
-*/
     }
 
     public void reconnect(final DBRProgressMonitor monitor)
@@ -448,15 +372,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     {
         return preferenceStore;
     }
-
-/*
-    public void reconnect(DBRProgressMonitor monitor, Object source)
-        throws DBException
-    {
-        this.disconnect(source);
-        this.connect(source);
-    }
-*/
 
     public void resetPassword()
     {
@@ -510,41 +425,8 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                 }
             }
             return props;
-        }/* else if (adapter == IWorkbenchAdapter.class) {
-            return new IWorkbenchAdapter() {
-
-                public Object[] getChildren(Object o)
-                {
-                    return null;
-                }
-
-                public ImageDescriptor getImageDescriptor(Object object)
-                {
-                    return ImageDescriptor.createFromImage(driver.getIcon());
-                }
-
-                public String getLabel(Object o)
-                {
-                    return "DataSource " + getName();
-                }
-
-                public Object getParent(Object o)
-                {
-                    return null;
-                }
-            };
-        }*/
-        return null;
-    }
-
-    public boolean testAttribute(Object target, String name, String value)
-    {
-        if (name.equals("connected")) {
-            return String.valueOf(this.isConnected()).equals(value);
-        } else if (name.equals("savePassword")) {
-            return String.valueOf(this.isSavePassword()).equals(value);
         }
-        return false;
+        return null;
     }
 
     public Image getObjectImage()
@@ -576,4 +458,10 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     public static String generateNewId(DriverDescriptor driver) {
         return driver.getId() + "-" + System.currentTimeMillis() + "-" + new Random().nextInt();
     }
+
+    private void firePropertyChange()
+    {
+        DataSourcePropertyTester.fireProperty—hange(DataSourcePropertyTester.PROP_CONNECTED);
+    }
+
 }

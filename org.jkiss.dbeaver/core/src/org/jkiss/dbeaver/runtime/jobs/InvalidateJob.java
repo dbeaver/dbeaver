@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.runtime.jobs;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -13,11 +11,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**
- * DisconnectJob
+ * InvalidateJob
  */
-public class ReconnectJob extends DataSourceJob
+public class InvalidateJob extends DataSourceJob
 {
-    public ReconnectJob(
+    public InvalidateJob(
         DBPDataSource dataSource)
     {
         super("Invalidate " + dataSource.getContainer().getName(), null, dataSource);
