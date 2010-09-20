@@ -84,6 +84,9 @@
         <command id="org.jkiss.dbeaver.core.invalidate" name="Invalidate" description="Invalidate database connection"/>
         <command id="org.jkiss.dbeaver.core.commit" name="Commit changes" description="Commit changes in SQL Session"/>
         <command id="org.jkiss.dbeaver.core.rollback" name="Rollback changes" description="Rollback changes in SQL Session"/>
+        <command id="org.jkiss.dbeaver.core.txn.autocommit" name="Transactional mode" description="Changes transactional mode of active session">
+            <!--state id="org.eclipse.ui.commands.toggleState" class="org.eclipse.ui.handlers.RegistryToggleState:true"/-->
+        </command>
         <command
                 description="Execute Statement"
                 id="org.jkiss.dbeaver.ui.editors.sql.run.statement"
@@ -117,27 +120,8 @@
         <image commandId="org.jkiss.dbeaver.core.disconnect" icon="icons/sql/disconnect.png"/>
         <image commandId="org.jkiss.dbeaver.core.commit" icon="icons/sql/commit.png"/>
         <image commandId="org.jkiss.dbeaver.core.rollback" icon="icons/sql/rollback.png"/>
+        <image commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_config.png"/>
         <image commandId="org.jkiss.dbeaver.core.new.sql.editor" icon="icons/sql/sql_script.png"/>
-    </extension>
-
-    <extension point="org.eclipse.ui.actionSets">
-        <actionSet
-                id="org.jkiss.dbeaver.core.dataSourceActionSet"
-                label="DataSource actions"
-                visible="true">
-
-            <action
-                    class="org.jkiss.dbeaver.ui.actions.TransactionModeAction"
-                    icon="/icons/sql/txn_config.png"
-                    id="org.jkiss.dbeaver.ui.actions.TransactionModeAction"
-                    label="Transactions mode"
-                    menubarPath="dataSourceMenu/sessionGroup"
-                    style="pulldown"
-                    toolbarPath="sessionGroup"
-                    tooltip="Transactions mode">
-            </action>
-
-        </actionSet>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -247,22 +231,31 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.commit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCommitHandler">
-            <enabledWhen>
+            <activeWhen>
                 <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
                         <test property="org.jkiss.dbeaver.core.datasource.transactional" value="true"/>
                     </adapt>
                 </with>
-            </enabledWhen>
+            </activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.rollback" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceRollbackHandler">
-            <enabledWhen>
+            <activeWhen>
                 <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
                         <test property="org.jkiss.dbeaver.core.datasource.transactional" value="true"/>
                     </adapt>
                 </with>
-            </enabledWhen>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.txn.autocommit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeHandler">
+            <activeWhen>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                        <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
+                    </adapt>
+                </with>
+            </activeWhen>
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.new.sql.editor" class="org.jkiss.dbeaver.ui.actions.sql.OpenSQLEditorHandler">
@@ -314,6 +307,7 @@
             <separator name="session" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.commit"/>
             <command commandId="org.jkiss.dbeaver.core.rollback"/>
+            <command commandId="org.jkiss.dbeaver.core.txn.autocommit" style="pulldown" id="transactionModeMenu"/>
         </menuContribution>
 
         <!-- Database toolbar -->
@@ -327,6 +321,7 @@
                 <separator name="session" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.commit"/>
                 <command commandId="org.jkiss.dbeaver.core.rollback"/>
+                <command commandId="org.jkiss.dbeaver.core.txn.autocommit" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn"/>
             </toolbar>
         </menuContribution>
 
@@ -376,6 +371,11 @@
             <command commandId="org.jkiss.dbeaver.core.export.data">
                <visibleWhen checkEnabled="true"/>
             </command>
+        </menuContribution>
+
+        <!-- Transaction mode menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.txn">
+            <dynamic id="org.jkiss.dbeaver.core.menu.txn.isolation" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeContributor"/>
         </menuContribution>
 
     </extension>

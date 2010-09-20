@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -20,7 +21,7 @@ import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class DataSourceCommitHandler extends DataSourceHandler
+public class DataSourceTransactionModeHandler extends DataSourceHandler
 {
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -38,9 +39,10 @@ public class DataSourceCommitHandler extends DataSourceHandler
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
-                    DBCExecutionContext context = dataSource.openContext(monitor, "Commit '" + dataSourceContainer.getName() + "' transaction");
+                    DBCExecutionContext context = dataSource.openContext(monitor, "Change '" + dataSourceContainer.getName() + "' transactional mode");
                     try {
-                        context.getTransactionManager().commit();
+                        DBCTransactionManager txnManager = context.getTransactionManager();
+                        txnManager.setAutoCommit(!txnManager.isAutoCommit());
                     }
                     catch (DBCException e) {
                         throw new InvocationTargetException(e);
@@ -51,7 +53,7 @@ public class DataSourceCommitHandler extends DataSourceHandler
                 }
             });
         } catch (InvocationTargetException e) {
-            DBeaverUtils.showErrorDialog(shell, "Commit", "Error while committing session", e);
+            DBeaverUtils.showErrorDialog(shell, "Auto-Commit", "Error while toggle auto-commit", e);
         } catch (InterruptedException e) {
             // do nothing
         }

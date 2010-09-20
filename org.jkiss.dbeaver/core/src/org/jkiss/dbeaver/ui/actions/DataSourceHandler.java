@@ -23,12 +23,9 @@ public abstract class DataSourceHandler extends AbstractHandler {
     protected DBSDataSourceContainer getDataSourceContainer(ExecutionEvent event, boolean chooseOnNoSelection)
     {
         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-        if (activePart instanceof IDataSourceContainerProvider) {
-            return ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
-        }
-        if (activePart instanceof IDataSourceProvider) {
-            DBPDataSource dataSource = ((IDataSourceProvider) activePart).getDataSource();
-            return dataSource == null ? null : dataSource.getContainer();
+        DBSDataSourceContainer container = getDataSourceContainer(activePart);
+        if (container != null) {
+            return container;
         }
         ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (selection instanceof IStructuredSelection) {
@@ -46,4 +43,15 @@ public abstract class DataSourceHandler extends AbstractHandler {
         return null;
     }
 
+    public static DBSDataSourceContainer getDataSourceContainer(IWorkbenchPart activePart)
+    {
+        if (activePart instanceof IDataSourceContainerProvider) {
+            return ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
+        }
+        if (activePart instanceof IDataSourceProvider) {
+            DBPDataSource dataSource = ((IDataSourceProvider) activePart).getDataSource();
+            return dataSource == null ? null : dataSource.getContainer();
+        }
+        return null;
+    }
 }

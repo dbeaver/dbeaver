@@ -11,7 +11,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -434,7 +433,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         if (iconNormal == null) {
             iconNormal = driver.getIcon();
 
-            // Create overlay image for ocnnected icon
+            // Create overlay image for connected icon
             {
                 OverlayImageDescriptor connectedDescriptor = new OverlayImageDescriptor(iconNormal.getImageData());
                 connectedDescriptor.setBottomRight(new ImageDescriptor[] {DBIcon.OVER_SUCCESS.getImageDescriptor()} );

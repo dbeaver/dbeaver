@@ -15,8 +15,6 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
 import org.jkiss.dbeaver.model.dbc.*;
 import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
-import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
@@ -263,7 +261,7 @@ public final class DBUtils {
             if (monitor != null) {
                 finder.run(monitor);
             } else {
-                DBeaverCore.getInstance().runAndWait2(true, true, finder);
+                DBeaverCore.getInstance().runAndWait2(finder);
             }
         }
         catch (InvocationTargetException e) {
