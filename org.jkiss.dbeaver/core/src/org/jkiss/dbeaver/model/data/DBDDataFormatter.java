@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public interface DBDDataFormatter {
 
-    Map<String, Object> getDefaultProperties(Locale locale);
+    Map<String, String> getDefaultProperties(Locale locale);
 
     Object getSampleValue();
 

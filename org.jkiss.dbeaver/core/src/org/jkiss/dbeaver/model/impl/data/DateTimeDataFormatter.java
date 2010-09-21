@@ -15,7 +15,7 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
 
     private DateFormat dateFormat;
 
-    public Map<String, Object> getDefaultProperties(Locale locale)
+    public Map<String, String> getDefaultProperties(Locale locale)
     {
         return null;
     }

@@ -143,6 +143,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
+            formatterProfile.saveProfile(store);
             //store.setValue(PrefConstants.DEFAULT_AUTO_COMMIT, autoCommitCheck.getSelection());
             //store.setValue(PrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
             //store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());

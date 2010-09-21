@@ -11,7 +11,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
 
     private NumberFormat numberFormat;
 
-    public Map<String, Object> getDefaultProperties(Locale locale)
+    public Map<String, String> getDefaultProperties(Locale locale)
     {
         //NumberFormat tmpFormat = NumberFormat.getInstance(locale);
         return null;

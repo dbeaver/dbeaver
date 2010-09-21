@@ -227,7 +227,7 @@ public class DataSourceRegistry implements DBPRegistry
 
     public DBDDataFormatterProfile loadDataFormatterProfile(IPreferenceStore store)
     {
-        return new DataFormatterProfile("Global", store);
+        return new DataFormatterProfile(store);
     }
 
     ////////////////////////////////////////////////////
