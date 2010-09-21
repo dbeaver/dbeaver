@@ -30,8 +30,8 @@ public interface DBPProperty
 
     boolean isRequired();
 
-    Object getDefaultValue();
+    String getDefaultValue();
 
-    Object[] getValidValues();
+    String[] getValidValues();
 
 }

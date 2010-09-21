@@ -18,7 +18,7 @@ public interface IDataExporterSite {
 
     DBPNamedObject getSource();
 
-    Map<String, Object> getProperties();
+    Map<String, String> getProperties();
 
     List<DBDColumnBinding> getColumns();
 

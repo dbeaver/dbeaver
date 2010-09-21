@@ -29,12 +29,7 @@ import org.xml.sax.Attributes;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 
 public class DataSourceRegistry implements DBPRegistry
 {
@@ -44,7 +39,12 @@ public class DataSourceRegistry implements DBPRegistry
     private DBeaverCore core;
     private File workspaceRoot;
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<DataSourceProviderDescriptor>();
+
     private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();
+
+    private final List<DataFormatterDescriptor> dataFormatterList = new ArrayList<DataFormatterDescriptor>();
+    private final Map<String, DataFormatterDescriptor> dataFormatterMap = new HashMap<String, DataFormatterDescriptor>();
+
     private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<DBPEventListener>();
 
@@ -93,6 +93,16 @@ public class DataSourceRegistry implements DBPRegistry
             }
         }
 
+        // Load data formatters from external plugins
+        {
+            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataFormatterDescriptor.EXTENSION_ID);
+            for (IConfigurationElement ext : extElements) {
+                DataFormatterDescriptor formatterDescriptor = new DataFormatterDescriptor(ext);
+                dataFormatterList.add(formatterDescriptor);
+                dataFormatterMap.put(formatterDescriptor.getId(), formatterDescriptor);
+            }
+        }
+
         // Load drivers
         loadDrivers();
         // Load datasources
@@ -109,6 +119,9 @@ public class DataSourceRegistry implements DBPRegistry
         }
 
         closeConnections();
+
+        // Dispose and clear all descriptors
+
         for (DataSourceDescriptor dataSourceDescriptor : this.dataSources) {
             dataSourceDescriptor.dispose();
         }
@@ -118,6 +131,10 @@ public class DataSourceRegistry implements DBPRegistry
             providerDescriptor.dispose();
         }
         this.dataSourceProviders.clear();
+
+        this.dataSourceProviders.clear();
+        this.dataFormatterList.clear();
+        this.dataFormatterMap.clear();
     }
 
     public void closeConnections()
@@ -520,10 +537,10 @@ public class DataSourceRegistry implements DBPRegistry
                 xml.addAttribute("password", encPassword);
             }
             if (connectionInfo.getProperties() != null) {
-                for (Map.Entry<String, Object> entry : connectionInfo.getProperties().entrySet()) {
+                for (Map.Entry<String, String> entry : connectionInfo.getProperties().entrySet()) {
                     xml.startElement("property");
                     xml.addAttribute("name", entry.getKey());
-                    xml.addAttribute("value", String.valueOf(entry.getValue()));
+                    xml.addAttribute("value", entry.getValue());
                     xml.endElement();
                 }
             }

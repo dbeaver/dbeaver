@@ -23,7 +23,6 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
 
     static final Log log = LogFactory.getLog(DataSourceRegistry.class);
 
-    private DataSourceRegistry registry;
     private String id;
     private String className;
     private String name;
@@ -36,7 +35,6 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
     public DataTypeProviderDescriptor(DataSourceRegistry registry, IConfigurationElement config)
     {
         super(config.getContributor());
-        this.registry = registry;
 
         this.id = config.getAttribute("id");
         this.className = config.getAttribute("class");

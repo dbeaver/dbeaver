@@ -49,8 +49,8 @@ public interface DBSDataSourceContainer extends DBSEntity
      * Connects to datasource.
      * This is async method and returns immediately.
      * Connection will be opened in separate job, so no progress monitor is required.
-     * @param monitor
-     * @throws DBException
+     * @param monitor progress monitor
+     * @throws DBException on error
      */
     void connect(DBRProgressMonitor monitor) throws DBException;
 
@@ -58,8 +58,8 @@ public interface DBSDataSourceContainer extends DBSEntity
      * Disconnects from datasource.
      * This is async method and returns immediately.
      * Connection will be closed in separate job, so no progress monitor is required.
-     * @param monitor
-     * @throws DBException
+     * @param monitor progress monitor
+     * @throws DBException on error
      */
     void disconnect(DBRProgressMonitor monitor) throws DBException;
 

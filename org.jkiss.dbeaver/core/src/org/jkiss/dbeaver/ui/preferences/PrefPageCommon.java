@@ -11,13 +11,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
-
-import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * PrefPageSQL
@@ -28,6 +23,7 @@ public class PrefPageCommon extends TargetPrefPage
 
     private Button autoCommitCheck;
     private Button rollbackOnErrorCheck;
+    private Spinner resultSetSize;
 
     public PrefPageCommon()
     {
@@ -39,6 +35,7 @@ public class PrefPageCommon extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
+            store.contains(PrefConstants.RESULT_SET_MAX_ROWS) ||
             store.contains(PrefConstants.QUERY_ROLLBACK_ON_ERROR) ||
             store.contains(PrefConstants.DEFAULT_AUTO_COMMIT)
             ;
@@ -64,38 +61,17 @@ public class PrefPageCommon extends TargetPrefPage
             rollbackOnErrorCheck = UIUtils.createLabelCheckbox(txnGroup, "Rollback on error", false);
         }
 
-        LocaleSelectorControl localeSelector = new LocaleSelectorControl(composite, null);
-        // Format settings
         {
-            Group formatGroup = new Group(composite, SWT.NONE);
-            formatGroup.setText("Format");
-            formatGroup.setLayout(new GridLayout(2, false));
+            Group queriesGroup = UIUtils.createControlGroup(composite, "Queries", 2, SWT.NONE, 0);
+            UIUtils.createControlLabel(queriesGroup, "ResultSet maximum size");
 
-            {
-                UIUtils.createControlLabel(formatGroup, "Locale");
-                Combo localeCombo = new Combo(formatGroup, SWT.DROP_DOWN);
-
-                Locale[] locales = Locale.getAvailableLocales();
-                Set<String> localeSet = new TreeSet<String>();
-                String defLocale = Locale.getDefault().toString();
-                for (Locale locale : locales) {
-                    String localeString = locale.toString();
-                    localeSet.add(localeString);
-                }
-                for (String locale : localeSet) {
-                    localeCombo.add(locale);
-                    if (locale.equals(defLocale)) {
-                        localeCombo.select(localeCombo.getItemCount() - 1);
-                    }
-                }
-            }
-
-            UIUtils.createLabelText(formatGroup, "Date format", "");
-            UIUtils.createLabelText(formatGroup, "Time format", "");
-            UIUtils.createLabelText(formatGroup, "Timestamp format", "");
-            UIUtils.createLabelText(formatGroup, "Number format", "");
+            resultSetSize = new Spinner(queriesGroup, SWT.BORDER);
+            resultSetSize.setSelection(0);
+            resultSetSize.setDigits(0);
+            resultSetSize.setIncrement(1);
+            resultSetSize.setMinimum(1);
+            resultSetSize.setMaximum(1024 * 1024);
         }
-
 
         return composite;
     }
@@ -105,6 +81,7 @@ public class PrefPageCommon extends TargetPrefPage
         try {
             autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
             rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
+            resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -115,6 +92,7 @@ public class PrefPageCommon extends TargetPrefPage
         try {
             store.setValue(PrefConstants.DEFAULT_AUTO_COMMIT, autoCommitCheck.getSelection());
             store.setValue(PrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
+            store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -125,6 +103,7 @@ public class PrefPageCommon extends TargetPrefPage
     {
         store.setToDefault(PrefConstants.DEFAULT_AUTO_COMMIT);
         store.setToDefault(PrefConstants.QUERY_ROLLBACK_ON_ERROR);
+        store.setToDefault(PrefConstants.RESULT_SET_MAX_ROWS);
     }
 
     public void applyData(Object data)

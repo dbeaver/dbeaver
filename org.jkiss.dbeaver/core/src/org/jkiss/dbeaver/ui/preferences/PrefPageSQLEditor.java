@@ -22,7 +22,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqleditor";
 
-    private Spinner resultSetSize;
     private Spinner executeTimeoutText;
 
     private Combo commitTypeCombo;
@@ -39,14 +38,12 @@ public class PrefPageSQLEditor extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(PrefConstants.RESULT_SET_MAX_ROWS) ||
-                store.contains(PrefConstants.STATEMENT_TIMEOUT) ||
-
-                store.contains(PrefConstants.SCRIPT_COMMIT_TYPE) ||
-                store.contains(PrefConstants.SCRIPT_ERROR_HANDLING) ||
-                store.contains(PrefConstants.SCRIPT_COMMIT_LINES) ||
-                store.contains(PrefConstants.SCRIPT_FETCH_RESULT_SETS)
-            ;
+            store.contains(PrefConstants.STATEMENT_TIMEOUT) ||
+            store.contains(PrefConstants.SCRIPT_COMMIT_TYPE) ||
+            store.contains(PrefConstants.SCRIPT_ERROR_HANDLING) ||
+            store.contains(PrefConstants.SCRIPT_COMMIT_LINES) ||
+            store.contains(PrefConstants.SCRIPT_FETCH_RESULT_SETS)
+        ;
     }
 
     protected boolean supportsDataSourceSpecificOptions()
@@ -63,17 +60,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             Group commonGroup = new Group(composite, SWT.NONE);
             commonGroup.setText("Common");
             commonGroup.setLayout(new GridLayout(2, false));
-
-            {
-                UIUtils.createControlLabel(commonGroup, "ResultSet maximum size");
-
-                resultSetSize = new Spinner(commonGroup, SWT.BORDER);
-                resultSetSize.setSelection(0);
-                resultSetSize.setDigits(0);
-                resultSetSize.setIncrement(1);
-                resultSetSize.setMinimum(1);
-                resultSetSize.setMaximum(1024 * 1024);
-            }
 
             {
                 UIUtils.createControlLabel(commonGroup, "SQL statement timeout");
@@ -131,7 +117,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
-            resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
             executeTimeoutText.setSelection(store.getInt(PrefConstants.STATEMENT_TIMEOUT));
 
             commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(PrefConstants.SCRIPT_COMMIT_TYPE)).ordinal());
@@ -146,7 +131,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
-            store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
             store.setValue(PrefConstants.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
 
             store.setValue(PrefConstants.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.fromOrdinal(commitTypeCombo.getSelectionIndex()).name());
@@ -161,7 +145,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
     protected void clearPreferences(IPreferenceStore store)
     {
-        store.setToDefault(PrefConstants.RESULT_SET_MAX_ROWS);
         store.setToDefault(PrefConstants.STATEMENT_TIMEOUT);
 
         store.setToDefault(PrefConstants.SCRIPT_COMMIT_TYPE);

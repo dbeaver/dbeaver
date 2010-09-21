@@ -37,8 +37,8 @@ public class EditablePropertiesControl extends Composite {
     private TreeViewer propsTree;
     private TreeEditor treeEditor;
 
-    private Map<String, Object> originalValues = new TreeMap<String, Object>();
-    private Map<String, Object> propValues = new TreeMap<String, Object>();
+    private Map<String, String> originalValues = new TreeMap<String, String>();
+    private Map<String, String> propValues = new TreeMap<String, String>();
 
     private Font boldFont;
     //private Color colorBlue;
@@ -61,7 +61,7 @@ public class EditablePropertiesControl extends Composite {
         initPropTree();
     }
 
-    public void loadProperties(List<? extends DBPPropertyGroup> propertyGroups, Map<String, Object> propertyValues)
+    public void loadProperties(List<? extends DBPPropertyGroup> propertyGroups, Map<String, String> propertyValues)
     {
         propValues.clear();
         originalValues.clear();
@@ -86,12 +86,12 @@ public class EditablePropertiesControl extends Composite {
         disposeOldEditor();
     }
 
-    public Map<String, Object> getProperties() {
+    public Map<String, String> getProperties() {
         return propValues;
     }
 
-    public Map<String, Object> getPropertiesWithDefaults() {
-        Map<String, Object> allValues = new HashMap<String, Object>(propValues);
+    public Map<String, String> getPropertiesWithDefaults() {
+        Map<String, String> allValues = new HashMap<String, String>(propValues);
         Object root = propsTree.getInput();
         if (root instanceof DBPPropertyGroup) {
             addDefaultValues((DBPPropertyGroup)root, allValues);
@@ -106,7 +106,7 @@ public class EditablePropertiesControl extends Composite {
         return allValues;
     }
 
-    private void addDefaultValues(DBPPropertyGroup propertyGroup, Map<String, Object> values)
+    private void addDefaultValues(DBPPropertyGroup propertyGroup, Map<String, String> values)
     {
         for (DBPProperty property : propertyGroup.getProperties()) {
             if (!values.containsKey(property.getId()) && property.getDefaultValue() != null) {
@@ -380,7 +380,7 @@ public class EditablePropertiesControl extends Composite {
         propsTree.update(prop, null);
     }
 
-    protected void handlePropertyCreate(PropertyDescriptor newProp, Object newValue) {
+    protected void handlePropertyCreate(PropertyDescriptor newProp, String newValue) {
         propValues.put(newProp.getId(), newValue);
         propsTree.refresh(newProp.getGroup());
         propsTree.expandToLevel(newProp.getGroup(), 1);

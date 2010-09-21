@@ -56,7 +56,7 @@ public class DataExportSettings {
     private LobExtractType lobExtractType = LobExtractType.SKIP;
     private LobEncoding lobEncoding = LobEncoding.HEX;
 
-    private Map<String, Object> extractorProperties = new HashMap<String, Object>();
+    private Map<String, String> extractorProperties = new HashMap<String, String>();
 
     private String outputFolder = System.getProperty("user.home");
     private String outputFilePattern = PATTERN_TABLE + "_" + PATTERN_TIMESTAMP;
@@ -69,7 +69,7 @@ public class DataExportSettings {
     private boolean openFolderOnFinish = true;
     private int maxJobCount = DEFAULT_THREADS_NUM;
 
-    private Map<DataExporterDescriptor, Map<String,Object>> exporterPropsHistory = new HashMap<DataExporterDescriptor, Map<String, Object>>();
+    private Map<DataExporterDescriptor, Map<String,String>> exporterPropsHistory = new HashMap<DataExporterDescriptor, Map<String, String>>();
 
     private transient boolean folderOpened = false;
     private transient int curProviderNum = 0;
@@ -111,9 +111,9 @@ public class DataExportSettings {
 
     public void setDataExporter(DataExporterDescriptor dataExporter)
     {
-        Map<String, Object> historyProps = this.exporterPropsHistory.get(dataExporter);
+        Map<String, String> historyProps = this.exporterPropsHistory.get(dataExporter);
         if (historyProps == null) {
-            historyProps = new HashMap<String, Object>();
+            historyProps = new HashMap<String, String>();
         }
         if (this.dataExporter != null) {
             this.exporterPropsHistory.put(this.dataExporter, this.extractorProperties);
@@ -164,12 +164,12 @@ public class DataExportSettings {
         this.lobEncoding = lobEncoding;
     }
 
-    public Map<String, Object> getExtractorProperties()
+    public Map<String, String> getExtractorProperties()
     {
         return extractorProperties;
     }
 
-    public void setExtractorProperties(Map<String, Object> extractorProperties)
+    public void setExtractorProperties(Map<String, String> extractorProperties)
     {
         this.extractorProperties = extractorProperties;
     }
@@ -379,7 +379,7 @@ public class DataExportSettings {
                 expId = expSection.getName();
                 DataExporterDescriptor exporter = DBeaverCore.getInstance().getDataExportersRegistry().getDataExporter(expId);
                 if (exporter != null) {
-                    Map<String, Object> expProps = new HashMap<String, Object>();
+                    Map<String, String> expProps = new HashMap<String, String>();
                     exporterPropsHistory.put(exporter, expProps);
                     for (DBPPropertyGroup group : exporter.getPropertyGroups()) {
                         for (DBPProperty prop : group.getProperties()) {
@@ -423,10 +423,10 @@ public class DataExportSettings {
             if (expSettings == null) {
                 expSettings = dialogSettings.addNewSection(exp.getId());
             }
-            Map<String, Object> props = exporterPropsHistory.get(exp);
+            Map<String, String> props = exporterPropsHistory.get(exp);
             if (props != null) {
-                for (Map.Entry<String,Object> prop : props.entrySet()) {
-                    expSettings.put(prop.getKey(), String.valueOf(prop.getValue()));
+                for (Map.Entry<String,String> prop : props.entrySet()) {
+                    expSettings.put(prop.getKey(), prop.getValue());
                 }
             }
         }

@@ -10,6 +10,7 @@
     <extension-point id="org.jkiss.dbeaver.databaseEditor" name="Custom Entity Editor" schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataExportProvider" name="Data Export Provider" schema="schema/org.jkiss.dbeaver.dataExportProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataFormatter" name="Data Formatters" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
@@ -89,26 +90,11 @@
         <command id="org.jkiss.dbeaver.core.edit.connection" name="Edit Connection" description="Open connection editor dialog"/>
         <command id="org.jkiss.dbeaver.core.new.sql.editor" name="Open SQL Editor" description="Open SQL Editor"/>
         <command id="org.jkiss.dbeaver.core.open.object" name="Edit Object" description="Open object editor"/>
-        <command
-                description="Execute Statement"
-                id="org.jkiss.dbeaver.ui.editors.sql.run.statement"
-                name="Execute SQL Statement">
-        </command>
-        <command
-                description="Execute Script"
-                id="org.jkiss.dbeaver.ui.editors.sql.run.script"
-                name="Execute SQL Script">
-        </command>
-        <command
-                description="Load from file"
-                id="org.jkiss.dbeaver.ui.editors.sql.open.file"
-                name="Load SQL script">
-        </command>
-        <command
-                description="Export data to file(s)"
-                id="org.jkiss.dbeaver.core.export.data"
-                name="Export data">
-        </command>
+
+        <command id="org.jkiss.dbeaver.ui.editors.sql.run.statement" name="Execute SQL Statement" description="Execute Statement"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.run.script" name="Execute SQL Script" description="Execute Script"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.open.file" name="Load SQL script" description="Load from file"/>
+        <command id="org.jkiss.dbeaver.core.export.data" name="Export data" description="Export data to file(s)"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -694,36 +680,49 @@
                 name="Database Management">
         </page>
         <page
+                category="org.jkiss.dbeaver.preferences.main"
                 id="org.jkiss.dbeaver.preferences.main.common"
                 class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon"
-                name="Common"
-                category="org.jkiss.dbeaver.preferences.main">
+                name="Common">
         </page>
         <page
+                category="org.jkiss.dbeaver.preferences.main"
+                id="org.jkiss.dbeaver.preferences.main.dataformat"
+                class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat"
+                name="Data Formats">
+        </page>
+        
+        <page
+                category="org.eclipse.ui.preferencePages.Editors"
                 id="org.jkiss.dbeaver.preferences.main.sqleditor"
                 class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor"
-                name="SQL Editor"
-                category="org.jkiss.dbeaver.preferences.main">
-        </page>
-        <page
-                id="org.jkiss.dbeaver.preferences.main.contenteditor"
-                class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor"
-                name="Content Editor"
-                category="org.jkiss.dbeaver.preferences.main">
+                name="SQL Editor">
         </page>
         <page
                 category="org.eclipse.ui.preferencePages.Editors"
-                class="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
+                id="org.jkiss.dbeaver.preferences.main.contenteditor"
+                class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor"
+                name="Content Editor">
+        </page>
+        <page
+                category="org.eclipse.ui.preferencePages.Editors"
                 id="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
+                class="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
                 name="Binary Editor">
         </page>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
         <page
-                class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon"
                 id="org.jkiss.dbeaver.preferences.main.common"
+                class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon"
                 name="Common Settings"
+                objectClass="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+        </page>
+        <page
+                id="org.jkiss.dbeaver.preferences.main.dataformat"
+                class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat"
+                name="Data Formats"
                 objectClass="org.jkiss.dbeaver.model.navigator.DBNDataSource">
         </page>
         <page
@@ -741,8 +740,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.elementFactories">
-        <factory id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory"
-                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory"/>
+        <factory id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory"/>
     </extension>
 
     <extension point="org.eclipse.ui.views.properties.tabbed.propertyContributor">
@@ -924,8 +922,31 @@
 
         </provider>
     </extension>
-    <extension
-            point="org.jkiss.dbeaver.dataExportProvider">
+
+    <extension point="org.jkiss.dbeaver.dataFormatter">
+        <formatter id="date" label="Date" class="org.jkiss.dbeaver.model.impl.data.DateTimeDataFormatter">
+            <propertyGroup label="General">
+                <property id="pattern" label="Pattern" type="string" description="Date pattern" required="true"/>
+            </propertyGroup>
+        </formatter>
+        <formatter id="time" label="Time" class="org.jkiss.dbeaver.model.impl.data.DateTimeDataFormatter">
+            <propertyGroup label="General">
+                <property id="pattern" label="Pattern" type="string" description="Time pattern" required="true"/>
+            </propertyGroup>
+        </formatter>
+        <formatter id="timestamp" label="Timestamp" class="org.jkiss.dbeaver.model.impl.data.DateTimeDataFormatter">
+            <propertyGroup label="General">
+                <property id="pattern" label="Pattern" type="string" description="Timestamp pattern" required="true"/>
+            </propertyGroup>
+        </formatter>
+        <formatter id="number" label="Numbers" class="org.jkiss.dbeaver.model.impl.data.NumberDataFormatter">
+            <propertyGroup label="General">
+                <!--property id="pattern" label="Pattern" type="string" description="Date pattern" required="true"/-->
+            </propertyGroup>
+        </formatter>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataExportProvider">
         <export
                 id="org.jkiss.dbeaver.core.dataExport.csv"
                 class="org.jkiss.dbeaver.ui.export.impl.DataExporterCSV"
@@ -934,13 +955,9 @@
                 icon="icons/misc/csv.png"
                 label="CSV">
             <propertyGroup label="General">
-                <property id="delimiter" label="Delimiter" type="string" description="Columns delimiter"
-                          defaultValue="," required="true"/>
-                <property id="header" label="Header" type="string" description="CSV header settings" defaultValue="top"
-                          required="true" validValues="none,top,bottom,both"/>
-                <property id="escape" label="Characters escape" type="string"
-                          description="Bad characters escaping model (surrounded with quotes or escaped with '\' character)"
-                          defaultValue="quotes" required="true" validValues="quotes,escape"/>
+                <property id="delimiter" label="Delimiter" type="string" description="Columns delimiter" defaultValue="," required="true"/>
+                <property id="header" label="Header" type="string" description="CSV header settings" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
+                <property id="escape" label="Characters escape" type="string" description="Bad characters escaping model (surrounded with quotes or escaped with '\' character)" defaultValue="quotes" required="true" validValues="quotes,escape"/>
             </propertyGroup>
         </export>
         <export
