@@ -12,8 +12,11 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,17 +34,19 @@ import java.text.NumberFormat;
  */
 public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
-    public static final JDBCNumberValueHandler INSTANCE = new JDBCNumberValueHandler();
-
-    static final Log log = LogFactory.getLog(JDBCNumberValueHandler.class);
-
+    private static final String TYPE_NAME_NUMBER = "number";
     private static final int MAX_NUMBER_LENGTH = 100;
 
-    private NumberFormat numberFormat;
+    private DBDDataFormatter formatter;
 
-    public JDBCNumberValueHandler()
+    public JDBCNumberValueHandler(DBDDataFormatterProfile formatterProfile)
     {
-        numberFormat = NumberFormat.getNumberInstance();
+        try {
+            formatter = formatterProfile.createFormatter(TYPE_NAME_NUMBER);
+        } catch (Exception e) {
+            log.error("Could not create formatter for number value handler", e);
+            formatter = DefaultDataFormatter.INSTANCE;
+        }
     }
 
     /**
@@ -50,7 +55,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     @Override
     public synchronized String getValueDisplayString(DBSTypedObject column, Object value)
     {
-        return value == null ? DBConstants.NULL_VALUE_LABEL : numberFormat.format(value);
+        return value == null ? DBConstants.NULL_VALUE_LABEL : formatter.formatValue(value);
     }
 
     protected Object getColumnValue(DBRProgressMonitor monitor, ResultSet resultSet, DBSColumnBase column,

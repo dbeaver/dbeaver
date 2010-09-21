@@ -71,7 +71,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 return 0;
             }
             try {
-                dataReceiver.fetchStart(monitor, dbResult);
+                dataReceiver.fetchStart(context, dbResult);
                 fetchStarted = true;
 
                 long rowCount = 0;
@@ -80,7 +80,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                         // Fetch not more than max rows
                         break;
                     }
-                    dataReceiver.fetchRow(monitor, dbResult);
+                    dataReceiver.fetchRow(context, dbResult);
                     rowCount++;
                     if (rowCount % 100 == 0) {
                         monitor.subTask(rowCount + " rows fetched");
@@ -97,7 +97,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         finally {
             dbStat.close();
             if (fetchStarted) {
-                dataReceiver.fetchEnd(monitor);
+                dataReceiver.fetchEnd(context);
             }
         }
     }
@@ -184,7 +184,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (DBUtils.isNullValue(column.getValue())) {
                     continue;
                 }
-                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(getDataSource(), column.getColumn());
+                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, column.getColumn());
                 valueHandler.bindValueObject(context.getProgressMonitor(), dbStat, column.getColumn(), paramNum++, column.getValue());
             }
 
@@ -240,7 +240,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             allColumn.addAll(keyColumns);
             for (int i = 0; i < allColumn.size(); i++) {
                 DBDColumnValue column = allColumn.get(i);
-                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(getDataSource(), column.getColumn());
+                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, column.getColumn());
                 valueHandler.bindValueObject(context.getProgressMonitor(), dbStat, column.getColumn(), i, column.getValue());
             }
 
@@ -281,7 +281,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             // Set parameters
             for (int i = 0; i < keyColumns.size(); i++) {
                 DBDColumnValue column = keyColumns.get(i);
-                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(getDataSource(), column.getColumn());
+                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, column.getColumn());
                 valueHandler.bindValueObject(context.getProgressMonitor(), dbStat, column.getColumn(), i, column.getValue());
             }
 
@@ -308,14 +308,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             return;
         }
         try {
-            keysReceiver.fetchStart(context.getProgressMonitor(), dbResult);
+            keysReceiver.fetchStart(context, dbResult);
             try {
                 while (dbResult.nextRow()) {
-                    keysReceiver.fetchRow(context.getProgressMonitor(), dbResult);
+                    keysReceiver.fetchRow(context, dbResult);
                 }
             }
             finally {
-                keysReceiver.fetchEnd(context.getProgressMonitor());
+                keysReceiver.fetchEnd(context);
             }
         }
         finally {

@@ -117,6 +117,7 @@ public class EditablePropertiesControl extends Composite {
         if (defaultValues != null) {
             this.defaultValues.putAll(defaultValues);
         }
+        disposeOldEditor();
         propsTree.refresh();
     }
 

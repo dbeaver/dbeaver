@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -317,58 +318,64 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                         }
                     }
                 }
-                DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable)refConstraint.getReferencedKey();
-                Collection<DBDLabelValuePair> enumValues = enumConstraint.getKeyEnumeration(
-                    monitor,
-                    fkColumn.getReferencedColumn(),
-                    pattern,
-                    preceedingKeys,
-                    100);
-                for (DBDLabelValuePair pair : enumValues) {
-                    keyValues.put(pair.getValue(), pair.getLabel());
-                }
-                if (monitor.isCanceled()) {
-                    return Status.CANCEL_STATUS;
-                }
-                valueController.getValueSite().getShell().getDisplay().syncExec(new Runnable() {
-                    public void run()
-                    {
-                        DBDValueHandler colHandler = DBUtils.getColumnValueHandler(valueController.getDataSource(), fkColumn.getReferencedColumn());
+                final DBCExecutionContext context = getDataSource().openContext(monitor, "Select '" + fkColumn.getReferencedColumn().getName() + "' enumeration values");
+                try {
+                    DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable)refConstraint.getReferencedKey();
+                    Collection<DBDLabelValuePair> enumValues = enumConstraint.getKeyEnumeration(
+                        context,
+                        fkColumn.getReferencedColumn(),
+                        pattern,
+                        preceedingKeys,
+                        100);
+                    for (DBDLabelValuePair pair : enumValues) {
+                        keyValues.put(pair.getValue(), pair.getLabel());
+                    }
+                    if (monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    valueController.getValueSite().getShell().getDisplay().syncExec(new Runnable() {
+                        public void run()
+                        {
+                            DBDValueHandler colHandler = DBUtils.getColumnValueHandler(context, fkColumn.getReferencedColumn());
 
-                        if (editorSelector != null && !editorSelector.isDisposed()) {
-                            editorSelector.setRedraw(false);
-                            try {
-                                editorSelector.removeAll();
-                                for (Map.Entry<Object, String> entry : keyValues.entrySet()) {
-                                    TableItem discItem = new TableItem(editorSelector, SWT.NONE);
-                                    discItem.setText(0, colHandler.getValueDisplayString(fkColumn.getReferencedColumn(), entry.getKey()));
-                                    discItem.setText(1, entry.getValue());
-                                    discItem.setData(entry.getKey());
-                                }
+                            if (editorSelector != null && !editorSelector.isDisposed()) {
+                                editorSelector.setRedraw(false);
+                                try {
+                                    editorSelector.removeAll();
+                                    for (Map.Entry<Object, String> entry : keyValues.entrySet()) {
+                                        TableItem discItem = new TableItem(editorSelector, SWT.NONE);
+                                        discItem.setText(0, colHandler.getValueDisplayString(fkColumn.getReferencedColumn(), entry.getKey()));
+                                        discItem.setText(1, entry.getValue());
+                                        discItem.setData(entry.getKey());
+                                    }
 
-                                if (editor != null && !editor.isDisposed()) {
-                                    Object curValue = getEditorValue();
-                                    TableItem curItem = null;
-                                    for (TableItem item : editorSelector.getItems()) {
-                                        if (item.getData() == curValue || (item.getData() != null && curValue != null && item.getData().equals(curValue))) {
-                                            curItem = item;
-                                            break;
+                                    if (editor != null && !editor.isDisposed()) {
+                                        Object curValue = getEditorValue();
+                                        TableItem curItem = null;
+                                        for (TableItem item : editorSelector.getItems()) {
+                                            if (item.getData() == curValue || (item.getData() != null && curValue != null && item.getData().equals(curValue))) {
+                                                curItem = item;
+                                                break;
+                                            }
+                                        }
+                                        if (curItem != null) {
+                                            editorSelector.select(editorSelector.indexOf(curItem));
+                                            editorSelector.showSelection();
                                         }
                                     }
-                                    if (curItem != null) {
-                                        editorSelector.select(editorSelector.indexOf(curItem));
-                                        editorSelector.showSelection();
-                                    }
-                                }
 
-                                UIUtils.maxTableColumnsWidth(editorSelector);
-                            }
-                            finally {
-                                editorSelector.setRedraw(true);
+                                    UIUtils.maxTableColumnsWidth(editorSelector);
+                                }
+                                finally {
+                                    editorSelector.setRedraw(true);
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
+                finally {
+                    context.close();
+                }
 
             } catch (DBException e) {
                 // error

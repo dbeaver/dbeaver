@@ -192,19 +192,19 @@ public final class DBUtils {
         }
     }
 
-    public static DBDColumnBinding getColumnBinding(DBPDataSource dataSource, DBCColumnMetaData columnMeta)
+    public static DBDColumnBinding getColumnBinding(DBCExecutionContext context, DBCColumnMetaData columnMeta)
     {
         return new DBDColumnBinding(
             columnMeta,
-            getColumnValueHandler(dataSource, columnMeta));
+            getColumnValueHandler(context, columnMeta));
     }
 
-    public static DBDValueHandler getColumnValueHandler(DBPDataSource dataSource, DBSTypedObject column)
+    public static DBDValueHandler getColumnValueHandler(DBCExecutionContext context, DBSTypedObject column)
     {
         DBDValueHandler typeHandler = null;
-        DataTypeProviderDescriptor typeProvider = DataSourceRegistry.getDefault().getDataTypeProvider(dataSource, column);
+        DataTypeProviderDescriptor typeProvider = DataSourceRegistry.getDefault().getDataTypeProvider(context.getDataSource(), column);
         if (typeProvider != null) {
-            typeHandler = typeProvider.getInstance().getHandler(dataSource, column);
+            typeHandler = typeProvider.getInstance().getHandler(context, column);
         }
         if (typeHandler == null) {
             typeHandler = DBCDefaultValueHandler.INSTANCE;

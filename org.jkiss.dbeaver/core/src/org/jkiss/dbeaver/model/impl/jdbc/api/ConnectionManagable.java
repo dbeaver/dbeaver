@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
@@ -55,6 +57,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     private String taskTitle;
     private boolean isolated;
     private Connection isolatedConnection;
+    private DBDDataFormatterProfile dataFormatterProfile;
 
     public ConnectionManagable(JDBCConnector connector, DBRProgressMonitor monitor, String taskTitle, boolean isolated)
     {
@@ -63,6 +66,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         this.taskTitle = taskTitle;
         this.isolated = isolated;
         this.isolatedConnection = null;
+        this.dataFormatterProfile = connector.getDataSource().getContainer().getDataFormatterProfile();
 
         if (taskTitle != null) {
             monitor.startBlock(this, taskTitle);
@@ -109,6 +113,11 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     public DBCTransactionManager getTransactionManager()
     {
         return new TransactionManager();
+    }
+
+    public DBDDataFormatterProfile getDataFormatterProfile()
+    {
+        return dataFormatterProfile;
     }
 
     public JDBCStatement prepareStatement(

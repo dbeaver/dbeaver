@@ -5,8 +5,8 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Data reciever.
@@ -15,18 +15,17 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBDDataReceiver {
 
-    void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet)
+    void fetchStart(DBCExecutionContext context, DBCResultSet resultSet)
         throws DBCException;
 
-    void fetchRow(DBRProgressMonitor monitor, DBCResultSet resultSet)
+    void fetchRow(DBCExecutionContext context, DBCResultSet resultSet)
         throws DBCException;
 
     /**
      * Called after entire result set is fetched and closed
-     * @throws DBCException on error
-     * @param monitor
+     * @throws DBCException on error  @param context
      */
-    void fetchEnd(DBRProgressMonitor monitor)
+    void fetchEnd(DBCExecutionContext context)
         throws DBCException;
 
 }

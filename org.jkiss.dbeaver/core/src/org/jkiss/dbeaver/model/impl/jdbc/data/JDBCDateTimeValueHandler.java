@@ -10,18 +10,20 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -30,10 +32,30 @@ import java.util.Date;
  */
 public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
 
-    public static final JDBCDateTimeValueHandler INSTANCE = new JDBCDateTimeValueHandler();
-    public static final DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.LONG);//new SimpleDateFormat("yyyy-MMM-dd");
-    public static final DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.LONG);//new SimpleDateFormat("HH:mm:ss");
-    public static final DateFormat timeStampFormat = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);//new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final String TYPE_NAME_DATE = "date";
+    private static final String TYPE_NAME_TIME = "time";
+    private static final String TYPE_NAME_TIMESTAMP = "timestamp";
+
+    private DBDDataFormatterProfile formatterProfile;
+    private DBDDataFormatter formatter;
+
+    public JDBCDateTimeValueHandler(DBDDataFormatterProfile formatterProfile)
+    {
+        this.formatterProfile = formatterProfile;
+    }
+
+    private DBDDataFormatter getFormatter(String typeId)
+    {
+        if (formatter == null) {
+            try {
+                formatter = formatterProfile.createFormatter(typeId);
+            } catch (Exception e) {
+                log.error("Could not create formatter for datetime value handler", e);
+                formatter = DefaultDataFormatter.INSTANCE;
+            }
+        }
+        return formatter;
+    }
 
     protected Object getColumnValue(DBRProgressMonitor monitor, ResultSet resultSet, DBSColumnBase column,
                                     int columnIndex)
@@ -125,20 +147,13 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         if (value == null) {
             return super.getValueDisplayString(column, value);
         }
-        DateFormat formatter;
         switch (column.getValueType()) {
         case java.sql.Types.TIME:
-            formatter = timeFormat;
-            break;
+            return getFormatter(TYPE_NAME_TIME).formatValue(value);
         case java.sql.Types.DATE:
-            formatter = dateFormat;
-            break;
+            return getFormatter(TYPE_NAME_DATE).formatValue(value);
         default:
-            formatter = timeStampFormat;
-            break;
-        }
-        synchronized (formatter) {
-            return formatter.format(value);
+            return getFormatter(TYPE_NAME_TIMESTAMP).formatValue(value);
         }
     }
 

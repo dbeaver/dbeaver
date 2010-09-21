@@ -1705,21 +1705,21 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             this.statement = statement;
         }
 
-        public void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet)
+        public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet)
             throws DBCException
         {
 
         }
 
-        public void fetchRow(DBRProgressMonitor monitor, DBCResultSet resultSet)
+        public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet)
             throws DBCException
         {
             DBCResultSetMetaData rsMeta = resultSet.getResultSetMetaData();
             List<DBCColumnMetaData> keyColumns = rsMeta.getColumns();
             for (int i = 0; i < keyColumns.size(); i++) {
                 DBCColumnMetaData keyColumn = keyColumns.get(i);
-                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(dataContainer.getDataSource(), keyColumn);
-                Object keyValue = valueHandler.getValueObject(monitor, resultSet, keyColumn, i);
+                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, keyColumn);
+                Object keyValue = valueHandler.getValueObject(context.getProgressMonitor(), resultSet, keyColumn, i);
                 boolean updated = false;
                 if (!CommonUtils.isEmpty(keyColumn.getName())) {
                     int colIndex = getMetaColumnIndex(statement.table, keyColumn.getName());
@@ -1753,7 +1753,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
-        public void fetchEnd(DBRProgressMonitor monitor)
+        public void fetchEnd(DBCExecutionContext context)
             throws DBCException
         {
 

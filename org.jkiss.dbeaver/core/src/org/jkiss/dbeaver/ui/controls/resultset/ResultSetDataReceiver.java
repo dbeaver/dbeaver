@@ -11,11 +11,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.dbc.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,7 +57,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         this.nextSegmentRead = nextSegmentRead;
     }
 
-    public void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet)
+    public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet)
         throws DBCException
     {
         rows.clear();
@@ -79,21 +75,22 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             // Extrat column info
             metaColumns = new DBDColumnBinding[columnsCount];
             for (int i = 0; i < columnsCount; i++) {
-                metaColumns[i] = DBUtils.getColumnBinding(dataSource, rsColumns.get(i));
+                metaColumns[i] = DBUtils.getColumnBinding(context, rsColumns.get(i));
             }
 
             resultSetViewer.setColumnsInfo(metaColumns);
         }
     }
 
-    public void fetchRow(DBRProgressMonitor monitor, DBCResultSet resultSet)
+    public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet)
         throws DBCException
     {
         Object[] row = new Object[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
             try {
                 row[i] = metaColumns[i].getValueHandler().getValueObject(
-                    monitor, resultSet,
+                    context.getProgressMonitor(),
+                    resultSet,
                     metaColumns[i].getColumn(),
                     i);
             }
@@ -115,12 +112,12 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         rows.add(row);
     }
 
-    public void fetchEnd(DBRProgressMonitor monitor)
+    public void fetchEnd(DBCExecutionContext context)
         throws DBCException
     {
         if (!nextSegmentRead) {
             // Read locators metadata
-            DBUtils.findValueLocators(monitor, metaColumns);
+            DBUtils.findValueLocators(context.getProgressMonitor(), metaColumns);
         }
 
         display.syncExec(new Runnable() {

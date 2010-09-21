@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
@@ -33,6 +35,8 @@ import java.sql.SQLException;
  * Standard JDBC value handler
  */
 public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
+
+    static final Log log = LogFactory.getLog(JDBCAbstractValueHandler.class);
 
     public final Object getValueObject(DBRProgressMonitor monitor, DBCResultSet resultSet, DBSColumnBase column, int columnIndex)
         throws DBCException

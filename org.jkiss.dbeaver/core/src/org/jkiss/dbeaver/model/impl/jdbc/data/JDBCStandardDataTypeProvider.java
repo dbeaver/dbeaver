@@ -5,9 +5,9 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataTypeProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -22,26 +22,26 @@ public class JDBCStandardDataTypeProvider implements DBDDataTypeProvider {
         return JDBCUtils.getDataIcon(type).getImage();
     }
 
-    public DBDValueHandler getHandler(DBPDataSource dataSource, DBSTypedObject type)
+    public DBDValueHandler getHandler(DBCExecutionContext context, DBSTypedObject type)
     {
         DBSDataKind dataKind = JDBCUtils.getDataKind(type);
         switch (dataKind) {
             case BOOLEAN:
-                return JDBCBooleanValueHandler.INSTANCE;
+                return new JDBCBooleanValueHandler();
             case STRING:
                 if (type.getValueType() == java.sql.Types.LONGVARCHAR || type.getValueType() == java.sql.Types.LONGNVARCHAR) {
                     // Eval longvarchars as LOBs
-                    return JDBCContentValueHandler.INSTANCE;
+                    return new JDBCContentValueHandler();
                 } else {
-                    return JDBCStringValueHandler.INSTANCE;
+                    return new JDBCStringValueHandler();
                 }
             case NUMERIC:
-                return JDBCNumberValueHandler.INSTANCE;
+                return new JDBCNumberValueHandler(context.getDataFormatterProfile());
             case DATETIME:
-                return JDBCDateTimeValueHandler.INSTANCE;
+                return new JDBCDateTimeValueHandler(context.getDataFormatterProfile());
             case BINARY:
             case LOB:
-                return JDBCContentValueHandler.INSTANCE;
+                return new JDBCContentValueHandler();
             default:
                 return null;
         }

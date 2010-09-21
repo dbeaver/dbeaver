@@ -6,35 +6,35 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
 import java.util.Map;
 
-public class NumberDataFormatter implements DBDDataFormatter {
+public class DefaultDataFormatter implements DBDDataFormatter {
 
-    private NumberFormat numberFormat;
+    public static final DBDDataFormatter INSTANCE = new DefaultDataFormatter();
+
+    private  DefaultDataFormatter()
+    {
+    }
 
     public void init(Locale locale, Map<String, String> properties)
     {
-        numberFormat = NumberFormat.getInstance(locale);
+    }
+
+    public Object getSampleValue()
+    {
+        return "";
     }
 
     public String formatValue(Object value)
     {
-        if (value == null) {
-            return null;
-        }
-        try {
-            return numberFormat.format(value);
-        } catch (Exception e) {
-            return value.toString();
-        }
+        return value == null ? null : value.toString();
     }
 
     public Object parseValue(String value) throws ParseException
     {
-        return numberFormat.parse(value);
+        return null;
     }
 
 }

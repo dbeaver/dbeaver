@@ -6,9 +6,9 @@ package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataTypeProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -22,7 +22,7 @@ public class MySQLDataTypeProvider implements DBDDataTypeProvider {
         return JDBCUtils.getDataIcon(type).getImage();
     }
 
-    public DBDValueHandler getHandler(DBPDataSource dataSource, DBSTypedObject type)
+    public DBDValueHandler getHandler(DBCExecutionContext context, DBSTypedObject type)
     {
         String typeName = type.getTypeName();
         if (MySQLConstants.TYPE_NAME_ENUM.equalsIgnoreCase(typeName)) {

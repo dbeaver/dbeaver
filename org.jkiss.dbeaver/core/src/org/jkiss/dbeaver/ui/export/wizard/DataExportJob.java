@@ -171,13 +171,13 @@ public class DataExportJob extends AbstractJob {
             }
         }
 
-        public void fetchStart(DBRProgressMonitor monitor, DBCResultSet resultSet) throws DBCException
+        public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
         {
             // Prepare columns
             metaColumns = new ArrayList<DBDColumnBinding>();
             List<DBCColumnMetaData> columns = resultSet.getResultSetMetaData().getColumns();
             for (DBCColumnMetaData column : columns) {
-                DBDColumnBinding columnBinding = DBUtils.getColumnBinding(dataProvider.getDataSource(), column);
+                DBDColumnBinding columnBinding = DBUtils.getColumnBinding(context, column);
 /*
                 if (settings.getLobExtractType() == DataExportSettings.LobExtractType.SKIP &&
                     DBDContent.class.isAssignableFrom(columnBinding.getValueHandler().getValueObjectType()))
@@ -190,7 +190,7 @@ public class DataExportJob extends AbstractJob {
             row = new Object[metaColumns.size()];
 
             try {
-                dataExporter.exportHeader(monitor);
+                dataExporter.exportHeader(context.getProgressMonitor());
             } catch (DBException e) {
                 log.warn("Error while exporting table header", e);
             } catch (IOException e) {
@@ -198,13 +198,13 @@ public class DataExportJob extends AbstractJob {
             }
         }
 
-        public void fetchRow(DBRProgressMonitor monitor, DBCResultSet resultSet) throws DBCException
+        public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
         {
             try {
                 // Get values
                 for (int i = 0; i < metaColumns.size(); i++) {
                     DBDColumnBinding column = metaColumns.get(i);
-                    Object value = column.getValueHandler().getValueObject(monitor, resultSet, column.getColumn(), i);
+                    Object value = column.getValueHandler().getValueObject(context.getProgressMonitor(), resultSet, column.getColumn(), i);
                     if (value instanceof DBDContent) {
                         // Check for binary type export
                         if (!ContentUtils.isTextContent((DBDContent)value)) {
@@ -218,7 +218,7 @@ public class DataExportJob extends AbstractJob {
                                     break;
                                 case FILES:
                                     // Save content to file and pass file reference to exporter
-                                    value = saveContentToFile(monitor, (DBDContent)value);
+                                    value = saveContentToFile(context.getProgressMonitor(), (DBDContent)value);
                                     break;
                             }
                         }
@@ -226,7 +226,7 @@ public class DataExportJob extends AbstractJob {
                     row[i] = value;
                 }
                 // Export row
-                dataExporter.exportRow(monitor, row);
+                dataExporter.exportRow(context.getProgressMonitor(), row);
             } catch (DBException e) {
                 throw new DBCException("Error while exporting table row", e);
             } catch (IOException e) {
@@ -234,10 +234,10 @@ public class DataExportJob extends AbstractJob {
             }
         }
 
-        public void fetchEnd(DBRProgressMonitor monitor) throws DBCException
+        public void fetchEnd(DBCExecutionContext context) throws DBCException
         {
             try {
-                dataExporter.exportFooter(monitor);
+                dataExporter.exportFooter(context.getProgressMonitor());
             } catch (DBException e) {
                 log.warn("Error while exporting table footer", e);
             } catch (IOException e) {

@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.dbc;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -21,6 +22,8 @@ public interface DBCExecutionContext {
     DBRProgressMonitor getProgressMonitor();
 
     DBCTransactionManager getTransactionManager();
+
+    public DBDDataFormatterProfile getDataFormatterProfile();
 
     DBCStatement prepareStatement(
         String query,

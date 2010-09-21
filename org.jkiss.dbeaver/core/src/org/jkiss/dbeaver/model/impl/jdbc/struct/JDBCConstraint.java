@@ -47,16 +47,15 @@ public abstract class JDBCConstraint<DATASOURCE extends DBPDataSource, TABLE ext
 
     /**
      * Returns prepared statements for enumeration fetch
-     * @param monitor progress monitor
-     * @param keyColumn enumeration column.
+     * @param context
+     *@param keyColumn enumeration column.
      * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
      * @param preceedingKeys other constrain key values. May be null.
-     * @param maxResults maximum enumeration values in result set
-     * @return
+     * @param maxResults maximum enumeration values in result set     @return
      * @throws DBException
      */
     public Collection<DBDLabelValuePair> getKeyEnumeration(
-        DBRProgressMonitor monitor,
+        DBCExecutionContext context,
         DBSTableColumn keyColumn,
         Object keyPattern,
         List<DBDColumnValue> preceedingKeys,
@@ -67,103 +66,97 @@ public abstract class JDBCConstraint<DATASOURCE extends DBPDataSource, TABLE ext
             throw new IllegalArgumentException("Bad key column argument");
         }
         DBPDataSource dataSource = keyColumn.getDataSource();
-        DBCExecutionContext context = getDataSource().openContext(monitor, "Select '" + keyColumn.getName() + "' enumeration values");
-        try {
-            DBDValueHandler keyValueHandler = DBUtils.getColumnValueHandler(getDataSource(), keyColumn);
-            StringBuilder query = new StringBuilder();
-            query.append("SELECT ").append(DBUtils.getQuotedIdentifier(dataSource, keyColumn.getName()));
-            DBSTableColumn descColumn = getKeyDescriptionColumn(monitor, keyColumn);
-            if (descColumn != null) {
-                query.append(", ").append(DBUtils.getQuotedIdentifier(dataSource, descColumn.getName()));
-            }
-            query.append(" FROM ").append(keyColumn.getTable().getFullQualifiedName());
-            List<String> conditions = new ArrayList<String>();
-            if (keyPattern != null) {
-                if (keyPattern instanceof CharSequence) {
-                    if (((CharSequence)keyPattern).length() > 0) {
-                        conditions.add(DBUtils.getQuotedIdentifier(dataSource, keyColumn.getName()) + " LIKE ?");
-                    } else {
-                        keyPattern = null;
-                    }
-                } else if (keyPattern instanceof Number) {
-                    conditions.add(DBUtils.getQuotedIdentifier(dataSource, keyColumn.getName()) + " >= ?");
+        DBDValueHandler keyValueHandler = DBUtils.getColumnValueHandler(context, keyColumn);
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT ").append(DBUtils.getQuotedIdentifier(dataSource, keyColumn.getName()));
+        DBSTableColumn descColumn = getKeyDescriptionColumn(context.getProgressMonitor(), keyColumn);
+        if (descColumn != null) {
+            query.append(", ").append(DBUtils.getQuotedIdentifier(dataSource, descColumn.getName()));
+        }
+        query.append(" FROM ").append(keyColumn.getTable().getFullQualifiedName());
+        List<String> conditions = new ArrayList<String>();
+        if (keyPattern != null) {
+            if (keyPattern instanceof CharSequence) {
+                if (((CharSequence)keyPattern).length() > 0) {
+                    conditions.add(DBUtils.getQuotedIdentifier(dataSource, keyColumn.getName()) + " LIKE ?");
                 } else {
-                    // not supported
+                    keyPattern = null;
                 }
+            } else if (keyPattern instanceof Number) {
+                conditions.add(DBUtils.getQuotedIdentifier(dataSource, keyColumn.getName()) + " >= ?");
+            } else {
+                // not supported
             }
+        }
+        if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
+            for (DBDColumnValue precColumn : preceedingKeys) {
+                conditions.add(DBUtils.getQuotedIdentifier(dataSource, precColumn.getColumn().getName()) + " = ?");
+            }
+        }
+        if (!conditions.isEmpty()) {
+            query.append(" WHERE");
+            for (int i = 0; i < conditions.size(); i++) {
+                if (i > 0) {
+                    query.append(" AND");
+                }
+                query.append(" ").append(conditions.get(i));
+            }
+        }
+        DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, false);
+        try {
+            int paramPos = 0;
+            if (keyPattern instanceof CharSequence) {
+                // Add % for LIKE operand
+                keyPattern = keyPattern.toString() + "%";
+            }
+            if (keyPattern != null) {
+                keyValueHandler.bindValueObject(context.getProgressMonitor(), dbStat, keyColumn, paramPos++, keyPattern);
+            }
+
             if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
                 for (DBDColumnValue precColumn : preceedingKeys) {
-                    conditions.add(DBUtils.getQuotedIdentifier(dataSource, precColumn.getColumn().getName()) + " = ?");
+                    DBDValueHandler precValueHandler = DBUtils.getColumnValueHandler(context, precColumn.getColumn());
+                    precValueHandler.bindValueObject(context.getProgressMonitor(), dbStat, precColumn.getColumn(), paramPos++, precColumn.getValue());
                 }
             }
-            if (!conditions.isEmpty()) {
-                query.append(" WHERE");
-                for (int i = 0; i < conditions.size(); i++) {
-                    if (i > 0) {
-                        query.append(" AND");
+            dbStat.setLimit(0, 100);
+            if (dbStat.executeStatement()) {
+                DBCResultSet dbResult = dbStat.openResultSet();
+                try {
+                    List<DBDLabelValuePair> values = new ArrayList<DBDLabelValuePair>();
+                    DBDValueHandler descValueHandler = null;
+                    if (descColumn != null) {
+                        descValueHandler = DBUtils.getColumnValueHandler(context, descColumn);
                     }
-                    query.append(" ").append(conditions.get(i));
-                }
-            }
-            DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, false);
-            try {
-                int paramPos = 0;
-                if (keyPattern instanceof CharSequence) {
-                    // Add % for LIKE operand
-                    keyPattern = keyPattern.toString() + "%";
-                }
-                if (keyPattern != null) {
-                    keyValueHandler.bindValueObject(monitor, dbStat, keyColumn, paramPos++, keyPattern);
-                }
-
-                if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
-                    for (DBDColumnValue precColumn : preceedingKeys) {
-                        DBDValueHandler precValueHandler = DBUtils.getColumnValueHandler(dataSource, precColumn.getColumn());
-                        precValueHandler.bindValueObject(monitor, dbStat, precColumn.getColumn(), paramPos++, precColumn.getValue());
-                    }
-                }
-                dbStat.setLimit(0, 100);
-                if (dbStat.executeStatement()) {
-                    DBCResultSet dbResult = dbStat.openResultSet();
-                    try {
-                        List<DBDLabelValuePair> values = new ArrayList<DBDLabelValuePair>();
-                        DBDValueHandler descValueHandler = null;
-                        if (descColumn != null) {
-                            descValueHandler = DBUtils.getColumnValueHandler(dataSource, descColumn);
+                    // Extract enumeration values and (optionally) their descriptions
+                    while (dbResult.nextRow()) {
+                        // Check monitor
+                        if (context.getProgressMonitor().isCanceled()) {
+                            break;
                         }
-                        // Extract enumeration values and (optionally) their descriptions
-                        while (dbResult.nextRow()) {
-                            // Check monitor
-                            if (monitor.isCanceled()) {
-                                break;
-                            }
-                            // Get value and description
-                            Object keyValue = keyValueHandler.getValueObject(monitor, dbResult, keyColumn, 0);
-                            if (keyValue == null) {
-                                continue;
-                            }
-                            String keyLabel = keyValueHandler.getValueDisplayString(keyColumn, keyValue);
-                            if (descValueHandler != null) {
-                                Object descValue = descValueHandler.getValueObject(monitor, dbResult, descColumn, 1);
-                                keyLabel = descValueHandler.getValueDisplayString(descColumn, descValue);
-                            }
-                            values.add(new DBDLabelValuePair(keyLabel, keyValue));
+                        // Get value and description
+                        Object keyValue = keyValueHandler.getValueObject(context.getProgressMonitor(), dbResult, keyColumn, 0);
+                        if (keyValue == null) {
+                            continue;
                         }
-                        return values;
+                        String keyLabel = keyValueHandler.getValueDisplayString(keyColumn, keyValue);
+                        if (descValueHandler != null) {
+                            Object descValue = descValueHandler.getValueObject(context.getProgressMonitor(), dbResult, descColumn, 1);
+                            keyLabel = descValueHandler.getValueDisplayString(descColumn, descValue);
+                        }
+                        values.add(new DBDLabelValuePair(keyLabel, keyValue));
                     }
-                    finally {
-                        dbResult.close();
-                    }
-                } else {
-                    return null;
+                    return values;
                 }
-            }
-            finally {
-                dbStat.close();
+                finally {
+                    dbResult.close();
+                }
+            } else {
+                return null;
             }
         }
         finally {
-            context.close();
+            dbStat.close();
         }
     }
 

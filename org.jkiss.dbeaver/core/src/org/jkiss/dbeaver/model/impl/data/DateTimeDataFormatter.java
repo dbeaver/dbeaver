@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
@@ -21,7 +25,7 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
 
     public String formatValue(Object value)
     {
-        return dateFormat.format(value);
+        return value == null ? null : dateFormat.format(value);
     }
 
     public Object parseValue(String value) throws ParseException
