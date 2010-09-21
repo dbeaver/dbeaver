@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.registry;
 
 import net.sf.jkiss.utils.CommonUtils;
@@ -14,12 +18,14 @@ import java.util.*;
  */
 class DataFormatterProfile implements DBDDataFormatterProfile {
 
+    private IPreferenceStore store;
     private String name;
     private Locale locale;
     private Map<String, Map<String, String>> properties = new HashMap<String, Map<String, String>>();
 
     DataFormatterProfile(IPreferenceStore store)
     {
+        this.store = store;
         this.name = store.getString("dataformat.profile.name");
         {
             String language = store.getString("dataformat.profile.language");
@@ -49,7 +55,7 @@ class DataFormatterProfile implements DBDDataFormatterProfile {
         }
     }
 
-    public void saveProfile(IPreferenceStore store)
+    public void saveProfile()
     {
         store.setValue("dataformat.profile.name", name);
         store.setValue("dataformat.profile.language", locale.getLanguage());
@@ -72,6 +78,11 @@ class DataFormatterProfile implements DBDDataFormatterProfile {
     public String getProfileName()
     {
         return name;
+    }
+
+    public void setProfileName(String name)
+    {
+        this.name = name;
     }
 
     public Locale getLocale()
@@ -102,11 +113,17 @@ class DataFormatterProfile implements DBDDataFormatterProfile {
             throw new IllegalArgumentException("Formatter '" + typeId + "' not found");
         }
         DBDDataFormatter formatter = descriptor.createFormatter();
+
+        Map<String, String> defProps = descriptor.getSample().getDefaultProperties(locale);
         Map<String, String> props = getFormatterProperties(typeId);
-        if (props == null || props.isEmpty()) {
-            props = descriptor.getSample().getDefaultProperties(locale);
+        Map<String, String> formatterProps = new HashMap<String, String>();
+        if (defProps != null && !defProps.isEmpty()) {
+            formatterProps.putAll(defProps);
         }
-        formatter.init(locale, props);
+        if (props != null && !props.isEmpty()) {
+            formatterProps.putAll(props);
+        }
+        formatter.init(locale, formatterProps);
         return formatter;
     }
 

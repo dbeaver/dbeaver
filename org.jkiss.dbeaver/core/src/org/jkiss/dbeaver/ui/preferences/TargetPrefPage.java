@@ -69,7 +69,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     protected abstract String getPropertyPageID();
 
-    public DataSourceDescriptor getDataSource()
+    public DataSourceDescriptor getDataSourceContainer()
     {
         return dsNode.getObject();
     }
@@ -146,13 +146,13 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
         configurationBlockControl.setLayoutData(data);
 
         if (isDataSourcePreferencePage()) {
-            boolean useProjectSettings = hasDataSourceSpecificOptions(getDataSource());
+            boolean useProjectSettings = hasDataSourceSpecificOptions(getDataSourceContainer());
             enableDataSourceSpecificSettings(useProjectSettings);
         }
 
         {
             IPreferenceStore store = useDataSourceSettings() ?
-                getDataSource().getPreferenceStore() :
+                getDataSourceContainer().getPreferenceStore() :
                 DBeaverCore.getInstance().getGlobalPreferenceStore();
             loadPreferences(store);
         }
@@ -269,7 +269,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
     public final boolean performOk()
     {
         IPreferenceStore store = isDataSourcePreferencePage() ?
-            getDataSource().getPreferenceStore() :
+            getDataSourceContainer().getPreferenceStore() :
             DBeaverCore.getInstance().getGlobalPreferenceStore();
         if (isDataSourcePreferencePage() && !useDataSourceSettings()) {
             // Just delete datasource specific settings

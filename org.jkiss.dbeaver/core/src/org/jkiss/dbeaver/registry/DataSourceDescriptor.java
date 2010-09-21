@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
@@ -53,6 +54,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     private Date createDate;
     private Date updateDate;
     private Date loginDate;
+    private DBDDataFormatterProfile formatterProfile;
     private DataSourcePreferenceStore preferenceStore;
 
     private DBPDataSource dataSource;
@@ -75,6 +77,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         this.connectionInfo = connectionInfo;
         this.createDate = new Date();
         this.preferenceStore = new DataSourcePreferenceStore(this);
+        this.formatterProfile = new DataFormatterProfile(preferenceStore);
     }
 
     public void dispose()
@@ -365,6 +368,11 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
     public void fireEvent(DBPEvent event) {
         DataSourceRegistry.getDefault().fireDataSourceEvent(event);
+    }
+
+    public DBDDataFormatterProfile getDataFormatterProfile()
+    {
+        return formatterProfile;
     }
 
     public AbstractPreferenceStore getPreferenceStore()

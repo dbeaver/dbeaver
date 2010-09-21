@@ -17,16 +17,15 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataFormatterDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
 import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * PrefPageDataFormat
@@ -44,6 +43,10 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     private List<DataFormatterDescriptor> formatterDescriptors;
     private LocaleSelectorControl localeSelector;
+
+    private String profileName;
+    private Locale profileLocale;
+    private Map<String, Map<String, String>> profileProperties = new HashMap<String, Map<String, String>>();
 
     public PrefPageDataFormat()
     {
@@ -123,12 +126,26 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     protected void loadPreferences(IPreferenceStore store)
     {
-        formatterProfile = DBeaverCore.getInstance().getDataSourceRegistry().loadDataFormatterProfile(store);
+        if (useDataSourceSettings()) {
+            formatterProfile = getDataSourceContainer().getDataFormatterProfile();
+        } else {
+            formatterProfile = DataSourceRegistry.getDefault().getGlobalFormatterProfile();
+        }
+        formatterDescriptors = new ArrayList<DataFormatterDescriptor>(DBeaverCore.getInstance().getDataSourceRegistry().getDataFormatters());
+
+        profileName = formatterProfile.getProfileName();
+        profileLocale = formatterProfile.getLocale();
+        for (DataFormatterDescriptor dfd : formatterDescriptors) {
+            Map<String, String> formatterProps = formatterProfile.getFormatterProperties(dfd.getId());
+            if (formatterProps != null) {
+                profileProperties.put(dfd.getId(), formatterProps);
+            }
+        }
+
         try {
             // Set locale
-            localeSelector.setLocale(formatterProfile.getLocale());
+            localeSelector.setLocale(profileLocale);
             // Load types
-            formatterDescriptors = new ArrayList<DataFormatterDescriptor>(DBeaverCore.getInstance().getDataSourceRegistry().getDataFormatters());
             for (DataFormatterDescriptor formatter : formatterDescriptors) {
                 typeCombo.add(formatter.getName());
             }
@@ -160,7 +177,7 @@ public class PrefPageDataFormat extends TargetPrefPage
             return;
         }
 
-        Map<String,String> formatterProps = formatterProfile.getFormatterProperties(formatterDescriptor.getId());
+        Map<String,String> formatterProps = profileProperties.get(formatterDescriptor.getId());
         Map<String, String> defaultProps = formatterDescriptor.getSample().getDefaultProperties(localeSelector.getSelectedLocale());
         propertiesControl.loadProperties(
             formatterDescriptor.getPropertyGroups(),
@@ -176,7 +193,19 @@ public class PrefPageDataFormat extends TargetPrefPage
             return;
         }
         try {
-            DBDDataFormatter formatter = formatterProfile.createFormatter(formatterDescriptor.getId());
+            DBDDataFormatter formatter = formatterDescriptor.createFormatter();
+
+            Map<String, String> defProps = formatterDescriptor.getSample().getDefaultProperties(profileLocale);
+            Map<String, String> props = profileProperties.get(formatterDescriptor.getId());
+            Map<String, String> formatterProps = new HashMap<String, String>();
+            if (defProps != null && !defProps.isEmpty()) {
+                formatterProps.putAll(defProps);
+            }
+            if (props != null && !props.isEmpty()) {
+                formatterProps.putAll(props);
+            }
+            formatter.init(profileLocale, formatterProps);
+
             String sampleValue = formatter.formatValue(formatterDescriptor.getSample().getSampleValue());
             sampleText.setText(sampleValue);
         } catch (Exception e) {
@@ -190,15 +219,15 @@ public class PrefPageDataFormat extends TargetPrefPage
         if (formatterDescriptor == null) {
             return;
         }
-        Map<String, String> props = propertiesControl.getPropertiesWithDefaults();
-        formatterProfile.setFormatterProperties(formatterDescriptor.getId(), props);
+        Map<String, String> props = propertiesControl.getProperties();
+        profileProperties.put(formatterDescriptor.getId(), props);
         reloadSample();
     }
 
     private void onLocaleChange(Locale locale)
     {
-        if (!locale.equals(formatterProfile.getLocale())) {
-            formatterProfile.setLocale(locale);
+        if (!locale.equals(profileLocale)) {
+            profileLocale = locale;
             DataFormatterDescriptor formatter = getCurrentFormatter();
             if (formatter != null) {
                 propertiesControl.reloadDefaultValues(formatter.getSample().getDefaultProperties(locale));
@@ -210,10 +239,12 @@ public class PrefPageDataFormat extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
-            formatterProfile.saveProfile(store);
-            //store.setValue(PrefConstants.DEFAULT_AUTO_COMMIT, autoCommitCheck.getSelection());
-            //store.setValue(PrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
-            //store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
+            formatterProfile.setProfileName(profileName);
+            formatterProfile.setLocale(profileLocale);
+            for (String typeId : profileProperties.keySet()) {
+                formatterProfile.setFormatterProperties(typeId, profileProperties.get(typeId));
+            }
+            formatterProfile.saveProfile();
         } catch (Exception e) {
             log.warn(e);
         }

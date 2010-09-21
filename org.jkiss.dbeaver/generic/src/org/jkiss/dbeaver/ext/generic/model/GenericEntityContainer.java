@@ -206,11 +206,11 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             String typeSchemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_SCHEM);
             GenericCatalog typeCatalog = CommonUtils.isEmpty(typeCatalogName) ?
                 null :
-                getDataSource().getCatalog(context.getProgressMonitor(), typeCatalogName);
+                getDataSourceContainer().getCatalog(context.getProgressMonitor(), typeCatalogName);
             GenericSchema typeSchema = CommonUtils.isEmpty(typeSchemaName) ?
                 null :
                 typeCatalog == null ?
-                    getDataSource().getSchema(context.getProgressMonitor(), typeSchemaName) :
+                    getDataSourceContainer().getSchema(context.getProgressMonitor(), typeSchemaName) :
                     typeCatalog.getSchema(typeSchemaName);
 */
             return new GenericTable(
@@ -291,7 +291,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                     // oracle fails if unquoted complex identifier specified
                     // but other DBs (and logically it's correct) do not want quote chars in this query
                     // so let's fix it in oracle plugin
-                    forParent == null ? null : forParent.getName(), //DBUtils.getQuotedIdentifier(getDataSource(), forTable.getName()),
+                    forParent == null ? null : forParent.getName(), //DBUtils.getQuotedIdentifier(getDataSourceContainer(), forTable.getName()),
                     true,
                     true).getStatement();
         }
@@ -431,7 +431,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
             String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
             int position = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-            //DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName);
+            //DBSDataType dataType = getDataSourceContainer().getInfo().getSupportedDataType(typeName);
             DBSProcedureColumnType columnType;
             switch (columnTypeNum) {
                 case DatabaseMetaData.procedureColumnIn: columnType = DBSProcedureColumnType.IN; break;

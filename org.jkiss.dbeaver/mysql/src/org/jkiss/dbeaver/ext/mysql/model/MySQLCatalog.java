@@ -442,7 +442,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
             int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
             int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
             String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-            //DBSDataType dataType = getDataSource().getInfo().getSupportedDataType(typeName);
+            //DBSDataType dataType = getDataSourceContainer().getInfo().getSupportedDataType(typeName);
             DBSProcedureColumnType columnType;
             switch (columnTypeNum) {
                 case DatabaseMetaData.procedureColumnIn: columnType = DBSProcedureColumnType.IN; break;

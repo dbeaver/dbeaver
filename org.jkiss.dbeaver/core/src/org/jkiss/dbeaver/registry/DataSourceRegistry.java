@@ -52,8 +52,9 @@ public class DataSourceRegistry implements DBPRegistry
 
     private StringEncrypter encrypter;
     private static final String PASSWORD_ENCRYPTION_KEY = "sdf@!#$verf^wv%6Fwe%$$#FFGwfsdefwfe135s$^H)dg";
+    private DBDDataFormatterProfile globalFormetterProfiler;
 
-    public DataSourceRegistry(DBeaverCore core, IExtensionRegistry registry)
+    public DataSourceRegistry(DBeaverCore core)
     {
         this.core = core;
         this.workspaceRoot = core.getRootPath().toFile();
@@ -64,7 +65,10 @@ public class DataSourceRegistry implements DBPRegistry
             // never be here
             log.error(e);
         }
+    }
 
+    public void loadExtensions(IExtensionRegistry registry)
+    {
         // Load datasource providers from external plugins
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID);
@@ -109,6 +113,8 @@ public class DataSourceRegistry implements DBPRegistry
         loadDrivers();
         // Load datasources
         loadDataSources();
+
+        globalFormetterProfiler = new DataFormatterProfile(DBeaverCore.getInstance().getGlobalPreferenceStore());
     }
 
     public void dispose()
@@ -225,9 +231,9 @@ public class DataSourceRegistry implements DBPRegistry
         return dataFormatterMap.get(typeId);
     }
 
-    public DBDDataFormatterProfile loadDataFormatterProfile(IPreferenceStore store)
+    public DBDDataFormatterProfile getGlobalFormatterProfile()
     {
-        return new DataFormatterProfile(store);
+        return globalFormetterProfiler;
     }
 
     ////////////////////////////////////////////////////

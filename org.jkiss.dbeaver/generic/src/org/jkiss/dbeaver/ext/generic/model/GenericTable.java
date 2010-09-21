@@ -240,7 +240,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
             return rowCount;
         }
 
-        JDBCExecutionContext context = getDataSource().openContext(monitor);
+        JDBCExecutionContext context = getDataSourceContainer().openContext(monitor);
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT COUNT(*) FROM " + getFullQualifiedName());

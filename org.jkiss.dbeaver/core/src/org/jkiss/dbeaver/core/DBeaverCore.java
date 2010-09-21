@@ -102,7 +102,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.rootPath = Platform.getLocation();
 
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
-        this.dataSourceRegistry = new DataSourceRegistry(this, extensionRegistry);
+        this.dataSourceRegistry = new DataSourceRegistry(this);
+        this.dataSourceRegistry.loadExtensions(extensionRegistry);
+        
         this.editorsRegistry = new EntityEditorsRegistry(extensionRegistry);
         this.dataExportersRegistry = new DataExportersRegistry(extensionRegistry);
 
