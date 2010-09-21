@@ -106,6 +106,12 @@ public class PrefPageDataFormat extends TargetPrefPage
             propertiesControl = new EditablePropertiesControl(formatGroup, SWT.NONE);
             propertiesControl.setMarginVisible(false);
             propertiesControl.setLayoutData(new GridData(GridData.FILL_BOTH));
+            propertiesControl.addListener(SWT.Modify, new Listener() {
+                public void handleEvent(Event event)
+                {
+                    saveFormatterProperties();
+                }
+            });
 
             UIUtils.createControlLabel(formatGroup, "Sample");
             sampleText = new Text(formatGroup, SWT.BORDER | SWT.READ_ONLY);
@@ -178,12 +184,25 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
     }
 
+    private void saveFormatterProperties()
+    {
+        DataFormatterDescriptor formatterDescriptor = getCurrentFormatter();
+        if (formatterDescriptor == null) {
+            return;
+        }
+        Map<String, String> props = propertiesControl.getPropertiesWithDefaults();
+        formatterProfile.setFormatterProperties(formatterDescriptor.getId(), props);
+        reloadSample();
+    }
+
     private void onLocaleChange(Locale locale)
     {
-        formatterProfile.setLocale(locale);
-        if (propertiesControl.isDirty()) {
-            reloadFormatter();
-        } else {
+        if (!locale.equals(formatterProfile.getLocale())) {
+            formatterProfile.setLocale(locale);
+            DataFormatterDescriptor formatter = getCurrentFormatter();
+            if (formatter != null) {
+                propertiesControl.reloadDefaultValues(formatter.getSample().getDefaultProperties(locale));
+            }
             reloadSample();
         }
     }

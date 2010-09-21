@@ -83,6 +83,11 @@ public class ContentUtils {
         }
     }
 
+    public static String getDefaultFileEncoding()
+    {
+        return System.getProperty("file.encoding", DEFAULT_FILE_CHARSET);
+    }
+
     public static IFile createTempContentFile(DBRProgressMonitor monitor, String fileName)
         throws IOException
     {

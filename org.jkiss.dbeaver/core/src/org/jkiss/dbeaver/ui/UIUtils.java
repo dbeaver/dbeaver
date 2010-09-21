@@ -24,6 +24,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.services.IServiceLocator;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.nio.charset.Charset;
 import java.text.NumberFormat;
@@ -377,10 +378,7 @@ public class UIUtils {
     public static Combo createEncodingCombo(Composite parent, String curCharset)
     {
         if (curCharset == null) {
-            curCharset = System.getProperty("file.encoding");
-            if (curCharset == null) {
-                curCharset = "UTF-8";
-            }
+            curCharset = ContentUtils.getDefaultFileEncoding();
         }
         Combo encodingCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
         encodingCombo.setVisibleItemCount(30);

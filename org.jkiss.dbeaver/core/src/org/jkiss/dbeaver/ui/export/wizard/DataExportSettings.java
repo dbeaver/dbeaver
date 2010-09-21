@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.prop.DBPProperty;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -60,7 +61,7 @@ public class DataExportSettings {
 
     private String outputFolder = System.getProperty("user.home");
     private String outputFilePattern = PATTERN_TABLE + "_" + PATTERN_TIMESTAMP;
-    private String outputEncoding = System.getProperty("file.encoding");
+    private String outputEncoding = ContentUtils.getDefaultFileEncoding();
     private boolean outputEncodingBOM = true;
 
     private boolean compressResults = false;

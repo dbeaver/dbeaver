@@ -5,8 +5,6 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -51,32 +49,16 @@ public class LocaleSelectorControl extends Composite
         UIUtils.createControlLabel(group, "Language");
         languageCombo = new Combo(group, SWT.DROP_DOWN);
         languageCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        languageCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                onLanguageChange(null);
-                onCountryChange(null);
-            }
-        });
         languageCombo.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e)
             {
                 onLanguageChange(null);
-                onCountryChange(null);
             }
         });
 
         UIUtils.createControlLabel(group, "Country");
         countryCombo = new Combo(group, SWT.DROP_DOWN);
         countryCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        countryCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                onCountryChange(null);
-            }
-        });
         countryCombo.addModifyListener(new ModifyListener() {
             public void modifyText(ModifyEvent e)
             {
@@ -154,7 +136,6 @@ public class LocaleSelectorControl extends Composite
         if (defCountry == null && countryCombo.getItemCount() > 0) {
             countryCombo.select(0);
         }
-        calculateLocale();
     }
 
     private void onCountryChange(String defVariant)
@@ -184,7 +165,6 @@ public class LocaleSelectorControl extends Composite
         if (defVariant == null && variantCombo.getItemCount() > 0) {
             variantCombo.select(0);
         }
-        calculateLocale();
     }
 
     private void calculateLocale()

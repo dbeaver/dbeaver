@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.binary;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
@@ -15,6 +16,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -199,21 +201,11 @@ public class HexEditControl extends Composite {
     }
 
 
-    public String getCharset()
-    {
-        return charset;
-    }
-
-    public String getSystemCharset()
-    {
-        return System.getProperty("file.encoding", "utf-8");
-//	return Charset.defaultCharset().toString();
-    }
-
     public void setCharset(String name)
     {
-        if ((name == null) || (name.length() == 0))
-            name = getSystemCharset();
+        if (CommonUtils.isEmpty(name)) {
+            name = ContentUtils.getDefaultFileEncoding();
+        }
         charset = name;
         composeByteToCharMap();
     }
@@ -222,9 +214,6 @@ public class HexEditControl extends Composite {
      * Get long selection start and end points. Helper method for long selection listeners.
      * The start point is formed by event.width as the most significant int and event.x as the least
      * significant int. The end point is similarly formed by event.height and event.y
-     *
-     * @param selectionEvent an event with long selection start and end points
-     * @see addLongSelectionListener(org.eclipse.swt.events.SelectionListener)
      */
     public static long[] getLongSelection(SelectionEvent event)
     {
@@ -566,7 +555,6 @@ public class HexEditControl extends Composite {
      *
      * @param listener the listener
      * @see StyledText#addSelectionListener(org.eclipse.swt.events.SelectionListener)
-     * @see getLongSelection(SelectionEvent)
      */
     public void addLongSelectionListener(SelectionListener listener)
     {
@@ -882,8 +870,6 @@ public class HexEditControl extends Composite {
 
     /**
      * Calls copy();deleteSelected();
-     *
-     * @see copy(), deleteSelected()
      */
     public void cut()
     {
@@ -1657,20 +1643,6 @@ public class HexEditControl extends Composite {
 
 
     /**
-     * Removes the specified selection listener
-     *
-     * @see StyledText#removeSelectionListener(org.eclipse.swt.events.SelectionListener)
-     */
-    public void removeLongSelectionListener(SelectionListener listener)
-    {
-        if (listener == null)
-            throw new IllegalArgumentException();
-
-        myLongSelectionListeners.remove(listener);
-    }
-
-
-    /**
      * Replaces the selection. The result depends on which insertion mode is currently active:
      * Insert mode replaces the selection with the replaceString or, if there is no selection, inserts
      * at the current caret offset.
@@ -1843,14 +1815,15 @@ public class HexEditControl extends Composite {
         finder = null;
         if (content != null) {
             content.setActionsHistory();
-        }
 
-        if (firstContent || myEnd > content.length() || myTextAreasStart >= content.length()) {
-            myTextAreasStart = myStart = myEnd = 0L;
-            myCaretStickToStart = false;
-        }
+            if (firstContent || myEnd > content.length() || myTextAreasStart >= content.length()) {
+                myTextAreasStart = myStart = myEnd = 0L;
+                myCaretStickToStart = false;
+            }
 
-        charsForFileSizeAddress = Long.toHexString(content.length()).length();
+            charsForFileSizeAddress = Long.toHexString(content.length()).length();
+
+        }
 
         updateScrollBar();
         redrawTextAreas(true);

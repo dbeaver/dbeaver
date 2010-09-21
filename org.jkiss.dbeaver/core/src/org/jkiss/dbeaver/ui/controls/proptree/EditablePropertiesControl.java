@@ -80,7 +80,21 @@ public class EditablePropertiesControl extends Composite {
         }
         this.defaultValues.clear();
         if (defaultValues != null) {
+            // Set specified default values
             this.defaultValues.putAll(defaultValues);
+        } else {
+            // Collect default values from property model
+            Object root = propsTree.getInput();
+            if (root instanceof DBPPropertyGroup) {
+                addDefaultValues((DBPPropertyGroup)root);
+            } else if (root instanceof Collection) {
+                for (Object group : (Collection)root) {
+                    if (group instanceof DBPPropertyGroup) {
+                        addDefaultValues((DBPPropertyGroup)group);
+                    }
+                }
+
+            }
         }
 
         if (propsTree != null) {
@@ -97,23 +111,22 @@ public class EditablePropertiesControl extends Composite {
         disposeOldEditor();
     }
 
+    public void reloadDefaultValues(Map<String, String> defaultValues)
+    {
+        this.defaultValues.clear();
+        if (defaultValues != null) {
+            this.defaultValues.putAll(defaultValues);
+        }
+        propsTree.refresh();
+    }
+
     public Map<String, String> getProperties() {
         return propValues;
     }
 
     public Map<String, String> getPropertiesWithDefaults() {
-        Map<String, String> allValues = new HashMap<String, String>(propValues);
-        Object root = propsTree.getInput();
-        if (root instanceof DBPPropertyGroup) {
-            addDefaultValues((DBPPropertyGroup)root, allValues);
-        } else if (root instanceof Collection) {
-            for (Object group : (Collection)root) {
-                if (group instanceof DBPPropertyGroup) {
-                    addDefaultValues((DBPPropertyGroup)group, allValues);
-                }
-            }
-
-        }
+        Map<String, String> allValues = new HashMap<String, String>(defaultValues);
+        allValues.putAll(propValues);
         return allValues;
     }
 
@@ -126,14 +139,12 @@ public class EditablePropertiesControl extends Composite {
         return value;
     }
 
-    private void addDefaultValues(DBPPropertyGroup propertyGroup, Map<String, String> values)
+    private void addDefaultValues(DBPPropertyGroup propertyGroup)
     {
         for (DBPProperty property : propertyGroup.getProperties()) {
-            if (!values.containsKey(property.getId())) {
-                String defaultValue = getDefaultValue(property);
-                if (defaultValue != null) {
-                    values.put(property.getId(), defaultValue);
-                }
+            String defaultValue = getDefaultValue(property);
+            if (defaultValue != null) {
+                defaultValues.put(property.getId(), defaultValue);
             }
         }
     }
@@ -338,9 +349,9 @@ public class EditablePropertiesControl extends Composite {
                                 @Override
                                 public void run() {
                                     if (originalValues.containsKey(propId)) {
-                                        propValues.put(propId, originalValues.get(propId));
+                                        changeProperty(prop, originalValues.get(propId));
                                     } else if (!isCustom) {
-                                        propValues.remove(propId);
+                                        changeProperty(prop, null);
                                     }
                                     propsTree.update(prop, null);
                                     disposeOldEditor();
@@ -350,7 +361,7 @@ public class EditablePropertiesControl extends Composite {
                                 manager.add(new Action("Reset value to default") {
                                     @Override
                                     public void run() {
-                                        propValues.remove(propId);
+                                        changeProperty(prop, null);
                                         propsTree.update(prop, null);
                                         disposeOldEditor();
                                     }
@@ -405,18 +416,27 @@ public class EditablePropertiesControl extends Composite {
         if (!originalValues.containsKey(propId) && propValues.containsKey(propId)) {
             originalValues.put(propId, propValues.get(propId));
         }
-        propValues.put(propId, text);
+        if (text == null) {
+            propValues.remove(propId);
+        } else {
+            propValues.put(propId, text);
+        }
         propsTree.update(prop, null);
+
+        // Send modify event
+        Event event = new Event();
+        event.data = prop;
+        this.notifyListeners(SWT.Modify, event);
     }
 
     protected void handlePropertyCreate(PropertyDescriptor newProp, String newValue) {
-        propValues.put(newProp.getId(), newValue);
+        changeProperty(newProp, newValue);
         propsTree.refresh(newProp.getGroup());
         propsTree.expandToLevel(newProp.getGroup(), 1);
     }
 
     protected void handlePropertyRemove(DBPProperty prop) {
-        propValues.remove(prop.getId());
+        changeProperty(prop, null);
         propsTree.refresh(prop.getGroup());
     }
 

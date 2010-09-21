@@ -1,26 +1,8 @@
 /*
- * binary, a java binary editor
- * Copyright (C) 2006, 2009 Jordi Bergenthal, pestatije(-at_)users.sourceforge.net
- * The official binary site is sourceforge.net/projects/binary
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 package org.jkiss.dbeaver.ui.editors.binary;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -49,15 +31,11 @@ import java.util.List;
  */
 public class HexManager {
 
-    static final Log log = LogFactory.getLog(HexManager.class);
-
     private BinaryContent content = null;
     private List<Object[]> findReplaceFindList = null;
     private List<Object[]> findReplaceReplaceList = null;
     private FontData fontData = null;  // when null uses default font
     private Font fontText = null;
-    private String lastErrorMessage = null;
-    private String lastErrorText = null;
     private java.util.List<Listener> listOfStatusChangedListeners = null;
     private java.util.List<SelectionListener> listOfLongListeners = null;
 
@@ -263,29 +241,6 @@ public class HexManager {
 
 
     /**
-     * Creates status part of parent application.
-     *
-     * @param aParent           composite where the part will be drawn
-     * @param aParent
-     * @param withLeftSeparator so it can be put besides other status items (for plugin)
-     * @throws NullPointerException if aParent is null
-     */
-    public void createStatusPart(Composite aParent, boolean withLeftSeparator)
-    {
-        if (aParent == null) throw new NullPointerException("Cannot use null parent");
-
-        statusLine = new StatusLine(aParent, SWT.NONE, withLeftSeparator);
-        if (hexEditControl != null && hexEditControl.getEnabled()) {
-            statusLine.updateInsertModeText(!hexEditControl.isOverwriteMode());
-            if (hexEditControl.isSelected())
-                statusLine.updateSelectionValueText(hexEditControl.getSelection(), hexEditControl.getActualValue());
-            else
-                statusLine.updatePositionValueText(hexEditControl.getCaretPos(), hexEditControl.getActualValue());
-        }
-    }
-
-
-    /**
      * Copies selection into clipboard
      */
     public void doCopy()
@@ -387,15 +342,6 @@ public class HexManager {
 
 
     /**
-     * While in insert mode, trims the selection
-     */
-    public void doTrim()
-    {
-        hexEditControl.deleteNotSelected();
-    }
-
-
-    /**
      * Undoes the last action
      */
     public void doUndo()
@@ -412,21 +358,6 @@ public class HexManager {
     public BinaryContent getContent()
     {
         return content;
-    }
-
-
-    /**
-     * Get error message from last unsuccessful operation
-     */
-    public String getLastErrorMessage()
-    {
-        return lastErrorMessage;
-    }
-
-
-    String getLastErrorText()
-    {
-        return lastErrorText;
     }
 
 
@@ -494,17 +425,6 @@ public class HexManager {
         content = new BinaryContent(aFile);  // throws IOException
         hexEditControl.setCharset(charset);
         hexEditControl.setContentProvider(content);
-    }
-
-
-    /**
-     * Reuse the status line control from another manager. Useful for multiple open editors
-     *
-     * @param other manager to copy its control from
-     */
-    public void reuseStatusControlFrom(HexManager other)
-    {
-        statusLine = other.statusLine;
     }
 
 
@@ -580,19 +500,6 @@ public class HexManager {
     public void setMenuListener(IMenuListener menuListener)
     {
         this.menuListener = menuListener;
-    }
-
-    /**
-     * Show an error box with the last error message
-     *
-     * @param aShell parent of the message box
-     */
-    public void showErrorBox(Shell aShell)
-    {
-        MessageBox aMessageBox = new MessageBox(aShell, SWT.ICON_ERROR | SWT.OK);
-        aMessageBox.setText(getLastErrorText());
-        aMessageBox.setMessage(getLastErrorMessage());
-        aMessageBox.open();
     }
 
 }
