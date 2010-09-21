@@ -337,6 +337,16 @@ public class UIUtils {
         }
     }
 
+    public static Composite createPlaceholder(Composite parent, int columns)
+    {
+        Composite ph = new Composite(parent, SWT.NONE);
+        GridLayout gl = new GridLayout(columns, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        ph.setLayout(gl);
+        return ph;
+    }
+
     public static Combo createEncodingCombo(Composite parent, String curCharset)
     {
         if (curCharset == null) {

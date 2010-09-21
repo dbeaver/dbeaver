@@ -7,15 +7,17 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
+
+import java.util.Locale;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * PrefPageSQL
@@ -51,6 +53,7 @@ public class PrefPageCommon extends TargetPrefPage
     {
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(1, false));
+
         // General settings
         {
             Group txnGroup = new Group(composite, SWT.NONE);
@@ -59,6 +62,38 @@ public class PrefPageCommon extends TargetPrefPage
 
             autoCommitCheck = UIUtils.createLabelCheckbox(txnGroup, "Auto-commit by default", false);
             rollbackOnErrorCheck = UIUtils.createLabelCheckbox(txnGroup, "Rollback on error", false);
+        }
+
+        LocaleSelectorControl localeSelector = new LocaleSelectorControl(composite, null);
+        // Format settings
+        {
+            Group formatGroup = new Group(composite, SWT.NONE);
+            formatGroup.setText("Format");
+            formatGroup.setLayout(new GridLayout(2, false));
+
+            {
+                UIUtils.createControlLabel(formatGroup, "Locale");
+                Combo localeCombo = new Combo(formatGroup, SWT.DROP_DOWN);
+
+                Locale[] locales = Locale.getAvailableLocales();
+                Set<String> localeSet = new TreeSet<String>();
+                String defLocale = Locale.getDefault().toString();
+                for (Locale locale : locales) {
+                    String localeString = locale.toString();
+                    localeSet.add(localeString);
+                }
+                for (String locale : localeSet) {
+                    localeCombo.add(locale);
+                    if (locale.equals(defLocale)) {
+                        localeCombo.select(localeCombo.getItemCount() - 1);
+                    }
+                }
+            }
+
+            UIUtils.createLabelText(formatGroup, "Date format", "");
+            UIUtils.createLabelText(formatGroup, "Time format", "");
+            UIUtils.createLabelText(formatGroup, "Timestamp format", "");
+            UIUtils.createLabelText(formatGroup, "Number format", "");
         }
 
 
