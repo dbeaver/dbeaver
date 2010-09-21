@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ui;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.window.IShellProvider;
@@ -145,6 +144,13 @@ public class UIUtils {
     {
         tree.setRedraw(false);
         try {
+            // Check for disposed items
+            // TODO: it looks like SWT error. Sometimes tree items are disposed and NPE is thrown from column.pack
+            for (TreeItem item : tree.getItems()) {
+                if (item.isDisposed()) {
+                    return;
+                }
+            }
             int totalWidth = 0;
             for (TreeColumn column : tree.getColumns()) {
                 column.pack();
@@ -201,10 +207,10 @@ public class UIUtils {
         }
     }
 
-    public static void dispose(Resource resourse)
+    public static void dispose(Resource resource)
     {
-        if (resourse != null && !resourse.isDisposed()) {
-            resourse.dispose();
+        if (resource != null && !resource.isDisposed()) {
+            resource.dispose();
         }
     }
 
@@ -234,13 +240,6 @@ public class UIUtils {
     {
         FontData[] fontData = normalFont.getFontData();
         fontData[0].setStyle(fontData[0].getStyle() | style);
-        return new Font(normalFont.getDevice(), fontData[0]);
-    }
-
-    public static Font modifyFontHeight(Font normalFont, int height)
-    {
-        FontData[] fontData = normalFont.getFontData();
-        fontData[0].setHeight(height);
         return new Font(normalFont.getDevice(), fontData[0]);
     }
 

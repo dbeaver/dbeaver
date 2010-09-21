@@ -13,6 +13,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataFormatterDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -24,6 +25,8 @@ import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * PrefPageDataFormat
@@ -72,6 +75,14 @@ public class PrefPageDataFormat extends TargetPrefPage
 
         // Locale
         localeSelector = new LocaleSelectorControl(composite, null);
+        localeSelector.addListener(SWT.Selection, new Listener() {
+            public void handleEvent(Event event)
+            {
+                if (event.data instanceof Locale) {
+                    onLocaleChange((Locale) event.data);
+                }
+            }
+        });
 
         // formats
         {
@@ -127,17 +138,54 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
     }
 
-    private void reloadFormatter()
+    private DataFormatterDescriptor getCurrentFormatter()
     {
         int selectionIndex = typeCombo.getSelectionIndex();
         if (selectionIndex < 0) {
+            return null;
+        }
+        return formatterDescriptors.get(selectionIndex);
+    }
+
+    private void reloadFormatter()
+    {
+        DataFormatterDescriptor formatterDescriptor = getCurrentFormatter();
+        if (formatterDescriptor == null) {
             return;
         }
-        DataFormatterDescriptor formatterDescriptor = formatterDescriptors.get(selectionIndex);
 
+        Map<String,String> formatterProps = formatterProfile.getFormatterProperties(formatterDescriptor.getId());
+        Map<String, String> defaultProps = formatterDescriptor.getSample().getDefaultProperties(localeSelector.getSelectedLocale());
         propertiesControl.loadProperties(
             formatterDescriptor.getPropertyGroups(),
-            formatterProfile.getFormatterProperties(formatterDescriptor.getId()));
+            formatterProps,
+            defaultProps);
+        reloadSample();
+    }
+
+    private void reloadSample()
+    {
+        DataFormatterDescriptor formatterDescriptor = getCurrentFormatter();
+        if (formatterDescriptor == null) {
+            return;
+        }
+        try {
+            DBDDataFormatter formatter = formatterProfile.createFormatter(formatterDescriptor.getId());
+            String sampleValue = formatter.formatValue(formatterDescriptor.getSample().getSampleValue());
+            sampleText.setText(sampleValue);
+        } catch (Exception e) {
+            log.warn("Could not render sample value", e);
+        }
+    }
+
+    private void onLocaleChange(Locale locale)
+    {
+        formatterProfile.setLocale(locale);
+        if (propertiesControl.isDirty()) {
+            reloadFormatter();
+        } else {
+            reloadSample();
+        }
     }
 
     protected void savePreferences(IPreferenceStore store)

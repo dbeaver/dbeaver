@@ -86,8 +86,7 @@ class DataFormatterProfile implements DBDDataFormatterProfile {
 
     public Map<String, String> getFormatterProperties(String typeId)
     {
-        Map<String, String> props = properties.get(typeId);
-        return props == null ? Collections.<String, String>emptyMap() : props;
+        return properties.get(typeId);
     }
 
     public void setFormatterProperties(String typeId, Map<String, String> properties)
@@ -103,7 +102,11 @@ class DataFormatterProfile implements DBDDataFormatterProfile {
             throw new IllegalArgumentException("Formatter '" + typeId + "' not found");
         }
         DBDDataFormatter formatter = descriptor.createFormatter();
-        formatter.init(locale, getFormatterProperties(typeId));
+        Map<String, String> props = getFormatterProperties(typeId);
+        if (props == null || props.isEmpty()) {
+            props = descriptor.getSample().getDefaultProperties(locale);
+        }
+        formatter.init(locale, props);
         return formatter;
     }
 

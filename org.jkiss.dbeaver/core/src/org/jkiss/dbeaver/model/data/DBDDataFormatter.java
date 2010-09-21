@@ -9,10 +9,6 @@ import java.util.Map;
  */
 public interface DBDDataFormatter {
 
-    Map<String, String> getDefaultProperties(Locale locale);
-
-    Object getSampleValue();
-
     void init(Locale locale, Map<String, String> properties);
 
     String formatValue(Object value);

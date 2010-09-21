@@ -71,6 +71,16 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="sampleClass" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.data.DBDDataFormatterSample"/>
+               </appInfo>
+            </annotation>
+         </attribute>
          <attribute name="label" type="string" use="required">
             <annotation>
                <documentation>

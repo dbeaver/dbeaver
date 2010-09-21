@@ -43,6 +43,7 @@ public class EditablePropertiesControl extends Composite {
     private Font boldFont;
     //private Color colorBlue;
     private Clipboard clipboard;
+    private Map<String,String> defaultValues = new TreeMap<String, String>();
 
     public EditablePropertiesControl(Composite parent, int style)
     {
@@ -59,13 +60,27 @@ public class EditablePropertiesControl extends Composite {
         initPropTree();
     }
 
-    public void loadProperties(List<? extends DBPPropertyGroup> propertyGroups, Map<String, String> propertyValues)
+    public void loadProperties(
+        List<? extends DBPPropertyGroup> propertyGroups,
+        Map<String, String> propertyValues)
     {
-        propValues.clear();
-        originalValues.clear();
+        loadProperties(propertyGroups, propertyValues, null);
+    }
+
+    public void loadProperties(
+        List<? extends DBPPropertyGroup> propertyGroups,
+        Map<String, String> propertyValues,
+        Map<String, String> defaultValues)
+    {
+        this.propValues.clear();
+        this.originalValues.clear();
         if (propertyValues != null) {
-            propValues.putAll(propertyValues);
-            originalValues.putAll(propertyValues);
+            this.propValues.putAll(propertyValues);
+            this.originalValues.putAll(propertyValues);
+        }
+        this.defaultValues.clear();
+        if (defaultValues != null) {
+            this.defaultValues.putAll(defaultValues);
         }
 
         if (propsTree != null) {
@@ -102,11 +117,23 @@ public class EditablePropertiesControl extends Composite {
         return allValues;
     }
 
+    private String getDefaultValue(DBPProperty property)
+    {
+        String value = defaultValues.get(property.getId());
+        if (value == null) {
+            value = property.getDefaultValue();
+        }
+        return value;
+    }
+
     private void addDefaultValues(DBPPropertyGroup propertyGroup, Map<String, String> values)
     {
         for (DBPProperty property : propertyGroup.getProperties()) {
-            if (!values.containsKey(property.getId()) && property.getDefaultValue() != null) {
-                values.put(property.getId(), property.getDefaultValue());
+            if (!values.containsKey(property.getId())) {
+                String defaultValue = getDefaultValue(property);
+                if (defaultValue != null) {
+                    values.put(property.getId(), defaultValue);
+                }
             }
         }
     }
@@ -357,7 +384,7 @@ public class EditablePropertiesControl extends Composite {
     {
         Object propValue = propValues.get(prop.getId());
         if (propValue == null) {
-            propValue = prop.getDefaultValue();
+            propValue = getDefaultValue(prop);
         }
         if (propValue != null) {
             return String.valueOf(propValue);
@@ -369,7 +396,7 @@ public class EditablePropertiesControl extends Composite {
     private boolean isPropertyChanged(DBPProperty prop)
     {
         Object propValue = propValues.get(prop.getId());
-        return propValue != null && !CommonUtils.equalObjects(propValue, prop.getDefaultValue());
+        return propValue != null && !CommonUtils.equalObjects(propValue, getDefaultValue(prop));
     }
 
     private void changeProperty(DBPProperty prop, String text)
@@ -403,6 +430,11 @@ public class EditablePropertiesControl extends Composite {
             layout.marginHeight = 0;
             layout.marginWidth = 0;
         }
+    }
+
+    public boolean isDirty()
+    {
+        return !propValues.isEmpty();
     }
 
     class PropsContentProvider implements IStructuredContentProvider, ITreeContentProvider

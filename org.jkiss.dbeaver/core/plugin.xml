@@ -924,22 +924,22 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataFormatter">
-        <formatter id="date" label="Date" class="org.jkiss.dbeaver.model.impl.data.DateTimeDataFormatter">
+        <formatter id="date" label="Date" class="org.jkiss.dbeaver.model.impl.data.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.DateFormatSample">
             <propertyGroup label="General">
                 <property id="pattern" label="Pattern" type="string" description="Date pattern" required="true"/>
             </propertyGroup>
         </formatter>
-        <formatter id="time" label="Time" class="org.jkiss.dbeaver.model.impl.data.DateTimeDataFormatter">
+        <formatter id="time" label="Time" class="org.jkiss.dbeaver.model.impl.data.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.TimeFormatSample">
             <propertyGroup label="General">
                 <property id="pattern" label="Pattern" type="string" description="Time pattern" required="true"/>
             </propertyGroup>
         </formatter>
-        <formatter id="timestamp" label="Timestamp" class="org.jkiss.dbeaver.model.impl.data.DateTimeDataFormatter">
+        <formatter id="timestamp" label="Timestamp" class="org.jkiss.dbeaver.model.impl.data.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.TimestampFormatSample">
             <propertyGroup label="General">
                 <property id="pattern" label="Pattern" type="string" description="Timestamp pattern" required="true"/>
             </propertyGroup>
         </formatter>
-        <formatter id="number" label="Numbers" class="org.jkiss.dbeaver.model.impl.data.NumberDataFormatter">
+        <formatter id="number" label="Numbers" class="org.jkiss.dbeaver.model.impl.data.NumberDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.NumberFormatSample">
             <propertyGroup label="General">
                 <!--property id="pattern" label="Pattern" type="string" description="Date pattern" required="true"/-->
             </propertyGroup>

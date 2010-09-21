@@ -14,10 +14,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Locale;
@@ -29,7 +26,6 @@ import java.util.TreeSet;
  */
 public class LocaleSelectorControl extends Composite
 {
-    static final Log log = LogFactory.getLog(LocaleSelectorControl.class);
     private Combo languageCombo;
     private Combo countryCombo;
     private Combo variantCombo;
@@ -198,6 +194,11 @@ public class LocaleSelectorControl extends Composite
         String variant = getIsoCode(variantCombo.getText());
         currentLocale = new Locale(language, country, variant);
         localeText.setText(currentLocale.toString());
+
+        Event event = new Event();
+        event.data = currentLocale;
+
+        super.notifyListeners(SWT.Selection, event);
     }
     
     public void setLocale(Locale locale)
