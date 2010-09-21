@@ -130,6 +130,14 @@ public class LocaleSelectorControl extends Composite
         return divPos == -1 ? value.trim() : value.substring(0, divPos).trim();
     }
 
+    private void onLocaleChange()
+    {
+        languageCombo.setText(currentLocale.getLanguage());
+        onLanguageChange(currentLocale.getCountry());
+        countryCombo.setText(currentLocale.getCountry());
+        onCountryChange(currentLocale.getVariant());
+    }
+
     private void onLanguageChange(String defCountry)
     {
         String language = getIsoCode(languageCombo.getText());
@@ -192,6 +200,12 @@ public class LocaleSelectorControl extends Composite
         localeText.setText(currentLocale.toString());
     }
     
+    public void setLocale(Locale locale)
+    {
+        currentLocale = locale;
+        onLocaleChange();
+    }
+
     public Locale getSelectedLocale()
     {
         return currentLocale;

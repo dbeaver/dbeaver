@@ -141,6 +141,34 @@ public class UIUtils {
         }
     }
 
+    public static void packColumns(Tree tree)
+    {
+        tree.setRedraw(false);
+        try {
+            int totalWidth = 0;
+            for (TreeColumn column : tree.getColumns()) {
+                column.pack();
+                totalWidth += column.getWidth();
+            }
+            if (totalWidth > tree.getClientArea().width) {
+                int extraSpace = totalWidth - tree.getClientArea().width;
+                for (TreeColumn tc : tree.getColumns()) {
+                    double ratio = (double) tc.getWidth() / totalWidth;
+                    tc.setWidth((int) (tc.getWidth() - extraSpace * ratio));
+                }
+            } else if (totalWidth < tree.getClientArea().width) {
+                int extraSpace = tree.getClientArea().width - totalWidth;
+                int columnCount = tree.getColumnCount();
+                extraSpace /= columnCount;
+                for (TreeColumn tc : tree.getColumns()) {
+                    tc.setWidth(tc.getWidth() + extraSpace);
+                }
+            }
+        } finally {
+            tree.setRedraw(true);
+        }
+    }
+
     public static void maxTableColumnsWidth(Table table)
     {
         table.setRedraw(false);

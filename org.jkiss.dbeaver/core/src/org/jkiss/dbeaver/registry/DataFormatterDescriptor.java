@@ -67,7 +67,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         return formatterClass;
     }
 
-    public DBDDataFormatter createExporter() throws IllegalAccessException, InstantiationException
+    public DBDDataFormatter createFormatter() throws IllegalAccessException, InstantiationException
     {
         Class clazz = getFormatterClass();
         if (clazz == null) {

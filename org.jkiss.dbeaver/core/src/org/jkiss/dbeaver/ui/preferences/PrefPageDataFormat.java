@@ -6,20 +6,24 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.registry.DataFormatterDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
+import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
-import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * PrefPageDataFormat
@@ -28,7 +32,15 @@ public class PrefPageDataFormat extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.dataformat";
 
+    private DBDDataFormatterProfile formatterProfile;
+
     private Font boldFont;
+    private Combo typeCombo;
+    private EditablePropertiesControl propertiesControl;
+    private Text sampleText;
+
+    private List<DataFormatterDescriptor> formatterDescriptors;
+    private LocaleSelectorControl localeSelector;
 
     public PrefPageDataFormat()
     {
@@ -59,46 +71,73 @@ public class PrefPageDataFormat extends TargetPrefPage
         composite.setLayout(new GridLayout(1, false));
 
         // Locale
-        LocaleSelectorControl localeSelector = new LocaleSelectorControl(composite, null);
+        localeSelector = new LocaleSelectorControl(composite, null);
 
         // formats
         {
             Group formatGroup = new Group(composite, SWT.NONE);
             formatGroup.setText("Format");
-            formatGroup.setLayout(new GridLayout(3, false));
+            formatGroup.setLayout(new GridLayout(2, false));
             formatGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             UIUtils.createControlLabel(formatGroup, "Type");
-            UIUtils.createControlLabel(formatGroup, "Format");
+            typeCombo = new Combo(formatGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+            typeCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    reloadFormatter();
+                }
+            });
+
+            Label propsLabel = UIUtils.createControlLabel(formatGroup, "Settings");
+            propsLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            propertiesControl = new EditablePropertiesControl(formatGroup, SWT.NONE);
+            propertiesControl.setMarginVisible(false);
+            propertiesControl.setLayoutData(new GridData(GridData.FILL_BOTH));
+
             UIUtils.createControlLabel(formatGroup, "Sample");
-
-            for (int i = 0; i < 5; i++) {
-                Label typeLable = new Label(formatGroup, SWT.SHADOW_OUT);
-                typeLable.setText("Type" + i + ":  ");
-                typeLable.setFont(boldFont);
-
-                Text typeFormat = new Text(formatGroup, SWT.BORDER);
-                typeFormat.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-                Text sampleText = new Text(formatGroup, SWT.BORDER | SWT.READ_ONLY);
-                sampleText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            }
-
+            sampleText = new Text(formatGroup, SWT.BORDER | SWT.READ_ONLY);
+            sampleText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
-
 
         return composite;
     }
 
     protected void loadPreferences(IPreferenceStore store)
     {
+        formatterProfile = DBeaverCore.getInstance().getDataSourceRegistry().loadDataFormatterProfile(store);
         try {
+            // Set locale
+            localeSelector.setLocale(formatterProfile.getLocale());
+            // Load types
+            formatterDescriptors = new ArrayList<DataFormatterDescriptor>(DBeaverCore.getInstance().getDataSourceRegistry().getDataFormatters());
+            for (DataFormatterDescriptor formatter : formatterDescriptors) {
+                typeCombo.add(formatter.getName());
+            }
+            if (typeCombo.getItemCount() > 0) {
+                typeCombo.select(0);
+            }
+            reloadFormatter();
             //autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
             //rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
             //resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
         } catch (Exception e) {
             log.warn(e);
         }
+    }
+
+    private void reloadFormatter()
+    {
+        int selectionIndex = typeCombo.getSelectionIndex();
+        if (selectionIndex < 0) {
+            return;
+        }
+        DataFormatterDescriptor formatterDescriptor = formatterDescriptors.get(selectionIndex);
+
+        propertiesControl.loadProperties(
+            formatterDescriptor.getPropertyGroups(),
+            formatterProfile.getFormatterProperties(formatterDescriptor.getId()));
     }
 
     protected void savePreferences(IPreferenceStore store)

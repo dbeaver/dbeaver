@@ -51,13 +51,11 @@ public class EditablePropertiesControl extends Composite {
         //colorBlue = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);
         clipboard = new Clipboard(getDisplay());
 
-        GridLayout gl = new GridLayout(1, false);
-        gl.marginHeight = 5;
-        gl.marginWidth = 5;
-        this.setLayout(gl);
+        this.setLayout(new GridLayout(1, false));
         GridData gd = new GridData(GridData.FILL_BOTH);
         this.setLayoutData(gd);
 
+        setMarginVisible(true);
         initPropTree();
     }
 
@@ -79,9 +77,7 @@ public class EditablePropertiesControl extends Composite {
             }
             propsTree.setInput(root);
             propsTree.expandAll();
-            for (TreeColumn column : propsTree.getTree().getColumns()) {
-                column.pack();
-            }
+            UIUtils.packColumns(propsTree.getTree());
         }
         disposeOldEditor();
     }
@@ -145,6 +141,12 @@ public class EditablePropertiesControl extends Composite {
             }
             public void keyReleased(KeyEvent e)
             {
+            }
+        });
+        treeControl.addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e) {
+                UIUtils.packColumns(treeControl);
             }
         });
 
@@ -389,6 +391,18 @@ public class EditablePropertiesControl extends Composite {
     protected void handlePropertyRemove(DBPProperty prop) {
         propValues.remove(prop.getId());
         propsTree.refresh(prop.getGroup());
+    }
+
+    public void setMarginVisible(boolean visible)
+    {
+        GridLayout layout = (GridLayout) getLayout();
+        if (visible) {
+            layout.marginHeight = 5;
+            layout.marginWidth = 5;
+        } else {
+            layout.marginHeight = 0;
+            layout.marginWidth = 0;
+        }
     }
 
     class PropsContentProvider implements IStructuredContentProvider, ITreeContentProvider

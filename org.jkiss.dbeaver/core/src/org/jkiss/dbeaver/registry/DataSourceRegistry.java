@@ -14,9 +14,11 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -177,6 +179,9 @@ public class DataSourceRegistry implements DBPRegistry
         return dataSourceProviders;
     }
 
+    ////////////////////////////////////////////////////
+    // DataType providers
+
     public List<DataTypeProviderDescriptor> getDataTypeProviders()
     {
         return dataTypeProviders;
@@ -206,6 +211,27 @@ public class DataSourceRegistry implements DBPRegistry
         }
         return null;
     }
+
+    ////////////////////////////////////////////////////
+    // Data formatters
+
+    public List<DataFormatterDescriptor> getDataFormatters()
+    {
+        return dataFormatterList;
+    }
+
+    public DataFormatterDescriptor getDataFormatter(String typeId)
+    {
+        return dataFormatterMap.get(typeId);
+    }
+
+    public DBDDataFormatterProfile loadDataFormatterProfile(IPreferenceStore store)
+    {
+        return new DataFormatterProfile("Global", store);
+    }
+
+    ////////////////////////////////////////////////////
+    // Datasources
 
     public DataSourceDescriptor getDataSource(String id)
     {
