@@ -94,6 +94,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.statement" name="Execute SQL Statement" description="Execute Statement"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.script" name="Execute SQL Script" description="Execute Script"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.open.file" name="Load SQL script" description="Load from file"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="Save SQL script" description="Save to file"/>
         <command id="org.jkiss.dbeaver.core.export.data" name="Export data" description="Export data to file(s)"/>
     </extension>
 
@@ -115,7 +116,17 @@
         <image commandId="org.jkiss.dbeaver.core.open.object" icon="icons/tree/edit_item.png"/>
     </extension>
 
-    <extension point="org.eclipse.ui.handlers">
+    <extension point="org.eclipse.core.expressions.definitions">
+        <definition id="org.jkiss.dbeaver.core.ui.spreadsheet.control">
+            <with variable="activeFocusControlId">
+                <equals value="org.jkiss.dbeaver.ui.spreadsheet"/>
+            </with>
+        </definition>
+    </extension>
+
+    <extension
+          id="activeFocusControl"
+          point="org.eclipse.ui.handlers">
         <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorCopyHandler">
             <activeWhen>
                 <with variable="selection">
@@ -286,6 +297,39 @@
                 </or>
             </enabledWhen>
         </handler>
+
+        <!-- Spreadsheet handlers -->
+        <handler commandId="org.eclipse.ui.edit.text.goto.lineStart" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.text.goto.lineEnd" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.text.goto.textStart" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.text.goto.textEnd" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.text.select.lineStart" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.text.select.lineEnd" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.text.select.textStart" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.text.select.textEnd" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.selectAll" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+
     </extension>
 
     <extension point="org.eclipse.ui.menus">

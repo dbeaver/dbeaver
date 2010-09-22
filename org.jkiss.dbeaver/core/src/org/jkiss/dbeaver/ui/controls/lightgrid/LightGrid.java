@@ -1415,7 +1415,7 @@ public class LightGrid extends Canvas {
      *
      * @return the index of the bottom item
      */
-    int getBottomIndex()
+    public int getBottomIndex()
     {
         checkWidget();
 

@@ -92,6 +92,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
     private RetargetTextEditorAction editorActionGotoLine;
 
     private OpenSQLFileAction openFileAction;
+    private SaveSQLFileAction saveFileAction;
     private ExecuteStatementAction executeStatementAction;
     private ExecuteScriptAction executeScriptAction;
     private ValidateStatementAction validateStatementAction;
@@ -153,6 +154,12 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
 
         // open SQL file
         openFileAction = new OpenSQLFileAction() {
+            protected SQLEditor getEditor()
+            {
+                return SQLEditorContributor.this.getEditor();
+            }
+        };
+        saveFileAction = new SaveSQLFileAction() {
             protected SQLEditor getEditor()
             {
                 return SQLEditorContributor.this.getEditor();
@@ -328,6 +335,7 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
         IMenuManager menu = new MenuManager("S&QL Editor");
         manager.prependToGroup(IWorkbenchActionConstants.MB_ADDITIONS, menu);
         menu.add(openFileAction);
+        menu.add(saveFileAction);
         menu.add(new Separator());
         menu.add(executeStatementAction);
         menu.add(executeScriptAction);

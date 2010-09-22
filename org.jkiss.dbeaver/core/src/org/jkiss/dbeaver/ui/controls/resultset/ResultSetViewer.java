@@ -120,6 +120,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private ResultSetDataPumpJob dataPumpJob;
     private boolean dataPumpRunning;
+    //private static final String RESULT_SET_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset";
 
     public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
     {
@@ -165,15 +166,17 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         applyThemeSettings();
 
+/*
         {
             final IFocusService focusService = (IFocusService) site.getService(IFocusService.class);
-            focusService.addFocusTracker(spreadsheet, "org.jkiss.dbeaver.ui.resultset.grid");
+            focusService.addFocusTracker(spreadsheet, RESULT_SET_CONTROL_ID);
             spreadsheet.addDisposeListener(new DisposeListener() {
                 public void widgetDisposed(DisposeEvent e) {
                     focusService.removeFocusTracker(spreadsheet);
                 }
             });
         }
+*/
     }
 
     private void updateGridCursor()
@@ -1825,7 +1828,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 valueHandler = metaColumns[cell.col].getValueHandler();
             }
 
-            if (dataReceiver.isHasMoreData() && rowNum == curRows.size() - 1) {
+            if (spreadsheet.isRowVisible(rowNum) && dataReceiver.isHasMoreData() && rowNum == curRows.size() - 1) {
                 readNextSegment();
             }
 

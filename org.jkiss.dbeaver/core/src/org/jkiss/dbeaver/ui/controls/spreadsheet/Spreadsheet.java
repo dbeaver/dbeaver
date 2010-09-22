@@ -28,7 +28,6 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridEditor;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
@@ -44,6 +43,7 @@ import java.util.List;
 public class Spreadsheet extends Composite implements Listener {
     static final Log log = LogFactory.getLog(Spreadsheet.class);
 
+    private static final String SPREADSHEET_CONTROL_ID = "org.jkiss.dbeaver.ui.spreadsheet";
     public static final int MAX_DEF_COLUMN_WIDTH = 300;
     public static final int MAX_INLINE_EDIT_WITH = 300;
 
@@ -62,7 +62,6 @@ public class Spreadsheet extends Composite implements Listener {
     private SpreadsheetSelectionProvider selectionProvider;
 
     private Clipboard clipboard;
-    private UIUtils.ActionInfo[] actionsInfo;
 
     private Color foregroundNormal;
     private Color foregroundLines;
@@ -99,39 +98,14 @@ public class Spreadsheet extends Composite implements Listener {
         this.rowLabelProvider = rowLabelProvider;
         this.selectionProvider = new SpreadsheetSelectionProvider(this);
 
-        foregroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
-        foregroundLines = getDisplay().getSystemColor(SWT.COLOR_GRAY);
-        foregroundSelected = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
-        backgroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
-        backgroundSelected = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
-        backgroundControl = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+        this.foregroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
+        this.foregroundLines = getDisplay().getSystemColor(SWT.COLOR_GRAY);
+        this.foregroundSelected = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
+        this.backgroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+        this.backgroundSelected = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
+        this.backgroundControl = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 
-        clipboard = new Clipboard(getDisplay());
-
-        actionsInfo = new UIUtils.ActionInfo[]{
-            new UIUtils.ActionInfo(new GridAction(IWorkbenchCommandConstants.EDIT_COPY) {
-                public void run()
-                {
-                    copySelectionToClipboard();
-                }
-            }),
-
-            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.LINE_START)),
-            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.LINE_END)),
-            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.TEXT_START)),
-            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.TEXT_END)),
-            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_LINE_START)),
-            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_LINE_END)),
-            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_TEXT_START)),
-            new UIUtils.ActionInfo(new CursorMoveAction(ITextEditorActionDefinitionIds.SELECT_TEXT_END)),
-
-            new UIUtils.ActionInfo(new GridAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL) {
-                public void run()
-                {
-                    grid.selectAll();
-                }
-            }),
-        };
+        this.clipboard = new Clipboard(getDisplay());
 
         this.createControl(style);
     }
@@ -284,19 +258,7 @@ public class Spreadsheet extends Composite implements Listener {
 
     private void createControl(int style)
     {
-        Composite group = new Composite(this, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        group.setLayoutData(gd);
-
-        GridLayout layout = new GridLayout(1, true);
-        layout.numColumns = 2;
-        layout.makeColumnsEqualWidth = false;
-        layout.marginWidth = 0;
-        layout.marginHeight = 0;
-        layout.horizontalSpacing = 0;
-        group.setLayout(layout);
-
-        grid = new LightGrid(group, style);
+        grid = new LightGrid(this, style);
         grid.setRowHeaderVisible(true);
         //grid.setFooterVisible(true);
         //spreadsheet.set
@@ -307,14 +269,12 @@ public class Spreadsheet extends Composite implements Listener {
         grid.setHeaderVisible(true);
         grid.setMaxColumnDefWidth(MAX_DEF_COLUMN_WIDTH);
 
-        gd = new GridData(GridData.FILL_BOTH);
+        GridData gd = new GridData(GridData.FILL_BOTH);
         grid.setLayoutData(gd);
 
         grid.addListener(SWT.MouseDoubleClick, this);
         grid.addListener(SWT.MouseDown, this);
         grid.addListener(SWT.KeyDown, this);
-        grid.addListener(SWT.FocusIn, this);
-        grid.addListener(SWT.FocusOut, this);
 
         gridSelectionListener = new SelectionListener() {
             public void widgetSelected(SelectionEvent e)
@@ -350,6 +310,17 @@ public class Spreadsheet extends Composite implements Listener {
         grid.setContentLabelProvider(contentLabelProvider);
         grid.setColumnLabelProvider(columnLabelProvider);
         grid.setRowLabelProvider(rowLabelProvider);
+
+        {
+            final IFocusService focusService = (IFocusService) site.getService(IFocusService.class);
+            focusService.addFocusTracker(grid, SPREADSHEET_CONTROL_ID);
+            grid.addDisposeListener(new DisposeListener() {
+                public void widgetDisposed(DisposeEvent e) {
+                    focusService.removeFocusTracker(grid);
+                }
+            });
+        }
+
     }
 
 
@@ -410,13 +381,6 @@ public class Spreadsheet extends Composite implements Listener {
             case SWT.MouseDown:
                 cancelInlineEditor();
                 break;
-            case SWT.FocusIn:
-                //grid.forceFocus();
-                UIUtils.registerPartActions(site, actionsInfo, true);
-                break;
-            case SWT.FocusOut:
-                UIUtils.registerPartActions(site, actionsInfo, false);
-                break;
         }
     }
 
@@ -474,7 +438,7 @@ public class Spreadsheet extends Composite implements Listener {
         grid.removeAll();
     }
 
-    private void copySelectionToClipboard()
+    public void copySelectionToClipboard()
     {
         String lineSeparator = System.getProperty("line.separator");
         List<Integer> colsSelected = new ArrayList<Integer>();
@@ -650,6 +614,11 @@ public class Spreadsheet extends Composite implements Listener {
     {
         Rectangle bounds = grid.getBounds();
         grid.redraw(bounds.x, bounds.y, bounds.width, bounds.height, true);
+    }
+
+    public boolean isRowVisible(int rowNum)
+    {
+        return rowNum >= grid.getTopIndex() && rowNum <= grid.getBottomIndex();
     }
 
     private abstract class GridAction extends Action {

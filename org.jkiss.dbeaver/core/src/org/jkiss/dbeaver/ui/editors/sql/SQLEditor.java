@@ -12,6 +12,8 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -53,6 +55,8 @@ import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -66,6 +70,7 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementAction;
 import org.jkiss.dbeaver.ui.actions.sql.OpenSQLFileAction;
+import org.jkiss.dbeaver.ui.actions.sql.SaveSQLFileAction;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogViewer;
@@ -80,6 +85,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -107,6 +113,7 @@ public class SQLEditor extends BaseTextEditor
     private ExecuteStatementAction execStatementAction;
     private ExecuteScriptAction execScriptAction;
     private OpenSQLFileAction openFileAction;
+    private SaveSQLFileAction saveFileAction;
 
     private ProjectionSupport projectionSupport;
 
@@ -334,6 +341,10 @@ public class SQLEditor extends BaseTextEditor
         openFileAction = new OpenSQLFileAction();
         setAction(ICommandIds.CMD_OPEN_FILE, openFileAction);
         openFileAction.setProcessor(this);
+
+        saveFileAction = new SaveSQLFileAction();
+        setAction(ICommandIds.CMD_SAVE_FILE, saveFileAction);
+        saveFileAction.setProcessor(this);
     }
 
     public void editorContextMenuAboutToShow(IMenuManager menu)
@@ -341,6 +352,7 @@ public class SQLEditor extends BaseTextEditor
         super.editorContextMenuAboutToShow(menu);
 
         menu.appendToGroup(ITextEditorActionConstants.GROUP_SAVE, openFileAction);
+        menu.appendToGroup(ITextEditorActionConstants.GROUP_SAVE, saveFileAction);
 
         boolean connected = getDataSourceContainer().isConnected();
         execStatementAction.setEnabled(connected);
@@ -934,6 +946,36 @@ public class SQLEditor extends BaseTextEditor
         if (newContent != null) {
             getDocument().set(newContent);
         }
+    }
+
+    public void saveToExternalFile()
+    {
+        FileDialog fileDialog = new FileDialog(getSite().getShell(), SWT.SAVE);
+        fileDialog.setFilterExtensions(new String[] { "*.sql", "*.txt", "*.*"});
+        fileDialog.setOverwrite(true);
+        String fileName = fileDialog.open();
+        if (CommonUtils.isEmpty(fileName)) {
+            return;
+        }
+        final File saveFile = new File(fileName);
+
+        DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
+            public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            {
+                getSite().getShell().getDisplay().syncExec(new Runnable() {
+                    public void run()
+                    {
+                        doSave(monitor.getNestedMonitor());
+                    }
+                });
+
+                try {
+                    ContentUtils.saveContentToFile(getEditorInput().getFile().getContents(), saveFile, monitor);
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                }
+            }
+        });
     }
 
     public DBSDataContainer getDataContainer()
