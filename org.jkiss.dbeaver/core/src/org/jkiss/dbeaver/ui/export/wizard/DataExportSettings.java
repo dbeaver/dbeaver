@@ -8,6 +8,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.program.Program;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.prop.DBPProperty;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -54,6 +55,7 @@ public class DataExportSettings {
 
     private ExtractType extractType = ExtractType.SINGLE_QUERY;
     private int segmentSize = DEFAULT_SEGMENT_SIZE;
+    private DBDDataFormatterProfile formatterProfile;
     private LobExtractType lobExtractType = LobExtractType.SKIP;
     private LobEncoding lobEncoding = LobEncoding.HEX;
 
@@ -143,6 +145,16 @@ public class DataExportSettings {
         if (segmentSize > 0) {
             this.segmentSize = segmentSize;
         }
+    }
+
+    public DBDDataFormatterProfile getFormatterProfile()
+    {
+        return formatterProfile;
+    }
+
+    public void setFormatterProfile(DBDDataFormatterProfile formatterProfile)
+    {
+        this.formatterProfile = formatterProfile;
     }
 
     public LobExtractType getLobExtractType()
@@ -328,6 +340,9 @@ public class DataExportSettings {
         } catch (NumberFormatException e) {
             segmentSize = DEFAULT_SEGMENT_SIZE;
         }
+        if (dialogSettings.get("formatterProfile") != null) {
+            formatterProfile = DBeaverCore.getInstance().getDataFormatterRegistry().getCustomProfile(dialogSettings.get("formatterProfile"));
+        }
         if (dialogSettings.get("lobExtractType") != null) {
             try {
                 lobExtractType = LobExtractType.valueOf(dialogSettings.get("lobExtractType"));
@@ -405,6 +420,9 @@ public class DataExportSettings {
 
         dialogSettings.put("extractType", extractType.name());
         dialogSettings.put("segmentSize", segmentSize);
+        if (formatterProfile != null) {
+            dialogSettings.put("formatterProfile", formatterProfile.getProfileName());
+        }
         dialogSettings.put("lobExtractType", lobExtractType.name());
         dialogSettings.put("lobEncoding", lobEncoding.name());
 

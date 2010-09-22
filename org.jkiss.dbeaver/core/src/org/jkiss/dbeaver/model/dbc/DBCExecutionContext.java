@@ -25,6 +25,8 @@ public interface DBCExecutionContext {
 
     public DBDDataFormatterProfile getDataFormatterProfile();
 
+    void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile);
+
     DBCStatement prepareStatement(
         String query,
         boolean scrollable,

@@ -120,6 +120,11 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         return dataFormatterProfile;
     }
 
+    public void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile)
+    {
+        dataFormatterProfile = formatterProfile;
+    }
+
     public JDBCStatement prepareStatement(
         String sqlQuery,
         boolean scrollable,

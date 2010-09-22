@@ -81,7 +81,9 @@ public class DataExportJob extends AbstractJob {
             dataProvider.getDataSource().openIsolatedContext(monitor, contextTask) :
             dataProvider.getDataSource().openContext(monitor, contextTask);
         try {
-
+            if (settings.getFormatterProfile() != null) {
+                context.setDataFormatterProfile(settings.getFormatterProfile());
+            }
             ExporterSite site = new ExporterSite(dataProvider);
             site.makeExport(context);
 

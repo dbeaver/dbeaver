@@ -75,6 +75,16 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                 gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
                 gd.widthHint = 200;
                 formatProfilesCombo.setLayoutData(gd);
+                formatProfilesCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        if (formatProfilesCombo.getSelectionIndex() > 0) {
+                            getWizard().getSettings().setFormatterProfile(
+                                DBeaverCore.getInstance().getDataFormatterRegistry().getCustomProfile(UIUtils.getComboSelection(formatProfilesCombo)));
+                        }
+                    }
+                });
 
                 Button profilesManageButton = new Button(formattingGroup, SWT.PUSH);
                 profilesManageButton.setText("Edit ... ");
@@ -167,13 +177,17 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
     private void reloadFormatProfiles()
     {
         DataFormatterRegistry registry = DBeaverCore.getInstance().getDataFormatterRegistry();
-        String oldProfile = UIUtils.getComboSelection(formatProfilesCombo);
         formatProfilesCombo.removeAll();
         formatProfilesCombo.add("<Connection's default>");
         for (DBDDataFormatterProfile profile : registry.getCustomProfiles()) {
             formatProfilesCombo.add(profile.getProfileName());
         }
-        if (!UIUtils.setComboSelection(formatProfilesCombo, oldProfile)) {
+        DBDDataFormatterProfile formatterProfile = getWizard().getSettings().getFormatterProfile();
+        if (formatterProfile != null) {
+            if (!UIUtils.setComboSelection(formatProfilesCombo, formatterProfile.getProfileName())) {
+                formatProfilesCombo.select(0);
+            }
+        } else {
             formatProfilesCombo.select(0);
         }
     }
