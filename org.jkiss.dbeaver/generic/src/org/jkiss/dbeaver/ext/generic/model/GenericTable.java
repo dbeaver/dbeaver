@@ -416,10 +416,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                         }
                     }
                     if (pk == null) {
-                        for (GenericPrimaryKey pkConstraint : pkTable.getUniqueKeys(monitor)) {
-                            if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
-                                pk = pkConstraint;
-                                break;
+                        List<GenericPrimaryKey> uniqueKeys = pkTable.getUniqueKeys(monitor);
+                        if (uniqueKeys != null) {
+                            for (GenericPrimaryKey pkConstraint : uniqueKeys) {
+                                if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
+                                    pk = pkConstraint;
+                                    break;
+                                }
                             }
                         }
                     }

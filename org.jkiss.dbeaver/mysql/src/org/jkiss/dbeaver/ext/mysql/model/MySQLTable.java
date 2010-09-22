@@ -403,10 +403,13 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                         }
                     }
                     if (pk == null) {
-                        for (MySQLConstraint pkConstraint : pkTable.getUniqueKeys(monitor)) {
-                            if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
-                                pk = pkConstraint;
-                                break;
+                        List<MySQLConstraint> uniqueKeys = pkTable.getUniqueKeys(monitor);
+                        if (uniqueKeys != null) {
+                            for (MySQLConstraint pkConstraint : uniqueKeys) {
+                                if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
+                                    pk = pkConstraint;
+                                    break;
+                                }
                             }
                         }
                     }

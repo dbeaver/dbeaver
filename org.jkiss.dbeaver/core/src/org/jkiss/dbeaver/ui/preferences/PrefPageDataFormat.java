@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -78,6 +79,13 @@ public class PrefPageDataFormat extends TargetPrefPage
             profilesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             Button editButton = new Button(profileGroup, SWT.PUSH);
             editButton.setText("Edit Profiles");
+            editButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    managerProfiles();
+                }
+            });
         }
 
         // Locale
@@ -126,6 +134,14 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
 
         return composite;
+    }
+
+    private void managerProfiles()
+    {
+        ManagerProfilesDialog dialog = new ManagerProfilesDialog(getShell());
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            
+        }
     }
 
     private DataFormatterDescriptor getCurrentFormatter()
@@ -296,4 +312,45 @@ public class PrefPageDataFormat extends TargetPrefPage
         boldFont.dispose();
         super.dispose();
     }
+
+    class ManagerProfilesDialog extends org.eclipse.jface.dialogs.Dialog {
+
+        private ManagerProfilesDialog(Shell parentShell)
+        {
+            super(parentShell);
+        }
+
+        protected boolean isResizable()
+        {
+            return true;
+        }
+
+        protected Control createDialogArea(Composite parent)
+        {
+            getShell().setText("Manage profiles");
+
+            Composite group = new Composite(parent, SWT.NONE);
+            group.setLayout(new GridLayout(1, false));
+            group.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            org.eclipse.swt.widgets.List profileList = new org.eclipse.swt.widgets.List(group, SWT.SINGLE | SWT.BORDER);
+            profileList.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            return parent;
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(Composite parent)
+        {
+            createButton(parent, 0, "New Profile", false);
+            createButton(parent, 0, "Delete Profile", false);
+            createButton(
+                parent,
+                IDialogConstants.OK_ID,
+                IDialogConstants.CLOSE_LABEL,
+                true);
+        }
+
+    }
+
 }

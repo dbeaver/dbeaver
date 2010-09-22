@@ -10,19 +10,15 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
@@ -41,7 +37,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 {
     static final Log log = LogFactory.getLog(TargetPrefPage.class);
 
-    private DBNDataSource dsNode;
+    private DBNDataSource containerNode;
     private Composite parentComposite;
     private Button dataSourceSettingsButton;
     private Control configurationBlockControl;
@@ -54,7 +50,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     public final boolean isDataSourcePreferencePage()
     {
-        return dsNode != null;
+        return containerNode != null;
     }
 
     protected abstract boolean hasDataSourceSpecificOptions(DataSourceDescriptor project);
@@ -71,7 +67,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     public DataSourceDescriptor getDataSourceContainer()
     {
-        return dsNode.getObject();
+        return containerNode.getObject();
     }
 
     public void init(IWorkbench workbench)
@@ -80,12 +76,12 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     public IAdaptable getElement()
     {
-        return dsNode;
+        return containerNode;
     }
 
     public void setElement(IAdaptable element)
     {
-        dsNode = (DBNDataSource) element.getAdapter(DBNDataSource.class);
+        containerNode = (DBNDataSource) element.getAdapter(DBNDataSource.class);
     }
 
     protected Label createDescriptionLabel(Composite parent)
