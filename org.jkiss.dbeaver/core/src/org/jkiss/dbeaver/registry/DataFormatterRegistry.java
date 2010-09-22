@@ -74,6 +74,16 @@ public class DataFormatterRegistry
         return globalProfile;
     }
 
+    public DBDDataFormatterProfile getCustomProfile(String name)
+    {
+        for (DBDDataFormatterProfile profile : getCustomProfiles()) {
+            if (profile.getProfileName().equals(name)) {
+                return profile;
+            }
+        }
+        return null;
+    }
+
     public synchronized List<DBDDataFormatterProfile> getCustomProfiles()
     {
         if (customProfiles == null) {
@@ -156,7 +166,28 @@ public class DataFormatterRegistry
         }
     }
 
+    public DBDDataFormatterProfile createCustomProfile(String profileName)
+    {
+        getCustomProfiles();
+        DBDDataFormatterProfile profile = new DataFormatterProfile(profileName, new CustomProfileStore());
+        customProfiles.add(profile);
+        saveProfiles();
+        return profile;
+    }
+
+    public void deleteCustomProfile(DBDDataFormatterProfile profile)
+    {
+        getCustomProfiles();
+        if (customProfiles.remove(profile)) {
+            saveProfiles();
+        }
+    }
+
     private class CustomProfileStore extends AbstractPreferenceStore {
+        private CustomProfileStore()
+        {
+            super(DBeaverCore.getInstance().getGlobalPreferenceStore());
+        }
 
         public void save() throws IOException
         {

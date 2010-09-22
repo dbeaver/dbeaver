@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
 import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
+import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.util.*;
@@ -48,6 +49,11 @@ public class PrefPageDataFormat extends TargetPrefPage
     private Locale profileLocale;
     private Map<String, Map<String, String>> profileProperties = new HashMap<String, Map<String, String>>();
     private Combo profilesCombo;
+
+    private static DataFormatterRegistry getRegistry()
+    {
+        return DBeaverCore.getInstance().getDataFormatterRegistry();
+    }
 
     public PrefPageDataFormat()
     {
@@ -77,13 +83,20 @@ public class PrefPageDataFormat extends TargetPrefPage
             UIUtils.createControlLabel(profileGroup, "Profile");
             profilesCombo = new Combo(profileGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
             profilesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            profilesCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    changeProfile();
+                }
+            });
             Button editButton = new Button(profileGroup, SWT.PUSH);
             editButton.setText("Edit Profiles");
             editButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    managerProfiles();
+                    manageProfiles();
                 }
             });
         }
@@ -136,13 +149,106 @@ public class PrefPageDataFormat extends TargetPrefPage
         return composite;
     }
 
-    private void managerProfiles()
+    private void manageProfiles()
     {
         ManagerProfilesDialog dialog = new ManagerProfilesDialog(getShell());
         if (dialog.open() == IDialogConstants.OK_ID) {
-            
+            refreshProfileList();
         }
     }
+
+    private DBDDataFormatterProfile getDefaultProfile()
+    {
+        if (isDataSourcePreferencePage()) {
+            return getDataSourceContainer().getDataFormatterProfile();
+        } else {
+            return getRegistry().getGlobalProfile();
+        }
+    }
+
+    private void changeProfile()
+    {
+        int selectionIndex = profilesCombo.getSelectionIndex();
+        if (selectionIndex < 0) {
+            return;
+        }
+        DBDDataFormatterProfile newProfile;
+        if (selectionIndex == 0) {
+            newProfile = getDefaultProfile();
+        } else {
+            String newProfileName = profilesCombo.getItem(selectionIndex);
+            DataFormatterRegistry registry = getRegistry();
+            newProfile = registry.getCustomProfile(newProfileName);
+        }
+        if (newProfile != formatterProfile) {
+            setCurrentProfile(newProfile);
+        }
+    }
+
+    private void setCurrentProfile(DBDDataFormatterProfile profile)
+    {
+        formatterProfile = profile;
+        formatterDescriptors = new ArrayList<DataFormatterDescriptor>(getRegistry().getDataFormatters());
+
+        profileName = formatterProfile.getProfileName();
+        profileLocale = formatterProfile.getLocale();
+        profileProperties.clear();
+        for (DataFormatterDescriptor dfd : formatterDescriptors) {
+            Map<String, String> formatterProps = formatterProfile.getFormatterProperties(dfd.getId());
+            if (formatterProps != null) {
+                profileProperties.put(dfd.getId(), formatterProps);
+            }
+        }
+
+        try {
+            // Set locale
+            localeSelector.setLocale(profileLocale);
+            // Load types
+            typeCombo.removeAll();
+            for (DataFormatterDescriptor formatter : formatterDescriptors) {
+                typeCombo.add(formatter.getName());
+            }
+            if (typeCombo.getItemCount() > 0) {
+                typeCombo.select(0);
+            }
+            reloadFormatter();
+            //autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
+            //rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
+            //resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
+        } catch (Exception e) {
+            log.warn(e);
+        }
+    }
+
+    private void refreshProfileList()
+    {
+        String defProfileName;
+        if (isDataSourcePreferencePage()) {
+            defProfileName = "Connection '" + getDataSourceContainer().getName() + "'";
+        } else {
+            defProfileName = "Global";
+        }
+        int selectionIndex = profilesCombo.getSelectionIndex();
+        String oldProfile = null;
+        if (selectionIndex > 0) {
+            oldProfile = profilesCombo.getItem(selectionIndex);
+        }
+        profilesCombo.removeAll();
+        profilesCombo.add("<" + defProfileName + ">");
+        for (DBDDataFormatterProfile profile : getRegistry().getCustomProfiles()) {
+            profilesCombo.add(profile.getProfileName());
+        }
+        if (oldProfile != null) {
+            profilesCombo.setText(oldProfile);
+        }
+        if (profilesCombo.getSelectionIndex() < 0) {
+            profilesCombo.select(0);
+        }
+        profilesCombo.setEnabled(profilesCombo.getItemCount() >= 2);
+        
+        changeProfile();
+    }
+
 
     private DataFormatterDescriptor getCurrentFormatter()
     {
@@ -221,59 +327,9 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     protected void loadPreferences(IPreferenceStore store)
     {
-        DataFormatterRegistry formatterRegistry = DBeaverCore.getInstance().getDataFormatterRegistry();
-
-        if (isDataSourcePreferencePage()) {
-            formatterProfile = getDataSourceContainer().getDataFormatterProfile();
-        } else {
-            formatterProfile = formatterRegistry.getGlobalProfile();
-        }
         refreshProfileList();
 
-        formatterDescriptors = new ArrayList<DataFormatterDescriptor>(formatterRegistry.getDataFormatters());
-
-        profileName = formatterProfile.getProfileName();
-        profileLocale = formatterProfile.getLocale();
-        for (DataFormatterDescriptor dfd : formatterDescriptors) {
-            Map<String, String> formatterProps = formatterProfile.getFormatterProperties(dfd.getId());
-            if (formatterProps != null) {
-                profileProperties.put(dfd.getId(), formatterProps);
-            }
-        }
-
-        try {
-            // Set locale
-            localeSelector.setLocale(profileLocale);
-            // Load types
-            for (DataFormatterDescriptor formatter : formatterDescriptors) {
-                typeCombo.add(formatter.getName());
-            }
-            if (typeCombo.getItemCount() > 0) {
-                typeCombo.select(0);
-            }
-            reloadFormatter();
-            //autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
-            //rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
-            //resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
-        } catch (Exception e) {
-            log.warn(e);
-        }
-    }
-
-    private void refreshProfileList()
-    {
-        String defProfileName;
-        if (isDataSourcePreferencePage()) {
-            defProfileName = "Connection '" + getDataSourceContainer().getName() + "'";
-        } else {
-            defProfileName = "Global";
-        }
-        profilesCombo.removeAll();
-        profilesCombo.add("<" + defProfileName + ">");
-        profilesCombo.select(0);
-        if (profilesCombo.getItemCount() < 2) {
-            profilesCombo.setEnabled(false);
-        }
+        setCurrentProfile(getDefaultProfile());
     }
 
     protected void savePreferences(IPreferenceStore store)
@@ -314,6 +370,9 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     class ManagerProfilesDialog extends org.eclipse.jface.dialogs.Dialog {
+        private static final int NEW_ID = IDialogConstants.CLIENT_ID + 1;
+        private static final int DELETE_ID = IDialogConstants.CLIENT_ID + 2;
+        private org.eclipse.swt.widgets.List profileList;
 
         private ManagerProfilesDialog(Shell parentShell)
         {
@@ -327,30 +386,79 @@ public class PrefPageDataFormat extends TargetPrefPage
 
         protected Control createDialogArea(Composite parent)
         {
-            getShell().setText("Manage profiles");
+            getShell().setText("Manage data format profiles");
 
             Composite group = new Composite(parent, SWT.NONE);
             group.setLayout(new GridLayout(1, false));
             group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            org.eclipse.swt.widgets.List profileList = new org.eclipse.swt.widgets.List(group, SWT.SINGLE | SWT.BORDER);
-            profileList.setLayoutData(new GridData(GridData.FILL_BOTH));
+            profileList = new org.eclipse.swt.widgets.List(group, SWT.SINGLE | SWT.BORDER);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.widthHint = 300;
+            gd.heightHint = 200;
+            profileList.setLayoutData(gd);
 
+            profileList.addSelectionListener(new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+                    getButton(DELETE_ID).setEnabled(profileList.getSelectionIndex() >= 0);
+                }
+            });
+
+            loadProfiles();
             return parent;
         }
 
         @Override
         protected void createButtonsForButtonBar(Composite parent)
         {
-            createButton(parent, 0, "New Profile", false);
-            createButton(parent, 0, "Delete Profile", false);
-            createButton(
-                parent,
-                IDialogConstants.OK_ID,
-                IDialogConstants.CLOSE_LABEL,
-                true);
+            createButton(parent, NEW_ID, "New Profile", false);
+            createButton(parent, DELETE_ID, "Delete Profile", false);
+            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
+
+            getButton(DELETE_ID).setEnabled(false);
         }
 
+        @Override
+        protected void buttonPressed(int buttonId)
+        {
+            DataFormatterRegistry registry = getRegistry();
+            if (buttonId == NEW_ID) {
+                String profileName = EnterNameDialog.chooseName(getShell(), "Profile Name");
+                if (registry.getCustomProfile(profileName) != null) {
+                    UIUtils.showMessageBox(getShell(), "Create profile", "Profile '" + profileName + "' already exists");
+                } else {
+                    registry.createCustomProfile(profileName);
+                    loadProfiles();
+                }
+            } else if (buttonId == DELETE_ID) {
+                int selectionIndex = profileList.getSelectionIndex();
+                if (selectionIndex >= 0) {
+                    DBDDataFormatterProfile profile = registry.getCustomProfile(profileList.getItem(selectionIndex));
+                    if (profile != null) {
+                        if (UIUtils.confirmAction(getShell(), "Delete Profile", "Are You Sure?")) {
+                            registry.deleteCustomProfile(profile);
+                            loadProfiles();
+                        }
+                    }
+                }
+            } else {
+                super.buttonPressed(buttonId);
+            }
+        }
+
+        private void loadProfiles()
+        {
+            profileList.removeAll();
+            List<DBDDataFormatterProfile> profiles = getRegistry().getCustomProfiles();
+            for (DBDDataFormatterProfile profile : profiles) {
+                profileList.add(profile.getProfileName());
+            }
+            Button deleteButton = getButton(DELETE_ID);
+            if (deleteButton != null) {
+                deleteButton.setEnabled(false);
+            }
+        }
     }
 
 }

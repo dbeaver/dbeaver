@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.prop.DBPProperty;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 import org.jkiss.dbeaver.registry.PropertyDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 
 import java.util.*;
 
@@ -94,9 +95,8 @@ public class DriverPropertiesControl extends EditablePropertiesControl {
         }
         if (customGroup != null) {
             // Ask user for new property name
-            PropertyNameDialog dialog = new PropertyNameDialog(getShell());
-            if (dialog.open() == IDialogConstants.OK_ID) {
-                String propName = dialog.getPropName();
+            String propName = EnterNameDialog.chooseName(getShell(), "Property Name");
+            if (propName != null) {
                 // Check property name (must be unique
                 PropertyDescriptor newProp = customGroup.addProperty(propName);
                 handlePropertyCreate(newProp, "");
@@ -200,42 +200,5 @@ public class DriverPropertiesControl extends EditablePropertiesControl {
         }
     }
 
-    static class PropertyNameDialog extends Dialog
-    {
-        private Text propNameText;
-
-        private String propName;
-
-        public PropertyNameDialog(Shell parentShell)
-        {
-            super(parentShell);
-        }
-
-        public String getPropName() {
-            return propName;
-        }
-
-        protected Control createDialogArea(Composite parent)
-        {
-            Composite propGroup = new Composite(parent, SWT.NONE);
-            GridLayout gl = new GridLayout(1, false);
-            gl.marginHeight = 10;
-            gl.marginWidth = 10;
-            propGroup.setLayout(gl);
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            propGroup.setLayoutData(gd);
-
-            propNameText = UIUtils.createLabelText(propGroup, "Property Name", "");
-
-            return parent;
-        }
-
-        protected void okPressed() {
-            propName = propNameText.getText();
-
-            super.okPressed();
-        }
-
-    }
 
 }
