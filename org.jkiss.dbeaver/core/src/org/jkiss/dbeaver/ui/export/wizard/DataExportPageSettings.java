@@ -82,6 +82,8 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                         if (formatProfilesCombo.getSelectionIndex() > 0) {
                             getWizard().getSettings().setFormatterProfile(
                                 DBeaverCore.getInstance().getDataFormatterRegistry().getCustomProfile(UIUtils.getComboSelection(formatProfilesCombo)));
+                        } else {
+                            getWizard().getSettings().setFormatterProfile(null);
                         }
                     }
                 });

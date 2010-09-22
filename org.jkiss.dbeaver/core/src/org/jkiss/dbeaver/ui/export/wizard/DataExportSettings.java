@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.export.wizard;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.program.Program;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -340,17 +341,17 @@ public class DataExportSettings {
         } catch (NumberFormatException e) {
             segmentSize = DEFAULT_SEGMENT_SIZE;
         }
-        if (dialogSettings.get("formatterProfile") != null) {
+        if (!CommonUtils.isEmpty(dialogSettings.get("formatterProfile"))) {
             formatterProfile = DBeaverCore.getInstance().getDataFormatterRegistry().getCustomProfile(dialogSettings.get("formatterProfile"));
         }
-        if (dialogSettings.get("lobExtractType") != null) {
+        if (!CommonUtils.isEmpty(dialogSettings.get("lobExtractType"))) {
             try {
                 lobExtractType = LobExtractType.valueOf(dialogSettings.get("lobExtractType"));
             } catch (IllegalArgumentException e) {
                 lobExtractType = LobExtractType.SKIP;
             }
         }
-        if (dialogSettings.get("lobEncoding") != null) {
+        if (!CommonUtils.isEmpty(dialogSettings.get("lobEncoding"))) {
             try {
                 lobEncoding = LobEncoding.valueOf(dialogSettings.get("lobEncoding"));
             } catch (IllegalArgumentException e) {
@@ -358,26 +359,26 @@ public class DataExportSettings {
             }
         }
 
-        if (dialogSettings.get("outputFolder") != null) {
+        if (!CommonUtils.isEmpty(dialogSettings.get("outputFolder"))) {
             outputFolder = dialogSettings.get("outputFolder");
         }
-        if (dialogSettings.get("outputFilePattern") != null) {
+        if (!CommonUtils.isEmpty(dialogSettings.get("outputFilePattern"))) {
             outputFilePattern = dialogSettings.get("outputFilePattern");
         }
-        if (dialogSettings.get("outputEncoding") != null) {
+        if (!CommonUtils.isEmpty(dialogSettings.get("outputEncoding"))) {
             outputEncoding = dialogSettings.get("outputEncoding");
         }
-        if (dialogSettings.get("outputEncodingBOM") != null) {
+        if (!CommonUtils.isEmpty(dialogSettings.get("outputEncodingBOM"))) {
             outputEncodingBOM = dialogSettings.getBoolean("outputEncodingBOM");
         }
 
-        if (dialogSettings.get("compressResults") != null) {
+        if (!CommonUtils.isEmpty(dialogSettings.get("compressResults"))) {
             compressResults = dialogSettings.getBoolean("compressResults");
         }
-        if (dialogSettings.get("openNewConnections") != null) {
+        if (!CommonUtils.isEmpty(dialogSettings.get("openNewConnections"))) {
             openNewConnections = dialogSettings.getBoolean("openNewConnections");
         }
-        if (dialogSettings.get("queryRowCount") != null) {
+        if (!CommonUtils.isEmpty(dialogSettings.get("queryRowCount"))) {
             queryRowCount = dialogSettings.getBoolean("queryRowCount");
         }
         try {
@@ -422,6 +423,8 @@ public class DataExportSettings {
         dialogSettings.put("segmentSize", segmentSize);
         if (formatterProfile != null) {
             dialogSettings.put("formatterProfile", formatterProfile.getProfileName());
+        } else {
+            dialogSettings.put("formatterProfile", "");
         }
         dialogSettings.put("lobExtractType", lobExtractType.name());
         dialogSettings.put("lobEncoding", lobEncoding.name());

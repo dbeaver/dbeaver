@@ -87,7 +87,7 @@ public class PrefPageDataFormat extends TargetPrefPage
                 }
             });
             Button editButton = new Button(profileGroup, SWT.PUSH);
-            editButton.setText("Edit Profiles");
+            editButton.setText("Manage Profiles");
             editButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)

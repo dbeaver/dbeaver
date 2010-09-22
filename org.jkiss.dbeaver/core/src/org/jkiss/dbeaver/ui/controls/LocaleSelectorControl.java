@@ -149,6 +149,7 @@ public class LocaleSelectorControl extends Composite
         finally {
             localeChanging = false;
         }
+        calculateLocale();
     }
 
     private void onLanguageChange(String defCountry)
