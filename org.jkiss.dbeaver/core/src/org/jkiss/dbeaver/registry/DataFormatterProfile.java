@@ -6,31 +6,46 @@ package org.jkiss.dbeaver.registry;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.prop.DBPProperty;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
+import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 import java.util.*;
 
 /**
  * DataFormatterProfile
  */
-class DataFormatterProfile implements DBDDataFormatterProfile {
+class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeListener {
 
     private IPreferenceStore store;
     private String name;
     private Locale locale;
     private Map<String, Map<String, String>> properties = new HashMap<String, Map<String, String>>();
+    private static final String PROP_NAME = "dataformat.profile.name";
+    private static final String PROP_LANGUAGE = "dataformat.profile.language";
+    private static final String PROP_COUNTRY = "dataformat.profile.country";
+    private static final String PROP_VARIANT = "dataformat.profile.variant";
 
     DataFormatterProfile(IPreferenceStore store)
     {
         this.store = store;
-        this.name = store.getString("dataformat.profile.name");
+        if (store instanceof AbstractPreferenceStore) {
+            ((AbstractPreferenceStore)store).getParentStore().addPropertyChangeListener(this);
+        }
+        loadProfile();
+    }
+
+    private void loadProfile()
+    {
+        this.name = store.getString(PROP_NAME);
         {
-            String language = store.getString("dataformat.profile.language");
-            String country = store.getString("dataformat.profile.country");
-            String variant = store.getString("dataformat.profile.variant");
+            String language = store.getString(PROP_LANGUAGE);
+            String country = store.getString(PROP_COUNTRY);
+            String variant = store.getString(PROP_VARIANT);
             if (CommonUtils.isEmpty(language)) {
                 this.locale = Locale.getDefault();
             } else if (CommonUtils.isEmpty(country)) {
@@ -41,6 +56,7 @@ class DataFormatterProfile implements DBDDataFormatterProfile {
                 this.locale = new Locale(language, country, variant);
             }
         }
+        properties.clear();
         for (DataFormatterDescriptor formatter : DataSourceRegistry.getDefault().getDataFormatters()) {
             Map<String, String> formatterProps = new HashMap<String, String>();
             for (DBPPropertyGroup group : formatter.getPropertyGroups()) {
@@ -57,20 +73,22 @@ class DataFormatterProfile implements DBDDataFormatterProfile {
 
     public void saveProfile()
     {
-        store.setValue("dataformat.profile.name", name);
-        store.setValue("dataformat.profile.language", locale.getLanguage());
-        store.setValue("dataformat.profile.country", locale.getCountry());
-        store.setValue("dataformat.profile.variant", locale.getVariant());
+        store.setValue(PROP_NAME, name);
+        store.setValue(PROP_LANGUAGE, locale.getLanguage());
+        store.setValue(PROP_COUNTRY, locale.getCountry());
+        store.setValue(PROP_VARIANT, locale.getVariant());
 
         for (DataFormatterDescriptor formatter : DataSourceRegistry.getDefault().getDataFormatters()) {
             Map<String, String> formatterProps = properties.get(formatter.getId());
-            if (formatterProps == null || formatterProps.isEmpty()) {
-                continue;
-            }
-            for (Map.Entry<String, String> entry : formatterProps.entrySet()) {
-                store.setValue(
-                    "dataformat.type." + formatter.getId() + "." + entry.getKey(),
-                    entry.getValue());
+            for (DBPPropertyGroup group : formatter.getPropertyGroups()) {
+                for (DBPProperty prop : group.getProperties()) {
+                    String propValue = formatterProps == null ? null : formatterProps.get(prop.getId());
+                    if (!CommonUtils.isEmpty(propValue)) {
+                        store.setValue("dataformat.type." + formatter.getId() + "." + prop.getId(), propValue);
+                    } else {
+                        store.setToDefault("dataformat.type." + formatter.getId() + "." + prop.getId());
+                    }
+                }
             }
         }
     }
@@ -105,6 +123,23 @@ class DataFormatterProfile implements DBDDataFormatterProfile {
         this.properties.put(typeId, new HashMap<String, String>(properties));
     }
 
+    public boolean isOverridesParent()
+    {
+        if (store instanceof AbstractPreferenceStore) {
+            AbstractPreferenceStore abstractPreferenceStore = (AbstractPreferenceStore) store;
+            return !abstractPreferenceStore.getProperties().isEmpty();
+        }
+        return true;
+    }
+
+    public void reset()
+    {
+        if (store instanceof AbstractPreferenceStore) {
+            ((AbstractPreferenceStore)store).clear();
+        }
+        loadProfile();
+    }
+
     public DBDDataFormatter createFormatter(String typeId)
         throws IllegalAccessException, InstantiationException, IllegalArgumentException
     {
@@ -125,6 +160,14 @@ class DataFormatterProfile implements DBDDataFormatterProfile {
         }
         formatter.init(locale, formatterProps);
         return formatter;
+    }
+
+    public void propertyChange(PropertyChangeEvent event)
+    {
+        if (event.getProperty() != null && event.getProperty().startsWith("dataformat.")) {
+            // Reload this profile
+            loadProfile();
+        }
     }
 
 }

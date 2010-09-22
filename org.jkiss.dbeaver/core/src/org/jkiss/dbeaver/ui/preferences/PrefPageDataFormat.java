@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
 import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.util.*;
@@ -56,12 +55,7 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
     {
-        AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
-        return false
-            //store.contains(PrefConstants.RESULT_SET_MAX_ROWS) ||
-            //store.contains(PrefConstants.QUERY_ROLLBACK_ON_ERROR) ||
-            //store.contains(PrefConstants.DEFAULT_AUTO_COMMIT)
-            ;
+        return dataSourceDescriptor.getDataFormatterProfile().isOverridesParent();
     }
 
     protected boolean supportsDataSourceSpecificOptions()
@@ -253,9 +247,7 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     protected void clearPreferences(IPreferenceStore store)
     {
-        //store.setToDefault(PrefConstants.DEFAULT_AUTO_COMMIT);
-        //store.setToDefault(PrefConstants.QUERY_ROLLBACK_ON_ERROR);
-        //store.setToDefault(PrefConstants.RESULT_SET_MAX_ROWS);
+        formatterProfile.reset();
     }
 
     public void applyData(Object data)
