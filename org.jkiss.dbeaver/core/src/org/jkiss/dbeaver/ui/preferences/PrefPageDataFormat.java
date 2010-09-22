@@ -46,6 +46,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     private String profileName;
     private Locale profileLocale;
     private Map<String, Map<String, String>> profileProperties = new HashMap<String, Map<String, String>>();
+    private Combo profilesCombo;
 
     public PrefPageDataFormat()
     {
@@ -67,8 +68,17 @@ public class PrefPageDataFormat extends TargetPrefPage
     {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(new GridLayout(1, false));
+        Composite composite = UIUtils.createPlaceholder(parent, 1);
+
+        {
+            Composite profileGroup = UIUtils.createPlaceholder(composite, 3);
+            profileGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            UIUtils.createControlLabel(profileGroup, "Profile");
+            profilesCombo = new Combo(profileGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+            profilesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Button editButton = new Button(profileGroup, SWT.PUSH);
+            editButton.setText("Edit Profiles");
+        }
 
         // Locale
         localeSelector = new LocaleSelectorControl(composite, null);
@@ -202,6 +212,8 @@ public class PrefPageDataFormat extends TargetPrefPage
         } else {
             formatterProfile = formatterRegistry.getGlobalProfile();
         }
+        refreshProfileList();
+
         formatterDescriptors = new ArrayList<DataFormatterDescriptor>(formatterRegistry.getDataFormatters());
 
         profileName = formatterProfile.getProfileName();
@@ -229,6 +241,22 @@ public class PrefPageDataFormat extends TargetPrefPage
             //resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
         } catch (Exception e) {
             log.warn(e);
+        }
+    }
+
+    private void refreshProfileList()
+    {
+        String defProfileName;
+        if (isDataSourcePreferencePage()) {
+            defProfileName = "Connection '" + getDataSourceContainer().getName() + "'";
+        } else {
+            defProfileName = "Global";
+        }
+        profilesCombo.removeAll();
+        profilesCombo.add("<" + defProfileName + ">");
+        profilesCombo.select(0);
+        if (profilesCombo.getItemCount() < 2) {
+            profilesCombo.setEnabled(false);
         }
     }
 

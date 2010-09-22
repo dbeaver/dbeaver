@@ -117,13 +117,14 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
             changeSettingsTargetLink = createLink(composite, "Show global settings");
             changeSettingsTargetLink.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
 
-            Label horizontalLine = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
-            horizontalLine.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 2, 1));
-            horizontalLine.setFont(composite.getFont());
         } else if (supportsDataSourceSpecificOptions()) {
             changeSettingsTargetLink = createLink(parent, "Show datasource settings");
             changeSettingsTargetLink.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
         }
+
+        Label horizontalLine = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+        horizontalLine.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 2, 1));
+        horizontalLine.setFont(parent.getFont());
 
         return super.createDescriptionLabel(parent);
     }

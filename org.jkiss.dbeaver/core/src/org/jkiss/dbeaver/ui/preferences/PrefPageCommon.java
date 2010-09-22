@@ -48,8 +48,7 @@ public class PrefPageCommon extends TargetPrefPage
 
     protected Control createPreferenceContent(Composite parent)
     {
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(new GridLayout(1, false));
+        Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         // General settings
         {
