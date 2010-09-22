@@ -73,7 +73,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private IWorkbenchPartSite site;
     private ResultSetMode mode;
     private Spreadsheet spreadsheet;
-    private DBSDataContainer dataContainer;
+    private ResultSetProvider resultSetProvider;
     private ResultSetDataReceiver dataReceiver;
     private IThemeManager themeManager;
 
@@ -121,7 +121,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private ResultSetDataPumpJob dataPumpJob;
     private boolean dataPumpRunning;
 
-    public ResultSetViewer(Composite parent, IWorkbenchPartSite site, DBSDataContainer dataContainer)
+    public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
     {
         super();
         this.site = site;
@@ -145,7 +145,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         createStatusBar(spreadsheet);
         changeMode(ResultSetMode.GRID);
-        this.dataContainer = dataContainer;
+        this.resultSetProvider = resultSetProvider;
         this.dataReceiver = new ResultSetDataReceiver(this);
 
         this.themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
@@ -199,7 +199,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             itemPrevious.setEnabled(isVisible && !isFirst);
             itemNext.setEnabled(isVisible && !isLast);
             itemLast.setEnabled(isVisible && !isLast);
-            itemRefresh.setEnabled(dataContainer != null && dataContainer.getDataSource() != null);
+            itemRefresh.setEnabled(resultSetProvider != null && resultSetProvider.isReadyToRun());
         }
 
         boolean validPosition;
@@ -431,7 +431,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public DBSDataContainer getDataContainer()
     {
-        return dataContainer;
+        return resultSetProvider.getDataContainer();
     }
 
     public void dispose()
@@ -773,7 +773,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.closeEditors();
         this.clearData();
         this.clearResultsView();
-        if (dataContainer != null && !dataPumpRunning) {
+        if (getDataContainer() != null && !dataPumpRunning) {
             runDataPump(0, getSegmentMaxRows());
         }
         updateGridCursor();
@@ -784,7 +784,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
-        if (dataContainer != null && !dataPumpRunning) {
+        if (getDataContainer() != null && !dataPumpRunning) {
             dataReceiver.setHasMoreData(false);
             dataReceiver.setNextSegmentRead(true);
             runDataPump(curRows.size(), getSegmentMaxRows());
@@ -793,10 +793,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     int getSegmentMaxRows()
     {
-        if (dataContainer == null) {
+        if (getDataContainer() == null) {
             return 0;
         }
-        IPreferenceStore preferenceStore = dataContainer.getDataSource().getContainer().getPreferenceStore();
+        IPreferenceStore preferenceStore = getDataContainer().getDataSource().getContainer().getPreferenceStore();
         return preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
     }
 
@@ -1053,7 +1053,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public DBPDataSource getDataSource()
         {
-            return dataContainer.getDataSource();
+            return getDataContainer().getDataSource();
         }
 
         public DBDRowController getRow() {
@@ -1555,7 +1555,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
             protected DataUpdaterJob(DBDValueListener listener)
             {
-                super("Update data", DBIcon.SQL_EXECUTE.getImageDescriptor(), dataContainer.getDataSource());
+                super("Update data", DBIcon.SQL_EXECUTE.getImageDescriptor(), getDataContainer().getDataSource());
                 this.listener = listener;
             }
 

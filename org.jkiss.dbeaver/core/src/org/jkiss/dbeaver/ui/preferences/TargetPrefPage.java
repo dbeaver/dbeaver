@@ -273,7 +273,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
             DBeaverCore.getInstance().getGlobalPreferenceStore();
         if (isDataSourcePreferencePage() && !useDataSourceSettings()) {
             // Just delete datasource specific settings
-            clearPreferences(store);
+            //clearPreferences(store);
         } else {
             savePreferences(store);
         }

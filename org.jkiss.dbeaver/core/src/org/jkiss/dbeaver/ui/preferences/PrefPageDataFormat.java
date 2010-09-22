@@ -124,43 +124,6 @@ public class PrefPageDataFormat extends TargetPrefPage
         return composite;
     }
 
-    protected void loadPreferences(IPreferenceStore store)
-    {
-        if (useDataSourceSettings()) {
-            formatterProfile = getDataSourceContainer().getDataFormatterProfile();
-        } else {
-            formatterProfile = DataSourceRegistry.getDefault().getGlobalFormatterProfile();
-        }
-        formatterDescriptors = new ArrayList<DataFormatterDescriptor>(DBeaverCore.getInstance().getDataSourceRegistry().getDataFormatters());
-
-        profileName = formatterProfile.getProfileName();
-        profileLocale = formatterProfile.getLocale();
-        for (DataFormatterDescriptor dfd : formatterDescriptors) {
-            Map<String, String> formatterProps = formatterProfile.getFormatterProperties(dfd.getId());
-            if (formatterProps != null) {
-                profileProperties.put(dfd.getId(), formatterProps);
-            }
-        }
-
-        try {
-            // Set locale
-            localeSelector.setLocale(profileLocale);
-            // Load types
-            for (DataFormatterDescriptor formatter : formatterDescriptors) {
-                typeCombo.add(formatter.getName());
-            }
-            if (typeCombo.getItemCount() > 0) {
-                typeCombo.select(0);
-            }
-            reloadFormatter();
-            //autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
-            //rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
-            //resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
-        } catch (Exception e) {
-            log.warn(e);
-        }
-    }
-
     private DataFormatterDescriptor getCurrentFormatter()
     {
         int selectionIndex = typeCombo.getSelectionIndex();
@@ -233,6 +196,43 @@ public class PrefPageDataFormat extends TargetPrefPage
                 propertiesControl.reloadDefaultValues(formatter.getSample().getDefaultProperties(locale));
             }
             reloadSample();
+        }
+    }
+
+    protected void loadPreferences(IPreferenceStore store)
+    {
+        if (isDataSourcePreferencePage()) {
+            formatterProfile = getDataSourceContainer().getDataFormatterProfile();
+        } else {
+            formatterProfile = DataSourceRegistry.getDefault().getGlobalFormatterProfile();
+        }
+        formatterDescriptors = new ArrayList<DataFormatterDescriptor>(DBeaverCore.getInstance().getDataSourceRegistry().getDataFormatters());
+
+        profileName = formatterProfile.getProfileName();
+        profileLocale = formatterProfile.getLocale();
+        for (DataFormatterDescriptor dfd : formatterDescriptors) {
+            Map<String, String> formatterProps = formatterProfile.getFormatterProperties(dfd.getId());
+            if (formatterProps != null) {
+                profileProperties.put(dfd.getId(), formatterProps);
+            }
+        }
+
+        try {
+            // Set locale
+            localeSelector.setLocale(profileLocale);
+            // Load types
+            for (DataFormatterDescriptor formatter : formatterDescriptors) {
+                typeCombo.add(formatter.getName());
+            }
+            if (typeCombo.getItemCount() > 0) {
+                typeCombo.select(0);
+            }
+            reloadFormatter();
+            //autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
+            //rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
+            //resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
+        } catch (Exception e) {
+            log.warn(e);
         }
     }
 

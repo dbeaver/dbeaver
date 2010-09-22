@@ -8,6 +8,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.progress.IProgressConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 
 /**
@@ -15,12 +16,17 @@ import org.jkiss.dbeaver.runtime.AbstractJob;
  */
 public abstract class DataSourceJob extends AbstractJob implements DBPDataSourceUser
 {
-    private DBPDataSource dataSource;
+    private DBSDataSourceContainer dataSourceContainer;
 
     protected DataSourceJob(String name, ImageDescriptor image, DBPDataSource dataSource)
     {
+        this(name, image, dataSource.getContainer());
+    }
+
+    protected DataSourceJob(String name, ImageDescriptor image, DBSDataSourceContainer dataSourceContainer)
+    {
         super(name);
-        this.dataSource = dataSource;
+        this.dataSourceContainer = dataSourceContainer;
 
         setUser(true);
         //setProperty(IProgressConstants.KEEP_PROPERTY, Boolean.TRUE);
@@ -32,17 +38,17 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
 
     public DBPDataSource getDataSource()
     {
-        return dataSource;
+        return dataSourceContainer.getDataSource();
     }
 
     protected void startJob()
     {
-        dataSource.getContainer().acquire(this);
+        dataSourceContainer.acquire(this);
     }
 
     protected void endJob()
     {
-        dataSource.getContainer().release(this);
+        dataSourceContainer.release(this);
     }
 
     public boolean needsConnection()
@@ -52,7 +58,7 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
 
     public boolean belongsTo(Object family)
     {
-        return dataSource == family || family == DBPDataSource.class;
+        return getDataSource() == family || family == DBPDataSource.class;
     }
 
 }

@@ -66,6 +66,7 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptAction;
 import org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementAction;
 import org.jkiss.dbeaver.ui.actions.sql.OpenSQLFileAction;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogViewer;
 import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
@@ -86,7 +87,7 @@ import java.util.*;
  */
 public class SQLEditor extends BaseTextEditor
     implements
-        IResourceChangeListener, IDataSourceProvider, IDataSourceContainerProvider, DBPEventListener, ISaveablePart2
+        IResourceChangeListener, IDataSourceProvider, IDataSourceContainerProvider, DBPEventListener, ISaveablePart2, ResultSetProvider
 {
     static final Log log = LogFactory.getLog(SQLEditor.class);
 
@@ -236,7 +237,7 @@ public class SQLEditor extends BaseTextEditor
             });
             resultTabs.setSimple(true);
 
-            resultsView = new ResultSetViewer(resultTabs, getSite(), dataContainer);
+            resultsView = new ResultSetViewer(resultTabs, getSite(), this);
 
             planView = new ExplainPlanViewer(resultTabs);
             logViewer = new SQLLogViewer(resultTabs);
@@ -933,6 +934,16 @@ public class SQLEditor extends BaseTextEditor
         if (newContent != null) {
             getDocument().set(newContent);
         }
+    }
+
+    public DBSDataContainer getDataContainer()
+    {
+        return dataContainer;
+    }
+
+    public boolean isReadyToRun()
+    {
+        return curJob != null && !curJobRunning;
     }
 
     private class DataContainer implements DBSDataContainer {

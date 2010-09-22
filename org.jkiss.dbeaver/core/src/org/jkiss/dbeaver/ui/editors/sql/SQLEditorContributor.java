@@ -756,7 +756,9 @@ public class SQLEditorContributor extends TextEditorActionContributor implements
     public void propertyChange(PropertyChangeEvent event)
     {
         if (event.getProperty().equals(PrefConstants.RESULT_SET_MAX_ROWS) && !resultSetSize.isDisposed()) {
-            resultSetSize.setText(event.getNewValue().toString());
+            if (event.getNewValue() != null) {
+                resultSetSize.setText(event.getNewValue().toString());
+            }
         }
     }
 
