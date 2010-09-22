@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.model.prop.DBPProperty;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -71,7 +72,7 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
         }
     }
 
-    public void saveProfile()
+    public void saveProfile() throws IOException
     {
         store.setValue(PROP_LANGUAGE, locale.getLanguage());
         store.setValue(PROP_COUNTRY, locale.getCountry());
@@ -89,6 +90,9 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
                     }
                 }
             }
+        }
+        if (store instanceof AbstractPreferenceStore) {
+            ((AbstractPreferenceStore)store).save();
         }
     }
 

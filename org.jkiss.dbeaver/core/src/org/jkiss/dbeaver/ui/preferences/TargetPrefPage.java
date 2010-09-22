@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
@@ -42,7 +43,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
     private Button dataSourceSettingsButton;
     private Control configurationBlockControl;
     private Link changeSettingsTargetLink;
-    private ControlEnableState fBlockEnableState;
+    private ControlEnableState blockEnableState;
 
     protected TargetPrefPage()
     {
@@ -56,6 +57,10 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
     protected abstract boolean hasDataSourceSpecificOptions(DataSourceDescriptor project);
 
     protected abstract boolean supportsDataSourceSpecificOptions();
+
+    protected void createPreferenceHeader(Composite composite)
+    {
+    }
 
     protected abstract Control createPreferenceContent(Composite composite);
 
@@ -88,13 +93,8 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
     {
         parentComposite = parent;
         if (isDataSourcePreferencePage()) {
-            Composite composite = new Composite(parent, SWT.NONE);
+            Composite composite = UIUtils.createPlaceholder(parent, 2);
             composite.setFont(parent.getFont());
-            GridLayout layout = new GridLayout();
-            layout.marginHeight = 0;
-            layout.marginWidth = 0;
-            layout.numColumns = 2;
-            composite.setLayout(layout);
             composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
             dataSourceSettingsButton = new Button(composite, SWT.CHECK);
@@ -121,6 +121,8 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
         Label horizontalLine = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
         horizontalLine.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 2, 1));
         horizontalLine.setFont(parent.getFont());
+
+        createPreferenceHeader(parent);
 
         return super.createDescriptionLabel(parent);
     }
@@ -200,13 +202,13 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
     protected void enablePreferenceContent(boolean enable)
     {
         if (enable) {
-            if (fBlockEnableState != null) {
-                fBlockEnableState.restore();
-                fBlockEnableState = null;
+            if (blockEnableState != null) {
+                blockEnableState.restore();
+                blockEnableState = null;
             }
         } else {
-            if (fBlockEnableState == null) {
-                fBlockEnableState = ControlEnableState.disable(configurationBlockControl);
+            if (blockEnableState == null) {
+                blockEnableState = ControlEnableState.disable(configurationBlockControl);
             }
         }
     }

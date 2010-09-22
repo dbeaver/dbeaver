@@ -716,26 +716,47 @@
         <page
                 id="org.jkiss.dbeaver.preferences.main.common"
                 class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon"
-                name="Common Settings"
-                objectClass="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+                name="Common Settings">
+           <enabledWhen>
+              <instanceof
+                    value="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+              </instanceof>
+           </enabledWhen>
         </page>
         <page
                 id="org.jkiss.dbeaver.preferences.main.dataformat"
                 class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat"
-                name="Data Formats"
-                objectClass="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+                name="Data Formats">
+           <enabledWhen>
+              <or>
+                 <instanceof
+                       value="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+                 </instanceof>
+                 <instanceof
+                       value="org.jkiss.dbeaver.registry.DataFormatterRegistry">
+                 </instanceof>
+              </or>
+           </enabledWhen>
         </page>
         <page
                 class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor"
                 id="org.jkiss.dbeaver.preferences.main.sqleditor"
-                name="SQL Editor"
-                objectClass="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+                name="SQL Editor">
+           <enabledWhen>
+              <instanceof
+                    value="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+              </instanceof>
+           </enabledWhen>
         </page>
         <page
                 class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor"
                 id="org.jkiss.dbeaver.preferences.main.contenteditor"
-                name="Content Editor"
-                objectClass="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+                name="Content Editor">
+           <enabledWhen>
+              <instanceof
+                    value="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+              </instanceof>
+           </enabledWhen>
         </page>
     </extension>
 

@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 
+import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ public interface DBDDataFormatterProfile {
 
     void reset();
 
-    void saveProfile();
+    void saveProfile() throws IOException;
 
     DBDDataFormatter createFormatter(String typeId) throws IllegalAccessException, InstantiationException, IllegalArgumentException;
 

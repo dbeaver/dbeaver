@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
 import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
-import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.dbeaver.ui.dialogs.misc.DataFormatProfilesEditDialog;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.util.*;
@@ -71,13 +71,9 @@ public class PrefPageDataFormat extends TargetPrefPage
         return true;
     }
 
-    protected Control createPreferenceContent(Composite parent)
+    protected void createPreferenceHeader(Composite composite)
     {
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
-
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
-
-        {
+        if (!isDataSourcePreferencePage()) {
             Composite profileGroup = UIUtils.createPlaceholder(composite, 3);
             profileGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.createControlLabel(profileGroup, "Profile");
@@ -100,6 +96,13 @@ public class PrefPageDataFormat extends TargetPrefPage
                 }
             });
         }
+    }
+
+    protected Control createPreferenceContent(Composite parent)
+    {
+        boldFont = UIUtils.makeBoldFont(parent.getFont());
+
+        Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         // Locale
         localeSelector = new LocaleSelectorControl(composite, null);
@@ -151,10 +154,9 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     private void manageProfiles()
     {
-        ManagerProfilesDialog dialog = new ManagerProfilesDialog(getShell());
-        if (dialog.open() == IDialogConstants.OK_ID) {
-            refreshProfileList();
-        }
+        DataFormatProfilesEditDialog dialog = new DataFormatProfilesEditDialog(getShell());
+        dialog.open();
+        refreshProfileList();
     }
 
     private DBDDataFormatterProfile getDefaultProfile()
@@ -177,8 +179,7 @@ public class PrefPageDataFormat extends TargetPrefPage
             newProfile = getDefaultProfile();
         } else {
             String newProfileName = profilesCombo.getItem(selectionIndex);
-            DataFormatterRegistry registry = getRegistry();
-            newProfile = registry.getCustomProfile(newProfileName);
+            newProfile = getRegistry().getCustomProfile(newProfileName);
         }
         if (newProfile != formatterProfile) {
             setCurrentProfile(newProfile);
@@ -187,6 +188,9 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     private void setCurrentProfile(DBDDataFormatterProfile profile)
     {
+        if (formatterProfile == profile) {
+            return;
+        }
         formatterProfile = profile;
         formatterDescriptors = new ArrayList<DataFormatterDescriptor>(getRegistry().getDataFormatters());
 
@@ -222,11 +226,8 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     private void refreshProfileList()
     {
-        String defProfileName;
         if (isDataSourcePreferencePage()) {
-            defProfileName = "Connection '" + getDataSourceContainer().getName() + "'";
-        } else {
-            defProfileName = "Global";
+            return;
         }
         int selectionIndex = profilesCombo.getSelectionIndex();
         String oldProfile = null;
@@ -234,7 +235,7 @@ public class PrefPageDataFormat extends TargetPrefPage
             oldProfile = profilesCombo.getItem(selectionIndex);
         }
         profilesCombo.removeAll();
-        profilesCombo.add("<" + defProfileName + ">");
+        profilesCombo.add("<" + getRegistry().getGlobalProfile().getProfileName() + ">");
         for (DBDDataFormatterProfile profile : getRegistry().getCustomProfiles()) {
             profilesCombo.add(profile.getProfileName());
         }
@@ -352,14 +353,18 @@ public class PrefPageDataFormat extends TargetPrefPage
         formatterProfile.reset();
     }
 
-    public void applyData(Object data)
-    {
-        super.applyData(data);
-    }
-
     protected String getPropertyPageID()
     {
         return PAGE_ID;
+    }
+
+    @Override
+    public void applyData(Object data)
+    {
+        if (data instanceof DBDDataFormatterProfile) {
+            UIUtils.setComboSelection(profilesCombo, ((DBDDataFormatterProfile)data).getProfileName());
+            changeProfile();
+        }
     }
 
     @Override
@@ -367,98 +372,6 @@ public class PrefPageDataFormat extends TargetPrefPage
     {
         boldFont.dispose();
         super.dispose();
-    }
-
-    class ManagerProfilesDialog extends org.eclipse.jface.dialogs.Dialog {
-        private static final int NEW_ID = IDialogConstants.CLIENT_ID + 1;
-        private static final int DELETE_ID = IDialogConstants.CLIENT_ID + 2;
-        private org.eclipse.swt.widgets.List profileList;
-
-        private ManagerProfilesDialog(Shell parentShell)
-        {
-            super(parentShell);
-        }
-
-        protected boolean isResizable()
-        {
-            return true;
-        }
-
-        protected Control createDialogArea(Composite parent)
-        {
-            getShell().setText("Manage data format profiles");
-
-            Composite group = new Composite(parent, SWT.NONE);
-            group.setLayout(new GridLayout(1, false));
-            group.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            profileList = new org.eclipse.swt.widgets.List(group, SWT.SINGLE | SWT.BORDER);
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.widthHint = 300;
-            gd.heightHint = 200;
-            profileList.setLayoutData(gd);
-
-            profileList.addSelectionListener(new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    getButton(DELETE_ID).setEnabled(profileList.getSelectionIndex() >= 0);
-                }
-            });
-
-            loadProfiles();
-            return parent;
-        }
-
-        @Override
-        protected void createButtonsForButtonBar(Composite parent)
-        {
-            createButton(parent, NEW_ID, "New Profile", false);
-            createButton(parent, DELETE_ID, "Delete Profile", false);
-            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
-
-            getButton(DELETE_ID).setEnabled(false);
-        }
-
-        @Override
-        protected void buttonPressed(int buttonId)
-        {
-            DataFormatterRegistry registry = getRegistry();
-            if (buttonId == NEW_ID) {
-                String profileName = EnterNameDialog.chooseName(getShell(), "Profile Name");
-                if (registry.getCustomProfile(profileName) != null) {
-                    UIUtils.showMessageBox(getShell(), "Create profile", "Profile '" + profileName + "' already exists");
-                } else {
-                    registry.createCustomProfile(profileName);
-                    loadProfiles();
-                }
-            } else if (buttonId == DELETE_ID) {
-                int selectionIndex = profileList.getSelectionIndex();
-                if (selectionIndex >= 0) {
-                    DBDDataFormatterProfile profile = registry.getCustomProfile(profileList.getItem(selectionIndex));
-                    if (profile != null) {
-                        if (UIUtils.confirmAction(getShell(), "Delete Profile", "Are You Sure?")) {
-                            registry.deleteCustomProfile(profile);
-                            loadProfiles();
-                        }
-                    }
-                }
-            } else {
-                super.buttonPressed(buttonId);
-            }
-        }
-
-        private void loadProfiles()
-        {
-            profileList.removeAll();
-            List<DBDDataFormatterProfile> profiles = getRegistry().getCustomProfiles();
-            for (DBDDataFormatterProfile profile : profiles) {
-                profileList.add(profile.getProfileName());
-            }
-            Button deleteButton = getButton(DELETE_ID);
-            if (deleteButton != null) {
-                deleteButton.setEnabled(false);
-            }
-        }
     }
 
 }

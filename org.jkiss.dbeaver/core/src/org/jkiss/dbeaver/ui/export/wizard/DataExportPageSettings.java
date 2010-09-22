@@ -4,19 +4,25 @@
 
 package org.jkiss.dbeaver.ui.export.wizard;
 
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
+import org.jkiss.dbeaver.registry.DataFormatterRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.dialogs.misc.DataFormatProfilesEditDialog;
+import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
+import org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor;
 
 class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
 
@@ -32,6 +38,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
     private Combo lobExtractType;
     private Label lobEncodingLabel;
     private Combo lobEncodingCombo;
+    private Combo formatProfilesCombo;
 
     DataExportPageSettings() {
         super("Settings");
@@ -58,10 +65,46 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
             generalSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             {
-                UIUtils.createControlLabel(generalSettings, "LOBs");
+                Composite formattingGroup = UIUtils.createPlaceholder(generalSettings, 3);
+                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.horizontalSpan = 4;
+                formattingGroup.setLayoutData(gd);
+                
+                UIUtils.createControlLabel(formattingGroup, "Formatting");
+                formatProfilesCombo = new Combo(formattingGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.widthHint = 200;
+                formatProfilesCombo.setLayoutData(gd);
+
+                Button profilesManageButton = new Button(formattingGroup, SWT.PUSH);
+                profilesManageButton.setText("Edit ... ");
+                profilesManageButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        //DataFormatProfilesEditDialog dialog = new DataFormatProfilesEditDialog(getShell());
+                        //dialog.open();
+                        PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
+                            getShell(),
+                            DBeaverCore.getInstance().getDataFormatterRegistry(),
+                            PrefPageDataFormat.PAGE_ID,
+                            null,
+                            getSelectedFormatterProfile(),
+                            PreferencesUtil.OPTION_NONE);
+                        if (propDialog != null) {
+                            propDialog.open();
+                            reloadFormatProfiles();
+                        }
+                    }
+                });
+
+                reloadFormatProfiles();
+            }
+            {
+                UIUtils.createControlLabel(generalSettings, "Binaries");
                 lobExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
                 lobExtractType.setItems(new String[] {
-                    "Skip column",
+                    "Set to NULL",
                     "Save to files",
                     "Inline" });
                 lobExtractType.addSelectionListener(new SelectionAdapter() {
@@ -77,7 +120,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                     }
                 });
 
-                lobEncodingLabel = UIUtils.createControlLabel(generalSettings, "LOB Encoding");
+                lobEncodingLabel = UIUtils.createControlLabel(generalSettings, "Encoding");
                 lobEncodingCombo = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
                 lobEncodingCombo.setItems(new String[] {
                     "Base64",
@@ -106,6 +149,33 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
         propsEditor.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         setControl(composite);
+    }
+
+    private Object getSelectedFormatterProfile()
+    {
+        DataFormatterRegistry registry = DBeaverCore.getInstance().getDataFormatterRegistry();
+        int selectionIndex = formatProfilesCombo.getSelectionIndex();
+        if (selectionIndex < 0) {
+            return null;
+        } else if (selectionIndex == 0) {
+            return registry.getGlobalProfile();
+        } else {
+            return registry.getCustomProfile(UIUtils.getComboSelection(formatProfilesCombo));
+        }
+    }
+
+    private void reloadFormatProfiles()
+    {
+        DataFormatterRegistry registry = DBeaverCore.getInstance().getDataFormatterRegistry();
+        String oldProfile = UIUtils.getComboSelection(formatProfilesCombo);
+        formatProfilesCombo.removeAll();
+        formatProfilesCombo.add("<Connection's default>");
+        for (DBDDataFormatterProfile profile : registry.getCustomProfiles()) {
+            formatProfilesCombo.add(profile.getProfileName());
+        }
+        if (!UIUtils.setComboSelection(formatProfilesCombo, oldProfile)) {
+            formatProfilesCombo.select(0);
+        }
     }
 
     @Override

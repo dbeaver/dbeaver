@@ -30,6 +30,8 @@ public class LocaleSelectorControl extends Composite
     private Text localeText;
     private Locale currentLocale;
 
+    private boolean localeChanging = false;
+
     public LocaleSelectorControl(
         Composite parent,
         Locale defaultLocale)
@@ -104,16 +106,49 @@ public class LocaleSelectorControl extends Composite
 
     private static String getIsoCode(String value)
     {
-        int divPos = value.indexOf('-');
-        return divPos == -1 ? value.trim() : value.substring(0, divPos).trim();
+        for (int i = 0; i < value.length(); i++) {
+            if (!Character.isLetter(value.charAt(i))) {
+                return value.substring(0, i);
+            }
+        }
+        return value;
     }
 
     private void onLocaleChange()
     {
-        languageCombo.setText(currentLocale.getLanguage());
-        onLanguageChange(currentLocale.getCountry());
-        countryCombo.setText(currentLocale.getCountry());
-        onCountryChange(currentLocale.getVariant());
+        try {
+            localeChanging = true;
+
+            int count = languageCombo.getItemCount();
+            boolean found = false;
+            for (int i = 0; i < count; i++) {
+                if (getIsoCode(languageCombo.getItem(i)).equals(currentLocale.getLanguage())) {
+                    languageCombo.select(i);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                languageCombo.setText(currentLocale.getLanguage());
+            }
+
+            count = countryCombo.getItemCount();
+            found = false;
+            for (int i = 0; i < count; i++) {
+                if (getIsoCode(countryCombo.getItem(i)).equals(currentLocale.getCountry())) {
+                    countryCombo.select(i);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                countryCombo.setText(currentLocale.getCountry());
+            }
+            variantCombo.setText(currentLocale.getVariant());
+        }
+        finally {
+            localeChanging = false;
+        }
     }
 
     private void onLanguageChange(String defCountry)
@@ -169,6 +204,9 @@ public class LocaleSelectorControl extends Composite
 
     private void calculateLocale()
     {
+        if (localeChanging) {
+            return;
+        }
         String language = getIsoCode(languageCombo.getText());
         String country = getIsoCode(countryCombo.getText());
         String variant = getIsoCode(variantCombo.getText());

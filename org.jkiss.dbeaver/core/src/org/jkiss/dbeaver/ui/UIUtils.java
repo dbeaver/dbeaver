@@ -375,6 +375,30 @@ public class UIUtils {
         return ph;
     }
 
+    public static String getComboSelection(Combo combo)
+    {
+        int selectionIndex = combo.getSelectionIndex();
+        if (selectionIndex < 0) {
+            return null;
+        }
+        return combo.getItem(selectionIndex);
+    }
+
+    public static boolean setComboSelection(Combo combo, String value)
+    {
+        if (value == null) {
+            return false;
+        }
+        int count = combo.getItemCount();
+        for (int i = 0; i < count; i++) {
+            if (value.equals(combo.getItem(i))) {
+                combo.select(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static Combo createEncodingCombo(Composite parent, String curCharset)
     {
         if (curCharset == null) {
