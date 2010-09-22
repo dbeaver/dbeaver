@@ -941,7 +941,12 @@
         </formatter>
         <formatter id="number" label="Numbers" class="org.jkiss.dbeaver.model.impl.data.NumberDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.NumberFormatSample">
             <propertyGroup label="General">
-                <!--property id="pattern" label="Pattern" type="string" description="Date pattern" required="true"/-->
+                <property id="useGrouping" label="Use Grouping" type="boolean" description="Tells grouping is used in this format"/>
+                <property id="maxIntegerDigits" label="Maximum integer digits" type="integer" description="Maximum integer digits"/>
+                <property id="minIntegerDigits" label="Minimum integer digits" type="integer" description="Minimum integer digits"/>
+                <property id="maxFractionDigits" label="Maximum fraction digits" type="integer" description="Maximum fraction digits"/>
+                <property id="minFractionDigits" label="Minimum fraction digits" type="integer" description="Minimum fraction digits"/>
+                <property id="roundingMode" label="Rounding mode" type="string" description="Rounding mode" validValues="UP,DOWN,CEILING,FLOOR,HALF_UP,HALF_DOWN,HALF_EVEN,UNNECESSARY"/>
             </propertyGroup>
         </formatter>
     </extension>

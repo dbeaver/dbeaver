@@ -246,7 +246,7 @@ public class EditablePropertiesControl extends Composite {
         // Make an editor
         final Tree treeControl = propsTree.getTree();
         treeEditor = new TreeEditor(treeControl);
-        treeEditor.horizontalAlignment = SWT.LEFT;
+        treeEditor.horizontalAlignment = SWT.CENTER;
         treeEditor.verticalAlignment = SWT.TOP;
         treeEditor.grabHorizontal = true;
         treeEditor.minimumWidth = 50;
@@ -275,17 +275,39 @@ public class EditablePropertiesControl extends Composite {
                     Object[] validValues = prop.getValidValues();
                     Control newEditor;
                     if (validValues == null) {
-                        Text text = new Text(treeControl, SWT.BORDER);
-                        text.setText(item.getText(1));
-                        text.addModifyListener(new ModifyListener() {
-                            public void modifyText(ModifyEvent e) {
-                                Text text = (Text) treeEditor.getEditor();
-                                changeProperty(prop, text.getText());
-                                treeEditor.getItem().setText(1, text.getText());
+                        switch (prop.getType()) {
+                            case BOOLEAN:
+                            {
+                                Combo control = new Combo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
+                                control.add("true");
+                                control.add("false");
+                                control.select(Boolean.valueOf(item.getText(1)) ? 0 : 1);
+                                control.addModifyListener(new ModifyListener() {
+                                    public void modifyText(ModifyEvent e) {
+                                        Combo combo = (Combo) treeEditor.getEditor();
+                                        changeProperty(prop, combo.getText());
+                                        treeEditor.getItem().setText(1, combo.getText());
+                                    }
+                                });
+                                newEditor = control;
+                                break;
                             }
-                        });
-                        text.selectAll();
-                        newEditor = text;
+                            default:
+                            {
+                                Text text = new Text(treeControl, SWT.BORDER);
+                                text.setText(item.getText(1));
+                                text.addModifyListener(new ModifyListener() {
+                                    public void modifyText(ModifyEvent e) {
+                                        Text text = (Text) treeEditor.getEditor();
+                                        changeProperty(prop, text.getText());
+                                        treeEditor.getItem().setText(1, text.getText());
+                                    }
+                                });
+                                text.selectAll();
+                                newEditor = text;
+                                break;
+                            }
+                        }
                     } else {
                         Combo control = new Combo(treeControl, SWT.READ_ONLY | SWT.DROP_DOWN);
                         int selIndex = -1;
