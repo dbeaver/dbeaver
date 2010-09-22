@@ -16,8 +16,8 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataFormatterDescriptor;
+import org.jkiss.dbeaver.registry.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
 import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
@@ -195,12 +195,14 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     protected void loadPreferences(IPreferenceStore store)
     {
+        DataFormatterRegistry formatterRegistry = DBeaverCore.getInstance().getDataFormatterRegistry();
+
         if (isDataSourcePreferencePage()) {
             formatterProfile = getDataSourceContainer().getDataFormatterProfile();
         } else {
-            formatterProfile = DataSourceRegistry.getDefault().getGlobalFormatterProfile();
+            formatterProfile = formatterRegistry.getGlobalProfile();
         }
-        formatterDescriptors = new ArrayList<DataFormatterDescriptor>(DBeaverCore.getInstance().getDataSourceRegistry().getDataFormatters());
+        formatterDescriptors = new ArrayList<DataFormatterDescriptor>(formatterRegistry.getDataFormatters());
 
         profileName = formatterProfile.getProfileName();
         profileLocale = formatterProfile.getLocale();

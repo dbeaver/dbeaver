@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataExportersRegistry;
+import org.jkiss.dbeaver.registry.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
@@ -64,10 +65,12 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     private DataSourceRegistry dataSourceRegistry;
     private EntityEditorsRegistry editorsRegistry;
+    private DataExportersRegistry dataExportersRegistry;
+    private DataFormatterRegistry dataFormatterRegistry;
+
     private DBNModel metaModel;
     private QMControllerImpl queryManager;
     private JexlEngine jexlEngine;
-    private DataExportersRegistry dataExportersRegistry;
 
     public static DBeaverCore getInstance()
     {
@@ -107,6 +110,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         
         this.editorsRegistry = new EntityEditorsRegistry(extensionRegistry);
         this.dataExportersRegistry = new DataExportersRegistry(extensionRegistry);
+        this.dataFormatterRegistry = new DataFormatterRegistry(extensionRegistry);
 
         this.metaModel = new DBNModel(dataSourceRegistry);
         this.queryManager = new QMControllerImpl(dataSourceRegistry);
@@ -167,6 +171,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         if (metaModel != null) {
             metaModel.dispose();
         }
+        this.dataExportersRegistry.dispose();
+        this.dataFormatterRegistry.dispose();
         this.dataSourceRegistry.dispose();
 
         // Unregister properties adapter
@@ -230,6 +236,11 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public DataExportersRegistry getDataExportersRegistry()
     {
         return dataExportersRegistry;
+    }
+
+    public DataFormatterRegistry getDataFormatterRegistry()
+    {
+        return dataFormatterRegistry;
     }
 
     public IWorkbench getWorkbench()

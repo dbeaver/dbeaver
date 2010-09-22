@@ -77,7 +77,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         this.connectionInfo = connectionInfo;
         this.createDate = new Date();
         this.preferenceStore = new DataSourcePreferenceStore(this);
-        this.formatterProfile = new DataFormatterProfile(preferenceStore);
     }
 
     public void dispose()
@@ -372,7 +371,10 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
     public DBDDataFormatterProfile getDataFormatterProfile()
     {
-        return formatterProfile;
+        if (this.formatterProfile == null) {
+            this.formatterProfile = new DataFormatterProfile(getId(), preferenceStore);
+        }
+        return this.formatterProfile;
     }
 
     public AbstractPreferenceStore getPreferenceStore()

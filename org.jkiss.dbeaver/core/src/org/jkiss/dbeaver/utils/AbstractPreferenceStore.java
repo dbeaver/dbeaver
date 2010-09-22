@@ -50,9 +50,19 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         return properties;
     }
 
+    public void setProperties(Map<String, String> properties)
+    {
+        this.properties = properties;
+    }
+
     public Map<String, String> getDefaultProperties()
     {
         return defaultProperties;
+    }
+
+    public void setDefaultProperties(Map<String, String> defaultProperties)
+    {
+        this.defaultProperties = defaultProperties;
     }
 
     public void clear()

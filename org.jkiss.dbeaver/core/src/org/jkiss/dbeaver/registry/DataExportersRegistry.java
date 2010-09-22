@@ -75,4 +75,9 @@ public class DataExportersRegistry {
         }
         return null;
     }
+
+    public void dispose()
+    {
+        dataExporters.clear();
+    }
 }

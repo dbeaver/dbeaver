@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.eclipse.jface.preference.IPreferenceStore;
+
 import java.util.Locale;
 import java.util.Map;
 
@@ -11,6 +13,8 @@ import java.util.Map;
  * Data formatter profile
  */
 public interface DBDDataFormatterProfile {
+
+    IPreferenceStore getPreferenceStore();
 
     String getProfileName();
     

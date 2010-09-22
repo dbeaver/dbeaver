@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.prop.DBPProperty;
@@ -25,13 +26,13 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
     private String name;
     private Locale locale;
     private Map<String, Map<String, String>> properties = new HashMap<String, Map<String, String>>();
-    private static final String PROP_NAME = "dataformat.profile.name";
     private static final String PROP_LANGUAGE = "dataformat.profile.language";
     private static final String PROP_COUNTRY = "dataformat.profile.country";
     private static final String PROP_VARIANT = "dataformat.profile.variant";
 
-    DataFormatterProfile(IPreferenceStore store)
+    DataFormatterProfile(String profileName, IPreferenceStore store)
     {
+        this.name = profileName;
         this.store = store;
         if (store instanceof AbstractPreferenceStore) {
             ((AbstractPreferenceStore)store).getParentStore().addPropertyChangeListener(this);
@@ -41,7 +42,6 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
 
     private void loadProfile()
     {
-        this.name = store.getString(PROP_NAME);
         {
             String language = store.getString(PROP_LANGUAGE);
             String country = store.getString(PROP_COUNTRY);
@@ -57,7 +57,7 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
             }
         }
         properties.clear();
-        for (DataFormatterDescriptor formatter : DataSourceRegistry.getDefault().getDataFormatters()) {
+        for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
             Map<String, String> formatterProps = new HashMap<String, String>();
             for (DBPPropertyGroup group : formatter.getPropertyGroups()) {
                 for (DBPProperty prop : group.getProperties()) {
@@ -73,12 +73,11 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
 
     public void saveProfile()
     {
-        store.setValue(PROP_NAME, name);
         store.setValue(PROP_LANGUAGE, locale.getLanguage());
         store.setValue(PROP_COUNTRY, locale.getCountry());
         store.setValue(PROP_VARIANT, locale.getVariant());
 
-        for (DataFormatterDescriptor formatter : DataSourceRegistry.getDefault().getDataFormatters()) {
+        for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
             Map<String, String> formatterProps = properties.get(formatter.getId());
             for (DBPPropertyGroup group : formatter.getPropertyGroups()) {
                 for (DBPProperty prop : group.getProperties()) {
@@ -91,6 +90,11 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
                 }
             }
         }
+    }
+
+    public IPreferenceStore getPreferenceStore()
+    {
+        return store;
     }
 
     public String getProfileName()
@@ -143,7 +147,7 @@ class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeLi
     public DBDDataFormatter createFormatter(String typeId)
         throws IllegalAccessException, InstantiationException, IllegalArgumentException
     {
-        DataFormatterDescriptor descriptor = DataSourceRegistry.getDefault().getDataFormatter(typeId);
+        DataFormatterDescriptor descriptor = DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatter(typeId);
         if (descriptor == null) {
             throw new IllegalArgumentException("Formatter '" + typeId + "' not found");
         }

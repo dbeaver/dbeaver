@@ -19,7 +19,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
 
     public void init(Locale locale, Map<String, String> properties)
     {
-        numberFormat = NumberFormat.getInstance(locale);
+        numberFormat = NumberFormat.getNumberInstance(locale);
         String propValue = properties.get(NumberFormatSample.PROP_USE_GROUPING);
         if (!CommonUtils.isEmpty(propValue)) {
             numberFormat.setGroupingUsed(Boolean.valueOf(propValue));

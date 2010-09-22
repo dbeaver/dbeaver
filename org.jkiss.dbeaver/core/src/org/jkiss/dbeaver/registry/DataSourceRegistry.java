@@ -14,18 +14,15 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.StringEncrypter;
 import org.xml.sax.Attributes;
 
@@ -44,15 +41,13 @@ public class DataSourceRegistry implements DBPRegistry
 
     private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();
 
-    private final List<DataFormatterDescriptor> dataFormatterList = new ArrayList<DataFormatterDescriptor>();
-    private final Map<String, DataFormatterDescriptor> dataFormatterMap = new HashMap<String, DataFormatterDescriptor>();
-
     private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<DBPEventListener>();
 
     private StringEncrypter encrypter;
     private static final String PASSWORD_ENCRYPTION_KEY = "sdf@!#$verf^wv%6Fwe%$$#FFGwfsdefwfe135s$^H)dg";
-    private DBDDataFormatterProfile globalFormetterProfiler;
+    public static final String CONFIG_FILE_NAME = "data-sources.xml";
+
 
     public DataSourceRegistry(DBeaverCore core)
     {
@@ -99,22 +94,10 @@ public class DataSourceRegistry implements DBPRegistry
             }
         }
 
-        // Load data formatters from external plugins
-        {
-            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataFormatterDescriptor.EXTENSION_ID);
-            for (IConfigurationElement ext : extElements) {
-                DataFormatterDescriptor formatterDescriptor = new DataFormatterDescriptor(ext);
-                dataFormatterList.add(formatterDescriptor);
-                dataFormatterMap.put(formatterDescriptor.getId(), formatterDescriptor);
-            }
-        }
-
         // Load drivers
         loadDrivers();
         // Load datasources
         loadDataSources();
-
-        globalFormetterProfiler = new DataFormatterProfile(DBeaverCore.getInstance().getGlobalPreferenceStore());
     }
 
     public void dispose()
@@ -141,8 +124,6 @@ public class DataSourceRegistry implements DBPRegistry
         this.dataSourceProviders.clear();
 
         this.dataSourceProviders.clear();
-        this.dataFormatterList.clear();
-        this.dataFormatterMap.clear();
     }
 
     public void closeConnections()
@@ -216,24 +197,6 @@ public class DataSourceRegistry implements DBPRegistry
             }
         }
         return null;
-    }
-
-    ////////////////////////////////////////////////////
-    // Data formatters
-
-    public List<DataFormatterDescriptor> getDataFormatters()
-    {
-        return dataFormatterList;
-    }
-
-    public DataFormatterDescriptor getDataFormatter(String typeId)
-    {
-        return dataFormatterMap.get(typeId);
-    }
-
-    public DBDDataFormatterProfile getGlobalFormatterProfile()
-    {
-        return globalFormetterProfiler;
     }
 
     ////////////////////////////////////////////////////
@@ -468,7 +431,7 @@ public class DataSourceRegistry implements DBPRegistry
 
     private void loadDataSources()
     {
-        File projectConfig = new File(workspaceRoot, "data-sources.xml");
+        File projectConfig = new File(workspaceRoot, CONFIG_FILE_NAME);
         if (projectConfig.exists()) {
             try {
                 InputStream is = new FileInputStream(projectConfig);
@@ -505,11 +468,11 @@ public class DataSourceRegistry implements DBPRegistry
 
     private void saveDataSources()
     {
-        File projectConfig = new File(workspaceRoot, "data-sources.xml");
+        File projectConfig = new File(workspaceRoot, CONFIG_FILE_NAME);
         try {
             OutputStream os = new FileOutputStream(projectConfig);
             try {
-                XMLBuilder xml = new XMLBuilder(os, "utf-8");
+                XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET);
                 xml.setButify(true);
                 xml.startElement("data-sources");
                 for (DataSourceDescriptor dataSource : dataSources) {
