@@ -4,9 +4,11 @@
 
 package org.jkiss.dbeaver.runtime.project;
 
-import org.eclipse.core.filebuffers.manipulation.ContainerCreator;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.Document;
@@ -15,8 +17,6 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.texteditor.AbstractDocumentProvider;
-import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -140,9 +140,9 @@ public class ProjectDocumentProvider extends AbstractDocumentProvider {
         } else {
             try {
                 monitor.beginTask("Save file '" + file.getName() + "'", 2000);
-                ContainerCreator creator = new ContainerCreator(file.getWorkspace(), file.getParent().getFullPath());
-                creator.createContainer(new SubProgressMonitor(monitor, 1000));
-                file.create(stream, false, new SubProgressMonitor(monitor, 1000));
+                //ContainerCreator creator = new ContainerCreator(file.getWorkspace(), file.getParent().getFullPath());
+                //creator.createContainer(new SubProgressMonitor(monitor, 1000));
+                file.create(stream, false, monitor);
             }
             finally {
                 monitor.done();
