@@ -1,11 +1,15 @@
 /*
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
+
 package org.jkiss.dbeaver.ui.editors.binary;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.*;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -60,9 +64,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         }
         IPath localPath = null;
         IEditorInput input = getEditorInput();
-        if (input instanceof IFileEditorInput) {
-            localPath = ((IFileEditorInput)input).getFile().getFullPath();
-        } else if (input instanceof IPathEditorInput) {
+        if (input instanceof IPathEditorInput) {
             localPath = ((IPathEditorInput)input).getPath();
         }
         if (localPath == null) {
@@ -189,22 +191,9 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         String charset = null;
         IEditorInput unresolved = getEditorInput();
         File systemFile = null;
-        IFile localFile = null;
-        if (unresolved instanceof IFileEditorInput) {
-            localFile = ((IFileEditorInput) unresolved).getFile();
-        } else if (unresolved instanceof IPathEditorInput) {  // eg. FileInPlaceEditorInput
+        if (unresolved instanceof IPathEditorInput) {  // eg. FileInPlaceEditorInput
             IPathEditorInput file = (IPathEditorInput) unresolved;
             systemFile = file.getPath().toFile();
-        }
-        // charset
-        if (localFile != null) {
-            systemFile = localFile.getLocation().toFile();
-            try {
-                charset = localFile.getCharset(true);
-            }
-            catch (CoreException e1) {
-                log.warn(e1);
-            }
         }
         // open file
         try {
@@ -352,9 +341,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         throws PartInitException
     {
         setSite(site);
-        if (!(input instanceof IFileEditorInput) &&
-            !(input instanceof IPathEditorInput))
-        {
+        if (!(input instanceof IPathEditorInput)) {
             throw new PartInitException("Editor Input is not a file");
         }
         setInput(input);

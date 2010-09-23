@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ext.erd.editor;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -63,9 +62,6 @@ import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -141,7 +137,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
      */
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         // Editor is readonly if editor input is not a file but database object
-        this.isReadOnly = !(input instanceof IFileEditorInput);
+        this.isReadOnly = true;
 
         editDomain = new DefaultEditDomain(this);
         setEditDomain(editDomain);
@@ -240,6 +236,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
      * @see EditorPart#doSave
      */
     public void doSave(IProgressMonitor monitor) {
+/*
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             ObjectOutputStream objectOut = new ObjectOutputStream(out);
@@ -258,6 +255,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         catch (Exception e) {
             log.error("Could not save diagram", e);
         }
+*/
         getCommandStack().markSaveLocation();
     }
 
@@ -313,12 +311,14 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
     protected void setInput(IEditorInput input) {
         super.setInput(input);
 
+/*
         if (input instanceof IFileEditorInput) {
             loadContentFromFile((IFileEditorInput) input);
         } else {
             // Setup empty schema for now
             // Actual data will be loaded later in activatePart
         }
+*/
     }
 
     private EntityDiagram loadFromDatabase(DBRProgressMonitor monitor)
@@ -443,9 +443,9 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
         return result;
     }
-
-    private void loadContentFromFile(IFileEditorInput input) {
 /*
+    private void loadContentFromFile(IFileEditorInput input) {
+
         IFile file = input.getFile();
         try {
             setPartName(file.getName());
@@ -458,8 +458,8 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             log.error("Error loading diagram from file '" + file.getFullPath().toString() + "'", e);
             entityDiagram = getContent();
         }
-*/
     }
+*/
 
     /**
      * Creates a PaletteViewerProvider that will be used to create palettes for
