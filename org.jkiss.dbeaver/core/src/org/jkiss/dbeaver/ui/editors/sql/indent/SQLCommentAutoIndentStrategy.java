@@ -8,7 +8,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
-import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 
@@ -21,6 +20,9 @@ import java.text.BreakIterator;
 public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
     static final Log log = LogFactory.getLog(SQLCommentAutoIndentStrategy.class);
+
+    private static final int DEFAULT_MARGIN = 5;
+    private static final int DEFAULT_TAB_WIDTH = 4;
 
     private String partitioning;
 
@@ -536,8 +538,9 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
     private static int calculateDisplayedWidth(String string)
     {
 
-        final int tabWidth = getPreferenceStore().getInt(
-            AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
+        final int tabWidth = DEFAULT_TAB_WIDTH;
+        /*getPreferenceStore().getInt(
+            AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);*/
 
         int column = 0;
         for (int i = 0; i < string.length(); i++) {
@@ -615,7 +618,7 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
 
     private static int getMargin()
     {
-        return getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_PRINT_MARGIN_COLUMN);
+        return DEFAULT_MARGIN;//getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_PRINT_MARGIN_COLUMN);
     }
 
     /**

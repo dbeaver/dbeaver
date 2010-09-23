@@ -21,7 +21,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.*;
-import org.eclipse.ui.editors.text.ILocationProvider;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.WorkbenchPart;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
@@ -65,8 +64,6 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             localPath = ((IFileEditorInput)input).getFile().getFullPath();
         } else if (input instanceof IPathEditorInput) {
             localPath = ((IPathEditorInput)input).getPath();
-        } else if (input instanceof ILocationProvider) {
-            localPath = ((ILocationProvider)input).getPath(input);
         }
         if (localPath == null) {
             return;
@@ -198,10 +195,6 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         } else if (unresolved instanceof IPathEditorInput) {  // eg. FileInPlaceEditorInput
             IPathEditorInput file = (IPathEditorInput) unresolved;
             systemFile = file.getPath().toFile();
-        } else if (unresolved instanceof ILocationProvider) {
-            ILocationProvider location = (ILocationProvider) unresolved;
-            IWorkspaceRoot rootWorkspace = ResourcesPlugin.getWorkspace().getRoot();
-            localFile = rootWorkspace.getFile(location.getPath(location));
         }
         // charset
         if (localFile != null) {
@@ -360,8 +353,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     {
         setSite(site);
         if (!(input instanceof IFileEditorInput) &&
-            !(input instanceof IPathEditorInput) &&
-            !(input instanceof ILocationProvider))
+            !(input instanceof IPathEditorInput))
         {
             throw new PartInitException("Editor Input is not a file");
         }

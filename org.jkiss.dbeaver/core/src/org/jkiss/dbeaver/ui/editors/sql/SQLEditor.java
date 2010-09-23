@@ -370,7 +370,6 @@ public class SQLEditor extends BaseTextEditor
     protected ISourceViewer createSourceViewer(Composite parent,
         IVerticalRuler ruler, int styles)
     {
-        // TODO: guess why not to use default
         OverviewRuler overviewRuler = new OverviewRuler(
             getAnnotationAccess(),
             VERTICAL_RULER_WIDTH,
@@ -387,7 +386,7 @@ public class SQLEditor extends BaseTextEditor
     private IAnnotationAccess getAnnotationAccess()
     {
         if (annotationAccess == null) {
-            annotationAccess = new DefaultMarkerAnnotationAccess();
+            annotationAccess = new SQLMarkerAnnotationAccess();
         }
         return annotationAccess;
     }
