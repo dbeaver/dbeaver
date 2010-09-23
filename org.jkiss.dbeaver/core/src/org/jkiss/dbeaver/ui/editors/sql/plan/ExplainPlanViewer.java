@@ -17,6 +17,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.DBIcon;
 
@@ -95,25 +96,13 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
             });
 */
             new ToolItem(toolBar, SWT.SEPARATOR);
-            itemRefresh = createToolItem(toolBar, "Refresh", DBIcon.RS_REFRESH, new SelectionAdapter() {
+            itemRefresh = UIUtils.createToolItem(toolBar, "Refresh", DBIcon.RS_REFRESH, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
                     refresh();
                 }
             });
         }
-    }
-
-    private ToolItem createToolItem(ToolBar toolBar, String text, DBIcon icon, SelectionListener listener)
-    {
-        ToolItem item = new ToolItem(toolBar, SWT.NONE);
-        item.setToolTipText(text);
-        ImageDescriptor descriptor = icon == null ? null : icon.getImageDescriptor();
-        if (descriptor != null) {
-            item.setImage(descriptor.createImage());
-        }
-        item.addSelectionListener(listener);
-        return item;
     }
 
     public void dispose()

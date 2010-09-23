@@ -87,11 +87,11 @@ public class UIUtils {
 
     public static ToolItem createToolItem(ToolBar toolBar, IServiceLocator serviceLocator, final String commandId, SelectionListener listener)
     {
-        ToolItem item = new ToolItem(toolBar, SWT.PUSH);
+        final ToolItem item = new ToolItem(toolBar, SWT.PUSH);
 
         final ICommandService commandService = (ICommandService)serviceLocator.getService(ICommandService.class);
         final ICommandImageService commandImageService = (ICommandImageService)serviceLocator.getService(ICommandImageService.class);
-        //final IBindingService bindingService = (IBindingService)serviceLocator.getService(IBindingService.class);
+        final IBindingService bindingService = (IBindingService)serviceLocator.getService(IBindingService.class);
         //final IHandlerService handlerService = (IHandlerService)serviceLocator.getService(IHandlerService.class);
 
         final Command command = commandService.getCommand(commandId);
@@ -105,15 +105,10 @@ public class UIUtils {
         } catch (NotDefinedException e) {
             commandName = commandId;
         }
-/*
-        TriggerSequence[] sequences = bindingService.getActiveBindingsFor(commandId);
-        if (sequences != null && sequences.length == 1) {
-            commandName += " (" + sequences[0].format() + ")";
-        }
-*/
+        final String toolTip = commandName;
         ImageDescriptor imageDescriptor = commandImageService.getImageDescriptor(commandId);
 
-        item.setToolTipText(commandName);
+        item.setToolTipText(toolTip);
         if (imageDescriptor != null) {
             final Image image = imageDescriptor.createImage();
             item.setImage(image);
@@ -125,6 +120,18 @@ public class UIUtils {
             });
         }
         item.addSelectionListener(listener);
+        toolBar.addListener(SWT.MouseEnter, new Listener() {
+            public void handleEvent(Event event)
+            {
+                TriggerSequence sequence = bindingService.getBestActiveBindingFor(commandId);
+                if (sequence != null) {
+                    String newToolTip = toolTip + " (" + sequence.format() + ")";
+                    if (!toolTip.equals(newToolTip)) {
+                        item.setToolTipText(newToolTip);
+                    }
+                }
+            }
+        });
 
         return item;
     }

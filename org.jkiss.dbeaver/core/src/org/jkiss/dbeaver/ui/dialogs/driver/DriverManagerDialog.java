@@ -10,6 +10,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -37,6 +38,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
     private Button editButton;
     private Button deleteButton;
     private DriverTreeControl treeControl;
+    private Image dialogImage;
 
     public DriverManagerDialog(Shell shell)
     {
@@ -68,7 +70,8 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
         }
 
         getShell().setText("Driver Manager");
-        getShell().setImage(DBeaverActivator.getImageDescriptor("/icons/driver_manager.png").createImage());
+        dialogImage = DBeaverActivator.getImageDescriptor("/icons/driver_manager.png").createImage();
+        getShell().setImage(dialogImage);
 
         Composite group = (Composite)super.createDialogArea(parent);
         GridLayout layout = (GridLayout)group.getLayout();
@@ -235,5 +238,15 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
             selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
             treeControl.refresh();
         }
+    }
+
+    @Override
+    public boolean close()
+    {
+        if (dialogImage != null) {
+            dialogImage.dispose();
+            dialogImage = null;
+        }
+        return super.close();
     }
 }

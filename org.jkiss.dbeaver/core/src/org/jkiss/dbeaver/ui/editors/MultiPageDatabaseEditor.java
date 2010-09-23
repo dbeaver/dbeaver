@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Layout;
@@ -31,19 +32,35 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
 
     private DatabaseEditorListener listener;
     private int activePageIndex = -1;
+    private Image editorImage;
 
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {
         super.init(site, input);
         setPartName(input.getName());
-        setTitleImage(input.getImageDescriptor().createImage());
+        editorImage = input.getImageDescriptor().createImage();
+        setTitleImage(editorImage);
 
         listener = new DatabaseEditorListener(this);
     }
 
+    @Override
+    protected void setTitleImage(Image titleImage)
+    {
+        super.setTitleImage(titleImage);
+        if (editorImage != null && editorImage != titleImage) {
+            editorImage.dispose();
+            editorImage = titleImage;
+        }
+    }
+
     public void dispose()
     {
+        if (editorImage != null) {
+            editorImage.dispose();
+            editorImage = null;
+        }
         listener.dispose();
         super.dispose();
     }

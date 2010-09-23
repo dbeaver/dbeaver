@@ -38,6 +38,10 @@ public class DBNTreeObject extends DBNTreeNode implements DBSObject
 
     protected void dispose()
     {
+        if (image != null) {
+            image.dispose();
+            image = null;
+        }
         if (this.getModel() != null) {
             this.getModel().removeNode(this);
         }

@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.editors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -22,6 +23,7 @@ public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorI
     static final Log log = LogFactory.getLog(AbstractDatabaseEditor.class);
 
     private DatabaseEditorListener listener;
+    private Image editorImage;
 
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
@@ -29,13 +31,18 @@ public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorI
         super.setSite(site);
         super.setInput(input);
         this.setPartName(input.getName());
-        this.setTitleImage(input.getImageDescriptor().createImage());
+        editorImage = input.getImageDescriptor().createImage();
+        this.setTitleImage(editorImage);
 
         listener = new DatabaseEditorListener(this);
     }
 
     public void dispose()
     {
+        if (editorImage != null) {
+            editorImage.dispose();
+            editorImage = null;
+        }
         listener.dispose();
         super.dispose();
     }
