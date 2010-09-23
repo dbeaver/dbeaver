@@ -7,15 +7,11 @@
  */
 package org.jkiss.dbeaver.ext.erd.layout;
 
+import org.eclipse.draw2d.graph.*;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.eclipse.draw2d.graph.DirectedGraph;
-import org.eclipse.draw2d.graph.Edge;
-import org.eclipse.draw2d.graph.EdgeList;
-import org.eclipse.draw2d.graph.Node;
-import org.eclipse.draw2d.graph.NodeList;
 
 /**
  * Creates dummy edges between nodes, to be used with NodeJoiningDirectedGraphLayout
@@ -51,7 +47,7 @@ public class ClusterEdgeCreator {
             //edgesAdded = new ArrayList();
 
             //iterate through all of the nodes in the node list
-            for (Iterator iter = nodeList.iterator(); iter.hasNext();) {
+            for (Iterator<?> iter = nodeList.iterator(); iter.hasNext();) {
                 Node node = (Node) iter.next();
 
                 //check whether we have already come across this node
@@ -131,7 +127,7 @@ public class ClusterEdgeCreator {
         } else {
             depth++;
             EdgeList incoming = node.incoming;
-            for (Iterator iter = incoming.iterator(); iter.hasNext();) {
+            for (Iterator<?> iter = incoming.iterator(); iter.hasNext();) {
                 Edge edge = (Edge) iter.next();
                 Node incomingNode = edge.source;
 
@@ -146,7 +142,7 @@ public class ClusterEdgeCreator {
             }
 
             EdgeList outgoing = node.outgoing;
-            for (Iterator iter = outgoing.iterator(); iter.hasNext();) {
+            for (Iterator<?> iter = outgoing.iterator(); iter.hasNext();) {
                 Edge edge = (Edge) iter.next();
                 Node outgoingNode = edge.target;
 

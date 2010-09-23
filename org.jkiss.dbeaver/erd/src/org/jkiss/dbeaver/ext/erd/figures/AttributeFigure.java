@@ -7,12 +7,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.figures;
 
-import org.eclipse.draw2d.AbstractBorder;
-import org.eclipse.draw2d.ColorConstants;
-import org.eclipse.draw2d.Figure;
-import org.eclipse.draw2d.FlowLayout;
-import org.eclipse.draw2d.Graphics;
-import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Insets;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 

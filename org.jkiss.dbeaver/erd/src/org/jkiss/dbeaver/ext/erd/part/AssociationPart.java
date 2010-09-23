@@ -9,13 +9,11 @@ package org.jkiss.dbeaver.ext.erd.part;
 
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw2d.text.TextFlow;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
-import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationBendEditPolicy;
 

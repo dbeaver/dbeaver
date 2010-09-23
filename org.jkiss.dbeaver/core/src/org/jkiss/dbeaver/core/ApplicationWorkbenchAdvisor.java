@@ -23,13 +23,13 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.utils.DBeaverUtils;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.IOException;
 
 /**
  * This workbench advisor creates the window advisor, and specifies

@@ -6,9 +6,9 @@ package org.jkiss.dbeaver.ui.views.navigator.database.load;
 
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
-import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;

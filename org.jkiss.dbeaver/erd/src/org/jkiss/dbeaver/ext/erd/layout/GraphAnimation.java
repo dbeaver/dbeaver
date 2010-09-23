@@ -7,17 +7,17 @@
  */
 package org.jkiss.dbeaver.ext.erd.layout;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Viewport;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * GraphAnimation class lifted directly from the GEF flow example. The only
@@ -41,18 +41,15 @@ public class GraphAnimation
 	static boolean PLAYBACK;
 	static boolean RECORDING;
 
-	static Map initialStates;
-	static Map finalStates;
+	static Map<IFigure, Object> initialStates;
+	static Map<IFigure, Object> finalStates;
 
 	public static void end()
 	{
-		Iterator iter = initialStates.keySet().iterator();
-		while (iter.hasNext())
-		{
-			IFigure f = ((IFigure) iter.next());
-			f.revalidate();
-			f.setVisible(true);
-		}
+        for (IFigure f : initialStates.keySet()) {
+            f.revalidate();
+            f.setVisible(true);
+        }
 		//$TODO instead of performing a final normal layout, what about setting
 		// progress=1.0?
 		initialStates = null;
@@ -74,12 +71,12 @@ public class GraphAnimation
 		while (root.getParent() != null)
 			root = root.getParent();
 
-		initialStates = new HashMap();
-		finalStates = new HashMap();
+		initialStates = new HashMap<IFigure, Object>();
+		finalStates = new HashMap<IFigure, Object>();
 
 		//This part records all layout results.
 		root.validate();
-		Iterator iter = initialStates.keySet().iterator();
+		Iterator<IFigure> iter = initialStates.keySet().iterator();
 		if (!iter.hasNext())
 		{
 			//Nothing layed out, so abort the animation
@@ -133,7 +130,7 @@ public class GraphAnimation
 		if (!PLAYBACK)
 			return false;
 
-		List children = container.getChildren();
+		List<?> children = container.getChildren();
 		Rectangle rect1, rect2;
 		for (int i = 0; i < children.size(); i++)
 		{
@@ -267,7 +264,7 @@ public class GraphAnimation
 		if (!RECORDING)
 			return;
 
-		List children = container.getChildren();
+		List<?> children = container.getChildren();
 		IFigure child;
 		for (int i = 0; i < children.size(); i++)
 		{
@@ -278,7 +275,7 @@ public class GraphAnimation
 
 	public static void swap()
 	{
-		Map temp = finalStates;
+		Map<IFigure, Object> temp = finalStates;
 		finalStates = initialStates;
 		initialStates = temp;
 	}
@@ -288,10 +285,10 @@ public class GraphAnimation
 		current = System.currentTimeMillis() + 30;
 		progress = (double) (current - start) / (finish - start);
 		progress = Math.min(progress, 0.999);
-		Iterator iter = initialStates.keySet().iterator();
 
-		while (iter.hasNext())
-			((IFigure) iter.next()).revalidate();
+        for (IFigure f : initialStates.keySet()) {
+            f.revalidate();
+        }
 		viewport.validate();
 
 		//	Point loc = viewport.getViewLocation();

@@ -15,10 +15,8 @@ import org.eclipse.gef.Request;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.editpolicies.XYLayoutEditPolicy;
 import org.eclipse.gef.requests.CreateRequest;
-
 import org.jkiss.dbeaver.ext.erd.command.EntityMoveCommand;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
-import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
 /**

@@ -8,7 +8,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * IDataExporter

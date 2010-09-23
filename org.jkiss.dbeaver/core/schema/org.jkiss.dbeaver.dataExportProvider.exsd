@@ -51,7 +51,8 @@
    <element name="export">
       <complexType>
          <sequence minOccurs="0" maxOccurs="unbounded">
-            <element ref="sourceType"/>
+            <element ref="sourceType" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
@@ -101,6 +102,13 @@
                <appInfo>
                   <meta.attribute kind="resource"/>
                </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="extension" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
             </annotation>
          </attribute>
       </complexType>
@@ -189,7 +197,7 @@
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="possibleValues" type="string">
+         <attribute name="validValues" type="string">
             <annotation>
                <documentation>
                   

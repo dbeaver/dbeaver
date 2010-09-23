@@ -536,6 +536,13 @@ View must implement interface(s) depending on targetID.
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="iconId" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
          <attribute name="if" type="string">
             <annotation>
                <documentation>

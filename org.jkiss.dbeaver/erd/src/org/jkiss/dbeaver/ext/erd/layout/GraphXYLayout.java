@@ -10,7 +10,6 @@ package org.jkiss.dbeaver.ext.erd.layout;
 import org.eclipse.draw2d.FreeformLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
-
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 
 

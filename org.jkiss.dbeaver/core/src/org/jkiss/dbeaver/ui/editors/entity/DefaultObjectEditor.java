@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorOpenObjectHandler;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageStandard;
 

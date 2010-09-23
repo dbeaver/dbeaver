@@ -27,8 +27,8 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.editors.binary.Finder;
-import org.jkiss.dbeaver.ui.editors.binary.HexManager;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
+import org.jkiss.dbeaver.ui.editors.binary.HexManager;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

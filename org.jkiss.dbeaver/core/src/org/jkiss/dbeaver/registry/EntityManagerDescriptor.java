@@ -73,7 +73,7 @@ public class EntityManagerDescriptor extends AbstractDescriptor
         return editorClass;
     }
 
-    public IDatabaseObjectManager createMannager()
+    public IDatabaseObjectManager<?> createMannager()
     {
         Class clazz = getEditorClass();
         if (clazz == null) {

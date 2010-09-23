@@ -7,16 +7,15 @@
  */
 package org.jkiss.dbeaver.ext.erd.command;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
-
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Command to delete tables from the schema

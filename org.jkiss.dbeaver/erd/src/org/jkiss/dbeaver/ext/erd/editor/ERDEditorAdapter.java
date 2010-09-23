@@ -4,16 +4,8 @@
 
 package org.jkiss.dbeaver.ext.erd.editor;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.eclipse.gef.EditPart;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.part.MultiPageEditorPart;
-import org.jkiss.dbeaver.ext.erd.editor.ERDEditor;
-import org.jkiss.dbeaver.ext.erd.model.ERDObject;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 
 import java.util.IdentityHashMap;
 import java.util.Map;

@@ -12,11 +12,14 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
+import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
+import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -32,7 +35,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * EntityEditor
@@ -41,7 +47,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
-    private static Map<Class, String> defaultPageMap = new HashMap<Class, String>();
+    private static Map<Class<?>, String> defaultPageMap = new HashMap<Class<?>, String>();
 
     private IDatabaseObjectManager objectManager;
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();

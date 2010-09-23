@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 
-import java.sql.Driver;
 import java.util.List;
 
 /**

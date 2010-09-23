@@ -6,16 +6,16 @@ package org.jkiss.dbeaver.utils;
 
 import net.sf.jkiss.utils.Base64;
 
-import javax.crypto.SecretKeyFactory;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.DESedeKeySpec;
+import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
-import java.security.spec.KeySpec;
+import javax.crypto.spec.DESedeKeySpec;
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.io.UnsupportedEncodingException;
+import java.security.spec.KeySpec;
 
 /**
  * Encryption util

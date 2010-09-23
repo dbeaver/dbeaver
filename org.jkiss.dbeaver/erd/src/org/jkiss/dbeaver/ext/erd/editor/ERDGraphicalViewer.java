@@ -13,18 +13,13 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.FocusEvent;
-
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
-import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.ui.ThemeConstants;
 
 /**
  * GraphicalViewer which also knows about ValidationMessageHandler to output

@@ -8,9 +8,8 @@
 package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
-
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 
 /**
  * Command to delete relationship

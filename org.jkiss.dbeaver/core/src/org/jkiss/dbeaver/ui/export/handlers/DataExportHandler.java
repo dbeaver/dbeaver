@@ -30,7 +30,7 @@ public class DataExportHandler extends AbstractHandler {
         }
         IStructuredSelection ss = (IStructuredSelection)selection;
         final List<DBSDataContainer> dataProviders = new ArrayList<DBSDataContainer>();
-        for (Iterator iter = ss.iterator(); iter.hasNext(); ) {
+        for (Iterator<?> iter = ss.iterator(); iter.hasNext(); ) {
             Object object = iter.next();
 
             final DBSDataContainer adapted = (DBSDataContainer)Platform.getAdapterManager().getAdapter(object, DBSDataContainer.class);

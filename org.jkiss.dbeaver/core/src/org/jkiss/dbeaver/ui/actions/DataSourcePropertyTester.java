@@ -9,7 +9,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IEvaluationService;
-import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;

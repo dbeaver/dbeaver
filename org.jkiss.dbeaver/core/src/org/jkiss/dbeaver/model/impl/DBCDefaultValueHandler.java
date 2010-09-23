@@ -4,20 +4,20 @@
 
 package org.jkiss.dbeaver.model.impl;
 
+import org.eclipse.jface.action.IMenuManager;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCResultSet;
+import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
-import org.jkiss.dbeaver.DBException;
-import org.eclipse.jface.action.IMenuManager;
 
 /**
  * Default value handler

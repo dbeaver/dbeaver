@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.model.qm;
 
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.dbc.DBCStatement;
 
 import java.util.List;
 

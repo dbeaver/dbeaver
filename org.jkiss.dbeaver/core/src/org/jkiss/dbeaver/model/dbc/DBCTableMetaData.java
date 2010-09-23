@@ -5,8 +5,8 @@
 package org.jkiss.dbeaver.model.dbc;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSTable;
 
 /**
  * Result set table metadata

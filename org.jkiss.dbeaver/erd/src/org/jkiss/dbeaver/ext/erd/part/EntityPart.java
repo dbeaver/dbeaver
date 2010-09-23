@@ -22,7 +22,9 @@ import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
+import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
 
 import java.beans.PropertyChangeEvent;
 import java.util.List;
@@ -109,7 +111,7 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	/**
 	 * @return the children Model objects as a new ArrayList
 	 */
-	protected List getModelChildren()
+	protected List<ERDTableColumn> getModelChildren()
 	{
 		return getTable().getColumns();
 	}
@@ -117,7 +119,7 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	/**
 	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getModelSourceConnections()
 	 */
-	protected List getModelSourceConnections()
+	protected List<ERDAssociation> getModelSourceConnections()
 	{
 		return getTable().getForeignKeyRelationships();
 	}
@@ -125,7 +127,7 @@ public class EntityPart extends PropertyAwarePart implements NodeEditPart
 	/**
 	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getModelTargetConnections()
 	 */
-	protected List getModelTargetConnections()
+	protected List<ERDAssociation> getModelTargetConnections()
 	{
 		return getTable().getPrimaryKeyRelationships();
 	}

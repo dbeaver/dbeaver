@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 
 /**

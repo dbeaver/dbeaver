@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model;
 
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 
 /**

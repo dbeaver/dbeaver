@@ -6,11 +6,8 @@ package org.jkiss.dbeaver.ui.export.wizard;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryErrorDialog;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryErrorResponse;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**

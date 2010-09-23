@@ -8,10 +8,7 @@
 package org.jkiss.dbeaver.ext.erd.action;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ISharedImages;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditor;
-import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**

@@ -4,13 +4,8 @@
 
 package org.jkiss.dbeaver.runtime.load;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Lazy loading service

@@ -5,15 +5,11 @@
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
 
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
-import org.jkiss.dbeaver.model.struct.DBSConstraint;
-import org.jkiss.dbeaver.model.struct.DBSIndex;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
-import org.jkiss.dbeaver.model.struct.DBSIndexColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * JDBC Table MetaData

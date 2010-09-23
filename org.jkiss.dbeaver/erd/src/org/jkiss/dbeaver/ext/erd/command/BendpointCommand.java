@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ext.erd.command;
 
-import org.eclipse.draw2d.AbsoluteBendpoint;
-import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 

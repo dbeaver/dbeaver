@@ -19,7 +19,7 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
 
     private int leftMargin = 6;
     private int rightMargin = 6;
-    private int topMargin = 3;
+    //private int topMargin = 3;
     private int bottomMargin = 3;
     private int arrowMargin = 6;
     private int imageSpacing = 3;

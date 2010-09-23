@@ -5,14 +5,14 @@
 package org.jkiss.dbeaver.registry.tree;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.jexl2.JexlContext;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.apache.commons.jexl2.JexlContext;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * DBXTreeNode

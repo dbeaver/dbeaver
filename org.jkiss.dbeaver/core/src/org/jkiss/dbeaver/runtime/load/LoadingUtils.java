@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.runtime.load;
 import net.sf.jkiss.utils.BeanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;

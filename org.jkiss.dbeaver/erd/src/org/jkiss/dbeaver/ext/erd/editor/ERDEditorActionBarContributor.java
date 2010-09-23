@@ -12,11 +12,8 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-
 import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ext.erd.action.FlyoutChangeLayoutAction;
-import org.jkiss.dbeaver.ext.erd.editor.ERDEditor;
 
 /**
  * Contributes actions to the Editor

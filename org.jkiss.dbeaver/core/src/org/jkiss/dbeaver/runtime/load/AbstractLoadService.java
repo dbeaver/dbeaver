@@ -4,9 +4,9 @@
 
 package org.jkiss.dbeaver.runtime.load;
 
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.lang.reflect.InvocationTargetException;
 

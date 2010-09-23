@@ -7,12 +7,6 @@
  */
 package org.jkiss.dbeaver.ext.erd.layout;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.draw2d.*;
@@ -23,11 +17,12 @@ import org.eclipse.draw2d.graph.DirectedGraph;
 import org.eclipse.draw2d.graph.Edge;
 import org.eclipse.draw2d.graph.Node;
 import org.eclipse.draw2d.graph.NodeList;
-
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
+
+import java.util.*;
 
 /**
  * Visitor with support for populating nodes and edges of DirectedGraph
@@ -99,7 +94,7 @@ public class DirectedGraphLayoutVisitor
 
 	protected void addEntityEdges(GraphicalEditPart entityPart)
 	{
-		List outgoing = entityPart.getSourceConnections();
+		List<?> outgoing = entityPart.getSourceConnections();
 		for (int i = 0; i < outgoing.size(); i++)
 		{
 			AbstractConnectionEditPart connectionPart = (AbstractConnectionEditPart) entityPart.getSourceConnections().get(i);

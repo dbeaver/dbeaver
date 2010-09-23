@@ -55,7 +55,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
     /**
 	 * @return the Tables for the current schema
 	 */
-	public synchronized List getTables()
+	public synchronized List<ERDTable> getTables()
 	{
 		return tables;
 	}

@@ -1,13 +1,13 @@
 package org.jkiss.dbeaver.runtime.qm;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * QMController default implementation

@@ -6,10 +6,9 @@ package org.jkiss.dbeaver.model.data;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.List;

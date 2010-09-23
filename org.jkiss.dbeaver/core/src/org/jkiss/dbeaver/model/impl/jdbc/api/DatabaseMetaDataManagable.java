@@ -8,8 +8,8 @@ import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 
 import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 import java.sql.RowIdLifetime;
+import java.sql.SQLException;
 
 /**
  * JDBC database metadata managable

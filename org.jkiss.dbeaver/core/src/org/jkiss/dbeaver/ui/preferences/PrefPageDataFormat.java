@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.jface.dialogs.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;

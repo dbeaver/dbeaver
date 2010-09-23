@@ -4,28 +4,12 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Date;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.sql.Ref;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Array;
-import java.sql.ResultSetMetaData;
-import java.sql.ParameterMetaData;
-import java.sql.RowId;
-import java.sql.NClob;
-import java.sql.SQLXML;
-import java.sql.SQLWarning;
-import java.sql.Connection;
-import java.math.BigDecimal;
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.Calendar;
+import java.math.BigDecimal;
 import java.net.URL;
+import java.sql.*;
+import java.util.Calendar;
 
 /**
  * Void PrperedStatement

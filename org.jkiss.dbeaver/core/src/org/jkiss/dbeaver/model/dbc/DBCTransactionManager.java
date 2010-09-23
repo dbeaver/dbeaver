@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.model.dbc;
 
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 

@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;

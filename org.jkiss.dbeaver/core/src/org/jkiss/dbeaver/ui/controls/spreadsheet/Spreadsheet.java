@@ -625,13 +625,4 @@ public class Spreadsheet extends Composite implements Listener {
         return rowNum >= grid.getTopIndex() && rowNum <= grid.getBottomIndex();
     }
 
-    private abstract class GridAction extends Action {
-        GridAction(String actionId)
-        {
-            setActionDefinitionId(actionId);
-        }
-
-        public abstract void run();
-    }
-
 }

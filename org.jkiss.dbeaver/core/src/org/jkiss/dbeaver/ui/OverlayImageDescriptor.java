@@ -3,8 +3,10 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.jface.resource.*;
-import org.eclipse.swt.graphics.*;
+import org.eclipse.jface.resource.CompositeImageDescriptor;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Point;
 
 /**
  * An OverlayIcon consists of a main icon and several adornments.

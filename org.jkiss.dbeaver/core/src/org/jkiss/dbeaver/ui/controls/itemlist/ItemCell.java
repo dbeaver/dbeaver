@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
-import org.jkiss.dbeaver.ui.views.properties.PropertyAnnoDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.ui.views.properties.PropertyAnnoDescriptor;
 
 /**
  * FolderCell

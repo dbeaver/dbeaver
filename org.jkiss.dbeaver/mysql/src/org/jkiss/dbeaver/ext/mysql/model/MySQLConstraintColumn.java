@@ -4,9 +4,9 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.impl.struct.AbstractConstraint;
 import org.jkiss.dbeaver.model.impl.struct.AbstractConstraintColumn;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**

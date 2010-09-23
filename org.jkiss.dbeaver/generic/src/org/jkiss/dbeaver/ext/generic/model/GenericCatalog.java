@@ -6,12 +6,12 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.DBUtils;
 
 import java.util.Collection;
 import java.util.List;

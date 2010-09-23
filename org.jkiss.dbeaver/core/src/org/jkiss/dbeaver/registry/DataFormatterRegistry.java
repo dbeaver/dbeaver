@@ -20,7 +20,10 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.xml.sax.Attributes;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DataFormatterRegistry
 {

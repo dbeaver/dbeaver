@@ -107,7 +107,7 @@ public class ProgressPageControl extends Composite
         super.dispose();
     }
 
-    public ProgressVisualizer createVisualizer()
+    public ProgressVisualizer<?> createVisualizer()
     {
         return new ProgressVisualizer<Object>();
     }

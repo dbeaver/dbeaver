@@ -7,17 +7,9 @@
  */
 package org.jkiss.dbeaver.ext.erd.layout;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+import org.eclipse.draw2d.graph.*;
 
-import org.eclipse.draw2d.graph.DirectedGraph;
-import org.eclipse.draw2d.graph.Edge;
-import org.eclipse.draw2d.graph.EdgeList;
-import org.eclipse.draw2d.graph.Node;
-import org.eclipse.draw2d.graph.NodeList;
+import java.util.*;
 
 /**
  * Creates dummy edges between nodes, to be used with NodeJoiningDirectedGraphLayout
@@ -28,17 +20,17 @@ public class DummyEdgeCreator
 
 	private NodeList nodeList;
 	private EdgeList edgeList;
-	private DirectedGraph graph;
+	//private DirectedGraph graph;
 
 	private List<Edge> edgesAdded;
 	private NodeList candidateList;
 	private int targetNodeIndex;
 
-	private boolean cleanNextTime = false;
+	//private boolean cleanNextTime = false;
 
 	public void visit(DirectedGraph g)
 	{
-		cleanNextTime = true;
+		//cleanNextTime = true;
 		init(g);
 		setDummyEdges();
 	}
@@ -49,7 +41,7 @@ public class DummyEdgeCreator
 	private void init(DirectedGraph graph)
 	{
 
-		this.graph = graph;
+		//this.graph = graph;
 		this.nodeList = graph.nodes;
 		this.edgeList = graph.edges;
 		edgesAdded = new ArrayList<Edge>();
@@ -62,7 +54,7 @@ public class DummyEdgeCreator
 		// the nodes are connected
 		if (nodeList.size() > 1)
 		{
-			for (Iterator iter = nodeList.iterator(); iter.hasNext();)
+			for (Iterator<?> iter = nodeList.iterator(); iter.hasNext();)
 			{
 				Node sourceNode = (Node) iter.next();
 
@@ -104,7 +96,7 @@ public class DummyEdgeCreator
 			boolean relationshipFound = false;
 
 			//first look for set of targets which are already in relationships
-			for (Iterator iter = nodeList.iterator(); iter.hasNext();)
+			for (Iterator<?> iter = nodeList.iterator(); iter.hasNext();)
 			{
 				Node element = (Node) iter.next();
 				if ((element.incoming.size() + element.outgoing.size()) >= 1)

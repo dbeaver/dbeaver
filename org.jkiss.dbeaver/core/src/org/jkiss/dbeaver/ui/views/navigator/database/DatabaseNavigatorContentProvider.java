@@ -11,10 +11,10 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadService;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadVisualizer;
-import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;

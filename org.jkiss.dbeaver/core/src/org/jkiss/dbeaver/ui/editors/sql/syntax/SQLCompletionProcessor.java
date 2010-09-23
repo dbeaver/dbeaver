@@ -25,13 +25,13 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.assist.SQLAssistProposalsService;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * The SQL content assist processor. This content assist processor proposes text

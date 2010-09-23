@@ -23,9 +23,9 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer
 
     private int leftMargin = 6;
     private int rightMargin = 6;
-    private int topMargin = 3;
+    //private int topMargin = 3;
     private int bottomMargin = 3;
-    private int arrowMargin = 6;
+    //private int arrowMargin = 6;
     private int imageSpacing = 3;
 
     public DefaultColumnFooterRenderer(LightGrid grid) {

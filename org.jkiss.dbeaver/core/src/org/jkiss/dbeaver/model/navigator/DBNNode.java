@@ -8,7 +8,6 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;

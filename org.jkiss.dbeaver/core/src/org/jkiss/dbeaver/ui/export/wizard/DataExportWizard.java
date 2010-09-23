@@ -9,8 +9,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.internal.WorkbenchPlugin;
-import org.eclipse.ui.internal.wizards.datatransfer.DataTransferMessages;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 import java.util.List;
@@ -23,7 +22,7 @@ public class DataExportWizard extends Wizard implements IExportWizard {
 
     public DataExportWizard(List<DBSDataContainer> dataContainers) {
         this.settings = new DataExportSettings(dataContainers);
-        IDialogSettings workbenchSettings = WorkbenchPlugin.getDefault().getDialogSettings();
+        IDialogSettings workbenchSettings = DBeaverActivator.getInstance().getDialogSettings();
         IDialogSettings section = workbenchSettings.getSection(RS_EXPORT_WIZARD_DIALOG_SETTINGS);//$NON-NLS-1$
         if (section == null) {
 			section = workbenchSettings.addNewSection(RS_EXPORT_WIZARD_DIALOG_SETTINGS);//$NON-NLS-1$
@@ -47,7 +46,7 @@ public class DataExportWizard extends Wizard implements IExportWizard {
     }
 
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
-        setWindowTitle(DataTransferMessages.DataTransfer_export);
+        setWindowTitle("Export data");
         setNeedsProgressMonitor(true);
     }
 

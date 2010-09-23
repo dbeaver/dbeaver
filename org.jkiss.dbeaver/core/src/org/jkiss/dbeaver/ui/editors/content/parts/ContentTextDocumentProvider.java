@@ -8,10 +8,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.texteditor.IDocumentProviderExtension;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**

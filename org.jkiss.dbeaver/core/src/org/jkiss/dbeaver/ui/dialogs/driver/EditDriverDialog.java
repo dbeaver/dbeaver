@@ -21,7 +21,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.swt.widgets.List;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
@@ -35,7 +34,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -507,7 +507,7 @@ public class EditDriverDialog extends Dialog
                 JarFile currentFile = new JarFile(libFile, false);
                 monitor.beginTask(libFile.getName(), currentFile.size());
 
-                for (Enumeration e = currentFile.entries(); e.hasMoreElements(); ) {
+                for (Enumeration<?> e = currentFile.entries(); e.hasMoreElements(); ) {
                     {
                         if (monitor.isCanceled()) {
                             break;

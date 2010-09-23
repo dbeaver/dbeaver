@@ -6,14 +6,10 @@ package org.jkiss.dbeaver.ui.views.properties;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
-import org.eclipse.ui.views.properties.tabbed.ITabDescriptorProvider;
-import org.eclipse.ui.views.properties.tabbed.ISectionDescriptor;
-import org.eclipse.ui.views.properties.tabbed.AbstractSectionDescriptor;
-import org.eclipse.ui.views.properties.tabbed.ISection;
+import org.eclipse.ui.views.properties.tabbed.*;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * PropertyTabDescriptorProvider

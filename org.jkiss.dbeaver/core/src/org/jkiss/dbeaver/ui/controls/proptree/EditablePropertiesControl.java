@@ -95,7 +95,7 @@ public class EditablePropertiesControl extends Composite {
             if (root instanceof DBPPropertyGroup) {
                 addDefaultValues((DBPPropertyGroup)root);
             } else if (root instanceof Collection) {
-                for (Object group : (Collection)root) {
+                for (Object group : (Collection<?>)root) {
                     if (group instanceof DBPPropertyGroup) {
                         addDefaultValues((DBPPropertyGroup)group);
                     }
@@ -510,7 +510,7 @@ public class EditablePropertiesControl extends Composite {
         {
             if (parent instanceof List) {
                 // Add all available property groups
-                return ((List) parent).toArray();
+                return ((List<?>) parent).toArray();
             } else if (parent instanceof DBPPropertyGroup) {
                 // Sort props by name
                 return ((DBPPropertyGroup) parent).getProperties().toArray();

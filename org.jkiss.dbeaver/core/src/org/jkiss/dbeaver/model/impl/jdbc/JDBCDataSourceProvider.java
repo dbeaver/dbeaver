@@ -8,15 +8,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.prop.DBPProperty;
 import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
 import org.jkiss.dbeaver.registry.PropertyGroupDescriptor;
 
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 /**

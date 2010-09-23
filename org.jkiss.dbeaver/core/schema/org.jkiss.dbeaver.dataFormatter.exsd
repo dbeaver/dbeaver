@@ -50,6 +50,7 @@
    <element name="formatter">
       <complexType>
          <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
@@ -154,7 +155,7 @@
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="possibleValues" type="string">
+         <attribute name="validValues" type="string">
             <annotation>
                <documentation>
                   

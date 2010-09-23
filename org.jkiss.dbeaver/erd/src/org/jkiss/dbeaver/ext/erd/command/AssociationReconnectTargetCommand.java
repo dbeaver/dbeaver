@@ -7,12 +7,11 @@
  */
 package org.jkiss.dbeaver.ext.erd.command;
 
-import java.util.List;
-
 import org.eclipse.gef.commands.Command;
-
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+
+import java.util.List;
 
 /**
  * Command to change the primary key we are connecting to a particular foreign key
@@ -50,7 +49,7 @@ public class AssociationReconnectTargetCommand extends Command
 		else
 		{
 
-			List relationships = targetPrimaryKey.getPrimaryKeyRelationships();
+			List<?> relationships = targetPrimaryKey.getPrimaryKeyRelationships();
 			for (int i = 0; i < relationships.size(); i++)
 			{
 

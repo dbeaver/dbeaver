@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.model.struct.DBSForeignKeyColumn;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSForeignKeyColumn;
 
 /**
  * GenericConstraintColumn

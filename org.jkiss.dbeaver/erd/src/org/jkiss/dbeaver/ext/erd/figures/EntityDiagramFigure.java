@@ -8,8 +8,6 @@
 package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.FreeformLayer;
-import org.eclipse.swt.graphics.Font;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Figure which represents the whole diagram - the view which corresponds to the

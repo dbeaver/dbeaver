@@ -5,9 +5,6 @@
 package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
-import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 
 /**
  * DatabaseEditorPropertyTester

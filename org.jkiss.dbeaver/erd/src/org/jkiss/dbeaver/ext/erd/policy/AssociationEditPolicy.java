@@ -10,10 +10,9 @@ package org.jkiss.dbeaver.ext.erd.policy;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.editpolicies.ComponentEditPolicy;
 import org.eclipse.gef.requests.GroupRequest;
-
 import org.jkiss.dbeaver.ext.erd.command.AssociationDeleteCommand;
-import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 
 /**
  * EditPolicy to handle deletion of relationships

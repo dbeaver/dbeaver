@@ -20,7 +20,6 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageViewControl;
 
 import java.io.InputStream;

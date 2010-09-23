@@ -83,7 +83,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNNode> implements IData
     public boolean equals(Object obj)
     {
         return obj == this ||
-            (obj instanceof DatabaseEditorInput && ((DatabaseEditorInput)obj).node.equals(node));
+            (obj instanceof DatabaseEditorInput && ((DatabaseEditorInput<?>)obj).node.equals(node));
     }
 
 }

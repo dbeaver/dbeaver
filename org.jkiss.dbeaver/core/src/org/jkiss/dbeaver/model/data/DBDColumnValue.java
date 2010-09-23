@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 /**

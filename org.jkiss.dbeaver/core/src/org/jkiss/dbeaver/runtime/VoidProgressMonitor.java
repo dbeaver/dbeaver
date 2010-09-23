@@ -5,8 +5,8 @@
 package org.jkiss.dbeaver.runtime;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Progress monitor null implementation

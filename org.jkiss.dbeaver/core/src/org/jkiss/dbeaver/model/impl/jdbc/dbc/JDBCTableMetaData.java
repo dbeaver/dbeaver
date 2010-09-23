@@ -4,28 +4,18 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
-import org.jkiss.dbeaver.model.struct.DBSConstraint;
-import org.jkiss.dbeaver.model.struct.DBSConstraintColumn;
-import org.jkiss.dbeaver.model.struct.DBSConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSIndex;
-import org.jkiss.dbeaver.model.struct.DBSIndexColumn;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.struct.DBSSchema;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import net.sf.jkiss.utils.CommonUtils;
 
 /**
  * JDBC Table MetaData

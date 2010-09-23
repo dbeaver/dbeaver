@@ -7,15 +7,14 @@
  */
 package org.jkiss.dbeaver.ext.erd.layout;
 
-import java.util.List;
-
 import org.eclipse.draw2d.AbstractLayout;
 import org.eclipse.draw2d.Animation;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
-
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
+
+import java.util.List;
 
 
 /**
@@ -36,7 +35,7 @@ public class GraphLayoutManager extends AbstractLayout
 	protected Dimension calculatePreferredSize(IFigure container, int wHint, int hHint)
 	{		
 		container.validate();
-		List children = container.getChildren();
+		List<?> children = container.getChildren();
 		Rectangle result = new Rectangle().setLocation(container.getClientArea().getLocation());
 		for (int i = 0; i < children.size(); i++)
 			result.union(((IFigure) children.get(i)).getBounds());

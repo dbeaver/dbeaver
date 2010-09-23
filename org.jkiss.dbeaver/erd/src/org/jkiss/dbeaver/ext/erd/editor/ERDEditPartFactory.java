@@ -9,14 +9,13 @@ package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
-
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
+import org.jkiss.dbeaver.ext.erd.model.ERDTableColumn;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ext.erd.part.AttributePart;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
 /**

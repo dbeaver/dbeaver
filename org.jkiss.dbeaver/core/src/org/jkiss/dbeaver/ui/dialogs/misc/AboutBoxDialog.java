@@ -23,7 +23,6 @@ import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.internal.IWorkbenchHelpContextIds;
 import org.eclipse.ui.internal.about.InstallationDialog;
 import org.jkiss.dbeaver.ui.DBIcon;
 
@@ -52,8 +51,6 @@ public class AboutBoxDialog extends Dialog
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText("About DBeaver");
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(newShell,
-				IWorkbenchHelpContextIds.ABOUT_DIALOG);
     }
 
     protected boolean isResizable()
@@ -95,9 +92,11 @@ public class AboutBoxDialog extends Dialog
             public void mouseDoubleClick(MouseEvent e) {
                 BusyIndicator.showWhile(getShell().getDisplay(), new Runnable() {
                     public void run() {
+                        // May be its better to execute "org.eclipse.ui.help.installationDialog" command
+                        // Now we use internal API and it is no good
                         IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
                         InstallationDialog dialog = new InstallationDialog(getShell(), workbenchWindow);
-                        dialog.setModalParent(AboutBoxDialog.this);
+                        //dialog.setModalParent(AboutBoxDialog.this);
                         dialog.open();
                     }
                 });

@@ -16,12 +16,9 @@ import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.ext.ui.IObjectEditorPart;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.IDBNListener;
+import org.jkiss.dbeaver.ext.ui.IObjectEditorPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.core.DBeaverCore;
 
 /**
  * MultiPageDatabaseEditor

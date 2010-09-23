@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ui.controls.spreadsheet;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * GridDataProvider

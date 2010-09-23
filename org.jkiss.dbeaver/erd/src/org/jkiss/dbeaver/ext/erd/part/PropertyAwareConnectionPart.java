@@ -7,13 +7,12 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
-
 import org.jkiss.dbeaver.ext.erd.model.ERDObject;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * An ConnectionEditPart base class which is property aware, that is, can handle property change notification events
@@ -29,7 +28,7 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
 	public void activate()
 	{
 		super.activate();
-		ERDObject erdObject = (ERDObject) getModel();
+		ERDObject<?> erdObject = (ERDObject<?>) getModel();
 		erdObject.addPropertyChangeListener(this);
 	}
 
@@ -39,7 +38,7 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
 	public void deactivate()
 	{
 		super.deactivate();
-		ERDObject erdObject = (ERDObject) getModel();
+		ERDObject<?> erdObject = (ERDObject<?>) getModel();
 		erdObject.removePropertyChangeListener(this);
 	}
 

@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ui.editors.object;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorDescriptor;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNTreeObject;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 

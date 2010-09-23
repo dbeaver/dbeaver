@@ -20,14 +20,9 @@ import org.jkiss.dbeaver.ext.ui.IObjectEditorPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 import org.jkiss.dbeaver.utils.ViewUtils;
-
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * EntityNodeEditor

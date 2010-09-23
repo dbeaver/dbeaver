@@ -4,14 +4,14 @@
 
 package org.jkiss.dbeaver.runtime;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Progress monitor default implementation

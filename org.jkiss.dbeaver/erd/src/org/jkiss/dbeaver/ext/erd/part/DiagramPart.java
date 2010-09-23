@@ -148,7 +148,7 @@ public class DiagramPart extends PropertyAwarePart
 	/**
 	 * @return the children Model objects as a new ArrayList
 	 */
-	protected List getModelChildren()
+	protected List<?> getModelChildren()
 	{
 		return getDiagram().getTables();
 	}
@@ -182,9 +182,9 @@ public class DiagramPart extends PropertyAwarePart
 	public boolean setTableModelBounds()
 	{
 
-		List entityParts = getChildren();
+		List<?> entityParts = getChildren();
 
-		for (Iterator iter = entityParts.iterator(); iter.hasNext();)
+		for (Iterator<?> iter = entityParts.iterator(); iter.hasNext();)
 		{
 			EntityPart entityPart = (EntityPart) iter.next();
 			IFigure entityFigure = entityPart.getFigure();
@@ -213,9 +213,9 @@ public class DiagramPart extends PropertyAwarePart
 	public boolean setTableFigureBounds(boolean updateConstraint)
 	{
 
-		List tableParts = getChildren();
+		List<?> tableParts = getChildren();
 
-		for (Iterator iter = tableParts.iterator(); iter.hasNext();)
+		for (Iterator<?> iter = tableParts.iterator(); iter.hasNext();)
 		{
 			EntityPart entityPart = (EntityPart) iter.next();
 

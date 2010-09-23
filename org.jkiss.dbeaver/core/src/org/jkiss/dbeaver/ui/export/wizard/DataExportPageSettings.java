@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.export.wizard;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -20,9 +19,7 @@ import org.jkiss.dbeaver.registry.DataFormatterRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.dbeaver.ui.dialogs.misc.DataFormatProfilesEditDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
-import org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor;
 
 class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
 

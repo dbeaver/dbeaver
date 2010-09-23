@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.ui.actions.sql;
 
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 public class AnalyseStatementAction extends AbstractSQLAction
 {

@@ -14,6 +14,6 @@ public class QMTransactionMetaInfo {
     private long startTime;
     private long endTime;
     private boolean commited;
-    private List savepoints;
+    private List<?> savepoints;
 
 }

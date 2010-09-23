@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.draw2d.Bendpoint;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.gef.EditPart;
 import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 
 public class BendpointMoveCommand extends BendpointCommand {

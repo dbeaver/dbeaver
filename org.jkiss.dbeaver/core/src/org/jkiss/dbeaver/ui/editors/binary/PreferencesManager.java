@@ -503,7 +503,7 @@ public class PreferencesManager {
         }
         String[] items = new String[sizes.size()];
         int i = 0;
-        for (Iterator j = sizes.iterator(); i < items.length; ++i) items[i] = j.next().toString();
+        for (Iterator<Integer> j = sizes.iterator(); i < items.length; ++i) items[i] = j.next().toString();
         list2.setItems(items);
     }
 

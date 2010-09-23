@@ -7,14 +7,14 @@ package org.jkiss.dbeaver.model.impl.jdbc.dbc;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
+import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetManagable;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetManagable;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;

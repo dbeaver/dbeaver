@@ -9,7 +9,6 @@ package org.jkiss.dbeaver.ext.erd.action;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.ui.IEditorPart;
-
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditor;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 

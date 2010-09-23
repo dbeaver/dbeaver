@@ -5,16 +5,16 @@
 package org.jkiss.dbeaver.core;
 
 import org.apache.commons.logging.Log;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
-import java.io.Serializable;
 import java.io.File;
-import java.io.PrintWriter;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.Date;
 
 /**

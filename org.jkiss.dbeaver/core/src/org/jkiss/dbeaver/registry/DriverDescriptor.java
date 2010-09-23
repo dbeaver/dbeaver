@@ -10,10 +10,10 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPDriverCustomQuery;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.net.URL;
 import java.util.ArrayList;

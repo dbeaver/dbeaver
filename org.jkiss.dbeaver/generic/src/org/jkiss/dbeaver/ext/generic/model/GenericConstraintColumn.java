@@ -4,10 +4,10 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.dbeaver.model.impl.struct.AbstractConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSConstraint;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.impl.struct.AbstractConstraintColumn;
 
 /**
  * GenericConstraintColumn

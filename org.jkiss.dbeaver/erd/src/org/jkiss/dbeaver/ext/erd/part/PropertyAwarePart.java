@@ -7,19 +7,17 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Iterator;
-import java.util.List;
-
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
-
 import org.jkiss.dbeaver.ext.erd.model.ERDObject;
-import org.jkiss.dbeaver.model.DBPNamedObject;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * An abstract EditPart implementation which is property aware and responds to
@@ -35,7 +33,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 	public void activate()
 	{
 		super.activate();
-		ERDObject erdObject = (ERDObject) getModel();
+		ERDObject<?> erdObject = (ERDObject<?>) getModel();
 		erdObject.addPropertyChangeListener(this);
 	}
 
@@ -45,7 +43,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 	public void deactivate()
 	{
 		super.deactivate();
-		ERDObject erdObject = (ERDObject) getModel();
+		ERDObject<?> erdObject = (ERDObject<?>) getModel();
 		erdObject.removePropertyChangeListener(this);
 	}
 
@@ -123,10 +121,10 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 		{
 
 			//remove connection
-			List children = getTargetConnections();
+			List<?> children = getTargetConnections();
 
 			ConnectionEditPart partToRemove = null;
-			for (Iterator iter = children.iterator(); iter.hasNext();)
+			for (Iterator<?> iter = children.iterator(); iter.hasNext();)
 			{
 				ConnectionEditPart part = (ConnectionEditPart) iter.next();
 				if (part.getModel() == oldValue)
@@ -178,10 +176,10 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 		{
 
 			//remove connection
-			List children = getSourceConnections();
+			List<?> children = getSourceConnections();
 
 			ConnectionEditPart partToRemove = null;
-			for (Iterator iter = children.iterator(); iter.hasNext();)
+			for (Iterator<?> iter = children.iterator(); iter.hasNext();)
 			{
 				ConnectionEditPart part = (ConnectionEditPart) iter.next();
 				if (part.getModel() == oldValue)
@@ -227,10 +225,10 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 		else
 		{
 
-			List children = getChildren();
+			List<?> children = getChildren();
 
 			EditPart partToRemove = null;
-			for (Iterator iter = children.iterator(); iter.hasNext();)
+			for (Iterator<?> iter = children.iterator(); iter.hasNext();)
 			{
 				EditPart part = (EditPart) iter.next();
 				if (part.getModel() == oldValue)

@@ -4,44 +4,23 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
-import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.jdbc.JDBCCallableStatement;
-import org.jkiss.dbeaver.model.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
-import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
-import org.jkiss.dbeaver.DBException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPTransactionIsolation;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
+import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
+import org.jkiss.dbeaver.model.jdbc.*;
+import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 
-import java.sql.Connection;
-import java.sql.Statement;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.Savepoint;
-import java.sql.Clob;
-import java.sql.Blob;
-import java.sql.NClob;
-import java.sql.SQLXML;
-import java.sql.SQLClientInfoException;
-import java.sql.Array;
-import java.sql.Struct;
-import java.sql.ResultSet;
-import java.sql.PreparedStatement;
-import java.sql.CallableStatement;
-import java.sql.SQLFeatureNotSupportedException;
+import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 
