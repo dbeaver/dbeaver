@@ -6,14 +6,15 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.IMemento;
-import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.runtime.project.ProjectEditorInput;
 
 /**
  * SQLEditorInput
  */
-public class SQLEditorInput extends FileEditorInput implements IAutoSaveEditorInput
+public class SQLEditorInput extends ProjectEditorInput implements IPersistableElement, IAutoSaveEditorInput
 {
     private DBSDataSourceContainer dataSourceContainer;
     private String scriptName;
@@ -57,6 +58,12 @@ public class SQLEditorInput extends FileEditorInput implements IAutoSaveEditorIn
             "Connection: " + dataSourceContainer.getName() + "\n" +
             "Type: " + dataSourceContainer.getDriver().getName() + "\n" +
             "URL: " + dataSourceContainer.getConnectionInfo().getUrl();
+    }
+
+    @Override
+    public IPersistableElement getPersistable()
+    {
+        return this;
     }
 
     public String getFactoryId()

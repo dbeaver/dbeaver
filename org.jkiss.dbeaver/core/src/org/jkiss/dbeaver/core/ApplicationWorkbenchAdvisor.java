@@ -9,7 +9,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -24,6 +23,7 @@ import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.project.ProjectEditorInput;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.IOException;
@@ -133,10 +133,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                                         }
                                     }
 
-                                    if (editorInput instanceof IStorageEditorInput) {
-                                        IStorageEditorInput sei = (IStorageEditorInput)editorInput;
-                                        IStorage storage = sei.getStorage();
-                                        openFiles.add(storage.getFullPath());
+                                    if (editorInput instanceof ProjectEditorInput) {
+                                        ProjectEditorInput sei = (ProjectEditorInput)editorInput;
+                                        openFiles.add(sei.getPath());
                                     }
                                 } catch (CoreException ex) {
                                     log.error("Can't obtain editor storage", ex);

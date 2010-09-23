@@ -140,6 +140,8 @@ public class SQLEditor extends BaseTextEditor
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
         DataSourceRegistry.getDefault().addDataSourceListener(this);
         dataContainer = new DataContainer();
+
+        setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(this));
     }
 
     public DBPDataSource getDataSource()
@@ -216,7 +218,6 @@ public class SQLEditor extends BaseTextEditor
     {
         syntaxManager = new SQLSyntaxManager(this);
         setRangeIndicator(new DefaultRangeIndicator());
-        setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(this));
 
         // Load syntax from datasource
         refreshSyntax();
