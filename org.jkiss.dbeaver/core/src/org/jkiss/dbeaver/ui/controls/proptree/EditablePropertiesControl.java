@@ -78,13 +78,20 @@ public class EditablePropertiesControl extends Composite {
             this.propValues.putAll(propertyValues);
             this.originalValues.putAll(propertyValues);
         }
+
+        Object root;
+        if (propertyGroups.size() == 1) {
+            root = propertyGroups.get(0);
+        } else {
+            root = propertyGroups;
+        }
+
         this.defaultValues.clear();
         if (defaultValues != null) {
             // Set specified default values
             this.defaultValues.putAll(defaultValues);
         } else {
             // Collect default values from property model
-            Object root = propsTree.getInput();
             if (root instanceof DBPPropertyGroup) {
                 addDefaultValues((DBPPropertyGroup)root);
             } else if (root instanceof Collection) {
@@ -93,17 +100,10 @@ public class EditablePropertiesControl extends Composite {
                         addDefaultValues((DBPPropertyGroup)group);
                     }
                 }
-
             }
         }
 
         if (propsTree != null) {
-            Object root;
-            if (propertyGroups.size() == 1) {
-                root = propertyGroups.get(0);
-            } else {
-                root = propertyGroups;
-            }
             propsTree.setInput(root);
             propsTree.expandAll();
             UIUtils.packColumns(propsTree.getTree());
