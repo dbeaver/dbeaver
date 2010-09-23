@@ -4453,8 +4453,9 @@ public class LightGrid extends Canvas {
             hoveringColumn = col;
             hoveringColumnHeader = hoverColHeader;
 
-            Rectangle clientArea = getClientArea();
-            redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
+            // TODO: guest why did they put redraw on mouse move??? It took fucking much memory and processor
+            //Rectangle clientArea = getClientArea();
+            //redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
 
             hoverChange = true;
         }
