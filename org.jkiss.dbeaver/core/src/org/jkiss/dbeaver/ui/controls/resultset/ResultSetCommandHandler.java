@@ -15,6 +15,10 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler;
  * ResultSetCommandHandler
  */
 public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
+    public static final String CMD_ROW_FIRST = "org.jkiss.dbeaver.core.resultset.row.first";
+    public static final String CMD_ROW_PREVIOUS = "org.jkiss.dbeaver.core.resultset.row.previous";
+    public static final String CMD_ROW_NEXT = "org.jkiss.dbeaver.core.resultset.row.next";
+    public static final String CMD_ROW_LAST = "org.jkiss.dbeaver.core.resultset.row.last";
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -30,13 +34,13 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
         String actionId = event.getCommand().getId();
         if (actionId.equals(IWorkbenchCommandConstants.FILE_REFRESH)) {
             resultSet.refresh();
-        } else if (actionId.equals(ITextEditorActionDefinitionIds.WORD_PREVIOUS)) {
+        } else if (actionId.equals(CMD_ROW_PREVIOUS) || actionId.equals(ITextEditorActionDefinitionIds.WORD_PREVIOUS)) {
             resultSet.scrollToRow(ResultSetViewer.RowPosition.PREVIOUS);
-        } else if (actionId.equals(ITextEditorActionDefinitionIds.WORD_NEXT)) {
+        } else if (actionId.equals(CMD_ROW_NEXT) || actionId.equals(ITextEditorActionDefinitionIds.WORD_NEXT)) {
             resultSet.scrollToRow(ResultSetViewer.RowPosition.NEXT);
-        } else if (actionId.equals(ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS)) {
+        } else if (actionId.equals(CMD_ROW_FIRST) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS)) {
             resultSet.scrollToRow(ResultSetViewer.RowPosition.FIRST);
-        } else if (actionId.equals(ITextEditorActionDefinitionIds.SELECT_WORD_NEXT)) {
+        } else if (actionId.equals(CMD_ROW_LAST) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_WORD_NEXT)) {
             resultSet.scrollToRow(ResultSetViewer.RowPosition.LAST);
         }
 

@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -27,7 +28,9 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
@@ -55,6 +58,7 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.export.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -270,7 +274,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         Composite statusBar = new Composite(parent, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         statusBar.setLayoutData(gd);
-        GridLayout gl = new GridLayout(2, false);
+        GridLayout gl = new GridLayout(3, false);
         gl.marginWidth = 5;
         gl.marginHeight = 0;
         statusBar.setLayout(gl);
@@ -332,38 +336,48 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 }
             });
             new ToolItem(toolBar, SWT.SEPARATOR);
-            itemFirst = UIUtils.createToolItem(toolBar, "First", DBIcon.RS_FIRST, new SelectionAdapter() {
+            itemFirst = UIUtils.createToolItem(toolBar, site, ResultSetCommandHandler.CMD_ROW_FIRST, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
                     scrollToRow(RowPosition.FIRST);
                 }
             });
-            itemPrevious = UIUtils.createToolItem(toolBar, "Previous", DBIcon.RS_PREV, new SelectionAdapter() {
+
+            itemPrevious = UIUtils.createToolItem(toolBar, site, ResultSetCommandHandler.CMD_ROW_PREVIOUS, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
                     scrollToRow(RowPosition.PREVIOUS);
                 }
             });
-            itemNext = UIUtils.createToolItem(toolBar, "Next", DBIcon.RS_NEXT, new SelectionAdapter() {
+            itemNext = UIUtils.createToolItem(toolBar, site, ResultSetCommandHandler.CMD_ROW_NEXT, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
                     scrollToRow(RowPosition.NEXT);
                 }
             });
-            itemLast = UIUtils.createToolItem(toolBar, "Last", DBIcon.RS_LAST, new SelectionAdapter() {
+            itemLast = UIUtils.createToolItem(toolBar, site, ResultSetCommandHandler.CMD_ROW_LAST, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
                     scrollToRow(RowPosition.LAST);
                 }
             });
             new ToolItem(toolBar, SWT.SEPARATOR);
-            itemRefresh = UIUtils.createToolItem(toolBar, "Refresh", DBIcon.RS_REFRESH, new SelectionAdapter() {
+            itemRefresh = UIUtils.createToolItem(toolBar, "Refresh Result Set", DBIcon.RS_REFRESH, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
                     refresh();
                 }
             });
         }
+        //ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+
+        //toolBarManager.add(ViewUtils.makeCommandContribution(site, "org.jkiss.dbeaver.core.resultset.row.previous"));
+        //toolBarManager.add(ViewUtils.makeCommandContribution(site, ITextEditorActionDefinitionIds.WORD_NEXT));
+        //toolBarManager.add(ViewUtils.makeCommandContribution(site, ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS));
+        //toolBarManager.add(ViewUtils.makeCommandContribution(site, ITextEditorActionDefinitionIds.SELECT_WORD_NEXT));
+        //toolBarManager.add(ViewUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
+        //toolBarManager.createControl(statusBar);
+
         updateEditControls();
     }
 

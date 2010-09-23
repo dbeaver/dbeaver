@@ -6,13 +6,21 @@ package org.jkiss.dbeaver.ui;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.commands.Command;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.NotEnabledException;
+import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.commands.ActionHandler;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -21,8 +29,11 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandImageService;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -72,6 +83,50 @@ public class UIUtils {
             return NumberFormat.getInstance().format(object);
         }
         return object;
+    }
+
+    public static ToolItem createToolItem(ToolBar toolBar, IServiceLocator serviceLocator, final String commandId, SelectionListener listener)
+    {
+        ToolItem item = new ToolItem(toolBar, SWT.PUSH);
+
+        final ICommandService commandService = (ICommandService)serviceLocator.getService(ICommandService.class);
+        final ICommandImageService commandImageService = (ICommandImageService)serviceLocator.getService(ICommandImageService.class);
+        //final IBindingService bindingService = (IBindingService)serviceLocator.getService(IBindingService.class);
+        //final IHandlerService handlerService = (IHandlerService)serviceLocator.getService(IHandlerService.class);
+
+        final Command command = commandService.getCommand(commandId);
+        if (command == null) {
+            log.error("Command '" + commandId + "' not found");
+            return item;
+        }
+        String commandName;
+        try {
+            commandName = command.getName();
+        } catch (NotDefinedException e) {
+            commandName = commandId;
+        }
+/*
+        TriggerSequence[] sequences = bindingService.getActiveBindingsFor(commandId);
+        if (sequences != null && sequences.length == 1) {
+            commandName += " (" + sequences[0].format() + ")";
+        }
+*/
+        ImageDescriptor imageDescriptor = commandImageService.getImageDescriptor(commandId);
+
+        item.setToolTipText(commandName);
+        if (imageDescriptor != null) {
+            final Image image = imageDescriptor.createImage();
+            item.setImage(image);
+            item.addDisposeListener(new DisposeListener() {
+                public void widgetDisposed(DisposeEvent e)
+                {
+                    image.dispose();
+                }
+            });
+        }
+        item.addSelectionListener(listener);
+
+        return item;
     }
 
     public static ToolItem createToolItem(ToolBar toolBar, String text, DBIcon icon, SelectionListener listener)
