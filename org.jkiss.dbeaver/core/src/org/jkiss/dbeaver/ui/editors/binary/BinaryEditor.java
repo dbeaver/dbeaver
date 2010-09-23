@@ -102,16 +102,6 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         getManager().setFindReplaceLists(HexConfig.getFindReplaceFindList(), HexConfig.getFindReplaceReplaceList());
         getManager().setMenuListener(this);
         int editorStyle = SWT.NONE;
-        if (getEditorInput() instanceof IStorageEditorInput) {
-            try {
-                if (((IStorageEditorInput)getEditorInput()).getStorage().isReadOnly()) {
-                    editorStyle |= SWT.READ_ONLY;
-                }
-            } catch (CoreException e) {
-                log.warn(e);
-                // do nothing
-            }
-        }
         getManager().createEditorPart(parent, editorStyle);
         FillLayout fillLayout = new FillLayout();
         parent.setLayout(fillLayout);

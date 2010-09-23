@@ -6,26 +6,17 @@ package org.jkiss.dbeaver.ui.editors.content.parts;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.editors.text.FileDocumentProvider;
 import org.eclipse.ui.texteditor.IDocumentProviderExtension;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.runtime.project.ProjectDocumentProvider;
 
 /**
  * SQLDocumentProvider
  */
-class ContentTextDocumentProvider extends FileDocumentProvider implements IDocumentProviderExtension {
+class ContentTextDocumentProvider extends ProjectDocumentProvider implements IDocumentProviderExtension {
 
     static final Log log = LogFactory.getLog(ContentTextDocumentProvider.class);
 
-    protected IDocument createDocument(Object element) throws CoreException
-    {
-        IDocument document = super.createDocument(element);
-        return document;
-    }
-
+/*
     @Override
     protected void handleElementContentChanged(IFileEditorInput fileEditorInput)
     {
@@ -41,4 +32,5 @@ class ContentTextDocumentProvider extends FileDocumentProvider implements IDocum
                 e);
         }
     }
+*/
 }

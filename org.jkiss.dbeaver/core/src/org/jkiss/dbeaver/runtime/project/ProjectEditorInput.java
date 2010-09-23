@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.runtime.project;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.PlatformObject;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPathEditorInput;
@@ -53,7 +54,7 @@ public class ProjectEditorInput extends PlatformObject implements IPathEditorInp
 
 	/* (non-Javadoc)
 	 * Method declared on IFileEditorInput.
-	 */
+    */
 	public IFile getFile() {
 		return file;
 	}
@@ -94,7 +95,7 @@ public class ProjectEditorInput extends PlatformObject implements IPathEditorInp
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return getClass().getName() + "(" + getFile().getFullPath() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
+		return getClass().getName() + "(" + file.getFullPath() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/*
@@ -121,16 +122,18 @@ public class ProjectEditorInput extends PlatformObject implements IPathEditorInp
 				}
 
 				public Object getParent(Object o) {
-					return ProjectEditorInput.this.getFile().getParent();
+					return ProjectEditorInput.this.file.getParent();
 				}
 			};
-		}
+		} else if (IFile.class.equals(adapter)) {
+            return file;
+        }
 
 		return super.getAdapter(adapter);
 	}
 
     public IPath getPath()
     {
-        return file.getFullPath();
+        return file == null ? null : new Path(file.getLocation().toString());
     }
 }

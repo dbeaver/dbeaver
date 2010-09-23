@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageViewControl;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 
 /**
@@ -74,10 +76,11 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
 
     private void loadImage() {
         IEditorInput input = getEditorInput();
-        if (input instanceof IStorageEditorInput) {
+        if (input instanceof IPathEditorInput) {
             try {
-                InputStream inputStream = ((IStorageEditorInput) input).getStorage().getContents();
-                if (inputStream != null) {
+                File file = ((IPathEditorInput) input).getPath().toFile();
+                if (file.exists()) {
+                    InputStream inputStream = new FileInputStream(file);
                     try {
                         contentValid = imageViewer.loadImage(inputStream);
                         imageViewer.update();
@@ -144,12 +147,8 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
         }
         IEditorInput input = getEditorInput();
         IPath localPath = null;
-        if (input instanceof IStorageEditorInput) {
-            try {
-                localPath = ((IStorageEditorInput) input).getStorage().getFullPath();
-            } catch (CoreException e) {
-                log.warn(e);
-            }
+        if (input instanceof IPathEditorInput) {
+            localPath = ((IPathEditorInput) input).getPath();
         }
         if (localPath == null) {
             return;

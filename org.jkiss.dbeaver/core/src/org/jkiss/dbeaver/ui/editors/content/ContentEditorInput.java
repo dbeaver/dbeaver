@@ -13,8 +13,8 @@ import org.eclipse.core.resources.ResourceAttributes;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.DBException;
@@ -40,7 +40,7 @@ import java.io.*;
 /**
  * ContentEditorInput
  */
-public class ContentEditorInput implements IFileEditorInput, IPathEditorInput, IDatabaseEditorInput
+public class ContentEditorInput implements IPathEditorInput, IDatabaseEditorInput
 {
     static final Log log = LogFactory.getLog(ContentEditorInput.class);
 
@@ -108,7 +108,10 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput, I
     {
         if (adapter == IFile.class) {
             return contentFile;
+        } else if (adapter == IPath.class) {
+            return contentFile.getFullPath();
         }
+
         return null;
     }
 
@@ -192,7 +195,7 @@ public class ContentEditorInput implements IFileEditorInput, IPathEditorInput, I
 
     public IPath getPath()
     {
-        return contentFile == null ? null : contentFile.getFullPath();
+        return contentFile == null ? null : new Path(contentFile.getLocation().toString());
     }
 
     public boolean isReadOnly() {

@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.project.ProjectEditorInput;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -120,7 +121,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                     public void run(IProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
-                        final List<IPath> openFiles = new ArrayList<IPath>();
+                        final List<File> openFiles = new ArrayList<File>();
                         for (IWorkbenchPage workbenchPage : workbenchWindow.getPages()) {
                             for (IEditorReference editorRef : workbenchPage.getEditorReferences()) {
                                 try {
@@ -135,7 +136,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
                                     if (editorInput instanceof ProjectEditorInput) {
                                         ProjectEditorInput sei = (ProjectEditorInput)editorInput;
-                                        openFiles.add(sei.getPath());
+                                        openFiles.add(sei.getPath().toFile());
                                     }
                                 } catch (CoreException ex) {
                                     log.error("Can't obtain editor storage", ex);
@@ -158,7 +159,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                             for (IResource tempResource : tempResources) {
                                 if (tempResource instanceof IFile) {
                                     IFile tempFile = (IFile)tempResource;
-                                    if (!openFiles.contains(tempFile.getFullPath())) {
+                                    if (!openFiles.contains(tempFile.getLocation().toFile())) {
                                         tempFile.delete(true, false, monitor);
                                     }
                                 }

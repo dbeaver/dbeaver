@@ -6,17 +6,18 @@ package org.jkiss.dbeaver.runtime.project;
 
 import org.eclipse.core.filebuffers.manipulation.ContainerCreator;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.*;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
+import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.texteditor.AbstractDocumentProvider;
+import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
@@ -40,14 +41,14 @@ public class ProjectDocumentProvider extends AbstractDocumentProvider {
     @Override
     protected Document createDocument(Object element) throws CoreException
     {
-        if (element instanceof ProjectEditorInput) {
+        if (element instanceof IPathEditorInput) {
             Document document = new Document();
-            if (setDocumentContent(document, (ProjectEditorInput) element)) {
+            if (setDocumentContent(document, (IPathEditorInput) element)) {
                 return document;
             }
         }
 
-        throw new IllegalArgumentException("Project document provider supports only project editor input");
+        throw new IllegalArgumentException("Project document provider supports only path editor input");
     }
 
     @Override
@@ -59,8 +60,8 @@ public class ProjectDocumentProvider extends AbstractDocumentProvider {
     @Override
     public boolean isReadOnly(Object element)
     {
-        if (element instanceof ProjectEditorInput) {
-            return ((ProjectEditorInput)element).getFile().isReadOnly();
+        if (element instanceof IPathEditorInput) {
+            return !((IPathEditorInput)element).getPath().toFile().canWrite();
         }
         return super.isReadOnly(element);
     }
@@ -73,9 +74,9 @@ public class ProjectDocumentProvider extends AbstractDocumentProvider {
 
     public boolean isDeleted(Object element) {
 
-        if (element instanceof ProjectEditorInput) {
-            ProjectEditorInput input= (ProjectEditorInput) element;
-            IPath path= input.getFile().getLocation();
+        if (element instanceof IPathEditorInput) {
+            IPathEditorInput input= (IPathEditorInput) element;
+            IPath path = input.getPath();
             return path == null || !path.toFile().exists();
 
         }
@@ -85,10 +86,13 @@ public class ProjectDocumentProvider extends AbstractDocumentProvider {
     @Override
     protected void doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite) throws CoreException
     {
-        ProjectEditorInput input = (ProjectEditorInput) element;
+        IPathEditorInput input = (IPathEditorInput) element;
         String encoding = ContentUtils.DEFAULT_FILE_CHARSET;
 
-        IFile file = input.getFile();
+        IFile file = (IFile)input.getAdapter(IFile.class);
+        if (file == null) {
+            throw new CoreException(new Status(Status.ERROR, DBeaverConstants.PLUGIN_ID, "Could not obtain file from editor input"));
+        }
 
         Charset charset;
         try {
@@ -122,7 +126,7 @@ public class ProjectDocumentProvider extends AbstractDocumentProvider {
             // inform about the upcoming content change
             fireElementStateChanging(element);
             try {
-                file.setContents(stream, overwrite, true, monitor);
+                file.setContents(stream, true, true, monitor);
             } catch (CoreException x) {
                 // inform about failure
                 fireElementStateChangeFailed(element);
@@ -158,16 +162,18 @@ public class ProjectDocumentProvider extends AbstractDocumentProvider {
     }
 
 
-    protected boolean setDocumentContent(IDocument document, ProjectEditorInput editorInput) throws CoreException
+    protected boolean setDocumentContent(IDocument document, IPathEditorInput editorInput) throws CoreException
     {
-        IFile file = editorInput.getFile();
-        InputStream contentStream = file.getContents(false);
+        File file = editorInput.getPath().toFile();
         try {
-            setDocumentContent(document, contentStream, null);
-        } catch (IOException ex) {
-            throw new CoreException(DBeaverUtils.makeExceptionStatus(ex));
-        } finally {
-            ContentUtils.close(contentStream);
+            InputStream contentStream = new FileInputStream(file);
+            try {
+                setDocumentContent(document, contentStream, null);
+            } finally {
+                ContentUtils.close(contentStream);
+            }
+        } catch (IOException e) {
+            throw new CoreException(DBeaverUtils.makeExceptionStatus(e));
         }
         return true;
     }
