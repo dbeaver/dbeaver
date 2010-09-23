@@ -6,9 +6,6 @@ package org.jkiss.dbeaver.ui.editors.sql.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationHover;
@@ -16,10 +13,6 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.eclipse.ui.texteditor.MarkerAnnotation;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -67,7 +60,7 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
             findAnnotations(hoverRegion.getOffset(), model, null, 0);
         }
 
-        return getHoverInfo();
+        return null;//getHoverInfo();
     }
 
     /**
@@ -97,6 +90,7 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
         findAnnotations(offset, textViewer instanceof ISourceViewer ? ((ISourceViewer) textViewer).getAnnotationModel()
             : null, textViewer.getDocument(), lineNumber);
         for (Annotation annotation : annotations) {
+/*
             if (annotation instanceof MarkerAnnotation) {
                 MarkerAnnotation markerAnnotation = (MarkerAnnotation) annotation;
                 try {
@@ -110,6 +104,7 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
                     log.error(e1);
                 }
             }
+*/
         }
 
         return null;
@@ -129,7 +124,7 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
             findAnnotations(-1, sourceViewer.getAnnotationModel(), sourceViewer.getDocument(), lineNumber);
         }
 
-        return getHoverInfo();
+        return null;//getHoverInfo();
     }
 
     /**
@@ -166,6 +161,7 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
             }
         }
     }
+/*
 
     private String getHoverInfo()
     {
@@ -195,6 +191,7 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
         annotations.clear();
         return text;
     }
+*/
 
     public void setEditor(IEditorPart editor)
     {

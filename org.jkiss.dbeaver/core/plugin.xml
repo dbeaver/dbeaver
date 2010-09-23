@@ -950,10 +950,6 @@
         </colorDefinition>
     </extension>
 
-    <extension point="org.eclipse.ui.editors.templates">
-        <include file="schema/editor-templates.xml">
-        </include>
-    </extension>
 
     <extension point="org.eclipse.ui.splashHandlers">
         <splashHandler

@@ -22,7 +22,6 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.eclipse.ui.editors.text.TextEditorActionContributor;
 import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.StatusLineContributionItem;
 import org.jkiss.dbeaver.DBException;
@@ -54,7 +53,7 @@ import java.util.List;
 /**
  * SQL Editor contributor
  */
-public class SQLEditorContributor extends TextEditorActionContributor implements DBPEventListener, IPropertyChangeListener
+public class SQLEditorContributor extends BasicTextEditorActionContributor implements DBPEventListener, IPropertyChangeListener
 {
     static final Log log = LogFactory.getLog(SQLEditorContributor.class);
 
