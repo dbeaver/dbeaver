@@ -28,7 +28,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
@@ -69,6 +68,18 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
     private static final int DEFAULT_ROW_HEADER_WIDTH = 50;
+
+    public enum ResultSetMode {
+        GRID,
+        RECORD
+    }
+
+    public enum RowPosition {
+        FIRST,
+        PREVIOUS,
+        NEXT,
+        LAST
+    }
 
     private IWorkbenchPartSite site;
     private ResultSetMode mode;
@@ -165,18 +176,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         });
 
         applyThemeSettings();
-
-/*
-        {
-            final IFocusService focusService = (IFocusService) site.getService(IFocusService.class);
-            focusService.addFocusTracker(spreadsheet, RESULT_SET_CONTROL_ID);
-            spreadsheet.addDisposeListener(new DisposeListener() {
-                public void widgetDisposed(DisposeEvent e) {
-                    focusService.removeFocusTracker(spreadsheet);
-                }
-            });
-        }
-*/
     }
 
     private void updateGridCursor()
@@ -336,45 +335,25 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             itemFirst = UIUtils.createToolItem(toolBar, "First", DBIcon.RS_FIRST, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
-                    if (mode == ResultSetMode.RECORD) {
-                        curRowNum = 0;
-                        updateRecord();
-                    } else {
-                        spreadsheet.shiftCursor(0, -spreadsheet.getItemCount(), false);
-                    }
+                    scrollToRow(RowPosition.FIRST);
                 }
             });
             itemPrevious = UIUtils.createToolItem(toolBar, "Previous", DBIcon.RS_PREV, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
-                    if (mode == ResultSetMode.RECORD && curRowNum > 0) {
-                        curRowNum--;
-                        updateRecord();
-                    } else {
-                        spreadsheet.shiftCursor(0, -1, false);
-                    }
+                    scrollToRow(RowPosition.PREVIOUS);
                 }
             });
             itemNext = UIUtils.createToolItem(toolBar, "Next", DBIcon.RS_NEXT, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
-                    if (mode == ResultSetMode.RECORD && curRowNum < curRows.size() - 1) {
-                        curRowNum++;
-                        updateRecord();
-                    } else {
-                        spreadsheet.shiftCursor(0, 1, false);
-                    }
+                    scrollToRow(RowPosition.NEXT);
                 }
             });
             itemLast = UIUtils.createToolItem(toolBar, "Last", DBIcon.RS_LAST, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
-                    if (mode == ResultSetMode.RECORD && !curRows.isEmpty()) {
-                        curRowNum = curRows.size() - 1;
-                        updateRecord();
-                    } else {
-                        spreadsheet.shiftCursor(0, spreadsheet.getItemCount(), false);
-                    }
+                    scrollToRow(RowPosition.LAST);
                 }
             });
             new ToolItem(toolBar, SWT.SEPARATOR);
@@ -386,6 +365,17 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             });
         }
         updateEditControls();
+    }
+
+    public DBSDataContainer getDataContainer()
+    {
+        return resultSetProvider.getDataContainer();
+    }
+
+
+    public ResultSetMode getMode()
+    {
+        return mode;
     }
 
     private void changeMode(ResultSetMode resultSetMode)
@@ -430,11 +420,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
         spreadsheet.layout(true, true);
-    }
-
-    public DBSDataContainer getDataContainer()
-    {
-        return resultSetProvider.getDataContainer();
     }
 
     public void dispose()
@@ -486,6 +471,44 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             || event.getProperty().equals(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE))
         {
             applyThemeSettings();
+        }
+    }
+
+    public void scrollToRow(RowPosition position)
+    {
+        switch (position) {
+            case FIRST:
+                if (mode == ResultSetMode.RECORD) {
+                    curRowNum = 0;
+                    updateRecord();
+                } else {
+                    spreadsheet.shiftCursor(0, -spreadsheet.getItemCount(), false);
+                }
+                break;
+            case PREVIOUS:
+                if (mode == ResultSetMode.RECORD && curRowNum > 0) {
+                    curRowNum--;
+                    updateRecord();
+                } else {
+                    spreadsheet.shiftCursor(0, -1, false);
+                }
+                break;
+            case NEXT:
+                if (mode == ResultSetMode.RECORD && curRowNum < curRows.size() - 1) {
+                    curRowNum++;
+                    updateRecord();
+                } else {
+                    spreadsheet.shiftCursor(0, 1, false);
+                }
+                break;
+            case LAST:
+                if (mode == ResultSetMode.RECORD && !curRows.isEmpty()) {
+                    curRowNum = curRows.size() - 1;
+                    updateRecord();
+                } else {
+                    spreadsheet.shiftCursor(0, spreadsheet.getItemCount(), false);
+                }
+                break;
         }
     }
 
@@ -1828,7 +1851,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 valueHandler = metaColumns[cell.col].getValueHandler();
             }
 
-            if (spreadsheet.isRowVisible(rowNum) && dataReceiver.isHasMoreData() && rowNum == curRows.size() - 1) {
+            if (rowNum == curRows.size() - 1 && (mode == ResultSetMode.RECORD || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
                 readNextSegment();
             }
 

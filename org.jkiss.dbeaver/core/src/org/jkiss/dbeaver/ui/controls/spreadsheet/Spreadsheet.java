@@ -27,7 +27,6 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.swt.IFocusService;
-import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridEditor;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
@@ -113,6 +112,11 @@ public class Spreadsheet extends Composite implements Listener {
     public LightGrid getGrid()
     {
         return grid;
+    }
+
+    public ISpreadsheetController getController()
+    {
+        return spreadsheetController;
     }
 
     public Color getForegroundNormal()
@@ -628,44 +632,6 @@ public class Spreadsheet extends Composite implements Listener {
         }
 
         public abstract void run();
-    }
-
-    private class CursorMoveAction extends GridAction {
-        private CursorMoveAction(String actionId)
-        {
-            super(actionId);
-        }
-
-        public void run()
-        {
-            Event event = new Event();
-            event.doit = true;
-            String actionId = getActionDefinitionId();
-            if (actionId.equals(ITextEditorActionDefinitionIds.LINE_START)) {
-                event.keyCode = SWT.HOME;
-            } else if (actionId.equals(ITextEditorActionDefinitionIds.SELECT_LINE_START)) {
-                event.keyCode = SWT.HOME;
-                event.stateMask = SWT.MOD2;
-            } else if (actionId.equals(ITextEditorActionDefinitionIds.LINE_END)) {
-                event.keyCode = SWT.END;
-            } else if (actionId.equals(ITextEditorActionDefinitionIds.SELECT_LINE_END)) {
-                event.keyCode = SWT.END;
-                event.stateMask = SWT.MOD2;
-            } else if (actionId.equals(ITextEditorActionDefinitionIds.TEXT_START)) {
-                event.keyCode = SWT.HOME;
-                event.stateMask = SWT.MOD1;
-            } else if (actionId.equals(ITextEditorActionDefinitionIds.SELECT_TEXT_START)) {
-                event.keyCode = SWT.HOME;
-                event.stateMask = SWT.MOD1 | SWT.MOD2;
-            } else if (actionId.equals(ITextEditorActionDefinitionIds.TEXT_END)) {
-                event.keyCode = SWT.END;
-                event.stateMask = SWT.MOD1;
-            } else if (actionId.equals(ITextEditorActionDefinitionIds.SELECT_TEXT_END)) {
-                event.keyCode = SWT.END;
-                event.stateMask = SWT.MOD1 | SWT.MOD2;
-            }
-            grid.onKeyDown(event);
-        }
     }
 
 }

@@ -4,24 +4,43 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.ISources;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
+import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
+import org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler;
 
 /**
  * ResultSetCommandHandler
  */
-public class ResultSetCommandHandler extends AbstractHandler {
+public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        Object control = HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);
-        if (!(control instanceof LightGrid)) {
+        Spreadsheet spreadsheet = getActiveSpreadsheet(event);
+        if (spreadsheet == null) {
             return null;
         }
+        if (!(spreadsheet.getController() instanceof ResultSetViewer)) {
+            return null;
+        }
+        ResultSetViewer resultSet = (ResultSetViewer) spreadsheet.getController();
+        //ResultSetViewer.ResultSetMode resultSetMode = resultSet.getMode();
+        String actionId = event.getCommand().getId();
+        if (actionId.equals(IWorkbenchCommandConstants.FILE_REFRESH)) {
+            resultSet.refresh();
+        } else if (actionId.equals(ITextEditorActionDefinitionIds.WORD_PREVIOUS)) {
+            resultSet.scrollToRow(ResultSetViewer.RowPosition.PREVIOUS);
+        } else if (actionId.equals(ITextEditorActionDefinitionIds.WORD_NEXT)) {
+            resultSet.scrollToRow(ResultSetViewer.RowPosition.NEXT);
+        } else if (actionId.equals(ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS)) {
+            resultSet.scrollToRow(ResultSetViewer.RowPosition.FIRST);
+        } else if (actionId.equals(ITextEditorActionDefinitionIds.SELECT_WORD_NEXT)) {
+            resultSet.scrollToRow(ResultSetViewer.RowPosition.LAST);
+        }
+
+
         return null;
     }
 

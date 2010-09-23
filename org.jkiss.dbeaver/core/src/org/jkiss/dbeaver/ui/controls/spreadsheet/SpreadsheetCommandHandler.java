@@ -20,23 +20,36 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
  */
 public class SpreadsheetCommandHandler extends AbstractHandler {
 
-    public Object execute(ExecutionEvent event) throws ExecutionException
+    public static LightGrid getActiveGrid(ExecutionEvent event)
     {
         Object control = HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);
         if (!(control instanceof LightGrid)) {
             return null;
         }
-        LightGrid grid = (LightGrid)control;
-        Spreadsheet spreadsheet = grid.getParent() instanceof Spreadsheet ? (Spreadsheet)grid.getParent() : null;
+        return (LightGrid)control;
+    }
+
+    public static Spreadsheet getActiveSpreadsheet(ExecutionEvent event)
+    {
+        LightGrid grid = getActiveGrid(event);
+        return grid != null && grid.getParent() instanceof Spreadsheet ? (Spreadsheet)grid.getParent() : null;
+    }
+
+    public Object execute(ExecutionEvent event) throws ExecutionException
+    {
+        Spreadsheet spreadsheet = getActiveSpreadsheet(event);
+        if (spreadsheet == null) {
+            return null;
+        }
+        LightGrid grid = spreadsheet.getGrid();
+
         String actionId = event.getCommand().getId();
         if (actionId.equals(IWorkbenchCommandConstants.EDIT_SELECT_ALL)) {
             grid.selectAll();
             return null;
         }
         if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY)) {
-            if (spreadsheet != null) {
-                spreadsheet.copySelectionToClipboard();
-            }
+            spreadsheet.copySelectionToClipboard();
             return null;
         }
         Event keyEvent = new Event();
