@@ -6,12 +6,13 @@ package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.texteditor.StatusTextEditor;
 
 /**
  * Abstract text editor.
  * Contains some common dbeaver text editor adaptions.
  */
-public abstract class BaseTextEditor extends TextEditor {
+public abstract class BaseTextEditor extends StatusTextEditor {
 
     public Object getAdapter(Class required)
     {

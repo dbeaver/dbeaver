@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
+import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
@@ -71,6 +72,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private DBNModel metaModel;
     private QMControllerImpl queryManager;
     private JexlEngine jexlEngine;
+    private SharedTextColors sharedTextColors;
 
     public static DBeaverCore getInstance()
     {
@@ -92,7 +94,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private void initialize()
     {
         //progressProvider = new DBeaverProgressProvider();
-        jexlEngine = new JexlEngine();
+        this.jexlEngine = new JexlEngine();
+        this.sharedTextColors = new SharedTextColors();
 
         // Register properties adapter
         editorsAdapter = new DatabaseEditorAdapterFactory();
@@ -178,6 +181,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         // Unregister properties adapter
         Platform.getAdapterManager().unregisterAdapters(editorsAdapter);
 
+        this.sharedTextColors.dispose();
         //progressProvider.shutdown();
         //progressProvider = null;
 
@@ -211,6 +215,11 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     public JexlEngine getJexlEngine() {
         return jexlEngine;
+    }
+
+    public SharedTextColors getSharedTextColors()
+    {
+        return sharedTextColors;
     }
 
     public DBNModel getNavigatorModel()

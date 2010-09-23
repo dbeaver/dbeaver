@@ -18,9 +18,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.source.Annotation;
-import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.text.source.IVerticalRuler;
+import org.eclipse.jface.text.source.*;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
@@ -127,6 +125,7 @@ public class SQLEditor extends BaseTextEditor
     private static Image imgDataGrid;
     private static Image imgExplainPlan;
     private static Image imgLog;
+    private IAnnotationAccess annotationAccess;
 
     static {
         imgDataGrid = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage();
@@ -217,6 +216,7 @@ public class SQLEditor extends BaseTextEditor
     {
         syntaxManager = new SQLSyntaxManager(this);
         setRangeIndicator(new DefaultRangeIndicator());
+        setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(this));
 
         // Load syntax from datasource
         refreshSyntax();
@@ -267,7 +267,10 @@ public class SQLEditor extends BaseTextEditor
         }
 
         ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
-        projectionSupport = new ProjectionSupport(viewer, getAnnotationAccess(), getSharedColors());
+        projectionSupport = new ProjectionSupport(
+            viewer,
+            getAnnotationAccess(),
+            getSharedColors());
         projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.error");
         projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning");
         projectionSupport.install();
@@ -296,10 +299,9 @@ public class SQLEditor extends BaseTextEditor
         }
     }
 
-    protected void initializeEditor()
+    private ISharedTextColors getSharedColors()
     {
-        super.initializeEditor();
-        setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(this));
+        return DBeaverCore.getInstance().getSharedTextColors();
     }
 
     protected void createActions()
@@ -368,19 +370,26 @@ public class SQLEditor extends BaseTextEditor
     protected ISourceViewer createSourceViewer(Composite parent,
         IVerticalRuler ruler, int styles)
     {
-        fAnnotationAccess = createAnnotationAccess();
-        fOverviewRuler = createOverviewRuler(getSharedColors());
+        // TODO: guess why not to use default
+        OverviewRuler overviewRuler = new OverviewRuler(
+            getAnnotationAccess(),
+            VERTICAL_RULER_WIDTH,
+            getSharedColors());
 
-        ISourceViewer viewer = new SQLEditorSourceViewer(
+        return new SQLEditorSourceViewer(
             parent,
             ruler,
-            getOverviewRuler(),
-            isOverviewRulerVisible(),
+            overviewRuler,
+            true,
             styles);
-        // ensure decoration support has been created and configured.
-        getSourceViewerDecorationSupport(viewer);
+    }
 
-        return viewer;
+    private IAnnotationAccess getAnnotationAccess()
+    {
+        if (annotationAccess == null) {
+            annotationAccess = new DefaultMarkerAnnotationAccess();
+        }
+        return annotationAccess;
     }
 
 /*

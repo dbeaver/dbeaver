@@ -254,26 +254,25 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
 
     private void changeRules()
     {
-        SQLSyntaxManager syntaxManager = editor.getSyntaxManager();
-        Color backgroundColor = editor.getSyntaxManager().getColor(SQLSyntaxManager.CONFIG_COLOR_BACKGROUND, SWT.COLOR_WHITE);
+        Color backgroundColor = getColor(SQLSyntaxManager.CONFIG_COLOR_BACKGROUND, SWT.COLOR_WHITE);
         IToken keywordToken = new Token(new TextAttribute(
-            editor.getSyntaxManager().getColor(SQLSyntaxManager.CONFIG_COLOR_KEYWORD),
+            getColor(SQLSyntaxManager.CONFIG_COLOR_KEYWORD),
             backgroundColor,
             SWT.BOLD));
         IToken typeToken = new Token(new TextAttribute(
-            editor.getSyntaxManager().getColor(SQLSyntaxManager.CONFIG_COLOR_DATATYPE),
+            getColor(SQLSyntaxManager.CONFIG_COLOR_DATATYPE),
             backgroundColor,
             SWT.BOLD));
         IToken stringToken = new Token(new TextAttribute(
-            editor.getSyntaxManager().getColor(SQLSyntaxManager.CONFIG_COLOR_STRING)));
+            getColor(SQLSyntaxManager.CONFIG_COLOR_STRING)));
         IToken numberToken = new Token(new TextAttribute(
-            editor.getSyntaxManager().getColor(SQLSyntaxManager.CONFIG_COLOR_NUMBER)));
+            getColor(SQLSyntaxManager.CONFIG_COLOR_NUMBER)));
         IToken commentToken = new Token(new TextAttribute(
-            editor.getSyntaxManager().getColor(SQLSyntaxManager.CONFIG_COLOR_COMMENT)));
+            getColor(SQLSyntaxManager.CONFIG_COLOR_COMMENT)));
         SQLDelimiterToken delimToken = new SQLDelimiterToken(new TextAttribute(
-            editor.getSyntaxManager().getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER, SWT.COLOR_RED)));
+            getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER, SWT.COLOR_RED)));
         IToken otherToken = new Token(new TextAttribute(
-            editor.getSyntaxManager().getColor(SQLSyntaxManager.CONFIG_COLOR_TEXT)));
+            getColor(SQLSyntaxManager.CONFIG_COLOR_TEXT)));
 
         setDefaultReturnToken(otherToken);
         List<IRule> rules = new ArrayList<IRule>();
@@ -296,13 +295,13 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
 
         // Add word rule for keywords, types, and constants.
         WordRule wordRule = new WordRule(new SQLWordDetector(), otherToken, true);
-        for (String reserverWord : syntaxManager.getReservedWords()) {
+        for (String reserverWord : getReservedWords()) {
             wordRule.addWord(reserverWord, keywordToken);
         }
-        for (String function : syntaxManager.getFunctions()) {
+        for (String function : getFunctions()) {
             wordRule.addWord(function, typeToken);
         }
-        for (String type : syntaxManager.getTypes()) {
+        for (String type : getTypes()) {
             wordRule.addWord(type, typeToken);
         }
         rules.add(wordRule);
