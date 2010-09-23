@@ -115,12 +115,8 @@
       <plugin id="org.eclipse.ui"/>
       <plugin id="org.eclipse.ui.carbon" fragment="true"/>
       <plugin id="org.eclipse.ui.cocoa" fragment="true"/>
-      <plugin id="org.eclipse.ui.editors"/>
       <plugin id="org.eclipse.ui.forms"/>
-      <plugin id="org.eclipse.ui.ide"/>
-      <plugin id="org.eclipse.ui.navigator"/>
       <plugin id="org.eclipse.ui.views"/>
-      <plugin id="org.eclipse.ui.views.log"/>
       <plugin id="org.eclipse.ui.views.properties.tabbed"/>
       <plugin id="org.eclipse.ui.win32" fragment="true"/>
       <plugin id="org.eclipse.ui.workbench"/>

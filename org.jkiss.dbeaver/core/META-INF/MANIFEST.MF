@@ -95,14 +95,12 @@ Bundle-ClassPath: lib/jkiss-utils-1.0.1.jar,
  .
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.5.0",
  org.eclipse.core.resources;bundle-version="3.5.0",
- org.eclipse.ui;bundle-version="3.5.0",
- org.eclipse.ui.views.log;bundle-version="1.0.0",
- org.eclipse.ui.editors;bundle-version="3.5.0",
- org.eclipse.jface.text;bundle-version="3.5.0",
- org.eclipse.ui.ide;bundle-version="3.5.0",
- org.eclipse.ui.views.properties.tabbed;bundle-version="3.5.0",
  org.eclipse.core.expressions,
+ org.eclipse.ui;bundle-version="3.5.0",
+ org.eclipse.ui.workbench,
+ org.eclipse.ui.workbench.texteditor;bundle-version="3.6.0",
+ org.eclipse.ui.views.properties.tabbed;bundle-version="3.5.0",
  org.eclipse.swt,
  org.eclipse.jface,
- org.eclipse.ui.workbench
+ org.eclipse.jface.text;bundle-version="3.5.0"
 Bundle-Vendor: Serge Rieder
