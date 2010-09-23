@@ -50,7 +50,6 @@
       <plugin id="org.eclipse.core.databinding.observable"/>
       <plugin id="org.eclipse.core.databinding.property"/>
       <plugin id="org.eclipse.core.expressions"/>
-      <plugin id="org.eclipse.core.filebuffers"/>
       <plugin id="org.eclipse.core.filesystem"/>
       <plugin id="org.eclipse.core.filesystem.aix.ppc" fragment="true"/>
       <plugin id="org.eclipse.core.filesystem.hpux.ia64_32" fragment="true"/>
@@ -67,31 +66,16 @@
       <plugin id="org.eclipse.core.runtime"/>
       <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
       <plugin id="org.eclipse.draw2d"/>
-      <plugin id="org.eclipse.ecf"/>
-      <plugin id="org.eclipse.ecf.filetransfer"/>
-      <plugin id="org.eclipse.ecf.identity"/>
-      <plugin id="org.eclipse.ecf.provider.filetransfer"/>
-      <plugin id="org.eclipse.ecf.provider.filetransfer.ssl" fragment="true"/>
-      <plugin id="org.eclipse.ecf.ssl" fragment="true"/>
       <plugin id="org.eclipse.equinox.app"/>
       <plugin id="org.eclipse.equinox.common"/>
-      <plugin id="org.eclipse.equinox.p2.core"/>
-      <plugin id="org.eclipse.equinox.p2.engine"/>
-      <plugin id="org.eclipse.equinox.p2.metadata"/>
-      <plugin id="org.eclipse.equinox.p2.metadata.repository"/>
-      <plugin id="org.eclipse.equinox.p2.repository"/>
       <plugin id="org.eclipse.equinox.preferences"/>
       <plugin id="org.eclipse.equinox.registry"/>
-      <plugin id="org.eclipse.equinox.security"/>
-      <plugin id="org.eclipse.equinox.security.macosx" fragment="true"/>
-      <plugin id="org.eclipse.equinox.security.win32.x86" fragment="true"/>
       <plugin id="org.eclipse.gef"/>
       <plugin id="org.eclipse.help"/>
       <plugin id="org.eclipse.jface"/>
       <plugin id="org.eclipse.jface.databinding"/>
       <plugin id="org.eclipse.jface.text"/>
       <plugin id="org.eclipse.osgi"/>
-      <plugin id="org.eclipse.osgi.services"/>
       <plugin id="org.eclipse.swt"/>
       <plugin id="org.eclipse.swt.carbon.macosx" fragment="true"/>
       <plugin id="org.eclipse.swt.cocoa.macosx" fragment="true"/>
@@ -118,7 +102,6 @@
       <plugin id="org.eclipse.ui.forms"/>
       <plugin id="org.eclipse.ui.views"/>
       <plugin id="org.eclipse.ui.views.properties.tabbed"/>
-      <plugin id="org.eclipse.ui.win32" fragment="true"/>
       <plugin id="org.eclipse.ui.workbench"/>
       <plugin id="org.eclipse.ui.workbench.texteditor"/>
       <plugin id="org.jkiss.dbeaver.core"/>
