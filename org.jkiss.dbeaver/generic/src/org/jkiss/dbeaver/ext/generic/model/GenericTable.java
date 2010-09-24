@@ -327,14 +327,32 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         }
     }
 
+    private static class ForeignKeyInfo {
+        String pkTableCatalog;
+        String pkTableSchema;
+        String pkTableName;
+        String pkColumnName;
+        String fkTableCatalog;
+        String fkTableSchema;
+        String fkTableName;
+        String fkColumnName;
+        int keySeq;
+        int updateRuleNum;
+        int deleteRuleNum;
+        String fkName;
+        String pkName;
+        int defferabilityNum;
+    }
+
     private List<GenericForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)
         throws DBException
     {
         JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
-            List<GenericForeignKey> fkList = new ArrayList<GenericForeignKey>();
-            Map<String, GenericForeignKey> fkMap = new HashMap<String, GenericForeignKey>();
-            Map<String, GenericPrimaryKey> pkMap = new HashMap<String, GenericPrimaryKey>();
+            // Read foreign keys in two passes
+            // First read entire resultset to prevent recursive metadata requests
+            // some drivers don't like it
+            List<ForeignKeyInfo> fkInfos = new ArrayList<ForeignKeyInfo>();
             JDBCDatabaseMetaData metaData = context.getMetaData();
             // Load indexes
             JDBCResultSet dbResult;
@@ -351,123 +369,130 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
             }
             try {
                 while (dbResult.next()) {
-                    String pkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_CAT);
-                    String pkTableSchema = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_SCHEM);
-                    String pkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_NAME);
-                    String pkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKCOLUMN_NAME);
-                    String fkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_CAT);
-                    String fkTableSchema = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_SCHEM);
-                    String fkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_NAME);
-                    String fkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKCOLUMN_NAME);
-                    int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
-                    int updateRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.UPDATE_RULE);
-                    int deleteRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DELETE_RULE);
-                    String fkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FK_NAME);
-                    String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
-                    int defferabilityNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DEFERRABILITY);
-
-                    DBSConstraintCascade deleteRule = getCascadeFromNum(deleteRuleNum);
-                    DBSConstraintCascade updateRule = getCascadeFromNum(updateRuleNum);
-                    DBSConstraintDefferability defferability;
-                    switch (defferabilityNum) {
-                        case DatabaseMetaData.importedKeyInitiallyDeferred: defferability = DBSConstraintDefferability.INITIALLY_DEFERRED; break;
-                        case DatabaseMetaData.importedKeyInitiallyImmediate: defferability = DBSConstraintDefferability.INITIALLY_IMMEDIATE; break;
-                        case DatabaseMetaData.importedKeyNotDeferrable: defferability = DBSConstraintDefferability.NOT_DEFERRABLE; break;
-                        default: defferability = DBSConstraintDefferability.UNKNOWN; break;
-                    }
-
-                    if (pkTableName == null) {
-                        log.debug("Null PK table name");
-                        continue;
-                    }
-                    String pkTableFullName = DBUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName);
-                    GenericTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableSchema, pkTableName);
-                    if (pkTable == null) {
-                        log.warn("Can't find PK table " + pkTableFullName);
-                        continue;
-                    }
-                    if (fkTableName == null) {
-                        log.debug("Null FK table name");
-                        continue;
-                    }
-                    String fkTableFullName = DBUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName);
-                    GenericTable fkTable = getDataSource().findTable(monitor, fkTableCatalog, fkTableSchema, fkTableName);
-                    if (fkTable == null) {
-                        log.warn("Can't find FK table " + fkTableFullName);
-                        continue;
-                    }
-                    GenericTableColumn pkColumn = pkTable.getColumn(monitor, pkColumnName);
-                    if (pkColumn == null) {
-                        log.warn("Can't find PK table " + DBUtils.getFullTableName(getDataSource(), pkTableCatalog, pkTableSchema, pkTableName) + " column " + pkColumnName);
-                        continue;
-                    }
-                    GenericTableColumn fkColumn = fkTable.getColumn(monitor, fkColumnName);
-                    if (fkColumn == null) {
-                        log.warn("Can't find FK table " + DBUtils.getFullTableName(getDataSource(), fkTableCatalog, fkTableSchema, fkTableName) + " column " + fkColumnName);
-                        continue;
-                    }
-
-                    // Find PK
-                    GenericPrimaryKey pk = null;
-                    if (pkName != null) {
-                        pk = DBUtils.findObject(pkTable.getUniqueKeys(monitor), pkName);
-                        if (pk == null) {
-                            log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
-                        }
-                    }
-                    if (pk == null) {
-                        List<GenericPrimaryKey> uniqueKeys = pkTable.getUniqueKeys(monitor);
-                        if (uniqueKeys != null) {
-                            for (GenericPrimaryKey pkConstraint : uniqueKeys) {
-                                if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
-                                    pk = pkConstraint;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (pk == null) {
-                        log.warn("Could not find unique key for table " + pkTable.getFullQualifiedName() + " column " + pkColumn.getName());
-                        // Too bad. But we have to create new fake PK for this FK
-                        String pkFullName = pkTableFullName + "." + pkName;
-                        pk = pkMap.get(pkFullName);
-                        if (pk == null) {
-                            pk = new GenericPrimaryKey(pkTable, pkName, null, DBSConstraintType.PRIMARY_KEY);
-                            pkMap.put(pkFullName, pk);
-                            // Add this fake constraint to it's owner
-                            pk.getTable().addConstraint(pk);
-                        }
-                        pk.addColumn(new GenericConstraintColumn(pk, pkColumn, keySeq));
-                    }
-
-                    // Find (or create) FK
-                    GenericForeignKey fk = null;
-                    if (references) {
-                        fk = DBUtils.findObject(fkTable.getForeignKeys(monitor), fkName);
-                        if (fk == null) {
-                            log.warn("Could not find foreign key '" + fkName + "' for table " + fkTable.getFullQualifiedName());
-                            // No choice, we have to create fake foreign key :(
-                        } else {
-                            if (!fkList.contains(fk)) {
-                                fkList.add(fk);
-                            }
-                        }
-                    }
-
-                    if (fk == null) {
-                        fk = fkMap.get(fkName);
-                        if (fk == null) {
-                            fk = new GenericForeignKey(fkTable, fkName, null, pk, deleteRule, updateRule, defferability);
-                            fkMap.put(fkName, fk);
-                            fkList.add(fk);
-                        }
-                        GenericForeignKeyColumn fkColumnInfo = new GenericForeignKeyColumn(fk, fkColumn, keySeq, pkColumn);
-                        fk.addColumn(fkColumnInfo);
-                    }
+                    ForeignKeyInfo fkInfo = new ForeignKeyInfo();
+                    fkInfo.pkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_CAT);
+                    fkInfo.pkTableSchema = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_SCHEM);
+                    fkInfo.pkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_NAME);
+                    fkInfo.pkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKCOLUMN_NAME);
+                    fkInfo.fkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_CAT);
+                    fkInfo.fkTableSchema = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_SCHEM);
+                    fkInfo.fkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_NAME);
+                    fkInfo.fkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKCOLUMN_NAME);
+                    fkInfo.keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
+                    fkInfo.updateRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.UPDATE_RULE);
+                    fkInfo.deleteRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DELETE_RULE);
+                    fkInfo.fkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FK_NAME);
+                    fkInfo.pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
+                    fkInfo.defferabilityNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DEFERRABILITY);
+                    fkInfos.add(fkInfo);
                 }
             }
             finally {
                 dbResult.close();
+            }
+
+            List<GenericForeignKey> fkList = new ArrayList<GenericForeignKey>();
+            Map<String, GenericForeignKey> fkMap = new HashMap<String, GenericForeignKey>();
+            Map<String, GenericPrimaryKey> pkMap = new HashMap<String, GenericPrimaryKey>();
+            for (ForeignKeyInfo info : fkInfos) {
+                DBSConstraintCascade deleteRule = getCascadeFromNum(info.deleteRuleNum);
+                DBSConstraintCascade updateRule = getCascadeFromNum(info.updateRuleNum);
+                DBSConstraintDefferability defferability;
+                switch (info.defferabilityNum) {
+                    case DatabaseMetaData.importedKeyInitiallyDeferred: defferability = DBSConstraintDefferability.INITIALLY_DEFERRED; break;
+                    case DatabaseMetaData.importedKeyInitiallyImmediate: defferability = DBSConstraintDefferability.INITIALLY_IMMEDIATE; break;
+                    case DatabaseMetaData.importedKeyNotDeferrable: defferability = DBSConstraintDefferability.NOT_DEFERRABLE; break;
+                    default: defferability = DBSConstraintDefferability.UNKNOWN; break;
+                }
+
+                if (info.pkTableName == null) {
+                    log.debug("Null PK table name");
+                    continue;
+                }
+                String pkTableFullName = DBUtils.getFullTableName(getDataSource(), info.pkTableCatalog, info.pkTableSchema, info.pkTableName);
+                GenericTable pkTable = getDataSource().findTable(monitor, info.pkTableCatalog, info.pkTableSchema, info.pkTableName);
+                if (pkTable == null) {
+                    log.warn("Can't find PK table " + pkTableFullName);
+                    continue;
+                }
+                if (info.fkTableName == null) {
+                    log.debug("Null FK table name");
+                    continue;
+                }
+                String fkTableFullName = DBUtils.getFullTableName(getDataSource(), info.fkTableCatalog, info.fkTableSchema, info.fkTableName);
+                GenericTable fkTable = getDataSource().findTable(monitor, info.fkTableCatalog, info.fkTableSchema, info.fkTableName);
+                if (fkTable == null) {
+                    log.warn("Can't find FK table " + fkTableFullName);
+                    continue;
+                }
+                GenericTableColumn pkColumn = pkTable.getColumn(monitor, info.pkColumnName);
+                if (pkColumn == null) {
+                    log.warn("Can't find PK table " + DBUtils.getFullTableName(getDataSource(), info.pkTableCatalog, info.pkTableSchema, info.pkTableName) + " column " + info.pkColumnName);
+                    continue;
+                }
+                GenericTableColumn fkColumn = fkTable.getColumn(monitor, info.fkColumnName);
+                if (fkColumn == null) {
+                    log.warn("Can't find FK table " + DBUtils.getFullTableName(getDataSource(), info.fkTableCatalog, info.fkTableSchema, info.fkTableName) + " column " + info.fkColumnName);
+                    continue;
+                }
+
+                // Find PK
+                GenericPrimaryKey pk = null;
+                if (info.pkName != null) {
+                    pk = DBUtils.findObject(pkTable.getUniqueKeys(monitor), info.pkName);
+                    if (pk == null) {
+                        log.warn("Unique key '" + info.pkName + "' not found in table " + pkTable.getFullQualifiedName());
+                    }
+                }
+                if (pk == null) {
+                    List<GenericPrimaryKey> uniqueKeys = pkTable.getUniqueKeys(monitor);
+                    if (uniqueKeys != null) {
+                        for (GenericPrimaryKey pkConstraint : uniqueKeys) {
+                            if (pkConstraint.getConstraintType().isUnique() && pkConstraint.getColumn(monitor, pkColumn) != null) {
+                                pk = pkConstraint;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (pk == null) {
+                    log.warn("Could not find unique key for table " + pkTable.getFullQualifiedName() + " column " + pkColumn.getName());
+                    // Too bad. But we have to create new fake PK for this FK
+                    String pkFullName = pkTableFullName + "." + info.pkName;
+                    pk = pkMap.get(pkFullName);
+                    if (pk == null) {
+                        pk = new GenericPrimaryKey(pkTable, info.pkName, null, DBSConstraintType.PRIMARY_KEY);
+                        pkMap.put(pkFullName, pk);
+                        // Add this fake constraint to it's owner
+                        pk.getTable().addConstraint(pk);
+                    }
+                    pk.addColumn(new GenericConstraintColumn(pk, pkColumn, info.keySeq));
+                }
+
+                // Find (or create) FK
+                GenericForeignKey fk = null;
+                if (references) {
+                    fk = DBUtils.findObject(fkTable.getForeignKeys(monitor), info.fkName);
+                    if (fk == null) {
+                        log.warn("Could not find foreign key '" + info.fkName + "' for table " + fkTable.getFullQualifiedName());
+                        // No choice, we have to create fake foreign key :(
+                    } else {
+                        if (!fkList.contains(fk)) {
+                            fkList.add(fk);
+                        }
+                    }
+                }
+
+                if (fk == null) {
+                    fk = fkMap.get(info.fkName);
+                    if (fk == null) {
+                        fk = new GenericForeignKey(fkTable, info.fkName, null, pk, deleteRule, updateRule, defferability);
+                        fkMap.put(info.fkName, fk);
+                        fkList.add(fk);
+                    }
+                    GenericForeignKeyColumn fkColumnInfo = new GenericForeignKeyColumn(fk, fkColumn, info.keySeq, pkColumn);
+                    fk.addColumn(fkColumnInfo);
+                }
             }
 
             return fkList;
