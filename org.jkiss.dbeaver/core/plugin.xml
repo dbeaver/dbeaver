@@ -522,12 +522,6 @@
         </key>
 
         <key
-                commandId="org.eclipse.ui.navigate.showInQuickMenu"
-                contextId="org.eclipse.ui.contexts.window"
-                schemeId="DBeaverKeyScheme"
-                sequence="Alt+F1">
-        </key>
-        <key
                 commandId="org.eclipse.ui.navigate.backwardHistory"
                 contextId="org.eclipse.ui.contexts.window"
                 schemeId="DBeaverKeyScheme"
@@ -564,12 +558,6 @@
                 sequence="SHIFT+F3">
         </key>
         <key
-                commandId="org.eclipse.ui.navigate.openResource"
-                contextId="org.eclipse.ui.contexts.window"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+SHIFT+N">
-        </key>
-        <key
                 commandId="org.eclipse.ui.edit.text.moveLineDown"
                 contextId="org.eclipse.ui.textEditorScope"
                 schemeId="DBeaverKeyScheme"
@@ -580,12 +568,6 @@
                 contextId="org.eclipse.ui.textEditorScope"
                 schemeId="DBeaverKeyScheme"
                 sequence="CTRL+SHIFT+ARROW_UP">
-        </key>
-        <key
-                commandId="org.eclipse.ui.file.newQuickMenu"
-                contextId="org.eclipse.ui.contexts.window"
-                schemeId="DBeaverKeyScheme"
-                sequence="ALT+INSERT">
         </key>
         <key
                 commandId="org.eclipse.ui.edit.text.copyLineUp"
@@ -616,42 +598,6 @@
                 contextId="org.eclipse.ui.textEditorScope"
                 schemeId="DBeaverKeyScheme"
                 sequence="ALT+F3">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.text.folding.expand"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+=">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.text.folding.expand_all"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+SHIFT+=">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.text.folding.expand_all"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+SHIFT+NUMPAD_ADD">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.text.folding.collapse"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+-">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.text.folding.collapse_all"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+SHIFT+-">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.text.folding.collapse_all"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+SHIFT+NUMPAD_SUBTRACT">
         </key>
         <key
                 commandId="org.eclipse.ui.window.preferences"
@@ -785,19 +731,24 @@
         </page>
         
         <page
-                category="org.eclipse.ui.preferencePages.Editors"
+                id="org.jkiss.dbeaver.preferences.editors"
+                class="org.jkiss.dbeaver.ui.preferences.PrefPageMain"
+                name="Editors">
+        </page>
+        <page
+                category="org.jkiss.dbeaver.preferences.editors"
                 id="org.jkiss.dbeaver.preferences.main.sqleditor"
                 class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor"
                 name="SQL Editor">
         </page>
         <page
-                category="org.eclipse.ui.preferencePages.Editors"
+                category="org.jkiss.dbeaver.preferences.editors"
                 id="org.jkiss.dbeaver.preferences.main.contenteditor"
                 class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor"
                 name="Content Editor">
         </page>
         <page
-                category="org.eclipse.ui.preferencePages.Editors"
+                category="org.jkiss.dbeaver.preferences.editors"
                 id="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
                 class="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
                 name="Binary Editor">
