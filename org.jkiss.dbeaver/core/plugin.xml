@@ -513,7 +513,7 @@
         <key
                 commandId="org.jkiss.dbeaver.core.new.sql.editor"
                 schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-                sequence="CTRL+ALT+Q">
+                sequence="CTRL+L">
         </key>
         <key
                 commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"

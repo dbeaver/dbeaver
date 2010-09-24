@@ -95,9 +95,12 @@ public abstract class DBNTreeNode extends DBNNode {
     public boolean hasChildren(DBRProgressMonitor monitor, DBXTreeNode childType)
         throws DBException
     {
-        for (DBNTreeNode child : getChildren(monitor)) {
-            if (child.getMeta() == childType) {
-                return true;
+        List<DBNTreeNode> children = getChildren(monitor);
+        if (!CommonUtils.isEmpty(children)) {
+            for (DBNTreeNode child : children) {
+                if (child.getMeta() == childType) {
+                    return true;
+                }
             }
         }
         return false;

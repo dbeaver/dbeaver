@@ -16,10 +16,7 @@ import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
-import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -172,33 +169,37 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 
         // Add all nested folders as tabs
         DBNNode node = getEditorInput().getTreeNode();
-        try {
-            List<? extends DBNNode> children = node.getChildren(monitor);
-            if (children != null) {
-                for (DBNNode child : children) {
-                    if (child instanceof DBNTreeFolder) {
-                        monitor.subTask("Add folder '" + child.getNodeName() + "'");
-                        tabs.add(new TabInfo(child));
+        if (node instanceof DBNDataSource && !((DBNDataSource)node).getDataSourceContainer().isConnected()) {
+            // Do not add children tabs
+        } else {
+            try {
+                List<? extends DBNNode> children = node.getChildren(monitor);
+                if (children != null) {
+                    for (DBNNode child : children) {
+                        if (child instanceof DBNTreeFolder) {
+                            monitor.subTask("Add folder '" + child.getNodeName() + "'");
+                            tabs.add(new TabInfo(child));
+                        }
                     }
                 }
+            } catch (DBException e) {
+                log.error("Error initializing entity editor");
             }
-        } catch (DBException e) {
-            log.error("Error initializing entity editor");
-        }
-        // Add itself as tab (if it has child items)
-        if (node instanceof DBNTreeNode) {
-            DBNTreeNode treeNode = (DBNTreeNode)node;
-            List<DBXTreeNode> subNodes = treeNode.getMeta().getChildren();
-            if (subNodes != null) {
-                for (DBXTreeNode child : subNodes) {
-                    if (child instanceof DBXTreeItem) {
-                        try {
-                            if (!((DBXTreeItem)child).isOptional() || treeNode.hasChildren(monitor, child)) {
-                                monitor.subTask("Add node '" + node.getNodeName() + "'");
-                                tabs.add(new TabInfo(node, child));
+            // Add itself as tab (if it has child items)
+            if (node instanceof DBNTreeNode) {
+                DBNTreeNode treeNode = (DBNTreeNode)node;
+                List<DBXTreeNode> subNodes = treeNode.getMeta().getChildren();
+                if (subNodes != null) {
+                    for (DBXTreeNode child : subNodes) {
+                        if (child instanceof DBXTreeItem) {
+                            try {
+                                if (!((DBXTreeItem)child).isOptional() || treeNode.hasChildren(monitor, child)) {
+                                    monitor.subTask("Add node '" + node.getNodeName() + "'");
+                                    tabs.add(new TabInfo(node, child));
+                                }
+                            } catch (DBException e) {
+                                log.debug("Can't add child items tab", e);
                             }
-                        } catch (DBException e) {
-                            log.debug("Can't add child items tab", e);
                         }
                     }
                 }

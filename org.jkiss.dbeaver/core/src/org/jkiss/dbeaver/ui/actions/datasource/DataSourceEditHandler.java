@@ -19,7 +19,7 @@ public class DataSourceEditHandler extends DataSourceHandler
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false);
-        if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
+        if (dataSourceContainer != null) {
             execute(HandlerUtil.getActiveWorkbenchWindow(event), dataSourceContainer);
         }
         return null;

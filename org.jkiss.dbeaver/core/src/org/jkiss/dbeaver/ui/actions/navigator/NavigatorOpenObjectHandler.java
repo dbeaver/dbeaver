@@ -12,6 +12,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -22,6 +23,7 @@ import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.editors.folder.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.folder.FolderEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
+import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 
 public class NavigatorOpenObjectHandler extends AbstractHandler {
 
@@ -40,6 +42,7 @@ public class NavigatorOpenObjectHandler extends AbstractHandler {
 
     public static void openEntityEditor(DBNNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
     {
+        IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
         try {
             for (IEditorReference ref : workbenchWindow.getActivePage().getEditorReferences()) {
                 if (ref.getEditorInput() instanceof EntityEditorInput && ((EntityEditorInput)ref.getEditorInput()).getTreeNode() == selectedNode) {
@@ -69,6 +72,14 @@ public class NavigatorOpenObjectHandler extends AbstractHandler {
             }
         } catch (Exception ex) {
             log.error("Can't open editor", ex);
+        }
+        finally {
+            // Reactivate navigator
+            // Actually it still focused but we need to use it's selection
+            // I think it is an eclipse bug
+            if (oldActivePart instanceof DatabaseNavigatorView) {
+                workbenchWindow.getActivePage().activate(oldActivePart);
+            }
         }
     }
 
