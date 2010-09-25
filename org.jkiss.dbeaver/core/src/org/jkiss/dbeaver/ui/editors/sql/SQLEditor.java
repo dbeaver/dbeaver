@@ -229,6 +229,7 @@ public class SQLEditor extends BaseTextEditor
         sashForm.setSashWidth(10);
 
         super.createPartControl(sashForm);
+
         editorControl = sashForm.getChildren()[0];
 
         {

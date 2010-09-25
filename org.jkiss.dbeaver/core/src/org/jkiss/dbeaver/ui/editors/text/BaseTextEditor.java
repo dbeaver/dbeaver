@@ -5,7 +5,10 @@
 package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.StatusTextEditor;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 /**
  * Abstract text editor.
@@ -21,6 +24,14 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         }
 */
         return super.getAdapter(required);
+    }
+
+    @Override
+    public void createPartControl(Composite parent)
+    {
+        setPreferenceStore(DBeaverCore.getInstance().getGlobalPreferenceStore());
+
+        super.createPartControl(parent);
     }
 
     protected void editorContextMenuAboutToShow(IMenuManager menu)

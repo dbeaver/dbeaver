@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
+import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
@@ -263,13 +264,17 @@ public class ViewUtils
                     StringBuilder buf = new StringBuilder();
                     for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {
                         Object nextSelected = i.next();
-                        if (nextSelected == null) {
+                        if (!(nextSelected instanceof DBNNode)) {
+                            continue;
+                        }
+                        DBSObject object = ((DBNNode)nextSelected).getObject();
+                        if (object == null) {
                             continue;
                         }
                         if (buf.length() > 0) {
                             buf.append(lineSeparator);
                         }
-                        buf.append(convertObjectToString(nextSelected));
+                        buf.append(object instanceof DBSEntityQualified ? ((DBSEntityQualified)object).getFullQualifiedName() : object.getName());
                     }
                     event.data = buf.toString();
                 } else {
