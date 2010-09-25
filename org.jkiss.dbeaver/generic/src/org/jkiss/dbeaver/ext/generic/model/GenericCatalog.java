@@ -123,6 +123,7 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException {
         super.refreshEntity(monitor);
         this.schemas = null;
+        this.isInitialized = false;
         return true;
     }
 }
