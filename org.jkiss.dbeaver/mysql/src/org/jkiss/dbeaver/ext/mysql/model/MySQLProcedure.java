@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -97,5 +98,12 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     public void cacheColumns(List<MySQLProcedureColumn> columns)
     {
         this.columns = columns;
+    }
+
+    public String getFullQualifiedName()
+    {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            getContainer().getName(),
+            getName());
     }
 }

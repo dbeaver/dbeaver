@@ -12,7 +12,7 @@ import java.util.Collection;
 /**
  * DBSIndex
  */
-public interface DBSProcedure extends DBSEntity
+public interface DBSProcedure extends DBSEntityQualified
 {
     DBSEntityContainer getContainer();
 

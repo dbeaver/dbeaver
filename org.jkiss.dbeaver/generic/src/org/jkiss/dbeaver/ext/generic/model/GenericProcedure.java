@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -70,4 +71,11 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         this.columns = columns;
     }
 
+    public String getFullQualifiedName()
+    {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            getCatalog() == null ? null : getCatalog().getName(),
+            getSchema() == null ? null : getSchema().getName(),
+            getName());
+    }
 }

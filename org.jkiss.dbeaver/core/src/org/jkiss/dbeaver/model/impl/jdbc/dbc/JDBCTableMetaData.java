@@ -96,7 +96,7 @@ public class JDBCTableMetaData implements DBCTableMetaData {
 
     public String getFullQualifiedName()
     {
-        return DBUtils.getFullTableName(
+        return DBUtils.getFullQualifiedName(
             resultSetMetaData.getResultSet().getContext().getDataSource(),
             catalogName,
             schemaName,

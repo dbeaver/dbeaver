@@ -2,12 +2,14 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.struct;
+
+import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
  * Named object extension
  */
-public interface DBPNamedObjectQualified extends DBPNamedObject {
+public interface DBSEntityQualified extends DBSEntity {
 
     /**
      * Entity full qualified name.

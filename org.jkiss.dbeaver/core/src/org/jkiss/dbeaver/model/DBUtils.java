@@ -55,18 +55,19 @@ public final class DBUtils {
         return str;
     }
 
-    public static String getFullTableName(DBPDataSource dataSource, String catalogName, String schemaName,
-                                          String tableName)
+    public static String getFullQualifiedName(DBPDataSource dataSource, String ... names)
     {
         String catalogSeparator = dataSource.getInfo().getCatalogSeparator();
         StringBuilder name = new StringBuilder();
-        if (!CommonUtils.isEmpty(catalogName)) {
-            name.append(DBUtils.getQuotedIdentifier(dataSource, catalogName)).append(catalogSeparator);
+        for (String namePart : names) {
+            if (namePart == null) {
+                continue;
+            }
+            if (name.length() > 0) {
+                name.append(catalogSeparator);
+            }
+            name.append(DBUtils.getQuotedIdentifier(dataSource, namePart));
         }
-        if (!CommonUtils.isEmpty(schemaName)) {
-            name.append(DBUtils.getQuotedIdentifier(dataSource, schemaName)).append(catalogSeparator);
-        }
-        name.append(DBUtils.getQuotedIdentifier(dataSource, tableName));
         return name.toString();
     }
 

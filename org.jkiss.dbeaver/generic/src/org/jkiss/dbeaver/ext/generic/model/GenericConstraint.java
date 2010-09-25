@@ -1,5 +1,10 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
 
@@ -20,6 +25,15 @@ public abstract class GenericConstraint extends JDBCConstraint<GenericDataSource
     GenericConstraint(GenericConstraint constraint)
     {
         super(constraint.getTable(), constraint.getName(), constraint.getDescription(), constraint.getConstraintType());
+    }
+
+    public String getFullQualifiedName()
+    {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            getTable().getCatalog() == null ? null : getTable().getCatalog().getName(),
+            getTable().getSchema() == null ? null : getTable().getSchema().getName(),
+            getTable().getName(),
+            getName());
     }
 
 }

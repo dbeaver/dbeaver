@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPNamedObjectQualified;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
@@ -13,7 +12,7 @@ import java.util.Collection;
 /**
  * Table
  */
-public interface DBSTable extends DBSEntity, DBPNamedObjectQualified
+public interface DBSTable extends DBSEntityQualified
 {
     String getTableType();
 

@@ -11,7 +11,7 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBPNamedObjectQualified;
+import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public class DBNAdapterFactory implements IAdapterFactory
 {
-    private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBPNamedObjectQualified.class, DBPObject.class, DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class, IPropertySource.class, IWorkbenchAdapter.class };
+    private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBSEntityQualified.class, DBPObject.class, DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class, IPropertySource.class, IWorkbenchAdapter.class };
 
     private Map<Object, IPropertySource> propertySourceCache = new Hashtable<Object, IPropertySource>();
 

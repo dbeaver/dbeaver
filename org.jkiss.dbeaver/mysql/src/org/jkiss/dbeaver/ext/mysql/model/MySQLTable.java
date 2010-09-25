@@ -65,9 +65,8 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
     public String getFullQualifiedName()
     {
-        return DBUtils.getFullTableName(getDataSource(),
+        return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer().getName(),
-            null,
             getName());
     }
 
@@ -374,13 +373,13 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                         default: defferability = DBSConstraintDefferability.UNKNOWN; break;
                     }
 
-                    String pkTableFullName = DBUtils.getFullTableName(getDataSource(), pkTableCatalog, null, pkTableName);
+                    String pkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), pkTableCatalog, null, pkTableName);
                     MySQLTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableName);
                     if (pkTable == null) {
                         log.warn("Can't find PK table " + pkTableFullName);
                         continue;
                     }
-                    String fkTableFullName = DBUtils.getFullTableName(getDataSource(), fkTableCatalog, null, fkTableName);
+                    String fkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), fkTableCatalog, null, fkTableName);
                     MySQLTable fkTable = getDataSource().findTable(monitor, fkTableCatalog, fkTableName);
                     if (fkTable == null) {
                         log.warn("Can't find FK table " + fkTableFullName);
@@ -388,12 +387,12 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                     }
                     MySQLTableColumn pkColumn = pkTable.getColumn(monitor, pkColumnName);
                     if (pkColumn == null) {
-                        log.warn("Can't find PK table " + DBUtils.getFullTableName(getDataSource(), pkTableCatalog, null, pkTableName) + " column " + pkColumnName);
+                        log.warn("Can't find PK table " + DBUtils.getFullQualifiedName(getDataSource(), pkTableCatalog, null, pkTableName) + " column " + pkColumnName);
                         continue;
                     }
                     MySQLTableColumn fkColumn = fkTable.getColumn(monitor, fkColumnName);
                     if (fkColumn == null) {
-                        log.warn("Can't find FK table " + DBUtils.getFullTableName(getDataSource(), fkTableCatalog, null, fkTableName) + " column " + fkColumnName);
+                        log.warn("Can't find FK table " + DBUtils.getFullQualifiedName(getDataSource(), fkTableCatalog, null, fkTableName) + " column " + fkColumnName);
                         continue;
                     }
 

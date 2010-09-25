@@ -128,4 +128,13 @@ public class GenericIndex extends AbstractIndex
         columns.add(column);
     }
 
+    public String getFullQualifiedName()
+    {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            getTable().getCatalog() == null ? null : getTable().getCatalog().getName(),
+            getTable().getSchema() == null ? null : getTable().getSchema().getName(),
+            getTable().getName(),
+            getName());
+    }
+
 }

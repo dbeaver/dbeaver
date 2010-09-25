@@ -154,7 +154,7 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.DBPNamedObjectQualified"/>
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSEntityQualified"/>
                     </iterate>
                 </with>
             </activeWhen>
@@ -456,15 +456,10 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.core.databaseNavigator">
-            <command commandId="org.jkiss.dbeaver.core.open.object"/>
             <command commandId="org.jkiss.dbeaver.core.edit.connection">
                 <visibleWhen checkEnabled="true"/>
             </command>
 
-            <command commandId="org.jkiss.dbeaver.core.edit.copy.fullname">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-            
             <separator name="connection" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.connect">
                <visibleWhen>
@@ -501,6 +496,12 @@
 
         <!-- Data Export -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+            <command commandId="org.jkiss.dbeaver.core.open.object"/>
+
+            <command commandId="org.jkiss.dbeaver.core.edit.copy.fullname">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+
             <command commandId="org.jkiss.dbeaver.core.export.data">
                <visibleWhen checkEnabled="true"/>
             </command>
@@ -525,6 +526,8 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.row.previous" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_LEFT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.next" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_RIGHT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.last" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_RIGHT"/>
+
+        <key commandId="org.jkiss.dbeaver.core.edit.copy.fullname" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
 
         <key
                 commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"

@@ -1,5 +1,10 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintType;
@@ -29,5 +34,13 @@ public class MySQLConstraint extends JDBCConstraint<MySQLDataSource,MySQLTable> 
             columns = new ArrayList<MySQLConstraintColumn>();
         }
         this.columns.add(column);
+    }
+
+    public String getFullQualifiedName()
+    {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            getTable().getContainer().getName(),
+            getTable().getName(),
+            getName());
     }
 }

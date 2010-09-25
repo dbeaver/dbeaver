@@ -97,7 +97,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
 
     public String getFullQualifiedName()
     {
-        return DBUtils.getFullTableName(getDataSource(),
+        return DBUtils.getFullQualifiedName(getDataSource(),
             getCatalog() == null ? null : getCatalog().getName(),
             getSchema() == null ? null : getSchema().getName(),
             getName());
@@ -409,7 +409,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                     log.debug("Null PK table name");
                     continue;
                 }
-                String pkTableFullName = DBUtils.getFullTableName(getDataSource(), info.pkTableCatalog, info.pkTableSchema, info.pkTableName);
+                String pkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), info.pkTableCatalog, info.pkTableSchema, info.pkTableName);
                 GenericTable pkTable = getDataSource().findTable(monitor, info.pkTableCatalog, info.pkTableSchema, info.pkTableName);
                 if (pkTable == null) {
                     log.warn("Can't find PK table " + pkTableFullName);
@@ -419,7 +419,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                     log.debug("Null FK table name");
                     continue;
                 }
-                String fkTableFullName = DBUtils.getFullTableName(getDataSource(), info.fkTableCatalog, info.fkTableSchema, info.fkTableName);
+                String fkTableFullName = DBUtils.getFullQualifiedName(getDataSource(), info.fkTableCatalog, info.fkTableSchema, info.fkTableName);
                 GenericTable fkTable = getDataSource().findTable(monitor, info.fkTableCatalog, info.fkTableSchema, info.fkTableName);
                 if (fkTable == null) {
                     log.warn("Can't find FK table " + fkTableFullName);
@@ -427,12 +427,12 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
                 }
                 GenericTableColumn pkColumn = pkTable.getColumn(monitor, info.pkColumnName);
                 if (pkColumn == null) {
-                    log.warn("Can't find PK table " + DBUtils.getFullTableName(getDataSource(), info.pkTableCatalog, info.pkTableSchema, info.pkTableName) + " column " + info.pkColumnName);
+                    log.warn("Can't find PK table " + DBUtils.getFullQualifiedName(getDataSource(), info.pkTableCatalog, info.pkTableSchema, info.pkTableName) + " column " + info.pkColumnName);
                     continue;
                 }
                 GenericTableColumn fkColumn = fkTable.getColumn(monitor, info.fkColumnName);
                 if (fkColumn == null) {
-                    log.warn("Can't find FK table " + DBUtils.getFullTableName(getDataSource(), info.fkTableCatalog, info.fkTableSchema, info.fkTableName) + " column " + info.fkColumnName);
+                    log.warn("Can't find FK table " + DBUtils.getFullQualifiedName(getDataSource(), info.fkTableCatalog, info.fkTableSchema, info.fkTableName) + " column " + info.fkColumnName);
                     continue;
                 }
 

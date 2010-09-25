@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractForeignKey;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -51,5 +52,13 @@ public class MySQLForeignKey extends AbstractForeignKey<MySQLDataSource, MySQLTa
             columns = new ArrayList<MySQLForeignKeyColumn>();
         }
         columns.add(column);
+    }
+
+    public String getFullQualifiedName()
+    {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            getTable().getContainer().getName(),
+            getTable().getName(),
+            getName());
     }
 }
