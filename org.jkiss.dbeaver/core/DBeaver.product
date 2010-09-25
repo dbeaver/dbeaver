@@ -42,7 +42,7 @@
    </license>
 
    <plugins>
-      <plugin id="com.ibm.icu"/>
+      <plugin id="com.ibm.icu.base"/>
       <plugin id="org.eclipse.compare.core"/>
       <plugin id="org.eclipse.core.commands"/>
       <plugin id="org.eclipse.core.contenttype"/>
