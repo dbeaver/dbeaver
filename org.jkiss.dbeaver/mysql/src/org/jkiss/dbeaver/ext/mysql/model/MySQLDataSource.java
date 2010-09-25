@@ -275,37 +275,34 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         JDBCUtils.startConnectionBlock(monitor, this, "Find table names");
         JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
-            JDBCDatabaseMetaData metaData = context.getMetaData();
-
-            // Make table mask uppercase
-            tableMask = tableMask.toUpperCase();
-
             // Load tables
-            JDBCResultSet dbResult = metaData.getTables(
-                null,
-                null,
-                tableMask,
-                null);
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT TABLE_SCHEMA,TABLE_NAME,TABLE_TYPE,TABLE_COMMENT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '" + tableMask.toLowerCase() + "%'");
             try {
-                int tableNum = maxResults;
-                while (dbResult.next() && tableNum-- > 0) {
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    int tableNum = maxResults;
+                    while (dbResult.next() && tableNum-- > 0) {
+    
+                        String catalogName = JDBCUtils.safeGetString(dbResult, 1);
+                        String tableName = JDBCUtils.safeGetString(dbResult, 2);
+                        String tableType = JDBCUtils.safeGetString(dbResult, 3);
+                        String remarks = JDBCUtils.safeGetString(dbResult, 4);
 
-                    String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
-                    String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
-                    String tableType = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_TYPE);
-                    String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-
-                    pathList.add(
-                        new DBSTablePath(
-                            catalogName,
-                            null,
-                            tableName,
-                            tableType,
-                            remarks));
+                        pathList.add(
+                            new DBSTablePath(
+                                catalogName,
+                                null,
+                                tableName,
+                                tableType,
+                                remarks));
+                    }
                 }
-            }
-            finally {
-                dbResult.close();
+                finally {
+                    dbResult.close();
+                }
+            } finally {
+                dbStat.close();
             }
             return pathList;
         }

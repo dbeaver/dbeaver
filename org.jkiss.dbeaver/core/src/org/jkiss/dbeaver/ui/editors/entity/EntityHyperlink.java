@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerOpenObject;
 
@@ -44,20 +45,11 @@ public class EntityHyperlink implements IHyperlink
 
     public String getHyperlinkText()
     {
-        StringBuilder nodeFullName = new StringBuilder();
-        for (DBSObject t = object; t != null; t = t.getParentObject()) {
-            if (t instanceof DBNTreeFolder) {
-                continue;
-            }
-            if (t instanceof DBNDataSource) {
-                break;
-            }
-            if (object.getParentObject() != null) {
-                nodeFullName.insert(0, '.');
-            }
-            nodeFullName.insert(0, t.getName());
+        if (object instanceof DBSEntityQualified) {
+            return ((DBSEntityQualified)object).getFullQualifiedName();
+        } else {
+            return object.getName();
         }
-        return nodeFullName.toString();
     }
 
     public void open()

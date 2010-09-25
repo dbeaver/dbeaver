@@ -326,17 +326,16 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
     }
 
-    private ICompletionProposal makeProposalsFromObject(DBRProgressMonitor monitor, DBSObject child)
+    private ICompletionProposal makeProposalsFromObject(DBRProgressMonitor monitor, DBSObject object)
     {
-        String childName = child.getName();
-/*
-        String displayString = child.getDescription();
-        if (CommonUtils.isEmpty(displayString)) {
-            displayString = child.getName();
+        String objectName = object.getName();
+        String displayString = objectName;
+        if (object instanceof DBSEntityQualified) {
+            displayString = ((DBSEntityQualified)object).getFullQualifiedName();
         }
-*/
+
         StringBuilder info = new StringBuilder();
-        PropertyCollector collector = new PropertyCollector(child, false);
+        PropertyCollector collector = new PropertyCollector(object, false);
         collector.collectProperties();
         for (IPropertyDescriptor descriptor : collector.getPropertyDescriptors()) {
             Object propValue = collector.getPropertyValue(descriptor.getId());
@@ -349,14 +348,14 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             info.append("<br>");
         }
 
-        DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, child, true);
+        DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, object, true);
 /*
         return new ContextInformation(
                 node == null ? null : node.getNodeIconDefault(),
                 childName,
                 info.toString());
 */
-        return createCompletionProposal(childName, childName, info.toString(), node == null ? null : node.getNodeIconDefault());
+        return createCompletionProposal(objectName, displayString, info.toString(), node == null ? null : node.getNodeIconDefault());
     }
 
     /*

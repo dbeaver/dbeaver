@@ -105,4 +105,8 @@ public class MySQLEngine implements DBSObject {
         return dataSource;
     }
 
+    public String toString()
+    {
+        return name;
+    }
 }
