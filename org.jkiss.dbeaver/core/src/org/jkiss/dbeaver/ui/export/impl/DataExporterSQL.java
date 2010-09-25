@@ -66,7 +66,7 @@ public class DataExporterSQL extends DataExporterAbstract {
             rowsInStatement = 10;
         }
         out = site.getWriter();
-        rowDelimiter = System.getProperty("line.separator");
+        rowDelimiter = ContentUtils.getDefaultLineSeparator();
     }
 
     @Override

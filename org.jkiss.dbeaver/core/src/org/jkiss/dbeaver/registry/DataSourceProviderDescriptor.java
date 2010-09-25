@@ -238,6 +238,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         DBXTreeItem treeRoot = new DBXTreeItem(
             null,
             "Data Source",
+            "Data Source",
             config.getAttribute("path"),
             null,
             false,
@@ -274,6 +275,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             child = new DBXTreeItem(
                 parent,
                 config.getAttribute("label"),
+                config.getAttribute("itemLabel"),
                 config.getAttribute("path"),
                 config.getAttribute("property"),
                 "true".equals(config.getAttribute("optional")),

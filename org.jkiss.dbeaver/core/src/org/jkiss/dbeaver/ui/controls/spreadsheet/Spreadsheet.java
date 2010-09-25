@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.GridEditor;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -444,7 +445,7 @@ public class Spreadsheet extends Composite implements Listener {
 
     public void copySelectionToClipboard()
     {
-        String lineSeparator = System.getProperty("line.separator");
+        String lineSeparator = ContentUtils.getDefaultLineSeparator();
         List<Integer> colsSelected = new ArrayList<Integer>();
         int firstCol = Integer.MAX_VALUE, lastCol = Integer.MIN_VALUE;
         int firstRow = Integer.MAX_VALUE;

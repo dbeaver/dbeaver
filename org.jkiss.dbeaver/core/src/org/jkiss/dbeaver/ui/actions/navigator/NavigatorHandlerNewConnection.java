@@ -12,7 +12,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 
-public class NewConnectionHandler extends AbstractHandler {
+public class NavigatorHandlerNewConnection extends AbstractHandler {
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
 

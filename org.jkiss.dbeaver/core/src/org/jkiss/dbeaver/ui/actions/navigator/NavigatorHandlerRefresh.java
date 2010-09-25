@@ -25,11 +25,11 @@ import org.jkiss.dbeaver.runtime.AbstractJob;
 
 import java.util.*;
 
-public class NavigatorRefreshHandler extends AbstractHandler {
+public class NavigatorHandlerRefresh extends AbstractHandler {
 
-    static final Log log = LogFactory.getLog(NavigatorRefreshHandler.class);
+    static final Log log = LogFactory.getLog(NavigatorHandlerRefresh.class);
 
-    public NavigatorRefreshHandler() {
+    public NavigatorHandlerRefresh() {
 
     }
 

@@ -10,6 +10,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.text.BreakIterator;
 
@@ -47,7 +48,7 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
 //            _log.error(EditorMessages.error_badLocationException, e);
         }
 
-        return System.getProperty("line.separator"); //$NON-NLS-1$
+        return ContentUtils.getDefaultLineSeparator();
     }
 
     /**

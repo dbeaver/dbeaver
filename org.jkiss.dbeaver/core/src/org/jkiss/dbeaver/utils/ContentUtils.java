@@ -78,6 +78,11 @@ public class ContentUtils {
         return System.getProperty("file.encoding", DEFAULT_FILE_CHARSET);
     }
 
+    public static String getDefaultLineSeparator()
+    {
+        return System.getProperty("line.separator", "\n");
+    }
+
     public static IFile createTempContentFile(DBRProgressMonitor monitor, String fileName)
         throws IOException
     {

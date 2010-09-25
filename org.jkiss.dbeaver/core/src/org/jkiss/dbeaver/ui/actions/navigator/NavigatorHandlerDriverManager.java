@@ -10,7 +10,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverManagerDialog;
 
-public class DriverManagerHandler extends AbstractHandler {
+public class NavigatorHandlerDriverManager extends AbstractHandler {
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
 

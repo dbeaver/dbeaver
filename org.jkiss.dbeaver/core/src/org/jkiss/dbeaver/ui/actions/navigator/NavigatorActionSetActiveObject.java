@@ -19,7 +19,7 @@ import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class SetActiveObjectAction implements IActionDelegate
+public class NavigatorActionSetActiveObject implements IActionDelegate
 {
     private ISelection selection;
 

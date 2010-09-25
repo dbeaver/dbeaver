@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSForeignKeyColumn;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorOpenObjectHandler;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerOpenObject;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
@@ -212,7 +212,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                     {
                         DBNNode tableNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, refConstraint.getReferencedKey().getTable(), true);
                         if (tableNode != null) {
-                            NavigatorOpenObjectHandler.openEntityEditor(tableNode, DatabaseDataEditor.class.getName(), window);
+                            NavigatorHandlerOpenObject.openEntityEditor(tableNode, DatabaseDataEditor.class.getName(), window);
                         }
                     }
                 });

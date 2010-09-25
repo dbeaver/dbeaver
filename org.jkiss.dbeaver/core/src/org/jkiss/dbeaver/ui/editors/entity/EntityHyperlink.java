@@ -14,7 +14,7 @@ import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorOpenObjectHandler;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerOpenObject;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -72,7 +72,7 @@ public class EntityHyperlink implements IHyperlink
                     true
                 );
                 if (node != null) {
-                    NavigatorOpenObjectHandler.openEntityEditor(node, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                    NavigatorHandlerOpenObject.openEntityEditor(node, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                 }
             }
         });

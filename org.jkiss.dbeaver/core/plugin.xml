@@ -101,6 +101,8 @@
         <command id="org.jkiss.dbeaver.core.resultset.row.previous" name="Previous Row" description="Move to previous row"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.next" name="Next Row" description="Move to next row"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.last" name="Last Row" description="Move to last row"/>
+
+        <command id="org.jkiss.dbeaver.core.edit.copy.fullname" name="Copy full qualified name" description="Copy object's full qualified name"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -137,7 +139,7 @@
     <extension
           id="activeFocusControl"
           point="org.eclipse.ui.handlers">
-        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorCopyHandler">
+        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopyName">
             <activeWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -147,7 +149,18 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorDeleteHandler">
+        <handler commandId="org.jkiss.dbeaver.core.edit.copy.fullname" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopyFullName">
+            <activeWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.DBPNamedObjectQualified"/>
+                    </iterate>
+                </with>
+            </activeWhen>
+        </handler>
+
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerDelete">
             <activeWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -157,7 +170,7 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorRefreshHandler">
+        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh">
             <activeWhen>
                 <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
@@ -175,9 +188,9 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.navigator.DriverManagerHandler"/>
-        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.navigator.NewConnectionHandler"/>
-        <handler commandId="org.jkiss.dbeaver.core.navigator.linkeditor" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorLinkEditorHandler">
+        <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerDriverManager"/>
+        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerNewConnection"/>
+        <handler commandId="org.jkiss.dbeaver.core.navigator.linkeditor" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerLinkEditor">
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.IDatabaseEditor"/>
@@ -281,7 +294,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.open.object" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorOpenObjectHandler">
+        <handler commandId="org.jkiss.dbeaver.core.open.object" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerOpenObject">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -448,11 +461,15 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
 
+            <command commandId="org.jkiss.dbeaver.core.edit.copy.fullname">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            
             <separator name="connection" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.connect">
                <visibleWhen>
                    <with variable="selection">
-                       <count value="+"/>
+                       <count value="1"/>
                        <iterate operator="and">
                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
                        </iterate>
@@ -462,7 +479,7 @@
             <command commandId="org.jkiss.dbeaver.core.disconnect">
                 <visibleWhen>
                     <with variable="selection">
-                        <count value="+"/>
+                        <count value="1"/>
                         <iterate operator="and">
                             <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
                         </iterate>
@@ -470,7 +487,16 @@
                 </visibleWhen>
             </command>
             <separator name="tools" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.core.new.sql.editor"/>
+            <command commandId="org.jkiss.dbeaver.core.new.sql.editor">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
         </menuContribution>
 
         <!-- Data Export -->

@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorOpenObjectHandler;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerOpenObject;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageStandard;
 
 import java.util.ArrayList;
@@ -70,7 +70,7 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart
                 objectIcon.setImage(treeNode.getNodeIconDefault());
 
                 Label objectLabel = new Label(infoGroup, SWT.NONE);
-                objectLabel.setText(treeNode.getMeta().getLabel() + ":");
+                objectLabel.setText(treeNode.getMeta().getItemLabel() + ":");
 
                 Link objectLink = new Link(infoGroup, SWT.NONE);
                 //Text objectText = new Text(infoGroup, SWT.BORDER);
@@ -85,7 +85,7 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart
                     {
                         public void widgetSelected(SelectionEvent e)
                         {
-                            NavigatorOpenObjectHandler.openEntityEditor(treeNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                            NavigatorHandlerOpenObject.openEntityEditor(treeNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                         }
                     });
                     objectLink.setToolTipText("Open '" + treeNode.getNodeName() + "' viewer");

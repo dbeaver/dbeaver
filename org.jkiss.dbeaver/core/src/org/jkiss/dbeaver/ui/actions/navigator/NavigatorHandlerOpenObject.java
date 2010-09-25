@@ -25,9 +25,9 @@ import org.jkiss.dbeaver.ui.editors.folder.FolderEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 
-public class NavigatorOpenObjectHandler extends AbstractHandler {
+public class NavigatorHandlerOpenObject extends AbstractHandler {
 
-    static final Log log = LogFactory.getLog(NavigatorOpenObjectHandler.class);
+    static final Log log = LogFactory.getLog(NavigatorHandlerOpenObject.class);
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);

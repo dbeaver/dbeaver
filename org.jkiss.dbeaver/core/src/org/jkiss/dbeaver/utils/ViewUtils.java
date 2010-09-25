@@ -28,13 +28,14 @@ import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.actions.navigator.SetActiveObjectAction;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
@@ -186,7 +187,7 @@ public class ViewUtils
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
                 // Add "Set active object" menu
-                if (dbmNode instanceof DBNTreeNode && dbmNode.getObject() != null) {
+                if (dbmNode instanceof DBNTreeNode && !(dbmNode instanceof DBNTreeFolder) && dbmNode.getObject() != null) {
                     final DBSEntitySelector activeContainer = DBUtils.queryParentInterface(
                         DBSEntitySelector.class, dbmNode.getObject());
                     if (activeContainer != null && activeContainer.supportsActiveChildChange()) {
@@ -209,7 +210,7 @@ public class ViewUtils
                                     DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
                                     text += " " + itemMeta.getPath();
                                 }
-                                IAction action = makeAction(new SetActiveObjectAction(), navigatorModelView.getWorkbenchPart(), selection, text, null, null);
+                                IAction action = makeAction(new NavigatorActionSetActiveObject(), navigatorModelView.getWorkbenchPart(), selection, text, null, null);
 
                                 manager.add(action);
                             }

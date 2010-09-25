@@ -61,7 +61,7 @@ public class DataExporterCSV extends DataExporterAbstract {
             delimiter = DEF_DELIMITER;
         }
         out = site.getWriter();
-        rowDelimiter = System.getProperty("line.separator");
+        rowDelimiter = ContentUtils.getDefaultLineSeparator();
         try {
             headerPosition = HeaderPosition.valueOf(String.valueOf(site.getProperties().get(PROP_HEADER)));
         } catch (Exception e) {

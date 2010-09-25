@@ -25,7 +25,7 @@ public class EntityEditorInput extends DatabaseEditorInput<DBNNode>
         //setPageText(index, );
         StringBuilder toolTip = new StringBuilder();
         if (node instanceof DBNTreeNode) {
-            toolTip.append(((DBNTreeNode)node).getMeta().getLabel()).append(" ");
+            toolTip.append(((DBNTreeNode)node).getMeta().getItemLabel()).append(" ");
         }
         toolTip.append(node.getNodeName());
         if (!CommonUtils.isEmpty(node.getNodeDescription())) {

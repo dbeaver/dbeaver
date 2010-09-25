@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
-public class NavigatorLinkEditorHandler extends AbstractHandler {
+public class NavigatorHandlerLinkEditor extends AbstractHandler {
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);

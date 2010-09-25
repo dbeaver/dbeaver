@@ -239,7 +239,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
             return;
         }
         if (!(child instanceof MySQLCatalog)) {
-            throw new IllegalArgumentException("child");
+            throw new IllegalArgumentException("Invalid active object type");
         }
         JDBCExecutionContext context = openContext(monitor);
         try {

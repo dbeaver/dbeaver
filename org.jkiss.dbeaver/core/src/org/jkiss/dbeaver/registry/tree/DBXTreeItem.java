@@ -10,6 +10,7 @@ package org.jkiss.dbeaver.registry.tree;
 public class DBXTreeItem extends DBXTreeNode
 {
     private String label;
+    private String itemLabel;
     private String path;
     private String propertyName;
     private boolean optional;
@@ -19,6 +20,7 @@ public class DBXTreeItem extends DBXTreeNode
     public DBXTreeItem(
         DBXTreeNode parent,
         String label,
+        String itemLabel,
         String path,
         String propertyName,
         boolean optional,
@@ -27,6 +29,7 @@ public class DBXTreeItem extends DBXTreeNode
     {
         super(parent);
         this.label = label;
+        this.itemLabel = itemLabel == null ? label : itemLabel;
         this.path = path;
         this.propertyName = propertyName;
         this.optional = optional;
@@ -62,6 +65,11 @@ public class DBXTreeItem extends DBXTreeNode
     public String getLabel()
     {
         return label;
+    }
+
+    public String getItemLabel()
+    {
+        return itemLabel;
     }
 
     @Override

@@ -15,9 +15,9 @@ import org.jkiss.dbeaver.model.DBPDeletableObject;
 
 import java.util.Iterator;
 
-public class NavigatorDeleteHandler extends AbstractHandler {
+public class NavigatorHandlerDelete extends AbstractHandler {
 
-    public NavigatorDeleteHandler() {
+    public NavigatorHandlerDelete() {
 
     }
 
