@@ -69,7 +69,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                 if (!wordDetector.isWordPart(ch)) {
                     break;
                 }
-                if (!wordDetector.isPlainWordPart(ch)) {
+                if (wordStart < 0 && !wordDetector.isPlainWordPart(ch)) {
                     wordStart = identStart + 1;
                 }
                 identStart--;
@@ -93,7 +93,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        if (editor.getSyntaxManager().getKeywordType(identifier.toUpperCase()) != null) {
+        if (editor.getSyntaxManager().getKeywordType(identifier.toUpperCase()) == SQLSyntaxManager.KeywordType.KEYWORD) {
             // Skip keywords
             return null;
         }

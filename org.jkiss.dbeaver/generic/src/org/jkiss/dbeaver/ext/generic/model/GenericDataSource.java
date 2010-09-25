@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -447,43 +448,17 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     {
         JDBCUtils.startConnectionBlock(monitor, getDataSource(), "Looking for tables in '" + getName() + "'");
 
-        List<DBSTablePath> pathList = new ArrayList<DBSTablePath>();
         JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
             JDBCDatabaseMetaData metaData = context.getMetaData();
 
-            // Make table mask uppercase
-            tableMask = tableMask.toUpperCase();
-
-            // Load tables
-            JDBCResultSet dbResult = metaData.getTables(
-                null,
-                null,
-                tableMask,
-                null);
-            try {
-                int tableNum = maxResults;
-                while (dbResult.next() && tableNum-- > 0) {
-
-                    String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
-                    String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
-                    String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
-                    String tableType = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_TYPE);
-                    String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-
-                    pathList.add(
-                        new DBSTablePath(
-                            catalogName,
-                            schemaName,
-                            tableName,
-                            tableType,
-                            remarks));
-                }
+            // Try to find tables in upper case and in lower case
+            List<DBSTablePath> tables = findTableNames(tableMask.toUpperCase(), maxResults, metaData);
+            if (tables == null) {
+                tables = findTableNames(tableMask.toLowerCase(), maxResults, metaData);
             }
-            finally {
-                dbResult.close();
-            }
-            return pathList;
+            return tables == null ? Collections.<DBSTablePath>emptyList() : tables;
+
         }
         catch (SQLException ex) {
             throw new DBException(ex);
@@ -492,6 +467,45 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
             context.close();
             JDBCUtils.endConnectionBlock(monitor);
         }
+    }
+
+    private List<DBSTablePath> findTableNames(String tableMask, int maxResults, JDBCDatabaseMetaData metaData)
+        throws SQLException
+    {
+        List<DBSTablePath> pathList = null;
+
+        // Load tables
+        JDBCResultSet dbResult = metaData.getTables(
+            null,
+            null,
+            tableMask,
+            null);
+        try {
+            int tableNum = maxResults;
+            while (dbResult.next() && tableNum-- > 0) {
+
+                String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
+                String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
+                String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
+                String tableType = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_TYPE);
+                String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
+
+                if (pathList == null) {
+                    pathList = new ArrayList<DBSTablePath>();
+                }
+                pathList.add(
+                    new DBSTablePath(
+                        catalogName,
+                        schemaName,
+                        tableName,
+                        tableType,
+                        remarks));
+            }
+        }
+        finally {
+            dbResult.close();
+        }
+        return pathList;
     }
 
     private class DataSourceEntityContainer extends GenericEntityContainer {
