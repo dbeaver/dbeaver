@@ -16,15 +16,22 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.editors.folder.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.folder.FolderEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
+
+import java.lang.reflect.InvocationTargetException;
 
 public class NavigatorHandlerOpenObject extends AbstractHandler {
 
@@ -35,9 +42,24 @@ public class NavigatorHandlerOpenObject extends AbstractHandler {
 
         if (selection instanceof IStructuredSelection) {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
-            DBNNode node = (DBNNode) Platform.getAdapterManager().getAdapter(structSelection.getFirstElement(), DBNNode.class);
-            if (node != null) {
-                openEntityEditor(node, null, HandlerUtil.getActiveWorkbenchWindow(event));
+            DBSObject object = (DBSObject) Platform.getAdapterManager().getAdapter(structSelection.getFirstElement(), DBSObject.class);
+            if (object != null) {
+                DBNModel model = DBeaverCore.getInstance().getNavigatorModel();
+                DBNNode node = model.findNode(object);
+                if (node == null) {
+                    NodeLoader nodeLoader = new NodeLoader(model, object);
+                    try {
+                        DBeaverCore.getInstance().runAndWait2(nodeLoader);
+                    } catch (InvocationTargetException e) {
+                        log.warn("Could not load node for object '" + object.getName() + "'", e.getTargetException());
+                    } catch (InterruptedException e) {
+                        // do nothing
+                    }
+                    node = nodeLoader.node;
+                }
+                if (node != null) {
+                    openEntityEditor(node, null, HandlerUtil.getActiveWorkbenchWindow(event));
+                }
             }
         }
         return null;
@@ -87,4 +109,20 @@ public class NavigatorHandlerOpenObject extends AbstractHandler {
     }
 
 
+    private static class NodeLoader implements DBRRunnableWithProgress {
+        private final DBNModel model;
+        private final DBSObject object;
+        private DBNNode node;
+
+        public NodeLoader(DBNModel model, DBSObject object)
+        {
+            this.model = model;
+            this.object = object;
+        }
+
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+        {
+            node = model.getNodeByObject(monitor, object, true);
+        }
+    }
 }

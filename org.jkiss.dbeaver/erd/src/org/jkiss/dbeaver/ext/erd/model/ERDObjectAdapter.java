@@ -22,18 +22,14 @@ public class ERDObjectAdapter implements IAdapterFactory {
     }
 
     public Object getAdapter(Object adaptableObject, Class adapterType) {
-        if (adapterType == DBPNamedObject.class || adapterType == DBPObject.class || adapterType == DBSObject.class) {
+        if (DBPObject.class.isAssignableFrom(adapterType)) {
             if (adaptableObject instanceof EditPart) {
                 Object model = ((EditPart) adaptableObject).getModel();
                 if (model instanceof ERDObject) {
-                    return ((ERDObject<?>)model).getObject();
-                }
-            }
-        } else if (adapterType == DBNNode.class) {
-            if (adaptableObject instanceof EditPart) {
-                Object model = ((EditPart) adaptableObject).getModel();
-                if (model instanceof ERDObject) {
-                    return DBeaverCore.getInstance().getNavigatorModel().findNode(((ERDObject<?>)model).getObject());
+                    DBSObject object = ((ERDObject<?>) model).getObject();
+                    if (object != null && adapterType.isAssignableFrom(object.getClass())) {
+                        return object;
+                    }
                 }
             }
         }
