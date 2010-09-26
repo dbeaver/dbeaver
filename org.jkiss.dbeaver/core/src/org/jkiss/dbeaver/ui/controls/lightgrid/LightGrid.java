@@ -8,14 +8,9 @@ import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.DND;
-import org.eclipse.swt.dnd.DropTargetEvent;
-import org.eclipse.swt.dnd.DropTargetListener;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ui.controls.lightgrid.dnd.GridDragSourceEffect;
-import org.jkiss.dbeaver.ui.controls.lightgrid.dnd.GridDropTargetEffect;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.NullScrollBar;
@@ -38,16 +33,6 @@ import java.util.List;
  * @author chris.gross@us.ibm.com
  */
 public class LightGrid extends Canvas {
-
-    /**
-     * Alpha blending value used when drawing the dragged column header.
-     */
-    private static final int COLUMN_DRAG_ALPHA = 128;
-
-    /**
-     * Number of pixels below the header to draw the drop point.
-     */
-    private static final int DROP_POINT_LOWER_OFFSET = 3;
 
     /**
      * Horizontal scrolling increment, in pixels.
@@ -160,12 +145,6 @@ public class LightGrid extends Canvas {
     private IGridRenderer emptyRowHeaderRenderer;
 
     /**
-     * Renderers the UI affordance identifying where the dragged column will be
-     * dropped.
-     */
-    private IGridRenderer dropPointRenderer;
-
-    /**
      * Are row headers visible?
      */
     private boolean rowHeaderVisible = false;
@@ -242,55 +221,6 @@ public class LightGrid extends Canvas {
      * with the resizingStartX determines the current width during resize.
      */
     private int resizingColumnStartWidth = 0;
-
-    /**
-     * Reference to the column whose header is currently in a pushed state.
-     */
-    private GridColumn columnBeingPushed;
-
-    /**
-     * Is the user currently pushing a column header?
-     */
-    private boolean pushingColumn = false;
-
-    /**
-     * Is the user currently pushing a column header and hovering over that same
-     * header?
-     */
-    private boolean pushingAndHovering = false;
-
-    /**
-     * X position of the mouse when the user first pushes a column header.
-     */
-    private int startHeaderPushX = 0;
-
-    /**
-     * X position of the mouse when the user has initiated a drag. This is
-     * different than startHeaderPushX because the mouse is allowed some
-     * 'wiggle-room' until the header is put into drag mode.
-     */
-    private int startHeaderDragX = 0;
-
-    /**
-     * The current X position of the mouse during a header drag.
-     */
-    private int currentHeaderDragX = 0;
-
-    /**
-     * Are we currently dragging a column header?
-     */
-    private boolean draggingColumn = false;
-
-    private GridColumn dragDropBeforeColumn = null;
-
-    private GridColumn dragDropAfterColumn = null;
-
-    /**
-     * True if the current dragDropPoint is a valid drop point for the dragged
-     * column. This is false if the column groups are involved and a column is
-     * being dropped into or out of its column group.
-     */
-    private boolean dragDropPointValid = true;
 
     /**
      * Reference to the currently item that the mouse is currently hovering
@@ -451,13 +381,6 @@ public class LightGrid extends Canvas {
     private String displayedToolTipText;
 
     /**
-     * The height of the area at the top and bottom of the
-     * visible grid area in which scrolling is initiated
-     * while dragging over this Grid.
-     */
-    private static final int DRAG_SCROLL_AREA_HEIGHT = 12;
-
-    /**
      * Threshold for the selection border used for drag n drop
      * in mode.
      */
@@ -529,10 +452,6 @@ public class LightGrid extends Canvas {
     {
         super(parent, checkStyle(style));
 
-        // initialize drag & drop support
-        setData("DEFAULT_DRAG_SOURCE_EFFECT", new GridDragSourceEffect(this));
-        setData("DEFAULT_DROP_TARGET_EFFECT", new GridDropTargetEffect(this));
-
         sizingGC = new GC(this);
         topLeftRenderer = new DefaultTopLeftRenderer(this);
         bottomLeftRenderer = new DefaultBottomLeftRenderer(this);
@@ -541,7 +460,6 @@ public class LightGrid extends Canvas {
         emptyColumnFooterRenderer = new DefaultEmptyColumnFooterRenderer(this);
         emptyCellRenderer = new DefaultEmptyCellRenderer(this);
         emptyRowHeaderRenderer = new DefaultEmptyRowHeaderRenderer(this);
-        dropPointRenderer = new DefaultDropPointRenderer(this);
         insertMarkRenderer = new DefaultInsertMarkRenderer(this);
 
         setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
@@ -2397,218 +2315,6 @@ public class LightGrid extends Canvas {
     }
 
     /**
-     * Manages the header column dragging and calculates the drop point,
-     * triggers a redraw.
-     *
-     * @param x mouse x
-     * @return true if this event has been consumed.
-     */
-    private boolean handleColumnDragging(int x)
-    {
-
-        GridColumn local_dragDropBeforeColumn = null;
-        GridColumn local_dragDropAfterColumn = null;
-
-        int x2 = 1;
-
-        if (rowHeaderVisible) {
-            x2 += rowHeaderWidth + 1;
-        }
-
-        x2 -= getHScrollSelectionInPixels();
-
-        GridColumn previousVisibleCol = null;
-        boolean nextVisibleColumnIsBeforeCol = false;
-        GridColumn firstVisibleCol = null;
-        GridColumn lastVisibleCol = null;
-
-        if (x < x2) {
-            local_dragDropBeforeColumn = displayOrderedColumns.isEmpty() ? null : displayOrderedColumns.get(0);
-            local_dragDropAfterColumn = null;
-        } else {
-            for (GridColumn column : displayOrderedColumns) {
-                if (firstVisibleCol == null) {
-                    firstVisibleCol = column;
-                }
-                lastVisibleCol = column;
-
-                if (nextVisibleColumnIsBeforeCol) {
-                    local_dragDropBeforeColumn = column;
-                    nextVisibleColumnIsBeforeCol = false;
-                }
-
-                if (x >= x2 && x <= (x2 + column.getWidth())) {
-                    if (x <= (x2 + column.getWidth() / 2)) {
-                        local_dragDropBeforeColumn = column;
-                        local_dragDropAfterColumn = previousVisibleCol;
-                    } else {
-                        local_dragDropAfterColumn = column;
-
-                        // the next visible column is the before col
-                        nextVisibleColumnIsBeforeCol = true;
-                    }
-                }
-
-                x2 += column.getWidth();
-                previousVisibleCol = column;
-            }
-
-            if (local_dragDropBeforeColumn == null) {
-                local_dragDropAfterColumn = lastVisibleCol;
-            }
-        }
-
-        currentHeaderDragX = x;
-
-        if (local_dragDropBeforeColumn != dragDropBeforeColumn
-            || (dragDropBeforeColumn == null && dragDropAfterColumn == null)) {
-            dragDropPointValid = true;
-        }
-
-        dragDropBeforeColumn = local_dragDropBeforeColumn;
-        dragDropAfterColumn = local_dragDropAfterColumn;
-
-        Rectangle clientArea = getClientArea();
-        redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
-
-        return true;
-    }
-
-    /**
-     * Handles the moving of columns after a column is dropped.
-     */
-    private void handleColumnDrop()
-    {
-        draggingColumn = false;
-
-        if ((dragDropBeforeColumn != columnBeingPushed && dragDropAfterColumn != columnBeingPushed)
-            && dragDropPointValid) {
-
-            int notifyFrom = displayOrderedColumns.indexOf(columnBeingPushed);
-            int notifyTo = notifyFrom;
-
-            displayOrderedColumns.remove(columnBeingPushed);
-
-            if (dragDropBeforeColumn == null) {
-
-                notifyTo = displayOrderedColumns.size();
-                displayOrderedColumns.add(columnBeingPushed);
-            } else if (dragDropAfterColumn == null) {
-                displayOrderedColumns.add(0, columnBeingPushed);
-                notifyFrom = 0;
-            } else {
-                int insertAtIndex;
-
-                insertAtIndex = displayOrderedColumns.indexOf(dragDropBeforeColumn);
-                displayOrderedColumns.add(insertAtIndex, columnBeingPushed);
-                notifyFrom = Math.min(notifyFrom, insertAtIndex);
-                notifyTo = Math.max(notifyTo, insertAtIndex);
-            }
-
-            for (int i = notifyFrom; i <= notifyTo; i++) {
-                displayOrderedColumns.get(i).fireMoved();
-            }
-        }
-
-        redraw();
-    }
-
-    /**
-     * Determines if the mouse is pushing the header but has since move out of
-     * the header bounds and therefore should be drawn unpushed. Also initiates
-     * a column header drag when appropriate.
-     *
-     * @param x mouse x
-     * @param y mouse y
-     * @return true if this event has been consumed.
-     */
-    private boolean handleColumnHeaderHoverWhilePushing(int x, int y)
-    {
-        GridColumn overThis = overColumnHeader(x, y);
-
-        if ((overThis == columnBeingPushed) != pushingAndHovering) {
-            pushingAndHovering = (overThis == columnBeingPushed);
-            redraw();
-        }
-        if (columnBeingPushed.getMoveable()) {
-
-            if (pushingAndHovering && Math.abs(startHeaderPushX - x) > 3) {
-
-                // stop pushing
-                pushingColumn = false;
-                columnBeingPushed.getHeaderRenderer().setMouseDown(false);
-                columnBeingPushed.getHeaderRenderer().setHover(false);
-
-                // now dragging
-                draggingColumn = true;
-                columnBeingPushed.getHeaderRenderer().setMouseDown(false);
-
-                startHeaderDragX = x;
-
-                dragDropAfterColumn = null;
-                dragDropBeforeColumn = null;
-                dragDropPointValid = true;
-
-                handleColumnDragging(x);
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Determines if a column header has been clicked, updates the renderer
-     * state and triggers a redraw if necesary.
-     *
-     * @param x mouse x
-     * @param y mouse y
-     * @return true if this event has been consumed.
-     */
-    private boolean handleColumnHeaderPush(int x, int y)
-    {
-        if (!columnHeadersVisible) {
-            return false;
-        }
-
-        GridColumn overThis = overColumnHeader(x, y);
-
-        if (overThis == null) {
-            return false;
-        }
-
-        if (!overThis.getMoveable()) {
-            return false;
-        }
-
-        columnBeingPushed = overThis;
-
-        // draw pushed
-        columnBeingPushed.getHeaderRenderer().setMouseDown(true);
-        columnBeingPushed.getHeaderRenderer().setHover(true);
-        pushingAndHovering = true;
-        redraw();
-
-        startHeaderPushX = x;
-        pushingColumn = true;
-
-        setCapture(true);
-
-        return true;
-    }
-
-    private boolean handleColumnFooterPush(int x, int y)
-    {
-        if (!columnFootersVisible) {
-            return false;
-        }
-
-        GridColumn overThis = overColumnFooter(x, y);
-
-        return overThis != null;
-
-    }
-
-    /**
      * Sets the new width of the column being resized and fires the appropriate
      * listeners.
      *
@@ -2912,28 +2618,6 @@ public class LightGrid extends Canvas {
             row++;
         }
 
-        // draw drop point
-        if (draggingColumn) {
-            if ((dragDropAfterColumn != null || dragDropBeforeColumn != null)
-                && (dragDropAfterColumn != columnBeingPushed && dragDropBeforeColumn != columnBeingPushed)
-                && dragDropPointValid) {
-                if (dragDropBeforeColumn != null) {
-                    x = getColumnHeaderXPosition(dragDropBeforeColumn);
-                } else {
-                    x = getColumnHeaderXPosition(dragDropAfterColumn)
-                        + dragDropAfterColumn.getWidth();
-                }
-
-                int dropPointwidth = 9;
-                x -= dropPointwidth / 2;
-                if (x < 0) {
-                    x = 0;
-                }
-                dropPointRenderer.setBounds(x - 1, headerHeight + DROP_POINT_LOWER_OFFSET, dropPointwidth, 7);
-                dropPointRenderer.paint(e.gc);
-            }
-        }
-
         // draw insertion mark
         if (insertMarkPosFound) {
             e.gc.setClipping(
@@ -3014,13 +2698,7 @@ public class LightGrid extends Canvas {
             int height = headerHeight;
             y = 0;
 
-            if (pushingColumn) {
-                column.getHeaderRenderer().setHover(
-                    columnBeingPushed == column
-                        && pushingAndHovering);
-            } else {
-                column.getHeaderRenderer().setHover(hoveringColumnHeader == column);
-            }
+            column.getHeaderRenderer().setHover(hoveringColumnHeader == column);
 
             column.getHeaderRenderer().setColumn(indexOf(column));
             column.getHeaderRenderer().setHoverDetail(hoveringDetail);
@@ -3047,29 +2725,6 @@ public class LightGrid extends Canvas {
             topLeftRenderer.paint(gc);
             x += rowHeaderWidth;
         }
-
-        if (draggingColumn) {
-
-            gc.setAlpha(COLUMN_DRAG_ALPHA);
-
-            columnBeingPushed.getHeaderRenderer().setSelected(false);
-
-            int height = headerHeight;
-            y = 0;
-
-            columnBeingPushed.getHeaderRenderer()
-                .setBounds(
-                    getColumnHeaderXPosition(columnBeingPushed)
-                        + (currentHeaderDragX - startHeaderDragX), y,
-                    columnBeingPushed.getWidth(), height);
-            columnBeingPushed.getHeaderRenderer().setColumn(indexOf(columnBeingPushed));
-            columnBeingPushed.getHeaderRenderer().paint(gc);
-            columnBeingPushed.getHeaderRenderer().setSelected(false);
-
-            gc.setAlpha(-1);
-            gc.setAdvanced(false);
-        }
-
     }
 
     private void paintFooter(GC gc)
@@ -3614,14 +3269,6 @@ public class LightGrid extends Canvas {
             return;
         }
 
-        if (e.button == 1 && handleColumnHeaderPush(e.x, e.y)) {
-            return;
-        }
-
-        if (e.button == 1 && handleColumnFooterPush(e.x, e.y)) {
-            return;
-        }
-
         int row = getRow(new Point(e.x, e.y));
 
         if (e.button == 1 && row >= 0 && handleCellClick(row, e.x, e.y)) {
@@ -3787,23 +3434,6 @@ public class LightGrid extends Canvas {
             return;
         }
 
-        if (pushingColumn) {
-            pushingColumn = false;
-            columnBeingPushed.getHeaderRenderer().setMouseDown(false);
-            columnBeingPushed.getHeaderRenderer().setHover(false);
-            redraw();
-            if (pushingAndHovering) {
-                columnBeingPushed.fireListeners();
-            }
-            setCapture(false);
-            return;
-        }
-
-        if (draggingColumn) {
-            handleColumnDrop();
-            return;
-        }
-
         if (cellDragSelectionOccuring || cellRowDragSelectionOccuring || cellColumnDragSelectionOccuring) {
             cellDragSelectionOccuring = false;
             cellRowDragSelectionOccuring = false;
@@ -3846,19 +3476,13 @@ public class LightGrid extends Canvas {
 
 
         if ((e.stateMask & SWT.BUTTON1) == 0) {
+
             handleHovering(e.x, e.y);
+
         } else {
-            if (draggingColumn) {
-                handleColumnDragging(e.x);
-                return;
-            }
 
             if (resizingColumn) {
                 handleColumnResizerDragging(e.x);
-                return;
-            }
-            if (pushingColumn) {
-                handleColumnHeaderHoverWhilePushing(e.x, e.y);
                 return;
             }
             {
@@ -5327,48 +4951,6 @@ public class LightGrid extends Canvas {
             hoveringOnSelectionDragArea = over;
         }
         return over;
-    }
-
-    /**
-     * Display a mark indicating the point at which an item will be inserted.
-     * This is used as a visual hint to show where a dragged item will be
-     * inserted when dropped on the grid.  This method should not be called
-     * directly, instead {@link DND#FEEDBACK_INSERT_BEFORE} or
-     * {@link DND#FEEDBACK_INSERT_AFTER} should be set in
-     * {@link DropTargetEvent#feedback} from within a {@link DropTargetListener}.
-     *
-     * @param item   the insert item.  Null will clear the insertion mark.
-     * @param column the column of the cell.  Null will make the insertion mark span all columns.
-     * @param before true places the insert mark above 'item'. false places
-     *               the insert mark below 'item'.
-     */
-    public void setInsertMark(int item, GridColumn column, boolean before)
-    {
-        checkWidget();
-        if (column != null) {
-            if (column.isDisposed())
-                SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-        }
-        insertMarkItem = item;
-        insertMarkColumn = column;
-        insertMarkBefore = before;
-        redraw();
-    }
-
-    /**
-     * A helper method for {@link  org.jkiss.dbeaver.ui.controls.lightgrid.dnd.GridDropTargetEffect#dragOver(DropTargetEvent)}.
-     *
-     * @param point
-     * @return true if point is near the top or bottom border of the visible grid area
-     */
-    public boolean isInDragScrollArea(Point point)
-    {
-        int rhw = rowHeaderVisible ? rowHeaderWidth : 0;
-        int chh = columnHeadersVisible ? headerHeight : 0;
-        Rectangle top = new Rectangle(rhw, chh, getClientArea().width - rhw, DRAG_SCROLL_AREA_HEIGHT);
-        Rectangle bottom = new Rectangle(rhw, getClientArea().height - DRAG_SCROLL_AREA_HEIGHT,
-                                         getClientArea().width - rhw, DRAG_SCROLL_AREA_HEIGHT);
-        return top.contains(point) || bottom.contains(point);
     }
 
     /**

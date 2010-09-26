@@ -67,11 +67,6 @@ public class GridColumn extends Item {
 	 */
 	private boolean resizeable = true;
 
-	/**
-	 * Is this column moveable?
-	 */
-	private boolean moveable = false;
-
 	private boolean cellSelectionEnabled = true;
 
 	private Image footerImage;
@@ -473,28 +468,6 @@ public class GridColumn extends Item {
 	public void setAlignment(int alignment) {
 		checkWidget();
 		cellRenderer.setAlignment(alignment);
-	}
-
-	/**
-	 * Returns true if this column is moveable.
-	 *
-	 * @return true if moveable.
-	 */
-	public boolean getMoveable() {
-		checkWidget();
-		return moveable;
-	}
-
-	/**
-	 * Sets the column moveable or fixed.
-	 *
-	 * @param moveable
-	 *            true to enable column moving
-	 */
-	public void setMoveable(boolean moveable) {
-		checkWidget();
-		this.moveable = moveable;
-		parent.redraw();
 	}
 
 	/**

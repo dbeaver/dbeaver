@@ -222,9 +222,6 @@ public class SQLEditor extends BaseTextEditor
         // Load syntax from datasource
         refreshSyntax();
 
-        // Check connection
-        checkConnected();
-
         sashForm = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
         sashForm.setSashWidth(10);
 
@@ -299,6 +296,9 @@ public class SQLEditor extends BaseTextEditor
                 ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(symbolInserter);
             }
         }
+
+        // Check connection
+        checkConnected();
     }
 
     private ISharedTextColors getSharedColors()
