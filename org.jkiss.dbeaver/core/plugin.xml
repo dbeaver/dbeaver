@@ -299,7 +299,7 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
                     </iterate>
                 </with>
             </enabledWhen>

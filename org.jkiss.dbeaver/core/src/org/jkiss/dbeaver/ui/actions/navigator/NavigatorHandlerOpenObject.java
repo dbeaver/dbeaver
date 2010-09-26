@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorReference;
@@ -34,8 +35,10 @@ public class NavigatorHandlerOpenObject extends AbstractHandler {
 
         if (selection instanceof IStructuredSelection) {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
-            DBNNode node = (DBNNode)structSelection.getFirstElement();
-            openEntityEditor(node, null, HandlerUtil.getActiveWorkbenchWindow(event));
+            DBNNode node = (DBNNode) Platform.getAdapterManager().getAdapter(structSelection.getFirstElement(), DBNNode.class);
+            if (node != null) {
+                openEntityEditor(node, null, HandlerUtil.getActiveWorkbenchWindow(event));
+            }
         }
         return null;
     }
