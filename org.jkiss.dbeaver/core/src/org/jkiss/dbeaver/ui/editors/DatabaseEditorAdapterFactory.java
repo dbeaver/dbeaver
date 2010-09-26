@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;

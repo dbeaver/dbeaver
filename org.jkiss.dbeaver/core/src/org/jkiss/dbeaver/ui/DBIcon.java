@@ -98,7 +98,7 @@ public enum DBIcon
     TYPE_BINARY("binary", "/icons/sql/types/binary.png"),
     TYPE_TEXT("text", "/icons/sql/types/text.png"),
     TYPE_LOB("lob", "/icons/sql/types/lob.png"),
-    TYPE_ARRAY("lob", "/icons/sql/types/array.png"),
+    TYPE_ARRAY("array", "/icons/sql/types/array.png"),
     TYPE_IMAGE("image", "/icons/sql/types/image.png"),
     TYPE_UNKNOWN("unknown", "/icons/sql/types/unknown.png"),
 

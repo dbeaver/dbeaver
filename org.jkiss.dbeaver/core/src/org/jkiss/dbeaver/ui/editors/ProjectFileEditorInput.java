@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.runtime.project;
+package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IStorage;
@@ -16,9 +16,9 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
- * ProjectEditorInput
+ * ProjectFileEditorInput
  */
-public class ProjectEditorInput extends PlatformObject implements IPathEditorInput {
+public class ProjectFileEditorInput extends PlatformObject implements IPathEditorInput {
 	private IFile file;
 
 	/**
@@ -26,7 +26,7 @@ public class ProjectEditorInput extends PlatformObject implements IPathEditorInp
 	 *
 	 * @param file the file resource
 	 */
-	public ProjectEditorInput(IFile file) {
+	public ProjectFileEditorInput(IFile file) {
 		if (file == null)
 			throw new IllegalArgumentException();
 		this.file = file;
@@ -41,10 +41,10 @@ public class ProjectEditorInput extends PlatformObject implements IPathEditorInp
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof ProjectEditorInput)) {
+		if (!(obj instanceof ProjectFileEditorInput)) {
 			return false;
 		}
-		ProjectEditorInput other = (ProjectEditorInput) obj;
+		ProjectFileEditorInput other = (ProjectFileEditorInput) obj;
 		return file.equals(other.file);
 	}
 
@@ -70,16 +70,10 @@ public class ProjectEditorInput extends PlatformObject implements IPathEditorInp
 		return file.getName();
 	}
 
-	/* (non-Javadoc)
-	 * Method declared on IEditorInput.
-	 */
 	public IPersistableElement getPersistable() {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * Method declared on IStorageEditorInput.
-	 */
 	public IStorage getStorage() {
 		return file;
 	}
@@ -114,15 +108,15 @@ public class ProjectEditorInput extends PlatformObject implements IPathEditorInp
 				}
 
 				public ImageDescriptor getImageDescriptor(Object object) {
-					return ProjectEditorInput.this.getImageDescriptor();
+					return ProjectFileEditorInput.this.getImageDescriptor();
 				}
 
 				public String getLabel(Object o) {
-					return ProjectEditorInput.this.getName();
+					return ProjectFileEditorInput.this.getName();
 				}
 
 				public Object getParent(Object o) {
-					return ProjectEditorInput.this.file.getParent();
+					return ProjectFileEditorInput.this.file.getParent();
 				}
 			};
 		} else if (IFile.class.equals(adapter)) {

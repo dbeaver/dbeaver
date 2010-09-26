@@ -7,12 +7,12 @@ package org.jkiss.dbeaver.ui.editors.content.parts;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.ui.texteditor.IDocumentProviderExtension;
-import org.jkiss.dbeaver.runtime.project.ProjectDocumentProvider;
+import org.jkiss.dbeaver.ui.editors.FileRefDocumentProvider;
 
 /**
  * SQLDocumentProvider
  */
-class ContentTextDocumentProvider extends ProjectDocumentProvider implements IDocumentProviderExtension {
+class ContentTextDocumentProvider extends FileRefDocumentProvider implements IDocumentProviderExtension {
 
     static final Log log = LogFactory.getLog(ContentTextDocumentProvider.class);
 

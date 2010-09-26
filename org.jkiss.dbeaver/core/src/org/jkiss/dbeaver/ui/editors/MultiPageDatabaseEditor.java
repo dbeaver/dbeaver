@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.editors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Image;
@@ -16,6 +17,7 @@ import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.ui.IObjectEditorPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -36,20 +38,18 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
     {
         super.init(site, input);
         setPartName(input.getName());
-        editorImage = input.getImageDescriptor().createImage();
-        setTitleImage(editorImage);
+        setTitleImage(input.getImageDescriptor());
 
         listener = new DatabaseEditorListener(this);
     }
 
-    @Override
-    protected void setTitleImage(Image titleImage)
+    protected void setTitleImage(ImageDescriptor titleImage)
     {
-        super.setTitleImage(titleImage);
-        if (editorImage != null && editorImage != titleImage) {
+        if (editorImage != null) {
             editorImage.dispose();
-            editorImage = titleImage;
         }
+        editorImage = titleImage.createImage();
+        super.setTitleImage(editorImage);
     }
 
     public void dispose()

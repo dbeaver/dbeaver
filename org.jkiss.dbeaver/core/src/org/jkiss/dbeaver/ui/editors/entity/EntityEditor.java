@@ -308,7 +308,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                     ((IRefreshablePart)part).refreshPart(event);
                 }
             }
-            setTitleImage(getEditorInput().getImageDescriptor().createImage());
+            setTitleImage(getEditorInput().getImageDescriptor());
         }});
     }
 

@@ -10,7 +10,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -23,7 +22,7 @@ import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.project.ProjectEditorInput;
+import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.File;
@@ -134,8 +133,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                                         }
                                     }
 
-                                    if (editorInput instanceof ProjectEditorInput) {
-                                        ProjectEditorInput sei = (ProjectEditorInput)editorInput;
+                                    if (editorInput instanceof ProjectFileEditorInput) {
+                                        ProjectFileEditorInput sei = (ProjectFileEditorInput)editorInput;
                                         openFiles.add(sei.getPath().toFile());
                                     }
                                 } catch (CoreException ex) {

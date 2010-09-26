@@ -42,7 +42,7 @@
                 id="org.jkiss.dbeaver.databaseEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.database.editor"
                 properties="active"
-                type="org.jkiss.dbeaver.ui.editors.IDatabaseEditor">
+                type="org.jkiss.dbeaver.ext.IDatabaseEditor">
         </propertyTester>
     </extension>
     <extension point="org.eclipse.ui.views">
@@ -193,7 +193,7 @@
         <handler commandId="org.jkiss.dbeaver.core.navigator.linkeditor" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerLinkEditor">
             <enabledWhen>
                 <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.IDatabaseEditor"/>
+                    <adapt type="org.jkiss.dbeaver.ext.IDatabaseEditor"/>
                 </with>
             </enabledWhen>
         </handler>

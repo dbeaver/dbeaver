@@ -8,13 +8,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.rules.FastPartitioner;
-import org.jkiss.dbeaver.runtime.project.ProjectDocumentProvider;
+import org.jkiss.dbeaver.ui.editors.FileRefDocumentProvider;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 
 /**
  * SQLDocumentProvider
  */
-class SQLDocumentProvider extends ProjectDocumentProvider {
+class SQLDocumentProvider extends FileRefDocumentProvider {
     protected Document createDocument(Object element) throws CoreException
     {
         Document document = super.createDocument(element);

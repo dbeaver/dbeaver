@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors;
+package org.jkiss.dbeaver.ext;
 
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;

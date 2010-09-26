@@ -9,12 +9,12 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.runtime.project.ProjectEditorInput;
+import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 
 /**
  * SQLEditorInput
  */
-public class SQLEditorInput extends ProjectEditorInput implements IPersistableElement, IAutoSaveEditorInput
+public class SQLEditorInput extends ProjectFileEditorInput implements IPersistableElement, IAutoSaveEditorInput
 {
     private DBSDataSourceContainer dataSourceContainer;
     private String scriptName;
