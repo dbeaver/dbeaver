@@ -4449,11 +4449,6 @@ public class LightGrid extends Canvas {
     }
 
 
-    GridColumn getFocusColumn()
-    {
-        return focusColumn;
-    }
-
     private void getCells(GridColumn col, List<GridPos> cells)
     {
         int colIndex = indexOf(col);

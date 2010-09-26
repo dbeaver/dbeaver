@@ -95,8 +95,7 @@ public class TextUtils
             return null;
         }
 
-        if (t.equals(""))
-        {
+        if (t.equals("") || width <= 0) {
             return "";
         }
         int avgCharWidth = gc.getFontMetrics().getAverageCharWidth();
