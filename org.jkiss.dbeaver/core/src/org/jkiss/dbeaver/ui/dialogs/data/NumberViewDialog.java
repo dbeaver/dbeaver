@@ -73,7 +73,8 @@ public class NumberViewDialog extends ValueViewDialog {
                     UIUtils.NUMBER_VERIFY_LISTENER);
 
             if (value != null) {
-                String textValue = valueController.getValueHandler().getValueDisplayString(valueController.getColumnMetaData(), value);
+                // Use simple toString() because we don't want formatted values.
+                String textValue = value.toString();
                 textEdit.setText(textValue);
             }
             int maxSize = getValueController().getColumnMetaData().getPrecision();
