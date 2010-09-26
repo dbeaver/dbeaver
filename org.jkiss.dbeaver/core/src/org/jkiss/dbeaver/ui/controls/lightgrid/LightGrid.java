@@ -99,11 +99,6 @@ public class LightGrid extends Canvas {
      */
     private List<GridColumn> columns = new ArrayList<GridColumn>();
 
-    /**
-     * List of the table columns in the order they are displayed.
-     */
-    private List<GridColumn> displayOrderedColumns = new ArrayList<GridColumn>();
-
     private int maxColumnDefWidth = 1000;
     /**
      * Renderer to paint the top left area when both column and row headers are
@@ -827,7 +822,7 @@ public class LightGrid extends Canvas {
 
         x2 -= getHScrollSelectionInPixels();
 
-        for (GridColumn column : displayOrderedColumns) {
+        for (GridColumn column : columns) {
             if (point.x >= x2 && point.x < x2 + column.getWidth()) {
                 overThis = column;
                 break;
@@ -856,77 +851,6 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
         return columns.size();
-    }
-
-    /**
-     * Returns an array of zero-relative integers that map the creation order of
-     * the receiver's items to the order in which they are currently being
-     * displayed.
-     * <p>
-     * Specifically, the indices of the returned array represent the current
-     * visual order of the items, and the contents of the array represent the
-     * creation order of the items.
-     * </p>
-     * <p>
-     * Note: This is not the actual structure used by the receiver to maintain
-     * its list of items, so modifying the array will not affect the receiver.
-     * </p>
-     *
-     * @return the current visual order of the receiver's items
-     */
-    public int[] getColumnOrder()
-    {
-        checkWidget();
-
-        int[] order = new int[columns.size()];
-        int i = 0;
-        for (GridColumn col : displayOrderedColumns) {
-            order[i] = columns.indexOf(col);
-            i++;
-        }
-        return order;
-    }
-
-    /**
-     * Sets the order that the items in the receiver should be displayed in to
-     * the given argument which is described in terms of the zero-relative
-     * ordering of when the items were added.
-     *
-     * @param order the new order to display the items
-     */
-    public void setColumnOrder(int[] order)
-    {
-        checkWidget();
-
-        if (order == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-            return;
-        }
-
-        if (order.length != displayOrderedColumns.size()) {
-            SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-            return;
-        }
-
-        boolean[] seen = new boolean[displayOrderedColumns.size()];
-
-        for (int anOrder : order) {
-            if (anOrder < 0 || anOrder >= displayOrderedColumns.size()) {
-                SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-            }
-            if (seen[anOrder]) {
-                SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-            }
-            seen[anOrder] = true;
-        }
-
-        GridColumn[] cols = getColumns();
-
-        displayOrderedColumns.clear();
-
-        for (int anOrder : order) {
-            displayOrderedColumns.add(cols[anOrder]);
-        }
     }
 
     /**
@@ -1218,14 +1142,12 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
 
-        int index = displayOrderedColumns.indexOf(column);
+        int index = columns.indexOf(column);
 
         if (index == 0)
             return null;
 
-        index--;
-
-        return displayOrderedColumns.get(index);
+        return columns.get(index - 1);
     }
 
     /**
@@ -1238,14 +1160,12 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
 
-        int index = displayOrderedColumns.indexOf(column);
+        int index = columns.indexOf(column);
 
-        if (index == displayOrderedColumns.size() - 1)
+        if (index == columns.size() - 1)
             return null;
 
-        index++;
-
-        return displayOrderedColumns.get(index);
+        return columns.get(index + 1);
     }
 
     /**
@@ -2106,7 +2026,7 @@ public class LightGrid extends Canvas {
             }
         } else {
             if (x < firstVisibleX || col.getWidth() > getClientArea().width - firstVisibleX) {
-                int sel = displayOrderedColumns.indexOf(col);
+                int sel = columns.indexOf(col);
                 hScroll.setSelection(sel);
             } else {
                 int availableWidth = getClientArea().width - firstVisibleX - col.getWidth();
@@ -2116,7 +2036,7 @@ public class LightGrid extends Canvas {
 
                 while (true) {
                     if (prevCol == null || prevCol.getWidth() > availableWidth) {
-                        int sel = displayOrderedColumns.indexOf(currentScrollTo);
+                        int sel = columns.indexOf(currentScrollTo);
                         hScroll.setSelection(sel);
                         break;
                     } else {
@@ -2253,7 +2173,7 @@ public class LightGrid extends Canvas {
         if (rowHeaderVisible) {
             x += rowHeaderWidth;
         }
-        for (GridColumn column2 : displayOrderedColumns) {
+        for (GridColumn column2 : columns) {
             if (column2 == column) {
                 break;
             }
@@ -2276,7 +2196,7 @@ public class LightGrid extends Canvas {
         if (columnScrolling) {
             int pixels = 0;
             for (int i = 0; i < selection; i++) {
-                pixels += displayOrderedColumns.get(i).getWidth();
+                pixels += columns.get(i).getWidth();
             }
             selection = pixels;
         }
@@ -2347,9 +2267,8 @@ public class LightGrid extends Canvas {
 
         columnBeingResized.fireResized();
 
-        for (int index = displayOrderedColumns.indexOf(
-            columnBeingResized) + 1; index < displayOrderedColumns.size(); index++) {
-            GridColumn col = displayOrderedColumns.get(index);
+        for (int index = columns.indexOf(columnBeingResized) + 1; index < columns.size(); index++) {
+            GridColumn col = columns.get(index);
             col.fireMoved();
         }
     }
@@ -2374,7 +2293,7 @@ public class LightGrid extends Canvas {
 
             x2 -= getHScrollSelectionInPixels();
 
-            for (GridColumn column : displayOrderedColumns) {
+            for (GridColumn column : columns) {
                 x2 += column.getWidth();
 
                 if (x2 >= (x - COLUMN_RESIZER_THRESHOLD) && x2 <= (x + COLUMN_RESIZER_THRESHOLD)) {
@@ -2487,7 +2406,7 @@ public class LightGrid extends Canvas {
                 }
 
                 // draw regular cells for each column
-                for (GridColumn column : displayOrderedColumns) {
+                for (GridColumn column : columns) {
 
                     int width = column.getWidth();
 
@@ -2588,7 +2507,7 @@ public class LightGrid extends Canvas {
                 emptyCellRenderer.setFocus(false);
                 emptyCellRenderer.setSelected(false);
 
-                for (GridColumn column : displayOrderedColumns) {
+                for (GridColumn column : columns) {
                     emptyCellRenderer.setBounds(x, y, column.getWidth(), getItemHeight());
                     emptyCellRenderer.setColumn(indexOf(column));
                     emptyCellRenderer.paint(e.gc);
@@ -2635,44 +2554,6 @@ public class LightGrid extends Canvas {
     }
 
     /**
-     * Returns a column reference if the x,y coordinates are over a column
-     * header (header only).
-     *
-     * @param x mouse x
-     * @param y mouse y
-     * @return column reference which mouse is over, or null.
-     */
-    private GridColumn overColumnHeader(int x, int y)
-    {
-        GridColumn col = null;
-
-        if (y <= headerHeight && y > 0) {
-            col = getColumn(new Point(x, y));
-        }
-
-        return col;
-    }
-
-    /**
-     * Returns a column reference if the x,y coordinates are over a column
-     * header (header only).
-     *
-     * @param x mouse x
-     * @param y mouse y
-     * @return column reference which mouse is over, or null.
-     */
-    private GridColumn overColumnFooter(int x, int y)
-    {
-        GridColumn col = null;
-
-        if (y >= getClientArea().height - footerHeight) {
-            col = getColumn(new Point(x, y));
-        }
-
-        return col;
-    }
-
-    /**
      * Paints the header.
      *
      * @param gc gc from paint event
@@ -2691,7 +2572,7 @@ public class LightGrid extends Canvas {
             x += rowHeaderWidth;
         }
 
-        for (GridColumn column : displayOrderedColumns) {
+        for (GridColumn column : columns) {
             if (x > getClientArea().width)
                 break;
 
@@ -2741,7 +2622,7 @@ public class LightGrid extends Canvas {
             x += rowHeaderWidth;
         }
 
-        for (GridColumn column : displayOrderedColumns) {
+        for (GridColumn column : columns) {
             if (x > getClientArea().width)
                 break;
 
@@ -2850,7 +2731,7 @@ public class LightGrid extends Canvas {
                 int i = 0;
 
                 while (hiddenArea > 0 && i < getColumnCount()) {
-                    GridColumn col = displayOrderedColumns.get(i);
+                    GridColumn col = columns.get(i);
 
                     i++;
 
@@ -2985,16 +2866,16 @@ public class LightGrid extends Canvas {
 
                 do {
                     if (!firstLoop2) {
-                        int index = displayOrderedColumns.indexOf(currentColumn) + 1;
+                        int index = columns.indexOf(currentColumn) + 1;
 
-                        if (index < displayOrderedColumns.size()) {
-                            currentColumn = getVisibleColumn_DegradeRight(displayOrderedColumns.get(index));
+                        if (index < columns.size()) {
+                            currentColumn = columns.get(index);
                         } else {
                             currentColumn = null;
                         }
 
                         if (currentColumn != null)
-                            if (displayOrderedColumns.indexOf(currentColumn) > displayOrderedColumns.indexOf(endColumn))
+                            if (columns.indexOf(currentColumn) > columns.indexOf(endColumn))
                                 currentColumn = null;
                     }
 
@@ -3396,9 +3277,8 @@ public class LightGrid extends Canvas {
             if (hoveringOnColumnResizer) {
                 columnBeingResized.pack();
                 columnBeingResized.fireResized();
-                for (int index = displayOrderedColumns.indexOf(
-                    columnBeingResized) + 1; index < displayOrderedColumns.size(); index++) {
-                    GridColumn col = displayOrderedColumns.get(index);
+                for (int index = columns.indexOf(columnBeingResized) + 1; index < columns.size(); index++) {
+                    GridColumn col = columns.get(index);
                     col.fireMoved();
                 }
                 resizingColumn = false;
@@ -3535,9 +3415,9 @@ public class LightGrid extends Canvas {
                     if (hoveringColumn == null) {
                         if (e.x > rowHeaderWidth) {
                             //then we must be hovering way to the right
-                            intentColumn = getVisibleColumn_DegradeLeft(displayOrderedColumns.get(displayOrderedColumns.size() - 1));
+                            intentColumn = columns.get(columns.size() - 1);
                         } else {
-                            intentColumn = displayOrderedColumns.get(0);
+                            intentColumn = columns.get(0);
                         }
                     }
 
@@ -3586,8 +3466,7 @@ public class LightGrid extends Canvas {
 
                     List<GridPos> newSelected = new ArrayList<GridPos>();
 
-                    boolean decreasing = (displayOrderedColumns.indexOf(iterCol) > displayOrderedColumns.indexOf(
-                        focusColumn));
+                    boolean decreasing = (columns.indexOf(iterCol) > columns.indexOf(focusColumn));
 
                     do {
                         getCells(iterCol, newSelected);
@@ -3733,12 +3612,12 @@ public class LightGrid extends Canvas {
                     if (impliedFocusItem >= 0 && impliedFocusColumn != null) {
                         newSelection = impliedFocusItem;
 
-                        int index = displayOrderedColumns.indexOf(impliedFocusColumn);
+                        int index = columns.indexOf(impliedFocusColumn);
 
                         index++;
 
-                        if (index < displayOrderedColumns.size()) {
-                            newColumnFocus = displayOrderedColumns.get(index);
+                        if (index < columns.size()) {
+                            newColumnFocus = columns.get(index);
                         } else {
                             newColumnFocus = impliedFocusColumn;
                         }
@@ -3750,12 +3629,10 @@ public class LightGrid extends Canvas {
                     if (impliedFocusItem >= 0 && impliedFocusColumn != null) {
                         newSelection = impliedFocusItem;
 
-                        int index = displayOrderedColumns.indexOf(impliedFocusColumn);
+                        int index = columns.indexOf(impliedFocusColumn);
 
                         if (index != 0) {
-                            newColumnFocus = displayOrderedColumns.get(index - 1);
-
-                            newColumnFocus = getVisibleColumn_DegradeLeft(newColumnFocus);
+                            newColumnFocus = columns.get(index - 1);
                         } else {
                             newColumnFocus = impliedFocusColumn;
                         }
@@ -3768,11 +3645,7 @@ public class LightGrid extends Canvas {
                 }
 
                 if (impliedFocusColumn != null) {
-                    if (newSelection >= 0) {
-                        newColumnFocus = getVisibleColumn_DegradeLeft(impliedFocusColumn);
-                    } else {
-                        newColumnFocus = impliedFocusColumn;
-                    }
+                    newColumnFocus = impliedFocusColumn;
                 }
 
                 break;
@@ -3786,11 +3659,7 @@ public class LightGrid extends Canvas {
                 }
 
                 if (impliedFocusColumn != null) {
-                    if (newSelection >= 0) {
-                        newColumnFocus = getVisibleColumn_DegradeLeft(impliedFocusColumn);
-                    } else {
-                        newColumnFocus = impliedFocusColumn;
-                    }
+                    newColumnFocus = impliedFocusColumn;
                 }
                 break;
             case SWT.HOME:
@@ -3799,7 +3668,7 @@ public class LightGrid extends Canvas {
                 } else {
                     newSelection = impliedFocusItem;
                 }
-                newColumnFocus = getVisibleColumn_DegradeRight(displayOrderedColumns.get(0));
+                newColumnFocus = columns.get(0);
 
                 break;
             case SWT.END:
@@ -3809,7 +3678,7 @@ public class LightGrid extends Canvas {
                     } else {
                         newSelection = impliedFocusItem;
                     }
-                    newColumnFocus = getVisibleColumn_DegradeLeft(displayOrderedColumns.get(displayOrderedColumns.size() - 1));
+                    newColumnFocus = columns.get(columns.size() - 1);
                 }
 
                 break;
@@ -3947,7 +3816,7 @@ public class LightGrid extends Canvas {
 
         x -= getHScrollSelectionInPixels();
 
-        for (GridColumn colIter : displayOrderedColumns) {
+        for (GridColumn colIter : columns) {
             if (colIter == column) {
                 break;
             }
@@ -4188,10 +4057,8 @@ public class LightGrid extends Canvas {
 
         if (index == -1) {
             columns.add(column);
-            displayOrderedColumns.add(column);
         } else {
             columns.add(index, column);
-            displayOrderedColumns.add(index, column);
 
             for (int i = 0; i < columns.size(); i++) {
                 columns.get(i).setColumnIndex(i);
@@ -4241,7 +4108,6 @@ public class LightGrid extends Canvas {
         }
 
         columns.remove(column);
-        displayOrderedColumns.remove(column);
 
         // Check focus column
         if (column == focusColumn) {
@@ -4264,16 +4130,6 @@ public class LightGrid extends Canvas {
             updateColumnSelection();
         }
 
-    }
-
-    /**
-     * Updates the cached number of visible items by the given amount.
-     *
-     * @param amount amount to update cached total
-     */
-    void updateVisibleItems(int amount)
-    {
-        currentVisibleItems += amount;
     }
 
     /**
@@ -4363,62 +4219,6 @@ public class LightGrid extends Canvas {
         this.columnScrolling = columnScrolling;
         scrollValuesObsolete = true;
         redraw();
-    }
-
-    /**
-     * Returns the first visible column that is not spanned by any other column that is either the
-     * given column or any of the columns displaying to the left of the given column.  If the
-     * given column and subsequent columns to the right are either not visible or spanned, this
-     * method will return null.
-     *
-     * @param col
-     * @return
-     */
-    private GridColumn getVisibleColumn_DegradeLeft(GridColumn col)
-    {
-        int index = displayOrderedColumns.indexOf(col);
-
-        GridColumn prevCol = col;
-
-        for (int j = 0; j < index; j++) {
-            GridColumn tempCol = displayOrderedColumns.get(j);
-            if (0 >= index - j) {
-                prevCol = tempCol;
-                break;
-            }
-        }
-
-        return prevCol;
-    }
-
-    /**
-     * Returns the first visible column that is not spanned by any other column that is either the
-     * given column or any of the columns displaying to the right of the given column.  If the
-     * given column and subsequent columns to the right are either not visible or spanned, this
-     * method will return null.
-     *
-     * @param col
-     * @return
-     */
-    private GridColumn getVisibleColumn_DegradeRight(GridColumn col)
-    {
-        int index = displayOrderedColumns.indexOf(col);
-        int startIndex = index;
-
-        while (index > 0) {
-
-            index--;
-            if (0 >= startIndex - index) {
-                if (startIndex == displayOrderedColumns.size() - 1) {
-                    return null;
-                } else {
-                    return getVisibleColumn_DegradeRight(displayOrderedColumns.get(startIndex + 1));
-                }
-            }
-
-        }
-
-        return col;
     }
 
     /**
@@ -4547,7 +4347,7 @@ public class LightGrid extends Canvas {
         GridColumn oldFocusColumn = focusColumn;
         int oldFocusItem = focusItem;
 
-        focusColumn = displayOrderedColumns.get(0);
+        focusColumn = columns.get(0);
         focusItem = 0;
 
         List<GridPos> cells = new ArrayList<GridPos>();
@@ -4725,7 +4525,7 @@ public class LightGrid extends Canvas {
      */
     private Point getSelectionRange(int fromItem, GridColumn fromColumn, int toItem, GridColumn toColumn)
     {
-        if (displayOrderedColumns.indexOf(fromColumn) > displayOrderedColumns.indexOf(toColumn)) {
+        if (columns.indexOf(fromColumn) > columns.indexOf(toColumn)) {
             GridColumn temp = fromColumn;
             fromColumn = toColumn;
             toColumn = temp;
@@ -4997,10 +4797,10 @@ public class LightGrid extends Canvas {
         }
 
         if (startColumnIndex <= endColumnIndex) {
-            if (displayOrderedColumns.size() > 0) {
+            if (columns.size() > 0) {
                 List<GridColumn> cols = new ArrayList<GridColumn>();
                 for (int i = startColumnIndex; i <= endColumnIndex; i++) {
-                    GridColumn col = displayOrderedColumns.get(i);
+                    GridColumn col = columns.get(i);
                     cols.add(col);
                 }
 
@@ -5036,7 +4836,7 @@ public class LightGrid extends Canvas {
             return endColumnIndex;
         }
 
-        if (displayOrderedColumns.size() == 0) {
+        if (columns.isEmpty()) {
             endColumnIndex = 0;
         } else if (getVisibleGridWidth() < 1) {
             endColumnIndex = getStartColumnIndex();
@@ -5050,12 +4850,10 @@ public class LightGrid extends Canvas {
             }
 
             int startIndex = getStartColumnIndex();
-            GridColumn[] columns = new GridColumn[displayOrderedColumns.size()];
-            displayOrderedColumns.toArray(columns);
 
-            for (int i = startIndex; i < columns.length; i++) {
+            for (int i = startIndex; i < columns.size(); i++) {
                 endColumnIndex = i;
-                GridColumn column = columns[i];
+                GridColumn column = columns.get(i);
                 x += column.getWidth();
 
                 if (x > getClientArea().width) {
