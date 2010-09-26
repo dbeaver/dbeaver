@@ -14,9 +14,8 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
@@ -55,7 +54,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         return value == null ? DBConstants.NULL_VALUE_LABEL : formatter.formatValue(value);
     }
 
-    protected Object getColumnValue(DBRProgressMonitor monitor, ResultSet resultSet, DBSColumnBase column,
+    protected Object getColumnValue(DBCExecutionContext context, ResultSet resultSet, DBSTypedObject column,
                                     int columnIndex)
         throws DBCException, SQLException
     {
@@ -92,7 +91,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    protected void bindParameter(DBRProgressMonitor monitor, PreparedStatement statement, DBSTypedObject paramType,
+    protected void bindParameter(DBCExecutionContext context, PreparedStatement statement, DBSTypedObject paramType,
                                  int paramIndex, Object value) throws SQLException
     {
         if (value == null) {
@@ -185,7 +184,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         return Number.class;
     }
 
-    public Object copyValueObject(DBRProgressMonitor monitor, Object value)
+    public Object copyValueObject(DBCExecutionContext context, Object value)
         throws DBCException
     {
         // Number are immutable

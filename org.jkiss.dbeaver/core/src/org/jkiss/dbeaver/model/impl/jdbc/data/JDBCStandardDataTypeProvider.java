@@ -42,6 +42,8 @@ public class JDBCStandardDataTypeProvider implements DBDDataTypeProvider {
             case BINARY:
             case LOB:
                 return new JDBCContentValueHandler();
+            case ARRAY:
+                return new JDBCArrayValueHandler();
             default:
                 return null;
         }

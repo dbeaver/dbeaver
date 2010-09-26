@@ -496,7 +496,9 @@
 
         <!-- Data Export -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-            <command commandId="org.jkiss.dbeaver.core.open.object"/>
+            <command commandId="org.jkiss.dbeaver.core.open.object">
+                <visibleWhen checkEnabled="true"/>
+            </command>
 
             <command commandId="org.jkiss.dbeaver.core.edit.copy.fullname">
                 <visibleWhen checkEnabled="true"/>
@@ -990,8 +992,8 @@
             <type standard="JAVA_OBJECT"/>
             <type standard="DISTINCT"/>
             <type standard="STRUCT"/>
-            <type standard="ARRAY"/>
             -->
+            <type standard="ARRAY"/>
             <type standard="BLOB"/>
             <type standard="CLOB"/>
             <!--

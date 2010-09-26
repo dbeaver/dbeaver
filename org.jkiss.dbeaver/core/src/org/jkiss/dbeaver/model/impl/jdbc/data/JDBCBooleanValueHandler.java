@@ -11,8 +11,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
 
@@ -29,7 +28,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
 
     static final Log log = LogFactory.getLog(JDBCBooleanValueHandler.class);
 
-    protected Object getColumnValue(DBRProgressMonitor monitor, ResultSet resultSet, DBSColumnBase column,
+    protected Object getColumnValue(DBCExecutionContext context, ResultSet resultSet, DBSTypedObject column,
                                     int columnIndex)
         throws DBCException, SQLException
     {
@@ -37,7 +36,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
         return resultSet.wasNull() ? null : value;
     }
 
-    protected void bindParameter(DBRProgressMonitor monitor, PreparedStatement statement, DBSTypedObject paramType,
+    protected void bindParameter(DBCExecutionContext context, PreparedStatement statement, DBSTypedObject paramType,
                                  int paramIndex, Object value) throws SQLException
     {
         if (value == null) {
@@ -52,7 +51,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
         return Boolean.class;
     }
 
-    public Object copyValueObject(DBRProgressMonitor monitor, Object value)
+    public Object copyValueObject(DBCExecutionContext context, Object value)
         throws DBCException
     {
         // Boolean is immutable

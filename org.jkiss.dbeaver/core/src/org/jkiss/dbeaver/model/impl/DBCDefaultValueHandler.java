@@ -10,12 +10,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.dbc.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
@@ -32,20 +27,20 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
         return Object.class;
     }
 
-    public Object getValueObject(DBRProgressMonitor monitor, DBCResultSet resultSet, DBSColumnBase column,
+    public Object getValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject column,
                                  int columnIndex) throws DBCException
     {
         Object value = resultSet.getColumnValue(columnIndex + 1);
         return value;
     }
 
-    public void bindValueObject(DBRProgressMonitor monitor, DBCStatement statement, DBSTypedObject columnType,
+    public void bindValueObject(DBCExecutionContext context, DBCStatement statement, DBSTypedObject columnType,
                                 int paramIndex, Object value) throws DBCException
     {
         
     }
 
-    public Object copyValueObject(DBRProgressMonitor monitor, Object value)
+    public Object copyValueObject(DBCExecutionContext context, Object value)
         throws DBCException
     {
         return value;
@@ -59,6 +54,12 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
         if (value == null) {
             return DBConstants.NULL_VALUE_LABEL;
         }
+        String className = value.getClass().getName();
+        if (className.startsWith("java.lang") || className.startsWith("java.util")) {
+            // Standard types just use toString
+            return value.toString();
+        }
+        // Unknown types prinyt their class name
         return "[" + value.getClass().getSimpleName() + "]"; 
     }
 

@@ -699,7 +699,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             columnIndex,
             inline ? inlinePlaceholder : null);
         try {
-            return metaColumn.getValueHandler().editValue(valueController);
+            boolean result = metaColumn.getValueHandler().editValue(valueController);
+            if (!result) {
+                DBeaverUtils.showErrorDialog(site.getShell(), "Edit", "Edit of '" + valueController.getColumnId() + "' is not supported");
+            }
+            return result;
         }
         catch (Exception e) {
             log.error(e);
@@ -908,22 +912,27 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
-                    // Copy cell values
-                    Object[] origRow = curRows.get(currentRowNumber);
-                    for (int i = 0; i < metaColumns.length; i++) {
-                        DBDColumnBinding metaColumn = metaColumns[i];
-                        if (metaColumn.getTableColumn().isAutoIncrement()) {
-                            // set autoincrement columns to null
-                            cells[i] = null;
-                        } else {
-                            try {
-                                cells[i] = metaColumn.getValueHandler().copyValueObject(monitor, origRow[i]);
-                            }
-                            catch (DBCException e) {
-                                log.warn(e);
-                                cells[i] = DBUtils.makeNullValue(origRow[i]);
+                    // Copy cell values in new context
+                    DBCExecutionContext context = getDataContainer().getDataSource().openContext(monitor, "Copy row values");
+                    try {
+                        Object[] origRow = curRows.get(currentRowNumber);
+                        for (int i = 0; i < metaColumns.length; i++) {
+                            DBDColumnBinding metaColumn = metaColumns[i];
+                            if (metaColumn.getTableColumn().isAutoIncrement()) {
+                                // set autoincrement columns to null
+                                cells[i] = null;
+                            } else {
+                                try {
+                                    cells[i] = metaColumn.getValueHandler().copyValueObject(context, origRow[i]);
+                                }
+                                catch (DBCException e) {
+                                    log.warn(e);
+                                    cells[i] = DBUtils.makeNullValue(origRow[i]);
+                                }
                             }
                         }
+                    } finally {
+                        context.close();
                     }
                 }
             });
@@ -1755,7 +1764,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             for (int i = 0; i < keyColumns.size(); i++) {
                 DBCColumnMetaData keyColumn = keyColumns.get(i);
                 DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, keyColumn);
-                Object keyValue = valueHandler.getValueObject(context.getProgressMonitor(), resultSet, keyColumn, i);
+                Object keyValue = valueHandler.getValueObject(context, resultSet, keyColumn, i);
                 boolean updated = false;
                 if (!CommonUtils.isEmpty(keyColumn.getName())) {
                     int colIndex = getMetaColumnIndex(statement.table, keyColumn.getName());

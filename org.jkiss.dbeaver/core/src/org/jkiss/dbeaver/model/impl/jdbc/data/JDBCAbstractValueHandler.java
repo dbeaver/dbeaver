@@ -16,14 +16,9 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.dbc.*;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
@@ -38,21 +33,21 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
 
     static final Log log = LogFactory.getLog(JDBCAbstractValueHandler.class);
 
-    public final Object getValueObject(DBRProgressMonitor monitor, DBCResultSet resultSet, DBSColumnBase column, int columnIndex)
+    public final Object getValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject column, int columnIndex)
         throws DBCException
     {
         try {
-            return getColumnValue(monitor, (JDBCResultSet) resultSet, column, columnIndex + 1);
+            return getColumnValue(context, (JDBCResultSet) resultSet, column, columnIndex + 1);
         }
         catch (SQLException e) {
             throw new DBCException("Could not get result set value", e);
         }
     }
 
-    public final void bindValueObject(DBRProgressMonitor monitor, DBCStatement statement, DBSTypedObject columnMetaData,
+    public final void bindValueObject(DBCExecutionContext context, DBCStatement statement, DBSTypedObject columnMetaData,
                                       int paramIndex, Object value) throws DBCException {
         try {
-            this.bindParameter(monitor, (JDBCPreparedStatement) statement, columnMetaData, paramIndex + 1, value);
+            this.bindParameter(context, (JDBCPreparedStatement) statement, columnMetaData, paramIndex + 1, value);
         }
         catch (SQLException e) {
             throw new DBCException("Could not bind statement parameter", e);
@@ -120,11 +115,11 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         });
     }
 
-    protected abstract Object getColumnValue(DBRProgressMonitor monitor, ResultSet resultSet, DBSColumnBase column, int columnIndex)
+    protected abstract Object getColumnValue(DBCExecutionContext context, ResultSet resultSet, DBSTypedObject column, int columnIndex)
         throws DBCException, SQLException;
 
     protected abstract void bindParameter(
-        DBRProgressMonitor monitor,
+        DBCExecutionContext context,
         PreparedStatement statement,
         DBSTypedObject paramType,
         int paramIndex,

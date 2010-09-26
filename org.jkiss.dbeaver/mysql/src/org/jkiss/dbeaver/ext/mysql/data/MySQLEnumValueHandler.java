@@ -12,9 +12,8 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCAbstractValueHandler;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -39,9 +38,9 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     }
 
     protected Object getColumnValue(
-        DBRProgressMonitor monitor,
+        DBCExecutionContext context,
         ResultSet resultSet,
-        DBSColumnBase column,
+        DBSTypedObject column,
         int columnIndex)
         throws SQLException
     {
@@ -50,14 +49,14 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
             tableColumn = (DBSTableColumn)column;
         } else if (column instanceof DBCColumnMetaData) {
             try {
-                tableColumn = ((DBCColumnMetaData)column).getTableColumn(monitor);
+                tableColumn = ((DBCColumnMetaData)column).getTableColumn(context.getProgressMonitor());
             }
             catch (DBException e) {
                 throw new SQLException(e);
             }
         }
         if (tableColumn == null) {
-            throw new SQLException("Could not find table column for column '" + column.getName() + "'");
+            throw new SQLException("Could not find table column for column '" + columnIndex + "'");
         }
         MySQLTableColumn enumColumn;
         if (tableColumn instanceof MySQLTableColumn) {
@@ -69,7 +68,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public void bindParameter(DBRProgressMonitor monitor, PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
+    public void bindParameter(DBCExecutionContext context, PreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
         throws SQLException
     {
         MySQLTypeEnum e = (MySQLTypeEnum)value;
@@ -125,7 +124,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         return MySQLTypeEnum.class;
     }
 
-    public Object copyValueObject(DBRProgressMonitor monitor, Object value)
+    public Object copyValueObject(DBCExecutionContext context, Object value)
         throws DBCException
     {
         // String are immutable

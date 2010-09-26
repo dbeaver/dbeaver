@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
 import org.jkiss.dbeaver.model.jdbc.JDBCCallableStatement;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -21,7 +22,7 @@ import java.util.Map;
 public class CallableStatementManagable extends PreparedStatementManagable implements JDBCCallableStatement {
 
     public CallableStatementManagable(
-        ConnectionManagable connection,
+        JDBCExecutionContext connection,
         CallableStatement original,
         String query)
     {

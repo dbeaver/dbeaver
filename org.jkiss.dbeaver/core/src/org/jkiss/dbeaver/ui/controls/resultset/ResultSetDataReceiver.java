@@ -89,7 +89,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         for (int i = 0; i < columnsCount; i++) {
             try {
                 row[i] = metaColumns[i].getValueHandler().getValueObject(
-                    context.getProgressMonitor(),
+                    context,
                     resultSet,
                     metaColumns[i].getColumn(),
                     i);

@@ -157,6 +157,8 @@ public class JDBCUtils
                 return DBIcon.TYPE_BINARY;
             case LOB:
                 return DBIcon.TYPE_LOB;
+            case ARRAY:
+                return DBIcon.TYPE_ARRAY;
             default:
                 return DBIcon.TYPE_UNKNOWN;
         }

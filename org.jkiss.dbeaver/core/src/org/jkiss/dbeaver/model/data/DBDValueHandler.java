@@ -6,12 +6,7 @@ package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.dbc.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
@@ -32,38 +27,34 @@ public interface DBDValueHandler
 
     /**
      * Extracts object from result set
-     * @param monitor progress monitor
-     * @param resultSet result set
+     * @param context
+     *@param resultSet result set
      * @param column column
-     * @param columnIndex column index   @return value or null
-     * @return value
-     * @throws org.jkiss.dbeaver.model.dbc.DBCException on error
+     * @param columnIndex column index   @return value or null    @return value    @throws org.jkiss.dbeaver.model.dbc.DBCException on error
      */
-    Object getValueObject(DBRProgressMonitor monitor, DBCResultSet resultSet, DBSColumnBase column, int columnIndex)
+    Object getValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject column, int columnIndex)
         throws DBCException;
 
     /**
      * Binds specified parameter to statement
-     * @param monitor progress monitor
-     * @param statement statement
+     * @param context
+     *@param statement statement
      * @param columnType column type
      * @param paramIndex parameter index (starts from 0)
      * @param value parameter value (can be null). Value is get from getValueObject function or from
-     * object set by editor (editValue function).
-     * @throws org.jkiss.dbeaver.model.dbc.DBCException on error
+* object set by editor (editValue function).     @throws org.jkiss.dbeaver.model.dbc.DBCException on error
      */
-    void bindValueObject(DBRProgressMonitor monitor, DBCStatement statement, DBSTypedObject columnType, int paramIndex, Object value)
+    void bindValueObject(DBCExecutionContext context, DBCStatement statement, DBSTypedObject columnType, int paramIndex, Object value)
         throws DBCException;
 
     /**
      * Makes value copy. For Non-mutable objects (like numbers and string) may return the same value as passed in.
      * If copy operation is not supported for some values then may return null.
-     * @param monitor progress monitor
-     * @param value original value  @return copied value or null
-     * @return value copy
+     * @param context
+     *@param value original value  @return copied value or null  @return value copy
      * @throws org.jkiss.dbeaver.model.dbc.DBCException on error
      */
-    Object copyValueObject(DBRProgressMonitor monitor, Object value)
+    Object copyValueObject(DBCExecutionContext context, Object value)
         throws DBCException;
 
     /**

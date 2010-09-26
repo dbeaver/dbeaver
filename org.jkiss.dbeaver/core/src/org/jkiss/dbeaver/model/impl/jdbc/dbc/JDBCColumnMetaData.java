@@ -10,7 +10,9 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -52,7 +54,8 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
     {
         this.resultSetMeta = resultSetMeta;
 
-        DBSObject dataContainer = this.resultSetMeta.getResultSet().getSource().getDataContainer();
+        DBPObject rsSource = this.resultSetMeta.getResultSet().getSource();
+        DBSObject dataContainer = rsSource instanceof DBCStatement ? ((DBCStatement)rsSource).getDataContainer() : null;
         DBSTable ownerTable = null;
         if (dataContainer instanceof DBSTable) {
             ownerTable = (DBSTable)dataContainer;

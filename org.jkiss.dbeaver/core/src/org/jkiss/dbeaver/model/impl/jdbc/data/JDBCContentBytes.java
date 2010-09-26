@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -111,7 +112,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
     }
 
     public void bindParameter(
-        DBRProgressMonitor monitor,
+        DBCExecutionContext context,
         PreparedStatement preparedStatement,
         DBSTypedObject columnType,
         int paramIndex)

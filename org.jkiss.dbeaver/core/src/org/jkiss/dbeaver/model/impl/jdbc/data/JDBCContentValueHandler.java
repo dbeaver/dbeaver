@@ -16,10 +16,10 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -51,7 +51,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
     private static final int MAX_STRING_LENGTH = 0xfffff;
 
-    protected DBDContent getColumnValue(DBRProgressMonitor monitor, ResultSet resultSet, DBSColumnBase column,
+    protected DBDContent getColumnValue(DBCExecutionContext context, ResultSet resultSet, DBSTypedObject column,
                                         int columnIndex)
         throws DBCException, SQLException
     {
@@ -91,7 +91,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     }
 
     protected void bindParameter(
-        DBRProgressMonitor monitor,
+        DBCExecutionContext context,
         PreparedStatement statement,
         DBSTypedObject paramType,
         int paramIndex,
@@ -99,7 +99,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         throws DBCException, SQLException
     {
         if (value instanceof JDBCContentAbstract) {
-            ((JDBCContentAbstract)value).bindParameter(monitor, statement, paramType, paramIndex);
+            ((JDBCContentAbstract)value).bindParameter(context, statement, paramType, paramIndex);
         } else {
             throw new DBCException("Unsupported value type: " + value);
         }
@@ -110,11 +110,11 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         return DBDContent.class;
     }
 
-    public Object copyValueObject(DBRProgressMonitor monitor, Object value)
+    public Object copyValueObject(DBCExecutionContext context, Object value)
         throws DBCException
     {
         if (value instanceof DBDValueClonable) {
-            return ((DBDValueClonable)value).cloneValue(monitor);
+            return ((DBDValueClonable)value).cloneValue(context.getProgressMonitor());
         }
         // Copy not supported
         if (value instanceof DBDValue) {

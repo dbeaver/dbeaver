@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 
 import java.sql.ResultSet;
@@ -17,7 +18,7 @@ public class ResultSetStatement extends PreparedStatementManagable {
     private ResultSet resultSet;
 
     public ResultSetStatement(
-        ConnectionManagable connection,
+        JDBCExecutionContext connection,
         ResultSet resultSet,
         String description)
     {

@@ -188,7 +188,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     continue;
                 }
                 DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, column.getColumn());
-                valueHandler.bindValueObject(context.getProgressMonitor(), dbStat, column.getColumn(), paramNum++, column.getValue());
+                valueHandler.bindValueObject(context, dbStat, column.getColumn(), paramNum++, column.getValue());
             }
 
             // Execute statement
@@ -244,7 +244,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             for (int i = 0; i < allColumn.size(); i++) {
                 DBDColumnValue column = allColumn.get(i);
                 DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, column.getColumn());
-                valueHandler.bindValueObject(context.getProgressMonitor(), dbStat, column.getColumn(), i, column.getValue());
+                valueHandler.bindValueObject(context, dbStat, column.getColumn(), i, column.getValue());
             }
 
             // Execute statement
@@ -285,7 +285,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             for (int i = 0; i < keyColumns.size(); i++) {
                 DBDColumnValue column = keyColumns.get(i);
                 DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, column.getColumn());
-                valueHandler.bindValueObject(context.getProgressMonitor(), dbStat, column.getColumn(), i, column.getValue());
+                valueHandler.bindValueObject(context, dbStat, column.getColumn(), i, column.getValue());
             }
 
             // Execute statement

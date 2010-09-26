@@ -9,8 +9,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
@@ -28,7 +27,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
 
     private static final int MAX_STRING_LENGTH = 0xffff;
 
-    protected Object getColumnValue(DBRProgressMonitor monitor, ResultSet resultSet, DBSColumnBase column,
+    protected Object getColumnValue(DBCExecutionContext context, ResultSet resultSet, DBSTypedObject column,
                                     int columnIndex)
         throws SQLException
     {
@@ -36,7 +35,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public void bindParameter(DBRProgressMonitor monitor, PreparedStatement statement, DBSTypedObject paramType,
+    public void bindParameter(DBCExecutionContext context, PreparedStatement statement, DBSTypedObject paramType,
                               int paramIndex, Object value)
         throws SQLException
     {
@@ -78,7 +77,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         return String.class;
     }
 
-    public Object copyValueObject(DBRProgressMonitor monitor, Object value)
+    public Object copyValueObject(DBCExecutionContext context, Object value)
         throws DBCException
     {
         // String are immutable

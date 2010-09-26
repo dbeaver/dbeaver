@@ -283,7 +283,7 @@ public class SQLQueryJob extends DataSourceJob
             if (!CommonUtils.isEmpty(query.getParameters())) {
                 for (SQLStatementParameter param : query.getParameters()) {
                     param.getValueHandler().bindValueObject(
-                        context.getProgressMonitor(),
+                        context,
                         curStatement,
                         param.getParamType(),
                         param.getIndex(),

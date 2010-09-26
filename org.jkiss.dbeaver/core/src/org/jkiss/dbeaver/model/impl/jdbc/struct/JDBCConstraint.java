@@ -106,13 +106,13 @@ public abstract class JDBCConstraint<DATASOURCE extends DBPDataSource, TABLE ext
                 keyPattern = keyPattern.toString() + "%";
             }
             if (keyPattern != null) {
-                keyValueHandler.bindValueObject(context.getProgressMonitor(), dbStat, keyColumn, paramPos++, keyPattern);
+                keyValueHandler.bindValueObject(context, dbStat, keyColumn, paramPos++, keyPattern);
             }
 
             if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
                 for (DBDColumnValue precColumn : preceedingKeys) {
                     DBDValueHandler precValueHandler = DBUtils.getColumnValueHandler(context, precColumn.getColumn());
-                    precValueHandler.bindValueObject(context.getProgressMonitor(), dbStat, precColumn.getColumn(), paramPos++, precColumn.getValue());
+                    precValueHandler.bindValueObject(context, dbStat, precColumn.getColumn(), paramPos++, precColumn.getValue());
                 }
             }
             dbStat.setLimit(0, 100);
@@ -131,13 +131,13 @@ public abstract class JDBCConstraint<DATASOURCE extends DBPDataSource, TABLE ext
                             break;
                         }
                         // Get value and description
-                        Object keyValue = keyValueHandler.getValueObject(context.getProgressMonitor(), dbResult, keyColumn, 0);
+                        Object keyValue = keyValueHandler.getValueObject(context, dbResult, keyColumn, 0);
                         if (keyValue == null) {
                             continue;
                         }
                         String keyLabel = keyValueHandler.getValueDisplayString(keyColumn, keyValue);
                         if (descValueHandler != null) {
-                            Object descValue = descValueHandler.getValueObject(context.getProgressMonitor(), dbResult, descColumn, 1);
+                            Object descValue = descValueHandler.getValueObject(context, dbResult, descColumn, 1);
                             keyLabel = descValueHandler.getValueDisplayString(descColumn, descValue);
                         }
                         values.add(new DBDLabelValuePair(keyLabel, keyValue));

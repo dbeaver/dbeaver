@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
 import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 
@@ -24,7 +25,7 @@ public class PreparedStatementManagable extends StatementManagable implements JD
     protected final PreparedStatement original;
 
     public PreparedStatementManagable(
-        ConnectionManagable connection,
+        JDBCExecutionContext connection,
         PreparedStatement original,
         String query)
     {

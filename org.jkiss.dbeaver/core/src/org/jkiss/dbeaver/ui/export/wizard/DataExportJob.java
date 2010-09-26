@@ -206,7 +206,7 @@ public class DataExportJob extends AbstractJob {
                 // Get values
                 for (int i = 0; i < metaColumns.size(); i++) {
                     DBDColumnBinding column = metaColumns.get(i);
-                    Object value = column.getValueHandler().getValueObject(context.getProgressMonitor(), resultSet, column.getColumn(), i);
+                    Object value = column.getValueHandler().getValueObject(context, resultSet, column.getColumn(), i);
                     if (value instanceof DBDContent) {
                         // Check for binary type export
                         if (!ContentUtils.isTextContent((DBDContent)value)) {

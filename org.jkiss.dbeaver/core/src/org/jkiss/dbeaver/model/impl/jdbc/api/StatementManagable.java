@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCQueryPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -26,7 +27,7 @@ public abstract class StatementManagable implements JDBCStatement {
 
     static final Log log = LogFactory.getLog(StatementManagable.class);
 
-    private ConnectionManagable connection;
+    private JDBCExecutionContext connection;
 
     private String query;
     private String description;
@@ -37,7 +38,7 @@ public abstract class StatementManagable implements JDBCStatement {
 
     private DBSObject dataContainer;
 
-    public StatementManagable(ConnectionManagable connection)
+    public StatementManagable(JDBCExecutionContext connection)
     {
         this.connection = connection;
     }
@@ -82,7 +83,7 @@ public abstract class StatementManagable implements JDBCStatement {
         }
     }
 
-    public ConnectionManagable getConnection()
+    public JDBCExecutionContext getConnection()
     {
         return connection;
     }

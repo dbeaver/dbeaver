@@ -28,6 +28,7 @@ public class ResultSetManagable implements JDBCResultSet {
 
     static final Log log = LogFactory.getLog(ResultSetManagable.class);
 
+    private DBCExecutionContext context;
     private PreparedStatementManagable statement;
     private ResultSet original;
     private long rowsFetched;
@@ -35,6 +36,7 @@ public class ResultSetManagable implements JDBCResultSet {
 
     public ResultSetManagable(PreparedStatementManagable statement, ResultSet original)
     {
+        this.context = statement.getContext();
         this.statement = statement;
         this.original = original;
     }
@@ -46,7 +48,7 @@ public class ResultSetManagable implements JDBCResultSet {
 
     public DBCExecutionContext getContext()
     {
-        return statement.getContext();
+        return context;
     }
 
     public DBCStatement getSource()
