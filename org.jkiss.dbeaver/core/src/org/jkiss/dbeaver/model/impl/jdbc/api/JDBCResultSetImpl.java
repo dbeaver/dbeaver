@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.dbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -24,29 +25,31 @@ import java.util.Map;
 /**
  * Managable result set
  */
-public class ResultSetManagable implements JDBCResultSet {
+public class JDBCResultSetImpl implements JDBCResultSet {
 
-    static final Log log = LogFactory.getLog(ResultSetManagable.class);
+    static final Log log = LogFactory.getLog(JDBCResultSetImpl.class);
 
     private DBCExecutionContext context;
-    private PreparedStatementManagable statement;
+    private JDBCPreparedStatementImpl statement;
     private ResultSet original;
     private long rowsFetched;
     private long maxRows = -1;
 
-    public ResultSetManagable(PreparedStatementManagable statement, ResultSet original)
+    public JDBCResultSetImpl(JDBCPreparedStatementImpl statement, ResultSet original)
     {
         this.context = statement.getContext();
         this.statement = statement;
         this.original = original;
+        QMUtils.getDefaultHandler().handleResultSetOpen(this);
     }
 
-    protected void startBlock()
+    protected void beforeFetch()
     {
         //this.context.getProgressMonitor().startBlock(statement, null);
+        //QMUtils.getDefaultHandler().handleResultSetFetch(this);
     }
 
-    protected void endBlock()
+    protected void afterFetch()
     {
         //this.context.getProgressMonitor().endBlock();
     }
@@ -66,7 +69,7 @@ public class ResultSetManagable implements JDBCResultSet {
         return statement;
     }
 
-    public PreparedStatementManagable getStatement()
+    public JDBCPreparedStatementImpl getStatement()
     {
         return statement;
     }
@@ -85,15 +88,11 @@ public class ResultSetManagable implements JDBCResultSet {
     public boolean nextRow()
         throws DBCException
     {
-        this.startBlock();
         try {
             return this.next();
         }
         catch (SQLException e) {
             throw new DBCException(e);
-        }
-        finally {
-            this.endBlock();
         }
     }
 
@@ -114,16 +113,24 @@ public class ResultSetManagable implements JDBCResultSet {
         if (maxRows >= 0 && rowsFetched >= maxRows) {
             return false;
         }
-        // Fetch next row
-        boolean fetched = original.next();
-        if (fetched) {
-            rowsFetched++;
+
+        this.beforeFetch();
+        try {
+            // Fetch next row
+            boolean fetched = original.next();
+            if (fetched) {
+                rowsFetched++;
+            }
+            return fetched;
         }
-        return fetched;
+        finally {
+            this.afterFetch();
+        }
     }
 
     public void close()
     {
+        QMUtils.getDefaultHandler().handleResultSetClose(this);
         try {
             original.close();
         }

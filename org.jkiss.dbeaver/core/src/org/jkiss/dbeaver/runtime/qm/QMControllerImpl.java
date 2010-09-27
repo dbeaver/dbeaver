@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.runtime.qm;
 
 import org.apache.commons.logging.Log;
@@ -5,7 +9,12 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMExecutionHandler;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,22 +25,36 @@ public class QMControllerImpl implements QMController {
 
     static final Log log = LogFactory.getLog(QMControllerImpl.class);
 
-    private QMExecutionHandlerImpl defaultHandler;
+    private QMExecutionHandler defaultHandler;
+    private QMMExecutionHandler metaHandler;
     private List<QMExecutionHandler> handlers = new ArrayList<QMExecutionHandler>();
     private DataSourceRegistry dataSourceRegistry;
 
     public QMControllerImpl(DataSourceRegistry dataSourceRegistry) {
         this.dataSourceRegistry = dataSourceRegistry;
-        defaultHandler = new QMExecutionHandlerImpl(this);
+
+        defaultHandler = (QMExecutionHandler) Proxy.newProxyInstance(
+            getClass().getClassLoader(),
+            new Class[]{ QMExecutionHandler.class },
+            new NotifyInvocationHandler());
+
+        metaHandler = new QMMExecutionHandler();
+        registerHandler(metaHandler);
     }
 
     public void dispose()
     {
+        if (metaHandler != null) {
+            unregisterHandler(metaHandler);
+            metaHandler.dispose();
+            metaHandler = null;
+        }
+
         if (!handlers.isEmpty()) {
             log.warn("Some QM handlers are still registered: " + handlers);
             handlers.clear();
         }
-      	defaultHandler.dispose();
+      	defaultHandler = null;
     }
 
     public QMExecutionHandler getDefaultHandler() {
@@ -55,6 +78,36 @@ public class QMControllerImpl implements QMController {
     List<QMExecutionHandler> getHandlers()
     {
         return handlers;
+    }
+
+    private class NotifyInvocationHandler implements InvocationHandler {
+
+        public synchronized Object invoke(Object proxy, Method method, Object[] args)
+        {
+            if (method.getReturnType() == Void.TYPE && method.getName().startsWith("handle")) {
+                for (QMExecutionHandler handler : getHandlers()) {
+                    try {
+                        method.invoke(handler, args);
+                    } catch (InvocationTargetException e) {
+                        log.debug("Error notifying QM handler '" + handler.getHandlerName() + "'", e.getTargetException());
+                    } catch (Throwable e) {
+                        log.debug("Internal error while notifying QM handler '" + handler.getHandlerName() + "'", e);
+                    }
+                }
+                return null;
+            } else if (method.getName().equals("getHandlerName")) {
+                return "Default";
+            } else {
+                try {
+                    return method.invoke(this, args);
+                } catch (Throwable e) {
+                    // just ignore it
+                    log.debug("Error executing QM method " + method, e);
+                    return null;
+                }
+            }
+        }
+
     }
 
 }

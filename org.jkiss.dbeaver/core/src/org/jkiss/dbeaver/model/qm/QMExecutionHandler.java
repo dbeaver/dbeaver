@@ -10,11 +10,17 @@ import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
 import org.jkiss.dbeaver.model.dbc.DBCStatement;
 
 /**
- * Query manager
+ * Query manager execution handler.
+ * Handler methods are invoked right at time of DBC operation, so they should work as fast as possible.
+ * Implementers should not invoke any DBC execution function in passed objects - otherwise execution handling may enter infinite recursion.
  */
 public interface QMExecutionHandler {
 
     String getHandlerName();
+
+    void handleContextOpen(DBCExecutionContext context);
+
+    void handleContextClose(DBCExecutionContext context);
 
     void handleTransactionCommit(DBCExecutionContext context);
 
@@ -24,15 +30,15 @@ public interface QMExecutionHandler {
 
     void handleStatementOpen(DBCStatement statement);
 
-    void handleStatementExecute(DBCStatement statement);
+    void handleStatementExecuteBegin(DBCStatement statement);
+
+    void handleStatementExecuteEnd(DBCStatement statement);
 
     void handleStatementBind(DBCStatement statement, Object column, Object value);
 
     void handleStatementClose(DBCStatement statement);
 
     void handleResultSetOpen(DBCResultSet resultSet);
-
-    void handleResultSetFetch(DBCResultSet resultSet);
 
     void handleResultSetClose(DBCResultSet resultSet);
 

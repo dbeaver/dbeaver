@@ -417,7 +417,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                 //props.addProperty("databaseType", "Database Type", info.getDatabaseProductName() + " " + info.getDatabaseProductVersion());
             }
             props.addProperty("url", "URL", connectionInfo.getUrl());
-            if (isConnected()) {
+            if (isConnected() && dataSource.getInfo() != null) {
                 String serverName = dataSource.getInfo().getDatabaseProductName();
                 String serverVersion = dataSource.getInfo().getDatabaseProductVersion();
                 if (serverName != null) {

@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.dbc.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.dbc.DBCQueryTransformer;
-import org.jkiss.dbeaver.model.impl.jdbc.api.ConnectionManagable;
+import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -154,11 +154,11 @@ public abstract class JDBCDataSource
         if (connection == null) {
             throw new IllegalStateException("Not connected to database");
         }
-        return new ConnectionManagable(this, monitor, taskTitle, false);
+        return new JDBCConnectionImpl(this, monitor, taskTitle, false);
     }
 
     public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String taskTitle) {
-        return new ConnectionManagable(this, monitor, taskTitle, true);
+        return new JDBCConnectionImpl(this, monitor, taskTitle, true);
     }
 
     public DBSDataSourceContainer getContainer()

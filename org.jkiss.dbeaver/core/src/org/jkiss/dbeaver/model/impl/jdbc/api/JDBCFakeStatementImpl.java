@@ -13,29 +13,29 @@ import java.sql.ResultSet;
  * ResultSet container.
  * May be used as "fake" statement to wrap result sets returned by connection metadata or something.
  */
-public class ResultSetStatement extends PreparedStatementManagable {
+public class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl {
 
     private ResultSet resultSet;
 
-    public ResultSetStatement(
+    public JDBCFakeStatementImpl(
         JDBCExecutionContext connection,
         ResultSet resultSet,
         String description)
     {
-        super(connection, VoidStatement.INSTANCE, "?");
+        super(connection, JDBCVoidStatementImpl.INSTANCE, "?");
         this.resultSet = resultSet;
         setDescription(description);
     }
 
     public JDBCResultSet executeQuery()
     {
-        return new ResultSetManagable(this, resultSet);
+        return new JDBCResultSetImpl(this, resultSet);
     }
 
     @Override
     public JDBCResultSet getResultSet()
     {
-        return new ResultSetManagable(this, resultSet);
+        return new JDBCResultSetImpl(this, resultSet);
     }
 
 }

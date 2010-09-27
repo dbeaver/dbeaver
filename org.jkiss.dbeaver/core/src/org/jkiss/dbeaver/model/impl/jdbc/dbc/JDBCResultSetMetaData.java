@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
 import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetManagable;
+import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCResultSetImpl;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
@@ -28,12 +28,12 @@ import java.util.Map;
  */
 public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMetaData
 {
-    private ResultSetManagable resultSet;
+    private JDBCResultSetImpl resultSet;
     private ResultSetMetaData jdbcMetaData;
     private List<DBCColumnMetaData> columns = new ArrayList<DBCColumnMetaData>();
     private Map<String, JDBCTableMetaData> tables = new HashMap<String, JDBCTableMetaData>();
 
-    public JDBCResultSetMetaData(ResultSetManagable resultSet)
+    public JDBCResultSetMetaData(JDBCResultSetImpl resultSet)
         throws DBCException
     {
         this.resultSet = resultSet;
@@ -49,7 +49,7 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
         }
     }
 
-    public JDBCResultSetMetaData(ResultSetManagable resultSet, ResultSetMetaData original)
+    public JDBCResultSetMetaData(JDBCResultSetImpl resultSet, ResultSetMetaData original)
     {
         this.resultSet = resultSet;
         this.jdbcMetaData = original;

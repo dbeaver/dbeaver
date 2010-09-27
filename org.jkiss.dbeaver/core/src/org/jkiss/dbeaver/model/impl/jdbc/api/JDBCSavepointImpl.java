@@ -15,14 +15,14 @@ import java.sql.Savepoint;
 /**
  * Savepoint
  */
-public class SavepointManagable implements DBCSavepoint, Savepoint {
+public class JDBCSavepointImpl implements DBCSavepoint, Savepoint {
 
-    static final Log log = LogFactory.getLog(SavepointManagable.class);
+    static final Log log = LogFactory.getLog(JDBCSavepointImpl.class);
 
-    private ConnectionManagable connection;
+    private JDBCConnectionImpl connection;
     private Savepoint original;
 
-    public SavepointManagable(ConnectionManagable connection, Savepoint savepoint)
+    public JDBCSavepointImpl(JDBCConnectionImpl connection, Savepoint savepoint)
     {
         this.connection = connection;
         this.original = savepoint;

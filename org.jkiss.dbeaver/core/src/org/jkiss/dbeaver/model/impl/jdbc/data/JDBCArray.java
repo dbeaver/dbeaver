@@ -13,10 +13,8 @@ import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.dbc.DBCException;
 import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
 import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.api.ConnectionManagable;
-import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetManagable;
-import org.jkiss.dbeaver.model.impl.jdbc.api.ResultSetStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCFakeStatementImpl;
+import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCResultSetImpl;
 import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -75,8 +73,8 @@ public class JDBCArray implements DBDArray, DBDValueClonable {
             return null;
         }
         try {
-            DBCResultSet resultSet = new ResultSetManagable(
-                new ResultSetStatement((JDBCExecutionContext) context, dbResult, "Array result set"),
+            DBCResultSet resultSet = new JDBCResultSetImpl(
+                new JDBCFakeStatementImpl((JDBCExecutionContext) context, dbResult, "Array result set"),
                 dbResult);
             List<Object> data = new ArrayList<Object>();
             while (dbResult.next()) {

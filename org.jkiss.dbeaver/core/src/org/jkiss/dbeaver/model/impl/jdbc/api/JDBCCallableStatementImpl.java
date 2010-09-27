@@ -19,9 +19,9 @@ import java.util.Map;
  * Managable base statement.
  * Stores information about execution in query manager and operated progress monitor.
  */
-public class CallableStatementManagable extends PreparedStatementManagable implements JDBCCallableStatement {
+public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl implements JDBCCallableStatement {
 
-    public CallableStatementManagable(
+    public JDBCCallableStatementImpl(
         JDBCExecutionContext connection,
         CallableStatement original,
         String query)

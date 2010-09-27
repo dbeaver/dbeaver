@@ -2,17 +2,17 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.runtime.qm;
+package org.jkiss.dbeaver.runtime.qm.meta;
 
 import java.util.Map;
 
 /**
  * DBCStatement meta info
  */
-public class QMStatementMetaInfo {
+public class QMMStatementInfo {
 
     public class QMExecuteMetaInfo {
-        private QMTransactionMetaInfo transaction;
+        private QMMTransactionInfo transaction;
         private String queryString;
         private Map<Object, Object> parameters;
 

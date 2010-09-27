@@ -15,15 +15,32 @@ public interface DBCExecutionContext {
 
     String getTaskTitle();
 
+    /**
+     * Data source of this context
+     * @return data source
+     */
     DBPDataSource getDataSource();
 
+    /**
+     * Performs check that this context is really connected to remote database
+     * @return connected state
+     */
     boolean isConnected();
 
+    /**
+     * Context's progress monitor.
+     * Each context has it's progress monitor which is passed at context creation time and never changes.
+     * @return progress monitor
+     */
     DBRProgressMonitor getProgressMonitor();
 
+    /**
+     * Associated transaction manager
+     * @return transaction manager
+     */
     DBCTransactionManager getTransactionManager();
 
-    public DBDDataFormatterProfile getDataFormatterProfile();
+    DBDDataFormatterProfile getDataFormatterProfile();
 
     void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile);
 

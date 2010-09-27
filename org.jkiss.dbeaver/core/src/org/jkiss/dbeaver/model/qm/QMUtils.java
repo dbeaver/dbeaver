@@ -11,9 +11,14 @@ import org.jkiss.dbeaver.core.DBeaverCore;
  */
 public class QMUtils {
 
-    public static QMExecutionHandler getHandler()
+    private static QMExecutionHandler defaultHandler; 
+
+    public static QMExecutionHandler getDefaultHandler()
     {
-        return DBeaverCore.getInstance().getQueryManager().getDefaultHandler();
+        if (defaultHandler == null) {
+            defaultHandler = DBeaverCore.getInstance().getQueryManager().getDefaultHandler();
+        }
+        return defaultHandler;
     }
 
     public static void registerHandler(QMExecutionHandler handler)

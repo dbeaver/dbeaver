@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.model.dbc.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
 import org.jkiss.dbeaver.model.jdbc.*;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
@@ -27,9 +28,9 @@ import java.util.Properties;
 /**
  * Managable connection
  */
-public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObject {
+public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObject {
 
-    static final Log log = LogFactory.getLog(ConnectionManagable.class);
+    static final Log log = LogFactory.getLog(JDBCConnectionImpl.class);
 
     private JDBCConnector connector;
     private DBRProgressMonitor monitor;
@@ -38,7 +39,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     private Connection isolatedConnection;
     private DBDDataFormatterProfile dataFormatterProfile;
 
-    public ConnectionManagable(JDBCConnector connector, DBRProgressMonitor monitor, String taskTitle, boolean isolated)
+    public JDBCConnectionImpl(JDBCConnector connector, DBRProgressMonitor monitor, String taskTitle, boolean isolated)
     {
         this.connector = connector;
         this.monitor = monitor;
@@ -50,6 +51,8 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         if (taskTitle != null) {
             monitor.startBlock(this, taskTitle);
         }
+
+        QMUtils.getDefaultHandler().handleContextOpen(this);
     }
 
     private Connection getConnection()
@@ -137,9 +140,9 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         throws SQLFeatureNotSupportedException
     {
         if (statement instanceof CallableStatement) {
-            return new CallableStatementManagable(this, (CallableStatement)statement, null);
+            return new JDBCCallableStatementImpl(this, (CallableStatement)statement, null);
         } else if (statement instanceof PreparedStatement) {
-            return new PreparedStatementManagable(this, (PreparedStatement)statement, null);
+            return new JDBCPreparedStatementImpl(this, (PreparedStatement)statement, null);
         } else {
             throw new SQLFeatureNotSupportedException();
         }
@@ -154,13 +157,13 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     public JDBCPreparedStatement prepareStatement(String sql)
         throws SQLException
     {
-        return new PreparedStatementManagable(this, getConnection().prepareStatement(sql), sql);
+        return new JDBCPreparedStatementImpl(this, getConnection().prepareStatement(sql), sql);
     }
 
     public JDBCCallableStatement prepareCall(String sql)
         throws SQLException
     {
-        return new CallableStatementManagable(this, getConnection().prepareCall(sql), sql);
+        return new JDBCCallableStatementImpl(this, getConnection().prepareCall(sql), sql);
     }
 
     public String nativeSQL(String sql)
@@ -199,6 +202,8 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     public void close()
         //throws SQLException
     {
+        QMUtils.getDefaultHandler().handleContextClose(this);
+
         if (taskTitle != null) {
             monitor.endBlock();
         }
@@ -224,7 +229,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     public JDBCDatabaseMetaData getMetaData()
         throws SQLException
     {
-        return new DatabaseMetaDataManagable(this, getConnection().getMetaData());
+        return new JDBCDatabaseMetaDataImpl(this, getConnection().getMetaData());
     }
 
     public void setReadOnly(boolean readOnly)
@@ -284,7 +289,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     public JDBCPreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency)
         throws SQLException
     {
-        return new PreparedStatementManagable(
+        return new JDBCPreparedStatementImpl(
             this,
             getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency),
             sql);
@@ -293,7 +298,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     public JDBCCallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency)
         throws SQLException
     {
-        return new CallableStatementManagable(this, getConnection().prepareCall(sql, resultSetType, resultSetConcurrency), sql);
+        return new JDBCCallableStatementImpl(this, getConnection().prepareCall(sql, resultSetType, resultSetConcurrency), sql);
     }
 
     public Map<String, Class<?>> getTypeMap()
@@ -335,8 +340,8 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     public void rollback(Savepoint savepoint)
         throws SQLException
     {
-        if (savepoint instanceof SavepointManagable) {
-            savepoint = ((SavepointManagable)savepoint).getOriginal();
+        if (savepoint instanceof JDBCSavepointImpl) {
+            savepoint = ((JDBCSavepointImpl)savepoint).getOriginal();
         }
         getConnection().rollback(savepoint);
     }
@@ -344,8 +349,8 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     public void releaseSavepoint(Savepoint savepoint)
         throws SQLException
     {
-        if (savepoint instanceof SavepointManagable) {
-            savepoint = ((SavepointManagable)savepoint).getOriginal();
+        if (savepoint instanceof JDBCSavepointImpl) {
+            savepoint = ((JDBCSavepointImpl)savepoint).getOriginal();
         }
         getConnection().releaseSavepoint(savepoint);
     }
@@ -359,7 +364,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     public JDBCPreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
         throws SQLException
     {
-        return new PreparedStatementManagable(
+        return new JDBCPreparedStatementImpl(
             this,
             getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
             sql);
@@ -368,7 +373,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     public JDBCCallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
         throws SQLException
     {
-        return new CallableStatementManagable(
+        return new JDBCCallableStatementImpl(
             this,
             getConnection().prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
             sql);
@@ -377,19 +382,19 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
     public JDBCPreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
         throws SQLException
     {
-        return new PreparedStatementManagable(this, getConnection().prepareStatement(sql, autoGeneratedKeys), sql);
+        return new JDBCPreparedStatementImpl(this, getConnection().prepareStatement(sql, autoGeneratedKeys), sql);
     }
 
     public JDBCPreparedStatement prepareStatement(String sql, int[] columnIndexes)
         throws SQLException
     {
-        return new PreparedStatementManagable(this, getConnection().prepareStatement(sql, columnIndexes), sql);
+        return new JDBCPreparedStatementImpl(this, getConnection().prepareStatement(sql, columnIndexes), sql);
     }
 
     public JDBCPreparedStatement prepareStatement(String sql, String[] columnNames)
         throws SQLException
     {
-        return new PreparedStatementManagable(this, getConnection().prepareStatement(sql, columnNames), sql);
+        return new JDBCPreparedStatementImpl(this, getConnection().prepareStatement(sql, columnNames), sql);
     }
 
     public Clob createClob()
@@ -501,14 +506,14 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
 
         public DBPDataSource getDataSource()
         {
-            return ConnectionManagable.this.getDataSource();
+            return JDBCConnectionImpl.this.getDataSource();
         }
 
         public DBPTransactionIsolation getTransactionIsolation()
             throws DBCException
         {
             try {
-                return JDBCTransactionIsolation.getByCode(ConnectionManagable.this.getTransactionIsolation());
+                return JDBCTransactionIsolation.getByCode(JDBCConnectionImpl.this.getTransactionIsolation());
             } catch (SQLException e) {
                 throw new JDBCException(e);
             }
@@ -521,7 +526,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
                 throw new JDBCException("Invalid transaction isolation parameter");
             }
             try {
-                ConnectionManagable.this.setTransactionIsolation(((JDBCTransactionIsolation)transactionIsolation).getCode());
+                JDBCConnectionImpl.this.setTransactionIsolation(((JDBCTransactionIsolation)transactionIsolation).getCode());
             } catch (SQLException e) {
                 throw new JDBCException(e);
             }
@@ -531,7 +536,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
             throws DBCException
         {
             try {
-                return ConnectionManagable.this.getAutoCommit();
+                return JDBCConnectionImpl.this.getAutoCommit();
             }
             catch (SQLException e) {
                 throw new JDBCException(e);
@@ -542,7 +547,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
             throws DBCException
         {
             try {
-                ConnectionManagable.this.setAutoCommit(autoCommit);
+                JDBCConnectionImpl.this.setAutoCommit(autoCommit);
             }
             catch (SQLException e) {
                 throw new JDBCException(e);
@@ -560,15 +565,15 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
             Savepoint savepoint;
             try {
                 if (name == null) {
-                    savepoint = ConnectionManagable.this.setSavepoint();
+                    savepoint = JDBCConnectionImpl.this.setSavepoint();
                 } else {
-                    savepoint = ConnectionManagable.this.setSavepoint(name);
+                    savepoint = JDBCConnectionImpl.this.setSavepoint(name);
                 }
             }
             catch (SQLException e) {
                 throw new DBCException(e);
             }
-            return new SavepointManagable(ConnectionManagable.this, savepoint);
+            return new JDBCSavepointImpl(JDBCConnectionImpl.this, savepoint);
         }
 
         public void releaseSavepoint(DBCSavepoint savepoint)
@@ -576,7 +581,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
         {
             try {
                 if (savepoint instanceof Savepoint) {
-                    ConnectionManagable.this.releaseSavepoint((Savepoint)savepoint);
+                    JDBCConnectionImpl.this.releaseSavepoint((Savepoint)savepoint);
                 } else {
                     throw new SQLFeatureNotSupportedException("Bad savepoint object");
                 }
@@ -590,7 +595,7 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
             throws DBCException
         {
             try {
-                ConnectionManagable.this.commit();
+                JDBCConnectionImpl.this.commit();
             }
             catch (SQLException e) {
                 throw new JDBCException(e);
@@ -603,12 +608,12 @@ public class ConnectionManagable implements JDBCExecutionContext, DBRBlockingObj
             try {
                 if (savepoint != null) {
                     if (savepoint instanceof Savepoint) {
-                        ConnectionManagable.this.rollback((Savepoint)savepoint);
+                        JDBCConnectionImpl.this.rollback((Savepoint)savepoint);
                     } else {
                         throw new SQLFeatureNotSupportedException("Bad savepoint object");
                     }
                 }
-                ConnectionManagable.this.rollback();
+                JDBCConnectionImpl.this.rollback();
             }
             catch (SQLException e) {
                 throw new JDBCException(e);

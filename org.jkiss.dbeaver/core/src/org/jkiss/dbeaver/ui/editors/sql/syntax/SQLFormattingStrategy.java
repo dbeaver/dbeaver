@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
 /**
  * The formatting strategy that transforms SQL keywords to upper case
  */
-public class SQLWordStrategy extends ContextBasedFormattingStrategy
+public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
 {
 
     private SQLSyntaxManager sqlSyntax;
@@ -19,9 +19,9 @@ public class SQLWordStrategy extends ContextBasedFormattingStrategy
     /**
    * According to profileName to determine which the database syntax keywords highlighted.
    *
-   * @param _profileName
+   * @param syntax syntax manager
    */
-    public SQLWordStrategy(SQLSyntaxManager syntax)
+    public SQLFormattingStrategy(SQLSyntaxManager syntax)
     {
         sqlSyntax = syntax;
     }
@@ -70,9 +70,6 @@ public class SQLWordStrategy extends ContextBasedFormattingStrategy
         return newContent.toString();
     }
 
-    /**
-   * @see org.eclipse.jface.text.formatter.IFormattingStrategy#formatterStops()
-   */
     public void formatterStops()
     {
     }

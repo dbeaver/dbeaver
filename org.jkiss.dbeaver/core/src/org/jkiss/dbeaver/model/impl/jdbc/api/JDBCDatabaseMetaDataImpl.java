@@ -14,12 +14,12 @@ import java.sql.SQLException;
 /**
  * JDBC database metadata managable
  */
-public class DatabaseMetaDataManagable implements JDBCDatabaseMetaData  {
+public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
 
-    private ConnectionManagable connection;
+    private JDBCConnectionImpl connection;
     private DatabaseMetaData original;
 
-    public DatabaseMetaDataManagable(ConnectionManagable connection, DatabaseMetaData original)
+    public JDBCDatabaseMetaDataImpl(JDBCConnectionImpl connection, DatabaseMetaData original)
     {
         this.connection = connection;
         this.original = original;
@@ -31,12 +31,12 @@ public class DatabaseMetaDataManagable implements JDBCDatabaseMetaData  {
         if (args.length > 0) {
             description += "[]";
         }
-        return new ResultSetManagable(
-            new ResultSetStatement(connection, resultSet, description),
+        return new JDBCResultSetImpl(
+            new JDBCFakeStatementImpl(connection, resultSet, description),
             resultSet);
     }
 
-    public ConnectionManagable getConnection()
+    public JDBCConnectionImpl getConnection()
     {
         return connection;
     }

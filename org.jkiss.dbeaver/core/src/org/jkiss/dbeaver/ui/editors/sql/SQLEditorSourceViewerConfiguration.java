@@ -208,7 +208,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         ContentFormatter formatter = new ContentFormatter();
         formatter.setDocumentPartitioning(SQLPartitionScanner.SQL_PARTITIONING);
 
-        IFormattingStrategy formattingStrategy = new SQLWordStrategy(editor.getSyntaxManager());
+        IFormattingStrategy formattingStrategy = new SQLFormattingStrategy(editor.getSyntaxManager());
         formatter.setFormattingStrategy(formattingStrategy, IDocument.DEFAULT_CONTENT_TYPE);
 
         return formatter;
