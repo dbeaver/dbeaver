@@ -17,7 +17,6 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.AbstractDocumentProvider;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -380,7 +379,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
     {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         IFile newFile = workspace.getRoot().getFile(path);
-        fireElementMoved(fileEditorInput, new FileEditorInput(newFile));
+        fireElementMoved(fileEditorInput, new ProjectFileEditorInput(newFile));
     }
 
     /**

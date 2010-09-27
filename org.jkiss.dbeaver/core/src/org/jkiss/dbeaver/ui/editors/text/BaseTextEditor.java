@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.StatusTextEditor;
 import org.jkiss.dbeaver.core.DBeaverCore;
 
