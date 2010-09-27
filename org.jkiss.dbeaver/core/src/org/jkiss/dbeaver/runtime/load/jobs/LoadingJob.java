@@ -71,9 +71,4 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         return family == loadingService.getFamily();
     }
 
-    protected void canceling()
-    {
-        // TODO: guess what?
-    }
-
 }

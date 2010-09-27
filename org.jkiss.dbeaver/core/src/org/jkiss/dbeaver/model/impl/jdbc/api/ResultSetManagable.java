@@ -43,12 +43,12 @@ public class ResultSetManagable implements JDBCResultSet {
 
     protected void startBlock()
     {
-        this.context.getProgressMonitor().startBlock(statement, null);
+        //this.context.getProgressMonitor().startBlock(statement, null);
     }
 
     protected void endBlock()
     {
-        this.context.getProgressMonitor().endBlock();
+        //this.context.getProgressMonitor().endBlock();
     }
 
     public ResultSet getOriginal()
