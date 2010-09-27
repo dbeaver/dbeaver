@@ -382,12 +382,15 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
+/*
     protected void canceling()
     {
         // Cancel statement only for the second time cancel is called
-        /*if (!statementCancel) {
+        */
+/*if (!statementCancel) {
             statementCancel = true;
-        } else */
+        } else *//*
+
         {
             if (!statementCanceled && curStatement != null) {
                 try {
@@ -399,6 +402,7 @@ public class SQLQueryJob extends DataSourceJob
             }
         }
     }
+*/
 
     public long extractData(DBCExecutionContext context)
         throws DBException

@@ -63,10 +63,12 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
 
     public synchronized void startBlock(DBRBlockingObject object, String taskName)
     {
-        if (taskRunning) {
-            subTask(taskName);
-        } else {
-            beginTask(taskName, 1);
+        if (taskName != null) {
+            if (taskRunning) {
+                subTask(taskName);
+            } else {
+                beginTask(taskName, 1);
+            }
         }
         if (blocks == null) {
             blocks = new ArrayList<DBRBlockingObject>();

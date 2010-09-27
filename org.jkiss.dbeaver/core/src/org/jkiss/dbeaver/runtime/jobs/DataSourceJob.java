@@ -6,8 +6,11 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.progress.IProgressConstants;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
+import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 
@@ -60,5 +63,6 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
     {
         return getDataSource() == family || family == DBPDataSource.class;
     }
+
 
 }

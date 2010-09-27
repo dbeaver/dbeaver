@@ -41,6 +41,16 @@ public class ResultSetManagable implements JDBCResultSet {
         this.original = original;
     }
 
+    protected void startBlock()
+    {
+        this.context.getProgressMonitor().startBlock(statement, null);
+    }
+
+    protected void endBlock()
+    {
+        this.context.getProgressMonitor().endBlock();
+    }
+
     public ResultSet getOriginal()
     {
         return original;
@@ -75,11 +85,15 @@ public class ResultSetManagable implements JDBCResultSet {
     public boolean nextRow()
         throws DBCException
     {
+        this.startBlock();
         try {
             return this.next();
         }
         catch (SQLException e) {
             throw new DBCException(e);
+        }
+        finally {
+            this.endBlock();
         }
     }
 
