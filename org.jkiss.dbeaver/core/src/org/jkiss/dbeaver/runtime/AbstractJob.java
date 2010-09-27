@@ -22,9 +22,12 @@ public abstract class AbstractJob extends Job
 {
     static final Log log = LogFactory.getLog(AbstractJob.class);
 
+    public static final int TIMEOUT_BEFORE_BLOCK_CANCEL = 1*1000;
+
     private DBRProgressMonitor progressMonitor;
     private boolean finished = false;
     private boolean blockCanceled = false;
+    private int cancelTimeout = TIMEOUT_BEFORE_BLOCK_CANCEL;
 
     protected AbstractJob(String name)
     {
@@ -34,6 +37,16 @@ public abstract class AbstractJob extends Job
     protected DBRProgressMonitor getProgressMonitor()
     {
         return progressMonitor;
+    }
+
+    public int getCancelTimeout()
+    {
+        return cancelTimeout;
+    }
+
+    public void setCancelTimeout(int cancelTimeout)
+    {
+        this.cancelTimeout = cancelTimeout;
     }
 
     protected final IStatus run(IProgressMonitor monitor)
@@ -82,7 +95,7 @@ public abstract class AbstractJob extends Job
                 }
             };
             // Cancel it in three seconds
-            cancelJob.schedule(1*1000);
+            cancelJob.schedule(cancelTimeout);
         }
     }
 
