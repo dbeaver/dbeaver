@@ -62,8 +62,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
                     DBeaverUtils.showErrorDialog(
                         resultSetViewer.getControl().getShell(),
                         "Error executing query",
-                        null,
-                        err);
+                        err.getMessage());
                 }
             });
         }

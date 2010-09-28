@@ -876,7 +876,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         try {
             new DataUpdater().applyChanges(null);
         } catch (DBException e) {
-            log.error("Could not obtain result set metdata", e);
+            log.error("Could not obtain result set meta data", e);
         }
     }
 
