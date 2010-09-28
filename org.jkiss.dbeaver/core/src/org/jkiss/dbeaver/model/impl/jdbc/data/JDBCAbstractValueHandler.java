@@ -16,9 +16,9 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.dbc.*;
-import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 

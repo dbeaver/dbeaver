@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.jdbc;
+package org.jkiss.dbeaver.model.exec.jdbc;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;

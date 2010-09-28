@@ -12,8 +12,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
-import org.jkiss.dbeaver.model.prop.DBPProperty;
-import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
+import org.jkiss.dbeaver.model.DBPProperty;
+import org.jkiss.dbeaver.model.DBPPropertyGroup;
 import org.jkiss.dbeaver.registry.PropertyDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 

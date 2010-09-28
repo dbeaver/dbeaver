@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;

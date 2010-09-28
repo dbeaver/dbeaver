@@ -6,8 +6,8 @@ package org.jkiss.dbeaver.registry;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.model.prop.DBPProperty;
-import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
+import org.jkiss.dbeaver.model.DBPProperty;
+import org.jkiss.dbeaver.model.DBPPropertyGroup;
 
 import java.util.ArrayList;
 import java.util.List;

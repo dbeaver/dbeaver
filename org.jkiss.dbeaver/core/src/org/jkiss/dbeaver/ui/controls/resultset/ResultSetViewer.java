@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.dbc.*;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;

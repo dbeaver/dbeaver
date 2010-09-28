@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
+import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.exec.DBCTableMetaData;
 
 import java.util.Collection;
 

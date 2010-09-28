@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSEntity;

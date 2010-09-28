@@ -6,12 +6,12 @@ package org.jkiss.dbeaver.model.impl.jdbc.api;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.dbc.DBCResultSetMetaData;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.dbc.JDBCResultSetMetaData;
-import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 
 import java.io.InputStream;

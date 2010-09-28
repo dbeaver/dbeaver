@@ -10,8 +10,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Combo;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
 

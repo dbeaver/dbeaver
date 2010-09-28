@@ -9,10 +9,10 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPProperty;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.prop.DBPProperty;
-import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
+import org.jkiss.dbeaver.model.DBPPropertyGroup;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 import java.io.IOException;

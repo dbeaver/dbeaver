@@ -6,9 +6,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.PreparedStatement;

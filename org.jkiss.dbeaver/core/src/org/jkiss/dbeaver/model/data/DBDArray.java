@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**

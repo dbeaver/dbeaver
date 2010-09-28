@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueLocator;
-import org.jkiss.dbeaver.model.dbc.*;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;

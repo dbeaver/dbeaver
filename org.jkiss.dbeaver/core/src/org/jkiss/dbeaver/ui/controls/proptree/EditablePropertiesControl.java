@@ -20,8 +20,8 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.model.prop.DBPProperty;
-import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
+import org.jkiss.dbeaver.model.DBPProperty;
+import org.jkiss.dbeaver.model.DBPPropertyGroup;
 import org.jkiss.dbeaver.registry.PropertyDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 

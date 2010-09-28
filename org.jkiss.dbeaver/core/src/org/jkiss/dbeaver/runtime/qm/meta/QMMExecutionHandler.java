@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.runtime.qm.meta;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 

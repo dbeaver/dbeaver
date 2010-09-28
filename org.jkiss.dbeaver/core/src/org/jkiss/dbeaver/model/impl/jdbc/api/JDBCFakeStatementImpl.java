@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
-import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
 import java.sql.ResultSet;
 

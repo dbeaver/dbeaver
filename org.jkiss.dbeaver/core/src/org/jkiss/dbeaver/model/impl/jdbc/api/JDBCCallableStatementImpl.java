@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
-import org.jkiss.dbeaver.model.jdbc.JDBCCallableStatement;
-import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 
 import java.io.InputStream;
 import java.io.Reader;

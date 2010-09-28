@@ -4,9 +4,9 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 
 /**
  * Data reciever.

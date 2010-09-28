@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
 
-import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
+import org.jkiss.dbeaver.model.exec.DBCTableIdentifier;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 

@@ -4,10 +4,10 @@
 
 package org.jkiss.dbeaver.model.qm;
 
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
-import org.jkiss.dbeaver.model.dbc.DBCResultSet;
-import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 
 /**
  * Query manager execution handler.

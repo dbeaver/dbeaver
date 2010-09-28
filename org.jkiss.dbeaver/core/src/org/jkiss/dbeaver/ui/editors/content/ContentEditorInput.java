@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDContentStorageLocal;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;

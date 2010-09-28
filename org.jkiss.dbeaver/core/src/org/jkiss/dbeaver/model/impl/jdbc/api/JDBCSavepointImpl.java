@@ -6,8 +6,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.api;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.model.dbc.DBCSavepoint;
-import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 
 import java.sql.SQLException;
 import java.sql.Savepoint;

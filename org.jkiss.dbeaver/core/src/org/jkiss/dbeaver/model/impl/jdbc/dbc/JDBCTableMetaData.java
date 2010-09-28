@@ -8,8 +8,8 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.dbc.DBCTableIdentifier;
-import org.jkiss.dbeaver.model.dbc.DBCTableMetaData;
+import org.jkiss.dbeaver.model.exec.DBCTableIdentifier;
+import org.jkiss.dbeaver.model.exec.DBCTableMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 

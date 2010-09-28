@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.dbc.*;
+import org.jkiss.dbeaver.model.exec.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;

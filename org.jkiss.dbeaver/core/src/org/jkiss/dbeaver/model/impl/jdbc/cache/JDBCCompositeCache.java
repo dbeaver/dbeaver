@@ -9,9 +9,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 

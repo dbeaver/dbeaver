@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.jkiss.dbeaver.model.dbc.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCException;
 
 import java.sql.SQLException;
 

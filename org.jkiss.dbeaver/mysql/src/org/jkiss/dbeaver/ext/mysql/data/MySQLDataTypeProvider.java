@@ -8,7 +8,7 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.data.DBDDataTypeProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 

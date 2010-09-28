@@ -4,9 +4,9 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.dbc.DBCQueryTransformer;
-import org.jkiss.dbeaver.model.dbc.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 
 import java.sql.SQLException;
 import java.sql.Statement;

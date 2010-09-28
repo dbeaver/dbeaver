@@ -4,10 +4,10 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
-import org.jkiss.dbeaver.model.dbc.DBCException;
-import org.jkiss.dbeaver.model.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
 import java.io.InputStream;
 import java.io.Reader;

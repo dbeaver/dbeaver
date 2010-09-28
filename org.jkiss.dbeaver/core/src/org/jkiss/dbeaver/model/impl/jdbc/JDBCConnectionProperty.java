@@ -1,7 +1,11 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.jkiss.dbeaver.model.prop.DBPProperty;
-import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
+import org.jkiss.dbeaver.model.DBPProperty;
+import org.jkiss.dbeaver.model.DBPPropertyGroup;
 
 import java.sql.DriverPropertyInfo;
 

@@ -6,7 +6,7 @@ package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.dbc.*;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 
@@ -30,7 +30,7 @@ public interface DBDValueHandler
      * @param context
      *@param resultSet result set
      * @param column column
-     * @param columnIndex column index   @return value or null    @return value    @throws org.jkiss.dbeaver.model.dbc.DBCException on error
+     * @param columnIndex column index   @return value or null    @return value    @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
     Object getValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject column, int columnIndex)
         throws DBCException;
@@ -42,7 +42,7 @@ public interface DBDValueHandler
      * @param columnType column type
      * @param paramIndex parameter index (starts from 0)
      * @param value parameter value (can be null). Value is get from getValueObject function or from
-* object set by editor (editValue function).     @throws org.jkiss.dbeaver.model.dbc.DBCException on error
+* object set by editor (editValue function).     @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
     void bindValueObject(DBCExecutionContext context, DBCStatement statement, DBSTypedObject columnType, int paramIndex, Object value)
         throws DBCException;
@@ -52,7 +52,7 @@ public interface DBDValueHandler
      * If copy operation is not supported for some values then may return null.
      * @param context
      *@param value original value  @return copied value or null  @return value copy
-     * @throws org.jkiss.dbeaver.model.dbc.DBCException on error
+     * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
     Object copyValueObject(DBCExecutionContext context, Object value)
         throws DBCException;

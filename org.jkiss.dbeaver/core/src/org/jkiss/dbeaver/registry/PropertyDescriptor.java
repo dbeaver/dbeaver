@@ -7,8 +7,8 @@ package org.jkiss.dbeaver.registry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.model.prop.DBPProperty;
-import org.jkiss.dbeaver.model.prop.DBPPropertyGroup;
+import org.jkiss.dbeaver.model.DBPProperty;
+import org.jkiss.dbeaver.model.DBPPropertyGroup;
 
 /**
  * PropertyDescriptor

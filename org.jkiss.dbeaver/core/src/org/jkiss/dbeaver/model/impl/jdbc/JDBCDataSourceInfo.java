@@ -7,10 +7,10 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.dbc.DBCStateType;
+import org.jkiss.dbeaver.model.exec.DBCStateType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
-import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 import java.sql.DatabaseMetaData;

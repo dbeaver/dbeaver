@@ -11,7 +11,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCDateTimeValueHandler;
 
 import java.util.Calendar;

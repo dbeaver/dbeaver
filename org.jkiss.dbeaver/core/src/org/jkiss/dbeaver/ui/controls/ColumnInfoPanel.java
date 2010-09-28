@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.data.DBDRowController;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.dbc.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageStandard;

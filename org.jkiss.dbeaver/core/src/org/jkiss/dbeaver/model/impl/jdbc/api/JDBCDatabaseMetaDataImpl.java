@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
 
-import org.jkiss.dbeaver.model.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
 import java.sql.DatabaseMetaData;
 import java.sql.RowIdLifetime;

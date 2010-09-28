@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
-import org.jkiss.dbeaver.model.dbc.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 import java.util.Collection;
 import java.util.List;

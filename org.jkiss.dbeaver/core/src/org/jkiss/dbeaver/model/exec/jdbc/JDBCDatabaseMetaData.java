@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.jdbc;
+package org.jkiss.dbeaver.model.exec.jdbc;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
