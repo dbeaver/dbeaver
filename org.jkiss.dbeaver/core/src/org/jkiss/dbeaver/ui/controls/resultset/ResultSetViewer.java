@@ -83,6 +83,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private IWorkbenchPartSite site;
     private ResultSetMode mode;
+    private Composite viewerPanel;
     private Spreadsheet spreadsheet;
     private ResultSetProvider resultSetProvider;
     private ResultSetDataReceiver dataReceiver;
@@ -145,8 +146,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.backgroundModified = new Color(parent.getDisplay(), 0xFF, 0xE4, 0xB5);
         this.foregroundNull = parent.getDisplay().getSystemColor(SWT.COLOR_GRAY);
 
+        this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
+
         this.spreadsheet = new Spreadsheet(
-            parent,
+            viewerPanel,
             SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
             site,
             this,
@@ -154,8 +157,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             new ContentLabelProvider(),
             new ColumnLabelProvider(),
             new RowLabelProvider());
+        this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        createStatusBar(spreadsheet);
+        createStatusBar(viewerPanel);
         changeMode(ResultSetMode.GRID);
         this.resultSetProvider = resultSetProvider;
         this.dataReceiver = new ResultSetDataReceiver(this);
@@ -267,17 +271,21 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void createStatusBar(Composite parent)
     {
+        UIUtils.createHorizontalLine(parent);
+
         Composite statusBar = new Composite(parent, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         statusBar.setLayoutData(gd);
         GridLayout gl = new GridLayout(3, false);
-        gl.marginWidth = 5;
-        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        gl.marginHeight = 3;
+        //gl.marginBottom = 5;
         statusBar.setLayout(gl);
         
         statusLabel = new Text(statusBar, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         statusLabel.setLayoutData(gd);
+        statusLabel.setBackground(statusBar.getBackground());
 
         {
             ToolBar toolBar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL);
@@ -783,7 +791,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public Control getControl()
     {
-        return spreadsheet;
+        return viewerPanel;
     }
 
     public Object getInput()

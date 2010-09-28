@@ -88,6 +88,7 @@ public class Spreadsheet extends Composite implements Listener {
         layout.numColumns = 1;
         layout.makeColumnsEqualWidth = false;
         layout.marginWidth = 0;
+        layout.marginHeight = 0;
         this.setLayout(layout);
 
         this.site = site;

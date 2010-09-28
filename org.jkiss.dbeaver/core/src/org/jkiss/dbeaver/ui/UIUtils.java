@@ -15,10 +15,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Resource;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -191,6 +188,10 @@ public class UIUtils {
 
     public static void packColumns(Tree tree)
     {
+        packColumns(tree, false);
+    }
+    public static void packColumns(Tree tree, boolean fit)
+    {
         tree.setRedraw(false);
         try {
             // Check for disposed items
@@ -205,18 +206,24 @@ public class UIUtils {
                 column.pack();
                 totalWidth += column.getWidth();
             }
-            if (totalWidth > tree.getClientArea().width) {
-                int extraSpace = totalWidth - tree.getClientArea().width;
-                for (TreeColumn tc : tree.getColumns()) {
-                    double ratio = (double) tc.getWidth() / totalWidth;
-                    tc.setWidth((int) (tc.getWidth() - extraSpace * ratio));
-                }
-            } else if (totalWidth < tree.getClientArea().width) {
-                int extraSpace = tree.getClientArea().width - totalWidth;
-                int columnCount = tree.getColumnCount();
-                extraSpace /= columnCount;
-                for (TreeColumn tc : tree.getColumns()) {
-                    tc.setWidth(tc.getWidth() + extraSpace);
+            Rectangle clientArea = tree.getClientArea();
+            if (clientArea.isEmpty()) {
+                return;
+            }
+            if (fit) {
+                if (totalWidth > clientArea.width) {
+                    int extraSpace = totalWidth - clientArea.width;
+                    for (TreeColumn tc : tree.getColumns()) {
+                        double ratio = (double) tc.getWidth() / totalWidth;
+                        tc.setWidth((int) (tc.getWidth() - extraSpace * ratio));
+                    }
+                } else if (totalWidth < clientArea.width) {
+                    int extraSpace = clientArea.width - totalWidth;
+                    int columnCount = tree.getColumnCount();
+                    extraSpace /= columnCount;
+                    for (TreeColumn tc : tree.getColumns()) {
+                        tc.setWidth(tc.getWidth() + extraSpace);
+                    }
                 }
             }
         } finally {
@@ -383,10 +390,19 @@ public class UIUtils {
     {
         Composite ph = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(columns, false);
+        gl.verticalSpacing = 0;
+        gl.horizontalSpacing = 0;
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         ph.setLayout(gl);
         return ph;
+    }
+
+    public static Label createHorizontalLine(Composite parent)
+    {
+        Label horizontalLine = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+        horizontalLine.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1));
+        return horizontalLine;
     }
 
     public static String getComboSelection(Combo combo)

@@ -12,16 +12,19 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.plan.DBCExecutionPlanBuilder;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 /**
  * ResultSetViewer
@@ -30,6 +33,8 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
 {
     static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
+    private SQLEditor editor;
+    private Composite planPanel;
     private Tree planTree;
     private Label statusLabel;
 
@@ -39,14 +44,21 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
     private ToolItem itemLast;
     private ToolItem itemRefresh;
 
-    public ExplainPlanViewer(Composite parent)
+    private DBCExecutionPlanBuilder planBuilder;
+
+    public ExplainPlanViewer(SQLEditor editor, Composite parent)
     {
         super();
-        planTree = new Tree(
-            parent,
-            SWT.FULL_SELECTION | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL);
+        this.editor = editor;
+        this.planPanel = UIUtils.createPlaceholder(parent, 1);
 
-        createStatusBar(planTree);
+        this.planTree = new Tree(
+            planPanel,
+            SWT.FULL_SELECTION | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL);
+        planTree.setHeaderVisible(true);
+        planTree.setLinesVisible(true);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        planTree.setLayoutData(gd);
 
         planTree.addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e)
@@ -54,6 +66,39 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
                 dispose();
             }
         });
+        planTree.addPaintListener(new PaintListener() {
+            public void paintControl(PaintEvent e)
+            {
+                if (planBuilder == null) {
+                    Rectangle bounds = planTree.getBounds();
+                    String message;
+                    if (getDataSource() != null) {
+                        message = "Data provider doesn't support execution plan";
+                    } else {
+                        message = "Not connected to database";
+                    }
+                    Point ext = e.gc.textExtent(message);
+                    e.gc.drawText(message, (bounds.width - ext.x) / 2, (bounds.height - planTree.getHeaderHeight()) / 2);
+                }
+            }
+        });
+        planTree.setLayout(new GridLayout(1, true));
+        TreeColumn nameColumn = new TreeColumn(planTree, SWT.LEFT);
+        nameColumn.setText("Name");
+
+        TreeColumn objectColumn = new TreeColumn(planTree, SWT.LEFT);
+        objectColumn.setText("Object");
+
+        //createStatusBar(planPanel);
+
+        nameColumn.pack();
+        objectColumn.pack();
+        planTree.pack();
+    }
+
+    private DBPDataSource getDataSource()
+    {
+        return editor.getDataSource();
     }
 
     private void createStatusBar(Composite parent)
@@ -62,7 +107,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         statusBar.setLayoutData(gd);
         GridLayout gl = new GridLayout(2, false);
-        gl.marginWidth = 5;
+        gl.marginWidth = 0;
         gl.marginHeight = 0;
         statusBar.setLayout(gl);
 
@@ -112,7 +157,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
         if (!planTree.isDisposed()) {
             planTree.dispose();
         }
-        statusLabel.dispose();
+        //statusLabel.dispose();
     }
 
     public void setStatus(String status)
@@ -137,7 +182,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
 
     public Control getControl()
     {
-        return planTree;
+        return planPanel;
     }
 
     public Object getInput()
@@ -161,9 +206,18 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
     public void refresh()
     {
         // Refresh plan
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource instanceof DBCExecutionPlanBuilder) {
+            planBuilder = (DBCExecutionPlanBuilder)dataSource;
+        } else {
+            planBuilder = null;
+        }
+        planTree.removeAll();
+        UIUtils.packColumns(planTree, false);
     }
 
     public void propertyChange(PropertyChangeEvent event)
     {
     }
+
 }

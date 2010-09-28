@@ -102,6 +102,7 @@ public class SQLEditor extends BaseTextEditor
     private Control editorControl;
     private CTabFolder resultTabs;
     private ResultSetViewer resultsView;
+
     private ExplainPlanViewer planView;
     private SQLLogViewer logViewer;
     private SQLSyntaxManager syntaxManager;
@@ -163,7 +164,7 @@ public class SQLEditor extends BaseTextEditor
         getEditorInput().setDataSourceContainer(container);
         checkConnected();
 
-        refreshSyntax();
+        onDataSourceChange();
     }
 
     public ISourceViewer getSV() {
@@ -219,9 +220,6 @@ public class SQLEditor extends BaseTextEditor
         syntaxManager = new SQLSyntaxManager(this);
         setRangeIndicator(new DefaultRangeIndicator());
 
-        // Load syntax from datasource
-        refreshSyntax();
-
         sashForm = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
         sashForm.setSashWidth(10);
 
@@ -243,7 +241,7 @@ public class SQLEditor extends BaseTextEditor
 
             resultsView = new ResultSetViewer(resultTabs, getSite(), this);
 
-            planView = new ExplainPlanViewer(resultTabs);
+            planView = new ExplainPlanViewer(this, resultTabs);
             logViewer = new SQLLogViewer(resultTabs);
 
             // Create tabs
@@ -299,6 +297,9 @@ public class SQLEditor extends BaseTextEditor
 
         // Check connection
         checkConnected();
+
+        // Update controls
+        onDataSourceChange();
     }
 
     private ISharedTextColors getSharedColors()
@@ -788,8 +789,17 @@ public class SQLEditor extends BaseTextEditor
         }
     }
 
-    private void refreshSyntax()
+    private void onDataSourceChange()
     {
+        if (getDataSource() == null) {
+            resultsView.setStatus("Not connected to database");
+        } else {
+            resultsView.setStatus("Connected to '" + getDataSource().getContainer().getName() + "'");
+        }
+        // Refresh plan view
+        planView.refresh();
+
+        // Refresh syntax
         if (syntaxManager != null) {
             syntaxManager.changeDataSource();
         }
@@ -837,9 +847,7 @@ public class SQLEditor extends BaseTextEditor
                         switch (event.getAction()) {
                             case OBJECT_UPDATE:
                                 if (event.getEnabled() != null) {
-                                    if (event.getEnabled()) {
-                                        refreshSyntax();
-                                    } else {
+                                    if (!event.getEnabled()) {
                                         closeSession();
                                     }
                                 }
@@ -848,6 +856,7 @@ public class SQLEditor extends BaseTextEditor
                                 getSite().getWorkbenchWindow().getActivePage().closeEditor(SQLEditor.this, false);
                                 break;
                         }
+                        onDataSourceChange();
                     }
                 }
             );
