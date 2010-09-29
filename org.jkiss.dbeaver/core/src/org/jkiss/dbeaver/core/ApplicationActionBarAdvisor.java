@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.core;
 
-import org.eclipse.core.runtime.IExtension;
 import org.eclipse.jface.action.*;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IPageLayout;
@@ -14,9 +13,6 @@ import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
-import org.eclipse.ui.internal.WorkbenchPlugin;
-import org.eclipse.ui.internal.registry.ActionSetRegistry;
-import org.eclipse.ui.internal.registry.IActionSetDescriptor;
 import org.jkiss.dbeaver.ui.actions.common.AboutBoxAction;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
 import org.jkiss.dbeaver.ui.views.console.ConsoleView;
@@ -46,6 +42,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         super(configurer);
     }
 
+/*
     @SuppressWarnings("restriction")
 	private void removeActionExtension(String actionSetId)
     {
@@ -59,17 +56,18 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             reg.removeExtension(ext, new Object[]{actionSet});
         }
     }
+*/
 
     protected void makeActions(final IWorkbenchWindow window)
     {
         // Remove annotations actions
-        removeActionExtension("org.eclipse.ui.edit.text.actionSet.annotationNavigation"); //$NON-NLS-1$
+        //removeActionExtension("org.eclipse.ui.edit.text.actionSet.annotationNavigation"); //$NON-NLS-1$
         // Removing annoying gotoLastPosition Message.
-        removeActionExtension("org.eclipse.ui.edit.text.actionSet.navigation"); //$NON-NLS-1$
+        //removeActionExtension("org.eclipse.ui.edit.text.actionSet.navigation"); //$NON-NLS-1$
         // Removing convert line delimiters menu.
-        removeActionExtension("org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo"); //$NON-NLS-1$
+        //removeActionExtension("org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo"); //$NON-NLS-1$
         // Removing convert line delimiters menu.
-        removeActionExtension("org.eclipse.ui.actionSet.openFiles"); //$NON-NLS-1$
+        //removeActionExtension("org.eclipse.ui.actionSet.openFiles"); //$NON-NLS-1$
 
         // Creates the actions and registers them.
         // Registering is needed to ensure that key bindings work.
@@ -99,12 +97,14 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     {
         MenuManager fileMenu = new MenuManager("&File", IWorkbenchActionConstants.M_FILE);
         MenuManager editMenu = new MenuManager("&Edit", IWorkbenchActionConstants.M_EDIT);
+        MenuManager navigateMenu = new MenuManager("&Navigate", IWorkbenchActionConstants.M_NAVIGATE);
         MenuManager databaseMenu = new MenuManager("&Database", "dataSourceMenu");
         MenuManager windowMenu = new MenuManager("&Window", IWorkbenchActionConstants.M_WINDOW);
         MenuManager helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);
 
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
+        menuBar.add(navigateMenu);
         menuBar.add(databaseMenu);
         // Add a group marker indicating where action set menus will appear.
         menuBar.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
@@ -120,6 +120,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         editMenu.add(new Separator("undoredo"));
         editMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         editMenu.add(new Separator(IWorkbenchActionConstants.FIND_EXT));
+
+        // Navigate
+        navigateMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
         // Database
         databaseMenu.add(new Separator("driverGroup"));

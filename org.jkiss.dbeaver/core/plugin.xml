@@ -641,7 +641,7 @@
 
         <!-- Database menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
-            <menu id="SQLEditorMenu" label="SQL Editor">
+            <menu id="SQLEditorMenu" label="S&amp;QL Editor">
                 <visibleWhen>
                     <with variable="activeEditor">
                         <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>

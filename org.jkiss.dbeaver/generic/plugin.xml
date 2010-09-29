@@ -7,32 +7,6 @@
 <plugin>
 
     <extension
-        point="org.eclipse.ui.views">
-        <category
-            name="DBeaver"
-            id="org.jkiss.dbeaver.ext.generic">
-        </category>
-        <view
-            name="Edit Table"
-            icon="icons/sample.gif"
-            category="org.jkiss.dbeaver.ext.generic"
-            class="org.jkiss.dbeaver.ext.generic.views.EditTableView"
-            id="org.jkiss.dbeaver.ext.generic.views.EditTableView">
-        </view>
-    </extension>
-    <extension
-        point="org.eclipse.ui.perspectiveExtensions">
-        <perspectiveExtension
-            targetID="org.eclipse.jdt.ui.JavaPerspective">
-            <view
-                ratio="0.5"
-                relative="org.eclipse.ui.views.TaskList"
-                relationship="right"
-                id="org.jkiss.dbeaver.ext.generic.views.EditTableView">
-            </view>
-        </perspectiveExtension>
-    </extension>
-    <extension
         point="org.eclipse.help.contexts">
         <contexts
             file="contexts.xml">
@@ -170,9 +144,6 @@
                 </view>
             </views>
         </datasource>
-    </extension>
-    <extension
-        point="org.eclipse.ui.popupMenus">
     </extension>
 
 </plugin>
