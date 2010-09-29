@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -23,7 +22,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.texteditor.*;
-import org.eclipse.ui.texteditor.StatusLineContributionItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -38,18 +36,15 @@ import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.sql.*;
-import org.jkiss.dbeaver.ui.controls.DefaultMenuCreator;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Collection;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * SQL Editor contributor
@@ -58,44 +53,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
 {
     static final Log log = LogFactory.getLog(SQLEditorContributor.class);
 
-    private static class StatusFieldDef
-    {
-        private String category;
-        private String actionId;
-        private boolean visible;
-        private int widthInChars;
-
-        private StatusFieldDef(String category, String actionId, boolean visible, int widthInChars)
-        {
-            Assert.isNotNull(category);
-            this.category = category;
-            this.actionId = actionId;
-            this.visible = visible;
-            this.widthInChars = widthInChars;
-        }
-    }
-
-    private final static StatusFieldDef[] STATUS_FIELD_DEFS = {
-        new StatusFieldDef(ITextEditorActionConstants.STATUS_CATEGORY_FIND_FIELD, null, false, 30),
-        new StatusFieldDef(ITextEditorActionConstants.STATUS_CATEGORY_ELEMENT_STATE, null, true, 15),
-        new StatusFieldDef(ITextEditorActionConstants.STATUS_CATEGORY_INPUT_MODE, ITextEditorActionDefinitionIds.TOGGLE_OVERWRITE, true, 15),
-        new StatusFieldDef(ITextEditorActionConstants.STATUS_CATEGORY_INPUT_POSITION, ITextEditorActionConstants.GOTO_LINE, true, 15)
-    };
-    private Map<StatusFieldDef, StatusLineContributionItem> statusFields;
-
     private IEditorPart activeEditorPart;
-
-    private RetargetTextEditorAction editorActionFindNext;
-    private RetargetTextEditorAction editorActionFindPrevious;
-    private RetargetTextEditorAction editorActionIncrementalFind;
-    private RetargetTextEditorAction editorActionIncrementalFindReverse;
-    private RetargetTextEditorAction editorActionGotoLine;
-
-    private OpenSQLFileAction openFileAction;
-    private SaveSQLFileAction saveFileAction;
-    private ValidateStatementAction validateStatementAction;
-    private ExplainPlanAction explainPlanAction;
-    private AnalyseStatementAction analyseStatementAction;
 
     private Text resultSetSize;
     private Combo connectionCombo;
@@ -116,57 +74,12 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
 
     private void createActions()
     {
-        // Init status line
-        statusFields = new HashMap<StatusFieldDef, StatusLineContributionItem>(3);
-        for (StatusFieldDef fieldDef : STATUS_FIELD_DEFS) {
-            statusFields.put(
-                fieldDef,
-                new StatusLineContributionItem(
-                    fieldDef.category,
-                    fieldDef.visible,
-                    fieldDef.widthInChars));
-        }
-
-
-        // Init standard actions
-        ResourceBundle textEditorBundle = ResourceBundle.getBundle("org.eclipse.ui.texteditor.ConstructedEditorMessages");
-
-        editorActionFindNext= new RetargetTextEditorAction(textEditorBundle, "Editor.FindNext."); //$NON-NLS-1$
-        editorActionFindNext.setActionDefinitionId(IWorkbenchActionDefinitionIds.FIND_NEXT);
-        editorActionFindPrevious= new RetargetTextEditorAction(textEditorBundle, "Editor.FindPrevious."); //$NON-NLS-1$
-        editorActionFindPrevious.setActionDefinitionId(IWorkbenchActionDefinitionIds.FIND_PREVIOUS);
-        editorActionIncrementalFind= new RetargetTextEditorAction(textEditorBundle, "Editor.FindIncremental."); //$NON-NLS-1$
-        editorActionIncrementalFind.setActionDefinitionId(IWorkbenchActionDefinitionIds.FIND_INCREMENTAL);
-        editorActionIncrementalFindReverse= new RetargetTextEditorAction(textEditorBundle, "Editor.FindIncrementalReverse."); //$NON-NLS-1$
-        editorActionIncrementalFindReverse.setActionDefinitionId(IWorkbenchActionDefinitionIds.FIND_INCREMENTAL_REVERSE);
-        editorActionGotoLine= new RetargetTextEditorAction(textEditorBundle, "Editor.GotoLine."); //$NON-NLS-1$
-        editorActionGotoLine.setActionDefinitionId(ITextEditorActionDefinitionIds.LINE_GOTO);
-
-
         // Init custom actions
         ResourceBundle bundle = DBeaverCore.getInstance().getPlugin().getResourceBundle();
         contentAssistProposal = new RetargetTextEditorAction(bundle, "ContentAssistProposal.");
         contentAssistProposal.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         contentFormatProposal = new RetargetTextEditorAction(bundle, "ContentFormatProposal.");
         contentAssistTip = new RetargetTextEditorAction(bundle, "ContentAssistTip.");
-
-        // open SQL file
-        openFileAction = new OpenSQLFileAction() {
-            protected SQLEditor getEditor()
-            {
-                return SQLEditorContributor.this.getEditor();
-            }
-        };
-        saveFileAction = new SaveSQLFileAction() {
-            protected SQLEditor getEditor()
-            {
-                return SQLEditorContributor.this.getEditor();
-            }
-        };
-        // Execute statement
-        validateStatementAction = new ValidateStatementAction();
-        explainPlanAction = new ExplainPlanAction();
-        analyseStatementAction = new AnalyseStatementAction();
     }
 
     public void dispose()
@@ -197,13 +110,8 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
 
     public void setActiveEditor(IEditorPart targetEditor)
     {
+        super.setActiveEditor(targetEditor);
         // Update previous statuses
-        if (activeEditorPart instanceof ITextEditorExtension) {
-            ITextEditorExtension extension= (ITextEditorExtension)activeEditorPart;
-            for (StatusFieldDef STATUS_FIELD_DEF : STATUS_FIELD_DEFS) {
-                extension.setStatusField(null, STATUS_FIELD_DEF.category);
-            }
-        }
         if (activeEditorPart instanceof SQLEditor) {
             ((SQLEditor)activeEditorPart).getDataSourceContainer().getPreferenceStore().removePropertyChangeListener(this);
         }
@@ -216,24 +124,10 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
 
 
         // Update editor actions
-        editorActionFindNext.setAction(getAction(editor, ITextEditorActionConstants.FIND_NEXT));
-        editorActionFindPrevious.setAction(getAction(editor, ITextEditorActionConstants.FIND_PREVIOUS));
-        editorActionIncrementalFind.setAction(getAction(editor, ITextEditorActionConstants.FIND_INCREMENTAL));
-        editorActionIncrementalFindReverse.setAction(getAction(editor, ITextEditorActionConstants.FIND_INCREMENTAL_REVERSE));
-        editorActionGotoLine.setAction(getAction(editor, ITextEditorActionConstants.GOTO_LINE));
-
         contentAssistProposal.setAction(getAction(editor, SQLEditor.ACTION_CONTENT_ASSIST_PROPOSAL)); //$NON-NLS-1$
         contentAssistTip.setAction(getAction(editor, SQLEditor.ACTION_CONTENT_ASSIST_TIP)); //$NON-NLS-1$
+        contentFormatProposal.setAction(getAction(editor, SQLEditor.ACTION_CONTENT_FORMAT_PROPOSAL)); //$NON-NLS-1$
 
-        // Update status line
-        if (activeEditorPart instanceof ITextEditorExtension) {
-            for (StatusFieldDef STATUS_FIELD_DEF : STATUS_FIELD_DEFS) {
-                StatusLineContributionItem statusField = statusFields.get(STATUS_FIELD_DEF);
-                statusField.setActionHandler(getAction(editor, STATUS_FIELD_DEF.actionId));
-                ITextEditorExtension extension = (ITextEditorExtension) activeEditorPart;
-                extension.setStatusField(statusField, STATUS_FIELD_DEF.category);
-            }
-        }
         if (activeEditorPart instanceof SQLEditor) {
             ((SQLEditor)activeEditorPart).getDataSourceContainer().getPreferenceStore().addPropertyChangeListener(this);
         }
@@ -242,111 +136,27 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
     public void init(IActionBars bars)
     {
         super.init(bars);
-
-        IActionBars actionBars = getActionBars();
-        if (actionBars != null) {
-/*
-
-            ITextEditor editor = (activeEditorPart instanceof ITextEditor) ? (ITextEditor) activeEditorPart : null;
-
-            actionBars.setGlobalActionHandler(
-                ActionFactory.DELETE.getId(),
-                getAction(editor, ITextEditorActionConstants.DELETE));
-            actionBars.setGlobalActionHandler(
-                ActionFactory.UNDO.getId(),
-                getAction(editor, ITextEditorActionConstants.UNDO));
-            actionBars.setGlobalActionHandler(
-                ActionFactory.REDO.getId(),
-                getAction(editor, ITextEditorActionConstants.REDO));
-            actionBars.setGlobalActionHandler(
-                ActionFactory.CUT.getId(),
-                getAction(editor, ITextEditorActionConstants.CUT));
-            actionBars.setGlobalActionHandler(
-                ActionFactory.COPY.getId(),
-                getAction(editor, ITextEditorActionConstants.COPY));
-            actionBars.setGlobalActionHandler(
-                ActionFactory.PASTE.getId(),
-                getAction(editor, ITextEditorActionConstants.PASTE));
-            actionBars.setGlobalActionHandler(
-                ActionFactory.SELECT_ALL.getId(),
-                getAction(editor, ITextEditorActionConstants.SELECT_ALL));
-            actionBars.setGlobalActionHandler(
-                ActionFactory.FIND.getId(),
-                getAction(editor, ITextEditorActionConstants.FIND));
-            actionBars.setGlobalActionHandler(
-                IDEActionFactory.BOOKMARK.getId(),
-                getAction(editor, IDEActionFactory.BOOKMARK.getId()));
-
-            actionBars.setGlobalActionHandler(
-                ICommandIds.CMD_EXECUTE_STATEMENT,
-                executeStatementAction);
-
-            actionBars.setGlobalActionHandler(
-                ICommandIds.CMD_EXECUTE_SCRIPT,
-                executeScriptAction);
-*/
-            actionBars.updateActionBars();
-
-            IMenuManager menuManager = actionBars.getMenuManager();
-            IMenuManager editMenu = menuManager.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
-            if (editMenu != null) {
-                editMenu.add(new Separator());
-                editMenu.add(contentAssistProposal);
-                editMenu.add(contentAssistTip);
-                //editMenu.add(new Separator());
-                //editMenu.add(executeStatementAction);
-                //editMenu.add(executeScriptAction);
-            }
-        }
     }
 
     public void contributeToMenu(IMenuManager manager)
     {
         super.contributeToMenu(manager);
 
-        IMenuManager menu = new MenuManager("S&QL Editor", "SQLEditorMenu");
-        manager.prependToGroup(IWorkbenchActionConstants.MB_ADDITIONS, menu);
-        menu.add(openFileAction);
-        menu.add(saveFileAction);
-        menu.add(new Separator());
-        if (activeEditorPart != null) {
-            menu.add(ViewUtils.makeCommandContribution(activeEditorPart.getSite(), ICommandIds.CMD_EXECUTE_STATEMENT));
-            menu.add(ViewUtils.makeCommandContribution(activeEditorPart.getSite(), ICommandIds.CMD_EXECUTE_SCRIPT));
-        }
-        menu.add(validateStatementAction);
-        menu.add(explainPlanAction);
-        menu.add(analyseStatementAction);
-
         IMenuManager editMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
         if (editMenu != null) {
-            editMenu.prependToGroup(IWorkbenchActionConstants.FIND_EXT, editorActionIncrementalFindReverse);
-            editMenu.prependToGroup(IWorkbenchActionConstants.FIND_EXT, editorActionIncrementalFind);
-            editMenu.prependToGroup(IWorkbenchActionConstants.FIND_EXT, editorActionFindPrevious);
-            editMenu.prependToGroup(IWorkbenchActionConstants.FIND_EXT, editorActionFindNext);
-
-            editMenu.prependToGroup(IWorkbenchActionConstants.MB_ADDITIONS, editorActionGotoLine);
-
-            editMenu.add(new Separator());
+            //editMenu.add(new Separator());
             editMenu.add(contentAssistProposal);
-            editMenu.add(contentFormatProposal);
             editMenu.add(contentAssistTip);
-
+            editMenu.add(contentFormatProposal);
+            //editMenu.add(new Separator());
+            //editMenu.add(executeStatementAction);
+            //editMenu.add(executeScriptAction);
         }
-
     }
 
     public void contributeToToolBar(IToolBarManager manager)
     {
         super.contributeToToolBar(manager);
-        // Execution
-        //manager.add(executeStatementAction);
-        //manager.add(executeScriptAction);
-        //manager.add(executeScriptAction);
-
-        manager.add(new Separator());
-        manager.add(validateStatementAction);
-        manager.add(explainPlanAction);
-        manager.add(analyseStatementAction);
         manager.add(new ControlContribution("ResultSet Size")
         {
             protected Control createControl(Composite parent)
@@ -474,9 +284,6 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
     public void contributeToStatusLine(IStatusLineManager statusLineManager)
     {
         super.contributeToStatusLine(statusLineManager);
-        for (StatusFieldDef STATUS_FIELD_DEF : STATUS_FIELD_DEFS) {
-            statusLineManager.add(statusFields.get(STATUS_FIELD_DEF));
-        }
     }
 
     public void handleDataSourceEvent(DBPEvent event)
@@ -524,20 +331,6 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                 fillDatabaseCombo(monitor, editor);
             }
         });
-
-
-        updateActions(editor);
-    }
-
-    private void updateActions(SQLEditor editor)
-    {
-        // Enable actions
-        //boolean isConnected = editor != null && editor.getDataSourceContainer() != null && editor.getDataSourceContainer().isConnected();
-        //executeStatementAction.setEnabled(isConnected);
-        //executeScriptAction.setEnabled(isConnected);
-        validateStatementAction.setEnabled(false);
-        explainPlanAction.setEnabled(false);
-        analyseStatementAction.setEnabled(false);
     }
 
     private void changeResultSetSize()

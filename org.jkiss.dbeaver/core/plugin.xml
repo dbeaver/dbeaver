@@ -139,6 +139,9 @@
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate" icon="icons/sql/sql_validate.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse" icon="icons/sql/sql_analyse.png"/>
 
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" icon="IMG_ETOOL_SAVEAS_EDIT"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" icon="IMG_OBJ_FOLDER"/>
+
         <image commandId="org.jkiss.dbeaver.core.resultset.row.first" icon="icons/sql/resultset_first.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.previous" icon="icons/sql/resultset_previous.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.next" icon="icons/sql/resultset_next.png"/>
@@ -355,6 +358,48 @@
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute"/>
                     </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" class="org.jkiss.dbeaver.ui.actions.sql.ExplainPlanHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse" class="org.jkiss.dbeaver.ui.actions.sql.AnalyseStatementHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate" class="org.jkiss.dbeaver.ui.actions.sql.ValidateStatementHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" class="org.jkiss.dbeaver.ui.actions.sql.SaveSQLFileHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" class="org.jkiss.dbeaver.ui.actions.sql.OpenSQLFileHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -613,6 +658,15 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"/>
             </menu>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext">
+            <separator name="files" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"/>
+            <separator name="execute" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
         </menuContribution>
 
     </extension>

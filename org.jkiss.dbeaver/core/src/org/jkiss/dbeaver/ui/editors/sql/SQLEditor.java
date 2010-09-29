@@ -36,7 +36,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.*;
-import org.eclipse.ui.texteditor.*;
+import org.eclipse.ui.texteditor.DefaultRangeIndicator;
+import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.eclipse.ui.texteditor.TextOperationAction;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -58,10 +61,7 @@ import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
-import org.jkiss.dbeaver.ui.actions.sql.OpenSQLFileAction;
-import org.jkiss.dbeaver.ui.actions.sql.SaveSQLFileAction;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogViewer;
@@ -101,9 +101,6 @@ public class SQLEditor extends BaseTextEditor
     private ExplainPlanViewer planView;
     private SQLLogViewer logViewer;
     private SQLSyntaxManager syntaxManager;
-
-    private OpenSQLFileAction openFileAction;
-    private SaveSQLFileAction saveFileAction;
 
     private ProjectionSupport projectionSupport;
 
@@ -324,24 +321,13 @@ public class SQLEditor extends BaseTextEditor
         ra.setActionDefinitionId(ITextEditorActionDefinitionIds.ADD_TASK);
         setAction(IDEActionFactory.ADD_TASK.getId(), ra);
 */
-
-        // Add execution actions
-        openFileAction = new OpenSQLFileAction();
-        setAction(ICommandIds.CMD_OPEN_FILE, openFileAction);
-        openFileAction.setProcessor(this);
-
-        saveFileAction = new SaveSQLFileAction();
-        setAction(ICommandIds.CMD_SAVE_FILE, saveFileAction);
-        saveFileAction.setProcessor(this);
     }
 
     public void editorContextMenuAboutToShow(IMenuManager menu)
     {
         super.editorContextMenuAboutToShow(menu);
 
-        menu.appendToGroup(ITextEditorActionConstants.GROUP_SAVE, openFileAction);
-        menu.appendToGroup(ITextEditorActionConstants.GROUP_SAVE, saveFileAction);
-
+        menu.add(new Separator("content"));
         addAction(menu, ACTION_CONTENT_ASSIST_PROPOSAL);
         addAction(menu, ACTION_CONTENT_ASSIST_TIP);
         addAction(menu, ACTION_CONTENT_FORMAT_PROPOSAL);
@@ -632,7 +618,7 @@ public class SQLEditor extends BaseTextEditor
         ConsoleManager.writeMessage(status, messageType);
     }
 
-    private void processQuery(List<SQLStatementInfo> queries)
+    private void processQuery(final List<SQLStatementInfo> queries)
     {
         if (queries.isEmpty()) {
             // Nothing to process
@@ -720,6 +706,9 @@ public class SQLEditor extends BaseTextEditor
                             } else {
                                 setStatus(result.getError().getMessage(), ConsoleMessageType.ERROR);
                             }
+                            if (queries.size() < 2) {
+                                getSelectionProvider().setSelection(originalSelection);
+                            }
                         }
                     });
                 }
@@ -733,7 +722,7 @@ public class SQLEditor extends BaseTextEditor
                     asyncExec(new Runnable() {
                         public void run()
                         {
-                            if (!hasErrors) {
+                            if (!hasErrors && queries.size() > 1) {
                                 getSelectionProvider().setSelection(originalSelection);
                             }
                             if (!isSingleQuery) {
