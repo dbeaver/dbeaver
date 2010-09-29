@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.controls.DefaultMenuCreator;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -92,8 +93,6 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
 
     private OpenSQLFileAction openFileAction;
     private SaveSQLFileAction saveFileAction;
-    private ExecuteStatementAction executeStatementAction;
-    private ExecuteScriptAction executeScriptAction;
     private ValidateStatementAction validateStatementAction;
     private ExplainPlanAction explainPlanAction;
     private AnalyseStatementAction analyseStatementAction;
@@ -165,33 +164,6 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
             }
         };
         // Execute statement
-        executeStatementAction = new ExecuteStatementAction()
-        {
-            protected SQLEditor getEditor()
-            {
-                return SQLEditorContributor.this.getEditor();
-            }
-        };
-        // Execute script
-        executeScriptAction = new ExecuteScriptAction()
-        {
-            protected SQLEditor getEditor()
-            {
-                return SQLEditorContributor.this.getEditor();
-            }
-        };
-        executeScriptAction.setMenuCreator(new DefaultMenuCreator()
-        {
-            public Menu getMenu(Menu parent)
-            {
-                return createScriptMenu(parent, parent.getShell(), getEditor());
-            }
-
-            public Menu getMenu(Control parent)
-            {
-                return createScriptMenu(null, parent.getShell(), getEditor());
-            }
-        });
         validateStatementAction = new ValidateStatementAction();
         explainPlanAction = new ExplainPlanAction();
         analyseStatementAction = new AnalyseStatementAction();
@@ -304,14 +276,15 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
             actionBars.setGlobalActionHandler(
                 IDEActionFactory.BOOKMARK.getId(),
                 getAction(editor, IDEActionFactory.BOOKMARK.getId()));
-*/
+
             actionBars.setGlobalActionHandler(
                 ICommandIds.CMD_EXECUTE_STATEMENT,
                 executeStatementAction);
+
             actionBars.setGlobalActionHandler(
                 ICommandIds.CMD_EXECUTE_SCRIPT,
                 executeScriptAction);
-
+*/
             actionBars.updateActionBars();
 
             IMenuManager menuManager = actionBars.getMenuManager();
@@ -329,15 +302,17 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
 
     public void contributeToMenu(IMenuManager manager)
     {
-        //super.contributeToMenu(manager);
+        super.contributeToMenu(manager);
 
-        IMenuManager menu = new MenuManager("S&QL Editor");
+        IMenuManager menu = new MenuManager("S&QL Editor", "SQLEditorMenu");
         manager.prependToGroup(IWorkbenchActionConstants.MB_ADDITIONS, menu);
         menu.add(openFileAction);
         menu.add(saveFileAction);
         menu.add(new Separator());
-        menu.add(executeStatementAction);
-        menu.add(executeScriptAction);
+        if (activeEditorPart != null) {
+            menu.add(ViewUtils.makeCommandContribution(activeEditorPart.getSite(), ICommandIds.CMD_EXECUTE_STATEMENT));
+            menu.add(ViewUtils.makeCommandContribution(activeEditorPart.getSite(), ICommandIds.CMD_EXECUTE_SCRIPT));
+        }
         menu.add(validateStatementAction);
         menu.add(explainPlanAction);
         menu.add(analyseStatementAction);
@@ -364,9 +339,9 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
     {
         super.contributeToToolBar(manager);
         // Execution
-        manager.add(executeStatementAction);
+        //manager.add(executeStatementAction);
         //manager.add(executeScriptAction);
-        manager.add(executeScriptAction);
+        //manager.add(executeScriptAction);
 
         manager.add(new Separator());
         manager.add(validateStatementAction);
@@ -557,9 +532,9 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
     private void updateActions(SQLEditor editor)
     {
         // Enable actions
-        boolean isConnected = editor != null && editor.getDataSourceContainer() != null && editor.getDataSourceContainer().isConnected();
-        executeStatementAction.setEnabled(isConnected);
-        executeScriptAction.setEnabled(isConnected);
+        //boolean isConnected = editor != null && editor.getDataSourceContainer() != null && editor.getDataSourceContainer().isConnected();
+        //executeStatementAction.setEnabled(isConnected);
+        //executeScriptAction.setEnabled(isConnected);
         validateStatementAction.setEnabled(false);
         explainPlanAction.setEnabled(false);
         analyseStatementAction.setEnabled(false);

@@ -19,8 +19,6 @@ import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
 import org.jkiss.dbeaver.ui.actions.common.AboutBoxAction;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
-import org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptAction;
-import org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementAction;
 import org.jkiss.dbeaver.ui.views.console.ConsoleView;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView;
@@ -95,9 +93,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         viewPreferencesAction = ActionFactory.PREFERENCES.create(window);
         register(viewPreferencesAction);
-
-        register(new ExecuteStatementAction());
-        register(new ExecuteScriptAction());
     }
 
     protected void fillMenuBar(IMenuManager menuBar)

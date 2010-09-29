@@ -39,11 +39,19 @@
         </propertyTester>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
-                id="org.jkiss.dbeaver.databaseEditorPropertyTester"
+                id="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.database.editor"
                 properties="active"
                 type="org.jkiss.dbeaver.ext.IDatabaseEditor">
         </propertyTester>
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
+                id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
+                namespace="org.jkiss.dbeaver.ui.editors.sql"
+                properties="canExecute,canExplain"
+                type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+        </propertyTester>
+
     </extension>
     <extension point="org.eclipse.ui.views">
         <view
@@ -93,6 +101,9 @@
 
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.statement" name="Execute SQL Statement" description="Execute Statement"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.script" name="Execute SQL Script" description="Execute Script"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.run.explain" name="Explain execution plan" description="Explain execution plan"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.run.validate" name="Validate query" description="Validate active query"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.run.analyse" name="Analyse query" description="Analyse active query"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.open.file" name="Load SQL script" description="Load from file"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="Save SQL script" description="Save to file"/>
         <command id="org.jkiss.dbeaver.core.export.data" name="Export data" description="Export data to file(s)"/>
@@ -121,6 +132,12 @@
 
         <image commandId="org.jkiss.dbeaver.core.new.sql.editor" icon="icons/sql/sql_script.png"/>
         <image commandId="org.jkiss.dbeaver.core.open.object" icon="icons/tree/edit_item.png"/>
+
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" icon="icons/sql/sql_exec.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" icon="icons/sql/sql_script_exec.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" icon="icons/sql/sql_plan.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate" icon="icons/sql/sql_validate.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse" icon="icons/sql/sql_analyse.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.resultset.row.first" icon="icons/sql/resultset_first.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.previous" icon="icons/sql/resultset_previous.png"/>
@@ -321,6 +338,27 @@
             </enabledWhen>
         </handler>
 
+        <!-- SQL editor handlers -->
+        
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" class="org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" class="org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+
         <!-- Spreadsheet handlers -->
         <handler commandId="org.eclipse.ui.edit.text.goto.lineStart" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
@@ -514,6 +552,69 @@
             <dynamic id="org.jkiss.dbeaver.core.menu.txn.isolation" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeContributor"/>
         </menuContribution>
 
+        <!-- SQL editor -->
+        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar">
+            <toolbar id="sqlEditorExecute" label="SQL Execute">
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <separator name="execute" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+            </toolbar>
+        </menuContribution>
+
+        <!-- Database menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+            <menu id="SQLEditorMenu" label="SQL Editor">
+                <visibleWhen>
+                    <with variable="activeEditor">
+                        <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                    </with>
+                </visibleWhen>
+                <separator name="execute" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
+                <separator name="query" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse"/>
+                <separator name="files" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"/>
+            </menu>
+        </menuContribution>
+
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
@@ -531,33 +632,14 @@
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.fullname" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
 
-        <key
-                commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"
-                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-                sequence="CTRL+Enter">
-        </key>
-        <key
-                commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"
-                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-                sequence="ALT+X">
-        </key>
-        <key
-                commandId="org.jkiss.dbeaver.core.new.sql.editor"
-                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-                sequence="CTRL+L">
-        </key>
-        <key
-                commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"
-                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-                sequence="CTRL+O">
-        </key>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+X"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+Enter"/>
 
-        <key
-                commandId="org.eclipse.ui.navigate.backwardHistory"
-                contextId="org.eclipse.ui.contexts.window"
-                schemeId="DBeaverKeyScheme"
-                sequence="ALT+CTRL+ARROW_LEFT">
-        </key>
+        <key commandId="org.jkiss.dbeaver.core.new.sql.editor" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+L"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+O"/>
+
+        <key commandId="org.eclipse.ui.navigate.backwardHistory" contextId="org.eclipse.ui.contexts.window" schemeId="DBeaverKeyScheme" sequence="ALT+CTRL+ARROW_LEFT"/>
         <key
                 commandId="org.eclipse.ui.navigate.forwardHistory"
                 contextId="org.eclipse.ui.contexts.window"

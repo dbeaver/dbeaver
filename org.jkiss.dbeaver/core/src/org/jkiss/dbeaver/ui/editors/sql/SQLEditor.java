@@ -35,10 +35,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.ISaveablePart2;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
@@ -63,8 +60,6 @@ import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
-import org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptAction;
-import org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementAction;
 import org.jkiss.dbeaver.ui.actions.sql.OpenSQLFileAction;
 import org.jkiss.dbeaver.ui.actions.sql.SaveSQLFileAction;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
@@ -107,8 +102,6 @@ public class SQLEditor extends BaseTextEditor
     private SQLLogViewer logViewer;
     private SQLSyntaxManager syntaxManager;
 
-    private ExecuteStatementAction execStatementAction;
-    private ExecuteScriptAction execScriptAction;
     private OpenSQLFileAction openFileAction;
     private SaveSQLFileAction saveFileAction;
 
@@ -333,14 +326,6 @@ public class SQLEditor extends BaseTextEditor
 */
 
         // Add execution actions
-        execStatementAction = new ExecuteStatementAction();
-        setAction(ICommandIds.CMD_EXECUTE_STATEMENT, execStatementAction);
-        execStatementAction.setProcessor(this);
-
-        execScriptAction = new ExecuteScriptAction();
-        setAction(ICommandIds.CMD_EXECUTE_SCRIPT, execScriptAction);
-        execScriptAction.setProcessor(this);
-
         openFileAction = new OpenSQLFileAction();
         setAction(ICommandIds.CMD_OPEN_FILE, openFileAction);
         openFileAction.setProcessor(this);
@@ -357,17 +342,11 @@ public class SQLEditor extends BaseTextEditor
         menu.appendToGroup(ITextEditorActionConstants.GROUP_SAVE, openFileAction);
         menu.appendToGroup(ITextEditorActionConstants.GROUP_SAVE, saveFileAction);
 
-        boolean connected = getDataSourceContainer().isConnected();
-        execStatementAction.setEnabled(connected);
-        execScriptAction.setEnabled(connected);
-
         addAction(menu, ACTION_CONTENT_ASSIST_PROPOSAL);
         addAction(menu, ACTION_CONTENT_ASSIST_TIP);
         addAction(menu, ACTION_CONTENT_FORMAT_PROPOSAL);
         //addAction(menu, ACTION_DEFINE_FOLDING_REGION);
-        menu.add(new Separator());
-        addAction(menu, ICommandIds.CMD_EXECUTE_STATEMENT);
-        addAction(menu, ICommandIds.CMD_EXECUTE_SCRIPT);
+        menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
     }
 
     protected ISourceViewer createSourceViewer(Composite parent,
@@ -798,6 +777,11 @@ public class SQLEditor extends BaseTextEditor
         }
         // Refresh plan view
         planView.refresh();
+
+        // Update command states
+        SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
+        SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXPLAIN);
+
 
         // Refresh syntax
         if (syntaxManager != null) {
