@@ -156,10 +156,12 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
             protected Control createControl(Composite parent)
             {
                 String curCharset = null;
-                try {
-                    curCharset = getEditor().getEditorInput().getFile().getCharset();
-                } catch (CoreException e) {
-                    log.error(e);
+                if (getEditor() != null) {
+                    try {
+                        curCharset = getEditor().getEditorInput().getFile().getCharset();
+                    } catch (CoreException e) {
+                        log.error(e);
+                    }
                 }
                 encodingCombo = UIUtils.createEncodingCombo(parent, curCharset);
                 encodingCombo.setToolTipText("Content Encoding");

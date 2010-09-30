@@ -923,49 +923,34 @@
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
-        <page
-                id="org.jkiss.dbeaver.preferences.main.common"
-                class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon"
-                name="Common Settings">
+        <page id="org.jkiss.dbeaver.preferences.main.common" class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon" name="Common Settings">
            <enabledWhen>
-              <instanceof
-                    value="org.jkiss.dbeaver.model.navigator.DBNDataSource">
-              </instanceof>
+               <or>
+                  <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                  <instanceof value="org.jkiss.dbeaver.ext.IDatabaseEditorInput"/>
+               </or>
            </enabledWhen>
         </page>
-        <page
-                id="org.jkiss.dbeaver.preferences.main.dataformat"
-                class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat"
-                name="Data Formats">
+        <page id="org.jkiss.dbeaver.preferences.main.dataformat" class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat" name="Data Formats">
            <enabledWhen>
               <or>
-                 <instanceof
-                       value="org.jkiss.dbeaver.model.navigator.DBNDataSource">
-                 </instanceof>
-                 <instanceof
-                       value="org.jkiss.dbeaver.registry.DataFormatterRegistry">
-                 </instanceof>
+                 <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                 <instanceof value="org.jkiss.dbeaver.ext.IDatabaseEditorInput"/>
+                 <instanceof value="org.jkiss.dbeaver.registry.DataFormatterRegistry"/>
               </or>
            </enabledWhen>
         </page>
-        <page
-                class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor"
-                id="org.jkiss.dbeaver.preferences.main.sqleditor"
-                name="SQL Editor">
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" id="org.jkiss.dbeaver.preferences.main.sqleditor" name="SQL Editor">
            <enabledWhen>
-              <instanceof
-                    value="org.jkiss.dbeaver.model.navigator.DBNDataSource">
-              </instanceof>
+               <or>
+                <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                <instanceof value="org.jkiss.dbeaver.ext.IDatabaseEditorInput"/>
+               </or>
            </enabledWhen>
         </page>
-        <page
-                class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor"
-                id="org.jkiss.dbeaver.preferences.main.contenteditor"
-                name="Content Editor">
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor" id="org.jkiss.dbeaver.preferences.main.contenteditor" name="Content Editor">
            <enabledWhen>
-              <instanceof
-                    value="org.jkiss.dbeaver.model.navigator.DBNDataSource">
-              </instanceof>
+              <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
            </enabledWhen>
         </page>
     </extension>

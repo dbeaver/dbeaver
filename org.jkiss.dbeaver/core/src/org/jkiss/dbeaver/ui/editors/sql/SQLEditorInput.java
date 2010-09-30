@@ -7,14 +7,19 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 
 /**
  * SQLEditorInput
  */
-public class SQLEditorInput extends ProjectFileEditorInput implements IPersistableElement, IAutoSaveEditorInput
+public class SQLEditorInput extends ProjectFileEditorInput implements IPersistableElement, IAutoSaveEditorInput, IDatabaseEditorInput
 {
     private DBSDataSourceContainer dataSourceContainer;
     private String scriptName;
@@ -79,6 +84,26 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     public boolean isAutoSaveEnabled()
     {
         return true;
+    }
+
+    public DBNNode getTreeNode()
+    {
+        return DBeaverCore.getInstance().getNavigatorModel().findNode(getDataSourceContainer());
+    }
+
+    public DBSObject getDatabaseObject()
+    {
+        return getDataSourceContainer();
+    }
+
+    public String getDefaultPageId()
+    {
+        return null;
+    }
+
+    public DBPDataSource getDataSource()
+    {
+        return getDataSourceContainer().getDataSource();
     }
 
 }

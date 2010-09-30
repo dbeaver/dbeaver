@@ -24,6 +24,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -86,7 +87,19 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     public void setElement(IAdaptable element)
     {
+        if (element == null) {
+            return;
+        }
         containerNode = (DBNDataSource) element.getAdapter(DBNDataSource.class);
+        if (containerNode == null) {
+            IDatabaseEditorInput dbInput = (IDatabaseEditorInput) element.getAdapter(IDatabaseEditorInput.class);
+            if (dbInput != null) {
+                DBNNode dbNode = dbInput.getTreeNode();
+                if (dbNode instanceof DBNDataSource) {
+                    containerNode = (DBNDataSource)dbNode;
+                }
+            }
+        }
     }
 
     protected Label createDescriptionLabel(Composite parent)
