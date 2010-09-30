@@ -189,7 +189,17 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
             throw new DBCException("This datasource doesn't support execution plans");
         }
         DBCPlan plan = planBuilder.prepareExecutionPlan(query);
-        Collection<DBCPlanNode> nodes = plan.explain(context);
+        final Collection<? extends DBCPlanNode> nodes = plan.explain(context);
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run()
+            {
+                planTree.removeAll(); 
+                for (DBCPlanNode node : nodes) {
+                    TreeItem item = new TreeItem(planTree, SWT.NONE);
+                    item.setText(node.getObjectName());
+                }
+            }
+        });
         System.out.println("hey: " + nodes);
     }
 }

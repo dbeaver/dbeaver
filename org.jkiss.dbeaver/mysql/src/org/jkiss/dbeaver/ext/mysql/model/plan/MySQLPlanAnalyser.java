@@ -2,8 +2,9 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext.mysql.model;
+package org.jkiss.dbeaver.ext.mysql.model.plan;
 
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -14,7 +15,9 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * MySQL execution plan analyser
@@ -35,7 +38,7 @@ public class MySQLPlanAnalyser implements DBCPlan {
         return query;
     }
 
-    public Collection<DBCPlanNode> explain(DBCExecutionContext context)
+    public Collection<MySQLPlanNode> explain(DBCExecutionContext context)
         throws DBCException
     {
         String plainQuery = SQLUtils.stripComments(query).toUpperCase();
@@ -48,19 +51,12 @@ public class MySQLPlanAnalyser implements DBCPlan {
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
+                    List<MySQLPlanNode> rootNodes = new ArrayList<MySQLPlanNode>();
                     while (dbResult.next()) {
-                        long id = dbResult.getLong("id");
-                        String selectType = dbResult.getString("select_type");
-                        String table = dbResult.getString("table");
-                        String type = dbResult.getString("type");
-                        String possibleKeys = dbResult.getString("possible_keys");
-                        String key = dbResult.getString("key");
-                        String keyLength = dbResult.getString("key_len");
-                        String ref = dbResult.getString("ref");
-                        long rowCount = dbResult.getLong("rows");
-                        double filtered = dbResult.getDouble("filtered");
-                        String extra = dbResult.getString("extra");
+                        MySQLPlanNode node = new MySQLPlanNode(null, dbResult);
+                        rootNodes.add(node);
                     }
+                    return rootNodes;
                 } finally {
                     dbResult.close();
                 }
@@ -68,8 +64,7 @@ public class MySQLPlanAnalyser implements DBCPlan {
                 dbStat.close();
             }
         } catch (SQLException e) {
-            throw new DBCException("Could not explain execution plan", e);
+            throw new DBCException(e);
         }
-        return null;
     }
 }

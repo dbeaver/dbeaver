@@ -107,7 +107,7 @@ public class DBeaverUtils
         }
         return msg.toString().trim();
     }
-    
+
     public static DBRProgressMonitor makeMonitor(IProgressMonitor monitor)
     {
         return new DefaultProgressMonitor(monitor);
