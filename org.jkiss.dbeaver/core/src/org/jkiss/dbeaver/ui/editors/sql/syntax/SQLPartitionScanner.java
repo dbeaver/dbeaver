@@ -48,12 +48,12 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
     };
 
     // Syntax higlight
-    List<IPredicateRule> _rules = new ArrayList<IPredicateRule>();
-    IToken _sqlCode = new Token(SQL_CODE);
-    IToken _comment = new Token(SQL_COMMENT);
-    IToken _multilineComment = new Token(SQL_MULTILINE_COMMENT);
-    IToken _sqlDoubleQuotesIdentifier = new Token(SQL_DOUBLE_QUOTES_IDENTIFIER);
-    IToken _sqlString = new Token(SQL_STRING);
+    List<IPredicateRule> rules = new ArrayList<IPredicateRule>();
+    IToken sqlCodeToken = new Token(SQL_CODE);
+    IToken commentToken = new Token(SQL_COMMENT);
+    IToken multilineCommentToken = new Token(SQL_MULTILINE_COMMENT);
+    IToken sqlDoubleQuotesIdentifierToken = new Token(SQL_DOUBLE_QUOTES_IDENTIFIER);
+    IToken sqlStringToken = new Token(SQL_STRING);
 
 
     /**
@@ -83,13 +83,13 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
      */
     static class EmptyCommentRule extends WordRule implements IPredicateRule {
 
-        private IToken _fSuccessToken;
+        private IToken successToken;
 
         public EmptyCommentRule(IToken successToken)
         {
             super(new EmptyCommentDetector());
-            _fSuccessToken = successToken;
-            addWord("/**/", _fSuccessToken); //$NON-NLS-1$
+            this.successToken = successToken;
+            addWord("/**/", this.successToken); //$NON-NLS-1$
         }
 
         public IToken evaluate(ICharacterScanner scanner, boolean resume)
@@ -99,7 +99,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
 
         public IToken getSuccessToken()
         {
-            return _fSuccessToken;
+            return successToken;
         }
     }
 
@@ -119,28 +119,28 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
 
     private void setupRules()
     {
-        IPredicateRule[] result = new IPredicateRule[_rules.size()];
-        _rules.toArray(result);
+        IPredicateRule[] result = new IPredicateRule[rules.size()];
+        rules.toArray(result);
         setPredicateRules(result);
     }
 
     private void initRules()
     {
         //Add rule for identifier which is enclosed in double quotes.
-        _rules.add(new MultiLineRule("\"", "\"", _sqlDoubleQuotesIdentifier, (char) 0));
+        rules.add(new MultiLineRule("\"", "\"", sqlDoubleQuotesIdentifierToken, (char) 0));
 
         //Add rule for SQL string.
-        _rules.add(new MultiLineRule("'", "'", _sqlString, (char) 0, true));
+        rules.add(new MultiLineRule("'", "'", sqlStringToken, (char) 0, true));
 
         //comments
-        _rules.add(new EndOfLineRule("--", _comment));
+        rules.add(new EndOfLineRule("--", commentToken));
 
         // Add special case word rule.
-        EmptyCommentRule wordRule = new EmptyCommentRule(_multilineComment);
-        _rules.add(wordRule);
+        EmptyCommentRule wordRule = new EmptyCommentRule(multilineCommentToken);
+        rules.add(wordRule);
 
         // Add rules for multi-line comments
-        _rules.add(new NestedMultiLineRule("/*", "*/", _multilineComment, (char) 0, true));
+        rules.add(new NestedMultiLineRule("/*", "*/", multilineCommentToken, (char) 0, true));
     }
 
     public SQLPartitionScanner(SQLSyntaxManager sqlSyntax)
@@ -158,7 +158,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
 
         for (String singleLineComment : singleLineComments) {
             // Add rule for single line comments.
-            _rules.add(new EndOfLineRule(singleLineComment, _comment));
+            rules.add(new EndOfLineRule(singleLineComment, commentToken));
         }
     }
 

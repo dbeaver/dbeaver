@@ -14,7 +14,6 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.plan.DBCExecutionPlanBuilder;
@@ -394,9 +393,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         return super.createQueryTransformer(type);
     }
 
-    public DBCPlan prepareExecutionPlan(DBCExecutionContext context, String query) throws DBCException
+    public DBCPlan prepareExecutionPlan(String query) throws DBCException
     {
-        return new MySQLPlanAnalyser(this, context, query);
+        return new MySQLPlanAnalyser(this, query);
     }
 
 }

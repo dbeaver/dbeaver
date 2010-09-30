@@ -81,8 +81,7 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
         int y;
 
         if (col.getHeaderControl() == null) {
-            y = getBounds().y + getBounds().height - bottomMargin
-                - gc.getFontMetrics().getHeight();
+            y = getBounds().y + getBounds().height - bottomMargin - gc.getFontMetrics().getHeight();
         } else {
             y = getBounds().y + getBounds().height - bottomMargin - gc.getFontMetrics().getHeight() - computeControlSize(col).y;
         }

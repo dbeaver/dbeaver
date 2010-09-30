@@ -16,18 +16,9 @@ public class SQLIdentifierDetector extends SQLWordDetector
 {
     private String catalogSeparator;
 
-    public SQLIdentifierDetector(SQLSyntaxManager syntaxManager)
+    public SQLIdentifierDetector(String catalogSeparator)
     {
-        catalogSeparator = ".";
-        String additional = syntaxManager.getDataSourceInfo() == null ? "." : syntaxManager.getDataSourceInfo().getCatalogSeparator();
-        if (!".".equals(additional)) {
-            catalogSeparator += additional;
-        }
-    }
-
-    public String getCatalogSeparator()
-    {
-        return catalogSeparator;
+        this.catalogSeparator = catalogSeparator;
     }
 
     public boolean containsSeparator(String identifier)

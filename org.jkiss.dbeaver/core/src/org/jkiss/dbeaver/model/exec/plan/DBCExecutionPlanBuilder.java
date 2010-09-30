@@ -12,7 +12,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
  */
 public interface DBCExecutionPlanBuilder {
 
-    DBCPlan prepareExecutionPlan(DBCExecutionContext context, String query)
+    DBCPlan prepareExecutionPlan(String query)
         throws DBCException;
 
 }

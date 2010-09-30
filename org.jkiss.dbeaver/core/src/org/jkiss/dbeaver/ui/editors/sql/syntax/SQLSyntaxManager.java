@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.text.Position;
@@ -13,11 +14,13 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 import java.util.*;
 
@@ -46,9 +49,7 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
     public static final String CONFIG_COLOR_TEXT = "org.jkiss.dbeaver.sql.editor.color.text.foreground";
     public static final String CONFIG_COLOR_BACKGROUND = "org.jkiss.dbeaver.sql.editor.color.text.background";
 
-    private SQLEditor editor;
     private IThemeManager themeManager;
-    private DBPDataSourceInfo dataSourceInfo;
 
     private TreeMap<String, KeywordType> allKeywords = new TreeMap<String, KeywordType>();
 
@@ -58,6 +59,7 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
     private TreeSet<String> tableQueryWords = new TreeSet<String>();
     private TreeSet<String> columnQueryWords = new TreeSet<String>();
 
+    private String catalogSeparator;
     private String statementDelimiter = ";";
     private String[] singleLineComments = { "--" };
 
@@ -66,10 +68,9 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
     private Set<SQLScriptPosition> addedPositions = new HashSet<SQLScriptPosition>();
     private Set<SQLScriptPosition> removedPositions = new HashSet<SQLScriptPosition>();
 
-    public SQLSyntaxManager(SQLEditor editor)
+    public SQLSyntaxManager(IWorkbenchPart workbenchPart)
     {
-        this.editor = editor;
-        themeManager = editor.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
+        themeManager = workbenchPart.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
         themeManager.addPropertyChangeListener(this);
     }
 
@@ -101,24 +102,28 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
         return posList;
     }
 
+    public String getCatalogSeparator()
+    {
+        return catalogSeparator;
+    }
+
     public boolean isLoaded()
     {
         return !allKeywords.isEmpty();
     }
 
-    public DBPDataSourceInfo getDataSourceInfo()
+    public void changeDataSource(DBPDataSource dataSource)
     {
-        return dataSourceInfo;
-    }
-
-    public void changeDataSource()
-    {
-        if (editor.getDataSourceContainer().isConnected()) {
-            this.dataSourceInfo = editor.getDataSource().getInfo();
-        } else {
-            this.dataSourceInfo = null;
+        DBPDataSourceInfo dataSourceInfo = null;
+        if (dataSource != null) {
+            dataSourceInfo = dataSource.getInfo();
         }
-        loadSyntax();
+        catalogSeparator = ".";
+        String additional = dataSourceInfo == null ? "" : dataSourceInfo.getCatalogSeparator();
+        if (!CommonUtils.isEmpty(additional) && !additional.equals(catalogSeparator)) {
+            catalogSeparator += additional;
+        }
+        loadSyntax(dataSourceInfo);
         changeRules();
     }
 
@@ -177,7 +182,7 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
         return statementDelimiter;
     }
 
-    private void loadSyntax()
+    private void loadSyntax(DBPDataSourceInfo dataSourceInfo)
     {
         allKeywords.clear();
         reservedWords.clear();
@@ -326,7 +331,6 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
         IRule[] result = new IRule[rules.size()];
         rules.toArray(result);
         setRules(result);
-
     }
 
     public String[] getSingleLineComments()
@@ -344,7 +348,7 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
         ITheme currentTheme = themeManager.getCurrentTheme();
         Color color = currentTheme.getColorRegistry().get(colorKey);
         if (color == null) {
-            color = editor.getSite().getShell().getDisplay().getSystemColor(colorDefault);
+            color = Display.getDefault().getSystemColor(colorDefault);
         }
         return color;
     }

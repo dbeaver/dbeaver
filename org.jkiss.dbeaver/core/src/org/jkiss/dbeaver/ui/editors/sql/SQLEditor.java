@@ -790,7 +790,7 @@ public class SQLEditor extends BaseTextEditor
 
         // Refresh syntax
         if (syntaxManager != null) {
-            syntaxManager.changeDataSource();
+            syntaxManager.changeDataSource(getDataSource());
         }
         ProjectionViewer projectionViewer = (ProjectionViewer)getSourceViewer();
         IDocument document = getDocument();

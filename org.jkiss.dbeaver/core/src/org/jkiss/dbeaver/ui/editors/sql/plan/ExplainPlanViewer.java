@@ -19,12 +19,17 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.plan.DBCExecutionPlanBuilder;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+
+import java.util.Collection;
 
 /**
  * ResultSetViewer
@@ -178,8 +183,13 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
     {
     }
 
-    public void explainQueryPlan(DBCExecutionContext context, String query)
+    public void explainQueryPlan(DBCExecutionContext context, String query) throws DBCException
     {
-
+        if (planBuilder == null) {
+            throw new DBCException("This datasource doesn't support execution plans");
+        }
+        DBCPlan plan = planBuilder.prepareExecutionPlan(query);
+        Collection<DBCPlanNode> nodes = plan.explain(context);
+        System.out.println("hey: " + nodes);
     }
 }

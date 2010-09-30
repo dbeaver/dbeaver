@@ -99,9 +99,9 @@ public class TextUtils
             return "";
         }
         int avgCharWidth = gc.getFontMetrics().getAverageCharWidth();
-        int length = t.length();
+        float length = t.length();
         if (width < length * avgCharWidth) {
-            length = width / avgCharWidth;
+            length = (float)width / avgCharWidth;
             length *= 1.5;
 /*
             for (;;) {
@@ -117,7 +117,7 @@ public class TextUtils
             }
 */
             if (length < t.length()) {
-                t = t.substring(0, length);
+                t = t.substring(0, (int)length);
             }
         }
         return t;

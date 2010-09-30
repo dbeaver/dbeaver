@@ -54,7 +54,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 
         int offset = region.getOffset();
 
-        SQLIdentifierDetector wordDetector = new SQLIdentifierDetector(editor.getSyntaxManager());
+        SQLIdentifierDetector wordDetector = new SQLIdentifierDetector(editor.getSyntaxManager().getCatalogSeparator());
         int docLength = document.getLength();
         int identStart = offset;
         int identEnd = offset;
