@@ -88,6 +88,10 @@ public class SQLEditor extends BaseTextEditor
 {
     static final Log log = LogFactory.getLog(SQLEditor.class);
 
+    static final int PAGE_INDEX_RESULTSET = 0;
+    static final int PAGE_INDEX_PLAN = 1;
+    static final int PAGE_INDEX_LOG = 2;
+
     static final String ACTION_CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal";
     static final String ACTION_CONTENT_ASSIST_TIP = "ContentAssistTip";
     static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal";
@@ -407,6 +411,7 @@ public class SQLEditor extends BaseTextEditor
             setStatus("Can't obtain editor's document", ConsoleMessageType.ERROR);
             return;
         }
+        resultTabs.setSelection(PAGE_INDEX_RESULTSET);
         if (script) {
             // Execute all SQL statements consequently
             List<SQLStatementInfo> statementInfos;
