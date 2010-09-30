@@ -19,8 +19,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.plan.DBCExecutionPlanBuilder;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -120,29 +120,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
             gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
             toolBar.setLayoutData(gd);
             new ToolItem(toolBar, SWT.SEPARATOR);
-/*
-            itemFirst = createToolItem(toolBar, "First", "/icons/sql/resultset_first.png", new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                }
-            });
-            itemPrevious = createToolItem(toolBar, "Previous", "/icons/sql/resultset_previous.png", new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                }
-            });
-            itemNext = createToolItem(toolBar, "Next", "/icons/sql/resultset_next.png", new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                }
-            });
-            itemLast = createToolItem(toolBar, "Last", "/icons/sql/resultset_last.png", new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                }
-            });
-*/
-            new ToolItem(toolBar, SWT.SEPARATOR);
+
             itemRefresh = UIUtils.createToolItem(toolBar, "Refresh", DBIcon.RS_REFRESH, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
@@ -158,26 +136,6 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
             planTree.dispose();
         }
         //statusLabel.dispose();
-    }
-
-    public void setStatus(String status)
-    {
-        setStatus(status, false);
-    }
-
-    public void setStatus(String status, boolean error)
-    {
-        statusLabel.setText(status);
-    }
-
-    public boolean isEditable()
-    {
-        return false;
-    }
-
-    public boolean isInsertable()
-    {
-        return false;
     }
 
     public Control getControl()
@@ -220,4 +178,8 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
     {
     }
 
+    public void explainQueryPlan(DBCExecutionContext context, String query)
+    {
+
+    }
 }

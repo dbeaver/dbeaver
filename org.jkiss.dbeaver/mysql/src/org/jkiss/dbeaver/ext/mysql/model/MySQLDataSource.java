@@ -13,8 +13,12 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
+import org.jkiss.dbeaver.model.exec.plan.DBCExecutionPlanBuilder;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -34,7 +38,7 @@ import java.util.Properties;
 /**
  * GenericDataSource
  */
-public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssistant, DBSEntitySelector
+public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssistant, DBSEntitySelector, DBCExecutionPlanBuilder
 {
     static final Log log = LogFactory.getLog(MySQLDataSource.class);
 
@@ -387,7 +391,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         } else if (type == DBCQueryTransformType.FETCH_ALL_TABLE) {
             return new QueryTransformerFetchAll();
         }
-        return super.createQueryTransformer(type);    //To change body of overridden methods use File | Settings | File Templates.
+        return super.createQueryTransformer(type);
+    }
+
+    public DBCPlan prepareExecutionPlan(DBCExecutionContext context, String query) throws DBCException
+    {
+        return new MySQLPlanAnalyser(this, context, query);
     }
 
 }

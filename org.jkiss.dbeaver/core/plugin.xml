@@ -383,7 +383,7 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.canAnalyse"/>
                     </adapt>
                 </with>
             </enabledWhen>
@@ -392,7 +392,7 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.canValidate"/>
                     </adapt>
                 </with>
             </enabledWhen>

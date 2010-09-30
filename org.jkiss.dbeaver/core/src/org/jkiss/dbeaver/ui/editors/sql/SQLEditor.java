@@ -404,6 +404,17 @@ public class SQLEditor extends BaseTextEditor
     {
     }
 
+    public void explainQueryPlan()
+    {
+        SQLStatementInfo sqlQuery = extractActiveQuery();
+        if (sqlQuery == null) {
+            setStatus("Empty query string", ConsoleMessageType.ERROR);
+            return;
+        }
+        resultTabs.setSelection(PAGE_INDEX_PLAN);
+        //processQuery(Collections.singletonList(sqlQuery));
+    }
+
     public void processSQL(boolean script)
     {
         IDocument document = getDocument();
