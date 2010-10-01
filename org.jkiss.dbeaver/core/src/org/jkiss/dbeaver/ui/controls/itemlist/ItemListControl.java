@@ -9,7 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
@@ -76,7 +76,7 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
         return node;
     }
 
-    public TableViewer getNavigatorViewer()
+    public Viewer getNavigatorViewer()
     {
         return getItemsViewer();
     }
@@ -200,7 +200,7 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
         public void visualizeLoading()
         {
             super.visualizeLoading();
-            if (!getItemsViewer().getTable().isDisposed()) {
+            if (!getItemsViewer().getControl().isDisposed()) {
                 getItemsViewer().refresh();
             }
         }

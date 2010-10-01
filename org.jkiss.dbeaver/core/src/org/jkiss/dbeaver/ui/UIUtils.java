@@ -165,6 +165,26 @@ public class UIUtils {
         }
     }
 
+    public static void packColumn(Item column)
+    {
+        if (column instanceof TableColumn) {
+            ((TableColumn)column).pack();
+        } else if (column instanceof TreeColumn) {
+            ((TreeColumn)column).pack();
+        }
+    }
+
+    public static int getColumnWidth(Item column)
+    {
+        if (column instanceof TableColumn) {
+            return ((TableColumn)column).getWidth();
+        } else if (column instanceof TreeColumn) {
+            return ((TreeColumn)column).getWidth();
+        } else {
+            return 0;
+        }
+    }
+
     public static void packColumns(Table table)
     {
         table.setRedraw(false);

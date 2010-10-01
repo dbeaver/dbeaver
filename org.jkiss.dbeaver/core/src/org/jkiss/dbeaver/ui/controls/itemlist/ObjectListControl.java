@@ -43,7 +43,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private boolean loadProperties;
     private TableViewer itemsViewer;
-    private List<TableColumn> columns = new ArrayList<TableColumn>();
+    private List<Item> columns = new ArrayList<Item>();
     private SortListener sortListener;
     private Map<Object, ItemRow> itemMap = new IdentityHashMap<Object, ItemRow>();
     private ISelectionProvider selectionProvider;
@@ -151,7 +151,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         });
     }
 
-    public TableViewer getItemsViewer()
+    public Viewer getItemsViewer()
     {
         return itemsViewer;
     }
@@ -194,7 +194,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
     public void clearData()
     {
-        for (TableColumn column : columns) {
+        for (Item column : columns) {
             column.dispose();
         }
         columns.clear();
@@ -224,7 +224,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private ItemCell getCellByIndex(ItemRow row, int index)
     {
-        TableColumn column = columns.get(index);
+        Item column = columns.get(index);
         if (column.isDisposed()) {
             return null;
         }
@@ -374,8 +374,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
                 itemsViewer.setInput(objectList);
 
-                for (TableColumn column : columns) {
-                    column.pack();
+                for (Item column : columns) {
+                    UIUtils.packColumn(column);
                 }
                 table.setRedraw(true);
 
@@ -424,8 +424,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         continue;
                     }
                     // Add column if necessary
-                    TableColumn propColumn = null;
-                    for (TableColumn column : columns) {
+                    Item propColumn = null;
+                    for (Item column : columns) {
                         if (descriptor.getId().equals(column.getData())) {
                             propColumn = column;
                             break;
@@ -434,7 +434,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     if (propColumn == null) {
                         propColumn = new TableColumn(itemsViewer.getTable(), SWT.NONE);
                         propColumn.setText(descriptor.getDisplayName());
-                        propColumn.setToolTipText(descriptor.getDescription());
+                        //propColumn.setToolTipText(descriptor.getDescription());
                         propColumn.setData(descriptor.getId());
                         propColumn.addListener(SWT.Selection, sortListener);
 
@@ -485,7 +485,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     ItemCell cell = row == null ? null : getCellByIndex(row, event.index);
                     if (cell != null && cell.value instanceof Boolean) {
                         if (((Boolean)cell.value)) {
-                            int columnWidth = columns.get(event.index).getWidth();
+                            int columnWidth = UIUtils.getColumnWidth(columns.get(event.index));
                             Image image = DBIcon.CHECK.getImage();
                             event.gc.drawImage(image, event.x + (columnWidth - image.getBounds().width) / 2, event.y);
                             event.doit = false;
