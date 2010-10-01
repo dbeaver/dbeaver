@@ -8,6 +8,8 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -47,26 +49,26 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private ISelectionProvider selectionProvider;
     private IDoubleClickListener doubleClickHandler;
 
-    private class ItemCell
+    protected class ItemCell
     {
-        final OBJECT_TYPE item;
+        final OBJECT_TYPE object;
         final PropertyAnnoDescriptor prop;
         Object value;
 
-        ItemCell(OBJECT_TYPE item, PropertyAnnoDescriptor prop, Object value)
+        ItemCell(OBJECT_TYPE object, PropertyAnnoDescriptor prop, Object value)
         {
-            this.item = item;
+            this.object = object;
             this.prop = prop;
             this.value = value;
         }
 
         public Object getObject()
         {
-            return getObjectValue(item);
+            return getObjectValue(object);
         }
     }
 
-    private class ItemRow
+    protected class ItemRow
     {
         final OBJECT_TYPE object;
         final List<ItemCell> props;
@@ -149,6 +151,16 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         });
     }
 
+    public TableViewer getItemsViewer()
+    {
+        return itemsViewer;
+    }
+
+    public ISelectionProvider getSelectionProvider()
+    {
+        return selectionProvider;
+    }
+
     public boolean isLoadProperties() {
         return loadProperties;
     }
@@ -166,6 +178,20 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         super.dispose();
     }
 
+    protected void loadData(LoadingJob<List<OBJECT_TYPE>> job)
+    {
+        if (loadingJob != null) {
+            // Don't do it twice
+            return;
+        }
+        loadingJob = job;
+        loadingJob.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                loadingJob = null;
+            }
+        });
+    }
     public void clearData()
     {
         for (TableColumn column : columns) {
@@ -306,9 +332,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     }
 
-    protected class ItemsLoadVisualizer extends ProgressVisualizer<List<OBJECT_TYPE>> {
+    protected class ObjectsLoadVisualizer extends ProgressVisualizer<List<OBJECT_TYPE>> {
 
         private List<ItemCell> lazyItems = new ArrayList<ItemCell>();
+
+        public List<ItemCell> getLazyItems()
+        {
+            return lazyItems;
+        }
 
         public void completeLoading(List<OBJECT_TYPE> items)
         {
@@ -350,12 +381,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
                 // Load all lazy items in one job
                 if (!CommonUtils.isEmpty(lazyItems)) {
-                    loadLazyItems();
+                    loadLazyItems(lazyItems);
                 }
             }
         }
 
-        protected void loadLazyItems()
+        protected void loadLazyItems(List<ItemCell> lazyItems)
         {
 /*
             LoadingUtils.executeService(
