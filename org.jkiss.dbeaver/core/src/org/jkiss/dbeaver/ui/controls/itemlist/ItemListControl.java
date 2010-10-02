@@ -14,6 +14,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
@@ -69,7 +70,7 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
     {
         super.loadData(LoadingUtils.executeService(
             new ItemLoadService(metaNode),
-            new ItemsLoadVisualizer()));
+            new ObjectsLoadVisualizer()));
     }
 
     public DBNNode getRootNode() {
@@ -84,6 +85,12 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
     public IWorkbenchPart getWorkbenchPart()
     {
         return workbenchPart;
+    }
+
+    @Override
+    protected DBPDataSource getDataSource()
+    {
+        return node.getObject().getDataSource();
     }
 
     @Override
@@ -151,59 +158,5 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
         }
     }
 
-    private class ItemsLoadVisualizer extends ObjectsLoadVisualizer {
-
-        @Override
-        protected void loadLazyItems(List<ItemCell> lazyItems)
-        {
-            LoadingUtils.executeService(
-                new ValueLoadService(lazyItems),
-                new ValuesLoadVisualizer());
-        }
-    }
-
-    private class ValueLoadService extends DatabaseLoadService<Object> {
-        private List<ItemCell> lazyItems;
-        public ValueLoadService(List<ItemCell> lazyItems)
-        {
-            super("Load item values", node);
-            this.lazyItems = lazyItems;
-        }
-
-        public Object evaluate()
-            throws InvocationTargetException, InterruptedException
-        {
-            for (ItemCell item : lazyItems) {
-                // Check control is disposed
-                if (isDisposed() || getProgressMonitor().isCanceled()) {
-                    break;
-                }
-                // Extract value with progress monitor
-                try {
-                    item.value = item.prop.readValue(item.object.getObject(), getProgressMonitor());
-                }
-                catch (InvocationTargetException e) {
-                    log.warn(e.getTargetException());
-                    item.value = "???";
-                }
-                catch (IllegalAccessException e) {
-                    log.warn(e);
-                    item.value = "???";
-                }
-            }
-            return null;
-        }
-    }
-
-    private class ValuesLoadVisualizer extends ProgressVisualizer<Object> {
-
-        public void visualizeLoading()
-        {
-            super.visualizeLoading();
-            if (!getItemsViewer().getControl().isDisposed()) {
-                getItemsViewer().refresh();
-            }
-        }
-    }
 
 }

@@ -20,6 +20,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -45,11 +48,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private TableViewer itemsViewer;
     private List<Item> columns = new ArrayList<Item>();
     private SortListener sortListener;
-    private Map<Object, ItemRow> itemMap = new IdentityHashMap<Object, ItemRow>();
+    private Map<Object, ItemRow<OBJECT_TYPE>> itemMap = new IdentityHashMap<Object, ItemRow<OBJECT_TYPE>>();
     private ISelectionProvider selectionProvider;
     private IDoubleClickListener doubleClickHandler;
+    private LoadingJob<List<OBJECT_TYPE>> loadingJob;
 
-    protected class ItemCell
+
+    private static class ItemCell<OBJECT_TYPE>
     {
         final OBJECT_TYPE object;
         final PropertyAnnoDescriptor prop;
@@ -62,18 +67,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             this.value = value;
         }
 
-        public Object getObject()
-        {
-            return getObjectValue(object);
-        }
     }
 
-    protected class ItemRow
+    private static class ItemRow<OBJECT_TYPE>
     {
         final OBJECT_TYPE object;
-        final List<ItemCell> props;
+        final List<ItemCell<OBJECT_TYPE>> props;
 
-        ItemRow(OBJECT_TYPE object, List<ItemCell> props)
+        ItemRow(OBJECT_TYPE object, List<ItemCell<OBJECT_TYPE>> props)
         {
             this.object = object;
             this.props = props;
@@ -82,14 +83,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         {
             return index >= props.size() ? null : props.get(index).value;
         }
-
-        public Object getObject()
-        {
-            return getObjectValue(object);
-        }
     }
-
-    private LoadingJob<List<OBJECT_TYPE>> loadingJob;
 
     public ObjectListControl(
         Composite parent,
@@ -222,13 +216,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    private ItemCell getCellByIndex(ItemRow row, int index)
+    private ItemCell<OBJECT_TYPE> getCellByIndex(ItemRow<OBJECT_TYPE> row, int index)
     {
         Item column = columns.get(index);
         if (column.isDisposed()) {
             return null;
         }
-        for (ItemCell cell : row.props) {
+        for (ItemCell<OBJECT_TYPE> cell : row.props) {
             if (cell.prop.getId().equals(column.getData())) {
                 return cell;
             }
@@ -236,6 +230,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return null;
     }
 
+    protected abstract DBPDataSource getDataSource();
     /**
      * Returns object with properties
      * @param item list item
@@ -268,8 +263,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 public int compare(Viewer viewer, Object e1, Object e2)
                 {
                     int result;
-                    ItemRow row1 = itemMap.get(e1);
-                    ItemRow row2 = itemMap.get(e2);
+                    ItemRow<OBJECT_TYPE> row1 = itemMap.get(e1);
+                    ItemRow<OBJECT_TYPE> row2 = itemMap.get(e2);
                     if (colIndex == 0) {
                         result = getObjectLabel(row1.object).compareToIgnoreCase(getObjectLabel(row2.object));
                     } else {
@@ -298,7 +293,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     {
         public Image getColumnImage(Object element, int columnIndex)
         {
-            ItemRow row = itemMap.get(element);
+            ItemRow<OBJECT_TYPE> row = itemMap.get(element);
             if (columnIndex == 0) {
                 return getObjectImage(row.object);
             }
@@ -313,11 +308,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     
         public String getColumnText(Object element, int columnIndex)
         {
-            ItemRow row = itemMap.get(element);
+            ItemRow<OBJECT_TYPE> row = itemMap.get(element);
             if (columnIndex == 0) {
                 return getObjectLabel(row.object);
             }
-            ItemCell cell = getCellByIndex(row, columnIndex);
+            ItemCell<OBJECT_TYPE> cell = getCellByIndex(row, columnIndex);
             if (cell == null || cell.value == null) {
                 return "";
             }
@@ -334,12 +329,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     protected class ObjectsLoadVisualizer extends ProgressVisualizer<List<OBJECT_TYPE>> {
 
-        private List<ItemCell> lazyItems = new ArrayList<ItemCell>();
-
-        public List<ItemCell> getLazyItems()
-        {
-            return lazyItems;
-        }
+        private List<ItemCell<OBJECT_TYPE>> lazyItems = new ArrayList<ItemCell<OBJECT_TYPE>>();
 
         public void completeLoading(List<OBJECT_TYPE> items)
         {
@@ -381,18 +371,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
                 // Load all lazy items in one job
                 if (!CommonUtils.isEmpty(lazyItems)) {
-                    loadLazyItems(lazyItems);
+                    LoadingUtils.executeService(
+                        new ValueLoadService(lazyItems),
+                        new ValuesLoadVisualizer());
                 }
             }
-        }
-
-        protected void loadLazyItems(List<ItemCell> lazyItems)
-        {
-/*
-            LoadingUtils.executeService(
-                new ValueLoadService(),
-                new ValuesLoadVisualizer());
-*/
         }
 
         private void addRow(OBJECT_TYPE item)
@@ -412,7 +395,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             }
 
-            List<ItemCell> cells = new ArrayList<ItemCell>();
+            List<ItemCell<OBJECT_TYPE>> cells = new ArrayList<ItemCell<OBJECT_TYPE>>();
             if (annoProps != null) {
                 for (PropertyAnnoDescriptor descriptor : annoProps) {
                     // Check control is disposed
@@ -457,19 +440,63 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             continue;
                         }
                     }
-                    ItemCell cell = new ItemCell(item, descriptor, value);
+                    ItemCell<OBJECT_TYPE> cell = new ItemCell<OBJECT_TYPE>(item, descriptor, value);
                     cells.add(cell);
                     if (descriptor.isLazy()) {
                         lazyItems.add(cell);
                     }
                 }
             }
-            ItemRow row = new ItemRow(item, cells);
+            ItemRow<OBJECT_TYPE> row = new ItemRow<OBJECT_TYPE>(item, cells);
             itemMap.put(item, row);
             //rows.add(row);
 
             if (itemMap.size() % 10 == 0) {
                 setInfo(itemMap.size() + " items");
+            }
+        }
+    }
+
+    private class ValueLoadService extends DatabaseLoadService<Object> {
+        private List<ItemCell<OBJECT_TYPE>> lazyItems;
+        public ValueLoadService(List<ItemCell<OBJECT_TYPE>> lazyItems)
+        {
+            super("Load item values", getDataSource());
+            this.lazyItems = lazyItems;
+        }
+
+        public Object evaluate()
+            throws InvocationTargetException, InterruptedException
+        {
+            for (ItemCell<OBJECT_TYPE> item : lazyItems) {
+                // Check control is disposed
+                if (isDisposed() || getProgressMonitor().isCanceled()) {
+                    break;
+                }
+                // Extract value with progress monitor
+                try {
+                    item.value = item.prop.readValue(getObjectValue(item.object), getProgressMonitor());
+                }
+                catch (InvocationTargetException e) {
+                    log.warn(e.getTargetException());
+                    item.value = "???";
+                }
+                catch (IllegalAccessException e) {
+                    log.warn(e);
+                    item.value = "???";
+                }
+            }
+            return null;
+        }
+    }
+
+    private class ValuesLoadVisualizer extends ProgressVisualizer<Object> {
+
+        public void visualizeLoading()
+        {
+            super.visualizeLoading();
+            if (!getItemsViewer().getControl().isDisposed()) {
+                getItemsViewer().refresh();
             }
         }
     }

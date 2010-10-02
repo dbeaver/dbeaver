@@ -200,6 +200,5 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
                 }
             }
         });
-        System.out.println("hey: " + nodes);
     }
 }
