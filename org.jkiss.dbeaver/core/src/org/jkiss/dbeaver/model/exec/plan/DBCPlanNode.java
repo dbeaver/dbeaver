@@ -14,8 +14,6 @@ public interface DBCPlanNode {
 
     String getObjectName();
 
-    String getType();
-
     DBCPlanNode getParent();
 
     Collection<? extends DBCPlanNode> getNested();

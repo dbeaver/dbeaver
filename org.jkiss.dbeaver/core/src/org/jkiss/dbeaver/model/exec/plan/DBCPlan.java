@@ -16,6 +16,6 @@ public interface DBCPlan {
 
     String getQueryString();
 
-    Collection<? extends DBCPlanNode> explain(DBCExecutionContext context) throws DBCException;
+    Collection<DBCPlanNode> explain(DBCExecutionContext context) throws DBCException;
 
 }

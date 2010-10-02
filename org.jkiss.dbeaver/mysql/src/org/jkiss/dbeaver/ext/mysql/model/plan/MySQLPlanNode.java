@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.meta.Property;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -55,29 +56,9 @@ public class MySQLPlanNode implements DBCPlanNode {
         this.extra = dbResult.getString("extra");
     }
 
-    public long getId()
-    {
-        return id;
-    }
-
-    public String getSelectType()
-    {
-        return selectType;
-    }
-
-    public String getTable()
-    {
-        return table;
-    }
-
     public String getObjectName()
     {
-        return table;
-    }
-
-    public String getType()
-    {
-        return type;
+        return String.valueOf(id);
     }
 
     public DBCPlanNode getParent()
@@ -90,36 +71,66 @@ public class MySQLPlanNode implements DBCPlanNode {
         return nested;
     }
 
+    public long getId()
+    {
+        return id;
+    }
+
+    @Property(name = "Select Type", order = 1, viewable = true)
+    public String getSelectType()
+    {
+        return selectType;
+    }
+
+    @Property(name = "Table", order = 2, viewable = true)
+    public String getTable()
+    {
+        return table;
+    }
+
+    @Property(name = "Type", order = 3, viewable = true)
+    public String getType()
+    {
+        return type;
+    }
+
+    @Property(name = "Possible Keys", order = 4, viewable = true)
     public String getPossibleKeys()
     {
         return possibleKeys;
     }
 
+    @Property(name = "Key", order = 5, viewable = true)
     public String getKey()
     {
         return key;
     }
 
+    @Property(name = "Key Length", order = 6, viewable = true)
     public String getKeyLength()
     {
         return keyLength;
     }
 
+    @Property(name = "Ref", order = 7, viewable = true)
     public String getRef()
     {
         return ref;
     }
 
+    @Property(name = "Rows", order = 8, viewable = true)
     public long getRowCount()
     {
         return rowCount;
     }
 
+    @Property(name = "Filtered", order = 9, viewable = true)
     public double getFiltered()
     {
         return filtered;
     }
 
+    @Property(name = "Extra", order = 10, viewable = true)
     public String getExtra()
     {
         return extra;

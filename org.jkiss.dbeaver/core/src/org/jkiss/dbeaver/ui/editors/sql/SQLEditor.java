@@ -416,7 +416,16 @@ public class SQLEditor extends BaseTextEditor
             return;
         }
         resultTabs.setSelection(PAGE_INDEX_PLAN);
-
+        try {
+            planView.explainQueryPlan(sqlQuery.getQuery());
+        } catch (DBCException e) {
+            DBeaverUtils.showErrorDialog(
+                sashForm.getShell(),
+                "Execution plan",
+                "Could not explain execution plan",
+                e);
+        }
+/*
         Job job = new DataSourceJob("Explain '" + sqlQuery.getQuery() + "'", DBIcon.SQL_EXPLAIN_PLAN.getImageDescriptor(), getDataSourceContainer()) {
             @Override
             protected IStatus run(DBRProgressMonitor monitor)
@@ -442,6 +451,7 @@ public class SQLEditor extends BaseTextEditor
             }
         };
         job.schedule();
+*/
     }
 
     public void processSQL(boolean script)

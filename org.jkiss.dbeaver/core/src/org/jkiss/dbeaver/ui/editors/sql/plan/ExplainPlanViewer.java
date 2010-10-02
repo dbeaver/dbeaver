@@ -12,24 +12,23 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.plan.DBCExecutionPlanBuilder;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-
-import java.util.Collection;
 
 /**
  * ResultSetViewer
@@ -40,14 +39,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
 
     private SQLEditor editor;
     private Composite planPanel;
-    private Tree planTree;
-    private Label statusLabel;
-
-    private ToolItem itemNext;
-    private ToolItem itemPrevious;
-    private ToolItem itemFirst;
-    private ToolItem itemLast;
-    private ToolItem itemRefresh;
+    private PlanNodesTree planTree;
 
     private DBCExecutionPlanBuilder planBuilder;
 
@@ -57,11 +49,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
         this.editor = editor;
         this.planPanel = UIUtils.createPlaceholder(parent, 1);
 
-        this.planTree = new Tree(
-            planPanel,
-            SWT.FULL_SELECTION | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL);
-        planTree.setHeaderVisible(true);
-        planTree.setLinesVisible(true);
+        this.planTree = new PlanNodesTree(planPanel, SWT.NONE, editor, editor);
         GridData gd = new GridData(GridData.FILL_BOTH);
         planTree.setLayoutData(gd);
 
@@ -83,56 +71,16 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
                         message = "Not connected to database";
                     }
                     Point ext = e.gc.textExtent(message);
-                    e.gc.drawText(message, (bounds.width - ext.x) / 2, (bounds.height - planTree.getHeaderHeight()) / 2);
+                    e.gc.drawText(message, (bounds.width - ext.x) / 2, (bounds.height - 20) / 2);
                 }
             }
         });
         planTree.setLayout(new GridLayout(1, true));
-        TreeColumn nameColumn = new TreeColumn(planTree, SWT.LEFT);
-        nameColumn.setText("Name");
-
-        TreeColumn objectColumn = new TreeColumn(planTree, SWT.LEFT);
-        objectColumn.setText("Object");
-
-        //createStatusBar(planPanel);
-
-        nameColumn.pack();
-        objectColumn.pack();
-        planTree.pack();
     }
 
     private DBPDataSource getDataSource()
     {
         return editor.getDataSource();
-    }
-
-    private void createStatusBar(Composite parent)
-    {
-        Composite statusBar = new Composite(parent, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        statusBar.setLayoutData(gd);
-        GridLayout gl = new GridLayout(2, false);
-        gl.marginWidth = 0;
-        gl.marginHeight = 0;
-        statusBar.setLayout(gl);
-
-        statusLabel = new Label(statusBar, SWT.NONE);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        statusLabel.setLayoutData(gd);
-
-        {
-            ToolBar toolBar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            toolBar.setLayoutData(gd);
-            new ToolItem(toolBar, SWT.SEPARATOR);
-
-            itemRefresh = UIUtils.createToolItem(toolBar, "Refresh", DBIcon.RS_REFRESH, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    refresh();
-                }
-            });
-        }
     }
 
     public void dispose()
@@ -159,7 +107,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
 
     public ISelection getSelection()
     {
-        return new StructuredSelection(planTree.getSelection());
+        return new StructuredSelection(planTree.getItemsViewer().getSelection());
     }
 
     public void setSelection(ISelection selection, boolean reveal)
@@ -175,30 +123,21 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
         } else {
             planBuilder = null;
         }
-        planTree.removeAll();
-        UIUtils.packColumns(planTree, false);
+        planTree.clearData();
     }
 
     public void propertyChange(PropertyChangeEvent event)
     {
     }
 
-    public void explainQueryPlan(DBCExecutionContext context, String query) throws DBCException
+    public void explainQueryPlan(String query) throws DBCException
     {
         if (planBuilder == null) {
             throw new DBCException("This datasource doesn't support execution plans");
         }
         DBCPlan plan = planBuilder.prepareExecutionPlan(query);
-        final Collection<? extends DBCPlanNode> nodes = plan.explain(context);
-        Display.getDefault().asyncExec(new Runnable() {
-            public void run()
-            {
-                planTree.removeAll(); 
-                for (DBCPlanNode node : nodes) {
-                    TreeItem item = new TreeItem(planTree, SWT.NONE);
-                    item.setText(node.getObjectName());
-                }
-            }
-        });
+
+        planTree.clearData();
+        planTree.fillData(plan);
     }
 }

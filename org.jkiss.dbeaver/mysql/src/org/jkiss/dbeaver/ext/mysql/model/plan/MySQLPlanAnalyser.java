@@ -38,7 +38,7 @@ public class MySQLPlanAnalyser implements DBCPlan {
         return query;
     }
 
-    public Collection<MySQLPlanNode> explain(DBCExecutionContext context)
+    public Collection<DBCPlanNode> explain(DBCExecutionContext context)
         throws DBCException
     {
         String plainQuery = SQLUtils.stripComments(query).toUpperCase();
@@ -51,7 +51,7 @@ public class MySQLPlanAnalyser implements DBCPlan {
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    List<MySQLPlanNode> rootNodes = new ArrayList<MySQLPlanNode>();
+                    List<DBCPlanNode> rootNodes = new ArrayList<DBCPlanNode>();
                     while (dbResult.next()) {
                         MySQLPlanNode node = new MySQLPlanNode(null, dbResult);
                         rootNodes.add(node);

@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -111,7 +112,7 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
         return item.getNodeIconDefault();
     }
 
-    private class ItemLoadService extends DatabaseLoadService<List<DBNNode>> {
+    private class ItemLoadService extends DatabaseLoadService<Collection<DBNNode>> {
 
         private DBXTreeNode metaNode;
 
@@ -121,7 +122,7 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
             this.metaNode = metaNode;
         }
 
-        public List<DBNNode> evaluate()
+        public Collection<DBNNode> evaluate()
             throws InvocationTargetException, InterruptedException
         {
             try {

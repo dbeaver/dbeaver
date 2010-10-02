@@ -52,7 +52,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private Map<Object, ItemRow<OBJECT_TYPE>> itemMap = new IdentityHashMap<Object, ItemRow<OBJECT_TYPE>>();
     private ISelectionProvider selectionProvider;
     private IDoubleClickListener doubleClickHandler;
-    private LoadingJob<List<OBJECT_TYPE>> loadingJob;
+    private LoadingJob<Collection<OBJECT_TYPE>> loadingJob;
 
     public ObjectListControl(
         Composite parent,
@@ -163,7 +163,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         super.dispose();
     }
 
-    protected void loadData(LoadingJob<List<OBJECT_TYPE>> job)
+    protected void loadData(LoadingJob<Collection<OBJECT_TYPE>> job)
     {
         if (loadingJob != null) {
             // Don't do it twice
@@ -225,7 +225,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     /**
      * Returns object with properties
      * @param item list item
-     * @return object which will be exmined for properties
+     * @return object which will be examined for properties
      */
     protected abstract Object getObjectValue(OBJECT_TYPE item);
 
@@ -344,11 +344,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     }
 
-    protected class ObjectsLoadVisualizer extends ProgressVisualizer<List<OBJECT_TYPE>> {
+    public class ObjectsLoadVisualizer extends ProgressVisualizer<Collection<OBJECT_TYPE>> {
 
         private List<ItemCell<OBJECT_TYPE>> lazyItems = new ArrayList<ItemCell<OBJECT_TYPE>>();
 
-        public void completeLoading(List<OBJECT_TYPE> items)
+        public void completeLoading(Collection<OBJECT_TYPE> items)
         {
             super.completeLoading(items);
 
@@ -464,8 +464,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     private class ValueLoadService extends DatabaseLoadService<Object> {
-        private List<ItemCell<OBJECT_TYPE>> lazyItems;
-        public ValueLoadService(List<ItemCell<OBJECT_TYPE>> lazyItems)
+        private Collection<ItemCell<OBJECT_TYPE>> lazyItems;
+        public ValueLoadService(Collection<ItemCell<OBJECT_TYPE>> lazyItems)
         {
             super("Load item values", getDataSource());
             this.lazyItems = lazyItems;
