@@ -71,67 +71,67 @@ public class MySQLPlanNode implements DBCPlanNode {
         return nested;
     }
 
-    @Property(name = "ID", order = 0, viewable = true)
+    @Property(name = "ID", order = 0, viewable = true, description = "The SELECT identifier. This is the sequential number of the SELECT within the query")
     public long getId()
     {
         return id;
     }
 
-    @Property(name = "Select Type", order = 1, viewable = true)
+    @Property(name = "Select Type", order = 1, viewable = true, description = "The type of SELECT")
     public String getSelectType()
     {
         return selectType;
     }
 
-    @Property(name = "Table", order = 2, viewable = true)
+    @Property(name = "Table", order = 2, viewable = true, description = "The table to which the row of output refers")
     public String getTable()
     {
         return table;
     }
 
-    @Property(name = "Type", order = 3, viewable = true)
+    @Property(name = "Type", order = 3, viewable = true, description = "The join type")
     public String getType()
     {
         return type;
     }
 
-    @Property(name = "Possible Keys", order = 4, viewable = true)
+    @Property(name = "Possible Keys", order = 4, viewable = true, description = "Indicates which indexes MySQL can choose from use to find the rows in this table")
     public String getPossibleKeys()
     {
         return possibleKeys;
     }
 
-    @Property(name = "Key", order = 5, viewable = true)
+    @Property(name = "Key", order = 5, viewable = true, description = "Key (index) that MySQL actually decided to use")
     public String getKey()
     {
         return key;
     }
 
-    @Property(name = "Key Length", order = 6, viewable = true)
+    @Property(name = "Key Length", order = 6, viewable = true, description = "Length of the key that MySQL decided to use")
     public String getKeyLength()
     {
         return keyLength;
     }
 
-    @Property(name = "Ref", order = 7, viewable = true)
+    @Property(name = "Ref", order = 7, viewable = true, description = "Shows which columns or constants are compared to the index named in the key column to select rows from the table")
     public String getRef()
     {
         return ref;
     }
 
-    @Property(name = "Rows", order = 8, viewable = true)
+    @Property(name = "Rows", order = 8, viewable = true, description = "Number of rows MySQL believes it must examine to execute the query")
     public long getRowCount()
     {
         return rowCount;
     }
 
-    @Property(name = "Filtered", order = 9, viewable = true)
+    @Property(name = "Filtered", order = 9, viewable = true, description = "Estimated percentage of table rows that will be filtered by the table condition")
     public double getFiltered()
     {
         return filtered;
     }
 
-    @Property(name = "Extra", order = 10, viewable = true)
+    @Property(name = "Extra", order = 10, viewable = true, description = "Additional information about how MySQL resolves the query")
     public String getExtra()
     {
         return extra;
