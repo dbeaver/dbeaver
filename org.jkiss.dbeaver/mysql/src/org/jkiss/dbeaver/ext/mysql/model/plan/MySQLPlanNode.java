@@ -71,6 +71,7 @@ public class MySQLPlanNode implements DBCPlanNode {
         return nested;
     }
 
+    @Property(name = "ID", order = 0, viewable = true)
     public long getId()
     {
         return id;

@@ -44,6 +44,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private final static Object LOADING_VALUE = new Object();
 
     private boolean isTree;
+    private boolean showName;
     private boolean loadProperties;
 
     private StructuredViewer itemsViewer;
@@ -62,6 +63,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     {
         super(parent, style, workbenchPart);
         this.isTree = contentProvider instanceof ITreeContentProvider;
+        this.showName = true;
         this.loadProperties = true;
 
         this.setLayout(new GridLayout(1, true));
@@ -152,6 +154,16 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     public void setLoadProperties(boolean loadProperties) {
         this.loadProperties = loadProperties;
+    }
+
+    public boolean isShowName()
+    {
+        return showName;
+    }
+
+    public void setShowName(boolean showName)
+    {
+        this.showName = showName;
     }
 
     @Override
@@ -282,17 +294,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     int result;
                     ItemRow<OBJECT_TYPE> row1 = itemMap.get(e1);
                     ItemRow<OBJECT_TYPE> row2 = itemMap.get(e2);
-                    if (colIndex == 0) {
+                    if (showName && colIndex == 0) {
                         result = getObjectLabel(row1.object).compareToIgnoreCase(getObjectLabel(row2.object));
                     } else {
-                        Object value1 = row1.getValue(colIndex - 1);
-                        Object value2 = row2.getValue(colIndex - 1);
+                        Object value1 = row1.getValue(showName ? colIndex - 1 : colIndex);
+                        Object value2 = row2.getValue(showName ? colIndex - 1 : colIndex);
                         if (value1 == null && value2 == null) {
                             result = 0;
                         } else if (value1 == null) {
                             result = -1;
                         } else if (value2 == null) {
                             result = 1;
+                        } else if (value1 instanceof Comparable) {
+                            result = ((Comparable)value1).compareTo(value2);
                         } else {
                             result = value1.toString().compareToIgnoreCase(value2.toString());
                         }
@@ -326,7 +340,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         public String getColumnText(Object element, int columnIndex)
         {
             ItemRow<OBJECT_TYPE> row = itemMap.get(element);
-            if (columnIndex == 0) {
+            if (showName && columnIndex == 0) {
                 return getObjectLabel(row.object);
             }
             ItemCell<OBJECT_TYPE> cell = getCellByIndex(row, columnIndex);
@@ -356,7 +370,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (itemsControl.isDisposed()) {
                 return;
             }
-            createColumn("Name", "Name", null);
+            if (showName) {
+                createColumn("Name", "Name", null);
+            }
 
             List<OBJECT_TYPE> objectList = new ArrayList<OBJECT_TYPE>();
             if (!CommonUtils.isEmpty(items)) {

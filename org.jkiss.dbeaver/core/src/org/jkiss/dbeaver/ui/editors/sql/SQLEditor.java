@@ -12,9 +12,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -34,7 +31,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -58,12 +58,10 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -81,7 +79,6 @@ import org.jkiss.dbeaver.utils.DBeaverUtils;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.List;
 
 /**
  * SQL Executor
@@ -425,33 +422,6 @@ public class SQLEditor extends BaseTextEditor
                 "Could not explain execution plan",
                 e);
         }
-/*
-        Job job = new DataSourceJob("Explain '" + sqlQuery.getQuery() + "'", DBIcon.SQL_EXPLAIN_PLAN.getImageDescriptor(), getDataSourceContainer()) {
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor)
-            {
-                DBCExecutionContext context = this.getDataSource().openContext(monitor);
-                try {
-                    planView.explainQueryPlan(context, sqlQuery.getQuery());
-                } catch (final DBCException e) {
-                    Display.getDefault().asyncExec(new Runnable() {
-                        public void run()
-                        {
-                            DBeaverUtils.showErrorDialog(
-                                sashForm.getShell(),
-                                "Execution plan",
-                                "Could not explain execution plan",
-                                e);
-                        }
-                    });
-                } finally {
-                    context.close();
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        job.schedule();
-*/
     }
 
     public void processSQL(boolean script)
