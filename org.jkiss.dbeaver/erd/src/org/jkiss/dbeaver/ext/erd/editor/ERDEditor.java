@@ -882,6 +882,16 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         }
 
         @Override
+        protected boolean cancelProgress()
+        {
+            if (diagramLoadingJob != null) {
+                diagramLoadingJob.cancel();
+                return true;
+            }
+            return false;
+        }
+
+        @Override
         protected Composite createProgressPanel(Composite container) {
             Composite infoGroup = super.createProgressPanel(container);
 
@@ -954,7 +964,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 if (entityDiagram != null) {
                     setInfo(entityDiagram.getEntityCount() + " objects");
                 } else {
-                    setInfo("Error");
+                    setInfo("Empty diagram due to error");
                 }
                 getCommandStack().flush();
                 getGraphicalViewer().setContents(entityDiagram);
