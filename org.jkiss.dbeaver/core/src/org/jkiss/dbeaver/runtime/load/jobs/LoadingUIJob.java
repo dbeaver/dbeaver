@@ -36,6 +36,7 @@ class LoadingUIJob<RESULT> extends AbstractUIJob {
 
     public IStatus runInUIThread(DBRProgressMonitor monitor)
     {
+/*
         if (mainMonitor.isCanceled()) {
             // Try to cancel current load service
             try {
@@ -46,11 +47,12 @@ class LoadingUIJob<RESULT> extends AbstractUIJob {
             }
             return Status.CANCEL_STATUS;
         } else {
+*/
             if (!visualizer.isCompleted()) {
                 visualizer.visualizeLoading();
                 schedule(DELAY);
             }
-        }
+        //}
         return Status.OK_STATUS;
     }
 

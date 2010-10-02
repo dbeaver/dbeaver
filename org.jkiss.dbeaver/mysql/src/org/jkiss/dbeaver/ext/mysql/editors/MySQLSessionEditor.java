@@ -302,7 +302,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
 
         @Override
         protected int getProgressCellCount() {
-            return 5;
+            return 3;
         }
 
         @Override

@@ -7,14 +7,15 @@ package org.jkiss.dbeaver.ui.controls;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.ProgressBar;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -30,6 +31,8 @@ public class ProgressPageControl extends Composite
 
     protected final IWorkbenchPart workbenchPart;
     private ProgressBar progressBar;
+    private ToolBar progressTools;
+    private ToolItem stopButton;
     private Label listInfoLabel;
 
     private int loadCount = 0;
@@ -53,7 +56,7 @@ public class ProgressPageControl extends Composite
 
     protected int getProgressCellCount()
     {
-        return 2;
+        return 0;
     }
 
     public final Composite createProgressPanel()
@@ -78,7 +81,7 @@ public class ProgressPageControl extends Composite
         Composite infoGroup = new Composite(container, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         infoGroup.setLayoutData(gd);
-        GridLayout gl = new GridLayout(getProgressCellCount(), false);
+        GridLayout gl = new GridLayout(getProgressCellCount() + 3, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         infoGroup.setLayout(gl);
@@ -96,6 +99,24 @@ public class ProgressPageControl extends Composite
         gd = new GridData(GridData.FILL_HORIZONTAL);
         progressBar.setLayoutData(gd);
 
+        progressTools = new ToolBar(infoGroup, SWT.HORIZONTAL);
+        stopButton = new ToolItem(progressTools, SWT.PUSH);
+        stopButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP));
+        stopButton.setToolTipText("Cancel current operation");
+        stopButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                // Cancel current job
+                if (cancelProgress()) {
+                    if (!stopButton.isDisposed()) {
+                        stopButton.setEnabled(false);
+                        stopButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP_DISABLED));
+                    }
+                }
+            }
+        });
+
         return infoGroup;
     }
 
@@ -105,6 +126,11 @@ public class ProgressPageControl extends Composite
         UIUtils.dispose(listInfoLabel);
         UIUtils.dispose(progressBar);
         super.dispose();
+    }
+
+    protected boolean cancelProgress()
+    {
+        return false;
     }
 
     public ProgressVisualizer<?> createVisualizer()
@@ -130,6 +156,9 @@ public class ProgressPageControl extends Composite
             if (!progressBar.isDisposed()) {
                 if (!progressBar.isVisible()) {
                     progressBar.setVisible(true);
+                    stopButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP));
+                    stopButton.setEnabled(true);
+                    progressTools.setVisible(true);
                 }
                 progressBar.setSelection(loadCount);
                 loadCount++;
@@ -151,6 +180,7 @@ public class ProgressPageControl extends Composite
             if (!progressBar.isDisposed()) {
                 progressBar.setState(SWT.PAUSED);
                 progressBar.setVisible(false);
+                progressTools.setVisible(false);
             }
         }
 

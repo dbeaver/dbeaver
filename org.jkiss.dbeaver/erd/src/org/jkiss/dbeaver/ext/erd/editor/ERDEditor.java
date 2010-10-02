@@ -878,7 +878,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         }
 
         protected int getProgressCellCount() {
-            return 3;
+            return 1;
         }
 
         @Override

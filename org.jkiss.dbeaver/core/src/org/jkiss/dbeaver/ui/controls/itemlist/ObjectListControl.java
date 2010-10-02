@@ -128,6 +128,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         });
     }
 
+    protected boolean cancelProgress()
+    {
+        if (loadingJob != null) {
+            loadingJob.cancel();
+            return true;
+        }
+        return false;
+    }
+
     private Tree getTree()
     {
         return ((TreeViewer)itemsViewer).getTree();
