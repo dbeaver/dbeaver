@@ -27,10 +27,8 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.swt.IFocusService;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridEditor;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
+import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.util.ArrayList;
@@ -444,7 +442,7 @@ public class Spreadsheet extends Composite implements Listener {
         grid.removeAll();
     }
 
-    public void copySelectionToClipboard()
+    public void copySelectionToClipboard(boolean copyHeader)
     {
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
         List<Integer> colsSelected = new ArrayList<Integer>();
@@ -466,13 +464,25 @@ public class Spreadsheet extends Composite implements Listener {
             }
         }
         StringBuilder tdt = new StringBuilder();
+        if (copyHeader) {
+            for (int colIndex : colsSelected) {
+                GridColumn column = grid.getColumn(colIndex);
+                if (tdt.length() > 0) {
+                    tdt.append('\t');
+                }
+                tdt.append(column.getText());
+            }
+            tdt.append(lineSeparator);
+        }
         int prevRow = firstRow;
         int prevCol = firstCol;
         for (GridPos pos : selection) {
             if (pos.row > prevRow) {
                 if (prevCol < lastCol) {
                     for (int i = prevCol; i < lastCol; i++) {
-                        tdt.append("\t");
+                        if (colsSelected.contains(i)) {
+                            tdt.append('\t');
+                        }
                     }
                 }
                 tdt.append(lineSeparator);
@@ -481,7 +491,9 @@ public class Spreadsheet extends Composite implements Listener {
             }
             if (pos.col > prevCol) {
                 for (int i = 0; i < pos.col - prevCol; i++) {
-                    tdt.append("\t");
+                    if (colsSelected.contains(i)) {
+                        tdt.append('\t');
+                    }
                 }
                 prevCol = pos.col;
             }
@@ -506,11 +518,20 @@ public class Spreadsheet extends Composite implements Listener {
                 IAction copyAction = new Action("Copy selection") {
                     public void run()
                     {
-                        copySelectionToClipboard();
+                        copySelectionToClipboard(false);
                     }
                 };
                 copyAction.setEnabled(grid.getCellSelectionCount() > 0);
                 copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
+
+                IAction copySpecialAction = new Action("Copy selection with header") {
+                    public void run()
+                    {
+                        copySelectionToClipboard(true);
+                    }
+                };
+                copySpecialAction.setEnabled(grid.getCellSelectionCount() > 0);
+                copySpecialAction.setActionDefinitionId(ICommandIds.CMD_COPY_SPECIAL);
 
                 IAction selectAllAction = new Action("Select All") {
                     public void run()
@@ -522,6 +543,7 @@ public class Spreadsheet extends Composite implements Listener {
                 selectAllAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_SELECT_ALL);
 
                 manager.add(copyAction);
+                manager.add(copySpecialAction);
                 manager.add(selectAllAction);
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 

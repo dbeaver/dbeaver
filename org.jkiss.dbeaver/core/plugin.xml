@@ -113,7 +113,7 @@
         <command id="org.jkiss.dbeaver.core.resultset.row.next" name="Next Row" description="Move to next row"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.last" name="Last Row" description="Move to last row"/>
 
-        <command id="org.jkiss.dbeaver.core.edit.copy.fullname" name="Copy full qualified name" description="Copy object's full qualified name"/>
+        <command id="org.jkiss.dbeaver.core.edit.copy.special" name="Copy full qualified name" description="Copy special"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -169,7 +169,7 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.edit.copy.fullname" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopyFullName">
+        <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopyFullName">
             <activeWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -444,6 +444,9 @@
         <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
 
         <!-- ResultSet handlers
             Handle both row and text editor commands
@@ -586,14 +589,21 @@
             </command>
         </menuContribution>
 
-        <!-- Data Export -->
+        <!-- All Context menus -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
             <command commandId="org.jkiss.dbeaver.core.open.object">
                 <visibleWhen checkEnabled="true"/>
             </command>
 
-            <command commandId="org.jkiss.dbeaver.core.edit.copy.fullname">
-                <visibleWhen checkEnabled="true"/>
+            <command commandId="org.jkiss.dbeaver.core.edit.copy.special" name="Copy object's full qualified name">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSEntityQualified"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
             </command>
 
             <command commandId="org.jkiss.dbeaver.core.export.data">
@@ -693,7 +703,7 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.row.next" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_RIGHT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.last" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_RIGHT"/>
 
-        <key commandId="org.jkiss.dbeaver.core.edit.copy.fullname" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
+        <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
 
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+X"/>
