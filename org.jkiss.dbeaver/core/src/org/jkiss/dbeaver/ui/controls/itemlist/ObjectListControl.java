@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.views.properties.PropertyAnnoDescriptor;
 
@@ -44,8 +43,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private final static Object LOADING_VALUE = new Object();
 
+    private boolean isTree;
     private boolean loadProperties;
-    private TableViewer itemsViewer;
+
+    private StructuredViewer itemsViewer;
     private List<Item> columns = new ArrayList<Item>();
     private SortListener sortListener;
     private Map<Object, ItemRow<OBJECT_TYPE>> itemMap = new IdentityHashMap<Object, ItemRow<OBJECT_TYPE>>();
@@ -53,59 +54,39 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private IDoubleClickListener doubleClickHandler;
     private LoadingJob<List<OBJECT_TYPE>> loadingJob;
 
-
-    private static class ItemCell<OBJECT_TYPE>
-    {
-        final OBJECT_TYPE object;
-        final PropertyAnnoDescriptor prop;
-        Object value;
-
-        ItemCell(OBJECT_TYPE object, PropertyAnnoDescriptor prop, Object value)
-        {
-            this.object = object;
-            this.prop = prop;
-            this.value = value;
-        }
-
-    }
-
-    private static class ItemRow<OBJECT_TYPE>
-    {
-        final OBJECT_TYPE object;
-        final List<ItemCell<OBJECT_TYPE>> props;
-
-        ItemRow(OBJECT_TYPE object, List<ItemCell<OBJECT_TYPE>> props)
-        {
-            this.object = object;
-            this.props = props;
-        }
-        Object getValue(int index)
-        {
-            return index >= props.size() ? null : props.get(index).value;
-        }
-    }
-
     public ObjectListControl(
         Composite parent,
         int style,
-        IWorkbenchPart workbenchPart)
+        IWorkbenchPart workbenchPart,
+        IContentProvider contentProvider)
     {
         super(parent, style, workbenchPart);
+        this.isTree = contentProvider instanceof ITreeContentProvider;
         this.loadProperties = true;
 
         this.setLayout(new GridLayout(1, true));
 
-        itemsViewer = new TableViewer(this, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
-        final Table table = itemsViewer.getTable();
-        table.setLinesVisible (true);
-        table.setHeaderVisible(true);
-        //table.addListener(SWT.MeasureItem, paintListener);
-        table.addListener(SWT.PaintItem, new PaintListener());
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        table.setLayoutData(gd);
-        itemsViewer.setContentProvider(new ListContentProvider());
+        if (isTree) {
+            TreeViewer treeViewer = new TreeViewer(this, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
+            final Tree tree = treeViewer.getTree();
+            tree.setLinesVisible (true);
+            tree.setHeaderVisible(true);
+            itemsViewer = treeViewer;
+            
+        } else {
+            TableViewer tableViewer = new TableViewer(this, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
+            final Table table = tableViewer.getTable();
+            table.setLinesVisible (true);
+            table.setHeaderVisible(true);
+            itemsViewer = tableViewer;
+        }
+        itemsViewer.setContentProvider(contentProvider);
         itemsViewer.setLabelProvider(new ItemLabelProvider());
         itemsViewer.addDoubleClickListener(this);
+        itemsViewer.getControl().addListener(SWT.PaintItem, new PaintListener());
+
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        itemsViewer.getControl().setLayoutData(gd);
 
         super.createProgressPanel();
 
@@ -143,6 +124,16 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             }
         });
+    }
+
+    private Tree getTree()
+    {
+        return ((TreeViewer)itemsViewer).getTree();
+    }
+
+    private Table getTable()
+    {
+        return ((TableViewer)itemsViewer).getTable();
     }
 
     public Viewer getItemsViewer()
@@ -186,6 +177,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
         });
     }
+
     public void clearData()
     {
         for (Item column : columns) {
@@ -193,8 +185,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
         columns.clear();
 
-        itemsViewer.getTable().clearAll();
-        itemsViewer.setItemCount(0);
+        itemsViewer.setInput(Collections.<Object>emptyList());
         itemMap.clear();
     }
 
@@ -242,22 +233,48 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     protected abstract Image getObjectImage(OBJECT_TYPE item);
 
+    private void createColumn(String name, String toolTip, Object data)
+    {
+        Item newColumn;
+        if (isTree) {
+            TreeColumn column = new TreeColumn (getTree(), SWT.NONE);
+            column.setText(name);
+            column.setToolTipText(toolTip);
+            column.setData(data);
+            column.addListener(SWT.Selection, sortListener);
+            newColumn = column;
+        } else {
+            TableColumn column = new TableColumn (getTable(), SWT.NONE);
+            column.setText(name);
+            column.setToolTipText(toolTip);
+            column.setData(data);
+            column.addListener(SWT.Selection, sortListener);
+            newColumn = column;
+        }
+        this.columns.add(newColumn);
+    }
+
     private class SortListener implements Listener
     {
         int sortDirection = SWT.DOWN;
-        TableColumn prevColumn = null;
+        Item prevColumn = null;
 
         public void handleEvent(Event e) {
             Collator collator = Collator.getInstance();
-            TableColumn column = (TableColumn)e.widget;
+            Item column = (Item)e.widget;
             final int colIndex = columns.indexOf(column);
             if (prevColumn == column) {
                 // Set reverse order
                 sortDirection = sortDirection == SWT.UP ? SWT.DOWN : SWT.UP;
             }
             prevColumn = column;
-            itemsViewer.getTable().setSortColumn(column);
-            itemsViewer.getTable().setSortDirection(sortDirection);
+            if (isTree) {
+                getTree().setSortColumn((TreeColumn) column);
+                getTree().setSortDirection(sortDirection);
+            } else {
+                getTable().setSortColumn((TableColumn) column);
+                getTable().setSortDirection(sortDirection);
+            }
 
             itemsViewer.setSorter(new ViewerSorter(collator) {
                 public int compare(Viewer viewer, Object e1, Object e2)
@@ -335,16 +352,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         {
             super.completeLoading(items);
 
-            Table table = itemsViewer.getTable();
-            if (table.isDisposed()) {
+            Control itemsControl = itemsViewer.getControl();
+            if (itemsControl.isDisposed()) {
                 return;
             }
-            TableColumn nameColumn = new TableColumn (table, SWT.NONE);
-            nameColumn.setText("Name");
-            nameColumn.setToolTipText("Name");
-            nameColumn.addListener(SWT.Selection, sortListener);
-
-            ObjectListControl.this.columns.add(nameColumn);
+            createColumn("Name", "Name", null);
 
             List<OBJECT_TYPE> objectList = new ArrayList<OBJECT_TYPE>();
             if (!CommonUtils.isEmpty(items)) {
@@ -359,15 +371,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 setInfo(itemMap.size() + " items");
             }
 
-            if (!table.isDisposed()) {
-                table.setRedraw(false);
+            if (!itemsControl.isDisposed()) {
+                itemsControl.setRedraw(false);
 
                 itemsViewer.setInput(objectList);
 
                 for (Item column : columns) {
                     UIUtils.packColumn(column);
                 }
-                table.setRedraw(true);
+                itemsControl.setRedraw(true);
 
                 // Load all lazy items in one job
                 if (!CommonUtils.isEmpty(lazyItems)) {
@@ -415,13 +427,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         }
                     }
                     if (propColumn == null) {
-                        propColumn = new TableColumn(itemsViewer.getTable(), SWT.NONE);
-                        propColumn.setText(descriptor.getDisplayName());
-                        //propColumn.setToolTipText(descriptor.getDescription());
-                        propColumn.setData(descriptor.getId());
-                        propColumn.addListener(SWT.Selection, sortListener);
-
-                        ObjectListControl.this.columns.add(propColumn);
+                        createColumn(descriptor.getDisplayName(), descriptor.getDescription(), descriptor.getId());
                     }
                     // Read property value
                     Object value;
@@ -508,8 +514,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
 			switch(event.type) {
 				case SWT.PaintItem: {
-                    ItemRow row = itemMap.get(event.item.getData());
-                    ItemCell cell = row == null ? null : getCellByIndex(row, event.index);
+                    ItemRow<OBJECT_TYPE> row = itemMap.get(event.item.getData());
+                    ItemCell<OBJECT_TYPE> cell = row == null ? null : getCellByIndex(row, event.index);
                     if (cell != null && cell.value instanceof Boolean) {
                         if (((Boolean)cell.value)) {
                             int columnWidth = UIUtils.getColumnWidth(columns.get(event.index));
@@ -523,5 +529,36 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 			}
 		}
 	}
+
+    private static class ItemCell<OBJECT_TYPE>
+    {
+        final OBJECT_TYPE object;
+        final PropertyAnnoDescriptor prop;
+        Object value;
+
+        ItemCell(OBJECT_TYPE object, PropertyAnnoDescriptor prop, Object value)
+        {
+            this.object = object;
+            this.prop = prop;
+            this.value = value;
+        }
+
+    }
+
+    private static class ItemRow<OBJECT_TYPE>
+    {
+        final OBJECT_TYPE object;
+        final List<ItemCell<OBJECT_TYPE>> props;
+
+        ItemRow(OBJECT_TYPE object, List<ItemCell<OBJECT_TYPE>> props)
+        {
+            this.object = object;
+            this.props = props;
+        }
+        Object getValue(int index)
+        {
+            return index >= props.size() ? null : props.get(index).value;
+        }
+    }
 
 }

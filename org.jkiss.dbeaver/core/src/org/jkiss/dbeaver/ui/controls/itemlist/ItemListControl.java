@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -42,9 +43,8 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
         final IWorkbenchPart workbenchPart,
         DBNNode node)
     {
-        super(parent, style, workbenchPart);
+        super(parent, style, workbenchPart, new ListContentProvider());
         this.node = node;
-
 
         ViewUtils.addContextMenu(this);
 
