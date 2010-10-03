@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.log;
+package org.jkiss.dbeaver.ui.controls.querylog;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,19 +19,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 /**
- * ResultSetViewer
+ * QueryLogViewer
  */
-public class SQLLogViewer extends Viewer implements IPropertyChangeListener
+public class QueryLogViewer extends Viewer implements IPropertyChangeListener
 {
-    static final Log log = LogFactory.getLog(ResultSetViewer.class);
+    static final Log log = LogFactory.getLog(QueryLogViewer.class);
 
     private Table logTable;
 
-    public SQLLogViewer(Composite parent)
+    public QueryLogViewer(Composite parent)
     {
         super();
         logTable = new Table(
@@ -47,8 +46,8 @@ public class SQLLogViewer extends Viewer implements IPropertyChangeListener
         column.setToolTipText("Time at which statement was executed");
 
         column = new TableColumn(logTable, SWT.NONE);
-        column.setText("SQL statement");
-        column.setToolTipText("SQL text");
+        column.setText("SQL");
+        column.setToolTipText("SQL statement text");
 
         column = new TableColumn(logTable, SWT.NONE);
         column.setText("Execution time");
@@ -76,16 +75,6 @@ public class SQLLogViewer extends Viewer implements IPropertyChangeListener
         if (!logTable.isDisposed()) {
             logTable.dispose();
         }
-    }
-
-    public boolean isEditable()
-    {
-        return false;
-    }
-
-    public boolean isInsertable()
-    {
-        return false;
     }
 
     public Control getControl()

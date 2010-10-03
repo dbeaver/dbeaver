@@ -44,7 +44,12 @@ public class ProgressPageControl extends Composite
     {
         super(parent, style);
         this.workbenchPart = workbenchPart;
-        this.setLayout(new GridLayout(1, true));
+        GridLayout layout = new GridLayout(1, true);
+        //layout.marginHeight = 0;
+        //layout.marginWidth = 0;
+        //layout.horizontalSpacing = 0;
+        //layout.verticalSpacing = 0;
+        this.setLayout(layout);
     }
 
     public void setInfo(String info)

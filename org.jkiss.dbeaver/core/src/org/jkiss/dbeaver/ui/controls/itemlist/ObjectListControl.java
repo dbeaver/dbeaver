@@ -66,8 +66,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         this.showName = true;
         this.loadProperties = true;
 
-        this.setLayout(new GridLayout(1, true));
-
         if (isTree) {
             TreeViewer treeViewer = new TreeViewer(this, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
             final Tree tree = treeViewer.getTree();
@@ -254,7 +252,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     protected abstract Image getObjectImage(OBJECT_TYPE item);
 
-    private void createColumn(String name, String toolTip, Object data)
+    protected void createColumn(String name, String toolTip, Object data)
     {
         Item newColumn;
         if (isTree) {

@@ -70,7 +70,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
                         message = "Not connected to database";
                     }
                     Point ext = e.gc.textExtent(message);
-                    e.gc.drawText(message, (bounds.width - ext.x) / 2, (bounds.height - 20) / 2);
+                    e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + 20);
                 }
             }
         });

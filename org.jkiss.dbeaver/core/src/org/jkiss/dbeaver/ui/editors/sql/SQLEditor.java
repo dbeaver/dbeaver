@@ -65,7 +65,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
-import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogViewer;
+import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
@@ -102,7 +102,7 @@ public class SQLEditor extends BaseTextEditor
     private ResultSetViewer resultsView;
 
     private ExplainPlanViewer planView;
-    private SQLLogViewer logViewer;
+    private SQLLogPanel logViewer;
     private SQLSyntaxManager syntaxManager;
 
     private ProjectionSupport projectionSupport;
@@ -235,7 +235,7 @@ public class SQLEditor extends BaseTextEditor
             resultsView = new ResultSetViewer(resultTabs, getSite(), this);
 
             planView = new ExplainPlanViewer(this, resultTabs);
-            logViewer = new SQLLogViewer(resultTabs);
+            logViewer = new SQLLogPanel(resultTabs);
 
             // Create tabs
             CTabItem item = new CTabItem(resultTabs, SWT.NONE, 0);
@@ -249,7 +249,7 @@ public class SQLEditor extends BaseTextEditor
             item.setImage(imgExplainPlan);
 
             item = new CTabItem(resultTabs, SWT.NONE, 2);
-            item.setControl(logViewer.getControl());
+            item.setControl(logViewer);
             item.setText("Execute Log");
             item.setImage(imgLog);
 

@@ -103,8 +103,16 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
         return null;
     }
 
+    @Override
+    public void clearData()
+    {
+        super.clearData();
+        createColumn("", "", null);
+    }
+
     public void fillData(DBCQueryPlanner planner, String query)
     {
+        super.clearData();
         super.loadData(
             LoadingUtils.executeService(
                 new ExplainPlanService(planner, query),
