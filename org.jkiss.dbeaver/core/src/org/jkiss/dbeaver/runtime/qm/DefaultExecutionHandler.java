@@ -86,4 +86,14 @@ public abstract class DefaultExecutionHandler implements QMExecutionHandler {
     {
 
     }
+
+    public void handleScriptBegin(DBCExecutionContext context)
+    {
+
+    }
+
+    public void handleScriptEnd(DBCExecutionContext context)
+    {
+
+    }
 }

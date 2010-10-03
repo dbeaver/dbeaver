@@ -47,4 +47,8 @@ public interface QMExecutionHandler {
 
     void handleResultSetClose(DBCResultSet resultSet);
 
+    void handleScriptBegin(DBCExecutionContext context);
+    
+    void handleScriptEnd(DBCExecutionContext context);
+
 }

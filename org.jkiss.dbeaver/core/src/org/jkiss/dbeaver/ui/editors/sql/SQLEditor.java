@@ -71,8 +71,6 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
-import org.jkiss.dbeaver.ui.views.console.ConsoleManager;
-import org.jkiss.dbeaver.ui.views.console.ConsoleMessageType;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.DBeaverUtils;
 
@@ -409,7 +407,7 @@ public class SQLEditor extends BaseTextEditor
     {
         final SQLStatementInfo sqlQuery = extractActiveQuery();
         if (sqlQuery == null) {
-            setStatus("Empty query string", ConsoleMessageType.ERROR);
+            setStatus("Empty query string", true);
             return;
         }
         resultTabs.setSelection(PAGE_INDEX_PLAN);
@@ -428,7 +426,7 @@ public class SQLEditor extends BaseTextEditor
     {
         IDocument document = getDocument();
         if (document == null) {
-            setStatus("Can't obtain editor's document", ConsoleMessageType.ERROR);
+            setStatus("Can't obtain editor's document", true);
             return;
         }
         resultTabs.setSelection(PAGE_INDEX_RESULTSET);
@@ -446,7 +444,7 @@ public class SQLEditor extends BaseTextEditor
             // Execute statement under cursor or selected text (if selection present)
             SQLStatementInfo sqlQuery = extractActiveQuery();
             if (sqlQuery == null) {
-                setStatus("Empty query string", ConsoleMessageType.ERROR);
+                setStatus("Empty query string", true);
             } else {
                 processQuery(Collections.singletonList(sqlQuery));
             }
@@ -637,10 +635,9 @@ public class SQLEditor extends BaseTextEditor
         return queryList;
     }
 
-    private void setStatus(String status, ConsoleMessageType messageType)
+    private void setStatus(String status, boolean error)
     {
-        resultsView.setStatus(status, messageType == ConsoleMessageType.ERROR);
-        ConsoleManager.writeMessage(status, messageType);
+        resultsView.setStatus(status, error);
     }
 
     private void processQuery(final List<SQLStatementInfo> queries)
@@ -659,7 +656,7 @@ public class SQLEditor extends BaseTextEditor
         try {
             checkSession();
         } catch (DBException ex) {
-            this.setStatus(ex.getMessage(), ConsoleMessageType.ERROR);
+            this.setStatus(ex.getMessage(), true);
             DBeaverUtils.showErrorDialog(
                 getSite().getShell(),
                 "Can't obtain session",
@@ -685,7 +682,6 @@ public class SQLEditor extends BaseTextEditor
                             public void run()
                             {
                                 sashForm.setMaximizedControl(editorControl);
-                                ConsoleManager.writeMessage("Start script execution", ConsoleMessageType.COMMENT);
                             }
                         });
                     }
@@ -696,7 +692,7 @@ public class SQLEditor extends BaseTextEditor
                         public void run()
                         {
                             selectAndReveal(query.getOffset(), query.getLength());
-                            setStatus(query.getQuery(), ConsoleMessageType.CODE);
+                            setStatus(query.getQuery(), false);
                         }
                     });
                 }
@@ -720,16 +716,16 @@ public class SQLEditor extends BaseTextEditor
 */
                                 } else if (result.getUpdateCount() != null) {
                                     if (result.getUpdateCount() == 0) {
-                                        setStatus("No rows updated", ConsoleMessageType.INFO);
+                                        setStatus("No rows updated", false);
                                     } else {
-                                        setStatus(String.valueOf(result.getUpdateCount()) + " row(s) updated", ConsoleMessageType.INFO);
+                                        setStatus(String.valueOf(result.getUpdateCount()) + " row(s) updated", false);
                                     }
                                 } else {
-                                    setStatus("Statement executed", ConsoleMessageType.INFO);
+                                    setStatus("Statement executed", false);
                                 }
                                 resultsView.setExecutionTime(result.getQueryTime());
                             } else {
-                                setStatus(result.getError().getMessage(), ConsoleMessageType.ERROR);
+                                setStatus(result.getError().getMessage(), true);
                             }
                             if (queries.size() < 2) {
                                 getSelectionProvider().setSelection(originalSelection);
@@ -751,7 +747,6 @@ public class SQLEditor extends BaseTextEditor
                                 getSelectionProvider().setSelection(originalSelection);
                             }
                             if (!isSingleQuery) {
-                                ConsoleManager.writeMessage("Script completed", ConsoleMessageType.COMMENT);
                                 sashForm.setMaximizedControl(null);
                             }
                         }

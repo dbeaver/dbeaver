@@ -57,10 +57,10 @@
         <view
                 allowMultiple="false"
                 category="org.jkiss.dbeaver.core.category"
-                class="org.jkiss.dbeaver.ui.views.console.ConsoleView"
-                icon="icons/properties.png"
-                id="org.jkiss.dbeaver.core.consoleView"
-                name="SQL Console">
+                class="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"
+                icon="icons/misc/sql.png"
+                id="org.jkiss.dbeaver.core.queryManager"
+                name="Query Manager">
         </view>
         <view
                 allowMultiple="false"

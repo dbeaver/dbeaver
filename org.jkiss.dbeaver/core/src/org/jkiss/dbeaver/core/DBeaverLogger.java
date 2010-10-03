@@ -96,7 +96,6 @@ public class DBeaverLogger implements Log, Serializable
     {
         if (message instanceof Throwable) {
             debug(message.toString(), (Throwable)message);
-            return;
         } else {
             debug(message, null);
         }

@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -124,6 +125,8 @@ public class SQLQueryJob extends DataSourceJob
             DBCExecutionContext context = getDataSource().openContext(monitor, "SQL Query");
             try {
 // Set transction settings (only if autocommit is off)
+                QMUtils.getDefaultHandler().handleScriptBegin(context);
+
                 DBCTransactionManager txnManager = context.getTransactionManager();
                 boolean oldAutoCommit = txnManager.isAutoCommit();
                 boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
@@ -228,6 +231,8 @@ public class SQLQueryJob extends DataSourceJob
                     "SQL job completed");
             }
 */
+                QMUtils.getDefaultHandler().handleScriptEnd(context);
+
                 // Return success
                 return new Status(
                     Status.OK,

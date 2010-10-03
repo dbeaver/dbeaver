@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.views.console;
+package org.jkiss.dbeaver.ui.views.qm;
 
 import net.sf.jkiss.utils.IntKeyMap;
 import org.eclipse.jface.action.*;
@@ -10,8 +10,6 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.ITextOperationTarget;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyleRange;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -21,9 +19,9 @@ import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 
-public class ConsoleView extends ViewPart
+public class QueryManagerView extends ViewPart
 {
-    public static final String VIEW_ID = "org.jkiss.dbeaver.core.consoleView";
+    public static final String VIEW_ID = "org.jkiss.dbeaver.core.queryManager";
 
     private Document consoleDocument;
     private TextViewer consoleText;
@@ -61,8 +59,8 @@ public class ConsoleView extends ViewPart
             {
                 manager.add(new Separator(ITextEditorActionConstants.GROUP_COPY));
 
-                ActionFactory.IWorkbenchAction retargetCopyAction = ActionFactory.COPY.create(ConsoleView.this.getSite().getWorkbenchWindow());
-                ActionFactory.IWorkbenchAction retargetSelectAllAction = ActionFactory.SELECT_ALL.create(ConsoleView.this.getSite().getWorkbenchWindow());
+                ActionFactory.IWorkbenchAction retargetCopyAction = ActionFactory.COPY.create(QueryManagerView.this.getSite().getWorkbenchWindow());
+                ActionFactory.IWorkbenchAction retargetSelectAllAction = ActionFactory.SELECT_ALL.create(QueryManagerView.this.getSite().getWorkbenchWindow());
                 Action copyAction = new Action(retargetCopyAction.getText()) {
                     public void run()
                     {
@@ -85,7 +83,7 @@ public class ConsoleView extends ViewPart
                 selectAllAction.setEnabled(consoleText.canDoOperation(ITextOperationTarget.SELECT_ALL));
                 manager.appendToGroup(ITextEditorActionConstants.GROUP_COPY, selectAllAction);
 
-                Action clearAction = new Action("Clear console") {
+                Action clearAction = new Action("Clear qm") {
                     public void run()
                     {
                         consoleText.getTextWidget().setText("");
@@ -102,32 +100,6 @@ public class ConsoleView extends ViewPart
 
     public void setFocus()
     {
-    }
-
-    void writeMessage(String text, ConsoleMessageType messageType)
-    {
-        Color color = colorMap.get(messageType.getColor());
-        if (color == null) {
-            color = getSite().getShell().getDisplay().getSystemColor(messageType.getColor());
-            if (color != null) {
-                colorMap.put(messageType.getColor(), color);
-            }
-        }
-        if (backgroundColor == null) {
-            backgroundColor = getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE);
-        }
-
-        StyledText styledText = consoleText.getTextWidget();
-        int caretOffset = styledText.getCaretOffset();
-        int textLength = styledText.getCharCount();
-
-        styledText.append(text + "\n");
-        StyleRange textStyle = new StyleRange(caretOffset, text.length(), color, backgroundColor);
-        styledText.setStyleRange(textStyle);
-
-        if (caretOffset >= textLength) {
-            styledText.setSelection(styledText.getCharCount());
-        }
     }
 
 }

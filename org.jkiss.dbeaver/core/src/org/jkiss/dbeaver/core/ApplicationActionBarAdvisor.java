@@ -15,7 +15,7 @@ import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.jkiss.dbeaver.ui.actions.common.AboutBoxAction;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
-import org.jkiss.dbeaver.ui.views.console.ConsoleView;
+import org.jkiss.dbeaver.ui.views.qm.QueryManagerView;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView;
 import org.jkiss.dbeaver.utils.ViewUtils;
@@ -141,7 +141,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         windowMenu.add(new ToggleViewAction("projects", ProjectNavigatorView.VIEW_ID)); //$NON-NLS-1$
         windowMenu.add(new Separator());
         windowMenu.add(new ToggleViewAction("properties", IPageLayout.ID_PROP_SHEET)); //$NON-NLS-1$
-        windowMenu.add(new ToggleViewAction("console", ConsoleView.VIEW_ID)); //$NON-NLS-1$
+        windowMenu.add(new ToggleViewAction("qm", QueryManagerView.VIEW_ID)); //$NON-NLS-1$
         windowMenu.add(new ToggleViewAction("error log", "org.eclipse.pde.runtime.LogView")); //$NON-NLS-1$
         //windowMenu.add(new ToggleViewAction("progress", IPageLayout.ID_PROGRESS_VIEW)); //$NON-NLS-1$
         windowMenu.add(new ToggleViewAction("outline", IPageLayout.ID_OUTLINE)); //$NON-NLS-1$
