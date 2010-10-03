@@ -11,7 +11,11 @@ import java.util.TreeSet;
 /**
  * Data source information
  */
-class QMMDataSourceInfo {
+public class QMMSessionInfo {
+
+    private String containerId;
+    private long openTime;
+    private long closeTime;
 
     private Set<QMMStatementInfo> activeStatements = new TreeSet<QMMStatementInfo>();
     private List<QMMStatementInfo> statements;

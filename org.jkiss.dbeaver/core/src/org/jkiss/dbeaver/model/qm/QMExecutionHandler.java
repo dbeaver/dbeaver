@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.qm;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -18,6 +19,10 @@ import org.jkiss.dbeaver.model.exec.DBCStatement;
 public interface QMExecutionHandler {
 
     String getHandlerName();
+
+    void handleSessionStart(DBPDataSource dataSource);
+
+    void handleSessionEnd(DBPDataSource dataSource);
 
     void handleContextOpen(DBCExecutionContext context);
 

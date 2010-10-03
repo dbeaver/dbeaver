@@ -19,11 +19,11 @@ import java.util.Map;
 /**
  * Query manager execution handler implementation
  */
-public class QMMExecutionHandler extends DefaultExecutionHandler implements DBPEventListener {
+public class QMMetaCollector extends DefaultExecutionHandler implements DBPEventListener {
 
-    private Map<DBSDataSourceContainer, QMMDataSourceInfo> dataSourcesInfo = new HashMap<DBSDataSourceContainer, QMMDataSourceInfo>();
+    private Map<DBSDataSourceContainer, QMMSessionInfo> dataSourcesInfo = new HashMap<DBSDataSourceContainer, QMMSessionInfo>();
 
-    public QMMExecutionHandler()
+    public QMMetaCollector()
     {
     	DBeaverCore.getInstance().getDataSourceRegistry().addDataSourceListener(this);
     }

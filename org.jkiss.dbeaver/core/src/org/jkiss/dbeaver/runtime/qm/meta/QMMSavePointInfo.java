@@ -5,15 +5,15 @@
 package org.jkiss.dbeaver.runtime.qm.meta;
 
 /**
- * QM Transaction info
+ * QM Savepoint info
  */
-public class QMMTransactionInfo {
+public class QMMSavePointInfo {
 
-    private QMMSessionInfo session;
+    private QMMTransactionInfo transaction;
     private long startTime;
-    private long endTime;
+    private String name;
     private boolean finished;
     private boolean commited;
-    private QMMSavePointInfo savepoint;
+    private QMMSavePointInfo previous;
 
 }

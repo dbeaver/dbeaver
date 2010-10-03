@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.runtime.qm;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -16,6 +17,16 @@ import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
  * Handle methods are no-ops.
  */
 public abstract class DefaultExecutionHandler implements QMExecutionHandler {
+
+    public void handleSessionStart(DBPDataSource dataSource)
+    {
+
+    }
+
+    public void handleSessionEnd(DBPDataSource dataSource)
+    {
+
+    }
 
     public void handleContextOpen(DBCExecutionContext context)
     {

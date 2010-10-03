@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 /**
  * QueryLogViewer
@@ -29,6 +28,7 @@ public class QueryLogViewer extends Viewer implements IPropertyChangeListener
     static final Log log = LogFactory.getLog(QueryLogViewer.class);
 
     private Table logTable;
+    private IQueryLogFilter filter;
 
     public QueryLogViewer(Composite parent)
     {
@@ -70,11 +70,21 @@ public class QueryLogViewer extends Viewer implements IPropertyChangeListener
         });
     }
 
-    public void dispose()
+    private void dispose()
     {
         if (!logTable.isDisposed()) {
             logTable.dispose();
         }
+    }
+
+    public IQueryLogFilter getFilter()
+    {
+        return filter;
+    }
+
+    public void setFilter(IQueryLogFilter filter)
+    {
+        this.filter = filter;
     }
 
     public Control getControl()

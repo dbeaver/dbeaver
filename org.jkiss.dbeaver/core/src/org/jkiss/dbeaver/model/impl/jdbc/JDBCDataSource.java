@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -56,6 +57,8 @@ public abstract class JDBCDataSource
     {
         this.container = container;
         this.connection = openConnection();
+
+        QMUtils.getDefaultHandler().handleSessionStart(this);
     }
 
     protected Connection openConnection()
@@ -213,6 +216,7 @@ public abstract class JDBCDataSource
             }
             connection = null;
         }
+        QMUtils.getDefaultHandler().handleSessionEnd(this);
     }
 
     public String getName()
