@@ -7,15 +7,12 @@ package org.jkiss.dbeaver.model.exec.plan;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
-import java.util.Collection;
-
 /**
- * Execution plan
+ * Execution plan builder
  */
-public interface DBCPlan {
+public interface DBCQueryPlanner {
 
-    String getQueryString();
-
-    Collection<DBCPlanNode> getPlanNodes();
+    DBCPlan planQueryExecution(DBCExecutionContext context, String query)
+        throws DBCException;
 
 }

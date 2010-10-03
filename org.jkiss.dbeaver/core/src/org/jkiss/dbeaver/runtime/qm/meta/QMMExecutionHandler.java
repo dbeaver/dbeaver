@@ -7,9 +7,11 @@ package org.jkiss.dbeaver.runtime.qm.meta;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
+import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +43,13 @@ public class QMMExecutionHandler extends DefaultExecutionHandler implements DBPE
     public String getHandlerName()
     {
         return "Meta info collector";
+    }
+
+    @Override
+    public void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit)
+    {
+        // Fire transactional mode change
+        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
     }
 
     @Override

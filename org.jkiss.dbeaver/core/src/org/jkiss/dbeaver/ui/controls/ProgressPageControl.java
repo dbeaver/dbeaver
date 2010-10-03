@@ -117,6 +117,9 @@ public class ProgressPageControl extends Composite
             }
         });
 
+        progressBar.setVisible(false);
+        progressTools.setVisible(false);
+
         return infoGroup;
     }
 

@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.qm;
 
+import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
@@ -21,6 +22,10 @@ public interface QMExecutionHandler {
     void handleContextOpen(DBCExecutionContext context);
 
     void handleContextClose(DBCExecutionContext context);
+
+    void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit);
+
+    void handleTransactionIsolation(DBCExecutionContext context, DBPTransactionIsolation level);
 
     void handleTransactionCommit(DBCExecutionContext context);
 

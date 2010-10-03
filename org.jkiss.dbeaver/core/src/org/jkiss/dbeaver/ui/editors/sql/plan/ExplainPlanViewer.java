@@ -24,8 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.plan.DBCExecutionPlanBuilder;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -41,7 +40,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
     private Composite planPanel;
     private PlanNodesTree planTree;
 
-    private DBCExecutionPlanBuilder planBuilder;
+    private DBCQueryPlanner planner;
 
     public ExplainPlanViewer(SQLEditor editor, Composite parent)
     {
@@ -59,10 +58,10 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
                 dispose();
             }
         });
-        planTree.addPaintListener(new PaintListener() {
+        planTree.getItemsViewer().getControl().addPaintListener(new PaintListener() {
             public void paintControl(PaintEvent e)
             {
-                if (planBuilder == null) {
+                if (planner == null) {
                     Rectangle bounds = planTree.getBounds();
                     String message;
                     if (getDataSource() != null) {
@@ -118,10 +117,10 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
     {
         // Refresh plan
         DBPDataSource dataSource = getDataSource();
-        if (dataSource instanceof DBCExecutionPlanBuilder) {
-            planBuilder = (DBCExecutionPlanBuilder)dataSource;
+        if (dataSource instanceof DBCQueryPlanner) {
+            planner = (DBCQueryPlanner)dataSource;
         } else {
-            planBuilder = null;
+            planner = null;
         }
         planTree.clearData();
     }
@@ -132,12 +131,11 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
 
     public void explainQueryPlan(String query) throws DBCException
     {
-        if (planBuilder == null) {
+        if (planner == null) {
             throw new DBCException("This datasource doesn't support execution plans");
         }
-        DBCPlan plan = planBuilder.prepareExecutionPlan(query);
 
         planTree.clearData();
-        planTree.fillData(plan);
+        planTree.fillData(planner, query);
     }
 }

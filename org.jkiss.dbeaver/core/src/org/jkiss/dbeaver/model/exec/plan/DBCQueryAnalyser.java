@@ -8,11 +8,11 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 /**
- * Execution plan builder
+ * Query analyser
  */
-public interface DBCExecutionPlanBuilder {
+public interface DBCQueryAnalyser {
 
-    DBCPlan prepareExecutionPlan(String query)
+    DBCPlan analyseQueryExecution(DBCExecutionContext context, String query)
         throws DBCException;
 
 }

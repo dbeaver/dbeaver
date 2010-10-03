@@ -13,13 +13,12 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
-import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 
 import java.sql.*;
 import java.util.Map;
@@ -177,8 +176,7 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
     {
         getConnection().setAutoCommit(autoCommit);
 
-        // Fire transactional mode change
-        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
+        QMUtils.getDefaultHandler().handleTransactionAutocommit(this, autoCommit);
     }
 
     public boolean getAutoCommit()
@@ -191,19 +189,21 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
         throws SQLException
     {
         getConnection().commit();
+
+        QMUtils.getDefaultHandler().handleTransactionCommit(this);
     }
 
     public void rollback()
         throws SQLException
     {
         getConnection().rollback();
+
+        QMUtils.getDefaultHandler().handleTransactionRollback(this, null);
     }
 
     public void close()
         //throws SQLException
     {
-        QMUtils.getDefaultHandler().handleContextClose(this);
-
         if (taskTitle != null) {
             monitor.endBlock();
         }
@@ -218,6 +218,8 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
             // do nothing
             // closing of context doesn't close real connection
         }
+
+        QMUtils.getDefaultHandler().handleContextClose(this);
     }
 
     public boolean isClosed()
@@ -328,13 +330,25 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
     public Savepoint setSavepoint()
         throws SQLException
     {
-        return getConnection().setSavepoint();
+        Savepoint savepoint = getConnection().setSavepoint();
+
+        JDBCSavepointImpl jdbcSavepoint = new JDBCSavepointImpl(this, savepoint);
+
+        QMUtils.getDefaultHandler().handleTransactionSavepoint(jdbcSavepoint);
+
+        return jdbcSavepoint;
     }
 
     public Savepoint setSavepoint(String name)
         throws SQLException
     {
-        return getConnection().setSavepoint(name);
+        Savepoint savepoint = getConnection().setSavepoint(name);
+
+        JDBCSavepointImpl jdbcSavepoint = new JDBCSavepointImpl(this, savepoint);
+
+        QMUtils.getDefaultHandler().handleTransactionSavepoint(jdbcSavepoint);
+
+        return jdbcSavepoint;
     }
 
     public void rollback(Savepoint savepoint)
@@ -344,6 +358,8 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
             savepoint = ((JDBCSavepointImpl)savepoint).getOriginal();
         }
         getConnection().rollback(savepoint);
+
+        QMUtils.getDefaultHandler().handleTransactionRollback(this, savepoint instanceof DBCSavepoint ? (DBCSavepoint) savepoint : null);
     }
 
     public void releaseSavepoint(Savepoint savepoint)
@@ -525,11 +541,14 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
             if (!(transactionIsolation instanceof JDBCTransactionIsolation)) {
                 throw new JDBCException("Invalid transaction isolation parameter");
             }
+            JDBCTransactionIsolation jdbcTIL = (JDBCTransactionIsolation) transactionIsolation;
             try {
-                JDBCConnectionImpl.this.setTransactionIsolation(((JDBCTransactionIsolation)transactionIsolation).getCode());
+                JDBCConnectionImpl.this.setTransactionIsolation(jdbcTIL.getCode());
             } catch (SQLException e) {
                 throw new JDBCException(e);
             }
+
+            QMUtils.getDefaultHandler().handleTransactionIsolation(JDBCConnectionImpl.this, jdbcTIL);
         }
 
         public boolean isAutoCommit()

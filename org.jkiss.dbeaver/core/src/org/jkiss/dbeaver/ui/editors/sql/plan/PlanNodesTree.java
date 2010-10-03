@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
@@ -93,7 +94,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
     @Override
     protected String getObjectLabel(DBCPlanNode item)
     {
-        return item.getObjectName();
+        return null;
     }
 
     @Override
@@ -102,22 +103,24 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
         return null;
     }
 
-    public void fillData(DBCPlan plan)
+    public void fillData(DBCQueryPlanner planner, String query)
     {
         super.loadData(
             LoadingUtils.executeService(
-                new ExplainPlanService(plan),
+                new ExplainPlanService(planner, query),
                 new ObjectsLoadVisualizer()));
     }
 
     private class ExplainPlanService extends DatabaseLoadService<Collection<DBCPlanNode>> {
 
-        private DBCPlan plan;
+        private DBCQueryPlanner planner;
+        private String query;
 
-        protected ExplainPlanService(DBCPlan plan)
+        protected ExplainPlanService(DBCQueryPlanner planner, String query)
         {
             super("Explain plan", getDataSource());
-            this.plan = plan;
+            this.planner = planner;
+            this.query = query;
         }
 
         public Collection<DBCPlanNode> evaluate()
@@ -128,9 +131,10 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
                     throw new DBCException("No database connection");
                 }
 
-                DBCExecutionContext context = getDataSource().openContext(getProgressMonitor(), "Explain '" + plan.getQueryString() + "'");
+                DBCExecutionContext context = getDataSource().openContext(getProgressMonitor(), "Explain '" + query + "'");
                 try {
-                    return plan.explain(context);
+                    DBCPlan plan = planner.planQueryExecution(context, query);
+                    return plan.getPlanNodes();
                 }
                 finally {
                     context.close();

@@ -4,20 +4,11 @@
 
 package org.jkiss.dbeaver.ext.mysql.model.plan;
 
-import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.model.SQLUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -54,11 +45,6 @@ public class MySQLPlanNode implements DBCPlanNode {
         this.rowCount = dbResult.getLong("rows");
         this.filtered = dbResult.getDouble("filtered");
         this.extra = dbResult.getString("extra");
-    }
-
-    public String getObjectName()
-    {
-        return String.valueOf(id);
     }
 
     public DBCPlanNode getParent()

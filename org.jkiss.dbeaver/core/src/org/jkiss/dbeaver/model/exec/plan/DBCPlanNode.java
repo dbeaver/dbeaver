@@ -12,8 +12,6 @@ import java.util.List;
  */
 public interface DBCPlanNode {
 
-    String getObjectName();
-
     DBCPlanNode getParent();
 
     Collection<? extends DBCPlanNode> getNested();

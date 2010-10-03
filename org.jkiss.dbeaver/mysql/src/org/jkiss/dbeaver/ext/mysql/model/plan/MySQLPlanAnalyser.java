@@ -26,6 +26,7 @@ public class MySQLPlanAnalyser implements DBCPlan {
 
     private MySQLDataSource dataSource;
     private String query;
+    private List<DBCPlanNode> rootNodes;
 
     public MySQLPlanAnalyser(MySQLDataSource dataSource, String query)
     {
@@ -38,7 +39,12 @@ public class MySQLPlanAnalyser implements DBCPlan {
         return query;
     }
 
-    public Collection<DBCPlanNode> explain(DBCExecutionContext context)
+    public Collection<DBCPlanNode> getPlanNodes()
+    {
+        return rootNodes;
+    }
+
+    public void explain(DBCExecutionContext context)
         throws DBCException
     {
         String plainQuery = SQLUtils.stripComments(query).toUpperCase();
@@ -51,12 +57,11 @@ public class MySQLPlanAnalyser implements DBCPlan {
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    List<DBCPlanNode> rootNodes = new ArrayList<DBCPlanNode>();
+                    rootNodes = new ArrayList<DBCPlanNode>();
                     while (dbResult.next()) {
                         MySQLPlanNode node = new MySQLPlanNode(null, dbResult);
                         rootNodes.add(node);
                     }
-                    return rootNodes;
                 } finally {
                     dbResult.close();
                 }
