@@ -9,10 +9,10 @@ import java.sql.SQLException;
 /**
 * Statement execute info
 */
-public class QMMStatementExecuteInfo {
+public class QMMStatementExecuteInfo extends QMMObject {
 
     private QMMStatementInfo statement;
-    private QMMSavePointInfo savepoint;
+    private QMMSavepointInfo savepoint;
     private String queryString;
     //private Map<Object, Object> parameters;
 
@@ -28,18 +28,18 @@ public class QMMStatementExecuteInfo {
 
     private QMMStatementExecuteInfo previous;
 
-    public QMMStatementExecuteInfo(QMMStatementInfo statement, QMMSavePointInfo savepoint, String queryString, QMMStatementExecuteInfo previous)
+    public QMMStatementExecuteInfo(QMMStatementInfo statement, QMMSavepointInfo savepoint, String queryString, QMMStatementExecuteInfo previous)
     {
         this.statement = statement;
         this.previous = previous;
         this.savepoint = savepoint;
         this.queryString = queryString;
-        this.beginTime = System.currentTimeMillis();
+        this.beginTime = getTimeStamp();
     }
 
     void endExecution(long rowCount, Throwable error)
     {
-        this.endTime = System.currentTimeMillis();
+        this.endTime = getTimeStamp();
         if (error != null) {
             if (error instanceof SQLException) {
                 this.errorCode = ((SQLException)error).getErrorCode();
@@ -51,12 +51,12 @@ public class QMMStatementExecuteInfo {
 
     void beginFetch()
     {
-        this.fetchBeginTime = System.currentTimeMillis();
+        this.fetchBeginTime = getTimeStamp();
     }
 
     void endFetch()
     {
-        this.fetchEndTime = System.currentTimeMillis();
+        this.fetchEndTime = getTimeStamp();
     }
 
     public QMMStatementInfo getStatement()
@@ -64,7 +64,7 @@ public class QMMStatementExecuteInfo {
         return statement;
     }
 
-    public QMMSavePointInfo getSavepoint()
+    public QMMSavepointInfo getSavepoint()
     {
         return savepoint;
     }

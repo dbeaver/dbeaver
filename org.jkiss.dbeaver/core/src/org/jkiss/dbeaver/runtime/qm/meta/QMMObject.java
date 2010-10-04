@@ -10,5 +10,12 @@ package org.jkiss.dbeaver.runtime.qm.meta;
 public class QMMObject {
 
     private long id;
-    
+    private boolean synced;
+
+
+    protected static long getTimeStamp()
+    {
+        return System.currentTimeMillis();
+    }
+
 }

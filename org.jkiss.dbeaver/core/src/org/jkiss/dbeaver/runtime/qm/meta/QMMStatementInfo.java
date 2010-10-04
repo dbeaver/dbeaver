@@ -11,7 +11,7 @@ import java.lang.ref.SoftReference;
 /**
  * DBCStatement meta info
  */
-public class QMMStatementInfo {
+public class QMMStatementInfo extends QMMObject {
 
     private final QMMSessionInfo session;
     private SoftReference<DBCStatement> reference;
@@ -28,17 +28,17 @@ public class QMMStatementInfo {
         this.reference = new SoftReference<DBCStatement>(reference);
         this.script = script;
         this.previous = previous;
-        this.openTime = System.currentTimeMillis();
+        this.openTime = getTimeStamp();
     }
 
     void close()
     {
-        this.closeTime = System.currentTimeMillis();
+        this.closeTime = getTimeStamp();
         this.reference.clear();
         this.reference = null;
     }
 
-    QMMStatementExecuteInfo beginExecution(QMMSavePointInfo savepoint, String queryString)
+    QMMStatementExecuteInfo beginExecution(QMMSavepointInfo savepoint, String queryString)
     {
         return this.execution = new QMMStatementExecuteInfo(this, savepoint, queryString, this.execution);
     }

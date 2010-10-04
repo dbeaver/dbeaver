@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.runtime.qm.meta;
 /**
  * Query script info
  */
-public class QMMStatementScripInfo {
+public class QMMStatementScripInfo extends QMMObject {
 
     private final QMMSessionInfo session;
     private final long beginTime;
@@ -16,12 +16,12 @@ public class QMMStatementScripInfo {
     QMMStatementScripInfo(QMMSessionInfo session)
     {
         this.session = session;
-        this.beginTime = System.currentTimeMillis();
+        this.beginTime = getTimeStamp();
     }
 
     void endScript()
     {
-        this.endTime = System.currentTimeMillis();
+        this.endTime = getTimeStamp();
     }
 
     public QMMSessionInfo getSession()
