@@ -16,7 +16,6 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertySource;
@@ -44,6 +43,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private final static Object LOADING_VALUE = new Object();
 
     private boolean isTree;
+    private boolean isFitWidth;
     private boolean showName;
     private boolean loadProperties;
 
@@ -63,6 +63,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     {
         super(parent, style, workbenchPart);
         this.isTree = contentProvider instanceof ITreeContentProvider;
+        this.isFitWidth = false;
         this.showName = true;
         this.loadProperties = true;
 
@@ -171,6 +172,16 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public void setShowName(boolean showName)
     {
         this.showName = showName;
+    }
+
+    public boolean isFitWidth()
+    {
+        return isFitWidth;
+    }
+
+    public void setFitWidth(boolean fitWidth)
+    {
+        isFitWidth = fitWidth;
     }
 
     @Override
@@ -395,14 +406,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
 
             if (!itemsControl.isDisposed()) {
-                itemsControl.setRedraw(false);
-
                 itemsViewer.setInput(objectList);
 
-                for (Item column : columns) {
-                    UIUtils.packColumn(column);
+                if (isTree) {
+                    UIUtils.packColumns(getTree(), isFitWidth);
+                } else {
+                    UIUtils.packColumns(getTable());
                 }
-                itemsControl.setRedraw(true);
 
                 // Load all lazy items in one job
                 if (!CommonUtils.isEmpty(lazyItems)) {

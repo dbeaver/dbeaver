@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext.mysql.model.plan;
 
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
 import java.sql.ResultSet;
@@ -34,17 +35,17 @@ public class MySQLPlanNode implements DBCPlanNode {
     public MySQLPlanNode(MySQLPlanNode parent, ResultSet dbResult) throws SQLException
     {
         this.parent = parent;
-        this.id = dbResult.getLong("id");
-        this.selectType = dbResult.getString("select_type");
-        this.table = dbResult.getString("table");
-        this.type = dbResult.getString("type");
-        this.possibleKeys = dbResult.getString("possible_keys");
-        this.key = dbResult.getString("key");
-        this.keyLength = dbResult.getString("key_len");
-        this.ref = dbResult.getString("ref");
-        this.rowCount = dbResult.getLong("rows");
-        this.filtered = dbResult.getDouble("filtered");
-        this.extra = dbResult.getString("extra");
+        this.id = JDBCUtils.safeGetLong(dbResult, "id");
+        this.selectType = JDBCUtils.safeGetString(dbResult, "select_type");
+        this.table = JDBCUtils.safeGetString(dbResult, "table");
+        this.type = JDBCUtils.safeGetString(dbResult, "type");
+        this.possibleKeys = JDBCUtils.safeGetString(dbResult, "possible_keys");
+        this.key = JDBCUtils.safeGetString(dbResult, "key");
+        this.keyLength = JDBCUtils.safeGetString(dbResult, "key_len");
+        this.ref = JDBCUtils.safeGetString(dbResult, "ref");
+        this.rowCount = JDBCUtils.safeGetLong(dbResult, "rows");
+        this.filtered = JDBCUtils.safeGetDouble(dbResult, "filtered");
+        this.extra = JDBCUtils.safeGetString(dbResult, "extra");
     }
 
     public DBCPlanNode getParent()

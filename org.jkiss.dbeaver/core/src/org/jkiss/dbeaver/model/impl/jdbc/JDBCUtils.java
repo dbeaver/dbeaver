@@ -67,6 +67,16 @@ public class JDBCUtils
         }
     }
 
+    public static double safeGetDouble(ResultSet dbResult, String columnName)
+    {
+        try {
+            return dbResult.getDouble(columnName);
+        } catch (SQLException e) {
+            log.debug(e);
+            return 0.0;
+        }
+    }
+
     public static boolean safeGetBoolean(ResultSet dbResult, String columnName)
     {
         try {
