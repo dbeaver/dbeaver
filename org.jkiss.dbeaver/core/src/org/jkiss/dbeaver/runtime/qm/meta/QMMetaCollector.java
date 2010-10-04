@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.runtime.qm.meta;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -24,6 +25,7 @@ public class QMMetaCollector extends DefaultExecutionHandler {
     static final Log log = LogFactory.getLog(QMMetaCollector.class);
 
     private Map<String, QMMSessionInfo> sessionMap = new HashMap<String, QMMSessionInfo>();
+    private List<QMMetaListener> listeners = new ArrayList<QMMetaListener>();
 
     public QMMetaCollector()
     {
@@ -47,6 +49,17 @@ public class QMMetaCollector extends DefaultExecutionHandler {
     public String getHandlerName()
     {
         return "Meta info collector";
+    }
+
+    private void fireMetaEvent(final QMMObject object, final QMMetaListener.Action action)
+    {
+        if (listeners.isEmpty()) {
+            return;
+        }
+        // Handle events asynchronously
+        for (QMMetaListener listener : listeners) {
+            listener.metaInfoChanged(object, action);
+        }
     }
 
     private QMMSessionInfo getSession(DBPDataSource dataSource)
