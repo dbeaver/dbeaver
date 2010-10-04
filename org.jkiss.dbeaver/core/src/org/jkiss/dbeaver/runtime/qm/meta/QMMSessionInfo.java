@@ -21,8 +21,6 @@ public class QMMSessionInfo extends QMMObject {
 
     private final String containerId;
     private SoftReference<DBPDataSource> reference;
-    private final long openTime;
-    private long closeTime;
     private boolean transactional;
 
     private QMMSessionInfo previous;
@@ -34,11 +32,10 @@ public class QMMSessionInfo extends QMMObject {
         this.containerId = reference.getContainer().getId();
         this.reference = new SoftReference<DBPDataSource>(reference);
         this.previous = previous;
-        this.openTime = getTimeStamp();
         this.transactional = transactional;
     }
 
-    void close()
+    protected void close()
     {
         if (transaction != null) {
             transaction.rollback(null);
@@ -49,20 +46,15 @@ public class QMMSessionInfo extends QMMObject {
                 stat.close();
             }
         }
-        this.closeTime = getTimeStamp();
         this.reference.clear();
         this.reference = null;
+        super.close();
     }
 
-    boolean isClosed()
-    {
-        return closeTime > 0;
-    }
-
-    void changeTransactional(boolean transactional)
+    QMMTransactionInfo changeTransactional(boolean transactional)
     {
         if (this.transactional == transactional) {
-            return;
+            return null;
         }
         this.transactional = transactional;
         if (this.transaction != null) {
@@ -71,42 +63,53 @@ public class QMMSessionInfo extends QMMObject {
         }
         // start new transaction
         this.transaction = new QMMTransactionInfo(this, this.transaction);
+        return this.transaction.getPrevious();
     }
 
-    void commit()
+    QMMTransactionInfo commit()
     {
         if (this.transactional) {
             if (this.transaction != null) {
                 this.transaction.commit();
             }
             this.transaction = new QMMTransactionInfo(this, this.transaction);
+            return this.transaction.getPrevious();
         }
+        return null;
     }
 
-    void rollback(DBCSavepoint savepoint)
+    QMMObject rollback(DBCSavepoint savepoint)
     {
         if (this.transactional) {
             if (this.transaction != null) {
                 this.transaction.rollback(savepoint);
             }
-            this.transaction = new QMMTransactionInfo(this, this.transaction);
+            if (savepoint == null) {
+                this.transaction = new QMMTransactionInfo(this, this.transaction);
+                return this.transaction.getPrevious();
+            } else {
+                if (this.transaction != null) {
+                    return this.transaction.getSavepoint(savepoint);
+                }
+            }
         }
+        return null;
     }
 
-    void openStatement(DBCStatement statement)
+    QMMStatementInfo openStatement(DBCStatement statement)
     {
-        this.statementStack = new QMMStatementInfo(this, statement, null, this.statementStack);
+        return this.statementStack = new QMMStatementInfo(this, statement, null, this.statementStack);
     }
 
-    boolean closeStatement(DBCStatement statement)
+    QMMStatementInfo closeStatement(DBCStatement statement)
     {
         for (QMMStatementInfo stat = this.statementStack; stat != null; stat = stat.getPrevious()) {
             if (stat.getReference() == statement) {
                 stat.close();
-                return true;
+                return stat;
             }
         }
-        return false;
+        return null;
     }
 
     QMMStatementInfo getStatement(DBCStatement statement)
@@ -127,16 +130,6 @@ public class QMMSessionInfo extends QMMObject {
     public DBPDataSource getReference()
     {
         return reference == null ? null : reference.get();
-    }
-
-    public long getOpenTime()
-    {
-        return openTime;
-    }
-
-    public long getCloseTime()
-    {
-        return closeTime;
     }
 
     public QMMStatementInfo getStatementStack()

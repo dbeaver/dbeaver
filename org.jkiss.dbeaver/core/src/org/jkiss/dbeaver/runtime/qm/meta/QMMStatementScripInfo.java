@@ -10,33 +10,20 @@ package org.jkiss.dbeaver.runtime.qm.meta;
 public class QMMStatementScripInfo extends QMMObject {
 
     private final QMMSessionInfo session;
-    private final long beginTime;
-    private long endTime;
 
     QMMStatementScripInfo(QMMSessionInfo session)
     {
         this.session = session;
-        this.beginTime = getTimeStamp();
     }
 
-    void endScript()
+    protected void close()
     {
-        this.endTime = getTimeStamp();
+        super.close();
     }
 
     public QMMSessionInfo getSession()
     {
         return session;
-    }
-
-    public long getBeginTime()
-    {
-        return beginTime;
-    }
-
-    public long getEndTime()
-    {
-        return endTime;
     }
 
 }

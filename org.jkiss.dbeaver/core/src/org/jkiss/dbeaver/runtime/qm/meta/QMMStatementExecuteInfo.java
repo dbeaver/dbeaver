@@ -21,8 +21,6 @@ public class QMMStatementExecuteInfo extends QMMObject {
     private int errorCode;
     private String errorMessage;
 
-    private long beginTime;
-    private long endTime;
     private long fetchBeginTime;
     private long fetchEndTime;
 
@@ -34,12 +32,10 @@ public class QMMStatementExecuteInfo extends QMMObject {
         this.previous = previous;
         this.savepoint = savepoint;
         this.queryString = queryString;
-        this.beginTime = getTimeStamp();
     }
 
-    void endExecution(long rowCount, Throwable error)
+    void close(long rowCount, Throwable error)
     {
-        this.endTime = getTimeStamp();
         if (error != null) {
             if (error instanceof SQLException) {
                 this.errorCode = ((SQLException)error).getErrorCode();
@@ -47,6 +43,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
             this.errorMessage = error.getMessage();
         }
         this.rowCount = rowCount;
+        super.close();
     }
 
     void beginFetch()
@@ -88,16 +85,6 @@ public class QMMStatementExecuteInfo extends QMMObject {
     public String getErrorMessage()
     {
         return errorMessage;
-    }
-
-    public long getBeginTime()
-    {
-        return beginTime;
-    }
-
-    public long getEndTime()
-    {
-        return endTime;
     }
 
     public long getFetchBeginTime()

@@ -13,44 +13,38 @@ public class QMMTransactionInfo extends QMMObject {
 
     private final QMMSessionInfo session;
     private final QMMTransactionInfo previous;
-    private final long startTime;
-    private long endTime;
-    private boolean finished;
     private boolean commited;
-    private QMMSavepointInfo savepoint;
+    private QMMSavepointInfo savepointStack;
 
     QMMTransactionInfo(QMMSessionInfo session, QMMTransactionInfo previous)
     {
         this.session = session;
         this.previous = previous;
-        this.startTime = getTimeStamp();
-        this.savepoint = new QMMSavepointInfo(this, null, null, null);
+        this.savepointStack = new QMMSavepointInfo(this, null, null, null);
     }
 
     void commit()
     {
-        this.endTime = getTimeStamp();
-        this.finished = true;
         this.commited = true;
-        for (QMMSavepointInfo sp = savepoint; sp != null; sp = sp.getPrevious()) {
-            if (!sp.isFinished()) {
+        for (QMMSavepointInfo sp = savepointStack; sp != null; sp = sp.getPrevious()) {
+            if (!sp.isClosed()) {
                 // Commit all non-finished savepoints
-                sp.applySavepoint(true);
+                sp.close(true);
             }
         }
+        super.close();
     }
 
     void rollback(DBCSavepoint toSavepoint)
     {
-        this.endTime = getTimeStamp();
-        this.finished = true;
         this.commited = false;
-        for (QMMSavepointInfo sp = savepoint; sp != null; sp = sp.getPrevious()) {
-            sp.applySavepoint(false);
+        for (QMMSavepointInfo sp = savepointStack; sp != null; sp = sp.getPrevious()) {
+            sp.close(false);
             if (toSavepoint != null && sp.getReference() == toSavepoint) {
                 break;
             }
         }
+        super.close();
     }
 
     public QMMSessionInfo getSession()
@@ -63,29 +57,23 @@ public class QMMTransactionInfo extends QMMObject {
         return previous;
     }
 
-    public long getStartTime()
-    {
-        return startTime;
-    }
-
-    public long getEndTime()
-    {
-        return endTime;
-    }
-
-    public boolean isFinished()
-    {
-        return finished;
-    }
-
     public boolean isCommited()
     {
         return commited;
     }
 
-    public QMMSavepointInfo getSavepoint()
+    public QMMSavepointInfo getCurrentSavepoint()
     {
-        return savepoint;
+        return savepointStack;
     }
 
+    public QMMObject getSavepoint(DBCSavepoint savepoint)
+    {
+        for (QMMSavepointInfo sp = this.savepointStack; sp != null; sp = sp.getPrevious()) {
+            if (sp.getReference() == savepoint) {
+                return sp;
+            }
+        }
+        return null;
+    }
 }

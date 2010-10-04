@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMetaCollector;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -26,7 +26,7 @@ public class QMControllerImpl implements QMController {
     static final Log log = LogFactory.getLog(QMControllerImpl.class);
 
     private QMExecutionHandler defaultHandler;
-    private QMMetaCollector metaHandler;
+    private QMMCollector metaHandler;
     private List<QMExecutionHandler> handlers = new ArrayList<QMExecutionHandler>();
     private DataSourceRegistry dataSourceRegistry;
 
@@ -38,7 +38,7 @@ public class QMControllerImpl implements QMController {
             new Class[]{ QMExecutionHandler.class },
             new NotifyInvocationHandler());
 
-        metaHandler = new QMMetaCollector();
+        metaHandler = new QMMCollector();
         registerHandler(metaHandler);
     }
 

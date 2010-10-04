@@ -15,9 +15,7 @@ public class QMMSavepointInfo extends QMMObject {
 
     private final QMMTransactionInfo transaction;
     private SoftReference<DBCSavepoint> reference;
-    private final long startTime;
     private final String name;
-    private boolean finished;
     private boolean commited;
     private final QMMSavepointInfo previous;
 
@@ -25,15 +23,14 @@ public class QMMSavepointInfo extends QMMObject {
     {
         this.transaction = transaction;
         this.reference = new SoftReference<DBCSavepoint>(reference);
-        this.startTime = getTimeStamp();
         this.name = name;
         this.previous = previous;
     }
 
-    void applySavepoint(boolean commit)
+    protected void close(boolean commit)
     {
-        this.finished = true;
         this.commited = commit;
+        super.close();
     }
 
     public QMMTransactionInfo getTransaction()
@@ -46,19 +43,9 @@ public class QMMSavepointInfo extends QMMObject {
         return reference == null ? null : reference.get();
     }
 
-    public long getStartTime()
-    {
-        return startTime;
-    }
-
     public String getName()
     {
         return name;
-    }
-
-    public boolean isFinished()
-    {
-        return finished;
     }
 
     public boolean isCommited()

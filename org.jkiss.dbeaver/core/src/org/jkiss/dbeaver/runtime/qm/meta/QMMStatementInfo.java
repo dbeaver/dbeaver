@@ -18,8 +18,6 @@ public class QMMStatementInfo extends QMMObject {
     private SoftReference<DBCStatement> reference;
     private final QMMStatementScripInfo script;
     private final QMMStatementInfo previous;
-    private final long openTime;
-    private long closeTime;
 
     private QMMStatementExecuteInfo execution;
 
@@ -29,19 +27,13 @@ public class QMMStatementInfo extends QMMObject {
         this.reference = new SoftReference<DBCStatement>(reference);
         this.script = script;
         this.previous = previous;
-        this.openTime = getTimeStamp();
     }
 
-    void close()
+    protected void close()
     {
-        this.closeTime = getTimeStamp();
         this.reference.clear();
         this.reference = null;
-    }
-
-    boolean isClosed()
-    {
-        return closeTime > 0;
+        super.close();
     }
 
     QMMStatementExecuteInfo beginExecution(DBCStatement statement)
@@ -52,27 +44,32 @@ public class QMMStatementInfo extends QMMObject {
         }
         return this.execution = new QMMStatementExecuteInfo(
             this,
-            session.isTransactional() ? session.getTransaction().getSavepoint() : null,
+            session.isTransactional() ? session.getTransaction().getCurrentSavepoint() : null,
             queryString,
             this.execution);
     }
 
-    void endExecution(long rowCount, Throwable error)
+    QMMStatementExecuteInfo endExecution(long rowCount, Throwable error)
     {
-        execution.endExecution(rowCount, error);
+        execution.close(rowCount, error);
+        return execution;
     }
 
-    void beginFetch(DBCResultSet resultSet)
+    QMMStatementExecuteInfo beginFetch(DBCResultSet resultSet)
     {
         if (execution == null) {
             beginExecution(resultSet.getSource());
         }
         execution.beginFetch();
+        return execution;
     }
 
-    void endFetch(long rowCount)
+    QMMStatementExecuteInfo endFetch(long rowCount)
     {
-        execution.endFetch(rowCount);
+        if (execution != null) {
+            execution.endFetch(rowCount);
+        }
+        return execution;
     }
 
     public QMMSessionInfo getSession()
@@ -93,16 +90,6 @@ public class QMMStatementInfo extends QMMObject {
     public QMMStatementInfo getPrevious()
     {
         return previous;
-    }
-
-    public long getOpenTime()
-    {
-        return openTime;
-    }
-
-    public long getCloseTime()
-    {
-        return closeTime;
     }
 
     public QMMStatementExecuteInfo getExecution()
