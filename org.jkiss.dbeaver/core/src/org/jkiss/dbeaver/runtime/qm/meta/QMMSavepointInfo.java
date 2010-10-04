@@ -58,4 +58,10 @@ public class QMMSavepointInfo extends QMMObject {
         return previous;
     }
 
+    @Override
+    public String toString()
+    {
+        return "SAVEPOINT" + (name == null ? "" : name);
+    }
+
 }

@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -239,7 +240,7 @@ public class QMMCollector extends DefaultExecutionHandler {
             if (stat != null) {
                 QMMStatementExecuteInfo exec = stat.beginFetch(resultSet);
                 if (exec != null) {
-                    fireMetaEvent(exec, QMMetaEvent.Action.UPDATE);
+                    //fireMetaEvent(exec, QMMetaEvent.Action.UPDATE);
                 }
             }
         }
@@ -272,19 +273,25 @@ public class QMMCollector extends DefaultExecutionHandler {
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
-            List<QMMetaEvent> events = obtainEvents();
-            List<QMMetaListener> listeners = getListeners();
+            final List<QMMetaEvent> events = obtainEvents();
+            final List<QMMetaListener> listeners = getListeners();
             if (!listeners.isEmpty() && !events.isEmpty()) {
                 // Dispatch all events
-                for (QMMetaEvent event : events) {
-                    for (QMMetaListener listener : listeners) {
-                        try {
-                            listener.metaInfoChanged(event);
-                        } catch (Throwable e) {
-                            log.error("Error notifying event listener", e);
+                Display display = Display.getDefault();
+                display.syncExec(new Runnable() {
+                    public void run()
+                    {
+                        for (QMMetaEvent event : events) {
+                            for (QMMetaListener listener : listeners) {
+                                try {
+                                    listener.metaInfoChanged(event);
+                                } catch (Throwable e) {
+                                    log.error("Error notifying event listener", e);
+                                }
+                            }
                         }
                     }
-                }
+                });
             }
 
             if (isRunning()) {

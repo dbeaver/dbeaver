@@ -101,4 +101,11 @@ public class QMMStatementExecuteInfo extends QMMObject {
     {
         return previous;
     }
+
+    @Override
+    public String toString()
+    {
+        return '"' + queryString + '"';
+    }
+
 }

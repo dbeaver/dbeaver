@@ -35,4 +35,10 @@ public class QMMetaEvent {
     {
         return action;
     }
+
+    @Override
+    public String toString()
+    {
+        return action + " " + object;
+    }
 }

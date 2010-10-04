@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
+import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
 
 /**
  * Query Manager utils
@@ -29,6 +31,16 @@ public class QMUtils {
     public static void unregisterHandler(QMExecutionHandler handler)
     {
         DBeaverCore.getInstance().getQueryManager().unregisterHandler(handler);
+    }
+
+    public static void registerMetaListener(QMMetaListener metaListener)
+    {
+        DBeaverCore.getInstance().getQueryManager().registerMetaListener(metaListener);
+    }
+
+    public static void unregisterMetaListener(QMMetaListener metaListener)
+    {
+        DBeaverCore.getInstance().getQueryManager().unregisterMetaListener(metaListener);
     }
 
 }

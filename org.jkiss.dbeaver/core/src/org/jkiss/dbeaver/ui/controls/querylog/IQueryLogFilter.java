@@ -4,11 +4,13 @@
 
 package org.jkiss.dbeaver.ui.controls.querylog;
 
+import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
+
 /**
  * Query log filter
  */
 public interface IQueryLogFilter {
 
-    boolean accept(Object event);
+    boolean accept(QMMetaEvent event);
 
 }

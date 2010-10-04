@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.runtime.qm.meta;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
@@ -16,8 +14,6 @@ import java.lang.ref.SoftReference;
  * Data source information
  */
 public class QMMSessionInfo extends QMMObject {
-
-    static final Log log = LogFactory.getLog(QMMSessionInfo.class);
 
     private final String containerId;
     private SoftReference<DBPDataSource> reference;
@@ -150,6 +146,12 @@ public class QMMSessionInfo extends QMMObject {
     public boolean isTransactional()
     {
         return transactional;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "SESSION " + containerId;
     }
 
 }

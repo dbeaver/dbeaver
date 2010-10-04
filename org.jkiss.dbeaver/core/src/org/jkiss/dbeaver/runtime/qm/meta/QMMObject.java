@@ -4,10 +4,15 @@
 
 package org.jkiss.dbeaver.runtime.qm.meta;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * Abstract QM meta object
  */
 public class QMMObject {
+
+    static final Log log = LogFactory.getLog(QMMObject.class);
 
     private static int globalObjectId = 0;
 

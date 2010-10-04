@@ -76,4 +76,11 @@ public class QMMTransactionInfo extends QMMObject {
         }
         return null;
     }
+
+    @Override
+    public String toString()
+    {
+        return "TRANSACTION";
+    }
+
 }

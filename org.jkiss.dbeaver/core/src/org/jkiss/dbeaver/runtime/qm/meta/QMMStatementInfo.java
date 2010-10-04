@@ -97,4 +97,9 @@ public class QMMStatementInfo extends QMMObject {
         return execution;
     }
 
+    @Override
+    public String toString()
+    {
+        return "STATEMENT";
+    }
 }
