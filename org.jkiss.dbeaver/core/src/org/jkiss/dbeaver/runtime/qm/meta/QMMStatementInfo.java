@@ -38,9 +38,18 @@ public class QMMStatementInfo extends QMMObject {
         this.reference = null;
     }
 
-    QMMStatementExecuteInfo beginExecution(QMMSavepointInfo savepoint, String queryString)
+    QMMStatementExecuteInfo beginExecution(String queryString)
     {
-        return this.execution = new QMMStatementExecuteInfo(this, savepoint, queryString, this.execution);
+        return this.execution = new QMMStatementExecuteInfo(
+            this,
+            session.getTransaction().getSavepoint(),
+            queryString,
+            this.execution);
+    }
+
+    void endExecution(long rowCount, Throwable error)
+    {
+        execution.endExecution(rowCount, error);
     }
 
     public QMMSessionInfo getSession()

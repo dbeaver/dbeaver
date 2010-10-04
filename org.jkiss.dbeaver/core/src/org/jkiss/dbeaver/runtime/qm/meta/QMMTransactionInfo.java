@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.runtime.qm.meta;
 
+import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+
 /**
  * QM Transaction info
  */
@@ -23,13 +25,29 @@ public class QMMTransactionInfo extends QMMObject {
         this.savepoint = new QMMSavepointInfo(this, null, null, null);
     }
 
-    void endTransaction(boolean commit)
+    void commit()
     {
-        this.finished = true;
-        this.commited = commit;
         this.endTime = getTimeStamp();
+        this.finished = true;
+        this.commited = true;
         for (QMMSavepointInfo sp = savepoint; sp != null; sp = sp.getPrevious()) {
-            sp.endSavepoint(commit);
+            if (!sp.isFinished()) {
+                // Commit all non-finished savepoints
+                sp.applySavepoint(true);
+            }
+        }
+    }
+
+    void rollback(DBCSavepoint toSavepoint)
+    {
+        this.endTime = getTimeStamp();
+        this.finished = true;
+        this.commited = false;
+        for (QMMSavepointInfo sp = savepoint; sp != null; sp = sp.getPrevious()) {
+            sp.applySavepoint(false);
+            if (toSavepoint != null && sp.getReference() == toSavepoint) {
+                break;
+            }
         }
     }
 

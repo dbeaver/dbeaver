@@ -9,9 +9,18 @@ package org.jkiss.dbeaver.runtime.qm.meta;
  */
 public class QMMObject {
 
-    private long id;
+    private long objectId;
     private boolean synced;
 
+    public long getObjectId()
+    {
+        return objectId;
+    }
+
+    public boolean isSynced()
+    {
+        return synced;
+    }
 
     protected static long getTimeStamp()
     {

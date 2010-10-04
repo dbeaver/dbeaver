@@ -4,7 +4,10 @@
 
 package org.jkiss.dbeaver.runtime.qm.meta;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -13,36 +16,63 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Query manager execution handler implementation
  */
-public class QMMetaCollector extends DefaultExecutionHandler implements DBPEventListener {
+public class QMMetaCollector extends DefaultExecutionHandler {
 
-    private Map<DBSDataSourceContainer, QMMSessionInfo> dataSourcesInfo = new HashMap<DBSDataSourceContainer, QMMSessionInfo>();
+    static final Log log = LogFactory.getLog(QMMetaCollector.class);
+
+    private Map<String, QMMSessionInfo> sessionMap = new HashMap<String, QMMSessionInfo>();
 
     public QMMetaCollector()
     {
-    	DBeaverCore.getInstance().getDataSourceRegistry().addDataSourceListener(this);
-    }
-
-    public void handleDataSourceEvent(DBPEvent event)
-    {
-        if (event.getObject() instanceof DBSDataSourceContainer && event.getAction() == DBPEvent.Action.OBJECT_REMOVE) {
-            dataSourcesInfo.remove((DBSDataSourceContainer)event.getObject());
-        }
     }
 
     public void dispose()
     {
-        DBeaverCore.getInstance().getDataSourceRegistry().removeDataSourceListener(this);
+        if (!sessionMap.isEmpty()) {
+            List<QMMSessionInfo> openSessions = new ArrayList<QMMSessionInfo>();
+            for (QMMSessionInfo session : sessionMap.values()) {
+                if (!session.isClosed()) {
+                    openSessions.add(session);
+                }
+            }
+            if (!openSessions.isEmpty()) {
+                log.warn("Some sessions are still open: " + openSessions);
+            }
+        }
     }
 
     public String getHandlerName()
     {
         return "Meta info collector";
+    }
+
+    @Override
+    public void handleSessionStart(DBPDataSource dataSource)
+    {
+        String containerId = dataSource.getContainer().getId();
+        QMMSessionInfo session = new QMMSessionInfo(
+            dataSource,
+            sessionMap.get(containerId));
+        sessionMap.put(containerId, session);
+
+        if (session.getPrevious() != null && !session.getPrevious().isClosed()) {
+            log.warn("Previous '" + containerId + "' session wasn't closed");
+            session.getPrevious().close();
+        }
+    }
+
+    @Override
+    public void handleSessionEnd(DBPDataSource dataSource)
+    {
+        QMMSessionInfo session = sessionMap.get(dataSource.getContainer().getId());
+        if (session != null) {
+            session.close();
+        }
     }
 
     @Override
