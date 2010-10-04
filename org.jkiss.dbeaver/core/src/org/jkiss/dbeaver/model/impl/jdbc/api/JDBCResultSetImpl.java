@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.dbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -78,7 +79,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         return context;
     }
 
-    public DBCStatement getSource()
+    public JDBCPreparedStatement getSource()
     {
         return statement;
     }
@@ -144,7 +145,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
 
     public void close()
     {
-        QMUtils.getDefaultHandler().handleResultSetClose(this);
+        QMUtils.getDefaultHandler().handleResultSetClose(this, rowsFetched);
         try {
             original.close();
         }

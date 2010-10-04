@@ -13,7 +13,7 @@ public interface DBCResultSet extends DBPObject
 {
     DBCExecutionContext getContext();
 
-    DBPObject getSource();
+    DBCStatement getSource();
 
     Object getColumnValue(int index) throws DBCException;
 

@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.runtime.qm.meta;
 
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 
 import java.lang.ref.SoftReference;
@@ -43,8 +44,12 @@ public class QMMStatementInfo extends QMMObject {
         return closeTime > 0;
     }
 
-    QMMStatementExecuteInfo beginExecution(String queryString)
+    QMMStatementExecuteInfo beginExecution(DBCStatement statement)
     {
+        String queryString = statement.getQueryString();
+        if (queryString == null) {
+            queryString = statement.getDescription();
+        }
         return this.execution = new QMMStatementExecuteInfo(
             this,
             session.isTransactional() ? session.getTransaction().getSavepoint() : null,
@@ -55,6 +60,19 @@ public class QMMStatementInfo extends QMMObject {
     void endExecution(long rowCount, Throwable error)
     {
         execution.endExecution(rowCount, error);
+    }
+
+    void beginFetch(DBCResultSet resultSet)
+    {
+        if (execution == null) {
+            beginExecution(resultSet.getSource());
+        }
+        execution.beginFetch();
+    }
+
+    void endFetch(long rowCount)
+    {
+        execution.endFetch(rowCount);
     }
 
     public QMMSessionInfo getSession()

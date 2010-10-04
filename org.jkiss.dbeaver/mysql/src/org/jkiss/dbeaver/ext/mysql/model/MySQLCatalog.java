@@ -427,7 +427,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
                 getName(),
                 null,
                 procedure.getName(),
-                null).getStatement();
+                null).getSource();
         }
 
         protected MySQLProcedureColumn fetchChild(JDBCExecutionContext context, MySQLProcedure parent, ResultSet dbResult)

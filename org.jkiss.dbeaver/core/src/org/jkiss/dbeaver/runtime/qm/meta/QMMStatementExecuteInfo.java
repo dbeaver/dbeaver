@@ -54,9 +54,10 @@ public class QMMStatementExecuteInfo extends QMMObject {
         this.fetchBeginTime = getTimeStamp();
     }
 
-    void endFetch()
+    void endFetch(long rowCount)
     {
         this.fetchEndTime = getTimeStamp();
+        this.rowCount = rowCount;
     }
 
     public QMMStatementInfo getStatement()

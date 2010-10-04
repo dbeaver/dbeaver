@@ -178,7 +178,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 getCatalog() == null ? null : getCatalog().getName(),
                 getSchema() == null ? null : getSchema().getName(),
                 null,
-                null).getStatement();
+                null).getSource();
         }
 
         protected GenericTable fetchObject(JDBCExecutionContext context, ResultSet dbResult)
@@ -240,7 +240,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 getCatalog() == null ? null : getCatalog().getName(),
                 getSchema() == null ? null : getSchema().getName(),
                 forTable == null ? null : forTable.getName(),
-                null).getStatement();
+                null).getSource();
         }
 
         protected GenericTableColumn fetchChild(JDBCExecutionContext context, GenericTable table, ResultSet dbResult)
@@ -293,7 +293,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                     // so let's fix it in oracle plugin
                     forParent == null ? null : forParent.getName(), //DBUtils.getQuotedIdentifier(getDataSourceContainer(), forTable.getName()),
                     true,
-                    true).getStatement();
+                    true).getSource();
         }
 
         protected GenericIndex fetchObject(JDBCExecutionContext context, ResultSet dbResult, GenericTable parent, String indexName)
@@ -374,7 +374,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             return context.getMetaData().getProcedures(
                 getCatalog() == null ? null : getCatalog().getName(),
                 getSchema() == null ? null : getSchema().getName(),
-                null).getStatement();
+                null).getSource();
         }
 
         protected GenericProcedure fetchObject(JDBCExecutionContext context, ResultSet dbResult)
@@ -414,7 +414,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 getCatalog() == null ? null : getCatalog().getName(),
                 getSchema() == null ? null : getSchema().getName(),
                 forObject == null ? null : forObject.getName(),
-                null).getStatement();
+                null).getSource();
         }
 
         protected GenericProcedureColumn fetchChild(JDBCExecutionContext context, GenericProcedure parent, ResultSet dbResult)

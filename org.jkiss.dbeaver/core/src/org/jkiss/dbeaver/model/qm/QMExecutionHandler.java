@@ -50,7 +50,7 @@ public interface QMExecutionHandler {
 
     void handleResultSetOpen(DBCResultSet resultSet);
 
-    void handleResultSetClose(DBCResultSet resultSet);
+    void handleResultSetClose(DBCResultSet resultSet, long rowCount);
 
     void handleScriptBegin(DBCExecutionContext context);
     

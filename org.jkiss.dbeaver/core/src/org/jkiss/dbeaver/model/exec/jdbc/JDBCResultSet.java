@@ -13,7 +13,7 @@ import java.sql.ResultSet;
  */
 public interface JDBCResultSet extends ResultSet, DBCResultSet {
 
-    JDBCPreparedStatement getStatement();
+    JDBCPreparedStatement getSource();
 
     void close();
 }

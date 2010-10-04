@@ -93,7 +93,7 @@ public abstract class DefaultExecutionHandler implements QMExecutionHandler {
 
     }
 
-    public void handleResultSetClose(DBCResultSet resultSet)
+    public void handleResultSetClose(DBCResultSet resultSet, long rowCount)
     {
 
     }

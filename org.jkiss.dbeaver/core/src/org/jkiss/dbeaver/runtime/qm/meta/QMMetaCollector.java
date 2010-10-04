@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
@@ -138,7 +139,7 @@ public class QMMetaCollector extends DefaultExecutionHandler {
         if (session != null) {
             QMMStatementInfo stat = session.getStatement(statement);
             if (stat != null) {
-                stat.beginExecution(statement.getQueryString());
+                stat.beginExecution(statement);
             }
         }
     }
@@ -151,6 +152,30 @@ public class QMMetaCollector extends DefaultExecutionHandler {
             QMMStatementInfo stat = session.getStatement(statement);
             if (stat != null) {
                 stat.endExecution(rows, error);
+            }
+        }
+    }
+
+    @Override
+    public void handleResultSetOpen(DBCResultSet resultSet)
+    {
+        QMMSessionInfo session = getSession(resultSet.getContext().getDataSource());
+        if (session != null) {
+            QMMStatementInfo stat = session.getStatement(resultSet.getSource());
+            if (stat != null) {
+                stat.beginFetch(resultSet);
+            }
+        }
+    }
+
+    @Override
+    public void handleResultSetClose(DBCResultSet resultSet, long rowCount)
+    {
+        QMMSessionInfo session = getSession(resultSet.getContext().getDataSource());
+        if (session != null) {
+            QMMStatementInfo stat = session.getStatement(resultSet.getSource());
+            if (stat != null) {
+                stat.endFetch(rowCount);
             }
         }
     }
