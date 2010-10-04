@@ -32,7 +32,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl implements JDBC
     {
         super(connection);
         this.original = original;
-        setQuery(query);
+        setQueryString(query);
     }
 
     protected PreparedStatement getOriginal()
@@ -83,7 +83,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl implements JDBC
     {
         this.beforeExecute();
         try {
-            return getOriginal().executeUpdate();
+            return handleExecuteResult(getOriginal().executeUpdate());
         } catch (SQLException e) {
             super.handleExecuteError(e);
             throw e;
@@ -97,7 +97,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl implements JDBC
     {
         this.beforeExecute();
         try {
-            return getOriginal().execute();
+            return handleExecuteResult(getOriginal().execute());
         } catch (SQLException e) {
             super.handleExecuteError(e);
             throw e;

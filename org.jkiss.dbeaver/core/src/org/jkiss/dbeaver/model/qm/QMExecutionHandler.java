@@ -20,7 +20,7 @@ public interface QMExecutionHandler {
 
     String getHandlerName();
 
-    void handleSessionStart(DBPDataSource dataSource);
+    void handleSessionStart(DBPDataSource dataSource, boolean transactional);
 
     void handleSessionEnd(DBPDataSource dataSource);
 
@@ -42,7 +42,7 @@ public interface QMExecutionHandler {
 
     void handleStatementExecuteBegin(DBCStatement statement);
 
-    void handleStatementExecuteEnd(DBCStatement statement);
+    void handleStatementExecuteEnd(DBCStatement statement, long rows, Throwable error);
 
     void handleStatementBind(DBCStatement statement, Object column, Object value);
 

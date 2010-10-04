@@ -19,19 +19,9 @@ public interface JDBCStatement extends Statement, DBCStatement, DBRBlockingObjec
 
     JDBCExecutionContext getConnection();
 
-    String getQuery();
-
-    String getDescription();
-
-    JDBCStatement setDescription(String description);
-
-    DBCQueryPurpose getQueryPurpose();
-
     JDBCResultSet openResultSet() throws DBCException;
 
     JDBCResultSet openGeneratedKeysResultSet() throws DBCException;
-
-    JDBCStatement setQueryPurpose(DBCQueryPurpose queryPurpose);
 
     JDBCResultSet executeQuery(String sql)
         throws SQLException;

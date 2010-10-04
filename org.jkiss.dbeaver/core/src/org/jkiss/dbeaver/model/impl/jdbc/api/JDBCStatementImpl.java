@@ -33,11 +33,13 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     private String query;
     private String description;
     private DBCQueryPurpose queryPurpose;
-    //private boolean blockStarted = false;
+
     private long rsOffset = -1;
     private long rsMaxRows = -1;
 
     private DBSObject dataContainer;
+    private int updateCount;
+    private Throwable executeError;
 
     public JDBCStatementImpl(JDBCExecutionContext connection)
     {
@@ -61,19 +63,6 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
         connection.getProgressMonitor().endBlock();
     }
 
-    protected void handleExecuteError(SQLException ex)
-    {
-        if (connection.getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR)) {
-            try {
-                if (!connection.isClosed() && !connection.getAutoCommit()) {
-                    connection.rollback();
-                }
-            } catch (SQLException e) {
-                log.error("Can't rollback connection after error (" + ex.getMessage() + ")", e);
-            }
-        }
-    }
-
     public void cancelBlock()
         throws DBException
     {
@@ -90,38 +79,6 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
         return connection;
     }
 
-    public String getQuery()
-    {
-        return query;
-    }
-
-    public void setQuery(String query)
-    {
-        this.query = query;
-    }
-
-    public String getDescription()
-    {
-        return description;
-    }
-
-    public JDBCStatement setDescription(String description)
-    {
-        this.description = description;
-        return this;
-    }
-
-    public DBCQueryPurpose getQueryPurpose()
-    {
-        return queryPurpose;
-    }
-
-    public JDBCStatement setQueryPurpose(DBCQueryPurpose queryPurpose)
-    {
-        this.queryPurpose = queryPurpose;
-        return this;
-    }
-
     ////////////////////////////////////////////////////////////////////
     // DBC Statement overrides
     ////////////////////////////////////////////////////////////////////
@@ -134,6 +91,31 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     public String getQueryString()
     {
         return query;
+    }
+
+    public void setQueryString(String query)
+    {
+        this.query = query;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
+    public DBCQueryPurpose getQueryPurpose()
+    {
+        return queryPurpose;
+    }
+
+    public void setQueryPurpose(DBCQueryPurpose queryPurpose)
+    {
+        this.queryPurpose = queryPurpose;
     }
 
     public JDBCResultSet openResultSet() throws DBCException
@@ -217,8 +199,44 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     // Statement overrides
     ////////////////////////////////////////////////////////////////////
 
+    protected boolean handleExecuteResult(boolean result)
+    {
+        if (!result) {
+            try {
+                updateCount = getOriginal().getUpdateCount();
+            } catch (SQLException e) {
+                log.warn("Could not obtain update count", e);
+            }
+        } else {
+            updateCount = 0;
+        }
+        return result;
+    }
+
+    protected int handleExecuteResult(int result)
+    {
+        updateCount = result;
+        return result;
+    }
+
+    protected void handleExecuteError(SQLException ex)
+    {
+        executeError = ex;
+        if (connection.getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR)) {
+            try {
+                if (!connection.isClosed() && !connection.getAutoCommit()) {
+                    connection.rollback();
+                }
+            } catch (SQLException e) {
+                log.error("Can't rollback connection after error (" + ex.getMessage() + ")", e);
+            }
+        }
+    }
+
     protected void beforeExecute()
     {
+        this.updateCount = 0;
+        this.executeError = null;
         QMUtils.getDefaultHandler().handleStatementExecuteBegin(this);
         this.startBlock();
     }
@@ -226,7 +244,7 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     protected void afterExecute()
     {
         this.endBlock();
-        QMUtils.getDefaultHandler().handleStatementExecuteEnd(this);
+        QMUtils.getDefaultHandler().handleStatementExecuteEnd(this, this.updateCount, this.executeError);
     }
 
     ////////////////////////////////////
@@ -235,10 +253,10 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     public boolean execute(String sql)
         throws SQLException
     {
-        setQuery(sql);
+        setQueryString(sql);
         this.beforeExecute();
         try {
-            return getOriginal().execute(sql);
+            return handleExecuteResult(getOriginal().execute(sql));
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
@@ -251,7 +269,7 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
         throws SQLException
     {
         if (this instanceof JDBCPreparedStatementImpl) {
-            setQuery(sql);
+            setQueryString(sql);
             this.beforeExecute();
             try {
                 return makeResultSet(getOriginal().executeQuery(sql));
@@ -269,10 +287,10 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     public int executeUpdate(String sql)
         throws SQLException
     {
-        setQuery(sql);
+        setQueryString(sql);
         this.beforeExecute();
         try {
-            return getOriginal().executeUpdate(sql);
+            return handleExecuteResult(getOriginal().executeUpdate(sql));
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
@@ -298,10 +316,10 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     public int executeUpdate(String sql, int autoGeneratedKeys)
         throws SQLException
     {
-        setQuery(sql);
+        setQueryString(sql);
         this.beforeExecute();
         try {
-            return getOriginal().executeUpdate(sql, autoGeneratedKeys);
+            return handleExecuteResult(getOriginal().executeUpdate(sql, autoGeneratedKeys));
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
@@ -313,10 +331,10 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     public int executeUpdate(String sql, int[] columnIndexes)
         throws SQLException
     {
-        setQuery(sql);
+        setQueryString(sql);
         this.beforeExecute();
         try {
-            return getOriginal().executeUpdate(sql, columnIndexes);
+            return handleExecuteResult(getOriginal().executeUpdate(sql, columnIndexes));
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
@@ -328,10 +346,10 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     public int executeUpdate(String sql, String[] columnNames)
         throws SQLException
     {
-        setQuery(sql);
+        setQueryString(sql);
         this.beforeExecute();
         try {
-            return getOriginal().executeUpdate(sql, columnNames);
+            return handleExecuteResult(getOriginal().executeUpdate(sql, columnNames));
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
@@ -343,10 +361,10 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     public boolean execute(String sql, int autoGeneratedKeys)
         throws SQLException
     {
-        setQuery(sql);
+        setQueryString(sql);
         this.beforeExecute();
         try {
-            return getOriginal().execute(sql, autoGeneratedKeys);
+            return handleExecuteResult(getOriginal().execute(sql, autoGeneratedKeys));
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
@@ -358,10 +376,10 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     public boolean execute(String sql, int[] columnIndexes)
         throws SQLException
     {
-        setQuery(sql);
+        setQueryString(sql);
         this.beforeExecute();
         try {
-            return getOriginal().execute(sql, columnIndexes);
+            return handleExecuteResult(getOriginal().execute(sql, columnIndexes));
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;
@@ -373,10 +391,10 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     public boolean execute(String sql, String[] columnNames)
         throws SQLException
     {
-        setQuery(sql);
+        setQueryString(sql);
         this.beforeExecute();
         try {
-            return getOriginal().execute(sql, columnNames);
+            return handleExecuteResult(getOriginal().execute(sql, columnNames));
         } catch (SQLException e) {
             this.handleExecuteError(e);
             throw e;

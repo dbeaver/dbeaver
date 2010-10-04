@@ -31,9 +31,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
         if (args.length > 0) {
             description += "[]";
         }
-        return new JDBCResultSetImpl(
-            new JDBCFakeStatementImpl(connection, resultSet, description),
-            resultSet);
+        return new JDBCResultSetImpl(connection, resultSet, description);
     }
 
     public JDBCConnectionImpl getConnection()

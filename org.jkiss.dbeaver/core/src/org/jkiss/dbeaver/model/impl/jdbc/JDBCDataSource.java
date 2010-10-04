@@ -58,7 +58,16 @@ public abstract class JDBCDataSource
         this.container = container;
         this.connection = openConnection();
 
-        QMUtils.getDefaultHandler().handleSessionStart(this);
+        {
+            // Notify QM
+            boolean autoCommit = false;
+            try {
+                autoCommit = connection.getAutoCommit();
+            } catch (Throwable e) {
+                log.warn("Could not check auto-commit state", e);
+            }
+            QMUtils.getDefaultHandler().handleSessionStart(this, !autoCommit);
+        }
     }
 
     protected Connection openConnection()

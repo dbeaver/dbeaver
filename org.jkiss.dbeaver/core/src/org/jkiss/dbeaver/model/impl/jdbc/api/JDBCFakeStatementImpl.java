@@ -7,19 +7,17 @@ package org.jkiss.dbeaver.model.impl.jdbc.api;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
-import java.sql.ResultSet;
-
 /**
  * ResultSet container.
  * May be used as "fake" statement to wrap result sets returned by connection metadata or something.
  */
-public class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl {
+class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl {
 
-    private ResultSet resultSet;
+    private JDBCResultSetImpl resultSet;
 
-    public JDBCFakeStatementImpl(
+    JDBCFakeStatementImpl(
         JDBCExecutionContext connection,
-        ResultSet resultSet,
+        JDBCResultSetImpl resultSet,
         String description)
     {
         super(connection, JDBCVoidStatementImpl.INSTANCE, "?");
@@ -29,13 +27,13 @@ public class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl {
 
     public JDBCResultSet executeQuery()
     {
-        return new JDBCResultSetImpl(this, resultSet);
+        return resultSet;
     }
 
     @Override
     public JDBCResultSet getResultSet()
     {
-        return new JDBCResultSetImpl(this, resultSet);
+        return resultSet;
     }
 
 }

@@ -43,7 +43,7 @@ public class QMMSavepointInfo extends QMMObject {
 
     public DBCSavepoint getReference()
     {
-        return reference.get();
+        return reference == null ? null : reference.get();
     }
 
     public long getStartTime()

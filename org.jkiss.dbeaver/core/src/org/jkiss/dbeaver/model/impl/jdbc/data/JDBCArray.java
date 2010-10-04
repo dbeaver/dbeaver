@@ -13,9 +13,7 @@ import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCFakeStatementImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCResultSetImpl;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -73,9 +71,7 @@ public class JDBCArray implements DBDArray, DBDValueClonable {
             return null;
         }
         try {
-            DBCResultSet resultSet = new JDBCResultSetImpl(
-                new JDBCFakeStatementImpl((JDBCExecutionContext) context, dbResult, "Array result set"),
-                dbResult);
+            DBCResultSet resultSet = new JDBCResultSetImpl(context, dbResult, "Array result set");
             List<Object> data = new ArrayList<Object>();
             while (dbResult.next()) {
                 data.add(type.getValueHandler().getValueObject(context, resultSet, type, 0));

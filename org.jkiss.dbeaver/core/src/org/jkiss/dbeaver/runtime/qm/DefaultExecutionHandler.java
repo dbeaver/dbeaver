@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
  */
 public abstract class DefaultExecutionHandler implements QMExecutionHandler {
 
-    public void handleSessionStart(DBPDataSource dataSource)
+    public void handleSessionStart(DBPDataSource dataSource, boolean transactional)
     {
 
     }
@@ -73,7 +73,7 @@ public abstract class DefaultExecutionHandler implements QMExecutionHandler {
 
     }
 
-    public void handleStatementExecuteEnd(DBCStatement statement)
+    public void handleStatementExecuteEnd(DBCStatement statement, long rows, Throwable error)
     {
         
     }

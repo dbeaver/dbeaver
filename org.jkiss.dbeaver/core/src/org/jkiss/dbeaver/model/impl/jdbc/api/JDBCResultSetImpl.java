@@ -10,8 +10,9 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.dbc.JDBCResultSetMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.dbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 
 import java.io.InputStream;
@@ -34,12 +35,25 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     private ResultSet original;
     private long rowsFetched;
     private long maxRows = -1;
+    private boolean fake;
+
+    public JDBCResultSetImpl(DBCExecutionContext context, ResultSet original, String description)
+    {
+        this.context = context;
+        this.original = original;
+        this.statement = new JDBCFakeStatementImpl((JDBCExecutionContext) context, this, description);
+        this.fake = true;
+
+        QMUtils.getDefaultHandler().handleResultSetOpen(this);
+    }
 
     public JDBCResultSetImpl(JDBCPreparedStatementImpl statement, ResultSet original)
     {
         this.context = statement.getContext();
         this.statement = statement;
         this.original = original;
+        this.fake = false;
+
         QMUtils.getDefaultHandler().handleResultSetOpen(this);
     }
 
@@ -136,6 +150,11 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         }
         catch (SQLException e) {
             log.error("Could not close result set", e);
+        }
+
+        if (this.fake) {
+            // Close fake statement
+            statement.close();
         }
     }
 

@@ -12,7 +12,7 @@ import java.sql.*;
 import java.util.Calendar;
 
 /**
- * Void PrperedStatement
+ * Void PreparedStatement
  */
 public class JDBCVoidStatementImpl implements PreparedStatement {
 

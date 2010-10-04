@@ -38,11 +38,16 @@ public class QMMStatementInfo extends QMMObject {
         this.reference = null;
     }
 
+    boolean isClosed()
+    {
+        return closeTime > 0;
+    }
+
     QMMStatementExecuteInfo beginExecution(String queryString)
     {
         return this.execution = new QMMStatementExecuteInfo(
             this,
-            session.getTransaction().getSavepoint(),
+            session.isTransactional() ? session.getTransaction().getSavepoint() : null,
             queryString,
             this.execution);
     }
@@ -59,7 +64,7 @@ public class QMMStatementInfo extends QMMObject {
 
     public DBCStatement getReference()
     {
-        return reference.get();
+        return reference == null ? null : reference.get();
     }
 
     public QMMStatementScripInfo getScript()

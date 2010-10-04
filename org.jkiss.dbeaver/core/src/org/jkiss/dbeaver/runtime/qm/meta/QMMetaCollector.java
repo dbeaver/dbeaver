@@ -6,13 +6,10 @@ package org.jkiss.dbeaver.runtime.qm.meta;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 
@@ -51,12 +48,22 @@ public class QMMetaCollector extends DefaultExecutionHandler {
         return "Meta info collector";
     }
 
+    private QMMSessionInfo getSession(DBPDataSource dataSource)
+    {
+        QMMSessionInfo session = sessionMap.get(dataSource.getContainer().getId());
+        if (session == null) {
+            log.warn("Could not find session meta information: " + dataSource.getContainer().getId());
+        }
+        return session;
+    }
+
     @Override
-    public void handleSessionStart(DBPDataSource dataSource)
+    public void handleSessionStart(DBPDataSource dataSource, boolean transactional)
     {
         String containerId = dataSource.getContainer().getId();
         QMMSessionInfo session = new QMMSessionInfo(
             dataSource,
+            transactional,
             sessionMap.get(containerId));
         sessionMap.put(containerId, session);
 
@@ -69,7 +76,7 @@ public class QMMetaCollector extends DefaultExecutionHandler {
     @Override
     public void handleSessionEnd(DBPDataSource dataSource)
     {
-        QMMSessionInfo session = sessionMap.get(dataSource.getContainer().getId());
+        QMMSessionInfo session = getSession(dataSource);
         if (session != null) {
             session.close();
         }
@@ -78,14 +85,73 @@ public class QMMetaCollector extends DefaultExecutionHandler {
     @Override
     public void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit)
     {
+        QMMSessionInfo session = getSession(context.getDataSource());
+        if (session != null) {
+            session.changeTransactional(!autoCommit);
+        }
         // Fire transactional mode change
         DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
     }
 
     @Override
-    public void handleStatementExecuteBegin(DBCStatement statement)
+    public void handleTransactionCommit(DBCExecutionContext context)
     {
-
+        QMMSessionInfo session = getSession(context.getDataSource());
+        if (session != null) {
+            session.commit();
+        }
     }
 
+    @Override
+    public void handleTransactionRollback(DBCExecutionContext context, DBCSavepoint savepoint)
+    {
+        QMMSessionInfo session = getSession(context.getDataSource());
+        if (session != null) {
+            session.rollback(savepoint);
+        }
+    }
+
+    @Override
+    public void handleStatementOpen(DBCStatement statement)
+    {
+        QMMSessionInfo session = getSession(statement.getContext().getDataSource());
+        if (session != null) {
+            session.openStatement(statement);
+        }
+    }
+
+    @Override
+    public void handleStatementClose(DBCStatement statement)
+    {
+        QMMSessionInfo session = getSession(statement.getContext().getDataSource());
+        if (session != null) {
+            if (!session.closeStatement(statement)) {
+                log.warn("Could not properly handle statement close");
+            }
+        }
+    }
+
+    @Override
+    public void handleStatementExecuteBegin(DBCStatement statement)
+    {
+        QMMSessionInfo session = getSession(statement.getContext().getDataSource());
+        if (session != null) {
+            QMMStatementInfo stat = session.getStatement(statement);
+            if (stat != null) {
+                stat.beginExecution(statement.getQueryString());
+            }
+        }
+    }
+
+    @Override
+    public void handleStatementExecuteEnd(DBCStatement statement, long rows, Throwable error)
+    {
+        QMMSessionInfo session = getSession(statement.getContext().getDataSource());
+        if (session != null) {
+            QMMStatementInfo stat = session.getStatement(statement);
+            if (stat != null) {
+                stat.endExecution(rows, error);
+            }
+        }
+    }
 }

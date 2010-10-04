@@ -12,15 +12,17 @@ import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 public class QMMTransactionInfo extends QMMObject {
 
     private final QMMSessionInfo session;
+    private final QMMTransactionInfo previous;
     private final long startTime;
     private long endTime;
     private boolean finished;
     private boolean commited;
     private QMMSavepointInfo savepoint;
 
-    QMMTransactionInfo(QMMSessionInfo session)
+    QMMTransactionInfo(QMMSessionInfo session, QMMTransactionInfo previous)
     {
         this.session = session;
+        this.previous = previous;
         this.startTime = getTimeStamp();
         this.savepoint = new QMMSavepointInfo(this, null, null, null);
     }
@@ -56,6 +58,11 @@ public class QMMTransactionInfo extends QMMObject {
         return session;
     }
 
+    public QMMTransactionInfo getPrevious()
+    {
+        return previous;
+    }
+
     public long getStartTime()
     {
         return startTime;
@@ -80,4 +87,5 @@ public class QMMTransactionInfo extends QMMObject {
     {
         return savepoint;
     }
+
 }
