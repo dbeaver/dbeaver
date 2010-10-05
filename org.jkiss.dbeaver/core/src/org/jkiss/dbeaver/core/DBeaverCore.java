@@ -13,6 +13,7 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
@@ -218,7 +219,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return jexlEngine;
     }
 
-    public SharedTextColors getSharedTextColors()
+    public ISharedTextColors getSharedTextColors()
     {
         return sharedTextColors;
     }

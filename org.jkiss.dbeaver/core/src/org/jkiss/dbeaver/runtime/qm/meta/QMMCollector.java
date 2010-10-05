@@ -114,7 +114,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public void handleSessionStart(DBPDataSource dataSource, boolean transactional)
+    public synchronized void handleSessionStart(DBPDataSource dataSource, boolean transactional)
     {
         String containerId = dataSource.getContainer().getId();
         QMMSessionInfo session = new QMMSessionInfo(
@@ -131,7 +131,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public void handleSessionEnd(DBPDataSource dataSource)
+    public synchronized void handleSessionEnd(DBPDataSource dataSource)
     {
         QMMSessionInfo session = getSession(dataSource);
         if (session != null) {
@@ -141,7 +141,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit)
+    public synchronized void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit)
     {
         QMMSessionInfo session = getSession(context.getDataSource());
         if (session != null) {
@@ -156,7 +156,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public void handleTransactionCommit(DBCExecutionContext context)
+    public synchronized void handleTransactionCommit(DBCExecutionContext context)
     {
         QMMSessionInfo session = getSession(context.getDataSource());
         if (session != null) {
@@ -168,7 +168,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public void handleTransactionRollback(DBCExecutionContext context, DBCSavepoint savepoint)
+    public synchronized void handleTransactionRollback(DBCExecutionContext context, DBCSavepoint savepoint)
     {
         QMMSessionInfo session = getSession(context.getDataSource());
         if (session != null) {
@@ -180,7 +180,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public void handleStatementOpen(DBCStatement statement)
+    public synchronized void handleStatementOpen(DBCStatement statement)
     {
         QMMSessionInfo session = getSession(statement.getContext().getDataSource());
         if (session != null) {
@@ -190,7 +190,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public void handleStatementClose(DBCStatement statement)
+    public synchronized void handleStatementClose(DBCStatement statement)
     {
         QMMSessionInfo session = getSession(statement.getContext().getDataSource());
         if (session != null) {
@@ -204,7 +204,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public void handleStatementExecuteBegin(DBCStatement statement)
+    public synchronized void handleStatementExecuteBegin(DBCStatement statement)
     {
         QMMSessionInfo session = getSession(statement.getContext().getDataSource());
         if (session != null) {
@@ -216,7 +216,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public void handleStatementExecuteEnd(DBCStatement statement, long rows, Throwable error)
+    public synchronized void handleStatementExecuteEnd(DBCStatement statement, long rows, Throwable error)
     {
         QMMSessionInfo session = getSession(statement.getContext().getDataSource());
         if (session != null) {
@@ -228,7 +228,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public void handleResultSetOpen(DBCResultSet resultSet)
+    public synchronized void handleResultSetOpen(DBCResultSet resultSet)
     {
         QMMSessionInfo session = getSession(resultSet.getContext().getDataSource());
         if (session != null) {
@@ -240,7 +240,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public void handleResultSetClose(DBCResultSet resultSet, long rowCount)
+    public synchronized void handleResultSetClose(DBCResultSet resultSet, long rowCount)
     {
         QMMSessionInfo session = getSession(resultSet.getContext().getDataSource());
         if (session != null) {

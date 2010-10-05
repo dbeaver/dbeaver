@@ -47,8 +47,6 @@ public class QMMSessionInfo extends QMMObject {
                 stat.close();
             }
         }
-        this.reference.clear();
-        this.reference = null;
         super.close();
     }
 

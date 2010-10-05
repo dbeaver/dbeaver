@@ -15,6 +15,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
@@ -141,9 +142,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.mode = ResultSetMode.GRID;
 
         this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
-        this.backgroundAdded = new Color(parent.getDisplay(), 0xE4, 0xFF, 0xB5);
-        this.backgroundDeleted = new Color(parent.getDisplay(), 0xFF, 0x63, 0x47);
-        this.backgroundModified = new Color(parent.getDisplay(), 0xFF, 0xE4, 0xB5);
+        ISharedTextColors sharedColors = DBeaverCore.getInstance().getSharedTextColors();
+        this.backgroundAdded = sharedColors.getColor(new RGB(0xE4, 0xFF, 0xB5));
+        this.backgroundDeleted = sharedColors.getColor(new RGB(0xFF, 0x63, 0x47));
+        this.backgroundModified = sharedColors.getColor(new RGB(0xFF, 0xE4, 0xB5));
         this.foregroundNull = parent.getDisplay().getSystemColor(SWT.COLOR_GRAY);
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);

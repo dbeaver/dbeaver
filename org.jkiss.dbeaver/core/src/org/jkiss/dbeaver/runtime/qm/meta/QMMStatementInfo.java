@@ -29,8 +29,6 @@ public class QMMStatementInfo extends QMMObject {
 
     protected void close()
     {
-        this.reference.clear();
-        this.reference = null;
         super.close();
     }
 

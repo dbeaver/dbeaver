@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.controls.querylog;
 import net.sf.jkiss.utils.LongKeyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
@@ -14,8 +15,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -28,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 
 /**
  * QueryLogViewer
@@ -138,9 +142,22 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
     private LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<TableItem>();
     private IQueryLogFilter filter;
 
+    private final Color colorLightGreen;
+    private final Color colorLightRed;
+    private final Color colorLightYellow;
+
     public QueryLogViewer(Composite parent, IQueryLogFilter filter)
     {
         super();
+
+        // Prepare colors
+        ISharedTextColors sharedColors = DBeaverCore.getInstance().getSharedTextColors();
+
+        colorLightGreen = sharedColors.getColor(new RGB(0xE4, 0xFF, 0xB5));
+        colorLightRed = sharedColors.getColor(new RGB(0xFF, 0x63, 0x47));
+        colorLightYellow = sharedColors.getColor(new RGB(0xFF, 0xE4, 0xB5));
+
+        // Create log table
         logTable = new Table(
             parent,
             SWT.MULTI | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -242,13 +259,24 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         return "";
     }
 
-    static Color getObjectForeground(QMMObject object)
+    Color getObjectForeground(QMMObject object)
     {
         return null;
     }
 
-    static Color getObjectBackground(QMMObject object)
+    Color getObjectBackground(QMMObject object)
     {
+        if (object instanceof QMMStatementExecuteInfo) {
+            QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
+            QMMTransactionSavepointInfo savepoint = exec.getSavepoint();
+            if (savepoint == null) {
+                return colorLightGreen;
+            } else if (savepoint.isClosed()) {
+                return savepoint.isCommited() ? colorLightGreen : colorLightRed;
+            } else {
+                return null;
+            }
+        }
         return null;
     }
 
@@ -266,6 +294,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
                 } else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo) {
                     createOrUpdateItem(object);
                     // Update all dependent statements
+                    if (object instanceof QMMTransactionInfo) {
+                        for (QMMTransactionSavepointInfo savepoint = ((QMMTransactionInfo)object).getCurrentSavepoint(); savepoint != null; savepoint = savepoint.getPrevious()) {
+                            updateExecutions(savepoint);
+                        }
+
+                    } else {
+                        updateExecutions((QMMTransactionSavepointInfo)object);
+                    }
                 } else if (object instanceof QMMSessionInfo) {
                     QMMetaEvent.Action action = event.getAction();
                     if (action == QMMetaEvent.Action.BEGIN || action == QMMetaEvent.Action.END) {
@@ -277,6 +313,18 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         }
         finally {
             logTable.setRedraw(true);
+        }
+    }
+
+    private void updateExecutions(QMMTransactionSavepointInfo savepoint)
+    {
+        for (Iterator<QMMStatementExecuteInfo> i = savepoint.getExecutions(); i.hasNext(); ) {
+            QMMStatementExecuteInfo exec = i.next();
+            TableItem item = objectToItemMap.get(exec.getObjectId());
+            if (item != null) {
+                item.setForeground(getObjectForeground(exec));
+                item.setBackground(getObjectBackground(exec));
+            }
         }
     }
 

@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.runtime.qm.meta;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 
 import java.lang.ref.SoftReference;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * QM Savepoint info
@@ -67,6 +69,30 @@ public class QMMTransactionSavepointInfo extends QMMObject {
     void setLastExecute(QMMStatementExecuteInfo lastExecute)
     {
         this.lastExecute = lastExecute;
+    }
+
+    public Iterator<QMMStatementExecuteInfo> getExecutions()
+    {
+        return new Iterator<QMMStatementExecuteInfo>() {
+            private QMMStatementExecuteInfo curExec = lastExecute;
+            public boolean hasNext()
+            {
+                return curExec != null && curExec.getSavepoint() == QMMTransactionSavepointInfo.this;
+            }
+            public QMMStatementExecuteInfo next()
+            {
+                if (curExec == null || curExec.getSavepoint() != QMMTransactionSavepointInfo.this) {
+                    throw new NoSuchElementException();
+                }
+                QMMStatementExecuteInfo n = curExec;
+                curExec = curExec.getPrevious();
+                return n;
+            }
+            public void remove()
+            {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 
     @Override
