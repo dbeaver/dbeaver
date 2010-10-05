@@ -240,9 +240,11 @@ public class UIUtils {
                 } else if (totalWidth < clientArea.width) {
                     int extraSpace = clientArea.width - totalWidth;
                     int columnCount = tree.getColumnCount();
-                    extraSpace /= columnCount;
-                    for (TreeColumn tc : tree.getColumns()) {
-                        tc.setWidth(tc.getWidth() + extraSpace);
+                    if (columnCount > 0) {
+                        extraSpace /= columnCount;
+                        for (TreeColumn tc : tree.getColumns()) {
+                            tc.setWidth(tc.getWidth() + extraSpace);
+                        }
                     }
                 }
             }

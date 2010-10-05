@@ -61,7 +61,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             return new Status(Status.CANCEL, DBeaverConstants.PLUGIN_ID, "Loading interrupted");
         }
         finally {
-            new LoadingFinishJob<RESULT>(visualizer, result, error).schedule();
+            new LoadingFinishJob<RESULT>(getName(), visualizer, result, error).schedule();
         }
         return Status.OK_STATUS;
     }

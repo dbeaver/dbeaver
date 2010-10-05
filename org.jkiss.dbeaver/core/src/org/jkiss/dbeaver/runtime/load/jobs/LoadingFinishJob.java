@@ -17,9 +17,9 @@ class LoadingFinishJob<RESULT> extends AbstractUIJob {
     private RESULT result;
     private Throwable error;
 
-    public LoadingFinishJob(ILoadVisualizer<RESULT> visualizer, RESULT result, Throwable error)
+    public LoadingFinishJob(String jobName, ILoadVisualizer<RESULT> visualizer, RESULT result, Throwable error)
     {
-        super("Finish loading job");
+        super(jobName);
         this.visualizer = visualizer;
         this.result = result;
         this.error = error;
@@ -32,9 +32,8 @@ class LoadingFinishJob<RESULT> extends AbstractUIJob {
         if (error != null) {
             DBeaverUtils.showErrorDialog(
                 visualizer.getShell(),
-                "Error loading data",
-                "Could not load data",
-                error);
+                getName(),
+                error.getMessage());
         }
         return Status.OK_STATUS;
     }
