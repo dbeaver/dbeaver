@@ -208,9 +208,8 @@ public class QMMCollector extends DefaultExecutionHandler {
     {
         QMMSessionInfo session = getSession(statement.getContext().getDataSource());
         if (session != null) {
-            QMMStatementInfo stat = session.getStatement(statement);
-            if (stat != null) {
-                QMMStatementExecuteInfo exec = stat.beginExecution(statement);
+            QMMStatementExecuteInfo exec = session.beginExecution(statement);
+            if (exec != null) {
                 fireMetaEvent(exec, QMMetaEvent.Action.BEGIN);
             }
         }
@@ -221,12 +220,9 @@ public class QMMCollector extends DefaultExecutionHandler {
     {
         QMMSessionInfo session = getSession(statement.getContext().getDataSource());
         if (session != null) {
-            QMMStatementInfo stat = session.getStatement(statement);
-            if (stat != null) {
-                QMMStatementExecuteInfo exec = stat.endExecution(rows, error);
-                if (exec != null) {
-                    fireMetaEvent(exec, QMMetaEvent.Action.END);
-                }
+            QMMStatementExecuteInfo exec = session.endExecution(statement, rows, error);
+            if (exec != null) {
+                fireMetaEvent(exec, QMMetaEvent.Action.END);
             }
         }
     }
@@ -236,12 +232,9 @@ public class QMMCollector extends DefaultExecutionHandler {
     {
         QMMSessionInfo session = getSession(resultSet.getContext().getDataSource());
         if (session != null) {
-            QMMStatementInfo stat = session.getStatement(resultSet.getSource());
-            if (stat != null) {
-                QMMStatementExecuteInfo exec = stat.beginFetch(resultSet);
-                if (exec != null) {
-                    //fireMetaEvent(exec, QMMetaEvent.Action.UPDATE);
-                }
+            QMMStatementExecuteInfo exec = session.beginFetch(resultSet);
+            if (exec != null) {
+                //fireMetaEvent(exec, QMMetaEvent.Action.UPDATE);
             }
         }
     }
@@ -251,12 +244,9 @@ public class QMMCollector extends DefaultExecutionHandler {
     {
         QMMSessionInfo session = getSession(resultSet.getContext().getDataSource());
         if (session != null) {
-            QMMStatementInfo stat = session.getStatement(resultSet.getSource());
-            if (stat != null) {
-                QMMStatementExecuteInfo exec = stat.endFetch(rowCount);
-                if (exec != null) {
-                    fireMetaEvent(exec, QMMetaEvent.Action.UPDATE);
-                }
+            QMMStatementExecuteInfo exec = session.endFetch(resultSet, rowCount);
+            if (exec != null) {
+                fireMetaEvent(exec, QMMetaEvent.Action.UPDATE);
             }
         }
     }

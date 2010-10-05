@@ -32,6 +32,9 @@ public class QMMStatementExecuteInfo extends QMMObject {
         this.previous = previous;
         this.savepoint = savepoint;
         this.queryString = queryString;
+        if (savepoint != null) {
+            savepoint.setLastExecute(this);
+        }
     }
 
     void close(long rowCount, Throwable error)

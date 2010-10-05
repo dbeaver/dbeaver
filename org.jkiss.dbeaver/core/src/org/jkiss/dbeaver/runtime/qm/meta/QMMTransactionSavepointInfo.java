@@ -18,6 +18,7 @@ public class QMMTransactionSavepointInfo extends QMMObject {
     private final String name;
     private boolean commited;
     private final QMMTransactionSavepointInfo previous;
+    private QMMStatementExecuteInfo lastExecute;
 
     QMMTransactionSavepointInfo(QMMTransactionInfo transaction, DBCSavepoint reference, String name, QMMTransactionSavepointInfo previous)
     {
@@ -56,6 +57,16 @@ public class QMMTransactionSavepointInfo extends QMMObject {
     public QMMTransactionSavepointInfo getPrevious()
     {
         return previous;
+    }
+
+    public QMMStatementExecuteInfo getLastExecute()
+    {
+        return lastExecute;
+    }
+
+    void setLastExecute(QMMStatementExecuteInfo lastExecute)
+    {
+        this.lastExecute = lastExecute;
     }
 
     @Override

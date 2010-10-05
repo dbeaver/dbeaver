@@ -19,8 +19,6 @@ public class QMMStatementInfo extends QMMObject {
     private final QMMStatementScripInfo script;
     private final QMMStatementInfo previous;
 
-    private QMMStatementExecuteInfo execution;
-
     QMMStatementInfo(QMMSessionInfo session, DBCStatement reference, QMMStatementScripInfo script, QMMStatementInfo previous)
     {
         this.session = session;
@@ -34,42 +32,6 @@ public class QMMStatementInfo extends QMMObject {
         this.reference.clear();
         this.reference = null;
         super.close();
-    }
-
-    QMMStatementExecuteInfo beginExecution(DBCStatement statement)
-    {
-        String queryString = statement.getQueryString();
-        if (queryString == null) {
-            queryString = statement.getDescription();
-        }
-        return this.execution = new QMMStatementExecuteInfo(
-            this,
-            session.isTransactional() ? session.getTransaction().getCurrentSavepoint() : null,
-            queryString,
-            this.execution);
-    }
-
-    QMMStatementExecuteInfo endExecution(long rowCount, Throwable error)
-    {
-        execution.close(rowCount, error);
-        return execution;
-    }
-
-    QMMStatementExecuteInfo beginFetch(DBCResultSet resultSet)
-    {
-        if (execution == null) {
-            beginExecution(resultSet.getSource());
-        }
-        execution.beginFetch();
-        return execution;
-    }
-
-    QMMStatementExecuteInfo endFetch(long rowCount)
-    {
-        if (execution != null) {
-            execution.endFetch(rowCount);
-        }
-        return execution;
     }
 
     public QMMSessionInfo getSession()
@@ -90,11 +52,6 @@ public class QMMStatementInfo extends QMMObject {
     public QMMStatementInfo getPrevious()
     {
         return previous;
-    }
-
-    public QMMStatementExecuteInfo getExecution()
-    {
-        return execution;
     }
 
     @Override

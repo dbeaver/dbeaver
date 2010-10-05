@@ -263,7 +263,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
                 QMMObject object = event.getObject();
                 if (object instanceof QMMStatementExecuteInfo) {
                     createOrUpdateItem(object);
-                } else if (object instanceof QMMTransactionInfo || object instanceof QMMSavepointInfo) {
+                } else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo) {
                     createOrUpdateItem(object);
                     // Update all dependent statements
                 } else if (object instanceof QMMSessionInfo) {

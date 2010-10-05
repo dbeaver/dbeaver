@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.runtime.qm.meta;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -23,6 +24,7 @@ public class QMMSessionInfo extends QMMObject {
 
     private QMMSessionInfo previous;
     private QMMStatementInfo statementStack;
+    private QMMStatementExecuteInfo executionStack;
     private QMMTransactionInfo transaction;
 
     QMMSessionInfo(DBPDataSource reference, boolean transactional, QMMSessionInfo previous)
@@ -118,7 +120,65 @@ public class QMMSessionInfo extends QMMObject {
                 return stat;
             }
         }
+        log.warn("Statement meta info not found");
         return null;
+    }
+
+    QMMStatementExecuteInfo getExecution(DBCStatement statement)
+    {
+        for (QMMStatementExecuteInfo exec = this.executionStack; exec != null; exec = exec.getPrevious()) {
+            if (exec.getStatement().getReference() == statement) {
+                return exec;
+            }
+        }
+        log.warn("Statement execution meta info not found");
+        return null;
+    }
+
+    QMMStatementExecuteInfo beginExecution(DBCStatement statement)
+    {
+        QMMStatementInfo stat = getStatement(statement);
+        if (stat != null) {
+            String queryString = statement.getQueryString();
+            if (queryString == null) {
+                queryString = statement.getDescription();
+            }
+            return this.executionStack = new QMMStatementExecuteInfo(
+                stat,
+                isTransactional() ? getTransaction().getCurrentSavepoint() : null,
+                queryString,
+                this.executionStack);
+        } else {
+            return null;
+        }
+    }
+
+    QMMStatementExecuteInfo endExecution(DBCStatement statement, long rowCount, Throwable error)
+    {
+        QMMStatementExecuteInfo exec = getExecution(statement);
+        if (exec != null) {
+            exec.close(rowCount, error);
+        }
+        return exec;
+    }
+
+    QMMStatementExecuteInfo beginFetch(DBCResultSet resultSet)
+    {
+        QMMStatementExecuteInfo exec = getExecution(resultSet.getSource());
+        if (exec == null) {
+            exec = beginExecution(resultSet.getSource());
+        }
+        exec.beginFetch();
+        return exec;
+    }
+
+    QMMStatementExecuteInfo endFetch(DBCResultSet resultSet, long rowCount)
+    {
+        QMMStatementExecuteInfo exec = getExecution(resultSet.getSource());
+        if (exec != null) {
+            exec.endFetch(rowCount);
+        }
+        return exec;
     }
 
     public String getContainerId()
