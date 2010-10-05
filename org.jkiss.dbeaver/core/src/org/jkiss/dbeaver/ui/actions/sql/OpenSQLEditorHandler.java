@@ -28,7 +28,7 @@ public class OpenSQLEditorHandler extends DataSourceHandler {
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false);
+        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false, false);
         if (dataSourceContainer != null) {
             IFile tempFile;
             try {

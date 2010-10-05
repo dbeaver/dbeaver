@@ -26,7 +26,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
 
     private QMMStatementExecuteInfo previous;
 
-    public QMMStatementExecuteInfo(QMMStatementInfo statement, QMMTransactionSavepointInfo savepoint, String queryString, QMMStatementExecuteInfo previous)
+    QMMStatementExecuteInfo(QMMStatementInfo statement, QMMTransactionSavepointInfo savepoint, String queryString, QMMStatementExecuteInfo previous)
     {
         this.statement = statement;
         this.previous = previous;

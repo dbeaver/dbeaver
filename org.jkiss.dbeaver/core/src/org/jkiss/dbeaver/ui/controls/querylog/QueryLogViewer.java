@@ -16,7 +16,9 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
@@ -24,6 +26,7 @@ import org.jkiss.dbeaver.runtime.qm.meta.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 
 /**
@@ -76,6 +79,25 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
             {
                 if (object instanceof QMMStatementExecuteInfo) {
                     return ((QMMStatementExecuteInfo)object).getQueryString();
+                } else if (object instanceof QMMTransactionInfo) {
+                    if (((QMMTransactionInfo)object).isCommited()) {
+                        return "Commit";
+                    } else {
+                        return "Rollback";
+                    }
+                } else if (object instanceof QMMTransactionSavepointInfo) {
+                    if (((QMMTransactionSavepointInfo)object).isCommited()) {
+                        return "Commit";
+                    } else {
+                        return "Rollback";
+                    }
+                } else if (object instanceof QMMSessionInfo) {
+                    DBSDataSourceContainer container = ((QMMSessionInfo) object).getContainer();
+                    if (((QMMSessionInfo) object).getReference() != null) {
+                        return "Connected to " + (container == null ? "?" : container.getName());
+                    } else {
+                        return "Disconnected from " + (container == null ? "?" : container.getName());
+                    }
                 }
                 return "";
             }
@@ -230,28 +252,48 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         return null;
     }
 
-    public void metaInfoChanged(QMMetaEvent event)
+    public void metaInfoChanged(Collection<QMMetaEvent> events)
     {
-        if (filter != null && !filter.accept(event)) {
-            return;
-        }
-        QMMObject object = event.getObject();
-        if (object instanceof QMMStatementExecuteInfo) {
-            if (event.getAction() == QMMetaEvent.Action.BEGIN) {
-                TableItem item = new TableItem(logTable, SWT.NONE);
-                updateItem(object, item);
-                fireNewItem(object, item);
-            } else {
-                TableItem item = objectToItemMap.get(object.getObjectId());
-                updateItem(object, item);
+        logTable.setRedraw(false);
+        try {
+            for (QMMetaEvent event : events) {
+                if (filter != null && !filter.accept(event)) {
+                    return;
+                }
+                QMMObject object = event.getObject();
+                if (object instanceof QMMStatementExecuteInfo) {
+                    createOrUpdateItem(object);
+                } else if (object instanceof QMMTransactionInfo || object instanceof QMMSavepointInfo) {
+                    createOrUpdateItem(object);
+                    // Update all dependent statements
+                } else if (object instanceof QMMSessionInfo) {
+                    QMMetaEvent.Action action = event.getAction();
+                    if (action == QMMetaEvent.Action.BEGIN || action == QMMetaEvent.Action.END) {
+                        TableItem item = new TableItem(logTable, SWT.NONE, 0);
+                        updateItem(object, item);
+                    }
+                }
             }
         }
+        finally {
+            logTable.setRedraw(true);
+        }
+    }
+
+    private void createOrUpdateItem(QMMObject object)
+    {
+        TableItem item = objectToItemMap.get(object.getObjectId());
+        if (item == null) {
+            item = new TableItem(logTable, SWT.NONE, 0);
+            objectToItemMap.put(object.getObjectId(), item);
+        }
+        updateItem(object, item);
     }
 
     private void fireNewItem(QMMObject object, TableItem item)
     {
-        objectToItemMap.put(object.getObjectId(), item);
 
+/*
         int selCount = logTable.getSelectionCount();
         if (selCount > 1) {
             return;
@@ -264,10 +306,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
             logTable.setSelection(-1);
         }
         logTable.showItem(item);
+*/
     }
 
     private void updateItem(QMMObject object, TableItem item)
     {
+        item.setData(object);
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
             ColumnDescriptor cd = columns.get(i);
             item.setText(i, cd.logColumn.getText(object));

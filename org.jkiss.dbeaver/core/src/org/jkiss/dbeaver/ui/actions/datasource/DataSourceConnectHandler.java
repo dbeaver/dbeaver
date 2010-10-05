@@ -24,7 +24,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
 {
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getDataSourceContainer(event, false);
+        final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getDataSourceContainer(event, false, false);
         if (dataSourceContainer != null) {
             execute(dataSourceContainer);
         }

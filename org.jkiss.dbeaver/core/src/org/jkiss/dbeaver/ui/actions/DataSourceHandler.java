@@ -8,6 +8,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
@@ -20,8 +21,18 @@ import org.jkiss.dbeaver.utils.ViewUtils;
 
 public abstract class DataSourceHandler extends AbstractHandler {
 
-    protected DBSDataSourceContainer getDataSourceContainer(ExecutionEvent event, boolean chooseOnNoSelection)
+    protected DBSDataSourceContainer getDataSourceContainer(ExecutionEvent event, boolean useEditor, boolean chooseOnNoSelection)
     {
+        if (useEditor) {
+            IEditorPart editor = HandlerUtil.getActiveEditor(event);
+            if (editor != null) {
+                DBSDataSourceContainer container = getDataSourceContainer(editor);
+                if (container != null) {
+                    return container;
+                }
+            }
+            return null;
+        }
         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
         DBSDataSourceContainer container = getDataSourceContainer(activePart);
         if (container != null) {

@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.runtime.qm.meta;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 import java.lang.ref.SoftReference;
 
@@ -17,6 +18,7 @@ public class QMMSessionInfo extends QMMObject {
 
     private final String containerId;
     private SoftReference<DBPDataSource> reference;
+    private SoftReference<DBSDataSourceContainer> container;
     private boolean transactional;
 
     private QMMSessionInfo previous;
@@ -27,6 +29,7 @@ public class QMMSessionInfo extends QMMObject {
     {
         this.containerId = reference.getContainer().getId();
         this.reference = new SoftReference<DBPDataSource>(reference);
+        this.container = new SoftReference<DBSDataSourceContainer>(reference.getContainer());
         this.previous = previous;
         this.transactional = transactional;
     }
@@ -121,6 +124,11 @@ public class QMMSessionInfo extends QMMObject {
     public String getContainerId()
     {
         return containerId;
+    }
+
+    public DBSDataSourceContainer getContainer()
+    {
+        return container.get();
     }
 
     public DBPDataSource getReference()

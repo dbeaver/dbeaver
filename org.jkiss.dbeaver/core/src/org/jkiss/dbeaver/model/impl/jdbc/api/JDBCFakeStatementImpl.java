@@ -20,7 +20,7 @@ class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl {
         JDBCResultSetImpl resultSet,
         String description)
     {
-        super(connection, JDBCVoidStatementImpl.INSTANCE, "?");
+        super(connection, JDBCVoidStatementImpl.INSTANCE, description);
         this.resultSet = resultSet;
         setDescription(description);
     }

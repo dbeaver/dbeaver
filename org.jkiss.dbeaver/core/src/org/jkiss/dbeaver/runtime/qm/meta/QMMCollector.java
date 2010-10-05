@@ -273,7 +273,7 @@ public class QMMCollector extends DefaultExecutionHandler {
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
-            final List<QMMetaEvent> events = obtainEvents();
+            final List<QMMetaEvent> events = Collections.unmodifiableList(obtainEvents());
             final List<QMMetaListener> listeners = getListeners();
             if (!listeners.isEmpty() && !events.isEmpty()) {
                 // Dispatch all events
@@ -281,13 +281,11 @@ public class QMMCollector extends DefaultExecutionHandler {
                 display.syncExec(new Runnable() {
                     public void run()
                     {
-                        for (QMMetaEvent event : events) {
-                            for (QMMetaListener listener : listeners) {
-                                try {
-                                    listener.metaInfoChanged(event);
-                                } catch (Throwable e) {
-                                    log.error("Error notifying event listener", e);
-                                }
+                        for (QMMetaListener listener : listeners) {
+                            try {
+                                listener.metaInfoChanged(events);
+                            } catch (Throwable e) {
+                                log.error("Error notifying event listener", e);
                             }
                         }
                     }
