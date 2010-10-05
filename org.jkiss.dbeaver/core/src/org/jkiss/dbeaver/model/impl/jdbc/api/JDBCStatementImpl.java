@@ -40,6 +40,7 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     private DBSObject dataContainer;
     private int updateCount;
     private Throwable executeError;
+    private Object userData;
 
     public JDBCStatementImpl(JDBCExecutionContext connection)
     {
@@ -176,6 +177,16 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     public void setDataContainer(DBSObject container)
     {
         this.dataContainer = container;
+    }
+
+    public Object getUserData()
+    {
+        return userData;
+    }
+
+    public void setUserData(Object userData)
+    {
+        this.userData = userData;
     }
 
     private JDBCResultSetImpl makeResultSet(ResultSet resultSet)

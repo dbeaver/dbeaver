@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 /**
  * ResultSetViewer
@@ -31,7 +32,7 @@ public class SQLLogPanel extends Composite
 {
     private QueryLogViewer queryLogViewer;
 
-    public SQLLogPanel(Composite parent)
+    public SQLLogPanel(Composite parent, SQLEditor editor)
     {
         super(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, true);
@@ -41,7 +42,7 @@ public class SQLLogPanel extends Composite
         gl.horizontalSpacing = 0;
         setLayout(gl);
 
-        queryLogViewer = new QueryLogViewer(this);
+        queryLogViewer = new QueryLogViewer(this, new SQLLogFilter(editor));
     }
 
     public QueryLogViewer getQueryLogViewer()

@@ -283,6 +283,7 @@ public class SQLQueryJob extends DataSourceJob
         try {
             // Prepare statement
             curStatement = DBUtils.prepareSelectQuery(context, sqlQuery, rsOffset, rsMaxRows);
+            curStatement.setUserData(dataReceiver);
 
             // Bind parameters
             if (!CommonUtils.isEmpty(query.getParameters())) {

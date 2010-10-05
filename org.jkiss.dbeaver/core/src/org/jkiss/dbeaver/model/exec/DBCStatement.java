@@ -76,4 +76,7 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
 
     void setDataContainer(DBSObject container);
 
+    Object getUserData();
+
+    void setUserData(Object userData);
 }

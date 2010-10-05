@@ -61,7 +61,7 @@ public class QMMObject {
         return closeTime;
     }
 
-    boolean isClosed()
+    public boolean isClosed()
     {
         return closeTime > 0;
     }

@@ -235,7 +235,7 @@ public class SQLEditor extends BaseTextEditor
             resultsView = new ResultSetViewer(resultTabs, getSite(), this);
 
             planView = new ExplainPlanViewer(this, resultTabs);
-            logViewer = new SQLLogPanel(resultTabs);
+            logViewer = new SQLLogPanel(resultTabs, this);
 
             // Create tabs
             CTabItem item = new CTabItem(resultTabs, SWT.NONE, 0);

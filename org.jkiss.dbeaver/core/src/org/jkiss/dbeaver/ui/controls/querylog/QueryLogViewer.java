@@ -16,19 +16,21 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMObject;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMStatementExecuteInfo;
+import org.jkiss.dbeaver.runtime.qm.meta.*;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 /**
  * QueryLogViewer
  */
-public class QueryLogViewer extends Viewer implements IPropertyChangeListener, QMMetaListener {
+public class QueryLogViewer extends Viewer implements QMMetaListener {
 
     static final Log log = LogFactory.getLog(QueryLogViewer.class);
 
@@ -57,19 +59,20 @@ public class QueryLogViewer extends Viewer implements IPropertyChangeListener, Q
     }
 
     private static LogColumn[] ALL_COLUMNS = new LogColumn[] {
-        new LogColumn("Time", "Time at which statement was executed", 120) {
+        new LogColumn("Time", "Time at which statement was executed", 80) {
+            private DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
             String getText(QMMObject object)
             {
-                return new Date(object.getOpenTime()).toString();
+                return timeFormat.format(new Date(object.getOpenTime()));
             }
         },
-        new LogColumn("Type", "Event type", 120) {
+        new LogColumn("Type", "Event type", 100) {
             String getText(QMMObject object)
             {
-                return object.getClass().getSimpleName();
+                return getObjectType(object);
             }
         },
-        new LogColumn("Text", "SQL statement text/description", 120) {
+        new LogColumn("Text", "SQL statement text/description", 400) {
             String getText(QMMObject object)
             {
                 if (object instanceof QMMStatementExecuteInfo) {
@@ -78,11 +81,16 @@ public class QueryLogViewer extends Viewer implements IPropertyChangeListener, Q
                 return "";
             }
         },
-        new LogColumn("Execution Time", "Execution Time", 120) {
+        new LogColumn("Execution Time", "Execution Time", 100) {
             String getText(QMMObject object)
             {
                 if (object instanceof QMMStatementExecuteInfo) {
-                    //return ((QMMStatementExecuteInfo)object).getCloseTime();
+                    QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
+                    if (exec.isClosed()) {
+                        return String.valueOf(exec.getCloseTime() - exec.getOpenTime()) + "ms";
+                    } else {
+                        return "";
+                    }
                 }
                 return "";
             }
@@ -105,7 +113,7 @@ public class QueryLogViewer extends Viewer implements IPropertyChangeListener, Q
     private java.util.List<ColumnDescriptor> columns = new ArrayList<ColumnDescriptor>();
     private IQueryLogFilter filter;
 
-    public QueryLogViewer(Composite parent)
+    public QueryLogViewer(Composite parent, IQueryLogFilter filter)
     {
         super();
         logTable = new Table(
@@ -125,6 +133,7 @@ public class QueryLogViewer extends Viewer implements IPropertyChangeListener, Q
             }
         });
 
+        this.filter = filter;
         QMUtils.registerMetaListener(this);
     }
 
@@ -192,8 +201,20 @@ public class QueryLogViewer extends Viewer implements IPropertyChangeListener, Q
         // Refresh plan
     }
 
-    public void propertyChange(PropertyChangeEvent event)
+    static String getObjectType(QMMObject object)
     {
+        if (object instanceof QMMSessionInfo) {
+            return "Connection";
+        } else if (object instanceof QMMStatementInfo || object instanceof QMMStatementExecuteInfo) {
+            return "SQL";
+        } else if (object instanceof QMMStatementScripInfo) {
+            return "Script";
+        } else if (object instanceof QMMTransactionInfo) {
+            return "Transaction";
+        } else if (object instanceof QMMTransactionSavepointInfo) {
+            return "Savepoint";
+        }
+        return "";
     }
 
     public void metaInfoChanged(QMMetaEvent event)

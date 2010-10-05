@@ -71,7 +71,7 @@ public class JDBCArray implements DBDArray, DBDValueClonable {
             return null;
         }
         try {
-            DBCResultSet resultSet = new JDBCResultSetImpl(context, dbResult, "Array result set");
+            DBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(context, dbResult, "Array result set");
             List<Object> data = new ArrayList<Object>();
             while (dbResult.next()) {
                 data.add(type.getValueHandler().getValueObject(context, resultSet, type, 0));

@@ -9,7 +9,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -38,23 +37,36 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     private long maxRows = -1;
     private boolean fake;
 
-    public JDBCResultSetImpl(DBCExecutionContext context, ResultSet original, String description)
+    public static JDBCResultSetImpl makeResultSet(DBCExecutionContext context, ResultSet original, String description)
+    {
+        return new JDBCResultSetImpl(context, original, description);
+    }
+
+    private JDBCResultSetImpl(DBCExecutionContext context, ResultSet original, String description)
     {
         this.context = context;
         this.original = original;
+
+        // Make fake statement
         this.statement = new JDBCFakeStatementImpl((JDBCExecutionContext) context, this, description);
         this.fake = true;
 
+        // Simulate statement execution
+        this.statement.beforeExecute();
+        this.statement.afterExecute();
+
+        // Notify handler
         QMUtils.getDefaultHandler().handleResultSetOpen(this);
     }
 
-    public JDBCResultSetImpl(JDBCPreparedStatementImpl statement, ResultSet original)
+    JDBCResultSetImpl(JDBCPreparedStatementImpl statement, ResultSet original)
     {
         this.context = statement.getContext();
         this.statement = statement;
         this.original = original;
         this.fake = false;
 
+        // Notify handler
         QMUtils.getDefaultHandler().handleResultSetOpen(this);
     }
 
