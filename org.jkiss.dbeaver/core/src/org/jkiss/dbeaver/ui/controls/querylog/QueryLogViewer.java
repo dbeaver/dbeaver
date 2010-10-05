@@ -19,7 +19,6 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
@@ -97,22 +96,43 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
                     }
                 } else if (object instanceof QMMSessionInfo) {
                     DBSDataSourceContainer container = ((QMMSessionInfo) object).getContainer();
-                    if (((QMMSessionInfo) object).getReference() != null) {
-                        return "Connected to " + (container == null ? "?" : container.getName());
+                    if (!object.isClosed()) {
+                        return "Connected to \"" + (container == null ? "?" : container.getName()) + "\"";
                     } else {
-                        return "Disconnected from " + (container == null ? "?" : container.getName());
+                        return "Disconnected from \"" + (container == null ? "?" : container.getName()) + "\"";
                     }
                 }
                 return "";
             }
         },
-        new LogColumn("Execution Time", "Execution Time", 100) {
+        new LogColumn("Duration", "Operation execution time", 100) {
             String getText(QMMObject object)
             {
                 if (object instanceof QMMStatementExecuteInfo) {
                     QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
                     if (exec.isClosed()) {
                         return String.valueOf(exec.getCloseTime() - exec.getOpenTime()) + "ms";
+                    } else {
+                        return "";
+                    }
+                } else if (object instanceof QMMTransactionInfo) {
+                    QMMTransactionInfo txn = (QMMTransactionInfo)object;
+                    if (txn.isClosed()) {
+                        return formatMinutes(txn.getCloseTime() - txn.getOpenTime());
+                    } else {
+                        return "";
+                    }
+                } else if (object instanceof QMMTransactionSavepointInfo) {
+                    QMMTransactionSavepointInfo sp = (QMMTransactionSavepointInfo)object;
+                    if (sp.isClosed()) {
+                        return formatMinutes(sp.getCloseTime() - sp.getOpenTime());
+                    } else {
+                        return "";
+                    }
+                } else if (object instanceof QMMSessionInfo) {
+                    QMMSessionInfo session = (QMMSessionInfo)object;
+                    if (session.isClosed()) {
+                        return formatMinutes(session.getCloseTime() - session.getOpenTime());
                     } else {
                         return "";
                     }
@@ -132,10 +152,33 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         new LogColumn("Result", "Execution result", 120) {
             String getText(QMMObject object)
             {
+                if (object instanceof QMMStatementExecuteInfo) {
+                    QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
+                    if (exec.isClosed()) {
+                        if (exec.getErrorCode() != 0 || exec.getErrorMessage() != null) {
+                            if (exec.getErrorCode() == 0) {
+                                return exec.getErrorMessage();
+                            } else if (exec.getErrorMessage() == null) {
+                                return "Error [" + exec.getErrorCode() + "]";
+                            } else {
+                                return "[" + exec.getErrorCode() + "] " + exec.getErrorMessage();
+                            }
+                        } else {
+                            return "Success";
+                        }
+                    }
+                }
                 return "";
             }
         },
     };
+
+    private static String formatMinutes(long ms)
+    {
+        long min = ms / 1000 / 60;
+        long sec = (ms - min * 1000 * 60) / 1000;
+        return String.valueOf(min) + " min " + String.valueOf(sec) + " sec";
+    }
 
     private Table logTable;
     private java.util.List<ColumnDescriptor> columns = new ArrayList<ColumnDescriptor>();
@@ -146,7 +189,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
     private final Color colorLightRed;
     private final Color colorLightYellow;
 
-    public QueryLogViewer(Composite parent, IQueryLogFilter filter)
+    public QueryLogViewer(Composite parent, IQueryLogFilter filter, boolean loadPastEvents)
     {
         super();
 
@@ -176,6 +219,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         });
 
         this.filter = filter;
+        if (loadPastEvents) {
+            metaInfoChanged(QMUtils.getPastMetaEvents());
+        }
         QMUtils.registerMetaListener(this);
     }
 
@@ -276,6 +322,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
             } else {
                 return null;
             }
+        } else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo) {
+            return colorLightYellow;
         }
         return null;
     }

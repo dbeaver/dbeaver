@@ -81,6 +81,11 @@ public class QMControllerImpl implements QMController {
         metaHandler.removeListener(metaListener);
     }
 
+    public List<QMMetaEvent> getPastMetaEvents()
+    {
+        return metaHandler.getPastEvents();
+    }
+
     DataSourceRegistry getDataSourceRegistry() {
         return dataSourceRegistry;
     }

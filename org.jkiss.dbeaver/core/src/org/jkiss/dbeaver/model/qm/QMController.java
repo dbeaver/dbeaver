@@ -5,7 +5,10 @@
 package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
+
+import java.util.List;
 
 /**
  * Query manager controller
@@ -22,4 +25,5 @@ public interface QMController {
 
     void unregisterMetaListener(QMMetaListener metaListener);
 
+    List<QMMetaEvent> getPastMetaEvents();
 }

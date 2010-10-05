@@ -19,7 +19,7 @@ public class QueryManagerView extends ViewPart
     {
         Composite group = UIUtils.createPlaceholder(parent, 1);
 
-        queryLogViewer = new QueryLogViewer(group, null);
+        queryLogViewer = new QueryLogViewer(group, null, true);
     }
 
     public void setFocus()

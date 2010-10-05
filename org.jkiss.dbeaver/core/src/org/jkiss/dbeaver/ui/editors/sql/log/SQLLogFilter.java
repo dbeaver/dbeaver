@@ -30,7 +30,7 @@ class SQLLogFilter implements IQueryLogFilter {
         // - session changes (if session belongs to active datasource)
         QMMObject object = event.getObject();
         if (object instanceof QMMSessionInfo) {
-            return ((QMMSessionInfo)object).getReference() == editor.getDataSource();
+            return ((QMMSessionInfo)object).getContainer() == editor.getDataSourceContainer();
         } else if (object instanceof QMMStatementExecuteInfo) {
             DBCStatement statement = ((QMMStatementExecuteInfo) object).getStatement().getReference();
             return statement != null && statement.getUserData() == editor.getResultsView().getDataReceiver();

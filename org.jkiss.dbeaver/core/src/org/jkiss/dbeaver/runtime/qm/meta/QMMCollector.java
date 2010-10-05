@@ -35,6 +35,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     private Map<String, QMMSessionInfo> sessionMap = new HashMap<String, QMMSessionInfo>();
     private List<QMMetaListener> listeners = new ArrayList<QMMetaListener>();
     private List<QMMetaEvent> eventPool = new ArrayList<QMMetaEvent>();
+    private final List<QMMetaEvent> pastEvents = new ArrayList<QMMetaEvent>();
     private boolean running = true;
 
     public QMMCollector()
@@ -111,6 +112,13 @@ public class QMMCollector extends DefaultExecutionHandler {
             log.warn("Could not find session meta information: " + dataSource.getContainer().getId());
         }
         return session;
+    }
+
+    public List<QMMetaEvent> getPastEvents()
+    {
+        synchronized (pastEvents) {
+            return new ArrayList<QMMetaEvent>(pastEvents);
+        }
     }
 
     @Override
@@ -281,7 +289,9 @@ public class QMMCollector extends DefaultExecutionHandler {
                     }
                 });
             }
-
+            synchronized (pastEvents) {
+                pastEvents.addAll(events);
+            }
             if (isRunning()) {
                 this.schedule(EVENT_DISPATCH_PERIOD);
             }
