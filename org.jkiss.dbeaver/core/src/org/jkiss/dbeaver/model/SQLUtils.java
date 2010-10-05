@@ -20,11 +20,11 @@ public final class SQLUtils {
     public static final String TOKEN_TRANSFORM_START = "/*DB[*/";
     public static final String TOKEN_TRANSFORM_END = "/*]DB*/";
 
-    //public static final Pattern PATTERN_XFORM = Pattern.compile(Pattern.quote(TOKEN_TRANSFORM_START) + "^" + Pattern.quote(TOKEN_TRANSFORM_END) + "*" + Pattern.quote(TOKEN_TRANSFORM_END));    
+    public static final Pattern PATTERN_XFORM = Pattern.compile(Pattern.quote(TOKEN_TRANSFORM_START) + "[^" + Pattern.quote(TOKEN_TRANSFORM_END) + "]*" + Pattern.quote(TOKEN_TRANSFORM_END));
 
     public static String stripTransformations(String query)
     {
-        return query.replaceAll(Pattern.quote(TOKEN_TRANSFORM_START) + "[^" + Pattern.quote(TOKEN_TRANSFORM_END) + "]*" + Pattern.quote(TOKEN_TRANSFORM_END), "");
+        return PATTERN_XFORM.matcher(query).replaceAll("");
     }
 
     public static String stripComments(String query)
