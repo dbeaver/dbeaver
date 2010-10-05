@@ -14,19 +14,19 @@ public class QMMTransactionInfo extends QMMObject {
     private final QMMSessionInfo session;
     private final QMMTransactionInfo previous;
     private boolean commited;
-    private QMMSavepointInfo savepointStack;
+    private QMMTransactionSavepointInfo savepointStack;
 
     QMMTransactionInfo(QMMSessionInfo session, QMMTransactionInfo previous)
     {
         this.session = session;
         this.previous = previous;
-        this.savepointStack = new QMMSavepointInfo(this, null, null, null);
+        this.savepointStack = new QMMTransactionSavepointInfo(this, null, null, null);
     }
 
     void commit()
     {
         this.commited = true;
-        for (QMMSavepointInfo sp = savepointStack; sp != null; sp = sp.getPrevious()) {
+        for (QMMTransactionSavepointInfo sp = savepointStack; sp != null; sp = sp.getPrevious()) {
             if (!sp.isClosed()) {
                 // Commit all non-finished savepoints
                 sp.close(true);
@@ -38,7 +38,7 @@ public class QMMTransactionInfo extends QMMObject {
     void rollback(DBCSavepoint toSavepoint)
     {
         this.commited = false;
-        for (QMMSavepointInfo sp = savepointStack; sp != null; sp = sp.getPrevious()) {
+        for (QMMTransactionSavepointInfo sp = savepointStack; sp != null; sp = sp.getPrevious()) {
             sp.close(false);
             if (toSavepoint != null && sp.getReference() == toSavepoint) {
                 break;
@@ -62,14 +62,14 @@ public class QMMTransactionInfo extends QMMObject {
         return commited;
     }
 
-    public QMMSavepointInfo getCurrentSavepoint()
+    public QMMTransactionSavepointInfo getCurrentSavepoint()
     {
         return savepointStack;
     }
 
     public QMMObject getSavepoint(DBCSavepoint savepoint)
     {
-        for (QMMSavepointInfo sp = this.savepointStack; sp != null; sp = sp.getPrevious()) {
+        for (QMMTransactionSavepointInfo sp = this.savepointStack; sp != null; sp = sp.getPrevious()) {
             if (sp.getReference() == savepoint) {
                 return sp;
             }

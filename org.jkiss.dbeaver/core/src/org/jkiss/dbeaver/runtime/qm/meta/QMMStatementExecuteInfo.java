@@ -12,7 +12,7 @@ import java.sql.SQLException;
 public class QMMStatementExecuteInfo extends QMMObject {
 
     private QMMStatementInfo statement;
-    private QMMSavepointInfo savepoint;
+    private QMMTransactionSavepointInfo savepoint;
     private String queryString;
     //private Map<Object, Object> parameters;
 
@@ -26,7 +26,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
 
     private QMMStatementExecuteInfo previous;
 
-    public QMMStatementExecuteInfo(QMMStatementInfo statement, QMMSavepointInfo savepoint, String queryString, QMMStatementExecuteInfo previous)
+    public QMMStatementExecuteInfo(QMMStatementInfo statement, QMMTransactionSavepointInfo savepoint, String queryString, QMMStatementExecuteInfo previous)
     {
         this.statement = statement;
         this.previous = previous;
@@ -62,7 +62,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
         return statement;
     }
 
-    public QMMSavepointInfo getSavepoint()
+    public QMMTransactionSavepointInfo getSavepoint()
     {
         return savepoint;
     }
