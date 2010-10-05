@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
@@ -27,7 +28,7 @@ class QueryTransformerLimit implements DBCQueryTransformer {
         if (!testQuery.startsWith("SELECT") || testQuery.indexOf("LIMIT") != -1) {
             limitSet = false;
         } else {
-            query = query + " LIMIT " + offset + ", " + length;
+            query = query + SQLUtils.TOKEN_TRANSFORM_START + " LIMIT " + offset + ", " + length + SQLUtils.TOKEN_TRANSFORM_END;
             limitSet = true;
         }
         return query;

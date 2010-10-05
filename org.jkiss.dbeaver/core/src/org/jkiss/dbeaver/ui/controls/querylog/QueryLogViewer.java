@@ -19,6 +19,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
@@ -81,7 +82,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
             String getText(QMMObject object)
             {
                 if (object instanceof QMMStatementExecuteInfo) {
-                    return ((QMMStatementExecuteInfo)object).getQueryString();
+                    return SQLUtils.stripTransformations(((QMMStatementExecuteInfo)object).getQueryString());
                 } else if (object instanceof QMMTransactionInfo) {
                     if (((QMMTransactionInfo)object).isCommited()) {
                         return "Commit";
@@ -111,7 +112,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
                 if (object instanceof QMMStatementExecuteInfo) {
                     QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
                     if (exec.isClosed()) {
-                        return String.valueOf(exec.getCloseTime() - exec.getOpenTime()) + "ms";
+                        return String.valueOf(exec.getCloseTime() - exec.getOpenTime()) + " ms";
                     } else {
                         return "";
                     }

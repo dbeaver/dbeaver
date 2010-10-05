@@ -17,6 +17,16 @@ public final class SQLUtils {
 
     static final Log log = LogFactory.getLog(SQLUtils.class);
 
+    public static final String TOKEN_TRANSFORM_START = "/*DB[*/";
+    public static final String TOKEN_TRANSFORM_END = "/*]DB*/";
+
+    //public static final Pattern PATTERN_XFORM = Pattern.compile(Pattern.quote(TOKEN_TRANSFORM_START) + "^" + Pattern.quote(TOKEN_TRANSFORM_END) + "*" + Pattern.quote(TOKEN_TRANSFORM_END));    
+
+    public static String stripTransformations(String query)
+    {
+        return query.replaceAll(Pattern.quote(TOKEN_TRANSFORM_START) + "[^" + Pattern.quote(TOKEN_TRANSFORM_END) + "]*" + Pattern.quote(TOKEN_TRANSFORM_END), "");
+    }
+
     public static String stripComments(String query)
     {
         return stripComments(query, "/*", "*/", "--");
@@ -34,7 +44,7 @@ public final class SQLUtils {
         if (matcher.matches()) {
             query = query.substring(matcher.end(1));
         }
-        while (query.startsWith("--")) {
+        while (query.startsWith(slComment)) {
             int crPos = query.indexOf('\n');
             if (crPos == -1) {
                 break;
