@@ -4,19 +4,18 @@
 
 package org.jkiss.dbeaver.ui.controls.querylog;
 
+import net.sf.jkiss.utils.LongKeyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
@@ -98,6 +97,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         new LogColumn("Rows", "Number of rows processed by statement", 120) {
             String getText(QMMObject object)
             {
+                if (object instanceof QMMStatementExecuteInfo) {
+                    return String.valueOf(((QMMStatementExecuteInfo)object).getRowCount());
+                }
                 return "";
             }
         },
@@ -111,6 +113,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
 
     private Table logTable;
     private java.util.List<ColumnDescriptor> columns = new ArrayList<ColumnDescriptor>();
+    private LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<TableItem>();
     private IQueryLogFilter filter;
 
     public QueryLogViewer(Composite parent, IQueryLogFilter filter)
@@ -118,7 +121,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         super();
         logTable = new Table(
             parent,
-            SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
+            SWT.MULTI | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         logTable.setLinesVisible(true);
         logTable.setHeaderVisible(true);
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -217,18 +220,60 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         return "";
     }
 
+    static Color getObjectForeground(QMMObject object)
+    {
+        return null;
+    }
+
+    static Color getObjectBackground(QMMObject object)
+    {
+        return null;
+    }
+
     public void metaInfoChanged(QMMetaEvent event)
     {
         if (filter != null && !filter.accept(event)) {
             return;
         }
-        if (event.getObject() instanceof QMMStatementExecuteInfo && event.getAction() == QMMetaEvent.Action.BEGIN) {
-            TableItem item = new TableItem(logTable, SWT.NONE);
-            for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-                ColumnDescriptor cd = columns.get(i);
-                item.setText(i, cd.logColumn.getText(event.getObject()));
+        QMMObject object = event.getObject();
+        if (object instanceof QMMStatementExecuteInfo) {
+            if (event.getAction() == QMMetaEvent.Action.BEGIN) {
+                TableItem item = new TableItem(logTable, SWT.NONE);
+                updateItem(object, item);
+                fireNewItem(object, item);
+            } else {
+                TableItem item = objectToItemMap.get(object.getObjectId());
+                updateItem(object, item);
             }
         }
+    }
+
+    private void fireNewItem(QMMObject object, TableItem item)
+    {
+        objectToItemMap.put(object.getObjectId(), item);
+
+        int selCount = logTable.getSelectionCount();
+        if (selCount > 1) {
+            return;
+        }
+        if (selCount == 1) {
+            int selIndex = logTable.getSelectionIndex();
+            if (selIndex != logTable.getItemCount() - 2) {
+                return;
+            }
+            logTable.setSelection(-1);
+        }
+        logTable.showItem(item);
+    }
+
+    private void updateItem(QMMObject object, TableItem item)
+    {
+        for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
+            ColumnDescriptor cd = columns.get(i);
+            item.setText(i, cd.logColumn.getText(object));
+        }
+        item.setForeground(getObjectForeground(object));
+        item.setBackground(getObjectBackground(object));
     }
 
 }
