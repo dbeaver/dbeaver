@@ -53,7 +53,7 @@ public class DBeaverUtils
         String title,
         String message)
     {
-        //log.error(message);
+        //log.debug(message);
         // Display the dialog
         ErrorDialog.openError(
             shell,

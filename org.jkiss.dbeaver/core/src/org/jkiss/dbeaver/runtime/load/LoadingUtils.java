@@ -53,7 +53,7 @@ public class LoadingUtils {
             return null;
         }
         catch (InvocationTargetException ex) {
-            throw new DBException("Error reading items " + propertyName, ex.getTargetException());
+            throw new DBException(ex.getTargetException());
         }
     }
 

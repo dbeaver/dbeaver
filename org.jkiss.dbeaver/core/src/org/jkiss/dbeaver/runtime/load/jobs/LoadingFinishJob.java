@@ -30,6 +30,7 @@ class LoadingFinishJob<RESULT> extends AbstractUIJob {
     {
         visualizer.completeLoading(result);
         if (error != null) {
+            log.debug(error);
             DBeaverUtils.showErrorDialog(
                 visualizer.getShell(),
                 getName(),

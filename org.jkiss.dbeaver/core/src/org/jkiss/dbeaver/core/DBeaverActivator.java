@@ -7,11 +7,15 @@ package org.jkiss.dbeaver.core;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.osgi.framework.BundleContext;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -24,6 +28,7 @@ public class DBeaverActivator extends AbstractUIPlugin
     // The shared instance
     private static DBeaverActivator instance;
     private ResourceBundle resourceBundle;
+    private PrintStream debugWriter;
 
     /**
      * The constructor
@@ -46,7 +51,22 @@ public class DBeaverActivator extends AbstractUIPlugin
         throws Exception
     {
         super.start(context);
+
         instance = this;
+
+        File rootPath = Platform.getLocation().toFile();
+        File debugLogFile = new File(rootPath, "debug.log");
+        if (debugLogFile.exists()) {
+            if (!debugLogFile.delete()) {
+                System.err.println("Could not delete ");
+            }
+        }
+        try {
+            debugWriter = new PrintStream(debugLogFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace(System.err);
+        }
+
         LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", DBeaverLogger.class.getName());
         try {
             resourceBundle = ResourceBundle.getBundle("org.jkiss.dbeaver.core.DBeaverResources");
@@ -62,9 +82,18 @@ public class DBeaverActivator extends AbstractUIPlugin
     public void stop(BundleContext context)
         throws Exception
     {
+        if (debugWriter != null) {
+            debugWriter.close();
+            debugWriter = null;
+        }
         instance = null;
 
         super.stop(context);
+    }
+
+    public PrintStream getDebugWriter()
+    {
+        return debugWriter;
     }
 
     /**
