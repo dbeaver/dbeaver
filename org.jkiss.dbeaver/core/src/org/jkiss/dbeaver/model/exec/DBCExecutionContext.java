@@ -40,16 +40,35 @@ public interface DBCExecutionContext {
      */
     DBCTransactionManager getTransactionManager();
 
+    /**
+     * Context's purpose
+     * @return purpose
+     */
+    DBCExecutionPurpose getPurpose();
+
+    /**
+     * Gets current context's data formatter profile
+     * @return profile
+     */
     DBDDataFormatterProfile getDataFormatterProfile();
 
+    /**
+     * Sets current context's data formatter profile
+     */
     void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile);
 
+    /**
+     * Prepares statements
+     */
     DBCStatement prepareStatement(
         String query,
         boolean scrollable,
         boolean updatable,
         boolean returnGeneratedKeys) throws DBCException;
 
+    /**
+     * Closes context. No exceptions could be throws from this method.
+     */
     void close();
 
 }

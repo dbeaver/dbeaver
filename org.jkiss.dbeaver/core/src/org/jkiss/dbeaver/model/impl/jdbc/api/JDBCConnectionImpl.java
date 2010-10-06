@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
@@ -33,15 +34,17 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
 
     private JDBCConnector connector;
     private DBRProgressMonitor monitor;
+    private DBCExecutionPurpose purpose;
     private String taskTitle;
     private boolean isolated;
     private Connection isolatedConnection;
     private DBDDataFormatterProfile dataFormatterProfile;
 
-    public JDBCConnectionImpl(JDBCConnector connector, DBRProgressMonitor monitor, String taskTitle, boolean isolated)
+    public JDBCConnectionImpl(JDBCConnector connector, DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle, boolean isolated)
     {
         this.connector = connector;
         this.monitor = monitor;
+        this.purpose = purpose;
         this.taskTitle = taskTitle;
         this.isolated = isolated;
         this.isolatedConnection = null;
@@ -94,6 +97,11 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
     public DBCTransactionManager getTransactionManager()
     {
         return new TransactionManager();
+    }
+
+    public DBCExecutionPurpose getPurpose()
+    {
+        return purpose;
     }
 
     public DBDDataFormatterProfile getDataFormatterProfile()

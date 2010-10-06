@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.model.exec.jdbc;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCQueryPurpose;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 

@@ -32,10 +32,6 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      */
     String getDescription();
 
-    DBCQueryPurpose getQueryPurpose();
-
-    void setQueryPurpose(DBCQueryPurpose queryPurpose);
-
     /**
      * Executes statement
      * @return true if statement returned result set, false otherwise
@@ -64,8 +60,18 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      */
     int getUpdateRowCount() throws DBCException;
 
+    /**
+     * Close statement.
+     * No exceptions could be thrown from this method. If any error will occur then it'll be logged.
+     */
     void close();
 
+    /**
+     * Sets statement result set limitations
+     * @param offset first row index
+     * @param limit maximum number of rows
+     * @throws DBCException on error
+     */
     void setLimit(long offset, long limit) throws DBCException;
 
     /**
@@ -76,9 +82,20 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      */
     DBSObject getDataContainer();
 
+    /**
+     * Sets statement data container
+     * @param container data container object
+     */
     void setDataContainer(DBSObject container);
 
+    /**
+     * Gets any user object associated with this statement
+     * @return user data object or null
+     */
     Object getUserData();
 
+    /**
+     * Sets user data
+     */
     void setUserData(Object userData);
 }

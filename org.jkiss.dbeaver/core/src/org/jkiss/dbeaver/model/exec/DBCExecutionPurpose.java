@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.model.exec;
 
 /**
- * Statement purpose.
+ * Execution purpose.
  *
  * Each query which executed withing application have some purpose.
  * Some of queries are instantiated by user, some are executed internally to obtain metadata, etc.
@@ -14,7 +14,7 @@ package org.jkiss.dbeaver.model.exec;
  * Note: for sure, we can't detect ALL executed queries. Some of them are executed by drivers internally,
  * some are executed by plugins and not reported to query manager.
  */
-public enum DBCQueryPurpose {
+public enum DBCExecutionPurpose {
 
     USER,               // User query
     USER_SCRIPT,        // User script query

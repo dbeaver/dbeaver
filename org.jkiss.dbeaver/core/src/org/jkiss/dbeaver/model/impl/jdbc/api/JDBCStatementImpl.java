@@ -9,7 +9,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCQueryPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -32,7 +31,6 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
 
     private String query;
     private String description;
-    private DBCQueryPurpose queryPurpose;
 
     private long rsOffset = -1;
     private long rsMaxRows = -1;
@@ -107,16 +105,6 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
     protected void setDescription(String description)
     {
         this.description = description;
-    }
-
-    public DBCQueryPurpose getQueryPurpose()
-    {
-        return queryPurpose;
-    }
-
-    public void setQueryPurpose(DBCQueryPurpose queryPurpose)
-    {
-        this.queryPurpose = queryPurpose;
     }
 
     public JDBCResultSet openResultSet() throws DBCException
