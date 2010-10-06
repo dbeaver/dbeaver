@@ -178,7 +178,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         return autoIncrement;
     }
 
-    @Property(name = "Comment", viewable = true, order = 5)
+    @Property(name = "Comment", viewable = true, order = 100)
     public String getComment(DBRProgressMonitor monitor) throws DBCException
     {
         if (!extraInfoLoaded) {
@@ -231,8 +231,11 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         this.columns = null;
     }
 
-    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
+    private synchronized void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
     {
+        if (extraInfoLoaded) {
+            return;
+        }
         JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(

@@ -39,7 +39,7 @@ public class PropertyPageStandard extends PropertySheetPage
         if (curObject != null) {
             pagesMap.remove(curObject);
             if (curObject instanceof DBSWrapper) {
-                pagesMap.put(((DBSWrapper)curObject).getObject(), this);
+                pagesMap.remove(((DBSWrapper)curObject).getObject());
             }
             curObject = null;
         }
@@ -67,6 +67,9 @@ public class PropertyPageStandard extends PropertySheetPage
     {
         if (this.curObject != null) {
             return this.curObject;
+        }
+        if (getControl().isDisposed()) {
+            return null;
         }
         PropertySheetEntry curPropsObject = (PropertySheetEntry)getControl().getData();
         Object[] curObjects = curPropsObject.getValues();
