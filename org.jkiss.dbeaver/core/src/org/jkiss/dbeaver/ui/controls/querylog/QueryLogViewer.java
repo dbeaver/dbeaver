@@ -194,6 +194,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
     private final Color colorLightGreen;
     private final Color colorLightRed;
     private final Color colorLightYellow;
+    private final Color colorGray;
     private final Font boldFont;
 
     public QueryLogViewer(Composite parent, IQueryLogFilter filter, boolean loadPastEvents)
@@ -206,6 +207,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         colorLightGreen = sharedColors.getColor(new RGB(0xE4, 0xFF, 0xB5));
         colorLightRed = sharedColors.getColor(new RGB(0xFF, 0x63, 0x47));
         colorLightYellow = sharedColors.getColor(new RGB(0xFF, 0xE4, 0xB5));
+        colorGray = sharedColors.getColor(new RGB(0x50, 0x50, 0x50));
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         // Create log table
@@ -329,6 +331,16 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
 
     Color getObjectForeground(QMMObject object)
     {
+        if (object instanceof QMMStatementExecuteInfo) {
+            QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
+            switch (exec.getStatement().getPurpose()) {
+                case USER_SCRIPT:
+                case USER:
+                    return null;
+                default:
+                    return colorGray;
+            }
+        }
         return null;
     }
 

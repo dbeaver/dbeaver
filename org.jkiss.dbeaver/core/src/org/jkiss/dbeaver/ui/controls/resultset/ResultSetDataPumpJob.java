@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -37,7 +38,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
     protected IStatus run(DBRProgressMonitor monitor) {
         boolean hasErrors = false;
         Throwable error = null;
-        DBCExecutionContext context = getDataSource().openContext(monitor, "Read data from '" + resultSetViewer.getDataContainer().getName() + "'");
+        DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.USER, "Read data from '" + resultSetViewer.getDataContainer().getName() + "'");
         try {
             resultSetViewer.getDataContainer().readData(
                 context,

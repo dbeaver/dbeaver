@@ -14,10 +14,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -156,21 +153,16 @@ public abstract class JDBCDataSource
         }
     }
 
-    public JDBCExecutionContext openContext(DBRProgressMonitor monitor)
-    {
-        return openContext(monitor, null);
-    }
-
-    public JDBCExecutionContext openContext(DBRProgressMonitor monitor, String taskTitle)
+    public JDBCExecutionContext openContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
         if (connection == null) {
             throw new IllegalStateException("Not connected to database");
         }
-        return new JDBCConnectionImpl(this, monitor, taskTitle, false);
+        return new JDBCConnectionImpl(this, monitor, purpose, taskTitle, false);
     }
 
-    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String taskTitle) {
-        return new JDBCConnectionImpl(this, monitor, taskTitle, true);
+    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle) {
+        return new JDBCConnectionImpl(this, monitor, purpose, taskTitle, true);
     }
 
     public DBSDataSourceContainer getContainer()
@@ -200,7 +192,7 @@ public abstract class JDBCDataSource
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCExecutionContext context = openContext(monitor, "Read database meta data");
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Read database meta data");
         try {
             dataSourceInfo = new JDBCDataSourceInfo(
                 context.getMetaData());

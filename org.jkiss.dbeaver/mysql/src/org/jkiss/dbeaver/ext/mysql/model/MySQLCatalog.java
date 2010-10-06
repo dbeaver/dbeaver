@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -195,7 +196,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
         if (forTable == null) {
             tableCache.getObjects(monitor);
         }
-        JDBCExecutionContext context = getDataSource().openContext(monitor);
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load constraints");
         try {
             Map<String, String> constrTypeMap = new HashMap<String, String>();
             Map<String, MySQLConstraint> constrMap = new HashMap<String, MySQLConstraint>();

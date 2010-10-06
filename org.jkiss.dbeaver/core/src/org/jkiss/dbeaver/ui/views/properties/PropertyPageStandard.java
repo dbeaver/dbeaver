@@ -38,7 +38,7 @@ public class PropertyPageStandard extends PropertySheetPage
     {
         if (curObject != null) {
             pagesMap.remove(curObject);
-            if (curObject instanceof DBSWrapper) {
+            if (curObject instanceof DBSWrapper && ((DBSWrapper)curObject).getObject() != null) {
                 pagesMap.remove(((DBSWrapper)curObject).getObject());
             }
             curObject = null;
@@ -56,7 +56,7 @@ public class PropertyPageStandard extends PropertySheetPage
         assert this.curObject == null;
         this.curObject = object;
         pagesMap.put(object, this);
-        if (object instanceof DBSWrapper) {
+        if (object instanceof DBSWrapper && ((DBSWrapper)object).getObject() != null) {
             pagesMap.put(((DBSWrapper)object).getObject(), this);
         }
 

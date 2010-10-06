@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -190,7 +190,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     public String getDDL(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCExecutionContext context = getDataSource().openContext(monitor);
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
         try {
             PreparedStatement dbStat = context.prepareStatement(
                 "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName());
@@ -240,7 +240,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         if (extraInfoLoaded) {
             return;
         }
-        JDBCExecutionContext context = getDataSource().openContext(monitor);
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table status");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'");
@@ -288,7 +288,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         // Load columns first
         getColumns(monitor);
         // Load index columns
-        JDBCExecutionContext context = getDataSource().openContext(monitor);
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load indexes");
         try {
             List<MySQLIndex> tmpIndexList = new ArrayList<MySQLIndex>();
             Map<String, MySQLIndex> tmpIndexMap = new HashMap<String, MySQLIndex>();
@@ -376,7 +376,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     private List<MySQLForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)
         throws DBException
     {
-        JDBCExecutionContext context = getDataSource().openContext(monitor);
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table relations");
         try {
             List<MySQLForeignKey> fkList = new ArrayList<MySQLForeignKey>();
             Map<String, MySQLForeignKey> fkMap = new HashMap<String, MySQLForeignKey>();
@@ -529,7 +529,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     {
         // Load only trigger's owner catalog and trigger name
         // Actual triggers are stored in catalog - we just get em from cache
-        JDBCExecutionContext context = getDataSource().openContext(monitor, "Load table '" + getName() + "' triggers");
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table '" + getName() + "' triggers");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT " + MySQLConstants.COL_TRIGGER_SCHEMA + "," + MySQLConstants.COL_TRIGGER_NAME + " FROM " + MySQLConstants.META_TABLE_TRIGGERS +

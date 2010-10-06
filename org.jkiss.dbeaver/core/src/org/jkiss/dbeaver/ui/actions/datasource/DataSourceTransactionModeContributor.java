@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -42,7 +43,7 @@ public class DataSourceTransactionModeContributor extends ContributionItem
         }
         final DBPDataSourceInfo dsInfo = dataSource.getInfo();
 
-        DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE);
+        DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Check connection's auto-commit state");
         try {
             final DBCTransactionManager txnManager = context.getTransactionManager();
             // Auto-commit

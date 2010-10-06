@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -318,7 +319,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                         }
                     }
                 }
-                final DBCExecutionContext context = getDataSource().openContext(monitor, "Select '" + fkColumn.getReferencedColumn().getName() + "' enumeration values");
+                final DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Select '" + fkColumn.getReferencedColumn().getName() + "' enumeration values");
                 try {
                     DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable)refConstraint.getReferencedKey();
                     Collection<DBDLabelValuePair> enumValues = enumConstraint.getKeyEnumeration(

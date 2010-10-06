@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.runtime.qm.meta;
 
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 
@@ -16,6 +17,7 @@ public class QMMStatementInfo extends QMMObject {
 
     private final QMMSessionInfo session;
     private SoftReference<DBCStatement> reference;
+    private final DBCExecutionPurpose purpose;
     private final QMMStatementScripInfo script;
     private final QMMStatementInfo previous;
 
@@ -23,6 +25,7 @@ public class QMMStatementInfo extends QMMObject {
     {
         this.session = session;
         this.reference = new SoftReference<DBCStatement>(reference);
+        this.purpose = reference.getContext().getPurpose();
         this.script = script;
         this.previous = previous;
     }
@@ -40,6 +43,11 @@ public class QMMStatementInfo extends QMMObject {
     public DBCStatement getReference()
     {
         return reference == null ? null : reference.get();
+    }
+
+    public DBCExecutionPurpose getPurpose()
+    {
+        return purpose;
     }
 
     public QMMStatementScripInfo getScript()

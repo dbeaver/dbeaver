@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -101,7 +102,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     {
         super.initialize(monitor);
 
-        JDBCExecutionContext context = openContext(monitor, "Read generic metadata");
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Read generic metadata");
         try {
             JDBCDatabaseMetaData metaData = context.getMetaData();
             {
@@ -356,7 +357,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         synchronized (this) {
             activeChildRead = true;
             String activeDbName;
-            JDBCExecutionContext context = openContext(monitor);
+            JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Check active catalog");
             try {
                 if (CommonUtils.isEmpty(queryGetActiveDB)) {
                     try {
@@ -416,7 +417,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         }
 
         String changeQuery = querySetActiveDB.replaceFirst("\\?", child.getName());
-        JDBCExecutionContext context = openContext(monitor);
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Set active catalog");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(changeQuery);
             try {
@@ -446,7 +447,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     {
         JDBCUtils.startConnectionBlock(monitor, getDataSource(), "Looking for tables in '" + getName() + "'");
 
-        JDBCExecutionContext context = getDataSource().openContext(monitor);
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Find tables by name");
         try {
             JDBCDatabaseMetaData metaData = context.getMetaData();
 

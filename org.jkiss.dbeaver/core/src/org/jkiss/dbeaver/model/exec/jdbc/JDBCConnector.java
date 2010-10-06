@@ -21,6 +21,4 @@ public interface JDBCConnector
 
     Connection openIsolatedConnection() throws SQLException;
 
-    JDBCExecutionContext openContext(DBRProgressMonitor monitor);
-
 }

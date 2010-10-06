@@ -7,8 +7,9 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -46,9 +47,9 @@ public abstract class JDBCStructCache<
     abstract protected CHILD fetchChild(JDBCExecutionContext context, OBJECT parent, ResultSet dbResult)
         throws SQLException, DBException;
 
-    protected JDBCStructCache(JDBCConnector connector, String objectNameColumn)
+    protected JDBCStructCache(JDBCDataSource dataSource, String objectNameColumn)
     {
-        super(connector);
+        super(dataSource);
         this.objectNameColumn = objectNameColumn;
     }
 
@@ -70,7 +71,7 @@ public abstract class JDBCStructCache<
             return;
         }
 
-        JDBCExecutionContext context = connector.openContext(monitor);
+        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Load child objects");
         try {
             Map<OBJECT, List<CHILD>> columnMap = new HashMap<OBJECT, List<CHILD>>();
 

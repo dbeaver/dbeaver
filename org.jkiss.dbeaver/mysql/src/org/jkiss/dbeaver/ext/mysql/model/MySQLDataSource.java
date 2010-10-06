@@ -14,10 +14,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -89,7 +86,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
     {
         super.initialize(monitor);
 
-        JDBCExecutionContext context = openContext(monitor);
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load basic datasource metadata");
         try {
             // Read engines
             List<MySQLEngine> tmpEngines = new ArrayList<MySQLEngine>();
@@ -209,7 +206,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
     {
         if (this.activeCatalog == null) {
             String activeDbName;
-            JDBCExecutionContext context = openContext(monitor);
+            JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Check active catalog");
             try {
                 JDBCPreparedStatement dbStat = context.prepareStatement("select database()");
                 try {
@@ -244,7 +241,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         if (!(child instanceof MySQLCatalog)) {
             throw new IllegalArgumentException("Invalid active object type");
         }
-        JDBCExecutionContext context = openContext(monitor);
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Set active catalog");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement("use " + child.getName());
             try {
@@ -275,8 +272,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         throws DBException
     {
         List<DBSTablePath> pathList = new ArrayList<DBSTablePath>();
-        JDBCUtils.startConnectionBlock(monitor, this, "Find table names");
-        JDBCExecutionContext context = getDataSource().openContext(monitor);
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Find tables by name");
         try {
             // Load tables
             JDBCPreparedStatement dbStat = context.prepareStatement(
@@ -314,7 +310,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         }
         finally {
             context.close();
-            JDBCUtils.endConnectionBlock(monitor);
         }
     }
 
@@ -358,7 +353,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
     private List<MySQLUser> loadUsers(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCExecutionContext context = getDataSource().openContext(monitor, "Load users");
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load users");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM mysql.user ORDER BY user");
             try {

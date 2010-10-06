@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
@@ -140,7 +141,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
                     throw new DBCException("No database connection");
                 }
 
-                DBCExecutionContext context = getDataSource().openContext(getProgressMonitor(), "Explain '" + query + "'");
+                DBCExecutionContext context = getDataSource().openContext(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Explain '" + query + "'");
                 try {
                     DBCPlan plan = planner.planQueryExecution(context, query);
                     return plan.getPlanNodes();

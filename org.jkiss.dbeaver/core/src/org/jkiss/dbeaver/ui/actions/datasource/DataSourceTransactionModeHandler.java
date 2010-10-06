@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -39,7 +40,7 @@ public class DataSourceTransactionModeHandler extends DataSourceHandler
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
-                    DBCExecutionContext context = dataSource.openContext(monitor, "Change '" + dataSourceContainer.getName() + "' transactional mode");
+                    DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.UTIL, "Change '" + dataSourceContainer.getName() + "' transactional mode");
                     try {
                         DBCTransactionManager txnManager = context.getTransactionManager();
                         txnManager.setAutoCommit(!txnManager.isAutoCommit());

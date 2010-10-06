@@ -923,7 +923,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     throws InvocationTargetException, InterruptedException
                 {
                     // Copy cell values in new context
-                    DBCExecutionContext context = getDataContainer().getDataSource().openContext(monitor, "Copy row values");
+                    DBCExecutionContext context = getDataContainer().getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Copy row values");
                     try {
                         Object[] origRow = curRows.get(currentRowNumber);
                         for (int i = 0; i < metaColumns.length; i++) {
@@ -1653,7 +1653,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
             private Throwable executeStatements(DBRProgressMonitor monitor)
             {
-                DBCExecutionContext context = getDataSource().openContext(monitor);
+                DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Check connection's auto-commit state");
                 try {
                     try {
                         this.autocommit = context.getTransactionManager().isAutoCommit();

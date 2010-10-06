@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
@@ -57,7 +58,7 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
         throws DBException
     {
         if (schemas == null && !isInitialized) {
-            JDBCExecutionContext context = this.getDataSource().openContext(monitor);
+            JDBCExecutionContext context = this.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load catalog schemas");
             try {
                 this.schemas = this.getDataSource().loadSchemas(context, this);
                 this.isInitialized = true;

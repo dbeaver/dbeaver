@@ -16,10 +16,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -78,8 +75,8 @@ public class DataExportJob extends AbstractJob {
 
         String contextTask = "Export data";
         DBCExecutionContext context = settings.isOpenNewConnections() ?
-            dataProvider.getDataSource().openIsolatedContext(monitor, contextTask) :
-            dataProvider.getDataSource().openContext(monitor, contextTask);
+            dataProvider.getDataSource().openIsolatedContext(monitor, DBCExecutionPurpose.UTIL, contextTask) :
+            dataProvider.getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, contextTask);
         try {
             if (settings.getFormatterProfile() != null) {
                 context.setDataFormatterProfile(settings.getFormatterProfile());

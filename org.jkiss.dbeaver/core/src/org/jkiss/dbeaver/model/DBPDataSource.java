@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
@@ -29,25 +30,18 @@ public interface DBPDataSource extends DBPObject
     /**
      * Opens new execution context
      * @param monitor progress monitor
-     * @return execution context
+     * @param purpose
+     *@param task task description  @return execution context
      */
-    DBCExecutionContext openContext(DBRProgressMonitor monitor);
-
-    /**
-     * Opens new execution context
-     * @param monitor progress monitor
-     * @param task task description
-     * @return execution context
-     */
-    DBCExecutionContext openContext(DBRProgressMonitor monitor, String task);
+    DBCExecutionContext openContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task);
 
     /**
      * Opens new isolated execution context.
      * @param monitor progress monitor
-     * @param task task description
-     * @return execution context
+     * @param purpose
+     *@param task task description  @return execution context
      */
-    DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String task);
+    DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task);
 
     /**
      * checks connection is alive and reconnects if needed.

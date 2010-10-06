@@ -108,21 +108,11 @@ public class SQLQueryJob extends DataSourceJob
         this.queryListeners.remove(listener);
     }
 
-    /**
-     * Exeucutes queries immediately (without job scheduling)
-     * @param monitor progress monitor
-     * @return status
-     */
-    public IStatus runImmediately(DBRProgressMonitor monitor)
-    {
-        return this.run(monitor);
-    }
-
     protected IStatus run(DBRProgressMonitor monitor)
     {
         startJob();
         try {
-            DBCExecutionContext context = getDataSource().openContext(monitor, "SQL Query");
+            DBCExecutionContext context = getDataSource().openContext(monitor, queries.size() > 1 ? DBCExecutionPurpose.USER_SCRIPT : DBCExecutionPurpose.USER, "SQL Query");
             try {
 // Set transction settings (only if autocommit is off)
                 QMUtils.getDefaultHandler().handleScriptBegin(context);

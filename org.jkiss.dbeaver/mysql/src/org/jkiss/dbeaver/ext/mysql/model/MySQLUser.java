@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.access.DBAUser;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -126,7 +127,7 @@ public class MySQLUser implements DBAUser
         if (catalogPrivileges != null) {
             return catalogPrivileges;
         }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, "Read catalog privileges");
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read catalog privileges");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM mysql.db WHERE User=?");
             try {

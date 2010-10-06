@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -232,7 +233,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             dataSource.initialize(monitor);
             // Change connection properties
 
-            DBCExecutionContext context = dataSource.openContext(monitor, "Set session defaults ...");
+            DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Set session defaults ...");
             try {
                 DBCTransactionManager txnManager = context.getTransactionManager();
                 boolean autoCommit = txnManager.isAutoCommit();
@@ -307,7 +308,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
         // First rollback active transaction
         monitor.subTask("Rollback active transaction");
-        DBCExecutionContext context = getDataSource().openContext(monitor);
+        DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Rollback transaction");
         try {
             if (context.isConnected() && !context.getTransactionManager().isAutoCommit()) {
                 context.getTransactionManager().rollback(null);

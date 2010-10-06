@@ -23,6 +23,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -167,7 +168,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
                     if (getDataSource() == null) {
                         return null;
                     }
-                    JDBCExecutionContext context = getDataSource().openContext(this.getProgressMonitor());
+                    JDBCExecutionContext context = getDataSource().openContext(this.getProgressMonitor(), DBCExecutionPurpose.UTIL, "Retrieve process list");
                     try {
                         JDBCPreparedStatement dbStat = context.prepareStatement("SHOW FULL PROCESSLIST");
                         JDBCResultSet dbResult = dbStat.executeQuery();
@@ -219,7 +220,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
                     if (getDataSource() == null) {
                         return null;
                     }
-                    JDBCExecutionContext context = getDataSource().openContext(this.getProgressMonitor());
+                    JDBCExecutionContext context = getDataSource().openContext(this.getProgressMonitor(), DBCExecutionPurpose.UTIL, "Cancel active process");
                     try {
                         JDBCPreparedStatement dbStat = context.prepareStatement(
                             killConnection ?

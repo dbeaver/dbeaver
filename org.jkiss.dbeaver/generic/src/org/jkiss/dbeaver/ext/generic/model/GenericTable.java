@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -254,7 +255,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
             return rowCount;
         }
 
-        JDBCExecutionContext context = getDataSourceContainer().openContext(monitor);
+        JDBCExecutionContext context = getDataSourceContainer().openContext(monitor, "Read row count");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT COUNT(*) FROM " + getFullQualifiedName());
@@ -287,8 +288,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
     private List<GenericPrimaryKey> loadConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
-        monitor.beginTask("Loading contraints", 1);
-        JDBCExecutionContext context = getDataSource().openContext(monitor);
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Loading constraints");
         try {
             List<GenericPrimaryKey> pkList = new ArrayList<GenericPrimaryKey>();
             Map<String, GenericPrimaryKey> pkMap = new HashMap<String, GenericPrimaryKey>();
@@ -337,7 +337,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
             throw new DBException(ex);
         } finally {
             context.close();
-            monitor.done();
         }
     }
 
@@ -361,7 +360,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
     private List<GenericForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)
         throws DBException
     {
-        JDBCExecutionContext context = getDataSource().openContext(monitor);
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table relations");
         try {
             // Read foreign keys in two passes
             // First read entire resultset to prevent recursive metadata requests

@@ -5,10 +5,11 @@
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -24,18 +25,18 @@ import java.util.Map;
  */
 public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
 
-    protected final JDBCConnector connector;
+    protected final JDBCDataSource dataSource;
     private List<OBJECT> objectList;
     private Map<String, OBJECT> objectMap;
 
-    protected JDBCObjectCache(JDBCConnector connector)
+    protected JDBCObjectCache(JDBCDataSource dataSource)
     {
-        this.connector = connector;
+        this.dataSource = dataSource;
     }
 
-    JDBCConnector getConnector()
+    JDBCDataSource getDataSource()
     {
-        return connector;
+        return dataSource;
     }
 
     abstract protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
@@ -78,7 +79,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
         List<OBJECT> tmpObjectList = new ArrayList<OBJECT>();
         Map<String, OBJECT> tmpObjectMap = new HashMap<String, OBJECT>();
 
-        JDBCExecutionContext context = connector.openContext(monitor);
+        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Load objects");
         try {
             JDBCPreparedStatement dbStat = prepareObjectsStatement(context);
             try {

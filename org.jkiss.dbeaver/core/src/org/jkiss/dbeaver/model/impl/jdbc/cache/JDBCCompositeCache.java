@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -113,7 +114,7 @@ public abstract class JDBCCompositeCache<
         }
 
         // Load index columns
-        JDBCExecutionContext context = parentCache.getConnector().openContext(monitor);
+        JDBCExecutionContext context = parentCache.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load composite objects");
         try {
             Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new HashMap<PARENT, Map<String, ObjectInfo>>();
 
