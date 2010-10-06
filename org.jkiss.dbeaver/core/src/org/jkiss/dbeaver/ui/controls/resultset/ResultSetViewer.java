@@ -1830,10 +1830,23 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
+        public Object getElement(GridPos pos)
+        {
+            if (mode == ResultSetMode.RECORD) {
+                return curRows.get(curRowNum)[pos.row];
+            } else {
+                return curRows.get(pos.row)[pos.col];
+            }
+        }
+
         public Object[] getElements(Object inputElement)
         {
-            int rowNum = ((Number) inputElement).intValue();
-            return curRows.get(rowNum);
+            if (mode == ResultSetMode.RECORD) {
+                return curRows.get(curRowNum);
+            } else {
+                int rowNum = ((Number) inputElement).intValue();
+                return curRows.get(rowNum);
+            }
         }
 
         public void dispose()

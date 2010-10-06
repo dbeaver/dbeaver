@@ -14,4 +14,5 @@ public interface IGridContentProvider extends IStructuredContentProvider {
      */
     public GridPos getSize();
 
+    public Object getElement(GridPos pos);
 }

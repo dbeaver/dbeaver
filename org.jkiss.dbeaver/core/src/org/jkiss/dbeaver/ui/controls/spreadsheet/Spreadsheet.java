@@ -497,7 +497,16 @@ public class Spreadsheet extends Composite implements Listener {
                 }
                 prevCol = pos.col;
             }
-            String text = contentLabelProvider.getText(pos);
+            // Make some formatting
+            // We don't want to use locale-specific formatter because numbers and dates
+            // become not valid for SQL queries
+            Object element = contentProvider.getElement(pos);
+            String text;
+            if (element instanceof Number) {
+                text = element.toString();
+            } else {
+                text = contentLabelProvider.getText(pos);
+            }
             tdt.append(text == null ? "" : text);
         }
         if (tdt.length() > 0) {
