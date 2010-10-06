@@ -193,12 +193,16 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         JDBCExecutionContext context = getDataSource().openContext(monitor);
         try {
             PreparedStatement dbStat = context.prepareStatement(
-                "SHOW CREATE TABLE " + getFullQualifiedName());
+                "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName());
             try {
                 ResultSet dbResult = dbStat.executeQuery();
                 try {
                     if (dbResult.next()) {
-                        return dbResult.getString("Create Table");
+                        if (isView()) {
+                            return dbResult.getString("Create View");
+                        } else {
+                            return dbResult.getString("Create Table");
+                        }
                     } else {
                         return "DDL is not available";
                     }
