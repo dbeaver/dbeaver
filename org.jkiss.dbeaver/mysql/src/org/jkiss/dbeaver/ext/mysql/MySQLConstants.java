@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.mysql;
 
 /**
@@ -96,11 +100,6 @@ public class MySQLConstants {
     public static final String CONSTRAINT_UNIQUE = "UNIQUE";
 
     public static final String EXTRA_AUTO_INCREMENT = "auto_increment";
-
-    public static final String QUERY_SELECT_TABLES =
-        "SELECT * FROM " + META_TABLE_TABLES +
-        " WHERE " + COL_TABLE_SCHEMA + "=?" +
-        " ORDER BY " + COL_TABLE_NAME;
 
     public static final String QUERY_SELECT_TABLE_COLUMNS =
         "SELECT * FROM " + META_TABLE_COLUMNS +

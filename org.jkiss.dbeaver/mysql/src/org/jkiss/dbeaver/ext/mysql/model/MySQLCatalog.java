@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -334,9 +335,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
             throws SQLException, DBException
         {
-            JDBCPreparedStatement dbStat = context.prepareStatement(MySQLConstants.QUERY_SELECT_TABLES);
-            dbStat.setString(1, getName());
-            return dbStat;
+            return context.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(getDataSource(), getName()));
         }
 
         protected MySQLTable fetchObject(JDBCExecutionContext context, ResultSet dbResult)

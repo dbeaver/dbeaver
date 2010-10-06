@@ -210,10 +210,19 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
     private void loadInfo(ResultSet dbResult)
     {
-        this.setName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME));
-        this.setTableType(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_TYPE));
+        this.setName(JDBCUtils.safeGetString(dbResult, 1));
+        this.setTableType(JDBCUtils.safeGetString(dbResult, 2));
 
-        // filer table comment (for INNODB it contains some system information) 
+        if (!CommonUtils.isEmpty(this.getTableType())) {
+            this.isView = (this.getTableType().toUpperCase().indexOf("VIEW") != -1);
+            this.isSystem = (this.getTableType().toUpperCase().indexOf("SYSTEM") != -1);
+        }
+        this.columns = null;
+    }
+
+    private void loadAdditionalInfo(ResultSet dbResult)
+    {
+        // filer table comment (for INNODB it contains some system information)
         String desc = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_COMMENT);
         if (desc.startsWith(INNODB_COMMENT)) {
             desc = "";
@@ -227,14 +236,8 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         this.engine = getDataSource().getEngine(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE));
         this.rowCount = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_TABLE_ROWS);
         this.autoIncrement = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AUTO_INCREMENT);
-
-        if (!CommonUtils.isEmpty(this.getTableType())) {
-            this.isView = (this.getTableType().toUpperCase().indexOf("VIEW") != -1);
-            this.isSystem = (this.getTableType().toUpperCase().indexOf("SYSTEM") != -1);
-        }
-        this.columns = null;
     }
-
+    
     private List<MySQLIndex> loadIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
