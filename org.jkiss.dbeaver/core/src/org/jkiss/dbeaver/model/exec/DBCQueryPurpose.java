@@ -16,10 +16,11 @@ package org.jkiss.dbeaver.model.exec;
  */
 public enum DBCQueryPurpose {
 
-    MANUAL,     // User query
-    SCRIPT,     // User script query
-    DDL,        // DDL query, caused by some metadata modifications
-    META,       // Metadata query, processed by data source providers internally
-    OTHER       // Other types of queries
+    USER,               // User query
+    USER_SCRIPT,        // User script query
+    UTIL,               // Utility query (utility method initialized by user)
+    DDL,                // DDL query, caused by some metadata modifications, initiated by user
+    META,               // Metadata query, processed by data source providers internally
+    OTHER               // Other types of queries
 
 }

@@ -104,7 +104,7 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
         return description;
     }
 
-    public void setDescription(String description)
+    protected void setDescription(String description)
     {
         this.description = description;
     }

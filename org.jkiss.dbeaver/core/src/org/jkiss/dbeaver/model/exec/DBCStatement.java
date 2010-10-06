@@ -26,9 +26,11 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      */
     String getQueryString();
 
+    /**
+     * Statement's description
+     * @return description string or null
+     */
     String getDescription();
-
-    void setDescription(String description);
 
     DBCQueryPurpose getQueryPurpose();
 

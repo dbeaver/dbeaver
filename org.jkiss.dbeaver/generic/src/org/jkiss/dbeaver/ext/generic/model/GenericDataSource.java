@@ -368,7 +368,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                     }
                 } else {
                     JDBCPreparedStatement dbStat = context.prepareStatement(queryGetActiveDB);
-                    dbStat.setDescription("Reading active database");
                     try {
                         JDBCResultSet resultSet = dbStat.executeQuery();
                         try {
@@ -420,7 +419,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         JDBCExecutionContext context = openContext(monitor);
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(changeQuery);
-            dbStat.setDescription("Change active database");
             try {
                 dbStat.execute();
             } finally {

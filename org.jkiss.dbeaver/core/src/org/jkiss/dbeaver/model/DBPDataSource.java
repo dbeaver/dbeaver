@@ -20,7 +20,7 @@ public interface DBPDataSource extends DBPObject
 {
     /**
      * Datasource container
-     * @return contaner implementation
+     * @return container implementation
      */
     DBSDataSourceContainer getContainer();
 
