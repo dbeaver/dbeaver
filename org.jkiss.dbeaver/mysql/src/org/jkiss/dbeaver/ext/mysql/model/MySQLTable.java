@@ -10,6 +10,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -45,6 +47,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     private MySQLEngine engine;
     private boolean isView;
     private boolean isSystem;
+    private boolean extraInfoLoaded = false;
 
     private List<MySQLTableColumn> columns;
     private List<MySQLIndex> indexes;
@@ -54,6 +57,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
     private long rowCount;
     private long autoIncrement;
+    private String comment;
 
     public MySQLTable(
         MySQLCatalog catalog,
@@ -71,8 +75,12 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     }
 
     @Property(name = "Engine", viewable = true, order = 3)
-    public MySQLEngine getEngine()
+    public MySQLEngine getEngine(DBRProgressMonitor monitor)
+        throws DBCException
     {
+        if (!extraInfoLoaded) {
+            loadAdditionalInfo(monitor);
+        }
         return engine;
     }
 
@@ -156,14 +164,13 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
     }
 
     @Property(name = "Row Count", viewable = true, order = 5)
-    public long getRowCount()
+    public long getRowCount(DBRProgressMonitor monitor)
+        throws DBCException
     {
+        if (!extraInfoLoaded) {
+            loadAdditionalInfo(monitor);
+        }
         return rowCount;
-    }
-
-    void setRowCount(long rowCount)
-    {
-        this.rowCount = rowCount;
     }
 
     public long getAutoIncrement()
@@ -171,9 +178,13 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         return autoIncrement;
     }
 
-    public void setAutoIncrement(long autoIncrement)
+    @Property(name = "Comment", viewable = true, order = 5)
+    public String getComment(DBRProgressMonitor monitor) throws DBCException
     {
-        this.autoIncrement = autoIncrement;
+        if (!extraInfoLoaded) {
+            loadAdditionalInfo(monitor);
+        }
+        return comment;
     }
 
     public String getDDL(DBRProgressMonitor monitor)
@@ -220,24 +231,50 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         this.columns = null;
     }
 
-    private void loadAdditionalInfo(ResultSet dbResult)
+    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
     {
-        // filer table comment (for INNODB it contains some system information)
-        String desc = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_COMMENT);
-        if (desc.startsWith(INNODB_COMMENT)) {
-            desc = "";
-        } else if (!CommonUtils.isEmpty(desc)) {
-            int divPos = desc.indexOf("; " + INNODB_COMMENT);
-            if (divPos != -1) {
-                desc = desc.substring(0, divPos);
+        JDBCExecutionContext context = getDataSource().openContext(monitor);
+        try {
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'");
+            try {
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    if (dbResult.next()) {
+                        // filer table comment (for INNODB it contains some system information)
+                        String desc = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_COMMENT);
+                        if (desc != null) {
+                            if (desc.startsWith(INNODB_COMMENT)) {
+                                desc = "";
+                            } else if (!CommonUtils.isEmpty(desc)) {
+                                int divPos = desc.indexOf("; " + INNODB_COMMENT);
+                                if (divPos != -1) {
+                                    desc = desc.substring(0, divPos);
+                                } else {
+                                    desc = "";
+                                }
+                            }
+                            this.comment = desc;
+                        }
+                        this.engine = getDataSource().getEngine(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE));
+                        this.rowCount = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_TABLE_ROWS);
+                        this.autoIncrement = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AUTO_INCREMENT);
+                    }
+                    extraInfoLoaded = true;
+                } finally {
+                    dbResult.close();
+                }
+            } finally {
+                dbStat.close();
             }
         }
-        this.setDescription(desc);
-        this.engine = getDataSource().getEngine(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE));
-        this.rowCount = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_TABLE_ROWS);
-        this.autoIncrement = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AUTO_INCREMENT);
+        catch (SQLException e) {
+            throw new DBCException(e);
+        } finally {
+            context.close();
+        }
     }
-    
+
     private List<MySQLIndex> loadIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -540,4 +577,8 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         this.columns = columns;
     }
 
+    public String getDescription()
+    {
+        return getName();
+    }
 }

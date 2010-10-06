@@ -355,6 +355,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
 
     public void metaInfoChanged(Collection<QMMetaEvent> events)
     {
+        if (logTable.isDisposed()) {
+            return;
+        }
         logTable.setRedraw(false);
         try {
             for (QMMetaEvent event : events) {

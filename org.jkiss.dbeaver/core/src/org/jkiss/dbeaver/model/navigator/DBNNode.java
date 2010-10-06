@@ -14,14 +14,14 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 
 import java.util.List;
 
 /**
  * DBNNode
  */
-public abstract class DBNNode implements IActionFilter
+public abstract class DBNNode implements IActionFilter, DBSWrapper
 {
     static final Log log = LogFactory.getLog(DBNNode.class);
 
@@ -65,8 +65,6 @@ public abstract class DBNNode implements IActionFilter
     public final boolean isLocked() {
         return locked || parentNode != null && parentNode.isLocked();
     }
-
-    public abstract DBSObject getObject();
 
     public abstract Object getValueObject();
 

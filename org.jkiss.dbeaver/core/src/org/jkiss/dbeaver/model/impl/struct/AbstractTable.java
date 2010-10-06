@@ -23,19 +23,17 @@ public abstract class AbstractTable<
     private CONTAINER container;
     private String tableName;
     private String tableType;
-    private String description;
 
     protected AbstractTable(CONTAINER container)
     {
         this.container = container;
     }
 
-    protected AbstractTable(CONTAINER container, String tableName, String tableType, String description)
+    protected AbstractTable(CONTAINER container, String tableName, String tableType)
     {
         this(container);
         this.tableName = tableName;
         this.tableType = tableType;
-        this.description = description;
     }
 
     public CONTAINER getContainer()
@@ -67,17 +65,6 @@ public abstract class AbstractTable<
 
     public String getObjectId() {
         return getParentObject().getObjectId() + "." + getName();
-    }
-
-    @Property(name = "Table Description", viewable = true, order = 100)
-    public String getDescription()
-    {
-        return description;
-    }
-
-    protected void setDescription(String description)
-    {
-        this.description = description;
     }
 
     @SuppressWarnings("unchecked")

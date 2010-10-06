@@ -10,6 +10,7 @@ import org.eclipse.ui.views.properties.IPropertySheetEntry;
 import org.eclipse.ui.views.properties.PropertySheetEntry;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetSorter;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 
 import java.util.Hashtable;
 import java.util.Map;
@@ -37,6 +38,9 @@ public class PropertyPageStandard extends PropertySheetPage
     {
         if (curObject != null) {
             pagesMap.remove(curObject);
+            if (curObject instanceof DBSWrapper) {
+                pagesMap.put(((DBSWrapper)curObject).getObject(), this);
+            }
             curObject = null;
         }
         super.dispose();
@@ -52,6 +56,9 @@ public class PropertyPageStandard extends PropertySheetPage
         assert this.curObject == null;
         this.curObject = object;
         pagesMap.put(object, this);
+        if (object instanceof DBSWrapper) {
+            pagesMap.put(((DBSWrapper)object).getObject(), this);
+        }
 
         this.selectionChanged(sourcePart, new StructuredSelection(object));
     }

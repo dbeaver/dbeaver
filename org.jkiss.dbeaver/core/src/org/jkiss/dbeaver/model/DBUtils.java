@@ -31,6 +31,11 @@ public final class DBUtils {
 
     static final Log log = LogFactory.getLog(DBUtils.class);
 
+    public static String getQuotedIdentifier(DBSObject object)
+    {
+        return getQuotedIdentifier(object.getDataSource(), object.getName());
+    }
+
     public static String getQuotedIdentifier(DBPDataSource dataSource, String str)
     {
         String quoteString;

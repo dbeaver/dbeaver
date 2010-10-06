@@ -39,9 +39,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         super(container);
     }
 
-    protected JDBCTable(CONTAINER container, String tableName, String tableType, String description)
+    protected JDBCTable(CONTAINER container, String tableName, String tableType)
     {
-        super(container, tableName, tableType, description);
+        super(container, tableName, tableType);
     }
 
     public int getSupportedFeatures()

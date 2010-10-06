@@ -15,7 +15,9 @@ import org.eclipse.ui.views.properties.PropertySheet;
 import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
@@ -234,6 +236,9 @@ public class PropertySourceAbstract implements IPropertySource
         private void refreshProperties(PropertyPageStandard pageStandard)
         {
             Object curObject = pageStandard.getCurrentObject();
+            if (curObject instanceof DBSWrapper) {
+                curObject = ((DBSWrapper)curObject).getObject();
+            }
             // Refresh only if current property sheet object is the same as for collector
             if (curObject == object) {
                 DBeaverCore.getInstance().getNavigatorModel().getNodesAdapter().addToCache(object, PropertySourceAbstract.this);
