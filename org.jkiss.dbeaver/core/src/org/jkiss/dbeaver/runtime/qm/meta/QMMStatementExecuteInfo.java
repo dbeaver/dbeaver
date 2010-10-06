@@ -90,6 +90,11 @@ public class QMMStatementExecuteInfo extends QMMObject {
         return errorMessage;
     }
 
+    public boolean hasError()
+    {
+        return errorCode != 0 || errorMessage != null;
+    }
+
     public long getFetchBeginTime()
     {
         return fetchBeginTime;
@@ -98,6 +103,11 @@ public class QMMStatementExecuteInfo extends QMMObject {
     public long getFetchEndTime()
     {
         return fetchEndTime;
+    }
+
+    public boolean isFetching()
+    {
+        return fetchBeginTime > 0 && fetchEndTime == 0;
     }
 
     public QMMStatementExecuteInfo getPrevious()

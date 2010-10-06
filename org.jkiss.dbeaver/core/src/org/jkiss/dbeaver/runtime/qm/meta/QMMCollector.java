@@ -242,7 +242,7 @@ public class QMMCollector extends DefaultExecutionHandler {
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginFetch(resultSet);
             if (exec != null) {
-                //fireMetaEvent(exec, QMMetaEvent.Action.UPDATE);
+                fireMetaEvent(exec, QMMetaEvent.Action.UPDATE);
             }
         }
     }

@@ -15,6 +15,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -25,6 +26,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -111,7 +113,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
             {
                 if (object instanceof QMMStatementExecuteInfo) {
                     QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
-                    if (exec.isClosed()) {
+                    if (exec.isClosed() && !exec.isFetching()) {
                         return String.valueOf(exec.getCloseTime() - exec.getOpenTime()) + " ms";
                     } else {
                         return "";
@@ -145,7 +147,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
             String getText(QMMObject object)
             {
                 if (object instanceof QMMStatementExecuteInfo) {
-                    return String.valueOf(((QMMStatementExecuteInfo)object).getRowCount());
+                    QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
+                    if (exec.isClosed() && !exec.isFetching()) {
+                        return String.valueOf(exec.getRowCount());
+                    }
                 }
                 return "";
             }
@@ -156,7 +161,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
                 if (object instanceof QMMStatementExecuteInfo) {
                     QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
                     if (exec.isClosed()) {
-                        if (exec.getErrorCode() != 0 || exec.getErrorMessage() != null) {
+                        if (exec.hasError()) {
                             if (exec.getErrorCode() == 0) {
                                 return exec.getErrorMessage();
                             } else if (exec.getErrorMessage() == null) {
@@ -189,6 +194,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
     private final Color colorLightGreen;
     private final Color colorLightRed;
     private final Color colorLightYellow;
+    private final Font boldFont;
 
     public QueryLogViewer(Composite parent, IQueryLogFilter filter, boolean loadPastEvents)
     {
@@ -200,6 +206,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         colorLightGreen = sharedColors.getColor(new RGB(0xE4, 0xFF, 0xB5));
         colorLightRed = sharedColors.getColor(new RGB(0xFF, 0x63, 0x47));
         colorLightYellow = sharedColors.getColor(new RGB(0xFF, 0xE4, 0xB5));
+        boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         // Create log table
         logTable = new Table(
@@ -249,6 +256,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         QMUtils.unregisterMetaListener(this);
         if (!logTable.isDisposed()) {
             logTable.dispose();
+        }
+        if (!boldFont.isDisposed()) {
+            boldFont.dispose();
         }
     }
 
@@ -306,6 +316,17 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         return "";
     }
 
+    Font getObjectFont(QMMObject object)
+    {
+        if (object instanceof QMMStatementExecuteInfo) {
+            QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
+            if (!exec.isClosed() || exec.isFetching()) {
+                return boldFont;
+            }
+        }
+        return null;
+    }
+
     Color getObjectForeground(QMMObject object)
     {
         return null;
@@ -315,6 +336,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
     {
         if (object instanceof QMMStatementExecuteInfo) {
             QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
+            if (exec.hasError()) {
+                return colorLightRed;
+            }
             QMMTransactionSavepointInfo savepoint = exec.getSavepoint();
             if (savepoint == null) {
                 return colorLightGreen;
@@ -371,6 +395,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
             QMMStatementExecuteInfo exec = i.next();
             TableItem item = objectToItemMap.get(exec.getObjectId());
             if (item != null) {
+                item.setFont(getObjectFont(exec));
                 item.setForeground(getObjectForeground(exec));
                 item.setBackground(getObjectBackground(exec));
             }
@@ -413,6 +438,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
             ColumnDescriptor cd = columns.get(i);
             item.setText(i, cd.logColumn.getText(object));
         }
+        item.setFont(getObjectFont(object));
         item.setForeground(getObjectForeground(object));
         item.setBackground(getObjectBackground(object));
     }
