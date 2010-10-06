@@ -31,15 +31,12 @@
                   icon="icons/mysql_icon.png"
                   label="MySQL data source"
                   path="mysql">
-                <icon icon="icons/tree/connection_disabled.png" default="true"/>
-                <icon icon="icons/tree/connection_enabled.png" if="object.connected"/>
-
                 <folder type="org.jkiss.dbeaver.model.struct.DBSCatalog" label="Catalogs" iconId="#catalogs" description="Catalogs">
                     <items label="Catalog" path="catalog" property="catalogs" iconId="#catalog" optional="true">
                         <folder type="org.jkiss.dbeaver.model.struct.DBSTable" label="Tables" iconId="#tables" description="Tables">
                             <items label="Table" path="table" property="tables">
                                 <icon iconId="#table" default="true"/>
-                                <icon iconId="#view" if="object.view"/>
+                                <icon iconId="#view" if="view"/>
                                 <folder type="org.jkiss.dbeaver.model.struct.DBSTableColumn" label="Columns" iconId="#columns" description="Table columns">
                                     <items label="Column" path="column" property="columns" iconId="#column">
                                     </items>

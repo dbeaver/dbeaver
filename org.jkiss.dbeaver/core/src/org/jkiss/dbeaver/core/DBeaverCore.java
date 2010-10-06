@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.core;
 
-import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
@@ -73,7 +72,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     private DBNModel metaModel;
     private QMControllerImpl queryManager;
-    private JexlEngine jexlEngine;
     private SharedTextColors sharedTextColors;
 
     public static DBeaverCore getInstance()
@@ -96,7 +94,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private void initialize()
     {
         //progressProvider = new DBeaverProgressProvider();
-        this.jexlEngine = new JexlEngine();
         this.sharedTextColors = new SharedTextColors();
 
         // Register properties adapter
@@ -213,10 +210,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public IPath getRootPath()
     {
         return rootPath;
-    }
-
-    public JexlEngine getJexlEngine() {
-        return jexlEngine;
     }
 
     public ISharedTextColors getSharedTextColors()

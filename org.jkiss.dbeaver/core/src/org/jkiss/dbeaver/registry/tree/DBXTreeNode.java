@@ -4,15 +4,13 @@
 
 package org.jkiss.dbeaver.registry.tree;
 
+import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
-import org.apache.commons.jexl2.JexlContext;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * DBXTreeNode
@@ -97,29 +95,14 @@ public abstract class DBXTreeNode
     {
         List<DBXTreeIcon> extIcons = getIcons();
         if (!CommonUtils.isEmpty(extIcons)) {
-            final Map<String, Object> vars = new HashMap<String, Object>();
-            JexlContext exprContext = new JexlContext() {
-                public Object get(String s) {
-                    return vars.get(s);
-                }
-
-                public void set(String s, Object o) {
-                    vars.put(s, o);
-                }
-
-                public boolean has(String s) {
-                    return vars.containsKey(s);
-                }
-            };
-            vars.put("object", forObject);
             // Try to get some icon depending on it's condition
             for (DBXTreeIcon icon : extIcons) {
-                if (icon.getExpr() == null) {
+                if (CommonUtils.isEmpty(icon.getExprString())) {
                     continue;
                 }
                 try {
-                    Object result = icon.getExpr().evaluate(exprContext);
-                    if (Boolean.TRUE.equals(result)) {
+                    Object propValue = BeanUtils.readObjectProperty(forObject, icon.getExprString());
+                    if (Boolean.TRUE.equals(propValue) || (propValue instanceof String && Boolean.TRUE.equals(Boolean.valueOf((String)propValue)))) {
                         return icon.getIcon();
                     }
                 } catch (Exception e) {
