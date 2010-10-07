@@ -503,15 +503,28 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
                 };
                 selectAllAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_SELECT_ALL);
 
+                IAction clearLogAction = new Action("Clear Log") {
+                    public void run()
+                    {
+                        clearLog();
+                    }
+                };
+
                 manager.add(copyAction);
                 manager.add(copyAllAction);
                 manager.add(selectAllAction);
+                manager.add(clearLogAction);
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
         logTable.setMenu(menu);
         site.registerContextMenu(menuMgr, this);
+    }
+
+    private void clearLog()
+    {
+        logTable.removeAll();
     }
 
     void selectAll()

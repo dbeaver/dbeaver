@@ -6,6 +6,9 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
@@ -19,12 +22,16 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 
 /**
@@ -35,6 +42,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
     static final Log log = LogFactory.getLog(SQLHyperlinkDetector.class);
 
     private SQLEditor editor;
+    private Map<String, TablesFinderJob> linksCache = new WeakHashMap<String, TablesFinderJob>();
 
     public SQLHyperlinkDetector(SQLEditor editor)
     {
@@ -107,6 +115,18 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             final IRegion wordRegion = new Region(wordStart, wordEnd - wordStart);
             final List<IHyperlink> links = new ArrayList<IHyperlink>();
             final String checkWord = word;
+/*
+            TablesFinderJob finderJob = this.linksCache.get(word);
+            if (finderJob == null) {
+                finderJob = new TablesFinderJob(checkWord);
+                finderJob.schedule();
+            }
+            finderJob.join();
+
+            if (objects == null) {
+
+            }
+*/
             try {
                 DBRRunnableWithProgress objLoader = new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor)
@@ -151,6 +171,43 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             return links.toArray(new IHyperlink[links.size()]);
         }
         return null;
+    }
+
+    private class TablesFinderJob extends DataSourceJob {
+
+        private String word;
+        private List<DBSObject> objects = new ArrayList<DBSObject>();
+
+        protected TablesFinderJob(String word)
+        {
+            super("Find table names for '" + word + "'", DBIcon.SQL_EXECUTE.getImageDescriptor(), editor.getDataSource());
+            this.word = word;
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor)
+        {
+            final List<DBSTablePath> pathList;
+            try {
+                pathList = ((DBSStructureAssistant) getDataSource()).findTableNames(monitor, word, 10);
+                if (!pathList.isEmpty()) {
+                    for (DBSTablePath path : pathList) {
+                        DBSObject object = DBUtils.getTableByPath(monitor, (DBSEntityContainer) getDataSource(), path);
+                        if (object != null) {
+                            objects.add(object);
+                        }
+                    }
+                }
+            } catch (DBException e) {
+                log.warn(e);
+            }
+            return Status.OK_STATUS;
+        }
+
+        public List<DBSObject> getObjects()
+        {
+            return objects;
+        }
     }
 
 }
