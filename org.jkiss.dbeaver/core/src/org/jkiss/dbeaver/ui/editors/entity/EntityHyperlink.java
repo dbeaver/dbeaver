@@ -22,12 +22,12 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class EntityHyperlink implements IHyperlink
 {
-    private DBSObject object;
+    private DBNNode node;
     private IRegion region;
 
-    public EntityHyperlink(DBSObject object, IRegion region)
+    public EntityHyperlink(DBNNode node, IRegion region)
     {
-        this.object = object;
+        this.node = node;
         this.region = region;
     }
 
@@ -43,28 +43,12 @@ public class EntityHyperlink implements IHyperlink
 
     public String getHyperlinkText()
     {
-        if (object instanceof DBSEntityQualified) {
-            return ((DBSEntityQualified)object).getFullQualifiedName();
-        } else {
-            return object.getName();
-        }
+        return node.getNodePathName();
     }
 
     public void open()
     {
-        DBeaverCore.runUIJob("Open hyperlink", new DBRRunnableWithProgress() {
-            public void run(DBRProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException
-            {
-                DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
-                    monitor,
-                    object,
-                    true
-                );
-                if (node != null) {
-                    NavigatorHandlerOpenObject.openEntityEditor(node, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-                }
-            }
-        });
+        NavigatorHandlerOpenObject.openEntityEditor(node, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
     }
+
 }

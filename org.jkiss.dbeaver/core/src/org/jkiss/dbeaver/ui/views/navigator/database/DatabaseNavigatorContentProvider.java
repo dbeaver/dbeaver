@@ -86,7 +86,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
         } else {
             try {
                 // Read children with null monitor cos' it's not a lazy node
-                // and no blocking prooccess will occure
+                // and no blocking process will occur
                 List<? extends DBNNode> children = parentNode.getChildren(VoidProgressMonitor.INSTANCE);
                 if (CommonUtils.isEmpty(children)) {
                     return new Object[0];

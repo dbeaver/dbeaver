@@ -104,13 +104,18 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         addContributions(EntityEditorDescriptor.POSITION_START);
 
         final List<TabInfo> tabs = new ArrayList<TabInfo>();
-        DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
-            public void run(DBRProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException
-            {
-                tabs.addAll(collectTabs(monitor));
-            }
-        });
+        try {
+            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+                public void run(DBRProgressMonitor monitor)
+                {
+                    tabs.addAll(collectTabs(monitor));
+                }
+            });
+        } catch (InvocationTargetException e) {
+            log.error(e.getTargetException());
+        } catch (InterruptedException e) {
+            // just go further
+        }
 
         for (TabInfo tab : tabs) {
             if (tab.meta == null) {

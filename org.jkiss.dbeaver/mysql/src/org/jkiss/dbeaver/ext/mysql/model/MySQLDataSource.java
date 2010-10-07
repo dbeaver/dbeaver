@@ -276,7 +276,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         try {
             // Load tables
             JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT TABLE_SCHEMA,TABLE_NAME,TABLE_TYPE,TABLE_COMMENT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '" + tableMask.toLowerCase() + "%'");
+                "SELECT TABLE_SCHEMA,TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '" + tableMask.toLowerCase() + "'");
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
@@ -285,16 +285,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
     
                         String catalogName = JDBCUtils.safeGetString(dbResult, 1);
                         String tableName = JDBCUtils.safeGetString(dbResult, 2);
-                        String tableType = JDBCUtils.safeGetString(dbResult, 3);
-                        String remarks = JDBCUtils.safeGetString(dbResult, 4);
 
                         pathList.add(
                             new DBSTablePath(
                                 catalogName,
                                 null,
-                                tableName,
-                                tableType,
-                                remarks));
+                                tableName));
                     }
                 }
                 finally {

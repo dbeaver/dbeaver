@@ -8,30 +8,25 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.DBSTablePath;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 
 
 /**
@@ -41,15 +36,25 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 {
     static final Log log = LogFactory.getLog(SQLHyperlinkDetector.class);
 
+    private static class TableLookupCache {
+        List<DBNNode> nodes;
+        boolean loading = true;
+    }
+
     private SQLEditor editor;
-    private Map<String, TablesFinderJob> linksCache = new WeakHashMap<String, TablesFinderJob>();
+    private Map<String, TableLookupCache> linksCache = new HashMap<String, TableLookupCache>();
 
     public SQLHyperlinkDetector(SQLEditor editor)
     {
         this.editor = editor;
     }
 
-    public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks)
+    public synchronized void clearCache()
+    {
+        linksCache.clear();
+    }
+
+    public synchronized IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks)
     {
         if (region == null || textViewer == null || !editor.getDataSourceContainer().isConnected()) {
             return null;
@@ -110,104 +115,102 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        // Detect what all this means
-        final DBPDataSource dataSource = editor.getDataSource();
-        if (dataSource instanceof DBSEntityContainer && dataSource instanceof DBSStructureAssistant) {
-            final IRegion wordRegion = new Region(wordStart, wordEnd - wordStart);
-            final List<IHyperlink> links = new ArrayList<IHyperlink>();
-            final String checkWord = word;
-/*
-            TablesFinderJob finderJob = this.linksCache.get(word);
-            if (finderJob == null) {
-                finderJob = new TablesFinderJob(checkWord);
-                finderJob.schedule();
+        String tableName = word.toUpperCase();
+        TableLookupCache tlc = linksCache.get(tableName);
+        if (tlc == null) {
+            // Start new word finder job
+            tlc = new TableLookupCache();
+            linksCache.put(tableName, tlc);
+            TablesFinderJob job = new TablesFinderJob(tableName, tlc);
+            job.schedule();
+        }
+        if (tlc.loading) {
+            // Wait for 250ms maximum
+            for (int i = 0; i < 5; i++) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    // interrupted - just go further
+                    break;
+                }
+                if (!tlc.loading) {
+                    break;
+                }
             }
-            finderJob.join();
-
-            if (objects == null) {
-
-            }
-*/
-            try {
-                DBRRunnableWithProgress objLoader = new DBRRunnableWithProgress() {
-                    public void run(DBRProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        monitor.beginTask("Find tables", 1);
-                        try {
-                            final List<DBSTablePath> pathList = ((DBSStructureAssistant) editor.getDataSource()).findTableNames(
-                                monitor, checkWord, 10);
-                            if (!pathList.isEmpty()) {
-                                for (DBSTablePath path : pathList) {
-                                    DBSObject object = DBUtils.getTableByPath(monitor, (DBSEntityContainer) dataSource, path);
-                                    if (object != null) {
-                                        links.add(new EntityHyperlink(object, wordRegion));
-                                    }
-                                }
-                            }
-                        }
-                        catch (DBException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                        finally {
-                            monitor.done();
-                        }
-                    }
-                };
-                // Run it with dummy monitor
-                // Using detached thread (job) or running with progress service breaks hyperlinks
-                // TODO: use real progress monitor
-                objLoader.run(VoidProgressMonitor.INSTANCE);
-            }
-            catch (InvocationTargetException e) {
-                log.error(e.getTargetException());
-            }
-            catch (InterruptedException e) {
-                // do nothing
-            }
-
-            if (links.isEmpty()) {
+        }
+        if (tlc.loading) {
+            // Long task - just return no links for now
+            return null;
+        } else {
+            // If no nodes found for this word - just null result
+            if (tlc.nodes.isEmpty()) {
                 return null;
             }
-            return links.toArray(new IHyperlink[links.size()]);
+            // Check nodes (they may be disposed by refresh/delete/other node actions)
+            for (Iterator<DBNNode> i = tlc.nodes.iterator(); i.hasNext(); ) {
+                if (i.next().isDisposed()) {
+                    i.remove();
+                }
+            }
+            if (tlc.nodes.isEmpty()) {
+                // No more nodes remains - try next time
+                linksCache.remove(tableName);
+                return null;
+            }
+            // Create hyperlinks based on nodes
+            final IRegion wordRegion = new Region(wordStart, wordEnd - wordStart);
+            IHyperlink[] links = new IHyperlink[tlc.nodes.size()];
+            for (int i = 0, objectsSize = tlc.nodes.size(); i < objectsSize; i++) {
+                links[i] = new EntityHyperlink(tlc.nodes.get(i), wordRegion);
+            }
+            return links;
         }
-        return null;
+    }
+
+    @Override
+    public void dispose()
+    {
+        super.dispose();
     }
 
     private class TablesFinderJob extends DataSourceJob {
 
         private String word;
-        private List<DBSObject> objects = new ArrayList<DBSObject>();
+        private TableLookupCache cache;
 
-        protected TablesFinderJob(String word)
+        protected TablesFinderJob(String word, TableLookupCache cache)
         {
             super("Find table names for '" + word + "'", DBIcon.SQL_EXECUTE.getImageDescriptor(), editor.getDataSource());
             this.word = word;
+            this.cache = cache;
+            setUser(false);
+            setSystem(true);
         }
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
+            cache.nodes = new ArrayList<DBNNode>();
             final List<DBSTablePath> pathList;
             try {
+                DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                 pathList = ((DBSStructureAssistant) getDataSource()).findTableNames(monitor, word, 10);
                 if (!pathList.isEmpty()) {
                     for (DBSTablePath path : pathList) {
                         DBSObject object = DBUtils.getTableByPath(monitor, (DBSEntityContainer) getDataSource(), path);
                         if (object != null) {
-                            objects.add(object);
+                            DBNNode node = navigatorModel.getNodeByObject(monitor, object, true);
+                            cache.nodes.add(node);
                         }
                     }
                 }
             } catch (DBException e) {
                 log.warn(e);
             }
+            finally {
+                cache.loading = false;
+            }
             return Status.OK_STATUS;
-        }
-
-        public List<DBSObject> getObjects()
-        {
-            return objects;
         }
     }
 

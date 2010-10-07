@@ -58,6 +58,8 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      */
     private SQLAssistProposalsService fDBProposalsService;
 
+    private SQLHyperlinkDetector hyperlinkDetector;
+
     /**
      * This class implements a single token scanner.
      */
@@ -69,14 +71,6 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
     }
 
     /**
-     * Constructs an instance of this class.
-     */
-    public SQLEditorSourceViewerConfiguration()
-    {
-        this(null);
-    }
-
-    /**
      * Constructs an instance of this class with the given SQLEditor to
      * configure.
      *
@@ -85,7 +79,8 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
     public SQLEditorSourceViewerConfiguration(SQLEditor editor)
     {
         this.editor = editor;
-        completionProcessor = new SQLCompletionProcessor(this.editor);
+        this.completionProcessor = new SQLCompletionProcessor(this.editor);
+        this.hyperlinkDetector = new SQLHyperlinkDetector(this.editor);
     }
 
     /**
@@ -377,8 +372,15 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
             return null;
 
         return new IHyperlinkDetector[]{
-            new SQLHyperlinkDetector(editor),
+            hyperlinkDetector,
             new URLHyperlinkDetector()};
+    }
+
+    void onDataSourceChange()
+    {
+        if (hyperlinkDetector != null) {
+            hyperlinkDetector.clearCache();
+        }
     }
 
 }

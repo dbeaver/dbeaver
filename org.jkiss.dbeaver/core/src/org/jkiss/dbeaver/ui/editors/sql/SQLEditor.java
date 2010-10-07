@@ -791,7 +791,6 @@ public class SQLEditor extends BaseTextEditor
         SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
         SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXPLAIN);
 
-
         // Refresh syntax
         if (syntaxManager != null) {
             syntaxManager.changeDataSource(getDataSource());
@@ -806,6 +805,11 @@ public class SQLEditor extends BaseTextEditor
             } catch (BadLocationException ex) {
                 log.warn("Error refreshing projection", ex);
             }
+        }
+
+        // Update configuration
+        if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
+            ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
         }
     }
 

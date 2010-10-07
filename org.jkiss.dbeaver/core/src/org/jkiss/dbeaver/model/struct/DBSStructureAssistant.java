@@ -15,6 +15,9 @@ import java.util.List;
 public interface DBSStructureAssistant
 {
 
-    List<DBSTablePath> findTableNames(DBRProgressMonitor monitor, String tableMask, int maxResults) throws DBException;
+    List<DBSTablePath> findTableNames(
+        DBRProgressMonitor monitor,
+        String tableMask,
+        int maxResults) throws DBException;
 
 }

@@ -12,10 +12,10 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
@@ -486,8 +486,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                 String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
                 String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
                 String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
-                String tableType = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_TYPE);
-                String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
 
                 if (pathList == null) {
                     pathList = new ArrayList<DBSTablePath>();
@@ -496,9 +494,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                     new DBSTablePath(
                         catalogName,
                         schemaName,
-                        tableName,
-                        tableType,
-                        remarks));
+                        tableName));
             }
         }
         finally {
