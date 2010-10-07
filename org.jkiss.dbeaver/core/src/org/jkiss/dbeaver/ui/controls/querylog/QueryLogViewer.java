@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls.querylog;
 
+import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.LongKeyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,9 +15,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
@@ -253,6 +252,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         }
 
         createContextMenu();
+        addDragAndDropSupport();
 
         this.filter = filter;
         if (loadPastEvents) {
@@ -522,6 +522,30 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         site.registerContextMenu(menuMgr, this);
     }
 
+    public void addDragAndDropSupport()
+    {
+        Transfer[] types = new Transfer[] {TextTransfer.getInstance()};
+        int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
+
+        final DragSource source = new DragSource(logTable, operations);
+        source.setTransfer(types);
+        source.addDragListener (new DragSourceListener() {
+
+            public void dragStart(DragSourceEvent event) {
+            }
+            public void dragSetData (DragSourceEvent event) {
+                String tdt = getSelectedText(false);
+                if (!CommonUtils.isEmpty(tdt)) {
+                    event.data = tdt;
+                } else {
+                    event.data = "";
+                }
+            }
+            public void dragFinished(DragSourceEvent event) {
+            }
+        });
+    }
+
     private void clearLog()
     {
         logTable.removeAll();
@@ -536,9 +560,25 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
 
     void copySelectionToClipboard(boolean extraInfo)
     {
+        String tdt = getSelectedText(extraInfo);
+        if (CommonUtils.isEmpty(tdt)) {
+            return;
+        }
+
+        if (tdt.length() > 0) {
+            TextTransfer textTransfer = TextTransfer.getInstance();
+            Clipboard clipboard = new Clipboard(logTable.getDisplay());
+            clipboard.setContents(
+                new Object[]{tdt.toString()},
+                new Transfer[]{textTransfer});
+        }
+    }
+
+    private String getSelectedText(boolean extraInfo)
+    {
         IStructuredSelection selection = getSelection();
         if (selection.isEmpty()) {
-            return;
+            return null;
         }
         StringBuilder tdt = new StringBuilder();
         for (Iterator i = selection.iterator(); i.hasNext(); ) {
@@ -560,14 +600,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
                 tdt.append(text);
             }
         }
-
-        if (tdt.length() > 0) {
-            TextTransfer textTransfer = TextTransfer.getInstance();
-            Clipboard clipboard = new Clipboard(logTable.getDisplay());
-            clipboard.setContents(
-                new Object[]{tdt.toString()},
-                new Transfer[]{textTransfer});
-        }
+        return tdt.toString();
     }
 
 
