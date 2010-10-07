@@ -7,11 +7,16 @@ package org.jkiss.dbeaver.ui.controls.querylog;
 import net.sf.jkiss.utils.LongKeyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
@@ -19,6 +24,10 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -27,6 +36,7 @@ import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -41,6 +51,8 @@ import java.util.Iterator;
 public class QueryLogViewer extends Viewer implements QMMetaListener {
 
     static final Log log = LogFactory.getLog(QueryLogViewer.class);
+
+    private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log";
 
     private static abstract class LogColumn {
         private final String title;
@@ -186,6 +198,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         return String.valueOf(min) + " min " + String.valueOf(sec) + " sec";
     }
 
+    private final IWorkbenchPartSite site;
     private Table logTable;
     private java.util.List<ColumnDescriptor> columns = new ArrayList<ColumnDescriptor>();
     private LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<TableItem>();
@@ -197,9 +210,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
     private final Color colorGray;
     private final Font boldFont;
 
-    public QueryLogViewer(Composite parent, IQueryLogFilter filter, boolean loadPastEvents)
+    public QueryLogViewer(Composite parent, IWorkbenchPartSite site, IQueryLogFilter filter, boolean loadPastEvents)
     {
         super();
+
+        this.site = site;
 
         // Prepare colors
         ISharedTextColors sharedColors = DBeaverCore.getInstance().getSharedTextColors();
@@ -214,6 +229,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         logTable = new Table(
             parent,
             SWT.MULTI | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
+        logTable.setData(this);
         logTable.setLinesVisible(true);
         logTable.setHeaderVisible(true);
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -221,12 +237,22 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
 
         createColumns();
 
-        logTable.addDisposeListener(new DisposeListener() {
-            public void widgetDisposed(DisposeEvent e)
-            {
-                dispose();
-            }
-        });
+        {
+            // Register control in focus service (to provide handlers binding)
+            final IFocusService focusService = (IFocusService) site.getService(IFocusService.class);
+            focusService.addFocusTracker(logTable, QUERY_LOG_CONTROL_ID);
+
+            logTable.addDisposeListener(new DisposeListener() {
+                public void widgetDisposed(DisposeEvent e)
+                {
+                    // Unregister from focus service
+                    focusService.removeFocusTracker(logTable);
+                    dispose();
+                }
+            });
+        }
+
+        createContextMenu();
 
         this.filter = filter;
         if (loadPastEvents) {
@@ -288,7 +314,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
     {
     }
 
-    public ISelection getSelection()
+    public IStructuredSelection getSelection()
     {
         return new StructuredSelection(logTable.getSelection());
     }
@@ -427,25 +453,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         updateItem(object, item);
     }
 
-    private void fireNewItem(QMMObject object, TableItem item)
-    {
-
-/*
-        int selCount = logTable.getSelectionCount();
-        if (selCount > 1) {
-            return;
-        }
-        if (selCount == 1) {
-            int selIndex = logTable.getSelectionIndex();
-            if (selIndex != logTable.getItemCount() - 2) {
-                return;
-            }
-            logTable.setSelection(-1);
-        }
-        logTable.showItem(item);
-*/
-    }
-
     private void updateItem(QMMObject object, TableItem item)
     {
         item.setData(object);
@@ -456,6 +463,72 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         item.setFont(getObjectFont(object));
         item.setForeground(getObjectForeground(object));
         item.setBackground(getObjectBackground(object));
+    }
+
+    private void createContextMenu()
+    {
+        MenuManager menuMgr = new MenuManager();
+        Menu menu = menuMgr.createContextMenu(logTable);
+        menuMgr.addMenuListener(new IMenuListener() {
+            public void menuAboutToShow(IMenuManager manager)
+            {
+                IAction copyAction = new Action("Copy") {
+                    public void run()
+                    {
+                        copySelectionToClipboard(false);
+                    }
+                };
+                copyAction.setEnabled(logTable.getSelectionCount() > 0);
+                copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
+
+                IAction selectAllAction = new Action("Select All") {
+                    public void run()
+                    {
+                        selectAll();
+                    }
+                };
+                selectAllAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_SELECT_ALL);
+
+                manager.add(copyAction);
+                manager.add(selectAllAction);
+                manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+            }
+        });
+        menuMgr.setRemoveAllWhenShown(true);
+        logTable.setMenu(menu);
+        site.registerContextMenu(menuMgr, this);
+    }
+
+    void selectAll()
+    {
+        if (!logTable.isDisposed()) {
+            logTable.selectAll();
+        }
+    }
+
+    void copySelectionToClipboard(boolean extraInfo)
+    {
+        IStructuredSelection selection = getSelection();
+        if (selection.isEmpty()) {
+            return;
+        }
+        StringBuilder tdt = new StringBuilder();
+        for (Iterator i = selection.iterator(); i.hasNext(); ) {
+            TableItem item = (TableItem)i.next();
+            String text = item.getText(2);
+            if (tdt.length() > 0) {
+                tdt.append(ContentUtils.getDefaultLineSeparator());
+            }
+            tdt.append(text);
+        }
+
+        if (tdt.length() > 0) {
+            TextTransfer textTransfer = TextTransfer.getInstance();
+            Clipboard clipboard = new Clipboard(logTable.getDisplay());
+            clipboard.setContents(
+                new Object[]{tdt.toString()},
+                new Transfer[]{textTransfer});
+        }
     }
 
 }
