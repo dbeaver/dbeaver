@@ -101,11 +101,12 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        if (editor.getSyntaxManager().getKeywordType(identifier.toUpperCase()) == SQLSyntaxManager.KeywordType.KEYWORD) {
-            // Skip keywords
+        if (word.length() == 0) {
             return null;
         }
-        if (word.length() == 0) {
+
+        if (editor.getSyntaxManager().getKeywordType(identifier.toUpperCase()) == SQLSyntaxManager.KeywordType.KEYWORD) {
+            // Skip keywords
             return null;
         }
 
