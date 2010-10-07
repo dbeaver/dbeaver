@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
+import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -78,125 +79,124 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         }
     }
 
-    private static LogColumn[] ALL_COLUMNS = new LogColumn[] {
-        new LogColumn("Time", "Time at which statement was executed", 80) {
-            private DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-            String getText(QMMObject object)
-            {
-                return timeFormat.format(new Date(object.getOpenTime()));
-            }
-        },
-        new LogColumn("Type", "Event type", 100) {
-            String getText(QMMObject object)
-            {
-                return getObjectType(object);
-            }
-        },
-        new LogColumn("Text", "SQL statement text/description", 400) {
-            String getText(QMMObject object)
-            {
-                if (object instanceof QMMStatementExecuteInfo) {
-                    return SQLUtils.stripTransformations(((QMMStatementExecuteInfo)object).getQueryString());
-                } else if (object instanceof QMMTransactionInfo) {
-                    if (((QMMTransactionInfo)object).isCommited()) {
-                        return "Commit";
-                    } else {
-                        return "Rollback";
-                    }
-                } else if (object instanceof QMMTransactionSavepointInfo) {
-                    if (((QMMTransactionSavepointInfo)object).isCommited()) {
-                        return "Commit";
-                    } else {
-                        return "Rollback";
-                    }
-                } else if (object instanceof QMMSessionInfo) {
-                    DBSDataSourceContainer container = ((QMMSessionInfo) object).getContainer();
-                    if (!object.isClosed()) {
-                        return "Connected to \"" + (container == null ? "?" : container.getName()) + "\"";
-                    } else {
-                        return "Disconnected from \"" + (container == null ? "?" : container.getName()) + "\"";
-                    }
-                }
-                return "";
-            }
-        },
-        new LogColumn("Duration", "Operation execution time", 100) {
-            String getText(QMMObject object)
-            {
-                if (object instanceof QMMStatementExecuteInfo) {
-                    QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
-                    if (exec.isClosed() && !exec.isFetching()) {
-                        return String.valueOf(exec.getCloseTime() - exec.getOpenTime()) + " ms";
-                    } else {
-                        return "";
-                    }
-                } else if (object instanceof QMMTransactionInfo) {
-                    QMMTransactionInfo txn = (QMMTransactionInfo)object;
-                    if (txn.isClosed()) {
-                        return formatMinutes(txn.getCloseTime() - txn.getOpenTime());
-                    } else {
-                        return "";
-                    }
-                } else if (object instanceof QMMTransactionSavepointInfo) {
-                    QMMTransactionSavepointInfo sp = (QMMTransactionSavepointInfo)object;
-                    if (sp.isClosed()) {
-                        return formatMinutes(sp.getCloseTime() - sp.getOpenTime());
-                    } else {
-                        return "";
-                    }
-                } else if (object instanceof QMMSessionInfo) {
-                    QMMSessionInfo session = (QMMSessionInfo)object;
-                    if (session.isClosed()) {
-                        return formatMinutes(session.getCloseTime() - session.getOpenTime());
-                    } else {
-                        return "";
-                    }
-                }
-                return "";
-            }
-        },
-        new LogColumn("Rows", "Number of rows processed by statement", 120) {
-            String getText(QMMObject object)
-            {
-                if (object instanceof QMMStatementExecuteInfo) {
-                    QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
-                    if (exec.isClosed() && !exec.isFetching()) {
-                        return String.valueOf(exec.getRowCount());
-                    }
-                }
-                return "";
-            }
-        },
-        new LogColumn("Result", "Execution result", 120) {
-            String getText(QMMObject object)
-            {
-                if (object instanceof QMMStatementExecuteInfo) {
-                    QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
-                    if (exec.isClosed()) {
-                        if (exec.hasError()) {
-                            if (exec.getErrorCode() == 0) {
-                                return exec.getErrorMessage();
-                            } else if (exec.getErrorMessage() == null) {
-                                return "Error [" + exec.getErrorCode() + "]";
-                            } else {
-                                return "[" + exec.getErrorCode() + "] " + exec.getErrorMessage();
-                            }
-                        } else {
-                            return "Success";
-                        }
-                    }
-                }
-                return "";
-            }
-        },
+    private static LogColumn COLUMN_TIME = new LogColumn("Time", "Time at which statement was executed", 80) {
+        private DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+        String getText(QMMObject object)
+        {
+            return timeFormat.format(new Date(object.getOpenTime()));
+        }
     };
-
-    private static String formatMinutes(long ms)
-    {
-        long min = ms / 1000 / 60;
-        long sec = (ms - min * 1000 * 60) / 1000;
-        return String.valueOf(min) + " min " + String.valueOf(sec) + " sec";
-    }
+    private static LogColumn COLUMN_TYPE = new LogColumn("Type", "Event type", 100) {
+        String getText(QMMObject object)
+        {
+            return getObjectType(object);
+        }
+    };
+    private static LogColumn COLUMN_TEXT = new LogColumn("Text", "SQL statement text/description", 400) {
+        String getText(QMMObject object)
+        {
+            if (object instanceof QMMStatementExecuteInfo) {
+                return SQLUtils.stripTransformations(((QMMStatementExecuteInfo)object).getQueryString());
+            } else if (object instanceof QMMTransactionInfo) {
+                if (((QMMTransactionInfo)object).isCommited()) {
+                    return "Commit";
+                } else {
+                    return "Rollback";
+                }
+            } else if (object instanceof QMMTransactionSavepointInfo) {
+                if (((QMMTransactionSavepointInfo)object).isCommited()) {
+                    return "Commit";
+                } else {
+                    return "Rollback";
+                }
+            } else if (object instanceof QMMSessionInfo) {
+                DBSDataSourceContainer container = ((QMMSessionInfo) object).getContainer();
+                if (!object.isClosed()) {
+                    return "Connected to \"" + (container == null ? "?" : container.getName()) + "\"";
+                } else {
+                    return "Disconnected from \"" + (container == null ? "?" : container.getName()) + "\"";
+                }
+            }
+            return "";
+        }
+    };
+    private static LogColumn COLUMN_DURATION = new LogColumn("Duration", "Operation execution time", 100) {
+        String getText(QMMObject object)
+        {
+            if (object instanceof QMMStatementExecuteInfo) {
+                QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
+                if (exec.isClosed() && !exec.isFetching()) {
+                    return String.valueOf(exec.getCloseTime() - exec.getOpenTime()) + " ms";
+                } else {
+                    return "";
+                }
+            } else if (object instanceof QMMTransactionInfo) {
+                QMMTransactionInfo txn = (QMMTransactionInfo)object;
+                if (txn.isClosed()) {
+                    return formatMinutes(txn.getCloseTime() - txn.getOpenTime());
+                } else {
+                    return "";
+                }
+            } else if (object instanceof QMMTransactionSavepointInfo) {
+                QMMTransactionSavepointInfo sp = (QMMTransactionSavepointInfo)object;
+                if (sp.isClosed()) {
+                    return formatMinutes(sp.getCloseTime() - sp.getOpenTime());
+                } else {
+                    return "";
+                }
+            } else if (object instanceof QMMSessionInfo) {
+                QMMSessionInfo session = (QMMSessionInfo)object;
+                if (session.isClosed()) {
+                    return formatMinutes(session.getCloseTime() - session.getOpenTime());
+                } else {
+                    return "";
+                }
+            }
+            return "";
+        }
+    };
+    private static LogColumn COLUMN_ROWS = new LogColumn("Rows", "Number of rows processed by statement", 120) {
+        String getText(QMMObject object)
+        {
+            if (object instanceof QMMStatementExecuteInfo) {
+                QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
+                if (exec.isClosed() && !exec.isFetching()) {
+                    return String.valueOf(exec.getRowCount());
+                }
+            }
+            return "";
+        }
+    };
+    private static LogColumn COLUMN_RESULT = new LogColumn("Result", "Execution result", 120) {
+        String getText(QMMObject object)
+        {
+            if (object instanceof QMMStatementExecuteInfo) {
+                QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo)object;
+                if (exec.isClosed()) {
+                    if (exec.hasError()) {
+                        if (exec.getErrorCode() == 0) {
+                            return exec.getErrorMessage();
+                        } else if (exec.getErrorMessage() == null) {
+                            return "Error [" + exec.getErrorCode() + "]";
+                        } else {
+                            return "[" + exec.getErrorCode() + "] " + exec.getErrorMessage();
+                        }
+                    } else {
+                        return "Success";
+                    }
+                }
+            }
+            return "";
+        }
+    };
+    private static LogColumn[] ALL_COLUMNS = new LogColumn[] {
+        COLUMN_TIME,
+        COLUMN_TYPE,
+        COLUMN_TEXT,
+        COLUMN_DURATION,
+        COLUMN_ROWS,
+        COLUMN_RESULT,
+    };
 
     private final IWorkbenchPartSite site;
     private Table logTable;
@@ -316,7 +316,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
 
     public IStructuredSelection getSelection()
     {
-        return new StructuredSelection(logTable.getSelection());
+        TableItem[] items = logTable.getSelection();
+        QMMObject[] data = new QMMObject[items.length];
+        for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
+            data[i] = (QMMObject)items[i].getData();
+        }
+        return new StructuredSelection(data);
     }
 
     public void setSelection(ISelection selection, boolean reveal)
@@ -481,6 +486,15 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
                 copyAction.setEnabled(logTable.getSelectionCount() > 0);
                 copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
 
+                IAction copyAllAction = new Action("Copy All Fields") {
+                    public void run()
+                    {
+                        copySelectionToClipboard(true);
+                    }
+                };
+                copyAllAction.setEnabled(logTable.getSelectionCount() > 0);
+                copyAllAction.setActionDefinitionId(ICommandIds.CMD_COPY_SPECIAL);
+
                 IAction selectAllAction = new Action("Select All") {
                     public void run()
                     {
@@ -490,6 +504,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
                 selectAllAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_SELECT_ALL);
 
                 manager.add(copyAction);
+                manager.add(copyAllAction);
                 manager.add(selectAllAction);
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
             }
@@ -514,12 +529,23 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         }
         StringBuilder tdt = new StringBuilder();
         for (Iterator i = selection.iterator(); i.hasNext(); ) {
-            TableItem item = (TableItem)i.next();
-            String text = item.getText(2);
+            QMMObject item = (QMMObject)i.next();
             if (tdt.length() > 0) {
                 tdt.append(ContentUtils.getDefaultLineSeparator());
             }
-            tdt.append(text);
+            if (extraInfo) {
+                for (int i1 = 0, columnsSize = columns.size(); i1 < columnsSize; i1++) {
+                    ColumnDescriptor cd = columns.get(i1);
+                    String text = cd.logColumn.getText(item);
+                    if (i1 > 0) {
+                        tdt.append('\t');
+                    }
+                    tdt.append(text);
+                }
+            } else {
+                String text = COLUMN_TEXT.getText(item);
+                tdt.append(text);
+            }
         }
 
         if (tdt.length() > 0) {
@@ -531,4 +557,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         }
     }
 
+
+    private static String formatMinutes(long ms)
+    {
+        long min = ms / 1000 / 60;
+        long sec = (ms - min * 1000 * 60) / 1000;
+        return String.valueOf(min) + " min " + String.valueOf(sec) + " sec";
+    }
 }
