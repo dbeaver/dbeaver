@@ -53,6 +53,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
     static final Log log = LogFactory.getLog(QueryLogViewer.class);
 
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log";
+    private DragSource dndSource;
 
     private static abstract class LogColumn {
         private final String title;
@@ -282,12 +283,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
     private void dispose()
     {
         QMUtils.unregisterMetaListener(this);
-        if (!logTable.isDisposed()) {
-            logTable.dispose();
-        }
-        if (!boldFont.isDisposed()) {
-            boldFont.dispose();
-        }
+        UIUtils.dispose(dndSource);
+        UIUtils.dispose(logTable);
+        UIUtils.dispose(boldFont);
     }
 
     public IQueryLogFilter getFilter()
@@ -527,9 +525,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         Transfer[] types = new Transfer[] {TextTransfer.getInstance()};
         int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
-        final DragSource source = new DragSource(logTable, operations);
-        source.setTransfer(types);
-        source.addDragListener (new DragSourceListener() {
+        dndSource = new DragSource(logTable, operations);
+        dndSource.setTransfer(types);
+        dndSource.addDragListener (new DragSourceListener() {
 
             public void dragStart(DragSourceEvent event) {
             }
