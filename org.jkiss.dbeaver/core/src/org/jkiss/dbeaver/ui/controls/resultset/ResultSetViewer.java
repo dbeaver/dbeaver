@@ -993,6 +993,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         } else {
             // Mark row as deleted
             removedRows.add(rowInfo);
+            // Move one row down (if we are in grid mode)
+            if (mode == ResultSetMode.GRID && curPos.row < spreadsheet.getItemCount() - 1) {
+                curPos.row++;
+                spreadsheet.setCursor(curPos, false);
+            }
         }
         spreadsheet.redrawGrid();
         updateEditControls();
