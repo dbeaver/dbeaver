@@ -435,7 +435,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.initResultSet();
 
         if (mode == ResultSetMode.GRID) {
-            if (curRowNum >= 0) {
+            if (curRowNum >= 0 && curRowNum < spreadsheet.getItemCount()) {
                 spreadsheet.setCursor(new GridPos(0, curRowNum), false);
             }
         }
@@ -684,7 +684,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     {
         final int columnIndex = (mode == ResultSetMode.GRID ? cell.col : cell.row);
         final int rowIndex = (mode == ResultSetMode.GRID ? cell.row : curRowNum);
-        if (rowIndex >= curRows.size() || columnIndex >= metaColumns.length) {
+        if (rowIndex < 0 || rowIndex >= curRows.size() || columnIndex < 0 || columnIndex >= metaColumns.length) {
             // Out of bounds
             log.debug("Editor position is out of bounds (" + columnIndex + ":" + rowIndex + ")");
             return false;

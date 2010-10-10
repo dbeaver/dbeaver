@@ -114,6 +114,9 @@
         <command id="org.jkiss.dbeaver.core.resultset.row.last" name="Last Row" description="Move to last row"/>
 
         <command id="org.jkiss.dbeaver.core.edit.copy.special" name="Copy full qualified name" description="Copy special"/>
+
+        <command id="org.jkiss.dbeaver.core.qm.filter" name="Filters ..." description="Set query manager filter"/>
+        <command id="org.jkiss.dbeaver.core.qm.clear" name="Clear log" description="Clear query manager log"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -146,6 +149,9 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.row.previous" icon="icons/sql/resultset_previous.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.next" icon="icons/sql/resultset_next.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.last" icon="icons/sql/resultset_last.png"/>
+
+        <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="icons/misc/filter.png"/>
+        <image commandId="org.jkiss.dbeaver.core.qm.clear" icon="IMG_ETOOL_CLEAR"/>
     </extension>
 
     <extension point="org.eclipse.core.expressions.definitions">
@@ -157,6 +163,11 @@
         <definition id="org.jkiss.dbeaver.core.ui.querylog.control">
             <with variable="activeFocusControlId">
                 <equals value="org.jkiss.dbeaver.ui.qm.log"/>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.querylog.view">
+            <with variable="activePart">
+                <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
             </with>
         </definition>
     </extension>
@@ -215,6 +226,14 @@
 
         <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerDriverManager"/>
         <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerNewConnection"/>
+
+        <handler commandId="org.eclipse.ui.navigate.collapseAll" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCollapseAll">
+            <enabledWhen>
+                <with variable="activePart">
+                    <instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView"/>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.navigator.linkeditor" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerLinkEditor">
             <enabledWhen>
                 <with variable="activeEditor">
@@ -486,7 +505,7 @@
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
         </handler>
 
-        <!-- Query log view handlers -->
+        <!-- Query log control handlers -->
         <handler commandId="org.eclipse.ui.edit.selectAll" class="org.jkiss.dbeaver.ui.controls.querylog.QueryLogCommandHandler">
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.control"/></activeWhen>
         </handler>
@@ -495,6 +514,14 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.controls.querylog.QueryLogCommandHandler">
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.control"/></activeWhen>
+        </handler>
+
+        <!-- Query log view handlers -->
+        <handler commandId="org.jkiss.dbeaver.core.qm.filter" class="org.jkiss.dbeaver.ui.views.qm.QueryManagerFilterHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.view"/></activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.qm.clear" class="org.jkiss.dbeaver.ui.views.qm.QueryManagerClearHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.view"/></activeWhen>
         </handler>
     </extension>
 
@@ -556,6 +583,7 @@
             <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
             <command commandId="org.jkiss.dbeaver.core.new.connection"/>
             <separator name="additions" visible="true"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
         </menuContribution>
 
@@ -563,6 +591,7 @@
             <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
             <command commandId="org.jkiss.dbeaver.core.new.connection"/>
             <separator name="additions" visible="true"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
         </menuContribution>
 
@@ -702,6 +731,20 @@
             <separator name="execute" visible="true"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
+        </menuContribution>
+
+        <!-- QM menu & toolbar -->
+
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.queryManager">
+            <command commandId="org.jkiss.dbeaver.core.qm.filter"/>
+            <command commandId="org.jkiss.dbeaver.core.qm.clear"/>
+            <separator name="additions" visible="true"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.queryManager">
+            <command commandId="org.jkiss.dbeaver.core.qm.filter"/>
+            <command commandId="org.jkiss.dbeaver.core.qm.clear"/>
+            <separator name="additions" visible="true"/>
         </menuContribution>
 
     </extension>

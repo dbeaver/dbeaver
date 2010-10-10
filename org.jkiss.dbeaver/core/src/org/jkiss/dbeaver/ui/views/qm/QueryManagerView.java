@@ -15,6 +15,11 @@ public class QueryManagerView extends ViewPart
 
     private QueryLogViewer queryLogViewer;
 
+    public QueryLogViewer getQueryLogViewer()
+    {
+        return queryLogViewer;
+    }
+
     public void createPartControl(Composite parent)
     {
         Composite group = UIUtils.createPlaceholder(parent, 1);
@@ -27,4 +32,8 @@ public class QueryManagerView extends ViewPart
         queryLogViewer.getControl().setFocus();
     }
 
+    public void openFilterDialog()
+    {
+        UIUtils.showMessageBox(getSite().getShell(), "Filters", "Filters");
+    }
 }

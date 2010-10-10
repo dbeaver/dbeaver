@@ -544,19 +544,19 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         });
     }
 
-    private void clearLog()
+    public void clearLog()
     {
         logTable.removeAll();
     }
 
-    void selectAll()
+    public void selectAll()
     {
         if (!logTable.isDisposed()) {
             logTable.selectAll();
         }
     }
 
-    void copySelectionToClipboard(boolean extraInfo)
+    public void copySelectionToClipboard(boolean extraInfo)
     {
         String tdt = getSelectedText(extraInfo);
         if (CommonUtils.isEmpty(tdt)) {
