@@ -353,13 +353,18 @@ public class UIUtils {
 
     public static Text createLabelText(Composite parent, String label, String value, int style)
     {
+        return createLabelText(parent, label, value, style, GridData.FILL_HORIZONTAL);
+    }
+
+    public static Text createLabelText(Composite parent, String label, String value, int style, int layoutStyle)
+    {
         createControlLabel(parent, label);
 
         Text text = new Text(parent, style);
         text.setText(value);
 
-        if (parent.getLayout() instanceof GridLayout) {
-            text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if (layoutStyle != 0 && parent.getLayout() instanceof GridLayout) {
+            text.setLayoutData(new GridData(layoutStyle));
         }
 
         return text;
@@ -372,12 +377,21 @@ public class UIUtils {
 
     public static Button createLabelCheckbox(Composite parent, String label, boolean checked, int style)
     {
-        createControlLabel(parent, label);
+        Label labelControl = createControlLabel(parent, label);
+        labelControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Button button = new Button(parent, SWT.CHECK | style);
+        final Button button = new Button(parent, SWT.CHECK | style);
         if (checked) {
             button.setSelection(true);
         }
+        labelControl.addMouseListener(new MouseAdapter() {
+            public void mouseUp(MouseEvent e)
+            {
+                if (!button.isDisposed() && button.isVisible() && button.isEnabled()) {
+                    button.setSelection(!button.getSelection());
+                }
+            }
+        });
 
         return button;
     }
@@ -410,10 +424,15 @@ public class UIUtils {
 
     public static Composite createPlaceholder(Composite parent, int columns)
     {
+        return createPlaceholder(parent, columns, 0);
+    }
+
+    public static Composite createPlaceholder(Composite parent, int columns, int spacing)
+    {
         Composite ph = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(columns, false);
-        gl.verticalSpacing = 0;
-        gl.horizontalSpacing = 0;
+        gl.verticalSpacing = spacing;
+        gl.horizontalSpacing = spacing;
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         ph.setLayout(gl);

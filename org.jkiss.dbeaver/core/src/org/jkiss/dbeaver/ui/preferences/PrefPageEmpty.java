@@ -11,13 +11,13 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
- * PrefPageMain
+ * PrefPageEmpty
  */
-public class PrefPageMain extends PreferencePage implements IWorkbenchPreferencePage
+public class PrefPageEmpty extends PreferencePage implements IWorkbenchPreferencePage
 {
-    public static final String PAGE_ID = "org.jkiss.dbeaver.ui.preferences.PrefPageMain";
+    public static final String PAGE_ID = "org.jkiss.dbeaver.ui.preferences.PrefPageEmpty";
 
-    public PrefPageMain()
+    public PrefPageEmpty()
     {
         super();
     }

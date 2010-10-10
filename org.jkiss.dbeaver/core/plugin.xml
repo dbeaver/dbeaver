@@ -54,33 +54,31 @@
 
     </extension>
     <extension point="org.eclipse.ui.views">
+        <category id="org.jkiss.dbeaver.core.category" name="DBeaver Core View Category"/>
         <view
-                allowMultiple="false"
-                category="org.jkiss.dbeaver.core.category"
-                class="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"
-                icon="icons/misc/sql.png"
-                id="org.jkiss.dbeaver.core.queryManager"
-                name="Query Manager">
-        </view>
-        <view
-                allowMultiple="false"
+                id="org.jkiss.dbeaver.core.databaseNavigator"
                 category="org.jkiss.dbeaver.core.category"
                 class="org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView"
+                allowMultiple="false"
                 icon="icons/database_navigator.png"
-                id="org.jkiss.dbeaver.core.databaseNavigator"
                 name="Database Navigator">
         </view>
         <view
-                allowMultiple="false"
+                id="org.jkiss.dbeaver.core.projectNavigator"
                 category="org.jkiss.dbeaver.core.category"
                 class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView"
+                allowMultiple="false"
                 icon="icons/projects.png"
-                id="org.jkiss.dbeaver.core.projectNavigator"
                 name="Projects">
         </view>
-
-        <category id="org.jkiss.dbeaver.core.category" name="DBeaver Core Category">
-        </category>
+        <view
+                id="org.jkiss.dbeaver.core.queryManager"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"
+                allowMultiple="false"
+                icon="icons/misc/sql.png"
+                name="Query Manager">
+        </view>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
@@ -172,9 +170,7 @@
         </definition>
     </extension>
 
-    <extension
-          id="activeFocusControl"
-          point="org.eclipse.ui.handlers">
+    <extension point="org.eclipse.ui.handlers">
         <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopyName">
             <activeWhen>
                 <with variable="selection">
@@ -750,12 +746,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
-        <scheme
-                description="DBeaver accelerators"
-                id="DBeaverKeyScheme"
-                name="DBeaver"
-                parentId="org.eclipse.ui.defaultAcceleratorConfiguration">
-        </scheme>
+        <scheme id="DBeaverKeyScheme" name="DBeaver" parentId="org.eclipse.ui.defaultAcceleratorConfiguration" description="DBeaver accelerators"/>
 
         <key commandId="org.jkiss.dbeaver.core.resultset.row.first" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_LEFT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.previous" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_LEFT"/>
@@ -772,24 +763,9 @@
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+O"/>
 
         <key commandId="org.eclipse.ui.navigate.backwardHistory" contextId="org.eclipse.ui.contexts.window" schemeId="DBeaverKeyScheme" sequence="ALT+CTRL+ARROW_LEFT"/>
-        <key
-                commandId="org.eclipse.ui.navigate.forwardHistory"
-                contextId="org.eclipse.ui.contexts.window"
-                schemeId="DBeaverKeyScheme"
-                sequence="ALT+CTRL+ARROW_RIGHT">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.text.gotoLastEditPosition"
-                contextId="org.eclipse.ui.contexts.window"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+SHIFT+BS">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.text.goto.line"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+G">
-        </key>
+        <key commandId="org.eclipse.ui.navigate.forwardHistory" contextId="org.eclipse.ui.contexts.window" schemeId="DBeaverKeyScheme" sequence="ALT+CTRL+ARROW_RIGHT"/>
+        <key commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" contextId="org.eclipse.ui.contexts.window" schemeId="DBeaverKeyScheme" sequence="CTRL+SHIFT+BS"/>
+        <key commandId="org.eclipse.ui.edit.text.goto.line" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="CTRL+G"/>
         <key
                 commandId="org.eclipse.ui.edit.findNext"
                 contextId="org.eclipse.ui.textEditorScope"
@@ -957,47 +933,17 @@
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
-        <page
-                id="org.jkiss.dbeaver.preferences.main"
-                class="org.jkiss.dbeaver.ui.preferences.PrefPageMain"
-                name="Database Management">
-        </page>
-        <page
-                category="org.jkiss.dbeaver.preferences.main"
-                id="org.jkiss.dbeaver.preferences.main.common"
-                class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon"
-                name="Common">
-        </page>
-        <page
-                category="org.jkiss.dbeaver.preferences.main"
-                id="org.jkiss.dbeaver.preferences.main.dataformat"
-                class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat"
-                name="Data Formats">
-        </page>
+        <page id="org.jkiss.dbeaver.preferences.main" class="org.jkiss.dbeaver.ui.preferences.PrefPageEmpty" name="Database Management"/>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.common" class="org.jkiss.dbeaver.ui.preferences.PrefPageCommon" name="Common"/>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.dataformat" class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat" name="Data Formats"/>
         
-        <page
-                id="org.jkiss.dbeaver.preferences.editors"
-                class="org.jkiss.dbeaver.ui.preferences.PrefPageMain"
-                name="Editors">
-        </page>
-        <page
-                category="org.jkiss.dbeaver.preferences.editors"
-                id="org.jkiss.dbeaver.preferences.main.sqleditor"
-                class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor"
-                name="SQL Editor">
-        </page>
-        <page
-                category="org.jkiss.dbeaver.preferences.editors"
-                id="org.jkiss.dbeaver.preferences.main.contenteditor"
-                class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor"
-                name="Content Editor">
-        </page>
-        <page
-                category="org.jkiss.dbeaver.preferences.editors"
-                id="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
-                class="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage"
-                name="Binary Editor">
-        </page>
+        <page id="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.preferences.PrefPageEmpty" name="Editors"/>
+        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" name="SQL Editor"/>
+        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.contenteditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor" name="Content Editor"/>
+        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.PreferencesPage" name="Binary Editor"/>
+
+        <page id="org.jkiss.dbeaver.preferences.misc" class="org.jkiss.dbeaver.ui.preferences.PrefPageEmpty" name="Miscellaneous"/>
+        <page category="org.jkiss.dbeaver.preferences.misc" id="org.jkiss.dbeaver.preferences.misc.qm" class="org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager" name="Query Manager"/>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
@@ -1031,6 +977,11 @@
               <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
            </enabledWhen>
         </page>
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager" id="org.jkiss.dbeaver.preferences.main.qm" name="Query Manager">
+           <enabledWhen>
+              <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
+           </enabledWhen>
+        </page>
     </extension>
 
     <extension point="org.eclipse.ui.elementFactories">
@@ -1038,25 +989,16 @@
     </extension>
 
     <extension point="org.eclipse.ui.views.properties.tabbed.propertyContributor">
-        <propertyContributor
-                contributorId="org.jkiss.dbeaver.core.propertyViewContributor"
-                tabDescriptorProvider="org.jkiss.dbeaver.ui.views.properties.PropertyTabDescriptorProvider">
+        <propertyContributor contributorId="org.jkiss.dbeaver.core.propertyViewContributor" tabDescriptorProvider="org.jkiss.dbeaver.ui.views.properties.PropertyTabDescriptorProvider">
             <propertyCategory category="core-properties"/>
         </propertyContributor>
     </extension>
 
     <extension point="org.eclipse.ui.themes">
-        <themeElementCategory
-                label="SQL Editor"
-                id="org.jkiss.dbeaver.ui.presentation.sql">
-            <description>
-                SQL Editor
-            </description>
+        <themeElementCategory label="SQL Editor" id="org.jkiss.dbeaver.ui.presentation.sql">
+            <description>SQL Editor</description>
         </themeElementCategory>
-        <fontDefinition
-                label="ResultSet grid font"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                id="org.jkiss.dbeaver.sql.resultset.font">
+        <fontDefinition id="org.jkiss.dbeaver.sql.resultset.font" categoryId="org.jkiss.dbeaver.ui.presentation.sql" label="ResultSet grid font">
             <description>The grid font is used for result set cells, header and rows number.</description>
         </fontDefinition>
         <colorDefinition
@@ -1264,12 +1206,8 @@
                 label="SQL">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSTable"/>
             <propertyGroup label="General">
-                <property id="escape" label="Escape character" type="string"
-                          description="Character which escapes single quote character" defaultValue="\"
-                          required="true"/>
-                <property id="rowsInStatement" label="Data rows per statement" type="numeric"
-                          description="Number of data rows per single insert statement" defaultValue="10"
-                          required="true"/>
+                <property id="escape" label="Escape character" type="string" description="Character which escapes single quote character" defaultValue="\" required="true"/>
+                <property id="rowsInStatement" label="Data rows per statement" type="numeric" description="Number of data rows per single insert statement" defaultValue="10" required="true"/>
             </propertyGroup>
         </export>
     </extension>

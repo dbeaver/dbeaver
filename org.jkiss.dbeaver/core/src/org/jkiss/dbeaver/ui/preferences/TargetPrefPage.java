@@ -17,7 +17,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -145,17 +144,10 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
      */
     protected Control createContents(Composite parent)
     {
-        Composite composite = new Composite(parent, SWT.NONE);
-        GridLayout layout = new GridLayout();
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
-        composite.setLayout(layout);
-        composite.setFont(parent.getFont());
-
-        GridData data = new GridData(GridData.FILL, GridData.FILL, true, true);
+        Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         configurationBlockControl = createPreferenceContent(composite);
-        configurationBlockControl.setLayoutData(data);
+        configurationBlockControl.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
 
         if (isDataSourcePreferencePage()) {
             boolean useProjectSettings = hasDataSourceSpecificOptions(getDataSourceContainer());
