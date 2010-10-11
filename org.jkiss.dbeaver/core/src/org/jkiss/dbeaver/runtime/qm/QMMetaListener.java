@@ -5,12 +5,13 @@
 package org.jkiss.dbeaver.runtime.qm;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * DBC meta events listener
  */
 public interface QMMetaListener {
 
-    void metaInfoChanged(Collection<QMMetaEvent> events);
+    void metaInfoChanged(List<QMMetaEvent> events);
 
 }

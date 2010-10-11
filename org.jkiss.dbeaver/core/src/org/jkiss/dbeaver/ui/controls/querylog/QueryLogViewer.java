@@ -8,7 +8,12 @@ import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.LongKeyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -25,14 +30,19 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.List;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.SQLUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.qm.QMConstants;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
@@ -43,10 +53,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * QueryLogViewer
@@ -56,7 +63,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
     static final Log log = LogFactory.getLog(QueryLogViewer.class);
 
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log";
-    private DragSource dndSource;
 
     private static abstract class LogColumn {
         private final String title;
@@ -212,6 +218,16 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
     private final Color colorLightYellow;
     private final Color colorGray;
     private final Font boldFont;
+    private DragSource dndSource;
+
+    private boolean showSessions = false;
+    private boolean showTransactions = false;
+    private boolean showScripts = false;
+    private boolean showQueries = false;
+
+    private java.util.List<DBCExecutionPurpose> showPurposes = new ArrayList<DBCExecutionPurpose>();
+
+    private int entriesPerPage = 0;
 
     public QueryLogViewer(Composite parent, IWorkbenchPartSite site, IQueryLogFilter filter, boolean loadPastEvents)
     {
@@ -260,7 +276,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
         this.filter = filter;
         if (loadPastEvents) {
-            metaInfoChanged(QMUtils.getPastMetaEvents());
+            reloadEvents();
         }
         QMUtils.registerMetaListener(this);
 
@@ -400,36 +416,72 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         return null;
     }
 
-    public void metaInfoChanged(Collection<QMMetaEvent> events)
+    private void reloadEvents()
+    {
+        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+
+        java.util.List<String> objectTypes = CommonUtils.splitString(store.getString(QMConstants.PROP_OBJECT_TYPES), ',');
+        this.showSessions = objectTypes.contains(QMConstants.OBJECT_TYPE_SESSION);
+        this.showTransactions = objectTypes.contains(QMConstants.OBJECT_TYPE_TRANSACTION);
+        this.showScripts = objectTypes.contains(QMConstants.OBJECT_TYPE_SCRIPT);
+        this.showQueries = objectTypes.contains(QMConstants.OBJECT_TYPE_QUERY);
+
+        this.showPurposes.clear();
+        for (String queryType : CommonUtils.splitString(store.getString(QMConstants.PROP_QUERY_TYPES), ',')) {
+            try {
+                this.showPurposes.add(DBCExecutionPurpose.valueOf(queryType));
+            } catch (IllegalArgumentException e) {
+                log.warn(e);
+            }
+        }
+
+        this.entriesPerPage = store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE);
+
+        metaInfoChanged(QMUtils.getPastMetaEvents());
+    }
+
+    public void metaInfoChanged(java.util.List<QMMetaEvent> events)
     {
         if (logTable.isDisposed()) {
             return;
         }
         logTable.setRedraw(false);
         try {
-            for (QMMetaEvent event : events) {
+            // Add events in reverse order
+            int eventsAdded = 0;
+            for (int i = events.size(); i > 0; i--) {
+                if (eventsAdded >= entriesPerPage) {
+                    // Do not add remaining (older) events - they don't fit page anyway
+                    break;
+                }
+                QMMetaEvent event = events.get(i - 1);
                 if (filter != null && !filter.accept(event)) {
-                    return;
+                    continue;
                 }
                 QMMObject object = event.getObject();
                 if (object instanceof QMMStatementExecuteInfo) {
-                    createOrUpdateItem(object);
+                    if (createOrUpdateItem(object)) {
+                        eventsAdded++;
+                    }
                 } else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo) {
-                    createOrUpdateItem(object);
+                    if (createOrUpdateItem(object)) {
+                        eventsAdded++;
+                    }
                     // Update all dependent statements
                     if (object instanceof QMMTransactionInfo) {
-                        for (QMMTransactionSavepointInfo savepoint = ((QMMTransactionInfo)object).getCurrentSavepoint(); savepoint != null; savepoint = savepoint.getPrevious()) {
+                        for (QMMTransactionSavepointInfo savepoint = ((QMMTransactionInfo) object).getCurrentSavepoint(); savepoint != null; savepoint = savepoint.getPrevious()) {
                             updateExecutions(savepoint);
                         }
 
                     } else {
-                        updateExecutions((QMMTransactionSavepointInfo)object);
+                        updateExecutions((QMMTransactionSavepointInfo) object);
                     }
                 } else if (object instanceof QMMSessionInfo) {
                     QMMetaEvent.Action action = event.getAction();
                     if (action == QMMetaEvent.Action.BEGIN || action == QMMetaEvent.Action.END) {
                         TableItem item = new TableItem(logTable, SWT.NONE, 0);
                         updateItem(object, item);
+                        eventsAdded++;
                     }
                 }
             }
@@ -452,14 +504,17 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         }
     }
 
-    private void createOrUpdateItem(QMMObject object)
+    private boolean createOrUpdateItem(QMMObject object)
     {
+        boolean create = false;
         TableItem item = objectToItemMap.get(object.getObjectId());
         if (item == null) {
             item = new TableItem(logTable, SWT.NONE, 0);
             objectToItemMap.put(object.getObjectId(), item);
+            create = true;
         }
         updateItem(object, item);
+        return create;
     }
 
     private void updateItem(QMMObject object, TableItem item)
@@ -607,7 +662,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         return tdt.toString();
     }
 
-
     private static String formatMinutes(long ms)
     {
         long min = ms / 1000 / 60;
@@ -615,10 +669,36 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         return String.valueOf(min) + " min " + String.valueOf(sec) + " sec";
     }
 
-    public void propertyChange(PropertyChangeEvent event)
+    private ConfigRefreshJob configRefreshJob = null;
+
+    public synchronized void propertyChange(PropertyChangeEvent event)
     {
         if (event.getProperty().startsWith(QMConstants.PROP_PREFIX)) {
-            
+            // Many properties could be changed at once
+            // So here we just schedule single refresh job
+            if (configRefreshJob == null) {
+                configRefreshJob = new ConfigRefreshJob();
+                configRefreshJob.schedule(250);
+                configRefreshJob.addJobChangeListener(new JobChangeAdapter() {
+                    @Override
+                    public void done(IJobChangeEvent event)
+                    {
+                        configRefreshJob = null;
+                    }
+                });
+            }
+        }
+    }
+
+    private class ConfigRefreshJob extends AbstractUIJob {
+        protected ConfigRefreshJob()
+        {
+            super("Reload QM event log");
+        }
+        protected IStatus runInUIThread(DBRProgressMonitor monitor)
+        {
+            reloadEvents();
+            return Status.OK_STATUS;
         }
     }
 

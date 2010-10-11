@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
 import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Query Manager utils
@@ -46,7 +47,7 @@ public class QMUtils {
         DBeaverCore.getInstance().getQueryManager().unregisterMetaListener(metaListener);
     }
 
-    public static Collection<QMMetaEvent> getPastMetaEvents()
+    public static List<QMMetaEvent> getPastMetaEvents()
     {
         return DBeaverCore.getInstance().getQueryManager().getPastMetaEvents();
     }
