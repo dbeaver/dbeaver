@@ -6,9 +6,12 @@ package org.jkiss.dbeaver.runtime.qm;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
 
 import java.lang.reflect.InvocationHandler;
@@ -93,6 +96,20 @@ public class QMControllerImpl implements QMController {
     List<QMExecutionHandler> getHandlers()
     {
         return handlers;
+    }
+
+    public void initDefaultPreferences(IPreferenceStore store)
+    {
+        RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);
+        RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_ENTRIES_PER_PAGE, 200);
+        RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_OBJECT_TYPES,
+            QMConstants.OBJECT_TYPE_SESSION + "," +
+            QMConstants.OBJECT_TYPE_TRANSACTION + "," +
+            QMConstants.OBJECT_TYPE_QUERY + "," +
+            QMConstants.OBJECT_TYPE_SCRIPT);
+        RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_QUERY_TYPES,
+            DBCExecutionPurpose.USER + "," +
+            DBCExecutionPurpose.USER_SCRIPT);
     }
 
     private class NotifyInvocationHandler implements InvocationHandler {

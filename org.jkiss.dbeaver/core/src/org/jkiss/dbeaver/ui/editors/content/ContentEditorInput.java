@@ -31,9 +31,9 @@ import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.*;
 
@@ -209,10 +209,10 @@ public class ContentEditorInput implements IPathEditorInput, IDatabaseEditorInpu
             ContentUtils.saveContentToFile(
                 contentFile.getContents(true),
                 file,
-                DBeaverUtils.makeMonitor(monitor));
+                RuntimeUtils.makeMonitor(monitor));
         }
         catch (IOException e) {
-            throw new CoreException(DBeaverUtils.makeExceptionStatus(e));
+            throw new CoreException(RuntimeUtils.makeExceptionStatus(e));
         }
     }
 
@@ -231,7 +231,7 @@ public class ContentEditorInput implements IPathEditorInput, IDatabaseEditorInpu
                 File intFile = contentFile.getLocation().toFile();
                 OutputStream outputStream = new FileOutputStream(intFile);
                 try {
-                    ContentUtils.copyStreams(inputStream, extFile.length(), outputStream, DBeaverUtils.makeMonitor(monitor));
+                    ContentUtils.copyStreams(inputStream, extFile.length(), outputStream, RuntimeUtils.makeMonitor(monitor));
                 }
                 finally {
                     outputStream.close();
@@ -249,7 +249,7 @@ public class ContentEditorInput implements IPathEditorInput, IDatabaseEditorInpu
             }
         }
         catch (Throwable e) {
-            throw new CoreException(DBeaverUtils.makeExceptionStatus(e));
+            throw new CoreException(RuntimeUtils.makeExceptionStatus(e));
         }
     }
 
@@ -276,7 +276,7 @@ public class ContentEditorInput implements IPathEditorInput, IDatabaseEditorInpu
             throw new DBCException("Could not update read-only value");
         }
 
-        DBRProgressMonitor localMonitor = DBeaverUtils.makeMonitor(monitor);
+        DBRProgressMonitor localMonitor = RuntimeUtils.makeMonitor(monitor);
         DBDContent content = getContent();
         DBDContentStorage storage = content.getContents(localMonitor);
         if (storage instanceof DBDContentStorageLocal) {

@@ -7,9 +7,8 @@ package org.jkiss.dbeaver.core;
 import org.apache.commons.logging.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.io.*;
 import java.util.Date;
@@ -176,7 +175,7 @@ public class DBeaverLogger implements Log, Serializable
         DBeaverCore.getInstance().getPluginLog().log(new MultiStatus(
             DBeaverCore.getInstance().getPluginID(),
             0,
-            new IStatus[]{ DBeaverUtils.makeExceptionStatus(severity, t) },
+            new IStatus[]{ RuntimeUtils.makeExceptionStatus(severity, t) },
             message == null ? null : message.toString(),
             t));
     }

@@ -12,7 +12,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 class ResultSetDataPumpJob extends DataSourceJob {
 
@@ -60,7 +60,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
             resultSetViewer.getControl().getDisplay().syncExec(new Runnable() {
                 public void run() {
                     resultSetViewer.setStatus(err.getMessage(), true);
-                    DBeaverUtils.showErrorDialog(
+                    UIUtils.showErrorDialog(
                         resultSetViewer.getControl().getShell(),
                         "Error executing query",
                         err.getMessage());

@@ -25,7 +25,7 @@ class ContentTextDocumentProvider extends FileRefDocumentProvider implements IDo
             super.handleElementContentChanged(fileEditorInput);
         }
         catch (OutOfMemoryError e) {
-            DBeaverUtils.showErrorDialog(
+            RuntimeUtils.showErrorDialog(
                 null,
                 "Out of Memory",
                 "Could not load content into text editor",

@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -72,7 +73,6 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -414,7 +414,7 @@ public class SQLEditor extends BaseTextEditor
         try {
             planView.explainQueryPlan(sqlQuery.getQuery());
         } catch (DBCException e) {
-            DBeaverUtils.showErrorDialog(
+            UIUtils.showErrorDialog(
                 sashForm.getShell(),
                 "Execution plan",
                 "Could not explain execution plan",
@@ -647,7 +647,7 @@ public class SQLEditor extends BaseTextEditor
             return;
         }
         if (curJobRunning) {
-            DBeaverUtils.showErrorDialog(
+            UIUtils.showErrorDialog(
                 getSite().getShell(),
                 "Can't execute query",
                 "Can't execute more than one query in one editor simultaneously");
@@ -657,7 +657,7 @@ public class SQLEditor extends BaseTextEditor
             checkSession();
         } catch (DBException ex) {
             this.setStatus(ex.getMessage(), true);
-            DBeaverUtils.showErrorDialog(
+            UIUtils.showErrorDialog(
                 getSite().getShell(),
                 "Can't obtain session",
                 ex.getMessage());
@@ -952,7 +952,7 @@ public class SQLEditor extends BaseTextEditor
             }
         }
         catch (IOException e) {
-            DBeaverUtils.showErrorDialog(
+            UIUtils.showErrorDialog(
                 getSite().getShell(),
                 "Can't load file",
                 "Can't load file '" + loadFile.getAbsolutePath() + "' - " + e.getMessage());

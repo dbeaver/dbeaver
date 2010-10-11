@@ -17,8 +17,8 @@ import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -54,7 +54,7 @@ public class DataSourceTransactionModeHandler extends DataSourceHandler
                 }
             });
         } catch (InvocationTargetException e) {
-            DBeaverUtils.showErrorDialog(shell, "Auto-Commit", "Error while toggle auto-commit", e);
+            UIUtils.showErrorDialog(shell, "Auto-Commit", "Error while toggle auto-commit", e);
         } catch (InterruptedException e) {
             // do nothing
         }

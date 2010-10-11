@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.*;
 import java.util.HashMap;
@@ -115,7 +116,7 @@ public class ContentUtils {
         final File saveFile = new File(fileName);
         File saveDir = saveFile.getParentFile();
         if (!saveDir.exists()) {
-            DBeaverUtils.showErrorDialog(parentShell, "Bad file name", "Directory '" + saveDir.getAbsolutePath() + "' does not exists");
+            UIUtils.showErrorDialog(parentShell, "Bad file name", "Directory '" + saveDir.getAbsolutePath() + "' does not exists");
             return null;
         }
         return saveFile;

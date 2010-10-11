@@ -11,7 +11,7 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**
  * DisconnectJob
@@ -38,7 +38,7 @@ public class DisconnectJob extends AbstractJob
             return Status.OK_STATUS;
         }
         catch (Exception ex) {
-            return DBeaverUtils.makeExceptionStatus(
+            return RuntimeUtils.makeExceptionStatus(
                 "Error disconnecting from datasource '" + container.getName() + "'",
                 ex);
         }

@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**
  * PrefPageSQL
@@ -140,7 +140,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         } catch (Exception e) {
             log.warn(e);
         }
-        DBeaverUtils.savePreferenceStore(store);
+        RuntimeUtils.savePreferenceStore(store);
     }
 
     protected void clearPreferences(IPreferenceStore store)

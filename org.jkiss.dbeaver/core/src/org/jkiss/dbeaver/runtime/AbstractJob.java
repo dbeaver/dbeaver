@@ -13,7 +13,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**
  * Abstract Database Job
@@ -51,7 +50,7 @@ public abstract class AbstractJob extends Job
 
     protected final IStatus run(IProgressMonitor monitor)
     {
-        progressMonitor = DBeaverUtils.makeMonitor(monitor);
+        progressMonitor = RuntimeUtils.makeMonitor(monitor);
         blockCanceled = false;
         IStatus status;
         try {

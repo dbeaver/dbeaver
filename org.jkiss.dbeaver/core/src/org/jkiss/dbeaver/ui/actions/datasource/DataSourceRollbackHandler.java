@@ -16,8 +16,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -52,7 +52,7 @@ public class DataSourceRollbackHandler extends DataSourceHandler
                 }
             });
         } catch (InvocationTargetException e) {
-            DBeaverUtils.showErrorDialog(shell, "Rollback", "Error during session rollback", e);
+            UIUtils.showErrorDialog(shell, "Rollback", "Error during session rollback", e);
         } catch (InterruptedException e) {
             // do nothing
         }

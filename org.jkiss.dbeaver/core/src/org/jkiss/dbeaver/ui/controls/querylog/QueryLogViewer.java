@@ -10,6 +10,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.text.source.ISharedTextColors;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -31,6 +33,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.runtime.qm.QMConstants;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
@@ -48,7 +51,7 @@ import java.util.Iterator;
 /**
  * QueryLogViewer
  */
-public class QueryLogViewer extends Viewer implements QMMetaListener {
+public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyChangeListener {
 
     static final Log log = LogFactory.getLog(QueryLogViewer.class);
 
@@ -260,6 +263,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
             metaInfoChanged(QMUtils.getPastMetaEvents());
         }
         QMUtils.registerMetaListener(this);
+
+        DBeaverCore.getInstance().getGlobalPreferenceStore().addPropertyChangeListener(this);
     }
 
     private void createColumns()
@@ -282,6 +287,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
 
     private void dispose()
     {
+        DBeaverCore.getInstance().getGlobalPreferenceStore().removePropertyChangeListener(this);
         QMUtils.unregisterMetaListener(this);
         UIUtils.dispose(dndSource);
         UIUtils.dispose(logTable);
@@ -608,4 +614,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener {
         long sec = (ms - min * 1000 * 60) / 1000;
         return String.valueOf(min) + " min " + String.valueOf(sec) + " sec";
     }
+
+    public void propertyChange(PropertyChangeEvent event)
+    {
+        if (event.getProperty().startsWith(QMConstants.PROP_PREFIX)) {
+            
+        }
+    }
+
 }

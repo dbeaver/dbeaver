@@ -21,9 +21,9 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -143,7 +143,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                             }
                         }
 
-                        DBRProgressMonitor localMonitor = DBeaverUtils.makeMonitor(monitor);
+                        DBRProgressMonitor localMonitor = RuntimeUtils.makeMonitor(monitor);
 
                         IFolder tempFolder;
                         try {

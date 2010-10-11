@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.SimpleAction;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -237,7 +236,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                 });
             }
             catch (InvocationTargetException e) {
-                DBeaverUtils.showErrorDialog(
+                UIUtils.showErrorDialog(
                     shell,
                     "Could not save content",
                     "Could not save content to file '" + saveFile.getAbsolutePath() + "'",
@@ -279,7 +278,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                 });
             }
             catch (InvocationTargetException e) {
-                DBeaverUtils.showErrorDialog(
+                UIUtils.showErrorDialog(
                     shell,
                     "Could not load content",
                     "Could not load content from file '" + loadFile.getAbsolutePath() + "'",
@@ -325,7 +324,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                 });
             }
             catch (InvocationTargetException e) {
-                DBeaverUtils.showErrorDialog(
+                UIUtils.showErrorDialog(
                     getEditor().getSite().getShell(),
                     "Could not apply content changes",
                     "Could not apply content changes",

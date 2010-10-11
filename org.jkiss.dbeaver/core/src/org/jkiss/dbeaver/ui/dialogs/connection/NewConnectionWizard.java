@@ -13,7 +13,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.DBeaverExtensions;
 import org.jkiss.dbeaver.registry.*;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -119,7 +119,7 @@ public class NewConnectionWizard extends ConnectionWizard
             });
         }
         catch (Exception ex) {
-            DBeaverUtils.showErrorDialog(getShell(), "Error", "Error loading views", ex);
+            UIUtils.showErrorDialog(getShell(), "Error", "Error loading views", ex);
         }
 
         pageFinal = new ConnectionPageFinal(this);

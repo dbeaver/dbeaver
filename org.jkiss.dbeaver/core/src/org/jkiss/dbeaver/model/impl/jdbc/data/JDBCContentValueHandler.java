@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
 import org.jkiss.dbeaver.ui.views.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -281,7 +280,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             });
         }
         catch (InvocationTargetException e) {
-            DBeaverUtils.showErrorDialog(
+            UIUtils.showErrorDialog(
                 shell,
                 "Could not load content",
                 "Could not load content from file '" + openFile.getAbsolutePath() + "'",
@@ -334,7 +333,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             });
         }
         catch (InvocationTargetException e) {
-            DBeaverUtils.showErrorDialog(
+            UIUtils.showErrorDialog(
                 shell,
                 "Could not save content",
                 "Could not save content to file '" + saveFile.getAbsolutePath() + "'",

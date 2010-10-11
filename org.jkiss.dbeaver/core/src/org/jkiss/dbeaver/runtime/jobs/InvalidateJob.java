@@ -8,7 +8,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**
  * InvalidateJob
@@ -31,7 +31,7 @@ public class InvalidateJob extends DataSourceJob
             return Status.OK_STATUS;
         }
         catch (Exception ex) {
-            return DBeaverUtils.makeExceptionStatus(
+            return RuntimeUtils.makeExceptionStatus(
                 "Error invalidating datasource '" + getDataSource().getContainer().getName() + "'",
                 ex);
         }

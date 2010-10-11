@@ -12,10 +12,10 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadService;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadVisualizer;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -99,7 +99,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                 if (ex instanceof InvocationTargetException) {
                     ex = ((InvocationTargetException)ex).getTargetException();
                 }
-                DBeaverUtils.showErrorDialog(
+                UIUtils.showErrorDialog(
                     view.getSite().getShell(),
                     "Navigator error",
                     ex.getMessage(),

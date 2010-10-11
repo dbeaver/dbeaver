@@ -10,9 +10,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 /**
  * PrefPageSQL
@@ -95,7 +95,7 @@ public class PrefPageCommon extends TargetPrefPage
         } catch (Exception e) {
             log.warn(e);
         }
-        DBeaverUtils.savePreferenceStore(store);
+        RuntimeUtils.savePreferenceStore(store);
     }
 
     protected void clearPreferences(IPreferenceStore store)

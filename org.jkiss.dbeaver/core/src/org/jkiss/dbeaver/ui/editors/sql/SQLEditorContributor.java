@@ -36,10 +36,10 @@ import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -345,7 +345,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                 }
                 IPreferenceStore store = dsContainer.getPreferenceStore();
                 store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, rsSize);
-                DBeaverUtils.savePreferenceStore(store);
+                RuntimeUtils.savePreferenceStore(store);
             }
         }
     }

@@ -26,9 +26,10 @@ import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
@@ -105,7 +106,7 @@ public class ContentEditor extends MultiPageDatabaseEditor<ContentEditorInput> i
                 editorInput = new ContentEditorInput(
                     valueController,
                     editorParts,
-                    DBeaverUtils.makeMonitor(monitor));
+                    RuntimeUtils.makeMonitor(monitor));
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }
@@ -182,7 +183,7 @@ public class ContentEditor extends MultiPageDatabaseEditor<ContentEditorInput> i
                     closeValueEditor();
                 }
                 catch (Exception e) {
-                    DBeaverUtils.showErrorDialog(
+                    UIUtils.showErrorDialog(
                         getSite().getShell(),
                         "Could not save content",
                         "Could not save content to database",

@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.export.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -711,7 +710,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         try {
             boolean result = metaColumn.getValueHandler().editValue(valueController);
             if (!result) {
-                DBeaverUtils.showErrorDialog(site.getShell(), "Edit", "Edit of '" + valueController.getColumnId() + "' is not supported");
+                UIUtils.showErrorDialog(site.getShell(), "Edit", "Edit of '" + valueController.getColumnId() + "' is not supported");
             }
             return result;
         }
@@ -1644,7 +1643,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                                     " / Deleted: " + DataUpdaterJob.this.deleteCount +
                                     " / Updated: " + DataUpdaterJob.this.updateCount, false);
                             } else {
-                                DBeaverUtils.showErrorDialog(ResultSetViewer.this.site.getShell(), "Data error", "Error synchronizing data with database", error);
+                                UIUtils.showErrorDialog(ResultSetViewer.this.site.getShell(), "Data error", "Error synchronizing data with database", error);
                                 setStatus(error.getMessage(), true);
                             }
                         }

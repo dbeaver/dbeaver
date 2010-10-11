@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerOpenObject;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -143,7 +142,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
             super.okPressed();
         }
         catch (Exception e) {
-            DBeaverUtils.showErrorDialog(getShell(), "Error updating column", "Could not update column value", e);
+            UIUtils.showErrorDialog(getShell(), "Error updating column", "Could not update column value", e);
             super.cancelPressed();
         }
     }

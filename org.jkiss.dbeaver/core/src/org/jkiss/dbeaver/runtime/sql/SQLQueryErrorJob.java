@@ -9,7 +9,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**
  * SQLQueryErrorJob
@@ -35,7 +35,7 @@ public class SQLQueryErrorJob extends AbstractUIJob {
             script ?
                 "Error occured during SQL script execution" :
                 "Error occured during SQL query execution",
-            DBeaverUtils.makeExceptionStatus(error),
+            RuntimeUtils.makeExceptionStatus(error),
             IStatus.INFO | IStatus.WARNING | IStatus.ERROR,
             script);
         int result = dialog.open();

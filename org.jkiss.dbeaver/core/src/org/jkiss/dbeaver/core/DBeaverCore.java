@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.registry.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
@@ -38,7 +39,6 @@ import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -285,7 +285,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                 public void run(IProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
-                    runnable.run(DBeaverUtils.makeMonitor(monitor));
+                    runnable.run(RuntimeUtils.makeMonitor(monitor));
                 }
             });
         }
@@ -304,7 +304,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
             public void run(IProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException
             {
-                runnable.run(DBeaverUtils.makeMonitor(monitor));
+                runnable.run(RuntimeUtils.makeMonitor(monitor));
             }
         });
     }
@@ -318,7 +318,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                     runnableWithProgress.run(monitor);
                 }
                 catch (InvocationTargetException e) {
-                    return DBeaverUtils.makeExceptionStatus(e);
+                    return RuntimeUtils.makeExceptionStatus(e);
                 }
                 catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;
@@ -335,7 +335,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                 public void run(IProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
-                    runnable.run(DBeaverUtils.makeMonitor(monitor));
+                    runnable.run(RuntimeUtils.makeMonitor(monitor));
                 }
             }, DBeaverActivator.getWorkspace().getRoot());
         }
@@ -400,43 +400,38 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         IPreferenceStore store = getGlobalPreferenceStore();
 
         // Common
-        setDefaultPreferenceValue(store, PrefConstants.DEFAULT_AUTO_COMMIT, true);
-        setDefaultPreferenceValue(store, PrefConstants.QUERY_ROLLBACK_ON_ERROR, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.DEFAULT_AUTO_COMMIT, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.QUERY_ROLLBACK_ON_ERROR, true);
 
         // SQL execution
-        setDefaultPreferenceValue(store, PrefConstants.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.NO_COMMIT.name());
-        setDefaultPreferenceValue(store, PrefConstants.SCRIPT_COMMIT_LINES, 1000);
-        setDefaultPreferenceValue(store, PrefConstants.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.STOP_ROLLBACK.name());
-        setDefaultPreferenceValue(store, PrefConstants.SCRIPT_FETCH_RESULT_SETS, false);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.NO_COMMIT.name());
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.SCRIPT_COMMIT_LINES, 1000);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.STOP_ROLLBACK.name());
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.SCRIPT_FETCH_RESULT_SETS, false);
 
-        setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_MAX_ROWS, 200);
-        setDefaultPreferenceValue(store, PrefConstants.STATEMENT_TIMEOUT, 10 * 1000);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_MAX_ROWS, 200);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.STATEMENT_TIMEOUT, 10 * 1000);
 
-        setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
-        setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_LONG_AS_LOB, true);
-        setDefaultPreferenceValue(store, PrefConstants.RS_COMMIT_ON_EDIT_APPLY, false);
-        setDefaultPreferenceValue(store, PrefConstants.RS_COMMIT_ON_CONTENT_APPLY, false);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_LONG_AS_LOB, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_COMMIT_ON_EDIT_APPLY, false);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_COMMIT_ON_CONTENT_APPLY, false);
         
-        setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, true);
-        setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, 500);
-        setDefaultPreferenceValue(store, SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, 500);
+        RuntimeUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, true);
 
-        setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, true);
-        setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, true);
-        setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, true);
-        setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_COMMENTS, true);
-        setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_BEGIN_END, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_COMMENTS, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_BEGIN_END, true);
         
         // Text editor default preferences
-        setDefaultPreferenceValue(store, AbstractTextEditor.PREFERENCE_TEXT_DRAG_AND_DROP_ENABLED, true);
-    }
+        RuntimeUtils.setDefaultPreferenceValue(store, AbstractTextEditor.PREFERENCE_TEXT_DRAG_AND_DROP_ENABLED, true);
 
-    private static void setDefaultPreferenceValue(IPreferenceStore store, String name, Object value)
-    {
-        if (!store.contains(name)) {
-            store.setValue(name, value.toString());
-        }
-        store.setDefault(name, value.toString());
+        // QM
+        queryManager.initDefaultPreferences(store);
     }
 
     public static IWorkbenchWindow getActiveWorkbenchWindow()

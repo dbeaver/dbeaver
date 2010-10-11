@@ -8,7 +8,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * DataExportErrorJob
@@ -25,7 +25,7 @@ public class DataExportErrorJob extends AbstractUIJob {
 
     public IStatus runInUIThread(DBRProgressMonitor monitor)
     {
-        DBeaverUtils.showErrorDialog(
+        UIUtils.showErrorDialog(
             getDisplay().getActiveShell(),
             "Data export error",
             error.getMessage(), error);

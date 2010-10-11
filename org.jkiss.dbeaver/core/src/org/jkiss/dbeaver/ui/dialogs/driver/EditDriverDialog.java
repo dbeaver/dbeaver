@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -400,7 +399,7 @@ public class EditDriverDialog extends Dialog
                 portNumber = new Integer(driverPortText.getText());
             }
             catch (NumberFormatException e) {
-                DBeaverUtils.showErrorDialog(getShell(), "Invalid parameters", "Bad driver port specified");
+                UIUtils.showErrorDialog(getShell(), "Invalid parameters", "Bad driver port specified");
                 return;
             }
         }
@@ -451,7 +450,7 @@ public class EditDriverDialog extends Dialog
         try {
             driver.loadDriver(true);
         } catch (DBException ex) {
-            DBeaverUtils.showErrorDialog(getShell(), "Driver Error", "Can't load driver", ex);
+            UIUtils.showErrorDialog(getShell(), "Driver Error", "Can't load driver", ex);
         }
 
         super.okPressed();

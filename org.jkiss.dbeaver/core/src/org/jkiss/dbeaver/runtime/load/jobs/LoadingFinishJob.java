@@ -9,7 +9,7 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 class LoadingFinishJob<RESULT> extends AbstractUIJob {
 
@@ -31,7 +31,7 @@ class LoadingFinishJob<RESULT> extends AbstractUIJob {
         visualizer.completeLoading(result);
         if (error != null) {
             log.debug(error);
-            DBeaverUtils.showErrorDialog(
+            UIUtils.showErrorDialog(
                 visualizer.getShell(),
                 getName(),
                 error.getMessage());

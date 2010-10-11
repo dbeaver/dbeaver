@@ -12,7 +12,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**
  * ConnectJob
@@ -49,7 +49,7 @@ public class ConnectJob extends AbstractJob
         }
         catch (Throwable ex) {
             log.debug(ex);
-            return DBeaverUtils.makeExceptionStatus(
+            return RuntimeUtils.makeExceptionStatus(
                 "Error connecting to datasource '" + container.getName() + "'",
                 ex);
         }

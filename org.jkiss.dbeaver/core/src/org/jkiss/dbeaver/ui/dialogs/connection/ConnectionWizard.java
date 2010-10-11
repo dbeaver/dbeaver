@@ -15,7 +15,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -93,19 +94,19 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
         };
 
         try {
-            DBeaverUtils.run(getContainer(), true, true, op);
+            RuntimeUtils.run(getContainer(), true, true, op);
 
             MessageDialog.openInformation(
                 getShell(), "Success", "Successfully connected!");
         }
         catch (InterruptedException ex) {
-            DBeaverUtils.showErrorDialog(
+            UIUtils.showErrorDialog(
                 getShell(),
                 "Interrupted",
                 "Test interrupted");
         }
         catch (InvocationTargetException ex) {
-            DBeaverUtils.showErrorDialog(
+            UIUtils.showErrorDialog(
                 getShell(),
                 "Connection error",
                 "Database connectivity error",

@@ -8,9 +8,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.common.NotDefinedException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.commands.ActionHandler;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
@@ -28,6 +31,8 @@ import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.services.IServiceLocator;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.nio.charset.Charset;
@@ -353,18 +358,18 @@ public class UIUtils {
 
     public static Text createLabelText(Composite parent, String label, String value, int style)
     {
-        return createLabelText(parent, label, value, style, GridData.FILL_HORIZONTAL);
+        return createLabelText(parent, label, value, style, new GridData(GridData.FILL_HORIZONTAL));
     }
 
-    public static Text createLabelText(Composite parent, String label, String value, int style, int layoutStyle)
+    public static Text createLabelText(Composite parent, String label, String value, int style, Object layoutData)
     {
         createControlLabel(parent, label);
 
         Text text = new Text(parent, style);
         text.setText(value);
 
-        if (layoutStyle != 0 && parent.getLayout() instanceof GridLayout) {
-            text.setLayoutData(new GridData(layoutStyle));
+        if (layoutData != null) {
+            text.setLayoutData(layoutData);
         }
 
         return text;
@@ -396,6 +401,17 @@ public class UIUtils {
         return button;
     }
 
+    public static Button createCheckbox(Composite parent, String label, boolean checked)
+    {
+        final Button button = new Button(parent, SWT.CHECK);
+        button.setText(label);
+        if (checked) {
+            button.setSelection(true);
+        }
+
+        return button;
+    }
+
     public static Shell getActiveShell()
     {
         IWorkbench workbench = PlatformUI.getWorkbench();
@@ -410,6 +426,21 @@ public class UIUtils {
     public static Shell getShell(IWorkbenchPart part)
     {
         return part == null ? null : getShell(part.getSite());
+    }
+
+    public static Integer getTextInteger(Text text)
+    {
+        String str = text.getText();
+        str = str.trim();
+        if (str.length() == 0) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(str);
+        } catch (NumberFormatException e) {
+            log.debug(e);
+            return null;
+        }
     }
 
     public static IHandlerActivation registerKeyBinding(IServiceLocator serviceLocator, IAction action)
@@ -501,6 +532,36 @@ public class UIUtils {
             log.warn("Charset '" + curCharset + "' is not recognized");
         }
         return encodingCombo;
+    }
+
+    public static void showErrorDialog(
+        Shell shell,
+        String title,
+        String message,
+        Throwable error)
+    {
+        log.error(error);
+
+        // Display the dialog
+        ErrorDialog.openError(
+            shell,
+            title,
+            message,
+            RuntimeUtils.makeExceptionStatus(error));
+    }
+
+    public static void showErrorDialog(
+        Shell shell,
+        String title,
+        String message)
+    {
+        //log.debug(message);
+        // Display the dialog
+        ErrorDialog.openError(
+            shell,
+            title,
+            null,//message,
+            new Status(IStatus.ERROR, DBeaverCore.getInstance().getPluginID(), message));
     }
 
 }

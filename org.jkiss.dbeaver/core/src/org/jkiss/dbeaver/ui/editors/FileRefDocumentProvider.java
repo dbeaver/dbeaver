@@ -18,9 +18,9 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.AbstractDocumentProvider;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.DBeaverUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -113,7 +113,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
         try {
             charset = Charset.forName(encoding);
         } catch (Exception ex) {
-            throw new CoreException(DBeaverUtils.makeExceptionStatus(ex));
+            throw new CoreException(RuntimeUtils.makeExceptionStatus(ex));
         }
 
         CharsetEncoder encoder = charset.newEncoder();
@@ -133,7 +133,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
             }
             stream = new ByteArrayInputStream(bytes, 0, byteBuffer.limit());
         } catch (CharacterCodingException ex) {
-            throw new CoreException(DBeaverUtils.makeExceptionStatus(ex));
+            throw new CoreException(RuntimeUtils.makeExceptionStatus(ex));
         }
 
         if (file.exists()) {
@@ -186,7 +186,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
                 ContentUtils.close(contentStream);
             }
         } catch (IOException e) {
-            throw new CoreException(DBeaverUtils.makeExceptionStatus(e));
+            throw new CoreException(RuntimeUtils.makeExceptionStatus(e));
         }
         return true;
     }
