@@ -437,10 +437,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
         this.entriesPerPage = store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE);
 
+        clearLog();
         metaInfoChanged(QMUtils.getPastMetaEvents());
     }
 
-    public void metaInfoChanged(java.util.List<QMMetaEvent> events)
+    public synchronized void metaInfoChanged(java.util.List<QMMetaEvent> events)
     {
         if (logTable.isDisposed()) {
             return;
@@ -448,9 +449,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         logTable.setRedraw(false);
         try {
             // Add events in reverse order
-            int eventsAdded = 0;
+            int itemIndex = 0;
             for (int i = events.size(); i > 0; i--) {
-                if (eventsAdded >= entriesPerPage) {
+                if (itemIndex >= entriesPerPage) {
                     // Do not add remaining (older) events - they don't fit page anyway
                     break;
                 }
@@ -460,13 +461,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
                 }
                 QMMObject object = event.getObject();
                 if (object instanceof QMMStatementExecuteInfo) {
-                    if (createOrUpdateItem(object)) {
-                        eventsAdded++;
-                    }
+                    itemIndex = createOrUpdateItem(object, itemIndex);
                 } else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo) {
-                    if (createOrUpdateItem(object)) {
-                        eventsAdded++;
-                    }
+                    itemIndex = createOrUpdateItem(object, itemIndex);
                     // Update all dependent statements
                     if (object instanceof QMMTransactionInfo) {
                         for (QMMTransactionSavepointInfo savepoint = ((QMMTransactionInfo) object).getCurrentSavepoint(); savepoint != null; savepoint = savepoint.getPrevious()) {
@@ -479,11 +476,22 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
                 } else if (object instanceof QMMSessionInfo) {
                     QMMetaEvent.Action action = event.getAction();
                     if (action == QMMetaEvent.Action.BEGIN || action == QMMetaEvent.Action.END) {
-                        TableItem item = new TableItem(logTable, SWT.NONE, 0);
+                        TableItem item = new TableItem(logTable, SWT.NONE, itemIndex++);
                         updateItem(object, item);
-                        eventsAdded++;
                     }
                 }
+            }
+            int itemCount = logTable.getItemCount();
+            if (itemCount > entriesPerPage) {
+                int[] indexes = new int[itemCount - entriesPerPage];
+                for (int i = 0; i < itemCount - entriesPerPage; i++) {
+                    indexes[i] = entriesPerPage + i;
+                    TableItem tableItem = logTable.getItem(entriesPerPage + i);
+                    if (tableItem != null && tableItem.getData() instanceof QMMObject) {
+                        objectToItemMap.remove(((QMMObject)tableItem.getData()).getObjectId());
+                    }
+                }
+                logTable.remove(indexes);
             }
         }
         finally {
@@ -504,17 +512,15 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         }
     }
 
-    private boolean createOrUpdateItem(QMMObject object)
+    private int createOrUpdateItem(QMMObject object, int itemIndex)
     {
-        boolean create = false;
         TableItem item = objectToItemMap.get(object.getObjectId());
         if (item == null) {
-            item = new TableItem(logTable, SWT.NONE, 0);
+            item = new TableItem(logTable, SWT.NONE, itemIndex++);
             objectToItemMap.put(object.getObjectId(), item);
-            create = true;
         }
         updateItem(object, item);
-        return create;
+        return itemIndex;
     }
 
     private void updateItem(QMMObject object, TableItem item)
@@ -605,9 +611,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         });
     }
 
-    public void clearLog()
+    public synchronized void clearLog()
     {
         logTable.removeAll();
+        objectToItemMap.clear();
     }
 
     public void selectAll()
