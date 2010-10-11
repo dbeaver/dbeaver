@@ -149,6 +149,8 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.row.previous" icon="icons/sql/resultset_previous.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.next" icon="icons/sql/resultset_next.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.last" icon="icons/sql/resultset_last.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.row.add" icon="icons/sql/row_add.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.row.copy" icon="icons/sql/row_copy.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="icons/misc/filter.png"/>
         <image commandId="org.jkiss.dbeaver.core.qm.clear" icon="IMG_ETOOL_CLEAR"/>

@@ -28,6 +28,8 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
@@ -313,24 +315,26 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     showCellEditor(spreadsheet.getCursorPosition(), false, null);
                 }
             });
-            itemRowAdd = UIUtils.createToolItem(toolBar, "Add row", DBIcon.ROW_ADD, new SelectionAdapter() {
+            itemRowAdd = UIUtils.createToolItem(toolBar, site, ResultSetCommandHandler.CMD_ROW_ADD, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
                     addNewRow(false);
                 }
             });
-            itemRowCopy = UIUtils.createToolItem(toolBar, "Copy row", DBIcon.ROW_COPY, new SelectionAdapter() {
+            itemRowCopy = UIUtils.createToolItem(toolBar, site, ResultSetCommandHandler.CMD_ROW_COPY, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
                     addNewRow(true);
                 }
             });
-            itemRowDelete = UIUtils.createToolItem(toolBar, "Delete row", DBIcon.ROW_DELETE, new SelectionAdapter() {
+            itemRowDelete = UIUtils.createToolItem(toolBar, site, IWorkbenchCommandConstants.EDIT_DELETE, new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
                 {
                     deleteCurrentRow();
                 }
             });
+            itemRowDelete.setToolTipText("Delete row");
+            itemRowDelete.setImage(DBIcon.ROW_DELETE.getImage());
 
             new ToolItem(toolBar, SWT.SEPARATOR);
 

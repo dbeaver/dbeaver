@@ -119,12 +119,16 @@ public class UIUtils {
         }
         item.addSelectionListener(listener);
         toolBar.addListener(SWT.MouseEnter, new Listener() {
+            private String origToolTip;
             public void handleEvent(Event event)
             {
+                if (origToolTip == null) {
+                    origToolTip = item.getToolTipText();
+                }
                 TriggerSequence sequence = bindingService.getBestActiveBindingFor(commandId);
                 if (sequence != null) {
-                    String newToolTip = toolTip + " (" + sequence.format() + ")";
-                    if (!toolTip.equals(newToolTip)) {
+                    String newToolTip = origToolTip + " (" + sequence.format() + ")";
+                    if (!item.getToolTipText().equals(newToolTip)) {
                         item.setToolTipText(newToolTip);
                     }
                 }
