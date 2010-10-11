@@ -110,6 +110,8 @@
         <command id="org.jkiss.dbeaver.core.resultset.row.previous" name="Previous Row" description="Move to previous row"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.next" name="Next Row" description="Move to next row"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.last" name="Last Row" description="Move to last row"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.add" name="Add Row" description="Add new row"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.copy" name="Copy Row" description="Copy current row"/>
 
         <command id="org.jkiss.dbeaver.core.edit.copy.special" name="Copy full qualified name" description="Copy special"/>
 
@@ -483,6 +485,15 @@
         <handler commandId="org.jkiss.dbeaver.core.resultset.row.last" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.resultset.row.add" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.resultset.row.copy" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
 
         <handler commandId="org.eclipse.ui.edit.text.goto.wordPrevious" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
@@ -496,7 +507,6 @@
         <handler commandId="org.eclipse.ui.edit.text.select.wordNext" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
         </handler>
-
         <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
         </handler>
@@ -748,6 +758,8 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.row.previous" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_LEFT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.next" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_RIGHT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.last" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_RIGHT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="INSERT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.copy" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+INSERT"/>
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
 

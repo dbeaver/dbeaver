@@ -19,6 +19,8 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
     public static final String CMD_ROW_PREVIOUS = "org.jkiss.dbeaver.core.resultset.row.previous";
     public static final String CMD_ROW_NEXT = "org.jkiss.dbeaver.core.resultset.row.next";
     public static final String CMD_ROW_LAST = "org.jkiss.dbeaver.core.resultset.row.last";
+    public static final String CMD_ROW_ADD = "org.jkiss.dbeaver.core.resultset.row.add";
+    public static final String CMD_ROW_COPY = "org.jkiss.dbeaver.core.resultset.row.copy";
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -42,6 +44,14 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
             resultSet.scrollToRow(ResultSetViewer.RowPosition.FIRST);
         } else if (actionId.equals(CMD_ROW_LAST) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_WORD_NEXT)) {
             resultSet.scrollToRow(ResultSetViewer.RowPosition.LAST);
+        } else if (actionId.equals(CMD_ROW_ADD)) {
+            resultSet.addNewRow(false);
+        } else if (actionId.equals(CMD_ROW_COPY)) {
+            resultSet.addNewRow(true);
+        } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_DELETE)) {
+            if (resultSet.getMode() == ResultSetViewer.ResultSetMode.GRID) {
+                resultSet.deleteCurrentRow();
+            }
         }
 
 

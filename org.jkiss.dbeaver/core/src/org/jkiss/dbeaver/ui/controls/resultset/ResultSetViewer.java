@@ -899,7 +899,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return addedRows.contains(new RowInfo(row));
     }
 
-    private void addNewRow(boolean copyCurrent)
+    public void addNewRow(boolean copyCurrent)
     {
         GridPos curPos = spreadsheet.getCursorPosition();
         int rowNum;
@@ -915,8 +915,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         // Add new row
         final Object[] cells = new Object[metaColumns.length];
-        if (copyCurrent) {
-            final int currentRowNumber = rowNum;
+        final int currentRowNumber = rowNum;
+        if (copyCurrent && currentRowNumber >= 0 && currentRowNumber < curRows.size()) {
             DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
@@ -971,7 +971,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return removedRows.contains(new RowInfo(row));
     }
 
-    private void deleteCurrentRow()
+    public void deleteCurrentRow()
     {
         GridPos curPos = spreadsheet.getCursorPosition();
         int rowNum;
@@ -979,6 +979,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             rowNum = this.curRowNum;
         } else {
             rowNum = curPos.row;
+        }
+        if (rowNum < 0 || rowNum >= curRows.size()) {
+            return;
         }
 
         RowInfo rowInfo = new RowInfo(rowNum);
