@@ -216,13 +216,11 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
         }
 
 
-        GC gc = new GC(column.getParent());
-        gc.setFont(column.getParent().getFont());
-        int y = getBounds().height - bottomMargin - gc.getFontMetrics().getHeight();
+        int y = getBounds().height - bottomMargin - grid.sizingGC.getFontMetrics().getHeight();
 
         Rectangle bounds = new Rectangle(x, y, 0, 0);
 
-        Point p = gc.stringExtent(column.getText());
+        Point p = grid.sizingGC.stringExtent(column.getText());
 
         bounds.height = p.y;
 
@@ -237,9 +235,6 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
             }
             bounds.width = width;
         }
-
-
-        gc.dispose();
 
         return bounds;
     }

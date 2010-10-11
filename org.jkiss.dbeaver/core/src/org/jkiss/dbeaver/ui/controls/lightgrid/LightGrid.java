@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.jface.viewers.IColorProvider;
-import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -245,11 +244,6 @@ public class LightGrid extends Canvas {
     private String hoveringDetail = "";
 
     /**
-     * True if the mouse is hovering of a cell's text.
-     */
-    private boolean hoveringOverText = false;
-
-    /**
      * Are the grid lines visible?
      */
     private boolean linesVisible = true;
@@ -303,12 +297,7 @@ public class LightGrid extends Canvas {
      */
     private Listener disposeListener;
 
-    /**
-     * The inplace tooltip.
-     */
-    private GridToolTip inplaceToolTip;
-
-    private GC sizingGC;
+    public GC sizingGC;
 
     private Color backgroundColor;
 
@@ -363,13 +352,6 @@ public class LightGrid extends Canvas {
     private String toolTipText = null;
 
     /**
-     * Mouse capture flag.  Used for inplace tooltips.  This flag must be used to ensure that
-     * we don't setCapture(false) in situations where we didn't do setCapture(true).  The OS (SWT?)
-     * will automatically capture the mouse for us during a drag operation.
-     */
-    private boolean inplaceTooltipCapture;
-
-    /**
      * This is the tooltip text currently used.  This could be the tooltip text for the currently
      * hovered cell, or the general grid tooltip.  See handleCellHover.
      */
@@ -382,11 +364,6 @@ public class LightGrid extends Canvas {
     private static final int SELECTION_DRAG_BORDER_THRESHOLD = 2;
 
     private boolean hoveringOnSelectionDragArea = false;
-
-    private int insertMarkItem = -1;
-    private GridColumn insertMarkColumn = null;
-    private boolean insertMarkBefore = false;
-    private IGridRenderer insertMarkRenderer;
 
     /**
      * A range of rows in a <code>Grid</code>.
@@ -455,7 +432,6 @@ public class LightGrid extends Canvas {
         emptyColumnFooterRenderer = new DefaultEmptyColumnFooterRenderer(this);
         emptyCellRenderer = new DefaultEmptyCellRenderer(this);
         emptyRowHeaderRenderer = new DefaultEmptyRowHeaderRenderer(this);
-        insertMarkRenderer = new DefaultInsertMarkRenderer(this);
 
         setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
         setLineColor(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
@@ -2133,25 +2109,23 @@ public class LightGrid extends Canvas {
     /**
      * Computes and sets the height of the header row. This method will ask for
      * the preferred size of all the column headers and use the max.
-     *
-     * @param gc GC for font metrics, etc.
      */
-    private void computeHeaderHeight(GC gc)
+    private void computeHeaderHeight()
     {
 
         int colHeaderHeight = 0;
         for (GridColumn column : columns) {
-            colHeaderHeight = Math.max(column.computeHeaderHeight(gc), colHeaderHeight);
+            colHeaderHeight = Math.max(column.computeHeaderHeight(), colHeaderHeight);
         }
 
         headerHeight = colHeaderHeight;
     }
 
-    private void computeFooterHeight(GC gc)
+    private void computeFooterHeight()
     {
         int colFooterHeight = 0;
         for (GridColumn column : columns) {
-            colFooterHeight = Math.max(column.computeFooterHeight(gc), colFooterHeight);
+            colFooterHeight = Math.max(column.computeFooterHeight(), colFooterHeight);
         }
 
         footerHeight = colFooterHeight;
@@ -2353,11 +2327,6 @@ public class LightGrid extends Canvas {
      */
     private void onPaint(PaintEvent e)
     {
-        int insertMarkPosX1 = -1;        // we will populate these values while drawing the cells
-        int insertMarkPosX2 = -1;
-        int insertMarkPosY = -1;
-        boolean insertMarkPosFound = false;
-
         e.gc.setBackground(getBackground());
         this.drawBackground(e.gc, 0, 0, getSize().x, getSize().y);
 
@@ -2446,35 +2415,12 @@ public class LightGrid extends Canvas {
                         column.getCellRenderer().paint(e.gc);
 
                         e.gc.setClipping((Rectangle) null);
-
-                        // collect the insertMark position
-                        if (!insertMarkPosFound && insertMarkItem == row && (insertMarkColumn == null || insertMarkColumn == column)) {
-                            // y-pos
-                            insertMarkPosY = y - 1;
-                            if (!insertMarkBefore)
-                                insertMarkPosY += getItemHeight() + 1;
-                            // x1-pos
-                            insertMarkPosX1 = x;
-
-                            // x2-pos
-                            if (insertMarkColumn == null) {
-                                insertMarkPosX2 = getClientArea().x + getClientArea().width;
-                            } else {
-                                insertMarkPosX2 = x + width;
-                            }
-
-                            insertMarkPosFound = true;
-                        }
                     }
 
                     x += column.getWidth();
                 }
 
                 if (x < getClientArea().width) {
-                    // insertMarkPos needs correction
-                    if (insertMarkPosFound && insertMarkColumn == null)
-                        insertMarkPosX2 = x;
-
                     //emptyCellRenderer.setSelected(selectedItems.contains(item));
                     emptyCellRenderer.setFocus(this.isFocusControl());
                     emptyCellRenderer.setBounds(x, y, getClientArea().width - x + 1, getItemHeight());
@@ -2535,17 +2481,6 @@ public class LightGrid extends Canvas {
             }
 
             row++;
-        }
-
-        // draw insertion mark
-        if (insertMarkPosFound) {
-            e.gc.setClipping(
-                rowHeaderVisible ? rowHeaderWidth : 0,
-                columnHeadersVisible ? headerHeight : 0,
-                getClientArea().width,
-                getClientArea().height);
-            insertMarkRenderer.setBounds(new Rectangle(insertMarkPosX1, insertMarkPosY, insertMarkPosX2 - insertMarkPosX1, 0));
-            insertMarkRenderer.paint(e.gc);
         }
 
         if (columnFootersVisible) {
@@ -3132,8 +3067,6 @@ public class LightGrid extends Canvas {
             forceFocus();
         }
 
-        hideToolTip();
-
         //if populated will be fired at end of method.
         Event selectionEvent = null;
 
@@ -3341,19 +3274,8 @@ public class LightGrid extends Canvas {
      */
     private void onMouseMove(MouseEvent e)
     {
-        //check to see if the mouse is outside the grid
-        //this should only happen when the mouse is captured for inplace
-        //tooltips - see bug 203364
-        if (inplaceTooltipCapture && (e.x < 0 || e.y < 0 || e.x >= getBounds().width || e.y >= getBounds().height)) {
-            setCapture(false);
-            inplaceTooltipCapture = false;
-            return;  //a mouseexit event should occur immediately
-        }
-
-
         //if populated will be fired at end of method.
         Event selectionEvent = null;
-
 
         if ((e.stateMask & SWT.BUTTON1) == 0) {
 
@@ -3510,33 +3432,6 @@ public class LightGrid extends Canvas {
     {
         // TODO: need to clean up and refactor hover code
         handleCellHover(x, y);
-
-        // Is this Grid a DragSource ??
-        if (getData("DragSource") != null) {
-            if (handleHoverOnSelectionDragArea(x, y)) {
-                return;
-            }
-        }
-
-        if (columnHeadersVisible) {
-            if (handleHoverOnColumnResizer(x, y)) {
-//                if (hoveringItem != null || !hoveringDetail.equals("") || hoveringColumn != null
-//                    || hoveringColumnHeader != null || hoverColumnGroupHeader != null)
-//                {
-//                    hoveringItem = null;
-//                    hoveringDetail = "";
-//                    hoveringColumn = null;
-//                    hoveringColumnHeader = null;
-//                    hoverColumnGroupHeader = null;
-//
-//                    Rectangle clientArea = getClientArea();
-//                    redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
-//                }
-                return;
-            }
-        }
-
-        // handleCellHover(x, y);
     }
 
     /**
@@ -3561,8 +3456,6 @@ public class LightGrid extends Canvas {
         hoveringItem = -1;
         hoveringDetail = "";
         hoveringColumn = null;
-        hoveringOverText = false;
-        hideToolTip();
         redraw();
     }
 
@@ -3890,8 +3783,6 @@ public class LightGrid extends Canvas {
 
         String detail = "";
 
-        boolean overText = false;
-
         Point point = new Point(x, y);
         final GridColumn col = getColumn(point);
         final int row = getRow(point);
@@ -3906,14 +3797,6 @@ public class LightGrid extends Canvas {
                     if (col.getCellRenderer().notify(IGridWidget.MouseMove, new Point(x, y), row)) {
                         detail = col.getCellRenderer().getHoverDetail();
                     }
-
-                    Rectangle textBounds = col.getCellRenderer().getTextBounds(row, false);
-
-                    if (textBounds != null) {
-                        Point p = new Point(x - col.getCellRenderer().getBounds().x,
-                                            y - col.getCellRenderer().getBounds().y);
-                        overText = textBounds.contains(p);
-                    }
                 }
             } else {
                 if (y < headerHeight) {
@@ -3921,17 +3804,8 @@ public class LightGrid extends Canvas {
                     hoverColHeader = col;
 
                     col.getHeaderRenderer().setBounds(col.getBounds());
-                    if (col.getHeaderRenderer().notify(IGridWidget.MouseMove, new Point(x, y),
-                                                       col)) {
+                    if (col.getHeaderRenderer().notify(IGridWidget.MouseMove, new Point(x, y), col)) {
                         detail = col.getHeaderRenderer().getHoverDetail();
-                    }
-
-                    Rectangle textBounds = col.getHeaderRenderer().getTextBounds(col, false);
-
-                    if (textBounds != null) {
-                        Point p = new Point(x - col.getHeaderRenderer().getBounds().x,
-                                            y - col.getHeaderRenderer().getBounds().y);
-                        overText = textBounds.contains(p);
                     }
                 }
             }
@@ -3951,48 +3825,6 @@ public class LightGrid extends Canvas {
             //redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
 
             hoverChange = true;
-        }
-
-        //do inplace toolTip stuff
-        if (hoverChange || hoveringOverText != overText) {
-            hoveringOverText = overText;
-
-            if (overText) {
-
-                Rectangle cellBounds = null;
-                Rectangle textBounds = null;
-                Rectangle preferredTextBounds = null;
-
-                if (hoveringItem >= 0 && getCellToolTip(indexOf(col), hoveringItem) == null) //no inplace tooltips when regular tooltip
-                {
-                    cellBounds = col.getCellRenderer().getBounds();
-                    if (cellBounds.x + cellBounds.width > getSize().x) {
-                        cellBounds.width = getSize().x - cellBounds.x;
-                    }
-                    textBounds = col.getCellRenderer().getTextBounds(row, false);
-                    preferredTextBounds = col.getCellRenderer().getTextBounds(row, true);
-                } else if (hoveringColumnHeader != null && hoveringColumnHeader.getHeaderTooltip() == null) //no inplace tooltips when regular tooltip
-                {
-                    cellBounds = hoveringColumnHeader.getHeaderRenderer().getBounds();
-                    if (cellBounds.x + cellBounds.width > getSize().x) {
-                        cellBounds.width = getSize().x - cellBounds.x;
-                    }
-                    textBounds = hoveringColumnHeader.getHeaderRenderer().getTextBounds(col, false);
-                    preferredTextBounds = hoveringColumnHeader.getHeaderRenderer().getTextBounds(col, true);
-                }
-
-                //if we are truncated
-                if (textBounds != null && textBounds.width < preferredTextBounds.width) {
-                    showToolTip(row, col, new Point(cellBounds.x + textBounds.x, cellBounds.y +
-                        textBounds.y));
-                    //the following 2 lines are done here rather than in showToolTip to allow
-                    //that method to be overridden yet still capture the mouse.
-                    setCapture(true);
-                    inplaceTooltipCapture = true;
-                }
-            } else {
-                hideToolTip();
-            }
         }
 
         //do normal cell specific tooltip stuff
@@ -4065,8 +3897,8 @@ public class LightGrid extends Canvas {
             }
         }
 
-        computeHeaderHeight(sizingGC);
-        computeFooterHeight(sizingGC);
+        computeHeaderHeight();
+        computeFooterHeight();
 
         scrollValuesObsolete = true;
         redraw();
@@ -4595,55 +4427,6 @@ public class LightGrid extends Canvas {
     }
 
     /**
-     * Shows the inplace tooltip for the given item and column.  The location is the x and y origin
-     * of the text in the cell.
-     * <p/>
-     * This method may be overriden to provide their own custom tooltips.
-     *
-     * @param item     the item currently hovered over or null.
-     * @param column   the column currently hovered over or null.
-     * @param location the x,y origin of the text in the hovered object.
-     */
-    protected void showToolTip(int item, GridColumn column, Point location)
-    {
-        if (inplaceToolTip == null) {
-            inplaceToolTip = new GridToolTip(this);
-        }
-
-        if (item >= 0) {
-            inplaceToolTip.setFont(getCellFont(indexOf(column), item));
-            inplaceToolTip.setText(getCellText(indexOf(column), item));
-        } else if (column != null) {
-            inplaceToolTip.setFont(getFont());
-            inplaceToolTip.setText(column.getText());
-        }
-
-
-        Point p = getDisplay().map(this, null, location);
-
-        inplaceToolTip.setLocation(p);
-
-        inplaceToolTip.setVisible(true);
-    }
-
-    /**
-     * Hides the inplace tooltip.
-     * <p/>
-     * This method must be overriden when showToolTip is overriden.  Subclasses must
-     * call super when overriding this method.
-     */
-    protected void hideToolTip()
-    {
-        if (inplaceToolTip != null) {
-            inplaceToolTip.setVisible(false);
-        }
-        if (inplaceTooltipCapture) {
-            setCapture(false);
-            inplaceTooltipCapture = false;
-        }
-    }
-
-    /**
      * {@inheritDoc}
      */
     public void setFont(Font font)
@@ -4754,7 +4537,7 @@ public class LightGrid extends Canvas {
     public void recalculateHeader()
     {
         int previous = getHeaderHeight();
-        computeHeaderHeight(sizingGC);
+        computeHeaderHeight();
 
         if (previous != getHeaderHeight()) {
             scrollValuesObsolete = true;
@@ -4891,10 +4674,9 @@ public class LightGrid extends Canvas {
                 return null;
             }
             // Show tooltip only if it's larger than column width
-            GC ttGc = new GC(this);
-            Point ttSize = ttGc.textExtent(toolTip);
-            ttGc.dispose();
-            if (ttSize.x > getColumn(column).getWidth()) {
+            Point ttSize = sizingGC.textExtent(toolTip);
+            GridColumn itemColumn = getColumn(column);
+            if (ttSize.x > itemColumn.getWidth() || ttSize.y > getItemHeight()) {
                 return toolTip;
             } else {
                 return null;
@@ -4909,15 +4691,6 @@ public class LightGrid extends Canvas {
             return contentLabelProvider.getImage(new GridPos(column,  row));
         }
         return null;
-    }
-
-    public Font getCellFont(int column, int row)
-    {
-        Font font = null;
-        if (contentLabelProvider instanceof IFontProvider) {
-            font = ((IFontProvider)contentLabelProvider).getFont(new GridPos(column,  row));
-        }
-        return font != null ? font : getFont();
     }
 
     public Color getCellBackground(int column, int row)
@@ -4961,9 +4734,7 @@ public class LightGrid extends Canvas {
         if (origin.x < 0 && isRowHeaderVisible())
             return new Rectangle(-1000, -1000, 0, 0);
 
-        Point cellSize = new Point(column.getWidth(), getItemHeight());
-
-        return new Rectangle(origin.x, origin.y, cellSize.x, cellSize.y);
+        return new Rectangle(origin.x, origin.y, column.getWidth(), getItemHeight());
     }
 
     private static class CellComparator implements Comparator<GridPos> {

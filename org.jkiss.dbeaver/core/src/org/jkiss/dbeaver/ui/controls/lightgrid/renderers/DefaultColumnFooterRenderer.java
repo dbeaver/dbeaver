@@ -2,7 +2,7 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
+package org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
@@ -18,8 +18,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
  * @author Tom Schindl - tom.schindl@bestsolution.at
  * @since 2.0.0
  */
-public class DefaultColumnFooterRenderer extends GridColumnRenderer
-{
+public class DefaultColumnFooterRenderer extends GridColumnRenderer {
 
     private int leftMargin = 6;
     private int rightMargin = 6;
@@ -28,7 +27,8 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer
     //private int arrowMargin = 6;
     private int imageSpacing = 3;
 
-    public DefaultColumnFooterRenderer(LightGrid grid) {
+    public DefaultColumnFooterRenderer(LightGrid grid)
+    {
         super(grid);
     }
 
@@ -46,25 +46,23 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer
         gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
 
         gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width,
-                         getBounds().height);
+            getBounds().height);
 
         gc.drawLine(getBounds().x, getBounds().y, getBounds().x
-                + getBounds().width, getBounds().y);
+            + getBounds().width, getBounds().y);
 
         int x = leftMargin;
 
         Image columnImage = getColumnImage();
-        if (columnImage != null)
-        {
-                gc.drawImage(columnImage, getBounds().x + x,
-                        getBounds().y + getBounds().height - bottomMargin - columnImage.getBounds().height);
+        if (columnImage != null) {
+            gc.drawImage(columnImage, getBounds().x + x,
+                getBounds().y + getBounds().height - bottomMargin - columnImage.getBounds().height);
             x += columnImage.getBounds().width + imageSpacing;
         }
 
         int width = getBounds().width - x;
 
-        if (col.getSort() == SWT.NONE)
-        {
+        if (col.getSort() == SWT.NONE) {
             width -= rightMargin;
         }
 
@@ -75,26 +73,21 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer
 
         String text = TextUtils.getShortString(gc, getColumnText(), width);
 
-        if (col.getAlignment() == SWT.RIGHT)
-        {
+        if (col.getAlignment() == SWT.RIGHT) {
             int len = gc.stringExtent(text).x;
-            if (len < width)
-            {
+            if (len < width) {
                 x += width - len;
             }
-        }
-        else if (col.getAlignment() == SWT.CENTER)
-        {
+        } else if (col.getAlignment() == SWT.CENTER) {
             int len = gc.stringExtent(text).x;
-            if (len < width)
-            {
+            if (len < width) {
                 x += (width - len) / 2;
             }
         }
 
 
         gc.drawString(text, getBounds().x + x,
-                      y,true);
+            y, true);
 
     }
 
@@ -111,44 +104,33 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer
      */
     public Rectangle getTextBounds(Object value, boolean preferred)
     {
-        GridColumn column = (GridColumn)value;
+        GridColumn column = (GridColumn) value;
 
         int x = leftMargin;
 
-        if (column.getImage() != null)
-        {
+        if (column.getImage() != null) {
             x += column.getImage().getBounds().width + imageSpacing;
         }
 
 
+        int y = getBounds().height - bottomMargin - grid.sizingGC.getFontMetrics().getHeight();
 
-        GC gc = new GC(column.getParent());
-        gc.setFont(column.getFooterFont());
-        int y = getBounds().height - bottomMargin - gc.getFontMetrics().getHeight();
+        Rectangle bounds = new Rectangle(x, y, 0, 0);
 
-        Rectangle bounds = new Rectangle(x,y,0,0);
-
-        Point p = gc.stringExtent(column.getText());
+        Point p = grid.sizingGC.stringExtent(column.getText());
 
         bounds.height = p.y;
 
-        if (preferred)
-        {
+        if (preferred) {
             bounds.width = p.x;
-        }
-        else
-        {
+        } else {
             int width = getBounds().width - x;
-            if (column.getSort() == SWT.NONE)
-            {
+            if (column.getSort() == SWT.NONE) {
                 width -= rightMargin;
             }
 
             bounds.width = width;
         }
-
-
-        gc.dispose();
 
         return bounds;
     }

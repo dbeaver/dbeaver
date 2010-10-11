@@ -70,10 +70,6 @@ public class GridColumn extends Item {
 
 	private String footerText = "";
 
-	private Font headerFont;
-
-	private Font footerFont;
-
 	private int minimumWidth = 0;
 
 	private String headerTooltip = null;
@@ -206,11 +202,9 @@ public class GridColumn extends Item {
 		}
 	}
 
-    public int computeHeaderHeight(GC gc)
+    public int computeHeaderHeight()
     {
-        gc.setFont(getHeaderFont());
-
-        int y = topMargin + gc.getFontMetrics().getHeight() + bottomMargin;
+        int y = topMargin + parent.sizingGC.getFontMetrics().getHeight() + bottomMargin;
 
 
         if (getImage() != null) {
@@ -224,26 +218,22 @@ public class GridColumn extends Item {
 		return y;
     }
 
-    public int computeHeaderWidth(GC gc)
+    public int computeHeaderWidth()
     {
-        gc.setFont(getHeaderFont());
-
         int x = leftMargin;
         if (getImage() != null) {
             x += getImage().getBounds().width + imageSpacing;
         }
-        x += gc.stringExtent(getText()).x + rightMargin;
+        x += parent.sizingGC.stringExtent(getText()).x + rightMargin;
 
         return x;
     }
 
-    public int computeFooterHeight(GC gc)
+    public int computeFooterHeight()
     {
-        gc.setFont(getFooterFont());
-
         int y = topMargin;
 
-        y += gc.getFontMetrics().getHeight();
+        y += parent.sizingGC.getFontMetrics().getHeight();
 
         y += bottomMargin;
 
@@ -327,27 +317,22 @@ public class GridColumn extends Item {
 	public void pack() {
 		checkWidget();
 
-		GC gc = new GC(parent);
-		int newWidth = computeHeaderWidth(gc);
+		int newWidth = computeHeaderWidth();
         if (parent.getContentLabelProvider() != null) {
             int columnIndex = parent.indexOf(this);
             int topIndex = parent.getTopIndex();
             int bottomIndex = parent.getBottomIndex();
             if (topIndex >= 0 && bottomIndex > topIndex) {
                 for (int i = topIndex; i <= bottomIndex; i++) {
-                    newWidth = Math.max(newWidth, computeCellWidth(gc, columnIndex, i));
+                    newWidth = Math.max(newWidth, computeCellWidth(columnIndex, i));
                 }
             }
         }
-		gc.dispose();
 		setWidth(newWidth);
 		parent.redraw();
 	}
 
-    private int computeCellWidth(GC gc, int column, int row) {
-        Font cellFont = parent.getCellFont(column, row);
-        gc.setFont(cellFont);
-
+    private int computeCellWidth(int column, int row) {
         int x = 0;
 
         x += leftMargin;
@@ -357,7 +342,7 @@ public class GridColumn extends Item {
             x += image.getBounds().width + insideMargin;
         }
 
-        x += gc.textExtent(parent.getCellText(column, row)).x + rightMargin;
+        x += parent.sizingGC.textExtent(parent.getCellText(column, row)).x + rightMargin;
         return x;
     }
 
@@ -597,7 +582,16 @@ public class GridColumn extends Item {
 	 */
 	public String getHeaderTooltip() {
 		checkWidget();
-		return headerTooltip;
+        if (headerTooltip != null) {
+            return headerTooltip;
+        }
+        String tip = getText();
+        Point ttSize = getParent().sizingGC.textExtent(tip);
+        if (ttSize.x > getWidth()) {
+            return tip;
+        }
+
+		return null;
 	}
 
 	/**
@@ -657,56 +651,6 @@ public class GridColumn extends Item {
 	public String getFooterText() {
 		checkWidget();
 		return footerText;
-	}
-
-	/**
-	 * Returns the font that the receiver will use to paint textual information
-	 * for the header.
-	 *
-	 * @return the receiver's font
-	 */
-	public Font getHeaderFont() {
-		checkWidget();
-
-		if (headerFont == null) {
-			return parent.getFont();
-		}
-		return headerFont;
-	}
-
-	/**
-	 * Sets the Font to be used when displaying the Header text.
-	 *
-	 * @param font
-	 */
-	public void setHeaderFont(Font font) {
-		checkWidget();
-		headerFont = font;
-	}
-
-	/**
-	 * Returns the font that the receiver will use to paint textual information
-	 * for the footer.
-	 *
-	 * @return the receiver's font
-	 */
-	public Font getFooterFont() {
-		checkWidget();
-
-		if (footerFont == null) {
-			return parent.getFont();
-		}
-		return footerFont;
-	}
-
-	/**
-	 * Sets the Font to be used when displaying the Footer text.
-	 *
-	 * @param font
-	 */
-	public void setFooterFont(Font font) {
-		checkWidget();
-		footerFont = font;
 	}
 
 	/**
