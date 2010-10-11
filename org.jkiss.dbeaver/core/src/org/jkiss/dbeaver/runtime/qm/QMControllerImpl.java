@@ -103,7 +103,6 @@ public class QMControllerImpl implements QMController {
         RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);
         RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_ENTRIES_PER_PAGE, 200);
         RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_OBJECT_TYPES,
-            QMConstants.OBJECT_TYPE_SESSION + "," +
             QMConstants.OBJECT_TYPE_TRANSACTION + "," +
             QMConstants.OBJECT_TYPE_QUERY + "," +
             QMConstants.OBJECT_TYPE_SCRIPT);

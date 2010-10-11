@@ -461,8 +461,17 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
                 }
                 QMMObject object = event.getObject();
                 if (object instanceof QMMStatementExecuteInfo) {
+                    if (!showQueries) {
+                        continue;
+                    }
+                    if (!showPurposes.contains(((QMMStatementExecuteInfo)object).getStatement().getPurpose())) {
+                        continue;
+                    }
                     itemIndex = createOrUpdateItem(object, itemIndex);
                 } else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo) {
+                    if (!showTransactions) {
+                        continue;
+                    }
                     itemIndex = createOrUpdateItem(object, itemIndex);
                     // Update all dependent statements
                     if (object instanceof QMMTransactionInfo) {
@@ -474,6 +483,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
                         updateExecutions((QMMTransactionSavepointInfo) object);
                     }
                 } else if (object instanceof QMMSessionInfo) {
+                    if (!showSessions) {
+                        continue;
+                    }
                     QMMetaEvent.Action action = event.getAction();
                     if (action == QMMetaEvent.Action.BEGIN || action == QMMetaEvent.Action.END) {
                         TableItem item = new TableItem(logTable, SWT.NONE, itemIndex++);
@@ -635,7 +647,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
             TextTransfer textTransfer = TextTransfer.getInstance();
             Clipboard clipboard = new Clipboard(logTable.getDisplay());
             clipboard.setContents(
-                new Object[]{tdt.toString()},
+                new Object[]{tdt},
                 new Transfer[]{textTransfer});
         }
     }
