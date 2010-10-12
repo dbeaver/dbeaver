@@ -109,6 +109,11 @@ public class Spreadsheet extends Composite implements Listener {
         this.createControl(style);
     }
 
+    public static Spreadsheet getFromGrid(LightGrid grid)
+    {
+        return grid != null && grid.getParent() instanceof Spreadsheet ? (Spreadsheet)grid.getParent() : null;
+    }
+
     public LightGrid getGrid()
     {
         return grid;
@@ -170,6 +175,11 @@ public class Spreadsheet extends Composite implements Listener {
     public Collection<GridPos> getSelection()
     {
         return grid.getCellSelection();
+    }
+
+    public int getCurrentRow()
+    {
+        return grid.getFocusItem();
     }
 
     public GridPos getCursorPosition()
@@ -576,7 +586,7 @@ public class Spreadsheet extends Composite implements Listener {
         if (focusCell == null || focusCell.row < 0 || focusCell.col < 0) {
             return;
         }
-        if (!spreadsheetController.isEditable() || !spreadsheetController.isCellEditable(focusCell.col, focusCell.row)) {
+        if (!spreadsheetController.isEditable() || !spreadsheetController.isCellEditable(focusCell)) {
             return;
         }
         //GridItem item = grid.getItem(focusCell.y);

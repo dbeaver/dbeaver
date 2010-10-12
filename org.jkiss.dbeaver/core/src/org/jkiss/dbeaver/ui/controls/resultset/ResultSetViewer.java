@@ -11,9 +11,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -28,7 +26,6 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
@@ -57,6 +54,7 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.export.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -106,20 +104,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private Text statusLabel;
 
-    private ToolItem itemAccept;
-    private ToolItem itemReject;
-
-    private ToolItem itemRowEdit;
-    private ToolItem itemRowAdd;
-    private ToolItem itemRowCopy;
-    private ToolItem itemRowDelete;
-
-    private ToolItem itemToggleView;
-    private ToolItem itemNext;
-    private ToolItem itemPrevious;
-    private ToolItem itemFirst;
-    private ToolItem itemLast;
-    private ToolItem itemRefresh;
+    private IAction itemAccept;
+    private IAction itemReject;
 
     private Map<ResultSetValueController, DBDValueEditor> openEditors = new HashMap<ResultSetValueController, DBDValueEditor>();
     // Flag saying that edited values update is in progress
@@ -197,42 +183,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void onChangeGridCursor(int col, int row)
     {
-        if (mode == ResultSetMode.GRID) {
-            int rowsNum = spreadsheet.getItemCount();
-            //int colsNum = spreadsheet.getColumnsCount();
-            boolean isFirst = (row <= 0);
-            boolean isLast = rowsNum == 0 || (row >= rowsNum - 1);
-
-            boolean isVisible = col >= 0;
-            itemFirst.setEnabled(isVisible && !isFirst);
-            itemPrevious.setEnabled(isVisible && !isFirst);
-            itemNext.setEnabled(isVisible && !isLast);
-            itemLast.setEnabled(isVisible && !isLast);
-            itemRefresh.setEnabled(resultSetProvider != null && resultSetProvider.isReadyToRun());
-        }
-
-        boolean validPosition;
-        if (mode == ResultSetMode.GRID) {
-            validPosition = (col >= 0 && row >= 0);
-        } else {
-            validPosition = curRowNum >= 0;
-        }
-        itemRowEdit.setEnabled(validPosition);
-        itemRowAdd.setEnabled(singleSourceCells && !CommonUtils.isEmpty(metaColumns));
-        itemRowCopy.setEnabled(singleSourceCells && validPosition);
-        itemRowDelete.setEnabled(singleSourceCells && validPosition);
+        ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_MOVE);
+        ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
     }
 
-    private void updateRecord()
+    private void updateRecordMode()
     {
-        boolean isFirst = curRowNum <= 0;
-        boolean isLast = curRows.isEmpty() || (curRowNum >= curRows.size() - 1);
-
-        itemFirst.setEnabled(!isFirst);
-        itemPrevious.setEnabled(!isFirst);
-        itemNext.setEnabled(!isLast);
-        itemLast.setEnabled(!isLast);
-
         this.initResultSet();
     }
 
@@ -263,7 +219,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             if (mode == ResultSetMode.GRID) {
                 spreadsheet.setCursor(curPos, false);
             } else {
-                updateRecord();
+                updateRecordMode();
             }
 
         } else {
@@ -290,102 +246,36 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         statusLabel.setLayoutData(gd);
         statusLabel.setBackground(statusBar.getBackground());
 
-        {
-            ToolBar toolBar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            toolBar.setLayoutData(gd);
+        itemAccept = new Action("Apply changes", DBIcon.ACCEPT.getImageDescriptor()) {
+            public void run()
+            {
+                applyChanges();
+            }
+        };
+        itemReject = new Action("Reject changes", DBIcon.REJECT.getImageDescriptor()) {
+            public void run()
+            {
+                rejectChanges();
+            }
+        };
 
-            itemAccept = UIUtils.createToolItem(toolBar, "Apply changes", DBIcon.ACCEPT, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    applyChanges();
-                }
-            });
-            itemReject = UIUtils.createToolItem(toolBar, "Reject changes", DBIcon.REJECT, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    rejectChanges();
-                }
-            });
-            new ToolItem(toolBar, SWT.SEPARATOR);
-
-            itemRowEdit = UIUtils.createToolItem(toolBar, "Edit cell", DBIcon.ROW_EDIT, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    showCellEditor(spreadsheet.getCursorPosition(), false, null);
-                }
-            });
-            itemRowAdd = UIUtils.createToolItem(toolBar, site, ResultSetCommandHandler.CMD_ROW_ADD, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    addNewRow(false);
-                }
-            });
-            itemRowCopy = UIUtils.createToolItem(toolBar, site, ResultSetCommandHandler.CMD_ROW_COPY, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    addNewRow(true);
-                }
-            });
-            itemRowDelete = UIUtils.createToolItem(toolBar, site, IWorkbenchCommandConstants.EDIT_DELETE, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    deleteCurrentRow();
-                }
-            });
-            itemRowDelete.setToolTipText("Delete row");
-            itemRowDelete.setImage(DBIcon.ROW_DELETE.getImage());
-
-            new ToolItem(toolBar, SWT.SEPARATOR);
-
-            itemToggleView = UIUtils.createToolItem(toolBar, "Toggle View", DBIcon.RS_MODE_GRID, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    changeMode(mode == ResultSetMode.GRID ? ResultSetMode.RECORD : ResultSetMode.GRID);
-                }
-            });
-            new ToolItem(toolBar, SWT.SEPARATOR);
-            itemFirst = UIUtils.createToolItem(toolBar, site, ResultSetCommandHandler.CMD_ROW_FIRST, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    scrollToRow(RowPosition.FIRST);
-                }
-            });
-
-            itemPrevious = UIUtils.createToolItem(toolBar, site, ResultSetCommandHandler.CMD_ROW_PREVIOUS, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    scrollToRow(RowPosition.PREVIOUS);
-                }
-            });
-            itemNext = UIUtils.createToolItem(toolBar, site, ResultSetCommandHandler.CMD_ROW_NEXT, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    scrollToRow(RowPosition.NEXT);
-                }
-            });
-            itemLast = UIUtils.createToolItem(toolBar, site, ResultSetCommandHandler.CMD_ROW_LAST, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    scrollToRow(RowPosition.LAST);
-                }
-            });
-            new ToolItem(toolBar, SWT.SEPARATOR);
-            itemRefresh = UIUtils.createToolItem(toolBar, "Refresh Result Set", DBIcon.RS_REFRESH, new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    refresh();
-                }
-            });
-        }
-        //ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-
-        //toolBarManager.add(ViewUtils.makeCommandContribution(site, "org.jkiss.dbeaver.core.resultset.row.previous"));
-        //toolBarManager.add(ViewUtils.makeCommandContribution(site, ITextEditorActionDefinitionIds.WORD_NEXT));
-        //toolBarManager.add(ViewUtils.makeCommandContribution(site, ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS));
-        //toolBarManager.add(ViewUtils.makeCommandContribution(site, ITextEditorActionDefinitionIds.SELECT_WORD_NEXT));
-        //toolBarManager.add(ViewUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
-        //toolBarManager.createControl(statusBar);
+        ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+        toolBarManager.add(itemAccept);
+        toolBarManager.add(itemReject);
+        toolBarManager.add(new Separator());
+        toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
+        toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_ADD));
+        toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_COPY));
+        toolBarManager.add(ViewUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_DELETE, "Delete current row", DBIcon.ROW_DELETE.getImageDescriptor()));
+        toolBarManager.add(new Separator());
+        toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_FIRST));
+        toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_PREVIOUS));
+        toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_NEXT));
+        toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_LAST));
+        toolBarManager.add(new Separator());
+        toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGLE_MODE));
+        toolBarManager.add(ViewUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH, "Refresh result set", DBIcon.RS_REFRESH.getImageDescriptor()));
+        toolBarManager.createControl(statusBar);
 
         updateEditControls();
     }
@@ -401,12 +291,17 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return mode;
     }
 
+    public void toggleMode()
+    {
+        changeMode(mode == ResultSetMode.GRID ? ResultSetMode.RECORD : ResultSetMode.GRID);
+    }
+
     private void changeMode(ResultSetMode resultSetMode)
     {
         this.mode = resultSetMode;
         if (mode == ResultSetMode.GRID) {
             spreadsheet.setRowHeaderWidth(DEFAULT_ROW_HEADER_WIDTH);
-            itemToggleView.setImage(DBIcon.RS_MODE_GRID.getImage());
+            //itemToggleView.setImage(DBIcon.RS_MODE_GRID.getImage());
         } else {
             // Calculate width of spreadsheet panel - use longest column title
             int defaultWidth = 0;
@@ -422,7 +317,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 defaultWidth += DBIcon.EDIT_COLUMN.getImage().getBounds().width + 2;
             }
             spreadsheet.setRowHeaderWidth(defaultWidth + DEFAULT_ROW_HEADER_WIDTH);
-            itemToggleView.setImage(DBIcon.RS_MODE_RECORD.getImage());
+            //itemToggleView.setImage(DBIcon.RS_MODE_RECORD.getImage());
             GridPos curPos = spreadsheet.getCursorPosition();
             if (curPos != null) {
                 curRowNum = curPos.row;
@@ -432,7 +327,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             } else {
                 curRowNum = 0;
             }
-            updateRecord();
+            updateRecordMode();
         }
 
         this.initResultSet();
@@ -453,18 +348,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (!spreadsheet.isDisposed()) {
             spreadsheet.dispose();
         }
-        itemAccept.dispose();
-        itemReject.dispose();
-        itemRowEdit.dispose();
-        itemRowAdd.dispose();
-        itemRowCopy.dispose();
-        itemRowDelete.dispose();
-        itemToggleView.dispose();
-        itemNext.dispose();
-        itemPrevious.dispose();
-        itemFirst.dispose();
-        itemLast.dispose();
-        itemRefresh.dispose();
+
         statusLabel.dispose();
         themeManager.removePropertyChangeListener(ResultSetViewer.this);
     }
@@ -503,7 +387,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             case FIRST:
                 if (mode == ResultSetMode.RECORD) {
                     curRowNum = 0;
-                    updateRecord();
+                    updateRecordMode();
                 } else {
                     spreadsheet.shiftCursor(0, -spreadsheet.getItemCount(), false);
                 }
@@ -511,7 +395,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             case PREVIOUS:
                 if (mode == ResultSetMode.RECORD && curRowNum > 0) {
                     curRowNum--;
-                    updateRecord();
+                    updateRecordMode();
                 } else {
                     spreadsheet.shiftCursor(0, -1, false);
                 }
@@ -519,7 +403,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             case NEXT:
                 if (mode == ResultSetMode.RECORD && curRowNum < curRows.size() - 1) {
                     curRowNum++;
-                    updateRecord();
+                    updateRecordMode();
                 } else {
                     spreadsheet.shiftCursor(0, 1, false);
                 }
@@ -527,7 +411,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             case LAST:
                 if (mode == ResultSetMode.RECORD && !curRows.isEmpty()) {
                     curRowNum = curRows.size() - 1;
-                    updateRecord();
+                    updateRecordMode();
                 } else {
                     spreadsheet.shiftCursor(0, spreadsheet.getItemCount(), false);
                 }
@@ -542,6 +426,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
         DBSDataContainer dataContainer = (DBSDataContainer) column.getValueLocator().getTable();
         return (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_UPDATE) == 0;
+    }
+
+    public int getCurrentRow()
+    {
+        return mode == ResultSetMode.GRID ? spreadsheet.getCurrentRow() : curRowNum;
+    }
+
+    public GridPos getCurrentPosition()
+    {
+        return spreadsheet.getCursorPosition();
     }
 
     public int getRowsCount()
@@ -665,8 +559,15 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return !updateInProgress;
     }
 
-    public boolean isCellEditable(int col, int row) {
-        return true;
+    public boolean isCellEditable(GridPos pos) {
+        boolean validPosition;
+        if (mode == ResultSetMode.GRID) {
+            validPosition = (pos.col >= 0 && pos.row >= 0);
+        } else {
+            validPosition = curRowNum >= 0;
+        }
+
+        return validPosition;
     }
 
     public boolean isCellModified(int col, int row) {
@@ -677,7 +578,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public boolean isInsertable()
     {
-        return false;
+        return singleSourceCells && !CommonUtils.isEmpty(metaColumns);
     }
 
     public boolean showCellEditor(
@@ -823,6 +724,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void refresh()
     {
+        if (resultSetProvider == null || !resultSetProvider.isReadyToRun()) {
+            return;
+        }
         this.closeEditors();
         this.clearData();
         this.clearResultsView();
@@ -901,6 +805,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private boolean isRowAdded(int row)
     {
         return addedRows.contains(new RowInfo(row));
+    }
+
+    public void editCurrentRow()
+    {
+        showCellEditor(spreadsheet.getCursorPosition(), false, null);
     }
 
     public void addNewRow(boolean copyCurrent)

@@ -129,6 +129,24 @@ public class ViewUtils
             CommandContributionItem.STYLE_PUSH));
     }
 
+    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, String name, ImageDescriptor imageDescriptor)
+    {
+        return new CommandContributionItem(new CommandContributionItemParameter(
+            serviceLocator,
+            null,
+            commandId,
+            null,
+            imageDescriptor,
+            null,
+            null,
+            name,
+            null,
+            null,
+            CommandContributionItem.STYLE_PUSH,
+            null,
+            false));
+    }
+
     public static void addContextMenu(final INavigatorModelView navigatorModelView)
     {
         if (navigatorModelView.getWorkbenchPart() == null) {

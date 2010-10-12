@@ -32,8 +32,7 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
 
     public static Spreadsheet getActiveSpreadsheet(ExecutionEvent event)
     {
-        LightGrid grid = getActiveGrid(event);
-        return grid != null && grid.getParent() instanceof Spreadsheet ? (Spreadsheet)grid.getParent() : null;
+        return Spreadsheet.getFromGrid(getActiveGrid(event));
     }
 
     public Object execute(ExecutionEvent event) throws ExecutionException

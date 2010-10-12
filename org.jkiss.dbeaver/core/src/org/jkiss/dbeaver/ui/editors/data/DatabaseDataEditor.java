@@ -48,4 +48,9 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseOb
         return true;
     }
 
+    @Override
+    public void setFocus()
+    {
+        resultSetView.getControl().setFocus();
+    }
 }

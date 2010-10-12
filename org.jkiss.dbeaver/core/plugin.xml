@@ -51,6 +51,13 @@
                 properties="canExecute,canExplain"
                 type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
         </propertyTester>
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
+                id="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
+                namespace="org.jkiss.dbeaver.core.resultset"
+                properties="canMove,editable"
+                type="org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid">
+        </propertyTester>
 
     </extension>
     <extension point="org.eclipse.ui.views">
@@ -106,10 +113,12 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="Save SQL script" description="Save to file"/>
         <command id="org.jkiss.dbeaver.core.export.data" name="Export data" description="Export data to file(s)"/>
 
+        <command id="org.jkiss.dbeaver.core.resultset.toggleMode" name="Toggle Grid/Record View" description="Toggle Result Set Grid/Record View"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.first" name="First Row" description="Move to first row"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.previous" name="Previous Row" description="Move to previous row"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.next" name="Next Row" description="Move to next row"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.last" name="Last Row" description="Move to last row"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.edit" name="Edit cell" description="Edit cell"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.add" name="Add Row" description="Add new row"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.copy" name="Copy Row" description="Copy current row"/>
 
@@ -145,10 +154,12 @@
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" icon="IMG_ETOOL_SAVEAS_EDIT"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" icon="IMG_OBJ_FOLDER"/>
 
+        <image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="icons/sql/resultset_record.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.first" icon="icons/sql/resultset_first.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.previous" icon="icons/sql/resultset_previous.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.next" icon="icons/sql/resultset_next.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.last" icon="icons/sql/resultset_last.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.row.edit" icon="icons/sql/row_edit.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.add" icon="icons/sql/row_add.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.copy" icon="icons/sql/row_copy.png"/>
 
@@ -475,26 +486,72 @@
         <!-- ResultSet handlers
             Handle both row and text editor commands
         -->
+        <handler commandId="org.jkiss.dbeaver.core.resultset.toggleMode" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.row.first" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <enabledWhen>
+                <with variable="activeFocusControl">
+                    <test property="org.jkiss.dbeaver.core.resultset.canMove" value="back"/>
+                </with>
+            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.row.previous" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <enabledWhen>
+                 <with variable="activeFocusControl">
+                     <test property="org.jkiss.dbeaver.core.resultset.canMove" value="back"/>
+                 </with>
+            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.row.next" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <enabledWhen>
+                 <with variable="activeFocusControl">
+                     <test property="org.jkiss.dbeaver.core.resultset.canMove" value="forward"/>
+                 </with>
+            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.row.last" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <enabledWhen>
+                 <with variable="activeFocusControl">
+                     <test property="org.jkiss.dbeaver.core.resultset.canMove" value="forward"/>
+                 </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.resultset.row.edit" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <enabledWhen>
+                 <with variable="activeFocusControl">
+                     <test property="org.jkiss.dbeaver.core.resultset.editable" value="edit"/>
+                 </with>
+            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.row.add" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <enabledWhen>
+                 <with variable="activeFocusControl">
+                     <test property="org.jkiss.dbeaver.core.resultset.editable" value="add"/>
+                 </with>
+            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.row.copy" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <enabledWhen>
+                <with variable="activeFocusControl">
+                    <test property="org.jkiss.dbeaver.core.resultset.editable" value="copy"/>
+                </with>
+            </enabledWhen>
         </handler>
         <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <enabledWhen>
+                <with variable="activeFocusControl">
+                    <test property="org.jkiss.dbeaver.core.resultset.editable" value="delete"/>
+                </with>
+            </enabledWhen>
         </handler>
 
         <handler commandId="org.eclipse.ui.edit.text.goto.wordPrevious" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
@@ -756,10 +813,12 @@
     <extension point="org.eclipse.ui.bindings">
         <scheme id="DBeaverKeyScheme" name="DBeaver" parentId="org.eclipse.ui.defaultAcceleratorConfiguration" description="DBeaver accelerators"/>
 
+        <key commandId="org.jkiss.dbeaver.core.resultset.toggleMode" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="TAB"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.first" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_LEFT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.previous" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_LEFT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.next" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_RIGHT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.last" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_RIGHT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+ENTER"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="INSERT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.copy" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+INSERT"/>
 
