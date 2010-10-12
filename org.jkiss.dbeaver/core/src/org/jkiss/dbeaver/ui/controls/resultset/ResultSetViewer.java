@@ -20,8 +20,6 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -164,7 +162,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.spreadsheet.addCursorChangeListener(new Listener() {
             public void handleEvent(Event event)
             {
-                onChangeGridCursor(event.x, event.y);
+                updateGridCursor();
             }
         });
 
@@ -172,16 +170,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     }
 
     private void updateGridCursor()
-    {
-        GridPos point = spreadsheet.getCursorPosition();
-        if (point == null) {
-            onChangeGridCursor(0, 0);
-        } else {
-            onChangeGridCursor(point.col, point.row);
-        }
-    }
-
-    private void onChangeGridCursor(int col, int row)
     {
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_MOVE);
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
@@ -344,6 +332,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     {
         closeEditors();
         clearData();
+        clearMetaData();
 
         if (!spreadsheet.isDisposed()) {
             spreadsheet.dispose();
@@ -724,16 +713,18 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void refresh()
     {
-        if (resultSetProvider == null || !resultSetProvider.isReadyToRun()) {
-            return;
-        }
         this.closeEditors();
         this.clearData();
+        this.clearMetaData();
         this.clearResultsView();
-        if (getDataContainer() != null && !dataPumpRunning) {
-            runDataPump(0, getSegmentMaxRows());
+
+        if (resultSetProvider != null && resultSetProvider.isReadyToRun()) {
+            if (getDataContainer() != null && !dataPumpRunning) {
+                runDataPump(0, getSegmentMaxRows());
+            }
         }
         updateGridCursor();
+        updateEditControls();
     }
 
     synchronized void readNextSegment()
@@ -775,6 +766,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         dataPumpJob.schedule();
         dataPumpRunning = true;
     }
+
+    private void clearMetaData()
+    {
+        this.metaColumns = null;
+    }
+
 
     private void clearData()
     {
