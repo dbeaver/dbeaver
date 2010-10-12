@@ -88,7 +88,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private IThemeManager themeManager;
 
     // columns
-    private DBDColumnBinding[] metaColumns;
+    private DBDColumnBinding[] metaColumns = new DBDColumnBinding[0];
     // Data
     private List<Object[]> curRows = new ArrayList<Object[]>();
     // Current row number (for record mode)
@@ -293,17 +293,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         } else {
             // Calculate width of spreadsheet panel - use longest column title
             int defaultWidth = 0;
-            if (metaColumns != null) {
-                GC gc = new GC(spreadsheet);
-                gc.setFont(spreadsheet.getFont());
-                for (DBDColumnBinding column : metaColumns) {
-                    Point ext = gc.stringExtent(column.getColumn().getName());
-                    if (ext.x > defaultWidth) {
-                        defaultWidth = ext.x;
-                    }
+            GC gc = new GC(spreadsheet);
+            gc.setFont(spreadsheet.getFont());
+            for (DBDColumnBinding column : metaColumns) {
+                Point ext = gc.stringExtent(column.getColumn().getName());
+                if (ext.x > defaultWidth) {
+                    defaultWidth = ext.x;
                 }
-                defaultWidth += DBIcon.EDIT_COLUMN.getImage().getBounds().width + 2;
             }
+            defaultWidth += DBIcon.EDIT_COLUMN.getImage().getBounds().width + 2;
+
             spreadsheet.setRowHeaderWidth(defaultWidth + DEFAULT_ROW_HEADER_WIDTH);
             //itemToggleView.setImage(DBIcon.RS_MODE_RECORD.getImage());
             GridPos curPos = spreadsheet.getCursorPosition();
@@ -769,9 +768,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void clearMetaData()
     {
-        this.metaColumns = null;
+        this.metaColumns = new DBDColumnBinding[0];
     }
-
 
     private void clearData()
     {
@@ -1739,10 +1737,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             if (mode == ResultSetMode.RECORD) {
                 return new GridPos(
                     1,
-                    metaColumns == null ? 0 : metaColumns.length);
+                    metaColumns.length);
             } else {
                 return new GridPos(
-                    metaColumns == null ? 0 : metaColumns.length,
+                    metaColumns.length,
                     curRows.size());
             }
         }
