@@ -291,20 +291,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (mode == ResultSetMode.GRID) {
             spreadsheet.setRowHeaderWidth(DEFAULT_ROW_HEADER_WIDTH);
             //itemToggleView.setImage(DBIcon.RS_MODE_GRID.getImage());
+            this.initResultSet();
         } else {
-            // Calculate width of spreadsheet panel - use longest column title
-            int defaultWidth = 0;
-            GC gc = new GC(spreadsheet);
-            gc.setFont(spreadsheet.getFont());
-            for (DBDColumnBinding column : metaColumns) {
-                Point ext = gc.stringExtent(column.getColumn().getName());
-                if (ext.x > defaultWidth) {
-                    defaultWidth = ext.x;
-                }
-            }
-            defaultWidth += DBIcon.EDIT_COLUMN.getImage().getBounds().width + 2;
+            this.resetRecordHeaderWidth();
 
-            spreadsheet.setRowHeaderWidth(defaultWidth + DEFAULT_ROW_HEADER_WIDTH);
             //itemToggleView.setImage(DBIcon.RS_MODE_RECORD.getImage());
             GridPos curPos = spreadsheet.getCursorPosition();
             if (curPos != null) {
@@ -318,14 +308,29 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             updateRecordMode();
         }
 
-        this.initResultSet();
-
         if (mode == ResultSetMode.GRID) {
             if (curRowNum >= 0 && curRowNum < spreadsheet.getItemCount()) {
                 spreadsheet.setCursor(new GridPos(0, curRowNum), false);
             }
         }
         spreadsheet.layout(true, true);
+    }
+
+    private void resetRecordHeaderWidth()
+    {
+        // Calculate width of spreadsheet panel - use longest column title
+        int defaultWidth = 0;
+        GC gc = new GC(spreadsheet);
+        gc.setFont(spreadsheet.getFont());
+        for (DBDColumnBinding column : metaColumns) {
+            Point ext = gc.stringExtent(column.getColumn().getName());
+            if (ext.x > defaultWidth) {
+                defaultWidth = ext.x;
+            }
+        }
+        defaultWidth += DBIcon.EDIT_COLUMN.getImage().getBounds().width + 2;
+
+        spreadsheet.setRowHeaderWidth(defaultWidth + DEFAULT_ROW_HEADER_WIDTH);
     }
 
     public void dispose()
@@ -532,6 +537,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         spreadsheet.setRedraw(false);
         spreadsheet.clearGrid();
         if (mode == ResultSetMode.RECORD) {
+            this.resetRecordHeaderWidth();
             this.showCurrentRows();
         } else {
             this.showRowsCount();

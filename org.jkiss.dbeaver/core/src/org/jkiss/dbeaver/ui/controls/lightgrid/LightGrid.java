@@ -540,7 +540,7 @@ public class LightGrid extends Canvas {
             }
 
             if (getColumnCount() == 1) {
-                getColumn(0).setWidth(getSize().x);
+                getColumn(0).setWidth(getSize().x - getRowHeaderWidth() - 20);
             } else {
                 for (GridColumn curColumn : getColumns()) {
                     curColumn.pack();
