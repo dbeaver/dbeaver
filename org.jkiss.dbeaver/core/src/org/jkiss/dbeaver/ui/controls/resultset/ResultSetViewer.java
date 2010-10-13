@@ -20,6 +20,8 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -33,6 +35,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -50,6 +53,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.dbeaver.ui.dialogs.ViewTextDialog;
 import org.jkiss.dbeaver.ui.export.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ViewUtils;
@@ -102,8 +106,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private Text statusLabel;
 
-    private IAction itemAccept;
-    private IAction itemReject;
+    private IAction actionAccept;
+    private IAction actionReject;
 
     private Map<ResultSetValueController, DBDValueEditor> openEditors = new HashMap<ResultSetValueController, DBDValueEditor>();
     // Flag saying that edited values update is in progress
@@ -183,8 +187,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private void updateEditControls()
     {
         boolean hasChanges = !editedValues.isEmpty() || !addedRows.isEmpty() || !removedRows.isEmpty();
-        itemAccept.setEnabled(hasChanges);
-        itemReject.setEnabled(hasChanges);
+        actionAccept.setEnabled(hasChanges);
+        actionReject.setEnabled(hasChanges);
     }
 
     private void refreshSpreadsheet(boolean rowsChanged)
@@ -223,24 +227,38 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         Composite statusBar = new Composite(parent, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         statusBar.setLayoutData(gd);
-        GridLayout gl = new GridLayout(3, false);
+        GridLayout gl = new GridLayout(4, false);
         gl.marginWidth = 0;
         gl.marginHeight = 3;
         //gl.marginBottom = 5;
         statusBar.setLayout(gl);
         
-        statusLabel = new Text(statusBar, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL);
+        statusLabel = new Text(statusBar, SWT.MULTI | SWT.READ_ONLY);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         statusLabel.setLayoutData(gd);
         statusLabel.setBackground(statusBar.getBackground());
+        statusLabel.addMouseListener(new MouseAdapter() {
+            public void mouseDoubleClick(MouseEvent e)
+            {
+                ViewTextDialog.showText(site.getShell(), "Status", statusLabel.getText());
+            }
+        });
 
-        itemAccept = new Action("Apply changes", DBIcon.ACCEPT.getImageDescriptor()) {
+/*
+        IAction viewMessageAction = new Action("View status message", DBIcon.INFO.getImageDescriptor()) {
+            public void run()
+            {
+            }
+        };
+*/
+
+        actionAccept = new Action("Apply changes", DBIcon.ACCEPT.getImageDescriptor()) {
             public void run()
             {
                 applyChanges();
             }
         };
-        itemReject = new Action("Reject changes", DBIcon.REJECT.getImageDescriptor()) {
+        actionReject = new Action("Reject changes", DBIcon.REJECT.getImageDescriptor()) {
             public void run()
             {
                 rejectChanges();
@@ -248,8 +266,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         };
 
         ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-        toolBarManager.add(itemAccept);
-        toolBarManager.add(itemReject);
+        //toolBarManager.add(viewMessageAction);
+        toolBarManager.add(actionAccept);
+        toolBarManager.add(actionReject);
         toolBarManager.add(new Separator());
         toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
         toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_ADD));
@@ -448,7 +467,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         } else {
             statusLabel.setForeground(null);
         }
-        statusLabel.setText(status);
+        statusLabel.setText(SQLUtils.stripTransformations(status));
     }
 
     public void setExecutionTime(long executionTime)
