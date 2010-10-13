@@ -255,8 +255,7 @@ public class Spreadsheet extends Composite implements Listener {
         grid.redraw();
 
         // Change selection event
-        selectionEvent.x = newPos.col;
-        selectionEvent.y = newPos.row;
+        selectionEvent.data = new GridPos(newPos.col, newPos.row);
         gridSelectionListener.widgetSelected(selectionEvent);
     }
 
@@ -293,16 +292,17 @@ public class Spreadsheet extends Composite implements Listener {
         gridSelectionListener = new SelectionListener() {
             public void widgetSelected(SelectionEvent e)
             {
-                Integer row = (Integer) e.data;
-                GridPos focusCell = grid.getFocusCell();
-                if (focusCell != null) {
+                //Integer row = (Integer) e.data;
+                GridPos pos = (GridPos) e.data;
+                //GridPos focusCell = grid.getFocusCell();
+                //if (focusCell != null) {
                     Event event = new Event();
-                    event.data = row;
-                    event.data = e.data;
-                    event.x = focusCell.col;
-                    event.y = focusCell.row;
+                    //event.data = row;
+                    //event.data = e.data;
+                    event.x = pos.col;
+                    event.y = pos.row;
                     notifyListeners(Event_ChangeCursor, event);
-                }
+                //}
             }
 
             public void widgetDefaultSelected(SelectionEvent e)

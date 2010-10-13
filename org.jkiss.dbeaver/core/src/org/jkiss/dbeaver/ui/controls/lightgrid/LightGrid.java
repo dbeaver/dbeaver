@@ -3097,9 +3097,10 @@ public class LightGrid extends Canvas {
             }
         }
 
+        GridColumn col = null;
         if (row >= 0) {
             {
-                GridColumn col = getColumn(new Point(e.x, e.y));
+                col = getColumn(new Point(e.x, e.y));
                 boolean isSelectedCell = false;
                 if (col != null)
                     isSelectedCell = selectedCells.contains(new GridPos(indexOf(col), row));
@@ -3164,7 +3165,7 @@ public class LightGrid extends Canvas {
             focusItem = getTopIndex();
         } else if (e.button == 1 && columnHeadersVisible && e.y <= headerHeight) {
             //column cell selection
-            GridColumn col = getColumn(new Point(e.x, e.y));
+            col = getColumn(new Point(e.x, e.y));
 
             if (col == null) return;
 
@@ -3189,7 +3190,7 @@ public class LightGrid extends Canvas {
         if (selectionEvent != null) {
             selectionEvent.stateMask = e.stateMask;
             selectionEvent.button = e.button;
-            selectionEvent.data = row;
+            selectionEvent.data = new GridPos(col == null ? 0 : indexOf(col), row);
             selectionEvent.x = e.x;
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);
@@ -3256,7 +3257,9 @@ public class LightGrid extends Canvas {
             if (followupCellSelectionEventOwed) {
                 Event se = new Event();
                 se.button = e.button;
-                se.data = getRow(new Point(e.x, e.y));
+                Point point = new Point(e.x, e.y);
+                GridColumn column = getColumn(point);
+                se.data = new GridPos(column == null ? 0 : indexOf(column), getRow(point));
                 se.stateMask = e.stateMask;
                 se.x = e.x;
                 se.y = e.y;
@@ -3414,7 +3417,9 @@ public class LightGrid extends Canvas {
         if (selectionEvent != null) {
             selectionEvent.stateMask = e.stateMask;
             selectionEvent.button = e.button;
-            selectionEvent.data = getRow(new Point(e.x, e.y));
+            Point point = new Point(e.x, e.y);
+            GridColumn column = getColumn(point);
+            selectionEvent.data = new GridPos(column == null ? 0 : indexOf(column), getRow(point));
             selectionEvent.x = e.x;
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);
@@ -3640,18 +3645,20 @@ public class LightGrid extends Canvas {
 
         {
             //if (e.stateMask != SWT.MOD1) {
-                Event selEvent = updateCellSelection(
-                    new GridPos(indexOf(newColumnFocus), newSelection),
-                    e.stateMask,
-                    false,
-                    false,
-                    EventSource.KEYBOARD);
-                if (selEvent != null) {
-                    selEvent.stateMask = e.stateMask;
-                    selEvent.character = e.character;
-                    selEvent.keyCode = e.keyCode;
-                    notifyListeners(SWT.Selection, selEvent);
-                }
+            GridPos newPos = new GridPos(indexOf(newColumnFocus), newSelection);
+            Event selEvent = updateCellSelection(
+                newPos,
+                e.stateMask,
+                false,
+                false,
+                EventSource.KEYBOARD);
+            if (selEvent != null) {
+                selEvent.stateMask = e.stateMask;
+                selEvent.character = e.character;
+                selEvent.keyCode = e.keyCode;
+                selEvent.data = newPos;
+                notifyListeners(SWT.Selection, selEvent);
+            }
             //}
 
             if (!shiftPressed)

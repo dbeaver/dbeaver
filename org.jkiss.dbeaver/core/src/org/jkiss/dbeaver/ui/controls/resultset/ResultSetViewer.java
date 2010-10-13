@@ -96,6 +96,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private List<Object[]> curRows = new ArrayList<Object[]>();
     // Current row number (for record mode)
     private int curRowNum = -1;
+    private int curColNum = -1;
     private boolean singleSourceCells;
 
     // Edited rows and cells
@@ -162,15 +163,22 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.spreadsheet.addCursorChangeListener(new Listener() {
             public void handleEvent(Event event)
             {
-                updateGridCursor();
+                updateGridCursor(event.x, event.y);
             }
         });
 
         applyThemeSettings();
     }
 
-    private void updateGridCursor()
+    private void updateGridCursor(int col, int row)
     {
+        if (mode == ResultSetMode.GRID) {
+            curRowNum = row;
+            curColNum = col;
+        } else {
+            curColNum = row;
+        }
+
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_MOVE);
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
     }
@@ -188,12 +196,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private void refreshSpreadsheet(boolean rowsChanged)
     {
         if (rowsChanged) {
+            if (curRowNum >= curRows.size()) {
+                curRowNum = curRows.size() - 1;
+            }
             GridPos curPos = spreadsheet.getCursorPosition();
-            if (mode == ResultSetMode.RECORD) {
-                if (curRowNum >= curRows.size()) {
-                    curRowNum = curRows.size() - 1;
-                }
-            } else if (mode == ResultSetMode.GRID) {
+            if (mode == ResultSetMode.GRID) {
                 if (curPos.row >= curRows.size()) {
                     curPos.row = curRows.size() - 1;
                 }
@@ -287,30 +294,24 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void changeMode(ResultSetMode resultSetMode)
     {
+        int oldRowNum = this.curRowNum, oldColNum = this.curColNum;
         this.mode = resultSetMode;
-        if (mode == ResultSetMode.GRID) {
-            spreadsheet.setRowHeaderWidth(DEFAULT_ROW_HEADER_WIDTH);
-            //itemToggleView.setImage(DBIcon.RS_MODE_GRID.getImage());
+        if (this.mode == ResultSetMode.GRID) {
+            this.spreadsheet.setRowHeaderWidth(DEFAULT_ROW_HEADER_WIDTH);
             this.initResultSet();
         } else {
             this.resetRecordHeaderWidth();
-
-            //itemToggleView.setImage(DBIcon.RS_MODE_RECORD.getImage());
-            GridPos curPos = spreadsheet.getCursorPosition();
-            if (curPos != null) {
-                curRowNum = curPos.row;
-                if (curRowNum < 0) {
-                    curRowNum = 0;
-                }
-            } else {
-                curRowNum = 0;
-            }
-            updateRecordMode();
+            this.updateRecordMode();
         }
-
+        this.curRowNum = oldRowNum;
+        this.curColNum = oldColNum;
         if (mode == ResultSetMode.GRID) {
-            if (curRowNum >= 0 && curRowNum < spreadsheet.getItemCount()) {
-                spreadsheet.setCursor(new GridPos(0, curRowNum), false);
+            if (this.curRowNum >= 0 && this.curRowNum < spreadsheet.getItemCount()) {
+                spreadsheet.setCursor(new GridPos(this.curColNum, this.curRowNum), false);
+            }
+        } else {
+            if (this.curColNum >= 0) {
+                spreadsheet.setCursor(new GridPos(0, this.curColNum), false);
             }
         }
         spreadsheet.layout(true, true);
@@ -546,7 +547,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         spreadsheet.reinitState();
         spreadsheet.setRedraw(true);
 
-        this.updateGridCursor();
+        this.updateGridCursor(-1, -1);
     }
 
     public boolean isEditable()
@@ -729,7 +730,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 runDataPump(0, getSegmentMaxRows());
             }
         }
-        updateGridCursor();
+        updateGridCursor(-1, -1);
         updateEditControls();
     }
 
@@ -784,6 +785,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.releaseAll();
         this.curRows = new ArrayList<Object[]>();
         this.curRowNum = 0;
+        this.curColNum = 0;
 
         this.editedValues = new HashMap<CellInfo, Object>();
         this.addedRows = new TreeSet<RowInfo>();
