@@ -118,7 +118,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private Color foregroundNull;
 
     private ResultSetDataPumpJob dataPumpJob;
-    private boolean dataPumpRunning;
     //private static final String RESULT_SET_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset";
 
     public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
@@ -723,18 +722,23 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void refresh()
     {
+        int oldRowNum = curRowNum;
+        int oldColNum = curColNum;
+
         this.closeEditors();
         this.clearData();
         this.clearMetaData();
         this.clearResultsView();
 
-        if (resultSetProvider != null && resultSetProvider.isReadyToRun()) {
-            if (getDataContainer() != null && !dataPumpRunning) {
-                runDataPump(0, getSegmentMaxRows());
+        if (resultSetProvider != null && resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
+            int segmentSize = getSegmentMaxRows();
+            if (oldRowNum >= segmentSize) {
+                segmentSize = (oldRowNum / segmentSize + 1) * segmentSize;
             }
+            runDataPump(0, segmentSize, new GridPos(oldColNum, oldRowNum));
+            updateGridCursor(-1, -1);
+            updateEditControls();
         }
-        updateGridCursor(-1, -1);
-        updateEditControls();
     }
 
     synchronized void readNextSegment()
@@ -742,10 +746,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
-        if (getDataContainer() != null && !dataPumpRunning) {
+        if (getDataContainer() != null && dataPumpJob == null) {
             dataReceiver.setHasMoreData(false);
             dataReceiver.setNextSegmentRead(true);
-            runDataPump(curRows.size(), getSegmentMaxRows());
+            runDataPump(curRows.size(), getSegmentMaxRows(), null);
         }
     }
 
@@ -758,23 +762,36 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
     }
 
-    private synchronized void runDataPump(int offset, int maxRows)
+    private synchronized void runDataPump(final int offset, final int maxRows, final GridPos oldPos)
     {
         if (dataPumpJob == null) {
             dataPumpJob = new ResultSetDataPumpJob(this);
             dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void done(IJobChangeEvent event) {
-                    dataPumpRunning = false;
+                    dataPumpJob = null;
+                    if (oldPos != null) {
+                        Display.getDefault().syncExec(new Runnable() {
+                            public void run()
+                            {
+                                // Seems to be refresh
+                                // Restore original position
+                                ResultSetViewer.this.curRowNum = oldPos.row;
+                                ResultSetViewer.this.curColNum = oldPos.col;
+                                if (mode == ResultSetMode.GRID) {
+                                    spreadsheet.setCursor(new GridPos(curColNum, curRowNum), false);
+                                } else {
+                                    spreadsheet.setCursor(new GridPos(0, curColNum), false);
+                                }
+                            }
+                        });
+                    }
                 }
             });
-        } else if (dataPumpRunning) {
-            return;
+            dataPumpJob.setOffset(offset);
+            dataPumpJob.setMaxRows(maxRows);
+            dataPumpJob.schedule();
         }
-        dataPumpJob.setOffset(offset);
-        dataPumpJob.setMaxRows(maxRows);
-        dataPumpJob.schedule();
-        dataPumpRunning = true;
     }
 
     private void clearMetaData()
