@@ -254,7 +254,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
         toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_ADD));
         toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_COPY));
-        toolBarManager.add(ViewUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_DELETE, "Delete current row", DBIcon.ROW_DELETE.getImageDescriptor()));
+        toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_DELETE));
         toolBarManager.add(new Separator());
         toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_FIRST));
         toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_PREVIOUS));
@@ -825,34 +825,40 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         final Object[] cells = new Object[metaColumns.length];
         final int currentRowNumber = rowNum;
         if (copyCurrent && currentRowNumber >= 0 && currentRowNumber < curRows.size()) {
-            DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    // Copy cell values in new context
-                    DBCExecutionContext context = getDataContainer().getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Copy row values");
-                    try {
-                        Object[] origRow = curRows.get(currentRowNumber);
-                        for (int i = 0; i < metaColumns.length; i++) {
-                            DBDColumnBinding metaColumn = metaColumns[i];
-                            if (metaColumn.getTableColumn().isAutoIncrement()) {
-                                // set autoincrement columns to null
-                                cells[i] = null;
-                            } else {
-                                try {
-                                    cells[i] = metaColumn.getValueHandler().copyValueObject(context, origRow[i]);
-                                }
-                                catch (DBCException e) {
-                                    log.warn(e);
-                                    cells[i] = DBUtils.makeNullValue(origRow[i]);
+            try {
+                DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+                    public void run(DBRProgressMonitor monitor)
+                        throws InvocationTargetException, InterruptedException
+                    {
+                        // Copy cell values in new context
+                        DBCExecutionContext context = getDataContainer().getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Copy row values");
+                        try {
+                            Object[] origRow = curRows.get(currentRowNumber);
+                            for (int i = 0; i < metaColumns.length; i++) {
+                                DBDColumnBinding metaColumn = metaColumns[i];
+                                if (metaColumn.getTableColumn().isAutoIncrement()) {
+                                    // set autoincrement columns to null
+                                    cells[i] = null;
+                                } else {
+                                    try {
+                                        cells[i] = metaColumn.getValueHandler().copyValueObject(context, origRow[i]);
+                                    }
+                                    catch (DBCException e) {
+                                        log.warn(e);
+                                        cells[i] = DBUtils.makeNullValue(origRow[i]);
+                                    }
                                 }
                             }
+                        } finally {
+                            context.close();
                         }
-                    } finally {
-                        context.close();
                     }
-                }
-            });
+                });
+            } catch (InvocationTargetException e) {
+                log.error("Could not copy cell", e.getTargetException());
+            } catch (InterruptedException e) {
+                // interrupted - do nothing
+            }
         }
         curRows.add(rowNum, cells);
 

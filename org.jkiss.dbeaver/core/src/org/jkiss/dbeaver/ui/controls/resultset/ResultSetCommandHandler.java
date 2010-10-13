@@ -23,6 +23,7 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
     public static final String CMD_ROW_EDIT = "org.jkiss.dbeaver.core.resultset.row.edit";
     public static final String CMD_ROW_ADD = "org.jkiss.dbeaver.core.resultset.row.add";
     public static final String CMD_ROW_COPY = "org.jkiss.dbeaver.core.resultset.row.copy";
+    public static final String CMD_ROW_DELETE = "org.jkiss.dbeaver.core.resultset.row.delete";
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -54,7 +55,7 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
             resultSet.addNewRow(false);
         } else if (actionId.equals(CMD_ROW_COPY)) {
             resultSet.addNewRow(true);
-        } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_DELETE)) {
+        } else if (actionId.equals(CMD_ROW_DELETE)) {
             if (resultSet.getMode() == ResultSetViewer.ResultSetMode.GRID) {
                 resultSet.deleteCurrentRow();
             }

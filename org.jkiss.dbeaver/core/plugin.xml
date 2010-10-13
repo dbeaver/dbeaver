@@ -113,14 +113,15 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="Save SQL script" description="Save to file"/>
         <command id="org.jkiss.dbeaver.core.export.data" name="Export data" description="Export data to file(s)"/>
 
-        <command id="org.jkiss.dbeaver.core.resultset.toggleMode" name="Toggle Grid/Record View" description="Toggle Result Set Grid/Record View"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.first" name="First Row" description="Move to first row"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.previous" name="Previous Row" description="Move to previous row"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.next" name="Next Row" description="Move to next row"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.last" name="Last Row" description="Move to last row"/>
+        <command id="org.jkiss.dbeaver.core.resultset.toggleMode" name="Toggle Grid/Record view" description="Toggle Result Set Grid/Record View"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.first" name="First row" description="Move to first row"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.previous" name="Previous row" description="Move to previous row"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.next" name="Next row" description="Move to next row"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.last" name="Last row" description="Move to last row"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.edit" name="Edit cell" description="Edit cell"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.add" name="Add Row" description="Add new row"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.copy" name="Copy Row" description="Copy current row"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.add" name="Add row" description="Add new row"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.copy" name="Copy row" description="Copy current row"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.delete" name="Delete current row" description="Delete current row"/>
 
         <command id="org.jkiss.dbeaver.core.edit.copy.special" name="Copy full qualified name" description="Copy special"/>
 
@@ -162,6 +163,7 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.row.edit" icon="icons/sql/row_edit.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.add" icon="icons/sql/row_add.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.copy" icon="icons/sql/row_copy.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.row.delete" icon="icons/sql/row_delete.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="icons/misc/filter.png"/>
         <image commandId="org.jkiss.dbeaver.core.qm.clear" icon="IMG_ETOOL_CLEAR"/>
@@ -545,7 +547,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+        <handler commandId="org.jkiss.dbeaver.core.resultset.row.delete" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
             <enabledWhen>
                 <with variable="activeFocusControl">
@@ -569,6 +571,22 @@
         <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
         </handler>
+
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.cut" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <!--handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+        </handler-->
 
         <!-- Query log control handlers -->
         <handler commandId="org.eclipse.ui.edit.selectAll" class="org.jkiss.dbeaver.ui.controls.querylog.QueryLogCommandHandler">
@@ -821,6 +839,7 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.row.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+ENTER"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="INSERT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.copy" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+INSERT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.delete" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+DELETE"/>
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
 
