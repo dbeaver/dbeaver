@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -105,9 +104,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private Map<CellInfo, Object> editedValues = new HashMap<CellInfo, Object>();
 
     private Text statusLabel;
-
-    private IAction actionAccept;
-    private IAction actionReject;
 
     private Map<ResultSetValueController, DBDValueEditor> openEditors = new HashMap<ResultSetValueController, DBDValueEditor>();
     // Flag saying that edited values update is in progress
@@ -186,9 +182,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void updateEditControls()
     {
-        boolean hasChanges = !editedValues.isEmpty() || !addedRows.isEmpty() || !removedRows.isEmpty();
-        actionAccept.setEnabled(hasChanges);
-        actionReject.setEnabled(hasChanges);
+        ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CHANGED);
     }
 
     private void refreshSpreadsheet(boolean rowsChanged)
@@ -252,23 +246,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         };
 */
 
-        actionAccept = new Action("Apply changes", DBIcon.ACCEPT.getImageDescriptor()) {
-            public void run()
-            {
-                applyChanges();
-            }
-        };
-        actionReject = new Action("Reject changes", DBIcon.REJECT.getImageDescriptor()) {
-            public void run()
-            {
-                rejectChanges();
-            }
-        };
 
         ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
         //toolBarManager.add(viewMessageAction);
-        toolBarManager.add(actionAccept);
-        toolBarManager.add(actionReject);
+        toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES));
+        toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_REJECT_CHANGES));
         toolBarManager.add(new Separator());
         toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
         toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_ADD));
@@ -388,7 +370,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
-    public void scrollToRow(RowPosition position)
+    void scrollToRow(RowPosition position)
     {
         switch (position) {
             case FIRST:
@@ -802,7 +784,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.removedRows = new TreeSet<RowInfo>();
     }
 
-    private void applyChanges()
+    boolean hasChanges()
+    {
+        return !editedValues.isEmpty() || !addedRows.isEmpty() || !removedRows.isEmpty();
+    }
+
+    void applyChanges()
     {
         try {
             new DataUpdater().applyChanges(null);
@@ -811,7 +798,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
-    private void rejectChanges()
+    void rejectChanges()
     {
         new DataUpdater().rejectChanges();
     }
@@ -821,12 +808,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return addedRows.contains(new RowInfo(row));
     }
 
-    public void editCurrentRow()
+    void editCurrentRow()
     {
         showCellEditor(spreadsheet.getCursorPosition(), false, null);
     }
 
-    public void addNewRow(boolean copyCurrent)
+    void addNewRow(boolean copyCurrent)
     {
         GridPos curPos = spreadsheet.getCursorPosition();
         int rowNum;
@@ -904,7 +891,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return removedRows.contains(new RowInfo(row));
     }
 
-    public void deleteCurrentRow()
+    void deleteCurrentRow()
     {
         GridPos curPos = spreadsheet.getCursorPosition();
         int rowNum;

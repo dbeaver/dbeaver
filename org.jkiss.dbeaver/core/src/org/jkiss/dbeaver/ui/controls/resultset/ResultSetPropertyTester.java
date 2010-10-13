@@ -23,6 +23,7 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.resultset";
     public static final String PROP_CAN_MOVE = "canMove";
     public static final String PROP_EDITABLE = "editable";
+    public static final String PROP_CHANGED = "changed";
 
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         Spreadsheet spreadsheet = Spreadsheet.getFromGrid((LightGrid) receiver);
@@ -50,6 +51,8 @@ public class ResultSetPropertyTester extends PropertyTester
             } else {
                 return false;
             }
+        } else if (PROP_CHANGED.equals(property)) {
+            return rsv.hasChanges();
         }
         return false;
     }
