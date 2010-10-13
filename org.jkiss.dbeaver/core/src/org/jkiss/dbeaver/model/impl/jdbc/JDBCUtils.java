@@ -14,11 +14,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 
 /**
  * JDBCUtils
@@ -337,6 +335,16 @@ public class JDBCUtils
                     throw new SQLException("Could not scroll result set to " + offset + " row", e);
                 }
             }
+        }
+    }
+
+    public static void reportWarnings(SQLWarning rootWarning)
+    {
+        for (SQLWarning warning = rootWarning; warning != null; warning = warning.getNextWarning()) {
+            log.warn(
+                "SQL Warning: " + warning.getLocalizedMessage() + ContentUtils.getDefaultLineSeparator() +
+                "SQL Code: " + warning.getErrorCode() + ContentUtils.getDefaultLineSeparator() +
+                "SQL State: " + warning.getSQLState());
         }
     }
 }

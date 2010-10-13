@@ -407,7 +407,18 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
 
     public void close()
     {
+        // Check for warnings
+        try {
+            JDBCUtils.reportWarnings(getOriginal().getWarnings());
+            getOriginal().clearWarnings();
+        } catch (Throwable e) {
+            log.debug("Could not check for statement warnings", e);
+        }
+
+        // Handle close
         QMUtils.getDefaultHandler().handleStatementClose(this);
+
+        // Close statement
         try {
             getOriginal().close();
         }

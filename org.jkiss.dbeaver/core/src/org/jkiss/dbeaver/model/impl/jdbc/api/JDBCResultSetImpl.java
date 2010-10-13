@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.dbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 
@@ -157,7 +158,18 @@ public class JDBCResultSetImpl implements JDBCResultSet {
 
     public void close()
     {
+        // Check for warnings
+        try {
+            JDBCUtils.reportWarnings(getOriginal().getWarnings());
+            getOriginal().clearWarnings();
+        } catch (Throwable e) {
+            log.debug("Could not check for resultset warnings", e);
+        }
+
+        // Handle close
         QMUtils.getDefaultHandler().handleResultSetClose(this, rowsFetched);
+
+        // Close result set
         try {
             original.close();
         }

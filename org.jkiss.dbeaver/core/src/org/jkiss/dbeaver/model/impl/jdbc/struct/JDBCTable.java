@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -33,6 +35,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     extends AbstractTable<DATASOURCE, CONTAINER>
     implements DBSDataContainer
 {
+    static final Log log = LogFactory.getLog(JDBCTable.class);
 
     protected JDBCTable(CONTAINER container)
     {
@@ -304,7 +307,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         try {
             dbResult = dbStat.openGeneratedKeysResultSet();
         }
-        catch (IncompatibleClassChangeError e) {
+        catch (Throwable e) {
+            log.debug("Error obtaining generated keys", e);
             return;
         }
         if (dbResult == null) {

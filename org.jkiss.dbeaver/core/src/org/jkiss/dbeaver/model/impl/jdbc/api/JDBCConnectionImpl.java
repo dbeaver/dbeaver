@@ -17,9 +17,11 @@ import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.sql.*;
 import java.util.Map;
@@ -210,8 +212,15 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
     }
 
     public void close()
-        //throws SQLException
     {
+        // Check for warnings
+        try {
+            JDBCUtils.reportWarnings(getConnection().getWarnings());
+            getConnection().clearWarnings();
+        } catch (Throwable e) {
+            log.debug("Could not check for connection warnings", e);
+        }
+        // End context
         if (taskTitle != null) {
             monitor.endBlock();
         }
