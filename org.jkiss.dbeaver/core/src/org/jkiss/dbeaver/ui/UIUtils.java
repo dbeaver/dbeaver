@@ -33,6 +33,7 @@ import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.nio.charset.Charset;
@@ -547,11 +548,12 @@ public class UIUtils {
         log.error(error);
 
         // Display the dialog
-        ErrorDialog.openError(
-            shell,
+        StandardErrorDialog dialog = new StandardErrorDialog(shell,
             title,
             message,
-            RuntimeUtils.makeExceptionStatus(error));
+            RuntimeUtils.makeExceptionStatus(error),
+            IStatus.ERROR);
+        dialog.open();
     }
 
     public static void showErrorDialog(
@@ -561,11 +563,13 @@ public class UIUtils {
     {
         //log.debug(message);
         // Display the dialog
-        ErrorDialog.openError(
+        StandardErrorDialog dialog = new StandardErrorDialog(
             shell,
             title,
-            null,//message,
-            new Status(IStatus.ERROR, DBeaverCore.getInstance().getPluginID(), message));
+            null,
+            new Status(IStatus.ERROR, DBeaverConstants.PLUGIN_ID, message),
+            IStatus.ERROR);
+        dialog.open();
     }
 
 }
