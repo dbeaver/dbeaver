@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.SQLUtils;
 
 import java.sql.SQLException;
 
@@ -86,7 +87,7 @@ public class DBException extends Exception
             msg.append(" [").append(ex.getSQLState()).append("]");
         }
         if (!CommonUtils.isEmpty(ex.getMessage())) {
-            msg.append(": ").append(ex.getMessage());
+            msg.append(": ").append(SQLUtils.stripTransformations(ex.getMessage()));
         }
         if (ex.getNextException() != null) {
             msg.append("\n").append(makeMessage(ex.getNextException()));

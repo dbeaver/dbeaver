@@ -467,7 +467,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         } else {
             statusLabel.setForeground(null);
         }
-        statusLabel.setText(SQLUtils.stripTransformations(status));
+        statusLabel.setText(status);
     }
 
     public void setExecutionTime(long executionTime)
