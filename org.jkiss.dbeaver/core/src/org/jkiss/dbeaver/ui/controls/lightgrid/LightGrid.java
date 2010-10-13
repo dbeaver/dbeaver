@@ -3432,6 +3432,24 @@ public class LightGrid extends Canvas {
     {
         // TODO: need to clean up and refactor hover code
         handleCellHover(x, y);
+
+        if (columnHeadersVisible) {
+            if (handleHoverOnColumnResizer(x, y)) {
+//                if (hoveringItem != null || !hoveringDetail.equals("") || hoveringColumn != null
+//                    || hoveringColumnHeader != null || hoverColumnGroupHeader != null)
+//                {
+//                    hoveringItem = null;
+//                    hoveringDetail = "";
+//                    hoveringColumn = null;
+//                    hoveringColumnHeader = null;
+//                    hoverColumnGroupHeader = null;
+//
+//                    Rectangle clientArea = getClientArea();
+//                    redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
+//                }
+                return;
+            }
+        }
     }
 
     /**
