@@ -185,7 +185,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void updateRecordMode()
     {
+        int oldColNum = this.curColNum;
         this.initResultSet();
+        this.curColNum = oldColNum;
+        spreadsheet.setCursor(new GridPos(0, oldColNum), false);
     }
 
     private void updateEditControls()
