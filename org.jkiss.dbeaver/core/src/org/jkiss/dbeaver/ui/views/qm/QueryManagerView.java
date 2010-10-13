@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.views.qm;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Composite;
@@ -30,7 +29,7 @@ public class QueryManagerView extends ViewPart
     {
         Composite group = UIUtils.createPlaceholder(parent, 1);
 
-        queryLogViewer = new QueryLogViewer(group, getSite(), null, true);
+        queryLogViewer = new QueryLogViewer(group, getSite(), null);
     }
 
     public void setFocus()

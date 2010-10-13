@@ -229,7 +229,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
     private int entriesPerPage = 0;
 
-    public QueryLogViewer(Composite parent, IWorkbenchPartSite site, IQueryLogFilter filter, boolean loadPastEvents)
+    public QueryLogViewer(Composite parent, IWorkbenchPartSite site, IQueryLogFilter filter)
     {
         super();
 
@@ -275,9 +275,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         addDragAndDropSupport();
 
         this.filter = filter;
-        if (loadPastEvents) {
-            reloadEvents();
-        }
+
+        reloadEvents();
+
         QMUtils.registerMetaListener(this);
 
         DBeaverCore.getInstance().getGlobalPreferenceStore().addPropertyChangeListener(this);
