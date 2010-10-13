@@ -237,13 +237,13 @@ public class Spreadsheet extends Composite implements Listener {
         fakeEvent.widget = grid;
         SelectionEvent selectionEvent = new SelectionEvent(fakeEvent);
         // Move row
-        if (newPos.row >= 0) {
+        if (newPos.row >= 0 && newPos.row < getItemCount()) {
             selectionEvent.data = newPos.row;
             grid.setFocusItem(newPos.row);
             grid.showItem(newPos.row);
         }
         // Move column
-        if (newPos.col >= 0) {
+        if (newPos.col >= 0 && newPos.col < getColumnsCount()) {
             grid.setFocusColumn(newPos.col);
             grid.showColumn(newPos.col);
         }
