@@ -58,9 +58,7 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
         } else if (actionId.equals(CMD_ROW_COPY)) {
             resultSet.addNewRow(true);
         } else if (actionId.equals(CMD_ROW_DELETE)) {
-            if (resultSet.getMode() == ResultSetViewer.ResultSetMode.GRID) {
-                resultSet.deleteCurrentRow();
-            }
+            resultSet.deleteCurrentRow();
         } else if (actionId.equals(CMD_APPLY_CHANGES)) {
             resultSet.applyChanges();
         } else if (actionId.equals(CMD_REJECT_CHANGES)) {
