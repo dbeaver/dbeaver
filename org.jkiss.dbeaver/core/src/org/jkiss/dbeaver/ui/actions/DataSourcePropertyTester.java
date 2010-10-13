@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IEvaluationService;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -41,7 +42,11 @@ public class DataSourcePropertyTester extends PropertyTester
             if (!dataSourceContainer.isConnected()) {
                 return Boolean.FALSE.equals(expectedValue);
             }
-            DBCExecutionContext context = dataSourceContainer.getDataSource().openContext(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Check auto commit state");
+            DBPDataSource dataSource = dataSourceContainer.getDataSource();
+            if (dataSource == null || !dataSource.isConnected()) {
+                return false;
+            }
+            DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Check auto commit state");
             try {
                 boolean transactional = !context.getTransactionManager().isAutoCommit();
                 return Boolean.valueOf(transactional).equals(expectedValue);

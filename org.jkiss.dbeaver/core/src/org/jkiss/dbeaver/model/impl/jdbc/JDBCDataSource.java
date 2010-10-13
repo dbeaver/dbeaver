@@ -175,6 +175,11 @@ public abstract class JDBCDataSource
         return dataSourceInfo;
     }
 
+    public boolean isConnected()
+    {
+        return connection != null;
+    }
+
     public void invalidateConnection(DBRProgressMonitor monitor)
         throws DBException
     {
