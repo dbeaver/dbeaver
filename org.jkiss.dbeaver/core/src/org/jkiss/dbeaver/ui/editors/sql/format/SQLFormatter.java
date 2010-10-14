@@ -229,8 +229,8 @@ public class SQLFormatter {
             SQLFormatterToken t4 = argList.get(index - 4);
 
             if (t4.getString().equalsIgnoreCase("(")
-                    && t3.getString().trim().equalsIgnoreCase("")
-                    && t1.getString().trim().equalsIgnoreCase("")
+                    && t3.getString().trim().isEmpty()
+                    && t1.getString().trim().isEmpty()
                     && t0.getString().equalsIgnoreCase(")")) {
                 t4.setString(t4.getString() + t2.getString() + t0.getString());
                 argList.remove(index);
@@ -252,8 +252,7 @@ public class SQLFormatter {
                         && token.getString().equals("(")) {
                     continue;
                 }
-                argList.add(index, new SQLFormatterToken(
-                        SQLFormatterConstants.SPACE, " "));
+                argList.add(index, new SQLFormatterToken(SQLFormatterConstants.SPACE, " "));
             }
         }
 
