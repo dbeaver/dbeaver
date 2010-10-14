@@ -4,6 +4,11 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
+import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 
 import java.util.StringTokenizer;
@@ -13,6 +18,7 @@ import java.util.StringTokenizer;
  */
 public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
 {
+    static final Log log = LogFactory.getLog(SQLFormattingStrategy.class);
 
     private SQLSyntaxManager sqlSyntax;
 
@@ -38,11 +44,24 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
    */
     public String format(String content, boolean isLineStart, String indentation, int[] positions)
     {
+        SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(sqlSyntax);
+        configuration.setKeywordCase(SQLFormatterConfiguration.KEYWORD_UPPER_CASE);
+        //configuration.setIndentString(indentation);
+        SQLFormatter formatter = new SQLFormatter(configuration);
+        try {
+            return formatter.format(content);
+        } catch (SQLFormatterException e) {
+            log.warn("Error formatting content", e);
+            return content;
+        }
+
+/*
     	if (sqlSyntax == null)
     	{
     		return allToUpper(content);
     	}
         return keyWordsToUpper(content);
+*/
     }
 
     private String allToUpper( String content ) {

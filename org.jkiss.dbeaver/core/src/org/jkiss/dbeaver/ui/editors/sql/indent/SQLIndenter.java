@@ -57,7 +57,7 @@ public class SQLIndenter {
      * @return a String which reflects the indentation at the line in which the reference position to
      *         <code>offset</code> resides, or <code>null</code> if it cannot be determined
      */
-    public StringBuffer getReferenceIndentation(int offset)
+    public StringBuilder getReferenceIndentation(int offset)
     {
         int unit;
         unit = findReferencePosition(offset);
@@ -76,7 +76,7 @@ public class SQLIndenter {
      * @return a String which reflects the correct indentation for the line in which offset resides, or
      *         <code>null</code> if it cannot be determined
      */
-    public StringBuffer computeIndentation(int offset)
+    public StringBuilder computeIndentation(int offset)
     {
         return computeIndentation(offset, false);
 
@@ -90,13 +90,13 @@ public class SQLIndenter {
      * @return a String which reflects the correct indentation for the line in which offset resides, or
      *         <code>null</code> if it cannot be determined
      */
-    public StringBuffer computeIndentation(int offset, boolean assumeOpening)
+    public StringBuilder computeIndentation(int offset, boolean assumeOpening)
     {
 
         indent = 1;
 
         // add additional indent
-        StringBuffer indent = createIndent(this.indent);
+        StringBuilder indent = createIndent(this.indent);
 
         if (this.indent < 0) {
             unindent(indent);
@@ -113,15 +113,15 @@ public class SQLIndenter {
     }
 
     /**
-     * Returns the indentation of the line at <code>offset</code> as a <code>StringBuffer</code>. If the offset is
+     * Returns the indentation of the line at <code>offset</code> as a <code>StringBuilder</code>. If the offset is
      * not valid, the empty string is returned.
      *
      * @param offset the offset in the document
      * @return the indentation (leading whitespace) of the line in which <code>offset</code> is located
      */
-    private StringBuffer getLeadingWhitespace(int offset)
+    private StringBuilder getLeadingWhitespace(int offset)
     {
-        StringBuffer indent = new StringBuffer();
+        StringBuilder indent = new StringBuilder();
         try {
             IRegion line = document.getLineInformationOfOffset(offset);
             int lineOffset = line.getOffset();
@@ -140,7 +140,7 @@ public class SQLIndenter {
      *
      * @param indent the indentation to be modified
      */
-    private void unindent(StringBuffer indent)
+    private void unindent(StringBuilder indent)
     {
         CharSequence oneIndent = createIndent();
         int i = indent.lastIndexOf(oneIndent.toString()); //$NON-NLS-1$
@@ -155,11 +155,11 @@ public class SQLIndenter {
      * @param indent the requested indentation level.
      * @return the indentation specified by <code>indent</code>
      */
-    private StringBuffer createIndent(int indent)
+    private StringBuilder createIndent(int indent)
     {
-        StringBuffer oneIndent = createIndent();
+        StringBuilder oneIndent = createIndent();
 
-        StringBuffer ret = new StringBuffer();
+        StringBuilder ret = new StringBuilder();
         while (indent-- > 0) {
             ret.append(oneIndent);
         }
@@ -172,10 +172,10 @@ public class SQLIndenter {
      *
      * @return one indentation
      */
-    private StringBuffer createIndent()
+    private StringBuilder createIndent()
     {
         // get a sensible default when running without the infrastructure for testing
-        StringBuffer oneIndent = new StringBuffer();
+        StringBuilder oneIndent = new StringBuilder();
         oneIndent.append('\t');
         return oneIndent;
     }

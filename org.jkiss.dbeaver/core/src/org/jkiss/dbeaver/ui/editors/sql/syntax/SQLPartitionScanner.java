@@ -24,23 +24,11 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
     public final static String SQL_PARTITIONING = "___sql_partitioning";
     public final static String SQL_COMMENT = "sql_comment";
     public final static String SQL_MULTILINE_COMMENT = "sql_multiline_comment";
-    public final static String SQL_CODE = "sql_code";
     public final static String SQL_DOUBLE_QUOTES_IDENTIFIER = "sql_double_quotes_identifier";
     public final static String SQL_STRING = "sql_character";
 
-    // Define constants for SQL miscellaneous statements.
-    public final static String SQL_COMMENT_ON = "__sql_comment_on_statement__"; //$NON-NLS-1$
-    public final static String SQL_TERMINATE = "__sql_terminate_statement__"; //$NON-NLS-1$
-    public final static String SQL_CATALOG = "__sql_catalog_statement__"; //$NON-NLS-1$
-    public final static String SQL_UNCATALOG = "__sql_uncatalog_statement__"; //$NON-NLS-1$
-    public final static String SQL_SIGNAL = "__sql_signal_statement__"; //$NON-NLS-1$
-
-    // Define a constant for SQL not otherwise covered.
-    public final static String SQL_UNKNOWNSQL = "__sql__unknownsql_statement__"; //$NON-NLS-1$
-
     public final static String[] SQL_PARTITION_TYPES = new String[]{
         IDocument.DEFAULT_CONTENT_TYPE,
-        SQL_CODE,
         SQL_COMMENT,
         SQL_MULTILINE_COMMENT,
         SQL_STRING,
@@ -49,7 +37,6 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
 
     // Syntax higlight
     List<IPredicateRule> rules = new ArrayList<IPredicateRule>();
-    IToken sqlCodeToken = new Token(SQL_CODE);
     IToken commentToken = new Token(SQL_COMMENT);
     IToken multilineCommentToken = new Token(SQL_MULTILINE_COMMENT);
     IToken sqlDoubleQuotesIdentifierToken = new Token(SQL_DOUBLE_QUOTES_IDENTIFIER);

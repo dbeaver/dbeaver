@@ -98,28 +98,15 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
     /*
      * @see SourceViewerConfiguration#getAutoIndentStrategy(ISourceViewer, String)
      */
+
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType)
     {
-        if (SQLPartitionScanner.SQL_CODE.equals(contentType) || IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)) {
-            return new IAutoEditStrategy[]
-                {
-                    new SQLAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING)
-                }
-                ;
-        } else if (SQLPartitionScanner.SQL_COMMENT.equals(contentType)
-            || SQLPartitionScanner.SQL_MULTILINE_COMMENT.equals(contentType)) {
-            return new IAutoEditStrategy[]
-                {
-                    new SQLCommentAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING)
-                }
-                ;
-        } else if (SQLPartitionScanner.SQL_STRING.equals(
-            contentType) || SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER.equals(contentType)) {
-            return new IAutoEditStrategy[]
-                {
-                    new SQLStringAutoIndentStrategy(SQLPartitionScanner.SQL_STRING)
-                }
-                ;
+        if (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)) {
+            return new IAutoEditStrategy[] { new SQLAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING) } ;
+        } else if (SQLPartitionScanner.SQL_COMMENT.equals(contentType) || SQLPartitionScanner.SQL_MULTILINE_COMMENT.equals(contentType)) {
+            return new IAutoEditStrategy[] { new SQLCommentAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING) } ;
+        } else if (SQLPartitionScanner.SQL_STRING.equals(contentType) || SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER.equals(contentType)) {
+            return new IAutoEditStrategy[] { new SQLStringAutoIndentStrategy(SQLPartitionScanner.SQL_STRING) };
         }
         return null;
     }
@@ -183,6 +170,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
     * @since 2.0
     *
     */
+
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer)
     {
         return new IInformationControlCreator() {
@@ -204,7 +192,11 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         formatter.setDocumentPartitioning(SQLPartitionScanner.SQL_PARTITIONING);
 
         IFormattingStrategy formattingStrategy = new SQLFormattingStrategy(editor.getSyntaxManager());
-        formatter.setFormattingStrategy(formattingStrategy, IDocument.DEFAULT_CONTENT_TYPE);
+        for (String ct : SQLPartitionScanner.SQL_PARTITION_TYPES) {
+            formatter.setFormattingStrategy(formattingStrategy, ct);
+        }
+
+        formatter.enablePartitionAwareFormatting(false);
 
         return formatter;
     }
@@ -334,6 +326,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
 	 * @see SourceViewerConfiguration#getDefaultPrefixes(ISourceViewer, String)
 	 *  @since 2.0
 	 */
+
     public String[] getDefaultPrefixes(ISourceViewer sourceViewer, String contentType)
     {
         return new String[]
@@ -368,8 +361,9 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
 
     public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer)
     {
-        if (sourceViewer == null)
+        if (sourceViewer == null) {
             return null;
+        }
 
         return new IHyperlinkDetector[]{
             hyperlinkDetector,
