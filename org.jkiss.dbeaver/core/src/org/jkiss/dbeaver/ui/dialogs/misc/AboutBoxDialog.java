@@ -23,7 +23,7 @@ import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.internal.about.InstallationDialog;
+import org.eclipse.ui.handlers.IHandlerService;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
@@ -92,12 +92,17 @@ public class AboutBoxDialog extends Dialog
             public void mouseDoubleClick(MouseEvent e) {
                 BusyIndicator.showWhile(getShell().getDisplay(), new Runnable() {
                     public void run() {
-                        // May be its better to execute "org.eclipse.ui.help.installationDialog" command
-                        // Now we use internal API and it is no good
+                        // Do not create InstallationDialog directly
+                        // but execute "org.eclipse.ui.help.installationDialog" command
                         IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-                        InstallationDialog dialog = new InstallationDialog(getShell(), workbenchWindow);
-                        //dialog.setModalParent(AboutBoxDialog.this);
-                        dialog.open();
+                        IHandlerService service = (IHandlerService) workbenchWindow.getService(IHandlerService.class);
+                        if (service != null) {
+                            try {
+                                service.executeCommand("org.eclipse.ui.help.installationDialog", null);
+                            } catch (Exception e1) {
+                                // just ignore error
+                            }
+                        }
                     }
                 });
             }

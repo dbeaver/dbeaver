@@ -23,6 +23,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -129,6 +130,7 @@ public class HexConfig {
 
     public void savePreferences()
     {
-        DBeaverCore.getInstance().saveGlobalPreferences();
+        RuntimeUtils.savePreferenceStore(getPreferenceStore());
     }
+
 }

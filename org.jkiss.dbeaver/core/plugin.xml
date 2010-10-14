@@ -95,47 +95,47 @@
         <category id="org.jkiss.dbeaver.core.sql" name="SQL Editor" description="SQL Editor Commands"/>
         <category id="org.jkiss.dbeaver.core.rs" name="Result Set" description="Result Set Commands"/>
 
-        <command id="org.jkiss.dbeaver.core.driver.manager" name="Driver Manager" description="Driver Manager" category="org.jkiss.dbeaver.core.navigator"/>
-        <command id="org.jkiss.dbeaver.core.new.connection" name="New Connection" description="New Connection Wizard" category="org.jkiss.dbeaver.core.navigator"/>
-        <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="Link with editor" description="Link with editor" category="org.jkiss.dbeaver.core.navigator"/>
-        <command id="org.jkiss.dbeaver.core.navigator.set.active" name="Set active object" description="Set active object" category="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.driver.manager" name="Driver Manager" description="Driver Manager" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.new.connection" name="New Connection" description="New Connection Wizard" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="Link with editor" description="Link with editor" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.navigator.set.active" name="Set active object" description="Set active object" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
-        <command id="org.jkiss.dbeaver.core.connect" name="Connect" description="Connect to database" category="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.disconnect" name="Disconnect" description="Disconnect from database" category="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.invalidate" name="Invalidate" description="Invalidate database connection" category="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.commit" name="Commit changes" description="Commit changes in SQL Session" category="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.rollback" name="Rollback changes" description="Rollback changes in SQL Session" category="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.txn.autocommit" name="Transactional mode" description="Changes transactional mode of active session" category="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.connect" name="Connect" description="Connect to database" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.disconnect" name="Disconnect" description="Disconnect from database" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.invalidate" name="Invalidate" description="Invalidate database connection" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.commit" name="Commit changes" description="Commit changes in SQL Session" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.rollback" name="Rollback changes" description="Rollback changes in SQL Session" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.txn.autocommit" name="Transactional mode" description="Changes transactional mode of active session" categoryId="org.jkiss.dbeaver.core.database"/>
 
-        <command id="org.jkiss.dbeaver.core.edit.connection" name="Edit Connection" description="Open connection editor dialog" category="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.new.sql.editor" name="Open SQL Editor" description="Open SQL Editor" category="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.open.object" name="Edit Object" description="Open object editor" category="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.edit.connection" name="Edit Connection" description="Open connection editor dialog" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.new.sql.editor" name="Open SQL Editor" description="Open SQL Editor" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.open.object" name="Edit Object" description="Open object editor" categoryId="org.jkiss.dbeaver.core.database"/>
 
-        <command id="org.jkiss.dbeaver.ui.editors.sql.run.statement" name="Execute SQL Statement" description="Execute Statement" category="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.run.script" name="Execute SQL Script" description="Execute Script" category="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.run.explain" name="Explain execution plan" description="Explain execution plan" category="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.run.validate" name="Validate query" description="Validate active query" category="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.run.analyse" name="Analyse query" description="Analyse active query" category="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.open.file" name="Load SQL script" description="Load from file" category="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="Save SQL script" description="Save to file" category="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.core.export.data" name="Export data" description="Export data to file(s)" category="org.jkiss.dbeaver.core.util"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.run.statement" name="Execute SQL Statement" description="Execute Statement" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.run.script" name="Execute SQL Script" description="Execute Script" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.run.explain" name="Explain execution plan" description="Explain execution plan" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.run.validate" name="Validate query" description="Validate active query" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.run.analyse" name="Analyse query" description="Analyse active query" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.open.file" name="Load SQL script" description="Load from file" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="Save SQL script" description="Save to file" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.core.export.data" name="Export data" description="Export data to file(s)" categoryId="org.jkiss.dbeaver.core.util"/>
 
-        <command id="org.jkiss.dbeaver.core.resultset.toggleMode" name="Toggle Grid/Record view" description="Toggle Result Set Grid/Record View" category="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.first" name="First row" description="Move to first row" category="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.previous" name="Previous row" description="Move to previous row" category="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.next" name="Next row" description="Move to next row" category="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.last" name="Last row" description="Move to last row" category="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.edit" name="Edit cell" description="Edit cell" category="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.add" name="Add row" description="Add new row" category="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.copy" name="Copy row" description="Copy current row" category="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.delete" name="Delete current row" description="Delete current row" category="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.applyChanges" name="Apply changes" description="Apply data changes" category="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.rejectChanges" name="Reject changes" description="Reject data changes" category="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.toggleMode" name="Toggle Grid/Record view" description="Toggle Result Set Grid/Record View" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.first" name="First row" description="Move to first row" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.previous" name="Previous row" description="Move to previous row" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.next" name="Next row" description="Move to next row" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.last" name="Last row" description="Move to last row" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.edit" name="Edit cell" description="Edit cell" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.add" name="Add row" description="Add new row" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.copy" name="Copy row" description="Copy current row" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.delete" name="Delete current row" description="Delete current row" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.applyChanges" name="Apply changes" description="Apply data changes" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.rejectChanges" name="Reject changes" description="Reject data changes" categoryId="org.jkiss.dbeaver.core.rs"/>
 
-        <command id="org.jkiss.dbeaver.core.edit.copy.special" name="Copy full qualified name" description="Copy special" category="org.jkiss.dbeaver.core.util"/>
+        <command id="org.jkiss.dbeaver.core.edit.copy.special" name="Copy full qualified name" description="Copy special" categoryId="org.jkiss.dbeaver.core.util"/>
 
-        <command id="org.jkiss.dbeaver.core.qm.filter" name="Filters ..." description="Set query manager filter" category="org.jkiss.dbeaver.core.util"/>
-        <command id="org.jkiss.dbeaver.core.qm.clear" name="Clear log" description="Clear query manager log" category="org.jkiss.dbeaver.core.util"/>
+        <command id="org.jkiss.dbeaver.core.qm.filter" name="Filters ..." description="Set query manager filter" categoryId="org.jkiss.dbeaver.core.util"/>
+        <command id="org.jkiss.dbeaver.core.qm.clear" name="Clear log" description="Clear query manager log" categoryId="org.jkiss.dbeaver.core.util"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -746,7 +746,7 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
 
-            <command commandId="org.jkiss.dbeaver.core.edit.copy.special" name="Copy object's full qualified name">
+            <command commandId="org.jkiss.dbeaver.core.edit.copy.special">
                 <visibleWhen>
                     <with variable="selection">
                         <count value="+"/>

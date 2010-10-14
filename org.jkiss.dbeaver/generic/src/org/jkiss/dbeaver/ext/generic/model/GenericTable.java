@@ -74,19 +74,11 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         GenericEntityContainer container,
         String tableName,
         String tableType,
-        String remarks/*,
-        String typeName,
-        GenericCatalog typeCatalog,
-        GenericSchema typeSchema*/)
+        String remarks)
     {
         super(container, tableName, tableType);
-/*
-        this.typeName = typeName;
-        this.typeCatalog = typeCatalog;
-        this.typeSchema = typeSchema;
-*/
 
-        this.description = description;
+        this.description = remarks;
         if (!CommonUtils.isEmpty(this.getTableType())) {
             this.isView = (this.getTableType().toUpperCase().indexOf("VIEW") != -1);
             this.isSystem = (this.getTableType().toUpperCase().indexOf("SYSTEM") != -1);
@@ -220,12 +212,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
     {
         return description;
     }
-
-    protected void setDescription(String description)
-    {
-        this.description = description;
-    }
-
 
 /*
     public String getTypeName()

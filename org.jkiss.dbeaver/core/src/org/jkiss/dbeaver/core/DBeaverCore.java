@@ -260,17 +260,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return plugin.getPreferenceStore();
     }
 
-    public void saveGlobalPreferences()
-    {
-        //InstanceScope.getNode(plugin).flush();
-        plugin.savePluginPreferences();
-    }
-
-    public DatabaseEditorAdapterFactory getEditorsAdapter()
-    {
-        return editorsAdapter;
-    }
-
     public void runAndWait(final DBRRunnableWithProgress runnable)
     {
         try {
