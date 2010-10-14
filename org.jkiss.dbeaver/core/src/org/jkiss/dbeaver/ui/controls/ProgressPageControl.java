@@ -52,6 +52,11 @@ public class ProgressPageControl extends Composite
         this.setLayout(layout);
     }
 
+    public IWorkbenchPart getWorkbenchPart()
+    {
+        return workbenchPart;
+    }
+
     public void setInfo(String info)
     {
         if (!listInfoLabel.isDisposed()) {

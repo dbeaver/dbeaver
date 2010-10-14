@@ -746,6 +746,16 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
 
+            <command commandId="org.eclipse.ui.edit.copy">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
             <command commandId="org.jkiss.dbeaver.core.edit.copy.special">
                 <visibleWhen>
                     <with variable="selection">

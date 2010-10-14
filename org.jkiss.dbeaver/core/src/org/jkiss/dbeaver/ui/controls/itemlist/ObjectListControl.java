@@ -12,9 +12,10 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
@@ -51,9 +52,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private List<Item> columns = new ArrayList<Item>();
     private SortListener sortListener;
     private Map<Object, ItemRow<OBJECT_TYPE>> itemMap = new IdentityHashMap<Object, ItemRow<OBJECT_TYPE>>();
-    private ISelectionProvider selectionProvider;
     private IDoubleClickListener doubleClickHandler;
     private LoadingJob<Collection<OBJECT_TYPE>> loadingJob;
+
+    private int selectedItem = -1;
+    private int selectedColumn = -1;
 
     public ObjectListControl(
         Composite parent,
@@ -72,6 +75,26 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             final Tree tree = treeViewer.getTree();
             tree.setLinesVisible (true);
             tree.setHeaderVisible(true);
+            tree.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDown(MouseEvent e)
+                {
+                    selectedItem = -1;
+                    selectedColumn = -1;
+                    Point pt = new Point(e.x, e.y);
+                    TreeItem item = tree.getItem(pt);
+                    if (item == null) return;
+                    int columnCount = tree.getColumnCount();
+                    for (int i = 0; i < columnCount; i++) {
+                        Rectangle rect = item.getBounds(i);
+                        if (rect.contains(pt)) {
+                            selectedItem = tree.indexOf(item);
+                            selectedColumn = i;
+                            break;
+                        }
+                    }
+                }
+            });
             itemsViewer = treeViewer;
             
         } else {
@@ -79,6 +102,26 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             final Table table = tableViewer.getTable();
             table.setLinesVisible (true);
             table.setHeaderVisible(true);
+            table.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDown(MouseEvent e)
+                {
+                    selectedItem = -1;
+                    selectedColumn = -1;
+                    Point pt = new Point(e.x, e.y);
+                    TableItem item = table.getItem(pt);
+                    if (item == null) return;
+                    int columnCount = table.getColumnCount();
+                    for (int i = 0; i < columnCount; i++) {
+                        Rectangle rect = item.getBounds(i);
+                        if (rect.contains(pt)) {
+                            selectedItem = table.indexOf(item);
+                            selectedColumn = i;
+                            break;
+                        }
+                    }
+                }
+            });
             itemsViewer = tableViewer;
         }
         itemsViewer.setContentProvider(contentProvider);
@@ -93,30 +136,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         sortListener = new SortListener();
 
-        // Make selection provider
-        selectionProvider = new ISelectionProvider()
-        {
-            public void addSelectionChangedListener(ISelectionChangedListener listener)
-            {
-                itemsViewer.addSelectionChangedListener(listener);
-            }
-
-            public ISelection getSelection()
-            {
-                return itemsViewer.getSelection();
-            }
-
-            public void removeSelectionChangedListener(ISelectionChangedListener listener)
-            {
-                itemsViewer.removeSelectionChangedListener(listener);
-            }
-
-            public void setSelection(ISelection selection)
-            {
-                itemsViewer.setSelection(selection);
-            }
-        };
-
         itemsViewer.getControl().addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e) {
                 if (loadingJob != null) {
@@ -125,6 +144,24 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             }
         });
+    }
+
+    protected String getSelectedText()
+    {
+        if (selectedItem == -1 || selectedColumn == -1) {
+            return null;
+        }
+        if (isTree) {
+            if (selectedItem >= getTree().getItemCount()) {
+                return null;
+            }
+            return getTree().getItem(selectedItem).getText(selectedColumn);
+        } else {
+            if (selectedItem >= getTable().getItemCount()) {
+                return null;
+            }
+            return getTable().getItem(selectedItem).getText(selectedColumn);
+        }
     }
 
     protected boolean cancelProgress()
@@ -153,7 +190,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     public ISelectionProvider getSelectionProvider()
     {
-        return selectionProvider;
+        return itemsViewer;
     }
 
     public boolean isLoadProperties() {
