@@ -903,80 +903,24 @@
         <key commandId="org.eclipse.ui.edit.findNext" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="F3"/>
         <key commandId="org.eclipse.ui.edit.findPrevious" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="SHIFT+F3"/>
         <key commandId="org.eclipse.ui.edit.text.moveLineDown" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="CTRL+SHIFT+ARROW_DOWN"/>
-        <key
-                commandId="org.eclipse.ui.edit.text.moveLineUp"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+SHIFT+ARROW_UP">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.text.copyLineUp"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+D">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.text.delete.line"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+Y">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.redo"
-                contextId="org.eclipse.ui.contexts.window"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+SHIFT+Z">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.text.join.lines"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+SHIFT+J">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.findIncremental"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="ALT+F3">
-        </key>
-        <key
-                commandId="org.eclipse.ui.window.preferences"
-                contextId="org.eclipse.ui.contexts.window"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+ALT+S">
-        </key>
-        <key
-                commandId="org.eclipse.ui.window.resetPerspective"
-                contextId="org.eclipse.ui.contexts.window"
-                schemeId="DBeaverKeyScheme"
-                sequence="SHIFT+F12">
-        </key>
-        <key
-                commandId="org.eclipse.ui.window.maximizePart"
-                contextId="org.eclipse.ui.contexts.window"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+SHIFT+F12">
-        </key>
+        <key commandId="org.eclipse.ui.edit.text.moveLineUp" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="CTRL+SHIFT+ARROW_UP"/>
+        <key commandId="org.eclipse.ui.edit.text.copyLineUp" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="CTRL+D"/>
+        <key commandId="org.eclipse.ui.edit.text.delete.line" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="CTRL+Y"/>
+        <key commandId="org.eclipse.ui.edit.redo" contextId="org.eclipse.ui.contexts.window" schemeId="DBeaverKeyScheme" sequence="CTRL+SHIFT+Z"/>
+        <key commandId="org.eclipse.ui.edit.text.join.lines" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="CTRL+SHIFT+J"/>
+        <key commandId="org.eclipse.ui.edit.findIncremental" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="ALT+F3"/>
 
     </extension>
-    <extension
-            point="org.eclipse.ui.contexts">
-        <context
-                id="org.jkiss.dbeaver.core.navigationContext"
-                name="Navigation context">
-        </context>
+    <extension point="org.eclipse.ui.contexts">
+        <context id="org.jkiss.dbeaver.core.navigationContext" name="Navigation context"/>
     </extension>
 
     <extension point="org.eclipse.ui.perspectives">
-        <perspective
-                name="DBeaver Perspective"
-                class="org.jkiss.dbeaver.core.DBeaverPerspective"
-                id="org.jkiss.dbeaver.core.perspective">
-        </perspective>
+        <perspective name="Database Manager Perspective" class="org.jkiss.dbeaver.core.DBeaverPerspective" id="org.jkiss.dbeaver.core.perspective"/>
     </extension>
+
     <extension point="org.eclipse.ui.editors">
-        <editor
-                name="SQL Editor"
+        <editor name="SQL Editor"
                 extensions="sql"
                 icon="icons/sql/sql_script.png"
                 contributorClass="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributor"
@@ -1010,45 +954,15 @@
     </extension>
 
     <extension id="product" point="org.eclipse.core.runtime.products">
-        <product
-                application="org.jkiss.dbeaver.core.application"
-                description="Universal Database Manager"
-                name="DBeaver">
-            <property
-                    name="aboutText"
-                    value="DBeaver - Universal Database Manager">
-            </property>
-            <property
-                    name="windowImages"
-                    value="icons/dbeaver.png">
-            </property>
-            <property
-                    name="aboutImage"
-                    value="product_lg.gif">
-            </property>
-            <property
-                    name="appName"
-                    value="DBeaver">
-            </property>
-            <property
-                    name="startupForegroundColor"
-                    value="000000">
-            </property>
-            <property
-                    name="startupMessageRect"
-                    value="25,25,200,15">
-            </property>
-            <property
-                    name="startupProgressRect"
-                    value="25,45,150,15">
-            </property>
-            <property
-                    name="preferenceCustomization"
-                    value="plugin_customization.ini">
-            </property>
-            <property name="preferenceCustomization"
-                      value="plugin_customization.ini">
-            </property>
+        <product application="org.jkiss.dbeaver.core.application" description="Universal Database Manager" name="DBeaver">
+            <property name="aboutText" value="DBeaver - Universal Database Manager"/>
+            <property name="windowImages" value="icons/dbeaver.png"/>
+            <property name="aboutImage" value="product_lg.gif"/>
+            <property name="appName" value="DBeaver"/>
+            <property name="startupForegroundColor" value="000000"/>
+            <property name="startupMessageRect" value="25,25,200,15"/>
+            <property name="startupProgressRect" value="25,45,150,15"/>
+            <property name="preferenceCustomization" value="plugin_customization.ini"/>
         </product>
     </extension>
 
