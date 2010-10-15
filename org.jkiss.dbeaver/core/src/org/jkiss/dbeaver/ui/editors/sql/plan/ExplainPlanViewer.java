@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -117,11 +118,7 @@ public class ExplainPlanViewer extends Viewer implements IPropertyChangeListener
     {
         // Refresh plan
         DBPDataSource dataSource = getDataSource();
-        if (dataSource instanceof DBCQueryPlanner) {
-            planner = (DBCQueryPlanner)dataSource;
-        } else {
-            planner = null;
-        }
+        planner = DBUtils.getAdapter(DBCQueryPlanner.class, dataSource);
         planTree.clearData();
     }
 

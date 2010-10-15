@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IEvaluationService;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 
 /**
@@ -34,7 +35,7 @@ public class SQLEditorPropertyTester extends PropertyTester
         if (property.equals(PROP_CAN_EXECUTE)) {
             return editor.getDataSourceContainer().isConnected();
         } if (property.equals(PROP_CAN_EXPLAIN)) {
-            return editor.getDataSource() instanceof DBCQueryPlanner;
+            return DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
         }
         return false;
     }
