@@ -17,10 +17,10 @@ public interface DBSStructureAssistant
 /*
     List<DBSObjectType> getSupportedObjectTypes();
 
-    List<DBSObject> findObjects(
+    List<DBSObject> findObjectsByMask(
         DBRProgressMonitor monitor,
-        List<DBSObjectType> objectTypes,
         DBSObject parentObject,
+        List<DBSObjectType> objectTypes,
         String objectNameMask,
         int maxResults) throws DBException;
 */
