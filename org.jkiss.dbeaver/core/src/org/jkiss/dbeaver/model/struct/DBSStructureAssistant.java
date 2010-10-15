@@ -14,6 +14,16 @@ import java.util.List;
  */
 public interface DBSStructureAssistant
 {
+/*
+    List<DBSObjectType> getSupportedObjectTypes();
+
+    List<DBSObject> findObjects(
+        DBRProgressMonitor monitor,
+        List<DBSObjectType> objectTypes,
+        DBSObject parentObject,
+        String objectNameMask,
+        int maxResults) throws DBException;
+*/
 
     List<DBSTablePath> findTableNames(
         DBRProgressMonitor monitor,
