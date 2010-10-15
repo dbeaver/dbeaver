@@ -21,4 +21,5 @@ public final class ICommandIds
     public static final String CMD_OPEN_FILE = "org.jkiss.dbeaver.ui.editors.sql.open.file";
     public static final String CMD_SAVE_FILE = "org.jkiss.dbeaver.ui.editors.sql.save.file";
 
+    public static final String CMD_CONTENT_FORMAT = "org.jkiss.dbeaver.ui.editors.text.content.format";
 }

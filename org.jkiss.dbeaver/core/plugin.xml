@@ -136,6 +136,8 @@
 
         <command id="org.jkiss.dbeaver.core.qm.filter" name="Filters ..." description="Set query manager filter" categoryId="org.jkiss.dbeaver.core.util"/>
         <command id="org.jkiss.dbeaver.core.qm.clear" name="Clear log" description="Clear query manager log" categoryId="org.jkiss.dbeaver.core.util"/>
+
+        <command id="org.jkiss.dbeaver.ui.editors.text.content.format" name="Content Format" description="Format text"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -882,6 +884,7 @@
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
 
+        <!-- SQL Editor -->
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+X"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+Enter"/>
@@ -889,28 +892,17 @@
         <key commandId="org.jkiss.dbeaver.core.new.sql.editor" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+L"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+O"/>
 
+        <!-- Text editors -->
+        <key commandId="org.jkiss.dbeaver.ui.editors.text.content.format" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F"/>
+
+
         <key commandId="org.eclipse.ui.navigate.backwardHistory" contextId="org.eclipse.ui.contexts.window" schemeId="DBeaverKeyScheme" sequence="ALT+CTRL+ARROW_LEFT"/>
         <key commandId="org.eclipse.ui.navigate.forwardHistory" contextId="org.eclipse.ui.contexts.window" schemeId="DBeaverKeyScheme" sequence="ALT+CTRL+ARROW_RIGHT"/>
         <key commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" contextId="org.eclipse.ui.contexts.window" schemeId="DBeaverKeyScheme" sequence="CTRL+SHIFT+BS"/>
         <key commandId="org.eclipse.ui.edit.text.goto.line" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="CTRL+G"/>
-        <key
-                commandId="org.eclipse.ui.edit.findNext"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="F3">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.findPrevious"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="SHIFT+F3">
-        </key>
-        <key
-                commandId="org.eclipse.ui.edit.text.moveLineDown"
-                contextId="org.eclipse.ui.textEditorScope"
-                schemeId="DBeaverKeyScheme"
-                sequence="CTRL+SHIFT+ARROW_DOWN">
-        </key>
+        <key commandId="org.eclipse.ui.edit.findNext" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="F3"/>
+        <key commandId="org.eclipse.ui.edit.findPrevious" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="SHIFT+F3"/>
+        <key commandId="org.eclipse.ui.edit.text.moveLineDown" contextId="org.eclipse.ui.textEditorScope" schemeId="DBeaverKeyScheme" sequence="CTRL+SHIFT+ARROW_DOWN"/>
         <key
                 commandId="org.eclipse.ui.edit.text.moveLineUp"
                 contextId="org.eclipse.ui.textEditorScope"
@@ -965,6 +957,7 @@
                 schemeId="DBeaverKeyScheme"
                 sequence="CTRL+SHIFT+F12">
         </key>
+
     </extension>
     <extension
             point="org.eclipse.ui.contexts">

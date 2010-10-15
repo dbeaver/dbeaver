@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor;
@@ -79,7 +80,9 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
         contentAssistProposal = new RetargetTextEditorAction(bundle, "ContentAssistProposal.");
         contentAssistProposal.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         contentFormatProposal = new RetargetTextEditorAction(bundle, "ContentFormatProposal.");
+        contentFormatProposal.setActionDefinitionId(ICommandIds.CMD_CONTENT_FORMAT);
         contentAssistTip = new RetargetTextEditorAction(bundle, "ContentAssistTip.");
+        contentAssistTip.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
     }
 
     public void dispose()

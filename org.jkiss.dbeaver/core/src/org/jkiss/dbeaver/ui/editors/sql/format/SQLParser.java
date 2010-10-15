@@ -16,7 +16,7 @@ public class SQLParser {
     private SQLFormatterConfiguration configuration;
     private String fBefore;
     private int fPos;
-    private static final String[] twoCharacterSymbol = { "<>", "<=", ">=", "||" };
+    private static final String[] twoCharacterSymbol = { "<>", "<=", ">=", "||", "()" };
     private String catalogSeparator;
 
     public SQLParser(SQLFormatterConfiguration configuration) {

@@ -36,17 +36,16 @@ public class SQLFormatter {
             List<SQLFormatterToken> list = fParser.parse(argSql);
             list = format(list);
 
-            String after = "";
-            for (int index = 0; index < list.size(); index++) {
-                SQLFormatterToken token = list.get(index);
-                after += token.getString();
+            StringBuilder after = new StringBuilder(argSql.length() + 20);
+            for (SQLFormatterToken token : list) {
+                after.append(token.getString());
             }
 
             if (isSqlEndsWithNewLine) {
-                after += ContentUtils.getDefaultLineSeparator();
+                after.append(ContentUtils.getDefaultLineSeparator());
             }
 
-            return after;
+            return after.toString();
         } catch (Exception ex) {
             final SQLFormatterException sqlException = new SQLFormatterException(
                     ex.toString());
@@ -56,15 +55,24 @@ public class SQLFormatter {
     }
 
     private List<SQLFormatterToken> format(final List<SQLFormatterToken> argList) {
+        if (argList.isEmpty()) {
+            return argList;
+        }
 
         SQLFormatterToken token = argList.get(0);
         if (token.getType() == SQLFormatterConstants.SPACE) {
             argList.remove(0);
+            if (argList.isEmpty()) {
+                return argList;
+            }
         }
 
         token = argList.get(argList.size() - 1);
         if (token.getType() == SQLFormatterConstants.SPACE) {
             argList.remove(argList.size() - 1);
+            if (argList.isEmpty()) {
+                return argList;
+            }
         }
 
         for (int index = 0; index < argList.size(); index++) {
@@ -86,13 +94,9 @@ public class SQLFormatter {
         for (int index = argList.size() - 1; index >= 1; index--) {
             token = argList.get(index);
             SQLFormatterToken prevToken = argList.get(index - 1);
-            if (token.getType() == SQLFormatterConstants.SPACE
-                    && (prevToken.getType() == SQLFormatterConstants.SYMBOL || prevToken
-                            .getType() == SQLFormatterConstants.COMMENT)) {
+            if (token.getType() == SQLFormatterConstants.SPACE && (prevToken.getType() == SQLFormatterConstants.SYMBOL || prevToken.getType() == SQLFormatterConstants.COMMENT)) {
                 argList.remove(index);
-            } else if ((token.getType() == SQLFormatterConstants.SYMBOL || token
-                    .getType() == SQLFormatterConstants.COMMENT)
-                    && prevToken.getType() == SQLFormatterConstants.SPACE) {
+            } else if ((token.getType() == SQLFormatterConstants.SYMBOL || token.getType() == SQLFormatterConstants.COMMENT) && prevToken.getType() == SQLFormatterConstants.SPACE) {
                 argList.remove(index - 1);
             } else if (token.getType() == SQLFormatterConstants.SPACE) {
                 token.setString(" ");
@@ -132,9 +136,7 @@ public class SQLFormatter {
             token = argList.get(index);
             if (token.getType() == SQLFormatterConstants.SYMBOL) {
                 if (token.getString().equals("(")) {
-                    functionBracket
-                            .push(formatterCfg.isFunction(prev.getString()) ? Boolean.TRUE
-                                    : Boolean.FALSE);
+                    functionBracket.push(formatterCfg.isFunction(prev.getString()) ? Boolean.TRUE : Boolean.FALSE);
                     bracketIndent.push(indent);
                     indent++;
                     index += insertReturnAndIndent(argList, index + 1, indent);
@@ -145,7 +147,7 @@ public class SQLFormatter {
                     functionBracket.pop();
                 }
                 else if (token.getString().equals(",")) {
-                    index += insertReturnAndIndent(argList, index, indent);
+                    index += insertReturnAndIndent(argList, index + 1, indent);
                 } else if (token.getString().equals(";")) {
                     indent = 0;
                     index += insertReturnAndIndent(argList, index, indent);
@@ -154,7 +156,7 @@ public class SQLFormatter {
                 if (token.getString().equalsIgnoreCase("DELETE")
                         || token.getString().equalsIgnoreCase("SELECT")
                         || token.getString().equalsIgnoreCase("UPDATE")) {
-                    indent += 2;
+                    indent++;
                     index += insertReturnAndIndent(argList, index + 1, indent);
                 }
                 if (token.getString().equalsIgnoreCase("INSERT")
@@ -198,7 +200,8 @@ public class SQLFormatter {
                 {
                     indent -= 2;
                     index += insertReturnAndIndent(argList, index, indent);
-                    index += insertReturnAndIndent(argList, index + 1, indent);
+                    //index += insertReturnAndIndent(argList, index + 1, indent);
+                    indent++;
                 }
                 if (token.getString().equalsIgnoreCase("BETWEEN")) {
                     encounterBetween = true;
