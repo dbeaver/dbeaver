@@ -114,6 +114,10 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             // Skip keywords
             return null;
         }
+        DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, editor.getDataSource());
+        if (structureAssistant == null) {
+            return null;
+        }
 
         String tableName = word.toUpperCase();
         TableLookupCache tlc = linksCache.get(tableName);
@@ -121,7 +125,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             // Start new word finder job
             tlc = new TableLookupCache();
             linksCache.put(tableName, tlc);
-            TablesFinderJob job = new TablesFinderJob(tableName, tlc);
+            TablesFinderJob job = new TablesFinderJob(structureAssistant, tableName, tlc);
             job.schedule();
         }
         if (tlc.loading) {
@@ -175,12 +179,14 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 
     private class TablesFinderJob extends DataSourceJob {
 
+        private DBSStructureAssistant structureAssistant;
         private String word;
         private TableLookupCache cache;
 
-        protected TablesFinderJob(String word, TableLookupCache cache)
+        protected TablesFinderJob(DBSStructureAssistant structureAssistant, String word, TableLookupCache cache)
         {
             super("Find table names for '" + word + "'", DBIcon.SQL_EXECUTE.getImageDescriptor(), editor.getDataSource());
+            this.structureAssistant = structureAssistant;
             this.word = word;
             this.cache = cache;
             setUser(false);
@@ -191,10 +197,9 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
         protected IStatus run(DBRProgressMonitor monitor)
         {
             cache.nodes = new ArrayList<DBNNode>();
-            final List<DBSTablePath> pathList;
             try {
                 DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
-                pathList = ((DBSStructureAssistant) getDataSource()).findTableNames(monitor, word, 10);
+                List<DBSTablePath> pathList = structureAssistant.findTableNames(monitor, word, 10);
                 if (!pathList.isEmpty()) {
                     for (DBSTablePath path : pathList) {
                         DBSObject object = DBUtils.getTableByPath(monitor, (DBSEntityContainer) getDataSource(), path);

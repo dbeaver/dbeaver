@@ -28,7 +28,7 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
         if (selection instanceof IStructuredSelection) {
             final DBNNode selectedNode = ViewUtils.getSelectedNode((IStructuredSelection) selection);
             if (selectedNode != null) {
-                final DBSEntitySelector activeContainer = DBUtils.queryParentInterface(
+                final DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
                     DBSEntitySelector.class, selectedNode.getObject());
                 DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor)

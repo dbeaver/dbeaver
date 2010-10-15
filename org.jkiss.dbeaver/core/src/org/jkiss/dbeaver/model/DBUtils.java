@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
@@ -177,22 +178,31 @@ public final class DBUtils {
         return null;
     }
 
-    public static <T> T queryParentInterface(Class<T> i, DBSObject object)
+    public static <T> T getAdapter(Class<T> adapterType, DBPObject object)
+    {
+        if (object instanceof DBSDataSourceContainer) {
+            // Root object's parent is data source container (not datasource)
+            // So try to get adapter from real datasource object
+            object = ((DBSDataSourceContainer)object).getDataSource();
+        }
+        if (object == null) {
+            return null;
+        }
+        if (adapterType.isAssignableFrom(object.getClass())) {
+            return adapterType.cast(object);
+        } else if (object instanceof IAdaptable) {
+            return adapterType.cast(((IAdaptable)object).getAdapter(adapterType));
+        } else {
+            return null;
+        }
+    }
+
+    public static <T> T getParentAdapter(Class<T> i, DBSObject object)
     {
         if (object == null || object.getParentObject() == null) {
             return null;
         }
-        DBSObject parent = object.getParentObject();
-        if (i.isAssignableFrom(parent.getClass())) {
-            return i.cast(object.getParentObject());
-        } else if (parent instanceof DBSDataSourceContainer && object.getDataSource() != null && i.isAssignableFrom(
-            object.getDataSource().getClass())) {
-            // Root object's parent is data source container (not datasource)
-            // So try to extract this info from real datasource object
-            return i.cast(object.getDataSource());
-        } else {
-            return null;
-        }
+        return getAdapter(i, object.getParentObject());
     }
 
     public static boolean isNullValue(Object value)

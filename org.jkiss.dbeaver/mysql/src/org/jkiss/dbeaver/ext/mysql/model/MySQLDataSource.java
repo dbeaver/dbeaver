@@ -275,16 +275,16 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Find tables by name");
         try {
             // Load tables
+            String catalogName = getActiveChild(monitor).getName();
             JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT TABLE_SCHEMA,TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '" + tableMask.toLowerCase() + "'");
+                "SHOW TABLES LIKE '" + tableMask.toLowerCase() + "'");
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     int tableNum = maxResults;
                     while (dbResult.next() && tableNum-- > 0) {
     
-                        String catalogName = JDBCUtils.safeGetString(dbResult, 1);
-                        String tableName = JDBCUtils.safeGetString(dbResult, 2);
+                        String tableName = JDBCUtils.safeGetString(dbResult, 1);
 
                         pathList.add(
                             new DBSTablePath(

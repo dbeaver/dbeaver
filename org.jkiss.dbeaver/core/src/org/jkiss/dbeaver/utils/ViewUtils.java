@@ -207,7 +207,7 @@ public class ViewUtils
 
                 // Add "Set active object" menu
                 if (dbmNode instanceof DBNTreeNode && !(dbmNode instanceof DBNTreeFolder) && dbmNode.getObject() != null) {
-                    final DBSEntitySelector activeContainer = DBUtils.queryParentInterface(
+                    final DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
                         DBSEntitySelector.class, dbmNode.getObject());
                     if (activeContainer != null && activeContainer.supportsActiveChildChange()) {
                         try {

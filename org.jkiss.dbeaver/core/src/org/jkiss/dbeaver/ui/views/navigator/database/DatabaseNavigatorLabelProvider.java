@@ -110,7 +110,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     {
         if (element instanceof DBNNode) {
             DBSObject object = ((DBNNode) element).getObject();
-            DBSEntitySelector activeContainer = DBUtils.queryParentInterface(
+            DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
                 DBSEntitySelector.class, object);
             if (activeContainer != null) {
                 try {

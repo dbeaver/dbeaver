@@ -82,13 +82,19 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             // It's a table query
             // Use database information (only we are connected, of course)
             if (editor.getDataSourceContainer().isConnected()) {
-                DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
-                    public void run(DBRProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        makeStructureProposals(monitor, proposals, wordPart, isTableQuery);
-                    }
-                });
+                try {
+                    DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+                        public void run(DBRProgressMonitor monitor)
+                            throws InvocationTargetException, InterruptedException
+                        {
+                            makeStructureProposals(monitor, proposals, wordPart, isTableQuery);
+                        }
+                    });
+                } catch (InvocationTargetException e) {
+                    log.warn("Error while seeking for structure proposals", e.getTargetException());
+                } catch (InterruptedException e) {
+                    // interrupted - do nothing
+                }
             }
         } else if (wordPart.length() == 0) {
             // No assist
@@ -165,8 +171,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         // Assume it's a table alias ?
                         childObject = this.getTableFromAlias(monitor, sc, token);
                         if (childObject == null) {
-                            if (sc instanceof DBSStructureAssistant) {
-                                List<DBSTablePath> tableNames = ((DBSStructureAssistant) sc).findTableNames(monitor, token, 2);
+                            DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
+                            if (structureAssistant != null) {
+                                List<DBSTablePath> tableNames = structureAssistant.findTableNames(monitor, token, 2);
                                 if (!tableNames.isEmpty()) {
                                     childObject = DBUtils.getTableByPath(monitor, sc, tableNames.get(0));
                                 }
@@ -199,8 +206,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             makeProposalsFromChildren(monitor, childObject, lastToken, proposals);
             if (proposals.isEmpty() || tokens.size() == 1) {
                 // At last - try to find child tables by pattern
-                if (childObject instanceof DBSStructureAssistant) {
-                    makeProposalsFromAssistant(monitor, (DBSStructureAssistant)childObject, (DBSEntityContainer) dataSource, lastToken, proposals);
+                DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, childObject);
+                if (structureAssistant != null) {
+                    makeProposalsFromAssistant(monitor, structureAssistant, (DBSEntityContainer) dataSource, lastToken, proposals);
                 }
             }
         }
@@ -264,8 +272,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             DBSObject childObject = DBUtils.findNestedObject(monitor, sc, nameList);
             if (childObject == null && nameList.size() <= 1) {
                 // No such object found - may be it's start of table name
-                if (sc instanceof DBSStructureAssistant) {
-                    List<DBSTablePath> tableNames = ((DBSStructureAssistant) sc).findTableNames(monitor, startName, 2);
+                DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
+                if (structureAssistant != null) {
+                    List<DBSTablePath> tableNames = structureAssistant.findTableNames(monitor, startName, 2);
                     if (!tableNames.isEmpty()) {
                         return DBUtils.getTableByPath(monitor, sc, tableNames.get(0));
                     }
@@ -309,9 +318,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
     }
 
-    private void makeProposalsFromAssistant(DBRProgressMonitor monitor, DBSStructureAssistant assistant,
-                                            DBSEntityContainer rootSC, String tableName,
-                                            List<ICompletionProposal> proposals)
+    private void makeProposalsFromAssistant(
+        DBRProgressMonitor monitor,
+        DBSStructureAssistant assistant,
+        DBSEntityContainer rootSC,
+        String tableName,
+        List<ICompletionProposal> proposals)
     {
         try {
             List<DBSTablePath> tableNames = assistant.findTableNames(monitor, tableName + "%", 100);
