@@ -651,32 +651,37 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         } else if (isHyperlink(cell.value)) {
                             boolean isSelected = linkColor.equals(gc.getBackground());
                             // Clear item
-                            Color oldFg = gc.getForeground();
-                            gc.setForeground(gc.getBackground());
-                            gc.fillRectangle(event.x, event.y, event.width, event.height);
-                            gc.setForeground(oldFg);
-                            // Print link
-                            String text = getCellString(cell.value);
-                            linkLayout.setText(text);
-
-                            TextStyle linkStyle = new TextStyle(
-                                getFont(),
-                                isSelected ? gc.getForeground() : linkColor,
-                                gc.getBackground());
-                            linkStyle.underline = true;
-                            linkStyle.underlineStyle = SWT.UNDERLINE_LINK;
-                            linkLayout.setIndent(3);
-                            linkLayout.setStyle(linkStyle, 0, text.length());
-                            linkLayout.draw(gc, event.x, event.y);
-                            cell.linkBounds = linkLayout.getBounds();
                             Rectangle itemBounds;
                             if (isTree) {
                                 itemBounds = ((TreeItem)event.item).getBounds(event.index);
                             } else {
                                 itemBounds = ((TableItem)event.item).getBounds(event.index);
                             }
+
+                            //Color oldFg = gc.getBackground();
+                            //if (isSelected) {
+                            //    gc.setBackground(linkColor);
+                            //}
+                            gc.fillRectangle(itemBounds.x, itemBounds.y + 1, itemBounds.width, itemBounds.height - 2);
+                            //gc.setBackground(oldFg);
+
+                            // Print link
+                            TextStyle linkStyle = new TextStyle(
+                                getFont(),
+                                isSelected ? gc.getForeground() : linkColor,
+                                gc.getBackground());
+                            linkStyle.underline = true;
+                            linkStyle.underlineStyle = SWT.UNDERLINE_LINK;
+
+                            String text = getCellString(cell.value);
+                            linkLayout.setText(text);
+                            linkLayout.setIndent(3);
+                            linkLayout.setStyle(linkStyle, 0, text.length());
+                            linkLayout.draw(gc, event.x, event.y + 1);
+                            cell.linkBounds = linkLayout.getBounds();
                             cell.linkBounds.x += itemBounds.x;
-                            cell.linkBounds.y += itemBounds.y;
+                            cell.linkBounds.y += itemBounds.y + 1;
+                            cell.linkBounds.height -= 2;
                             //event.gc.drawText(cell.value.toString(), event.x, event.y);
                         }
                     }

@@ -40,7 +40,7 @@ public interface DBSEntityContainer extends DBSObject
      * Gets child object by its name.
      * In most cases object name have to be case insensitive.
      * @param monitor progress monitor
-     * @param childName name of child object  @return child object or null
+     * @param childName name of child object
      * @throws DBException on any DB error
      * @return child object or null
      */
