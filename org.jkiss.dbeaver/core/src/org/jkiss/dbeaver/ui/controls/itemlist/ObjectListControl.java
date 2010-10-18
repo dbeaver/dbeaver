@@ -60,9 +60,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private final Color linkColor;
     private final Cursor linkCursor;
 
-    private int selectedItem = -1;
-    private int selectedColumn = -1;
-    private boolean sampleItems = false;
+    // Current selection coordinates
+    private transient int selectedItem = -1;
+    private transient int selectedColumn = -1;
+    // Sample flag. True only when initial content is packed. Used to provide actual cell data to Tree/Table pack() methods
+    // After content is loaded is always false (and all hyperlink cells have empty text)
+    private transient boolean sampleItems = false;
 
     public ObjectListControl(
         Composite parent,
@@ -722,7 +725,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         private void resetCursor()
         {
-            getItemsViewer().getControl().setCursor(getParent().getCursor());
+            getItemsViewer().getControl().setCursor(null);
         }
 
         public void mouseMove(MouseEvent e)
