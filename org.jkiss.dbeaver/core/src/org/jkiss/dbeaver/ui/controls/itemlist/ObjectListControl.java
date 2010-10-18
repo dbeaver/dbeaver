@@ -13,14 +13,13 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
@@ -55,6 +54,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private IDoubleClickListener doubleClickHandler;
     private LoadingJob<Collection<OBJECT_TYPE>> loadingJob;
 
+    private final TextLayout linkLayout;
+    private final Color linkColor;
+    private final Cursor linkCursor;
+
     private int selectedItem = -1;
     private int selectedColumn = -1;
 
@@ -69,6 +72,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         this.isFitWidth = false;
         this.showName = true;
         this.loadProperties = true;
+        this.linkLayout = new TextLayout(parent.getDisplay());
+        this.linkColor = parent.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
+        this.linkCursor = parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND);
 
         if (isTree) {
             TreeViewer treeViewer = new TreeViewer(this, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
@@ -79,20 +85,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 @Override
                 public void mouseDown(MouseEvent e)
                 {
-                    selectedItem = -1;
-                    selectedColumn = -1;
-                    Point pt = new Point(e.x, e.y);
-                    TreeItem item = tree.getItem(pt);
-                    if (item == null) return;
-                    int columnCount = tree.getColumnCount();
-                    for (int i = 0; i < columnCount; i++) {
-                        Rectangle rect = item.getBounds(i);
-                        if (rect.contains(pt)) {
-                            selectedItem = tree.indexOf(item);
-                            selectedColumn = i;
-                            break;
-                        }
-                    }
+                    detectTreeItem(e.x, e.y);
                 }
             });
             itemsViewer = treeViewer;
@@ -106,20 +99,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 @Override
                 public void mouseDown(MouseEvent e)
                 {
-                    selectedItem = -1;
-                    selectedColumn = -1;
-                    Point pt = new Point(e.x, e.y);
-                    TableItem item = table.getItem(pt);
-                    if (item == null) return;
-                    int columnCount = table.getColumnCount();
-                    for (int i = 0; i < columnCount; i++) {
-                        Rectangle rect = item.getBounds(i);
-                        if (rect.contains(pt)) {
-                            selectedItem = table.indexOf(item);
-                            selectedColumn = i;
-                            break;
-                        }
-                    }
+                    detectTableItem(e.x, e.y);
                 }
             });
             itemsViewer = tableViewer;
@@ -128,6 +108,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         itemsViewer.setLabelProvider(new ItemLabelProvider());
         itemsViewer.addDoubleClickListener(this);
         itemsViewer.getControl().addListener(SWT.PaintItem, new PaintListener());
+        CellTrackListener mouseListener = new CellTrackListener();
+        itemsViewer.getControl().addMouseTrackListener(mouseListener);
+        itemsViewer.getControl().addMouseMoveListener(mouseListener);
 
         GridData gd = new GridData(GridData.FILL_BOTH);
         itemsViewer.getControl().setLayoutData(gd);
@@ -144,6 +127,44 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             }
         });
+    }
+
+    private TableItem detectTableItem(int x, int y)
+    {
+        selectedItem = -1;
+        selectedColumn = -1;
+        Point pt = new Point(x, y);
+        TableItem item = getTable().getItem(pt);
+        if (item == null) return null;
+        int columnCount = getTable().getColumnCount();
+        for (int i = 0; i < columnCount; i++) {
+            Rectangle rect = item.getBounds(i);
+            if (rect.contains(pt)) {
+                selectedItem = getTable().indexOf(item);
+                selectedColumn = i;
+                break;
+            }
+        }
+        return item;
+    }
+
+    private TreeItem detectTreeItem(int x, int y)
+    {
+        selectedItem = -1;
+        selectedColumn = -1;
+        Point pt = new Point(x, y);
+        TreeItem item = getTree().getItem(pt);
+        if (item == null) return null;
+        int columnCount = getTree().getColumnCount();
+        for (int i = 0; i < columnCount; i++) {
+            Rectangle rect = item.getBounds(i);
+            if (rect.contains(pt)) {
+                selectedItem = getTree().indexOf(item);
+                selectedColumn = i;
+                break;
+            }
+        }
+        return item;
     }
 
     protected String getSelectedText()
@@ -181,6 +202,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private Table getTable()
     {
         return ((TableViewer)itemsViewer).getTable();
+    }
+
+    private boolean isItemSelected(Widget item)
+    {
+        return false;
     }
 
     public Viewer getItemsViewer()
@@ -221,9 +247,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         isFitWidth = fitWidth;
     }
 
+    protected boolean isHyperlink(Object cellValue)
+    {
+        return false;
+    }
+
     @Override
     public void dispose()
     {
+        UIUtils.dispose(linkLayout);
         if (!itemsViewer.getControl().isDisposed()) {
             itemsViewer.getControl().dispose();
         }
@@ -391,7 +423,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 */
             return null;
         }
-    
+
         public String getColumnText(Object element, int columnIndex)
         {
             ItemRow<OBJECT_TYPE> row = itemMap.get(element);
@@ -408,7 +440,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (cell.value == LOADING_VALUE) {
                 return "...";
             }
-            return UIUtils.makeStringForUI(cell.value).toString();
+            return getCellString(cell.value);
         }
 
     }
@@ -578,6 +610,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
 	class PaintListener implements Listener {
+
 		public void handleEvent(Event event) {
             if (isDisposed()) {
                 return;
@@ -586,12 +619,45 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 				case SWT.PaintItem: {
                     ItemRow<OBJECT_TYPE> row = itemMap.get(event.item.getData());
                     ItemCell<OBJECT_TYPE> cell = row == null ? null : getCellByIndex(row, event.index);
-                    if (cell != null && cell.value instanceof Boolean) {
-                        if (((Boolean)cell.value)) {
-                            int columnWidth = UIUtils.getColumnWidth(columns.get(event.index));
-                            Image image = DBIcon.CHECK.getImage();
-                            event.gc.drawImage(image, event.x + (columnWidth - image.getBounds().width) / 2, event.y);
-                            event.doit = false;
+                    if (cell != null ) {
+                        GC gc = event.gc;
+                        if (cell.value instanceof Boolean) {
+                            if (((Boolean)cell.value)) {
+                                int columnWidth = UIUtils.getColumnWidth(columns.get(event.index));
+                                Image image = DBIcon.CHECK.getImage();
+                                gc.drawImage(image, event.x + (columnWidth - image.getBounds().width) / 2, event.y);
+                                event.doit = false;
+                            }
+                        } else if (isHyperlink(cell.value)) {
+                            boolean isSelected = linkColor.equals(gc.getBackground());
+                            // Clear item
+                            Color oldFg = gc.getForeground();
+                            gc.setForeground(gc.getBackground());
+                            gc.fillRectangle(event.x, event.y, event.width, event.height);
+                            gc.setForeground(oldFg);
+                            // Print link
+                            String text = getCellString(cell.value);
+                            linkLayout.setText(text);
+
+                            TextStyle linkStyle = new TextStyle(
+                                getFont(),
+                                isSelected ? gc.getForeground() : linkColor,
+                                gc.getBackground());
+                            linkStyle.underline = true;
+                            linkStyle.underlineStyle = SWT.UNDERLINE_LINK;
+                            linkLayout.setIndent(3);
+                            linkLayout.setStyle(linkStyle, 0, text.length());
+                            linkLayout.draw(gc, event.x, event.y);
+                            cell.linkBounds = linkLayout.getBounds();
+                            Rectangle itemBounds;
+                            if (isTree) {
+                                itemBounds = ((TreeItem)event.item).getBounds(event.index);
+                            } else {
+                                itemBounds = ((TableItem)event.item).getBounds(event.index);
+                            }
+                            cell.linkBounds.x += itemBounds.x;
+                            cell.linkBounds.y += itemBounds.y;
+                            //event.gc.drawText(cell.value.toString(), event.x, event.y);
                         }
                     }
 					break;
@@ -600,11 +666,60 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 		}
 	}
 
+    class CellTrackListener implements MouseTrackListener, MouseMoveListener {
+
+        public void mouseEnter(MouseEvent e)
+        {
+        }
+
+        public void mouseExit(MouseEvent e)
+        {
+            resetCursor();
+        }
+
+        public void mouseHover(MouseEvent e)
+        {
+        }
+
+        private void resetCursor()
+        {
+            getItemsViewer().getControl().setCursor(getParent().getCursor());
+        }
+
+        public void mouseMove(MouseEvent e)
+        {
+            Item hoverItem;
+            if (isTree) {
+                hoverItem = detectTreeItem(e.x, e.y);
+            } else {
+                hoverItem = detectTableItem(e.x, e.y);
+            }
+            if (hoverItem == null || selectedColumn < 0) {
+                resetCursor();
+            } else {
+                Object element = hoverItem.getData();
+                ItemRow<OBJECT_TYPE> row = itemMap.get(element);
+                ItemCell<OBJECT_TYPE> cell = row.getCell(showName ? selectedColumn - 1 : selectedColumn);
+                if (cell == null) {
+                    resetCursor();
+                } else {
+                    Object cellValue = cell.value;
+                    if (isHyperlink(cellValue) && cell.linkBounds != null && cell.linkBounds.contains(e.x, e.y)) {
+                        getItemsViewer().getControl().setCursor(linkCursor);
+                    } else {
+                        resetCursor();
+                    }
+                }
+            }
+        }
+    }
+
     private static class ItemCell<OBJECT_TYPE>
     {
         final OBJECT_TYPE object;
         final PropertyAnnoDescriptor prop;
         Object value;
+        Rectangle linkBounds;
 
         ItemCell(OBJECT_TYPE object, PropertyAnnoDescriptor prop, Object value)
         {
@@ -625,10 +740,21 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             this.object = object;
             this.props = props;
         }
+        ItemCell<OBJECT_TYPE> getCell(int index)
+        {
+            return index >= props.size() ? null : props.get(index);
+        }
         Object getValue(int index)
         {
             return index >= props.size() ? null : props.get(index).value;
         }
     }
 
+    private static String getCellString(Object value)
+    {
+        if (value instanceof DBPNamedObject) {
+            value = ((DBPNamedObject)value).getName();
+        }
+        return UIUtils.makeStringForUI(value).toString();
+    }
 }

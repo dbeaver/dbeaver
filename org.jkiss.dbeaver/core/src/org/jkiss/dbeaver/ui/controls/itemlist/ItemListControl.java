@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
@@ -83,11 +84,6 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
         return getItemsViewer();
     }
 
-    public IWorkbenchPart getWorkbenchPart()
-    {
-        return workbenchPart;
-    }
-
     @Override
     protected DBPDataSource getDataSource()
     {
@@ -110,6 +106,12 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
     protected Image getObjectImage(DBNNode item)
     {
         return item.getNodeIconDefault();
+    }
+
+    @Override
+    protected boolean isHyperlink(Object cellValue)
+    {
+        return cellValue instanceof DBSObject;
     }
 
     private class ItemLoadService extends DatabaseLoadService<Collection<DBNNode>> {
