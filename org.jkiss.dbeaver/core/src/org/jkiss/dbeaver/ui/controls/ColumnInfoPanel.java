@@ -53,7 +53,10 @@ public class ColumnInfoPanel extends Composite {
             properties.setCurrentObject(valueController.getValueSite().getPart(), infoItem);
         }
 
-        this.setLayout(new GridLayout(1, false));
+        GridLayout layout = new GridLayout(1, false);
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        this.setLayout(layout);
     }
 
     public static class KeyColumnValue implements DBPNamedObject {

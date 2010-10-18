@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -55,6 +56,7 @@ public class DBNModel implements DBPEventListener {
         nodesAdapter = new DBNAdapterFactory();
         IAdapterManager mgr = Platform.getAdapterManager();
         mgr.registerAdapters(nodesAdapter, DBNNode.class);
+        mgr.registerAdapters(nodesAdapter, DBPObject.class);
     }
 
     public void dispose()

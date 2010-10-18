@@ -42,15 +42,16 @@ public class DBNAdapterFactory implements IAdapterFactory
 
     public Object getAdapter(Object adaptableObject, Class adapterType)
     {
-        if (!(adaptableObject instanceof DBNNode)) {
-            return null;
-        }
-        final DBNNode node = (DBNNode) adaptableObject;
         if (adapterType == DBSDataSourceContainer.class) {
-            if (node instanceof DBNDataSource) {
-                return ((DBNDataSource)node).getDataSourceContainer();
+            if (adaptableObject instanceof DBNDataSource) {
+                return ((DBNDataSource)adaptableObject).getDataSourceContainer();
             }
-            DBSObject object = node.getObject();
+            DBSObject object = null;
+            if (adaptableObject instanceof DBNNode) {
+                object = ((DBNNode) adaptableObject).getObject();
+            } else if (adaptableObject instanceof DBSObject) {
+                object = (DBSObject) adaptableObject;
+            }
             if (object == null) {
                 return null;
             }
@@ -60,12 +61,23 @@ public class DBNAdapterFactory implements IAdapterFactory
             DBPDataSource dataSource = object.getDataSource();
             return dataSource == null ? null : dataSource.getContainer();
         } else if (DBPObject.class.isAssignableFrom(adapterType)) {
-            DBSObject object = node.getObject();
+            DBPObject object = null;
+            if (adaptableObject instanceof DBNNode) {
+                object = ((DBNNode) adaptableObject).getObject();
+            } else if (adaptableObject instanceof DBPObject) {
+                object = (DBPObject) adaptableObject;
+            }
             if (object != null && adapterType.isAssignableFrom(object.getClass())) {
                 return object;
             }
         } else if (adapterType == IPropertySource.class) {
-            DBPObject dbObject = node.getObject();
+            DBPObject dbObject = null;
+            if (adaptableObject instanceof DBNNode) {
+                dbObject = ((DBNNode) adaptableObject).getObject();
+            } else if (adaptableObject instanceof DBPObject) {
+                dbObject = (DBPObject) adaptableObject;
+            }
+
             if (dbObject instanceof IAdaptable) {
                 Object adapter = ((IAdaptable) dbObject).getAdapter(adapterType);
                 if (adapter != null) {
@@ -89,28 +101,33 @@ public class DBNAdapterFactory implements IAdapterFactory
             }
         } else if (adapterType == IWorkbenchAdapter.class) {
             // Workbench adapter
-            return new IWorkbenchAdapter() {
+            if (adaptableObject instanceof DBNNode) {
+                final DBNNode node = (DBNNode)adaptableObject;
+                return new IWorkbenchAdapter() {
 
-                public Object[] getChildren(Object o)
-                {
-                    return null;
-                }
+                    public Object[] getChildren(Object o)
+                    {
+                        return null;
+                    }
 
-                public ImageDescriptor getImageDescriptor(Object object)
-                {
-                    return ImageDescriptor.createFromImage(node.getNodeIconDefault());
-                }
+                    public ImageDescriptor getImageDescriptor(Object object)
+                    {
+                        return ImageDescriptor.createFromImage(node.getNodeIconDefault());
+                    }
 
-                public String getLabel(Object o)
-                {
-                    return node.getNodeName();
-                }
+                    public String getLabel(Object o)
+                    {
+                        return node.getNodeName();
+                    }
 
-                public Object getParent(Object o)
-                {
-                    return node.getParentNode();
-                }
-            };
+                    public Object getParent(Object o)
+                    {
+                        return node.getParentNode();
+                    }
+                };
+            } else {
+                return null;
+            }
         }
         return null;
     }
