@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerOpenObject;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
@@ -111,7 +112,17 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
     @Override
     protected boolean isHyperlink(Object cellValue)
     {
-        return cellValue instanceof DBSObject;
+        return cellValue instanceof DBSObject && cellValue != node.getValueObject();
+    }
+
+    protected void navigateHyperlink(Object cellValue)
+    {
+        if (cellValue instanceof DBSObject) {
+            DBNNode node = NavigatorHandlerOpenObject.getNodeByObject((DBSObject) cellValue);
+            if (node != null) {
+                NavigatorHandlerOpenObject.openEntityEditor(node, null, workbenchPart.getSite().getWorkbenchWindow());
+            }
+        }
     }
 
     private class ItemLoadService extends DatabaseLoadService<Collection<DBNNode>> {

@@ -97,7 +97,7 @@ public class MySQLEngine implements DBSObject {
 
     public DBSObject getParentObject()
     {
-        return dataSource;
+        return dataSource.getContainer();
     }
 
     public DBPDataSource getDataSource()

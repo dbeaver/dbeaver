@@ -81,13 +81,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             final Tree tree = treeViewer.getTree();
             tree.setLinesVisible (true);
             tree.setHeaderVisible(true);
-            tree.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseDown(MouseEvent e)
-                {
-                    detectTreeItem(e.x, e.y);
-                }
-            });
             itemsViewer = treeViewer;
             
         } else {
@@ -95,13 +88,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             final Table table = tableViewer.getTable();
             table.setLinesVisible (true);
             table.setHeaderVisible(true);
-            table.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseDown(MouseEvent e)
-                {
-                    detectTableItem(e.x, e.y);
-                }
-            });
             itemsViewer = tableViewer;
         }
         itemsViewer.setContentProvider(contentProvider);
@@ -109,6 +95,40 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         itemsViewer.addDoubleClickListener(this);
         itemsViewer.getControl().addListener(SWT.PaintItem, new PaintListener());
         CellTrackListener mouseListener = new CellTrackListener();
+        itemsViewer.getControl().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e)
+            {
+                if (isTree) {
+                    detectTreeItem(e.x, e.y);
+                } else {
+                    detectTableItem(e.x, e.y);
+                }
+            }
+            @Override
+            public void mouseUp(MouseEvent e)
+            {
+                Item hoverItem;
+                if (isTree) {
+                    hoverItem = detectTreeItem(e.x, e.y);
+                } else {
+                    hoverItem = detectTableItem(e.x, e.y);
+                }
+                if (hoverItem != null && selectedColumn >= 0) {
+                    Object element = hoverItem.getData();
+                    ItemRow<OBJECT_TYPE> row = itemMap.get(element);
+                    int checkColumn = showName ? selectedColumn - 1 : selectedColumn;
+                    ItemCell<OBJECT_TYPE> cell = checkColumn < 0 ? null : row.getCell(checkColumn);
+                    if (cell != null) {
+                        Object cellValue = cell.value;
+                        if (isHyperlink(cellValue) && cell.linkBounds != null && cell.linkBounds.contains(e.x, e.y)) {
+                            navigateHyperlink(cellValue);
+                        }
+                    }
+                }
+            }
+        });
+
         itemsViewer.getControl().addMouseTrackListener(mouseListener);
         itemsViewer.getControl().addMouseMoveListener(mouseListener);
 
@@ -204,11 +224,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return ((TableViewer)itemsViewer).getTable();
     }
 
-    private boolean isItemSelected(Widget item)
-    {
-        return false;
-    }
-
     public Viewer getItemsViewer()
     {
         return itemsViewer;
@@ -250,6 +265,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     protected boolean isHyperlink(Object cellValue)
     {
         return false;
+    }
+
+    protected void navigateHyperlink(Object cellValue)
+    {
+        // do nothing. by defalt all cells are not navigable
     }
 
     @Override
@@ -312,7 +332,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (column.isDisposed()) {
             return null;
         }
-        for (ItemCell<OBJECT_TYPE> cell : row.props) {
+        for (ItemCell<OBJECT_TYPE> cell : row.cells) {
             if (cell.prop.getId().equals(column.getData())) {
                 return cell;
             }
@@ -699,7 +719,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             } else {
                 Object element = hoverItem.getData();
                 ItemRow<OBJECT_TYPE> row = itemMap.get(element);
-                ItemCell<OBJECT_TYPE> cell = row.getCell(showName ? selectedColumn - 1 : selectedColumn);
+                int checkColumn = showName ? selectedColumn - 1 : selectedColumn;
+                ItemCell<OBJECT_TYPE> cell = checkColumn < 0 ? null : row.getCell(checkColumn);
                 if (cell == null) {
                     resetCursor();
                 } else {
@@ -733,20 +754,20 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private static class ItemRow<OBJECT_TYPE>
     {
         final OBJECT_TYPE object;
-        final List<ItemCell<OBJECT_TYPE>> props;
+        final List<ItemCell<OBJECT_TYPE>> cells;
 
-        ItemRow(OBJECT_TYPE object, List<ItemCell<OBJECT_TYPE>> props)
+        ItemRow(OBJECT_TYPE object, List<ItemCell<OBJECT_TYPE>> cells)
         {
             this.object = object;
-            this.props = props;
+            this.cells = cells;
         }
         ItemCell<OBJECT_TYPE> getCell(int index)
         {
-            return index >= props.size() ? null : props.get(index);
+            return index >= cells.size() ? null : cells.get(index);
         }
         Object getValue(int index)
         {
-            return index >= props.size() ? null : props.get(index).value;
+            return index >= cells.size() ? null : cells.get(index).value;
         }
     }
 

@@ -42,27 +42,39 @@ public class NavigatorHandlerOpenObject extends AbstractHandler {
 
         if (selection instanceof IStructuredSelection) {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
-            DBSObject object = (DBSObject) Platform.getAdapterManager().getAdapter(structSelection.getFirstElement(), DBSObject.class);
-            if (object != null) {
-                DBNModel model = DBeaverCore.getInstance().getNavigatorModel();
-                DBNNode node = model.findNode(object);
-                if (node == null) {
-                    NodeLoader nodeLoader = new NodeLoader(model, object);
-                    try {
-                        DBeaverCore.getInstance().runAndWait2(nodeLoader);
-                    } catch (InvocationTargetException e) {
-                        log.warn("Could not load node for object '" + object.getName() + "'", e.getTargetException());
-                    } catch (InterruptedException e) {
-                        // do nothing
-                    }
-                    node = nodeLoader.node;
+            Object element = structSelection.getFirstElement();
+            DBNNode node = null;
+            if (element instanceof DBNNode) {
+                node = (DBNNode)element;
+            } else {
+                DBSObject object = (DBSObject) Platform.getAdapterManager().getAdapter(element, DBSObject.class);
+                if (object != null) {
+                    node = getNodeByObject(object);
                 }
-                if (node != null) {
-                    openEntityEditor(node, null, HandlerUtil.getActiveWorkbenchWindow(event));
-                }
+            }
+            if (node != null) {
+                openEntityEditor(node, null, HandlerUtil.getActiveWorkbenchWindow(event));
             }
         }
         return null;
+    }
+
+    public static DBNNode getNodeByObject(DBSObject object)
+    {
+        DBNModel model = DBeaverCore.getInstance().getNavigatorModel();
+        DBNNode node = model.findNode(object);
+        if (node == null) {
+            NodeLoader nodeLoader = new NodeLoader(model, object);
+            try {
+                DBeaverCore.getInstance().runAndWait2(nodeLoader);
+            } catch (InvocationTargetException e) {
+                log.warn("Could not load node for object '" + object.getName() + "'", e.getTargetException());
+            } catch (InterruptedException e) {
+                // do nothing
+            }
+            node = nodeLoader.node;
+        }
+        return node;
     }
 
     public static void openEntityEditor(DBNNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
