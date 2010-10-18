@@ -1799,6 +1799,15 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
+        public int getColumnSort(int column)
+        {
+            if (mode == ResultSetMode.RECORD) {
+                return SWT.NONE;
+            } else {
+                return SWT.UP;
+            }
+        }
+
         public Object[] getElements(Object inputElement)
         {
             if (mode == ResultSetMode.RECORD) {

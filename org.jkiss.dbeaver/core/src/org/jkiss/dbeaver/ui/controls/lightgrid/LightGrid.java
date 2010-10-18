@@ -545,6 +545,7 @@ public class LightGrid extends Canvas {
             int columnCount = contentProvider.getSize().col;
             for (int i = 0; i < columnCount; i++) {
                 GridColumn column = new GridColumn(this, SWT.NONE);
+                column.setSort(contentProvider.getColumnSort(i));
                 column.setText(columnLabelProvider.getText(i));
                 column.setImage(columnLabelProvider.getImage(i));
             }

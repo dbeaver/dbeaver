@@ -12,6 +12,8 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.TableEditor;
+import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
@@ -60,6 +62,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private int selectedItem = -1;
     private int selectedColumn = -1;
+    private boolean sampleItems = false;
 
     public ObjectListControl(
         Composite parent,
@@ -82,6 +85,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             tree.setLinesVisible (true);
             tree.setHeaderVisible(true);
             itemsViewer = treeViewer;
+            //TreeEditor editor = new TreeEditor(tree);
             
         } else {
             TableViewer tableViewer = new TableViewer(this, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
@@ -89,6 +93,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             table.setLinesVisible (true);
             table.setHeaderVisible(true);
             itemsViewer = tableViewer;
+            //TableEditor editor = new TableEditor(table);
         }
         itemsViewer.setContentProvider(contentProvider);
         itemsViewer.setLabelProvider(new ItemLabelProvider());
@@ -457,6 +462,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (cell.value instanceof Boolean) {
                 return "";
             }
+            if (!sampleItems && isHyperlink(cell.value)) {
+                return "";
+            }
             if (cell.value == LOADING_VALUE) {
                 return "...";
             }
@@ -495,13 +503,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
 
             if (!itemsControl.isDisposed()) {
-                itemsViewer.setInput(objectList);
+                sampleItems = true;
+                try {
+                    itemsViewer.setInput(objectList);
 
-                if (isTree) {
-                    UIUtils.packColumns(getTree(), isFitWidth);
-                } else {
-                    UIUtils.packColumns(getTable());
+                    if (isTree) {
+                        UIUtils.packColumns(getTree(), isFitWidth);
+                    } else {
+                        UIUtils.packColumns(getTable());
+                    }
+                } finally {
+                    sampleItems = false;
                 }
+                itemsViewer.setInput(objectList);
 
                 // Load all lazy items in one job
                 if (!CommonUtils.isEmpty(lazyItems)) {
@@ -662,14 +676,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             //if (isSelected) {
                             //    gc.setBackground(linkColor);
                             //}
-                            gc.fillRectangle(itemBounds.x, itemBounds.y + 1, itemBounds.width, itemBounds.height - 2);
+                            //gc.fillRectangle(itemBounds.x, itemBounds.y + 1, itemBounds.width, itemBounds.height - 2);
                             //gc.setBackground(oldFg);
 
                             // Print link
                             TextStyle linkStyle = new TextStyle(
                                 getFont(),
                                 isSelected ? gc.getForeground() : linkColor,
-                                gc.getBackground());
+                                null);
                             linkStyle.underline = true;
                             linkStyle.underlineStyle = SWT.UNDERLINE_LINK;
 
