@@ -43,6 +43,7 @@ public class GridColumn extends Item {
 
 	private GridColumnRenderer footerRenderer;
 
+    private SortArrowRenderer sortRenderer;
 	/**
 	 * Cell renderer.
 	 */
@@ -57,7 +58,7 @@ public class GridColumn extends Item {
 	 * Sort style of column. Only used to draw indicator, does not actually sort
 	 * data.
 	 */
-	private int sortStyle = SWT.NONE;
+	private int sortStyle = SWT.UP;
 
 	/**
 	 * Is this column resizable?
@@ -111,6 +112,7 @@ public class GridColumn extends Item {
 
 	private void init(LightGrid grid, int index) {
 		this.parent = grid;
+        sortRenderer = new SortArrowRenderer(grid);
         headerRenderer = new DefaultColumnHeaderRenderer(grid);
         footerRenderer = new DefaultColumnFooterRenderer(grid);
         cellRenderer = new DefaultCellRenderer(grid);
@@ -125,7 +127,12 @@ public class GridColumn extends Item {
 */
 	}
 
-	/**
+    public SortArrowRenderer getSortRenderer()
+    {
+        return sortRenderer;
+    }
+
+    /**
 	 * {@inheritDoc}
 	 */
 	public void dispose() {
@@ -218,6 +225,16 @@ public class GridColumn extends Item {
 		return y;
     }
 
+    public boolean isOverSortArrow(int x)
+    {
+        if (!isSortable()) {
+            return false;
+        }
+        int arrowEnd = getBounds().width - rightMargin;
+        int arrowBegin = arrowEnd - sortRenderer.getBounds().width;
+        return x >= arrowBegin && x <= arrowEnd;
+    }
+
     public int computeHeaderWidth()
     {
         int x = leftMargin;
@@ -225,6 +242,9 @@ public class GridColumn extends Item {
             x += getImage().getBounds().width + imageSpacing;
         }
         x += parent.sizingGC.stringExtent(getText()).x + rightMargin;
+        if (isSortable()) {
+            x += rightMargin + sortRenderer.getBounds().width;
+        }
 
         return x;
     }
@@ -267,6 +287,11 @@ public class GridColumn extends Item {
 		checkWidget();
 		return sortStyle;
 	}
+
+    public boolean isSortable()
+    {
+        return sortStyle != SWT.NONE;
+    }
 
 	/**
 	 * Adds the listener to the collection of listeners who will be notified

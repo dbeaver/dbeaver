@@ -10,6 +10,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.NullScrollBar;
@@ -32,6 +33,8 @@ import java.util.List;
  * @author chris.gross@us.ibm.com
  */
 public class LightGrid extends Canvas {
+
+    public static final int Event_ChangeSort = 1000;
 
     /**
      * Horizontal scrolling increment, in pixels.
@@ -189,6 +192,13 @@ public class LightGrid extends Canvas {
      * Height of each column footer
      */
     private int footerHeight = 0;
+
+    /**
+     * True if mouse is hover on a column boundary and can resize the column.
+     */
+    boolean hoveringOnColumnSorter = false;
+
+    private GridColumn columnBeingSorted;
 
     /**
      * True if mouse is hover on a column boundary and can resize the column.
@@ -540,7 +550,7 @@ public class LightGrid extends Canvas {
             }
 
             if (getColumnCount() == 1) {
-                getColumn(0).setWidth(getSize().x - getRowHeaderWidth() - 20);
+                getColumn(0).setWidth(getSize().x - getRowHeaderWidth() - getHScrollSelectionInPixels());
             } else {
                 for (GridColumn curColumn : getColumns()) {
                     curColumn.pack();
@@ -2257,7 +2267,7 @@ public class LightGrid extends Canvas {
      */
     private boolean handleHoverOnColumnResizer(int x, int y)
     {
-        boolean over = false;
+        boolean overSorter = false, overResizer = false;
         if (y <= headerHeight) {
             int x2 = 0;
 
@@ -2268,28 +2278,42 @@ public class LightGrid extends Canvas {
             x2 -= getHScrollSelectionInPixels();
 
             for (GridColumn column : columns) {
+                if (column.isOverSortArrow(x - x2)) {
+                    overSorter = true;
+                    columnBeingSorted = column;
+                    break;
+                }
                 x2 += column.getWidth();
-
                 if (x2 >= (x - COLUMN_RESIZER_THRESHOLD) && x2 <= (x + COLUMN_RESIZER_THRESHOLD)) {
                     if (column.getResizeable()) {
-                        over = true;
+                        overResizer = true;
                         columnBeingResized = column;
                     }
                     break;
                 }
             }
         }
-
-        if (over != hoveringOnColumnResizer) {
-            if (over) {
+        if (overSorter != hoveringOnColumnSorter) {
+            if (overSorter) {
+                setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+            } else {
+                columnBeingSorted = null;
+                setCursor(null);
+            }
+            hoveringOnColumnSorter = overSorter;
+        }
+        if (overResizer != hoveringOnColumnResizer) {
+            if (overResizer) {
                 setCursor(getDisplay().getSystemCursor(SWT.CURSOR_SIZEWE));
             } else {
                 columnBeingResized = null;
-                setCursor(null);
+                if (!hoveringOnColumnSorter) {
+                    setCursor(null);
+                }
             }
-            hoveringOnColumnResizer = over;
+            hoveringOnColumnResizer = overResizer;
         }
-        return over;
+        return overResizer;
     }
 
     /**
@@ -3074,6 +3098,18 @@ public class LightGrid extends Canvas {
         cellRowSelectedOnLastMouseDown = false;
         cellColumnSelectedOnLastMouseDown = false;
 
+        if (hoveringOnColumnSorter) {
+            if (e.button == 1) {
+                Event event = new Event();
+                //event.data = row;
+                //event.data = e.data;
+                event.x = e.x;
+                event.y = e.y;
+                event.data = columnBeingSorted;
+                notifyListeners(Event_ChangeSort, event);
+            }
+            return;
+        }
         if (hoveringOnColumnResizer) {
             if (e.button == 1) {
                 resizingColumn = true;

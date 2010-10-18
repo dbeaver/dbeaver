@@ -681,6 +681,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     }
 
+    public void changeSorting(int column)
+    {
+        UIUtils.showMessageBox(spreadsheet.getShell(), "Sort", metaColumns[column].getColumn().getLabel());
+    }
+
     private void showCurrentRows()
     {
         setStatus("Row " + (curRowNum + 1));

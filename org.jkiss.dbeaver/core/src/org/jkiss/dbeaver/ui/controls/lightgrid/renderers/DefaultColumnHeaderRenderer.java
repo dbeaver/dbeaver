@@ -23,15 +23,15 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
     private int bottomMargin = 3;
     private int arrowMargin = 6;
     private int imageSpacing = 3;
-    private SortArrowRenderer arrowRenderer;
 
     public DefaultColumnHeaderRenderer(LightGrid grid) {
         super(grid);
-        arrowRenderer = new SortArrowRenderer(grid);
+
     }
 
     public void paint(GC gc) {
         GridColumn col = grid.getColumn(getColumn());
+        SortArrowRenderer arrowRenderer = col.getSortRenderer();
 
         // set the font to be used to display the text.
         gc.setFont(getColumnFont());
@@ -46,8 +46,7 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
             gc.setBackground(grid.getCellHeaderSelectionBackground());
         }
 
-        gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width,
-            getBounds().height);
+        gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width, getBounds().height);
 
         int pushedDrawingOffset = 0;
         if (drawSelected) {
@@ -70,7 +69,7 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
 
         int width = getBounds().width - x;
 
-        if (col.getSort() == SWT.NONE) {
+        if (!col.isSortable()) {
             width -= rightMargin;
         } else {
             width -= arrowMargin + arrowRenderer.getSize().x + arrowMargin;
@@ -102,10 +101,9 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
             }
         }
 
-        gc.drawString(text, getBounds().x + x + pushedDrawingOffset,
-            y + pushedDrawingOffset, true);
+        gc.drawString(text, getBounds().x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
 
-        if (col.getSort() != SWT.NONE) {
+        if (col.isSortable()) {
             if (col.getHeaderControl() == null) {
                 y = getBounds().y
                     + ((getBounds().height - arrowRenderer.getBounds().height) / 2)
@@ -228,10 +226,10 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
             bounds.width = p.x;
         } else {
             int width = getBounds().width - x;
-            if (column.getSort() == SWT.NONE) {
+            if (!column.isSortable()) {
                 width -= rightMargin;
             } else {
-                width -= arrowMargin + arrowRenderer.getSize().x + arrowMargin;
+                width -= arrowMargin + column.getSortRenderer().getSize().x + arrowMargin;
             }
             bounds.width = width;
         }

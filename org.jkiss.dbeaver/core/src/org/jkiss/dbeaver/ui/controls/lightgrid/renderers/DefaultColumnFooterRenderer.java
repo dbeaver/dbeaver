@@ -62,7 +62,7 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer {
 
         int width = getBounds().width - x;
 
-        if (col.getSort() == SWT.NONE) {
+        if (!col.isSortable()) {
             width -= rightMargin;
         }
 
@@ -125,7 +125,7 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer {
             bounds.width = p.x;
         } else {
             int width = getBounds().width - x;
-            if (column.getSort() == SWT.NONE) {
+            if (!column.isSortable()) {
                 width -= rightMargin;
             }
 

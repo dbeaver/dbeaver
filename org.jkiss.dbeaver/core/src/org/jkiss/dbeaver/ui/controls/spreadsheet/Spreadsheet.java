@@ -288,7 +288,8 @@ public class Spreadsheet extends Composite implements Listener {
         grid.addListener(SWT.MouseDoubleClick, this);
         grid.addListener(SWT.MouseDown, this);
         grid.addListener(SWT.KeyDown, this);
-
+        grid.addListener(LightGrid.Event_ChangeSort, this);
+        //Event_ChangeSort
         gridSelectionListener = new SelectionListener() {
             public void widgetSelected(SelectionEvent e)
             {
@@ -390,10 +391,17 @@ public class Spreadsheet extends Composite implements Listener {
                 }
                 break;
             case SWT.MouseDoubleClick:
-                openCellViewer(false);
+                GridPos pos = grid.getCell(new Point(event.x, event.y));
+                GridPos focusPos = grid.getFocusCell();
+                if (pos != null && focusPos != null && pos.equals(grid.getFocusCell())) {
+                    openCellViewer(false);
+                }
                 break;
             case SWT.MouseDown:
                 cancelInlineEditor();
+                break;
+            case LightGrid.Event_ChangeSort:
+                spreadsheetController.changeSorting(grid.indexOf((GridColumn) event.data));
                 break;
         }
     }
