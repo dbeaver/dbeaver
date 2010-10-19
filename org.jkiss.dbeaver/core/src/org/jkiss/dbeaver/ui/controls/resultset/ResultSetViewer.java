@@ -93,7 +93,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     // columns
     private DBDColumnBinding[] metaColumns = new DBDColumnBinding[0];
+    private List<ColumnOrder> orderedColumns = Collections.emptyList();
+
     // Data
+    private List<Object[]> origRows = new ArrayList<Object[]>();
     private List<Object[]> curRows = new ArrayList<Object[]>();
     // Current row number (for record mode)
     private int curRowNum = -1;
@@ -469,6 +472,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     public void setColumnsInfo(DBDColumnBinding[] metaColumns)
     {
         this.metaColumns = metaColumns;
+        this.orderedColumns = new ArrayList<ColumnOrder>();
     }
 
     public void setData(List<Object[]> rows)
@@ -478,6 +482,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.clearData();
 
         // Add new data
+        this.origRows.addAll(rows);
         this.curRows.addAll(rows);
 
         // Check single source flag
@@ -509,6 +514,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void appendData(List<Object[]> rows)
     {
+        origRows.addAll(rows);
         curRows.addAll(rows);
         refreshSpreadsheet(true);
 
@@ -684,8 +690,41 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void changeSorting(GridColumn column)
     {
-        column.setSort(column.getSort() == SWT.UP ? SWT.DOWN : SWT.UP);
+        DBDColumnBinding metaColumn = metaColumns[column.getIndex()];
+        ColumnOrder columnOrder = null;
+        for (ColumnOrder co : orderedColumns) {
+            if (co.column == metaColumn) {
+                columnOrder = co;
+                break;
+            }
+        }
+        int newSort;
+        if (columnOrder == null) {
+            if (dataReceiver.isHasMoreData()) {
+                if (!UIUtils.confirmAction(
+                    spreadsheet.getShell(),
+                    "Order result set",
+                    "Ordering of result set could take a lot of time for big tables when there is no appropriate index for this column. Are you sure you want to order this result set?"))
+                {
+                    return;
+                }
+            }
+            columnOrder = new ColumnOrder(metaColumn, column.getIndex(), false);
+            orderedColumns.add(columnOrder);
+            newSort = SWT.DOWN;
+
+        } else {
+            if (!columnOrder.descending) {
+                columnOrder.descending = true;
+                newSort = SWT.UP;
+            } else {
+                newSort = SWT.DEFAULT;
+                orderedColumns.remove(columnOrder);
+            }
+        }
+        column.setSort(newSort);
         rejectChanges();
+        reorderResultSet();
         spreadsheet.redrawGrid();
     }
 
@@ -749,6 +788,45 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
+    void reorderResultSet()
+    {
+        // Sort locally
+        curRows = new ArrayList<Object[]>(this.origRows);
+        if (orderedColumns.isEmpty()) {
+            return;
+        }
+        Collections.sort(curRows, new Comparator<Object[]>() {
+            public int compare(Object[] row1, Object[] row2)
+            {
+                int result = 0;
+                for (ColumnOrder co : orderedColumns) {
+                    Object cell1 = row1[co.columnIndex];
+                    Object cell2 = row2[co.columnIndex];
+                    if (cell1 == cell2) {
+                        result = 0;
+                    } else if (DBUtils.isNullValue(cell1)) {
+                        result = 1;
+                    } else if (DBUtils.isNullValue(cell2)) {
+                        result = -1;
+                    } else if (cell1 instanceof Comparable<?>) {
+                        result = ((Comparable)cell1).compareTo(cell2);
+                    } else {
+                        String str1 = co.column.getValueHandler().getValueDisplayString(co.column.getColumn(), cell1);
+                        String str2 = co.column.getValueHandler().getValueDisplayString(co.column.getColumn(), cell2);
+                        result = str1.compareTo(str2);
+                    }
+                    if (co.descending) {
+                        result = -result;
+                    }
+                    if (result != 0) {
+                        break;
+                    }
+                }
+                return result;
+            }
+        });
+    }
+
     synchronized void readNextSegment()
     {
         if (!dataReceiver.isHasMoreData()) {
@@ -805,12 +883,14 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private void clearMetaData()
     {
         this.metaColumns = new DBDColumnBinding[0];
+        this.orderedColumns = Collections.emptyList();
     }
 
     private void clearData()
     {
         // Refresh all rows
         this.releaseAll();
+        this.origRows = new ArrayList<Object[]>();
         this.curRows = new ArrayList<Object[]>();
         this.curRowNum = 0;
         this.curColNum = 0;
@@ -1812,8 +1892,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             if (mode == ResultSetMode.RECORD) {
                 column.setSort(SWT.NONE);
             } else {
-                column.setSort(SWT.UP);
-                column.setSortRenderer(new ResultSetSortRenderer(column.getParent()));
+                column.setSort(SWT.DEFAULT);
+                column.setSortRenderer(new ResultSetSortRenderer(column));
             }
         }
 
@@ -1982,4 +2062,18 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
     }
+
+    private static class ColumnOrder {
+        final DBDColumnBinding column;
+        final int columnIndex;
+        boolean descending;
+
+        private ColumnOrder(DBDColumnBinding column, int columnIndex, boolean descending)
+        {
+            this.column = column;
+            this.columnIndex = columnIndex;
+            this.descending = descending;
+        }
+    }
+
 }

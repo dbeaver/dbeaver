@@ -7,7 +7,10 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer;
 
@@ -15,20 +18,37 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer;
  * The column header sort arrow renderer.
  */
 class ResultSetSortRenderer extends AbstractRenderer {
-    private Color arrowColor;
+    private Image asterisk;
+    private Image arrowUp;
+    private Image arrowDown;
+    private GridColumn column;
 
-    ResultSetSortRenderer(LightGrid grid)
+    ResultSetSortRenderer(GridColumn column)
     {
-        super(grid);
-
-        arrowColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
-        setSize(7, 4);
+        super(column.getParent());
+        this.column = column;
+        this.asterisk = DBIcon.SORT_UNKNOWN.getImage();
+        this.arrowUp = DBIcon.SORT_DECREASE.getImage();
+        this.arrowDown = DBIcon.SORT_INCREASE.getImage();
+        Rectangle imgBounds = arrowUp.getBounds();
+        setSize(imgBounds.width, imgBounds.height);
     }
 
     public void paint(GC gc)
     {
-        gc.setForeground(arrowColor);
         Rectangle bounds = getBounds();
+        switch (column.getSort()) {
+            case SWT.DEFAULT:
+                gc.drawImage(asterisk, bounds.x, bounds.y);
+                break;
+            case SWT.UP:
+                gc.drawImage(arrowUp, bounds.x, bounds.y);
+                break;
+            case SWT.DOWN:
+                gc.drawImage(arrowDown, bounds.x, bounds.y);
+                break;
+        }
+/*
         if (isSelected()) {
             gc.drawLine(bounds.x, bounds.y, bounds.x + 6, bounds.y);
             gc.drawLine(bounds.x + 1, bounds.y + 1, bounds.x + 5, bounds.y + 1);
@@ -40,6 +60,7 @@ class ResultSetSortRenderer extends AbstractRenderer {
             gc.drawLine(bounds.x + 1, bounds.y + 2, bounds.x + 5, bounds.y + 2);
             gc.drawLine(bounds.x, bounds.y + 3, bounds.x + 6, bounds.y + 3);
         }
+*/
     }
 
 }
