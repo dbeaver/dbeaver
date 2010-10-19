@@ -110,6 +110,11 @@ public class GridColumn extends Item {
 		init(parent, index);
 	}
 
+    public int getIndex()
+    {
+        return getParent().indexOf(this);
+    }
+
 	private void init(LightGrid grid, int index) {
 		this.parent = grid;
         sortRenderer = new SortArrowRenderer(grid);
@@ -151,7 +156,7 @@ public class GridColumn extends Item {
 	 * Initialize cell renderer.
 	 */
 	private void initCellRenderer() {
-		cellRenderer.setColumn(parent.indexOf(this));
+		cellRenderer.setColumn(getIndex());
 
 		if ((getStyle() & SWT.RIGHT) == SWT.RIGHT) {
 			cellRenderer.setAlignment(SWT.RIGHT);
@@ -349,7 +354,7 @@ public class GridColumn extends Item {
 
 		int newWidth = computeHeaderWidth();
         if (parent.getContentLabelProvider() != null) {
-            int columnIndex = parent.indexOf(this);
+            int columnIndex = getIndex();
             int topIndex = parent.getTopIndex();
             int bottomIndex = parent.getBottomIndex();
             if (topIndex >= 0 && bottomIndex > topIndex) {

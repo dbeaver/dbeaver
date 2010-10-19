@@ -550,7 +550,7 @@ public class LightGrid extends Canvas {
             }
 
             if (getColumnCount() == 1) {
-                getColumn(0).setWidth(getSize().x - getRowHeaderWidth() - getHScrollSelectionInPixels());
+                getColumn(0).setWidth(getSize().x - getRowHeaderWidth() - getHScrollSelectionInPixels() - getVerticalBar().getSize().x);
             } else {
                 for (GridColumn curColumn : getColumns()) {
                     curColumn.pack();
@@ -1448,7 +1448,7 @@ public class LightGrid extends Canvas {
      * @param column the search column
      * @return the index of the column
      */
-    public int indexOf(GridColumn column)
+    int indexOf(GridColumn column)
     {
         checkWidget();
 
@@ -2423,7 +2423,7 @@ public class LightGrid extends Canvas {
                         column.getCellRenderer().setRowHover(hoveringItem == row);
                         column.getCellRenderer().setColumnHover(hoveringColumn == column);
 
-                        if (selectedCells.contains(new GridPos(indexOf(column), row))) {
+                        if (selectedCells.contains(new GridPos(column.getIndex(), row))) {
                             column.getCellRenderer().setCellSelected(true);
                             cellInRowSelected = true;
                         } else {
@@ -2479,7 +2479,7 @@ public class LightGrid extends Canvas {
 
                 for (GridColumn column : columns) {
                     emptyCellRenderer.setBounds(x, y, column.getWidth(), getItemHeight());
-                    emptyCellRenderer.setColumn(indexOf(column));
+                    emptyCellRenderer.setColumn(column.getIndex());
                     emptyCellRenderer.paint(e.gc);
 
                     x += column.getWidth();
@@ -2540,7 +2540,7 @@ public class LightGrid extends Canvas {
 
             column.getHeaderRenderer().setHover(hoveringColumnHeader == column);
 
-            column.getHeaderRenderer().setColumn(indexOf(column));
+            column.getHeaderRenderer().setColumn(column.getIndex());
             column.getHeaderRenderer().setHoverDetail(hoveringDetail);
             column.getHeaderRenderer().setBounds(x, y, column.getWidth(), height);
             column.getHeaderRenderer().setSelected(selectedColumns.contains(column));
@@ -2591,7 +2591,7 @@ public class LightGrid extends Canvas {
             y = getClientArea().height - height;
 
             column.getFooterRenderer().setBounds(x, y, column.getWidth(), height);
-            column.getFooterRenderer().setColumn(indexOf(column));
+            column.getFooterRenderer().setColumn(column.getIndex());
             if (x + column.getWidth() >= 0) {
                 column.getFooterRenderer().paint(gc);
             }
@@ -3139,11 +3139,11 @@ public class LightGrid extends Canvas {
                 col = getColumn(new Point(e.x, e.y));
                 boolean isSelectedCell = false;
                 if (col != null)
-                    isSelectedCell = selectedCells.contains(new GridPos(indexOf(col), row));
+                    isSelectedCell = selectedCells.contains(new GridPos(col.getIndex(), row));
 
                 if (e.button == 1 || (e.button == 3 && col != null && !isSelectedCell)) {
                     if (col != null) {
-                        selectionEvent = updateCellSelection(new GridPos(indexOf(col), row), e.stateMask, false, true, EventSource.MOUSE);
+                        selectionEvent = updateCellSelection(new GridPos(col.getIndex(), row), e.stateMask, false, true, EventSource.MOUSE);
                         cellSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
 
                         if (e.stateMask != SWT.MOD2) {
@@ -3226,7 +3226,7 @@ public class LightGrid extends Canvas {
         if (selectionEvent != null) {
             selectionEvent.stateMask = e.stateMask;
             selectionEvent.button = e.button;
-            selectionEvent.data = new GridPos(col == null ? 0 : indexOf(col), row);
+            selectionEvent.data = new GridPos(col == null ? 0 : col.getIndex(), row);
             selectionEvent.x = e.x;
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);
@@ -3295,7 +3295,7 @@ public class LightGrid extends Canvas {
                 se.button = e.button;
                 Point point = new Point(e.x, e.y);
                 GridColumn column = getColumn(point);
-                se.data = new GridPos(column == null ? 0 : indexOf(column), getRow(point));
+                se.data = new GridPos(column == null ? 0 : column.getIndex(), getRow(point));
                 se.stateMask = e.stateMask;
                 se.x = e.x;
                 se.y = e.y;
@@ -3384,7 +3384,7 @@ public class LightGrid extends Canvas {
 
                     showColumn(intentColumn);
                     showItem(intentItem);
-                    selectionEvent = updateCellSelection(new GridPos(indexOf(intentColumn), intentItem),
+                    selectionEvent = updateCellSelection(new GridPos(intentColumn.getIndex(), intentItem),
                                                          ctrlFlag | SWT.MOD2, true, false, EventSource.MOUSE);
                 }
                 if (cellRowDragSelectionOccuring && handleCellHover(e.x, e.y)) {
@@ -3455,7 +3455,7 @@ public class LightGrid extends Canvas {
             selectionEvent.button = e.button;
             Point point = new Point(e.x, e.y);
             GridColumn column = getColumn(point);
-            selectionEvent.data = new GridPos(column == null ? 0 : indexOf(column), getRow(point));
+            selectionEvent.data = new GridPos(column == null ? 0 : column.getIndex(), getRow(point));
             selectionEvent.x = e.x;
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);
@@ -3681,7 +3681,7 @@ public class LightGrid extends Canvas {
 
         {
             //if (e.stateMask != SWT.MOD1) {
-            GridPos newPos = new GridPos(indexOf(newColumnFocus), newSelection);
+            GridPos newPos = new GridPos(newColumnFocus.getIndex(), newSelection);
             Event selEvent = updateCellSelection(
                 newPos,
                 e.stateMask,
@@ -3825,7 +3825,7 @@ public class LightGrid extends Canvas {
             return false;
         }
 
-        col.getCellRenderer().setBounds(getCellBounds(indexOf(col), row));
+        col.getCellRenderer().setBounds(getCellBounds(col.getIndex(), row));
         return col.getCellRenderer().notify(IGridWidget.LeftMouseButtonDown, new Point(x, y), row);
 
     }
@@ -3893,7 +3893,7 @@ public class LightGrid extends Canvas {
             String newTip = null;
             if ((hoveringItem >= 0) && (hoveringColumn != null)) {
                 // get cell specific tooltip
-                newTip = getCellToolTip(indexOf(hoveringColumn), hoveringItem);
+                newTip = getCellToolTip(hoveringColumn.getIndex(), hoveringItem);
             } else if ((hoveringColumn != null) && (hoveringColumnHeader != null)) {
                 // get column header specific tooltip
                 newTip = hoveringColumn.getHeaderTooltip();
@@ -3976,7 +3976,7 @@ public class LightGrid extends Canvas {
     {
         boolean selectionModified = false;
 
-        int index = indexOf(column);
+        int index = column.getIndex();
 
         {
             List<GridPos> removeSelectedCells = new ArrayList<GridPos>();
@@ -4048,7 +4048,7 @@ public class LightGrid extends Canvas {
         int x = -1;
 
         if (focusColumn != null)
-            x = indexOf(focusColumn);
+            x = focusColumn.getIndex();
 
         return new GridPos(x, focusItem);
     }
@@ -4344,7 +4344,7 @@ public class LightGrid extends Canvas {
 
     private void getCells(GridColumn col, List<GridPos> cells)
     {
-        int colIndex = indexOf(col);
+        int colIndex = col.getIndex();
 
         for (int i = 0; i < getItemCount(); i++) {
             cells.add(new GridPos(colIndex, i));
@@ -4428,8 +4428,8 @@ public class LightGrid extends Canvas {
         boolean firstTime = true;
         int iterItem = fromItem;
 
-        int fromIndex = indexOf(fromColumn);
-        int toIndex = indexOf(toColumn);
+        int fromIndex = fromColumn.getIndex();
+        int toIndex = toColumn.getIndex();
 
         do {
             if (!firstTime) {
@@ -4450,7 +4450,7 @@ public class LightGrid extends Canvas {
             }
         } while (iterItem != toItem);
 
-        return new Point(indexOf(fromColumn), indexOf(toColumn));
+        return new Point(fromColumn.getIndex(), toColumn.getIndex());
     }
 
     /**
@@ -4463,8 +4463,8 @@ public class LightGrid extends Canvas {
      */
     private Point getRowSelectionRange(GridColumn fromColumn, GridColumn toColumn)
     {
-        int newFrom = indexOf(fromColumn);
-        int newTo = indexOf(toColumn);
+        int newFrom = fromColumn.getIndex();
+        int newTo = toColumn.getIndex();
         return new Point(newFrom, newTo);
     }
 

@@ -685,6 +685,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     public void changeSorting(GridColumn column)
     {
         column.setSort(column.getSort() == SWT.UP ? SWT.DOWN : SWT.UP);
+        rejectChanges();
         spreadsheet.redrawGrid();
     }
 
@@ -814,6 +815,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.curRowNum = 0;
         this.curColNum = 0;
 
+        clearEditedData();
+    }
+
+    private void clearEditedData()
+    {
         this.editedValues = new HashMap<CellInfo, Object>();
         this.addedRows = new TreeSet<RowInfo>();
         this.removedRows = new TreeSet<RowInfo>();
