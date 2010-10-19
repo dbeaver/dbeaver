@@ -351,7 +351,6 @@ public class SQLQueryJob extends DataSourceJob
             dataReceiver.fetchStart(context, resultSet);
 
             try {
-
                 while ((!hasLimits() || rowCount < rsMaxRows) && resultSet.nextRow()) {
                     rowCount++;
 
@@ -365,12 +364,12 @@ public class SQLQueryJob extends DataSourceJob
             }
             finally {
                 resultSet.close();
-            }
 
-            try {
-                dataReceiver.fetchEnd(context);
-            } catch (DBCException e) {
-                log.error("Error while handling end of result set fetch");
+                try {
+                    dataReceiver.fetchEnd(context);
+                } catch (DBCException e) {
+                    log.error("Error while handling end of result set fetch", e);
+                }
             }
 
             result.setRowCount(rowCount);

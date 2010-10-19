@@ -9,8 +9,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 
 /**
- * Data reciever.
- * Used to recieve some resultset data.
+ * Data receiver.
+ * Used to receive some resultset data.
  * Resultset can be a result of some query execution, cursor returned from stored procedure, generated keys result set, etc.
  */
 public interface DBDDataReceiver {
@@ -22,8 +22,10 @@ public interface DBDDataReceiver {
         throws DBCException;
 
     /**
-     * Called after entire result set is fetched and closed
-     * @throws DBCException on error  @param context
+     * Called after entire result set is fetched and closed.
+     * This method is called even if fetchStart wasn't called in this data receiver (may occur if statement throws an error)
+     * @throws DBCException on error
+     * @param context execution context
      */
     void fetchEnd(DBCExecutionContext context)
         throws DBCException;

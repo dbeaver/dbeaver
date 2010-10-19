@@ -383,11 +383,12 @@ public final class DBUtils {
         boolean hasLimits = offset >= 0 && maxRows > 0;
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
-        if (context.getDataSource() instanceof DBCQueryTransformProvider) {
+        DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, context.getDataSource());
+        if (transformProvider != null) {
             if (hasLimits) {
-                limitTransformer = ((DBCQueryTransformProvider) context.getDataSource()).createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
+                limitTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
             } else {
-                fetchAllTransformer = ((DBCQueryTransformProvider) context.getDataSource()).createQueryTransformer(DBCQueryTransformType.FETCH_ALL_TABLE);
+                fetchAllTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.FETCH_ALL_TABLE);
             }
         }
 

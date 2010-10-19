@@ -4,15 +4,13 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDColumnValue;
-import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -64,10 +62,25 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         DBRProgressMonitor monitor = context.getProgressMonitor();
         readRequiredMeta(monitor);
 
-        String query = "SELECT * FROM " + getFullQualifiedName();
-        boolean fetchStarted = false;
+        StringBuilder query = new StringBuilder(100);
+        query.append("SELECT * FROM ").append(getFullQualifiedName());
+        if (dataFilter != null) {
+            if (!CommonUtils.isEmpty(dataFilter.getOrderColumns())) {
+                query.append(" ORDER BY ");
+                boolean hasOrder = false;
+                for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
+                    if (hasOrder) query.append(',');
+                    query.append(DBUtils.getQuotedIdentifier(getDataSource(), co.getColumnMetaData().getName()));
+                    if (co.isDescending()) {
+                        query.append(" DESC");
+                    }
+                    hasOrder = true;
+                }
+            }
+        }
+
         monitor.subTask("Fetch table data");
-        DBCStatement dbStat = DBUtils.prepareSelectQuery(context, query, firstRow, maxRows);
+        DBCStatement dbStat = DBUtils.prepareSelectQuery(context, query.toString(), firstRow, maxRows);
         try {
             dbStat.setDataContainer(this);
             if (!dbStat.executeStatement()) {
@@ -79,7 +92,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
             try {
                 dataReceiver.fetchStart(context, dbResult);
-                fetchStarted = true;
 
                 long rowCount = 0;
                 while (dbResult.nextRow()) {
@@ -103,8 +115,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
         finally {
             dbStat.close();
-            if (fetchStarted) {
+            try {
                 dataReceiver.fetchEnd(context);
+            } catch (DBCException e) {
+                log.error("Error while finishing result set fetch", e);
             }
         }
     }
