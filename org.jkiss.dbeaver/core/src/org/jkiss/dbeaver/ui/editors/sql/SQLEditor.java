@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -1012,7 +1013,7 @@ public class SQLEditor extends BaseTextEditor
             return 0;
         }
 
-        public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, long firstRow, long maxRows) throws DBException
+        public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBException
         {
             if (curJob != null) {
                 curJob.setDataReciever(dataReceiver);

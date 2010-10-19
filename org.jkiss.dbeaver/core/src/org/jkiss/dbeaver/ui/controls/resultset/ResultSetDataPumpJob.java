@@ -43,6 +43,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
             resultSetViewer.getDataContainer().readData(
                 context,
                 resultSetViewer.getDataReceiver(),
+                resultSetViewer.getDataFilter(),
                 offset,
                 maxRows);
         }

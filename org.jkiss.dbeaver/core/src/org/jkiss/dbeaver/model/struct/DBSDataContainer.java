@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
@@ -22,12 +23,14 @@ public interface DBSDataContainer extends DBSObject {
     public static final int DATA_INSERT         = 2;
     public static final int DATA_UPDATE         = 4;
     public static final int DATA_DELETE         = 8;
+    public static final int DATA_FILTER         = 16;
 
     int getSupportedFeatures();
 
     long readData(
         DBCExecutionContext context,
         DBDDataReceiver dataReceiver,
+        DBDDataFilter dataFilter,
         long firstRow,
         long maxRows)
         throws DBException;

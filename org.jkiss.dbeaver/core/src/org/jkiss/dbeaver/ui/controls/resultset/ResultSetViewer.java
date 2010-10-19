@@ -93,7 +93,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     // columns
     private DBDColumnBinding[] metaColumns = new DBDColumnBinding[0];
-    private List<ColumnOrder> orderedColumns = Collections.emptyList();
+    private DBDDataFilter dataFilter;
 
     // Data
     private List<Object[]> origRows = new ArrayList<Object[]>();
@@ -287,6 +287,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return resultSetProvider.getDataContainer();
     }
 
+    public DBDDataFilter getDataFilter()
+    {
+        return dataFilter;
+    }
 
     public ResultSetMode getMode()
     {
@@ -472,7 +476,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     public void setColumnsInfo(DBDColumnBinding[] metaColumns)
     {
         this.metaColumns = metaColumns;
-        this.orderedColumns = new ArrayList<ColumnOrder>();
+        this.dataFilter = new DBDDataFilter();
     }
 
     public void setData(List<Object[]> rows)
@@ -691,13 +695,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     public void changeSorting(GridColumn column)
     {
         DBDColumnBinding metaColumn = metaColumns[column.getIndex()];
-        ColumnOrder columnOrder = null;
-        for (ColumnOrder co : orderedColumns) {
-            if (co.column == metaColumn) {
-                columnOrder = co;
-                break;
-            }
-        }
+        DBDColumnOrder columnOrder = dataFilter.getOrderColumn(metaColumn.getColumn());
         int newSort;
         if (columnOrder == null) {
             if (dataReceiver.isHasMoreData()) {
@@ -709,17 +707,17 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     return;
                 }
             }
-            columnOrder = new ColumnOrder(metaColumn, column.getIndex(), false);
-            orderedColumns.add(columnOrder);
+            columnOrder = new DBDColumnOrder(metaColumn.getColumn(), column.getIndex(), false);
+            dataFilter.addOrderColumn(columnOrder);
             newSort = SWT.DOWN;
 
         } else {
-            if (!columnOrder.descending) {
-                columnOrder.descending = true;
+            if (!columnOrder.isDescending()) {
+                columnOrder.setDescending(true);
                 newSort = SWT.UP;
             } else {
                 newSort = SWT.DEFAULT;
-                orderedColumns.remove(columnOrder);
+                dataFilter.removeOrderColumn(columnOrder);
             }
         }
         column.setSort(newSort);
@@ -792,16 +790,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     {
         // Sort locally
         curRows = new ArrayList<Object[]>(this.origRows);
-        if (orderedColumns.isEmpty()) {
+        if (dataFilter.getOrderColumns().isEmpty()) {
             return;
         }
         Collections.sort(curRows, new Comparator<Object[]>() {
             public int compare(Object[] row1, Object[] row2)
             {
                 int result = 0;
-                for (ColumnOrder co : orderedColumns) {
-                    Object cell1 = row1[co.columnIndex];
-                    Object cell2 = row2[co.columnIndex];
+                for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
+                    Object cell1 = row1[co.getColumnIndex()];
+                    Object cell2 = row2[co.getColumnIndex()];
                     if (cell1 == cell2) {
                         result = 0;
                     } else if (DBUtils.isNullValue(cell1)) {
@@ -811,11 +809,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     } else if (cell1 instanceof Comparable<?>) {
                         result = ((Comparable)cell1).compareTo(cell2);
                     } else {
-                        String str1 = co.column.getValueHandler().getValueDisplayString(co.column.getColumn(), cell1);
-                        String str2 = co.column.getValueHandler().getValueDisplayString(co.column.getColumn(), cell2);
+                        String str1 = cell1.toString();
+                        String str2 = cell2.toString();
                         result = str1.compareTo(str2);
                     }
-                    if (co.descending) {
+                    if (co.isDescending()) {
                         result = -result;
                     }
                     if (result != 0) {
@@ -883,7 +881,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private void clearMetaData()
     {
         this.metaColumns = new DBDColumnBinding[0];
-        this.orderedColumns = Collections.emptyList();
+        this.dataFilter = new DBDDataFilter();
     }
 
     private void clearData()
@@ -2060,19 +2058,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             } else {
                 return String.valueOf(rowNumber + 1);
             }
-        }
-    }
-
-    private static class ColumnOrder {
-        final DBDColumnBinding column;
-        final int columnIndex;
-        boolean descending;
-
-        private ColumnOrder(DBDColumnBinding column, int columnIndex, boolean descending)
-        {
-            this.column = column;
-            this.columnIndex = columnIndex;
-            this.descending = descending;
         }
     }
 

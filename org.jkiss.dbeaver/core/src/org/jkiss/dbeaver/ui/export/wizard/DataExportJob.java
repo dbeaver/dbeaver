@@ -312,13 +312,13 @@ public class DataExportJob extends AbstractJob {
                     // Perform export
                     if (settings.getExtractType() == DataExportSettings.ExtractType.SINGLE_QUERY) {
                         // Just do it in single query
-                        this.dataProvider.readData(context, this, -1, -1);
+                        this.dataProvider.readData(context, this, null, -1, -1);
                     } else {
                         // Read all data by segments
                         long offset = 0;
                         int segmentSize = settings.getSegmentSize();
                         for (;;) {
-                            long rowCount = this.dataProvider.readData(context, this, offset, segmentSize);
+                            long rowCount = this.dataProvider.readData(context, this, null, offset, segmentSize);
                             if (rowCount < segmentSize) {
                                 // Done
                                 break;
