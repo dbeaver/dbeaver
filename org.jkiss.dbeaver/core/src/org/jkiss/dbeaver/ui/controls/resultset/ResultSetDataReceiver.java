@@ -32,6 +32,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     private List<Object[]> rows = new ArrayList<Object[]>();
     private boolean hasMoreData;
     private boolean nextSegmentRead;
+    private boolean dataReload;
 
     Map<DBCColumnMetaData, List<DBCException>> errors = new HashMap<DBCColumnMetaData, List<DBCException>>();
 
@@ -57,12 +58,17 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         this.nextSegmentRead = nextSegmentRead;
     }
 
+    public void setDataReload(boolean dataReload)
+    {
+        this.dataReload = dataReload;
+    }
+
     public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet)
         throws DBCException
     {
         rows.clear();
 
-        if (!nextSegmentRead) {
+        if (!nextSegmentRead && !dataReload) {
             // Get columns metadata
             DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
 
@@ -115,7 +121,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     public void fetchEnd(DBCExecutionContext context)
         throws DBCException
     {
-        if (!nextSegmentRead) {
+        if (!nextSegmentRead && !dataReload) {
             // Read locators metadata
             DBUtils.findValueLocators(context.getProgressMonitor(), metaColumns);
         }
@@ -124,7 +130,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             public void run()
             {
                 if (!nextSegmentRead) {
-                    resultSetViewer.setData(rows);
+                    resultSetViewer.setData(rows, dataReload);
                 } else {
                     resultSetViewer.appendData(rows);
                 }
@@ -132,6 +138,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 // Check for more data
                 hasMoreData = rows.size() >= resultSetViewer.getSegmentMaxRows();
                 nextSegmentRead = false;
+                dataReload = false;
 
                 errors.clear();
                 rows = new ArrayList<Object[]>();

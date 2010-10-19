@@ -479,7 +479,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.dataFilter = new DBDDataFilter();
     }
 
-    public void setData(List<Object[]> rows)
+    public void setData(List<Object[]> rows, boolean dataReload)
     {
         // Clear previous data
         this.closeEditors();
@@ -489,23 +489,27 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.origRows.addAll(rows);
         this.curRows.addAll(rows);
 
-        // Check single source flag
-        this.singleSourceCells = true;
-        DBSTable sourceTable = null;
-        for (DBDColumnBinding column : metaColumns) {
-            if (isColumnReadOnly(column)) {
-                singleSourceCells = false;
-                break;
+        if (!dataReload) {
+            // Check single source flag
+            this.singleSourceCells = true;
+            DBSTable sourceTable = null;
+            for (DBDColumnBinding column : metaColumns) {
+                if (isColumnReadOnly(column)) {
+                    singleSourceCells = false;
+                    break;
+                }
+                if (sourceTable == null) {
+                    sourceTable = column.getValueLocator().getTable();
+                } else if (sourceTable != column.getValueLocator().getTable()) {
+                    singleSourceCells = false;
+                    break;
+                }
             }
-            if (sourceTable == null) {
-                sourceTable = column.getValueLocator().getTable();
-            } else if (sourceTable != column.getValueLocator().getTable()) {
-                singleSourceCells = false;
-                break;
-            }
-        }
 
-        this.initResultSet();
+            this.initResultSet();
+        } else {
+            this.refreshSpreadsheet(true);
+        }
 
         String statusMessage;
         if (rows.size() > 0) {
@@ -692,13 +696,18 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     }
 
+    private boolean supportsDataFilter()
+    {
+        return (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
+    }
+
     public void changeSorting(GridColumn column)
     {
         DBDColumnBinding metaColumn = metaColumns[column.getIndex()];
         DBDColumnOrder columnOrder = dataFilter.getOrderColumn(metaColumn.getColumn());
         int newSort;
         if (columnOrder == null) {
-            if (dataReceiver.isHasMoreData()) {
+            if (dataReceiver.isHasMoreData() && supportsDataFilter()) {
                 if (!UIUtils.confirmAction(
                     spreadsheet.getShell(),
                     "Order result set",
@@ -721,7 +730,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
         column.setSort(newSort);
-        rejectChanges();
+
         reorderResultSet();
         spreadsheet.redrawGrid();
     }
@@ -788,6 +797,20 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     void reorderResultSet()
     {
+        if (dataReceiver.isHasMoreData() && supportsDataFilter()) {
+            if (resultSetProvider != null && resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
+                int segmentSize = getSegmentMaxRows();
+                if (curRowNum >= segmentSize) {
+                    segmentSize = (curRowNum / segmentSize + 1) * segmentSize;
+                }
+                dataReceiver.setDataReload(true);
+                runDataPump(0, segmentSize, new GridPos(curColNum, curRowNum));
+            }
+            return;
+        }
+
+        rejectChanges();
+
         // Sort locally
         curRows = new ArrayList<Object[]>(this.origRows);
         if (dataFilter.getOrderColumns().isEmpty()) {
@@ -1891,6 +1914,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 column.setSort(SWT.NONE);
             } else {
                 column.setSort(SWT.DEFAULT);
+                int index = column.getIndex();
+                for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
+                    if (co.getColumnIndex() == index) {
+                        column.setSort(co.isDescending() ? SWT.DOWN : SWT.UP);
+                        break;
+                    }
+                }
                 column.setSortRenderer(new ResultSetSortRenderer(column));
             }
         }
