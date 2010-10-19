@@ -3099,16 +3099,10 @@ public class LightGrid extends Canvas {
         cellColumnSelectedOnLastMouseDown = false;
 
         if (hoveringOnColumnSorter) {
-            if (e.button == 1) {
-                Event event = new Event();
-                //event.data = row;
-                //event.data = e.data;
-                event.x = e.x;
-                event.y = e.y;
-                event.data = columnBeingSorted;
-                notifyListeners(Event_ChangeSort, event);
+            handleHoverOnColumnResizer(e.x, e.y);
+            if (hoveringOnColumnSorter) {
+                return;
             }
-            return;
         }
         if (hoveringOnColumnResizer) {
             if (e.button == 1) {
@@ -3277,6 +3271,21 @@ public class LightGrid extends Canvas {
     {
         cellSelectedOnLastMouseDown = false;
 
+        if (hoveringOnColumnSorter) {
+            handleHoverOnColumnResizer(e.x, e.y);
+            if (hoveringOnColumnSorter) {
+                if (e.button == 1) {
+                    Event event = new Event();
+                    //event.data = row;
+                    //event.data = e.data;
+                    event.x = e.x;
+                    event.y = e.y;
+                    event.data = columnBeingSorted;
+                    notifyListeners(Event_ChangeSort, event);
+                    return;
+                }
+            }
+        }
         if (resizingColumn) {
             resizingColumn = false;
             handleHoverOnColumnResizer(e.x, e.y); // resets cursor if

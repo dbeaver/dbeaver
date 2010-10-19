@@ -256,6 +256,11 @@ public abstract class JDBCDataSource
 
     public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type)
     {
+        if (type == DBCQueryTransformType.ORDER_BY) {
+
+        } else if (type == DBCQueryTransformType.FILTER) {
+
+        }
         return null;
     }
 
