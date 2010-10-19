@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.data.criteria.DBDCriterion;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.List;
 public class DBDDataFilter {
 
     private List<DBDColumnOrder> orderColumns = new ArrayList<DBDColumnOrder>();
+    private DBDCriterion criterion;
 
     public Collection<DBDColumnOrder> getOrderColumns()
     {
@@ -42,9 +44,13 @@ public class DBDDataFilter {
         return orderColumns.remove(columnOrder);
     }
 
-    public Object getCriteria()
+    public DBDCriterion getCriteria()
     {
-        return null;
+        return criterion;
     }
 
+    public void setCriterion(DBDCriterion criterion)
+    {
+        this.criterion = criterion;
+    }
 }
