@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 
 /**
@@ -28,5 +29,5 @@ public interface ISpreadsheetController {
         GridPos cell,
         IMenuManager manager);
 
-    void changeSorting(int column);
+    void changeSorting(GridColumn column);
 }

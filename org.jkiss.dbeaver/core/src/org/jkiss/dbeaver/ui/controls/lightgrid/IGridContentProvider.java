@@ -14,8 +14,18 @@ public interface IGridContentProvider extends IStructuredContentProvider {
      */
     public GridPos getSize();
 
+    /**
+     * Gets element by position
+     * @param pos grid position
+     * @return element (may be null)
+     */
     public Object getElement(GridPos pos);
 
-    public int getColumnSort(int column);
+    /**
+     * Updates grid column properties.
+     * Invoked once right after grid columns initialization.
+     * @param column grid column
+     */
+    public void updateColumn(GridColumn column);
 
 }

@@ -10,7 +10,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.NullScrollBar;
@@ -545,9 +544,9 @@ public class LightGrid extends Canvas {
             int columnCount = contentProvider.getSize().col;
             for (int i = 0; i < columnCount; i++) {
                 GridColumn column = new GridColumn(this, SWT.NONE);
-                column.setSort(contentProvider.getColumnSort(i));
                 column.setText(columnLabelProvider.getText(i));
                 column.setImage(columnLabelProvider.getImage(i));
+                contentProvider.updateColumn(column);
             }
 
             if (getColumnCount() == 1) {

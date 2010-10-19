@@ -31,7 +31,7 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
 
     public void paint(GC gc) {
         GridColumn col = grid.getColumn(getColumn());
-        SortArrowRenderer arrowRenderer = col.getSortRenderer();
+        AbstractRenderer arrowRenderer = col.getSortRenderer();
 
         // set the font to be used to display the text.
         gc.setFont(getColumnFont());

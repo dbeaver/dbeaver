@@ -43,7 +43,7 @@ public class GridColumn extends Item {
 
 	private GridColumnRenderer footerRenderer;
 
-    private SortArrowRenderer sortRenderer;
+    private AbstractRenderer sortRenderer;
 	/**
 	 * Cell renderer.
 	 */
@@ -127,9 +127,14 @@ public class GridColumn extends Item {
 */
 	}
 
-    public SortArrowRenderer getSortRenderer()
+    public AbstractRenderer getSortRenderer()
     {
         return sortRenderer;
+    }
+
+    public void setSortRenderer(AbstractRenderer sortRenderer)
+    {
+        this.sortRenderer = sortRenderer;
     }
 
     /**

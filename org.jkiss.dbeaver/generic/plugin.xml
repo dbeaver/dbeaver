@@ -87,7 +87,7 @@
                     id="oracle"
                     label="Oracle"
                     class="oracle.jdbc.OracleDriver"
-                    sampleURL="jdbc:oracle:thin:@{host}[:{port}]:{database}"
+                    sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
                     webURL="http://oracle.com"
                     description="Oracle thin driver">
                     <library path="drivers/ojdbc14.jar"/>

@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ThemeConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
@@ -681,9 +682,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     }
 
-    public void changeSorting(int column)
+    public void changeSorting(GridColumn column)
     {
-        UIUtils.showMessageBox(spreadsheet.getShell(), "Sort", metaColumns[column].getColumn().getLabel());
+        column.setSort(column.getSort() == SWT.UP ? SWT.DOWN : SWT.UP);
+        spreadsheet.redrawGrid();
     }
 
     private void showCurrentRows()
@@ -1799,12 +1801,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
-        public int getColumnSort(int column)
+        public void updateColumn(GridColumn column)
         {
             if (mode == ResultSetMode.RECORD) {
-                return SWT.NONE;
+                column.setSort(SWT.NONE);
             } else {
-                return SWT.UP;
+                column.setSort(SWT.UP);
+                column.setSortRenderer(new ResultSetSortRenderer(column.getParent()));
             }
         }
 

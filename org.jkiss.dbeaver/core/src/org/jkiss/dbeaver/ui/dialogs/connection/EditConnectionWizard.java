@@ -33,7 +33,7 @@ public class EditConnectionWizard extends ConnectionWizard
     {
         super();
         this.dataSource = dataSource;
-        this.oldData = this.dataSource.getConnectionInfo();
+        this.oldData = new DBPConnectionInfo(this.dataSource.getConnectionInfo());
         setWindowTitle("Edit connection");
     }
 

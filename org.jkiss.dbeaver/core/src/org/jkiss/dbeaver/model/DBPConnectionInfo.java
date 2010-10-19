@@ -21,6 +21,21 @@ public class DBPConnectionInfo implements DBPObject
     private String url;
     private Map<String, String> properties = new HashMap<String, String>();
 
+    public DBPConnectionInfo()
+    {
+    }
+
+    public DBPConnectionInfo(DBPConnectionInfo info)
+    {
+        this.hostName = info.hostName;
+        this.hostPort = info.hostPort;
+        this.databaseName = info.databaseName;
+        this.userName = info.userName;
+        this.userPassword = info.userPassword;
+        this.url = info.url;
+        this.properties = new HashMap<String, String>(info.properties);
+    }
+
 /*
 	public DBPConnectionInfo(DBPDriver driver)
 	{
