@@ -78,6 +78,7 @@ public enum DBIcon
     SORT_DECREASE("sort_decrease", "/icons/misc/sort_decrease.png"),
     SORT_UNKNOWN("sort_unknown", "/icons/misc/sort_unknown.png"),
     FRAME_QUERY("frame_query", "/icons/misc/frame_query.png"),
+    FILTER("filter", "/icons/misc/filter.png"),
 
     INFO("info", "/icons/file/info.png"),
     SAVE("save", "/icons/file/save.png"),

@@ -106,7 +106,7 @@ public class EditablePropertiesControl extends Composite {
         if (propsTree != null) {
             propsTree.setInput(root);
             propsTree.expandAll();
-            UIUtils.packColumns(propsTree.getTree());
+            UIUtils.packColumns(propsTree.getTree(), true);
         }
         disposeOldEditor();
     }

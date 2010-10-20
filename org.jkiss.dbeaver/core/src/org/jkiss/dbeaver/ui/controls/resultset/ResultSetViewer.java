@@ -682,6 +682,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         // Export and other utility methods
         manager.add(new Separator());
+        manager.add(new Action("Order/Filter ... ", DBIcon.FILTER.getImageDescriptor()) {
+            @Override
+            public void run()
+            {
+                UIUtils.showMessageBox(spreadsheet.getShell(), "Order/Filter", "Filter settings");
+            }
+        });
         manager.add(new Action("Export Resultset ... ", DBIcon.EXPORT.getImageDescriptor()) {
             @Override
             public void run()
@@ -693,7 +700,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 dialog.open();
             }
         });
-
     }
 
     private boolean supportsDataFilter()
@@ -711,7 +717,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 if (!UIUtils.confirmAction(
                     spreadsheet.getShell(),
                     "Order result set",
-                    "Ordering of result set could take a lot of time for big tables when there is no appropriate index for this column. Are you sure you want to order this result set?"))
+                    "Ordering of result set could take a lot of time for big tables when there is no appropriate index for this column." +
+                    "\n\n" +
+                    "Are you sure you want to order this result set?",
+                    "Don't ask again",
+                    "adfsadf"))
                 {
                     return;
                 }
