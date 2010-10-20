@@ -78,7 +78,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             // Determine type handlers for all columns
             DBPDataSource dataSource = resultSet.getContext().getDataSource();
 
-            // Extrat column info
+            // Extract column info
             metaColumns = new DBDColumnBinding[columnsCount];
             for (int i = 0; i < columnsCount; i++) {
                 metaColumns[i] = DBUtils.getColumnBinding(context, rsColumns.get(i));

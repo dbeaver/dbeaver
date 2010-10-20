@@ -305,6 +305,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private void changeMode(ResultSetMode resultSetMode)
     {
         int oldRowNum = this.curRowNum, oldColNum = this.curColNum;
+        if (oldRowNum < 0 && curRows.size() > 0) {
+            oldRowNum  = 0;
+        }
         this.mode = resultSetMode;
         if (this.mode == ResultSetMode.GRID) {
             this.spreadsheet.setRowHeaderWidth(DEFAULT_ROW_HEADER_WIDTH);
@@ -789,10 +792,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         int oldRowNum = curRowNum;
         int oldColNum = curColNum;
 
+/*
         this.closeEditors();
         this.clearData();
         this.clearMetaData();
         this.clearResultsView();
+*/
 
         if (resultSetProvider != null && resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
