@@ -128,22 +128,28 @@ public class DataSourceRegistry implements DBPRegistry
 
     public void closeConnections()
     {
-        DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                for (DataSourceDescriptor dataSource : dataSources) {
-                    if (dataSource.isConnected()) {
-                        try {
-                            // Cancel al jobs
-                            Job.getJobManager().cancel(dataSource.getDataSource());
-                            // Disconnect
-                            dataSource.disconnect(monitor);
-                        } catch (Exception ex) {
-                            log.error("Can't shutdown data source", ex);
+        try {
+            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    for (DataSourceDescriptor dataSource : dataSources) {
+                        if (dataSource.isConnected()) {
+                            try {
+                                // Cancel al jobs
+                                Job.getJobManager().cancel(dataSource.getDataSource());
+                                // Disconnect
+                                dataSource.disconnect(monitor);
+                            } catch (Exception ex) {
+                                log.error("Can't shutdown data source", ex);
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        } catch (InvocationTargetException e) {
+            log.error("Can't close opened connections", e.getTargetException());
+        } catch (InterruptedException e) {
+            // do nothing
+        }
     }
 
     public DBeaverCore getCore()

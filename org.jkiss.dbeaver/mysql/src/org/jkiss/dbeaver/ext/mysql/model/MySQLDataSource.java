@@ -8,6 +8,8 @@ import com.mysql.jdbc.ConnectionImpl;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IProduct;
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
@@ -325,6 +327,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
                 characterSetMetadataField.get(mysqlConnection));
         } catch (Throwable e) {
             log.debug(e);
+        }
+
+        {
+            // Provide client info
+            IProduct product = Platform.getProduct();
+            if (product != null) {
+                String appName = "DBeaver " + product.getDefiningBundle().getVersion().toString();
+                try {
+                    ((Connection)mysqlConnection).setClientInfo("ApplicationName", appName);
+                } catch (Throwable e) {
+                    // just ignore
+                }
+            }
         }
 
         return mysqlConnection;

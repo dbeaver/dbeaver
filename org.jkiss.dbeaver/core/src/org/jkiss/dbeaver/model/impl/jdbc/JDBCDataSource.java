@@ -107,18 +107,6 @@ public abstract class JDBCDataSource
                 throw new DBException("Null connection returned");
             }
 
-            {
-                // Provide client info
-                IProduct product = Platform.getProduct();
-                if (product != null) {
-                    String appName = "DBeaver " + product.getDefiningBundle().getVersion().toString();
-                    try {
-                        connection.setClientInfo("ApplicationName", appName);
-                    } catch (Throwable e) {
-                        // just ignore
-                    }
-                }
-            }
             return connection;
         }
         catch (SQLException ex) {
