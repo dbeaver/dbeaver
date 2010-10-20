@@ -126,8 +126,18 @@ public class DataSourceRegistry implements DBPRegistry
         this.dataSourceProviders.clear();
     }
 
-    public void closeConnections()
+    public synchronized void closeConnections()
     {
+        boolean hasConnections = false;
+        for (DataSourceDescriptor dataSource : dataSources) {
+            if (dataSource.isConnected()) {
+                hasConnections = true;
+                break;
+            }
+        }
+        if (!hasConnections) {
+            return;
+        }
         try {
             DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {

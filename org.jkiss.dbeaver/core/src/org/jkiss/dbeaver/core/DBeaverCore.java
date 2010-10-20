@@ -336,12 +336,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         }
     }
 
-    public void run(boolean fork, boolean cancelable, final IRunnableWithProgress runnable)
-        throws InvocationTargetException, InterruptedException
-    {
-        this.getWorkbench().getProgressService().run(fork, cancelable, runnable);
-    }
-
     public IFolder getAutosaveFolder(DBRProgressMonitor monitor)
         throws IOException
     {

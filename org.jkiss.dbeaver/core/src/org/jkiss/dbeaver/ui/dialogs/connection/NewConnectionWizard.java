@@ -4,14 +4,14 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.DBeaverExtensions;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -93,9 +93,9 @@ public class NewConnectionWizard extends ConnectionWizard
         addPage(pageDrivers);
 
         try {
-            DBeaverCore.getInstance().run(true, true, new IRunnableWithProgress()
+            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress()
             {
-                public void run(IProgressMonitor monitor)
+                public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
                     List<DataSourceProviderDescriptor> providers = registry.getDataSourceProviders();

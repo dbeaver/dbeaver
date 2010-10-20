@@ -11,6 +11,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.*;
@@ -21,7 +22,7 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 
@@ -76,11 +77,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
             if (DBeaverCore.getInstance() != null) {
                 DBeaverCore.getInstance().getDataSourceRegistry().closeConnections();
                 // Wait for all datasource jobs to finish
-                getWorkbenchConfigurer().getWorkbench().getProgressService().run(false, false, new IRunnableWithProgress() {
-                    public void run(IProgressMonitor monitor)
+                DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+                    public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
-                        Job.getJobManager().join(DBPDataSource.class, monitor);
+                        Job.getJobManager().join(DBPDataSource.class, monitor.getNestedMonitor());
                     }
                 });
             }
@@ -111,69 +112,50 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     private void saveAndCleanup()
     {
         final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        IProgressMonitor nullMonitor = new NullProgressMonitor();
+        final List<File> openFiles = new ArrayList<File>();
+        for (IWorkbenchPage workbenchPage : workbenchWindow.getPages()) {
+            for (IEditorReference editorRef : workbenchPage.getEditorReferences()) {
+                try {
+                    IEditorInput editorInput = editorRef.getEditorInput();
 
-        try {
-            workbenchWindow.getWorkbench().getProgressService().run(
-                false,
-                false,
-                new IRunnableWithProgress() {
-                    public void run(IProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        final List<File> openFiles = new ArrayList<File>();
-                        for (IWorkbenchPage workbenchPage : workbenchWindow.getPages()) {
-                            for (IEditorReference editorRef : workbenchPage.getEditorReferences()) {
-                                try {
-                                    IEditorInput editorInput = editorRef.getEditorInput();
-
-                                    if (editorInput instanceof IAutoSaveEditorInput) {
-                                        IEditorPart editor = editorRef.getEditor(false);
-                                        if (editor != null && editor.isDirty()) {
-                                            editor.doSave(monitor);
-                                        }
-                                    }
-
-                                    if (editorInput instanceof ProjectFileEditorInput) {
-                                        ProjectFileEditorInput sei = (ProjectFileEditorInput)editorInput;
-                                        openFiles.add(sei.getPath().toFile());
-                                    }
-                                } catch (CoreException ex) {
-                                    log.error("Can't obtain editor storage", ex);
-                                }
-                            }
-                        }
-
-                        DBRProgressMonitor localMonitor = RuntimeUtils.makeMonitor(monitor);
-
-                        IFolder tempFolder;
-                        try {
-                            tempFolder = DBeaverCore.getInstance().getAutosaveFolder(localMonitor);
-                        }
-                        catch (IOException e) {
-                            log.error(e);
-                            return;
-                        }
-                        try {
-                            IResource[] tempResources = tempFolder.members();
-                            for (IResource tempResource : tempResources) {
-                                if (tempResource instanceof IFile) {
-                                    IFile tempFile = (IFile)tempResource;
-                                    if (!openFiles.contains(tempFile.getLocation().toFile())) {
-                                        tempFile.delete(true, false, monitor);
-                                    }
-                                }
-                            }
-                        } catch (CoreException ex) {
-                            log.warn("Error deleting autosave files", ex);
+                    if (editorInput instanceof IAutoSaveEditorInput) {
+                        IEditorPart editor = editorRef.getEditor(false);
+                        if (editor != null && editor.isDirty()) {
+                            editor.doSave(nullMonitor);
                         }
                     }
-                });
+
+                    if (editorInput instanceof ProjectFileEditorInput) {
+                        ProjectFileEditorInput sei = (ProjectFileEditorInput)editorInput;
+                        openFiles.add(sei.getPath().toFile());
+                    }
+                } catch (CoreException ex) {
+                    log.error("Can't obtain editor storage", ex);
+                }
+            }
         }
-        catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
+
+        IFolder tempFolder;
+        try {
+            tempFolder = DBeaverCore.getInstance().getAutosaveFolder(VoidProgressMonitor.INSTANCE);
         }
-        catch (InterruptedException e) {
-            // do nothing
+        catch (IOException e) {
+            log.error(e);
+            return;
+        }
+        try {
+            IResource[] tempResources = tempFolder.members();
+            for (IResource tempResource : tempResources) {
+                if (tempResource instanceof IFile) {
+                    IFile tempFile = (IFile)tempResource;
+                    if (!openFiles.contains(tempFile.getLocation().toFile())) {
+                        tempFile.delete(true, false, nullMonitor);
+                    }
+                }
+            }
+        } catch (CoreException ex) {
+            log.warn("Error deleting autosave files", ex);
         }
     }
 
