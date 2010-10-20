@@ -121,7 +121,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     public void fetchEnd(DBCExecutionContext context)
         throws DBCException
     {
-        if (!nextSegmentRead && !dataReload) {
+        if (!nextSegmentRead && !dataReload && metaColumns != null) {
             // Read locators metadata
             DBUtils.findValueLocators(context.getProgressMonitor(), metaColumns);
         }
