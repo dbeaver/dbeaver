@@ -13,7 +13,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.commands.ActionHandler;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
@@ -31,9 +30,7 @@ import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.services.IServiceLocator;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -318,11 +315,6 @@ public class UIUtils {
         messageBox.setText(title);
         int response = messageBox.open();
         return response == SWT.YES;
-    }
-
-    public static boolean confirmAction(Shell shell, String title, String message, String toggleMessage, String prefKey)
-    {
-        return ConfirmationDialog.open(ConfirmationDialog.CONFIRM, shell, title, message, toggleMessage, false, prefKey) == 0;
     }
 
     public static Font makeBoldFont(Font normalFont)

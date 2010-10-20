@@ -306,7 +306,7 @@ public class SQLEditor extends BaseTextEditor
     {
         super.createActions();
 
-        ResourceBundle bundle = DBeaverCore.getInstance().getPlugin().getResourceBundle();
+        ResourceBundle bundle = DBeaverActivator.getInstance().getResourceBundle();
 
         IAction a = new TextOperationAction(bundle, "ContentAssistProposal.", this, ISourceViewer.CONTENTASSIST_PROPOSALS);
         a.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);

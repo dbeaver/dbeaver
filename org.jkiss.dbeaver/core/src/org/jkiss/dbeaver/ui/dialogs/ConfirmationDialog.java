@@ -1,15 +1,29 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+
+import java.util.ResourceBundle;
 
 /**
  * Standard confirmation dialog
  */
 public class ConfirmationDialog extends MessageDialogWithToggle {
+
+    public static final String PREF_KEY_PREFIX = "org.jkiss.dbeaver.core.confirm."; //$NON-NLS-1$
+
+    public static final String RES_KEY_TITLE = "title"; //$NON-NLS-1$
+    public static final String RES_KEY_MESSAGE = "message"; //$NON-NLS-1$
+    public static final String RES_KEY_TOGGLE_MESSAGE = "toggleMessage"; //$NON-NLS-1$
 
     public ConfirmationDialog(
         Shell parentShell,
@@ -34,6 +48,10 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         boolean toggleState,
         String key)
     {
+        IPreferenceStore prefStore = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        if (ConfirmationDialog.ALWAYS.equals(prefStore.getString(key))) {
+            return 0;
+        }
         ConfirmationDialog dialog = new ConfirmationDialog(
             parent,
             title,
@@ -44,7 +62,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
             0,
             toggleMessage,
             toggleState);
-        dialog.setPrefStore(DBeaverCore.getInstance().getGlobalPreferenceStore());
+        dialog.setPrefStore(prefStore);
         dialog.setPrefKey(key);
         return dialog.open();
     }
@@ -68,4 +86,26 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         }
     }
 
+    public static boolean confirmAction(Shell shell, String id)
+    {
+        ResourceBundle bundle = DBeaverActivator.getInstance().getResourceBundle();
+        String titleKey = getResourceKey(id, RES_KEY_TITLE);
+        String messageKey= getResourceKey(id, RES_KEY_MESSAGE);
+        String toggleKey = getResourceKey(id, RES_KEY_TOGGLE_MESSAGE);
+        String prefKey = PREF_KEY_PREFIX + id;
+
+        return open(
+            CONFIRM,
+            shell,
+            bundle.getString(titleKey),
+            bundle.getString(messageKey),
+            bundle.getString(toggleKey),
+            false,
+            prefKey) == 0;
+    }
+
+    public static String getResourceKey(String id, String key)
+    {
+        return "Confirm." + id + "." + key;  //$NON-NLS-1$
+    }
 }

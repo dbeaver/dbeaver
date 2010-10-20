@@ -25,4 +25,7 @@ public final class PrefConstants
     public static final String RS_COMMIT_ON_EDIT_APPLY = "resultset.commit.oneditapply";
     public static final String RS_COMMIT_ON_CONTENT_APPLY = "resultset.commit.oncontentapply";
 
+    public static final String CONFIRM_EXIT = "exit";
+    public static final String CONFIRM_ORDER_RESULTSET = "order.resultset";
+
 }

@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.ViewTextDialog;
 import org.jkiss.dbeaver.ui.export.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
@@ -710,21 +711,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
     }
 
-    public void changeSorting(GridColumn column)
+    public void changeSorting(final GridColumn column)
     {
         DBDColumnBinding metaColumn = metaColumns[column.getIndex()];
         DBDColumnOrder columnOrder = dataFilter.getOrderColumn(metaColumn.getColumn());
         int newSort;
         if (columnOrder == null) {
             if (dataReceiver.isHasMoreData() && supportsDataFilter()) {
-                if (!UIUtils.confirmAction(
+                if (!ConfirmationDialog.confirmAction(
                     spreadsheet.getShell(),
-                    "Order result set",
-                    "Ordering of result set could take a lot of time for big tables when there is no appropriate index for this column." +
-                    "\n\n" +
-                    "Are you sure you want to order this result set?",
-                    "Don't ask again",
-                    "adfsadf"))
+                    PrefConstants.CONFIRM_ORDER_RESULTSET))
                 {
                     return;
                 }
@@ -742,10 +738,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 dataFilter.removeOrderColumn(columnOrder);
             }
         }
-        column.setSort(newSort);
-
-        reorderResultSet();
-        spreadsheet.redrawGrid();
+        final int sort = newSort;
+        reorderResultSet(new Runnable() {
+            public void run()
+            {
+                if (!column.isDisposed()) {
+                    column.setSort(sort);
+                    spreadsheet.redrawGrid();
+                }
+            }
+        });
     }
 
     private void showCurrentRows()
@@ -804,13 +806,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             if (oldRowNum >= segmentSize) {
                 segmentSize = (oldRowNum / segmentSize + 1) * segmentSize;
             }
-            runDataPump(0, segmentSize, new GridPos(oldColNum, oldRowNum));
+            runDataPump(0, segmentSize, new GridPos(oldColNum, oldRowNum), null);
             updateGridCursor(-1, -1);
             updateEditControls();
         }
     }
 
-    void reorderResultSet()
+    private void reorderResultSet(Runnable onSuccess)
     {
         if (dataReceiver.isHasMoreData() && supportsDataFilter()) {
             if (resultSetProvider != null && resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
@@ -819,48 +821,54 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     segmentSize = (curRowNum / segmentSize + 1) * segmentSize;
                 }
                 dataReceiver.setDataReload(true);
-                runDataPump(0, segmentSize, new GridPos(curColNum, curRowNum));
+                runDataPump(0, segmentSize, new GridPos(curColNum, curRowNum), onSuccess);
             }
             return;
         }
 
-        rejectChanges();
+        try {
+            rejectChanges();
 
-        // Sort locally
-        curRows = new ArrayList<Object[]>(this.origRows);
-        if (dataFilter.getOrderColumns().isEmpty()) {
-            return;
-        }
-        Collections.sort(curRows, new Comparator<Object[]>() {
-            public int compare(Object[] row1, Object[] row2)
-            {
-                int result = 0;
-                for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
-                    Object cell1 = row1[co.getColumnIndex()];
-                    Object cell2 = row2[co.getColumnIndex()];
-                    if (cell1 == cell2) {
-                        result = 0;
-                    } else if (DBUtils.isNullValue(cell1)) {
-                        result = 1;
-                    } else if (DBUtils.isNullValue(cell2)) {
-                        result = -1;
-                    } else if (cell1 instanceof Comparable<?>) {
-                        result = ((Comparable)cell1).compareTo(cell2);
-                    } else {
-                        String str1 = cell1.toString();
-                        String str2 = cell2.toString();
-                        result = str1.compareTo(str2);
+            // Sort locally
+            curRows = new ArrayList<Object[]>(this.origRows);
+            if (dataFilter.getOrderColumns().isEmpty()) {
+                return;
+            }
+            Collections.sort(curRows, new Comparator<Object[]>() {
+                public int compare(Object[] row1, Object[] row2)
+                {
+                    int result = 0;
+                    for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
+                        Object cell1 = row1[co.getColumnIndex()];
+                        Object cell2 = row2[co.getColumnIndex()];
+                        if (cell1 == cell2) {
+                            result = 0;
+                        } else if (DBUtils.isNullValue(cell1)) {
+                            result = 1;
+                        } else if (DBUtils.isNullValue(cell2)) {
+                            result = -1;
+                        } else if (cell1 instanceof Comparable<?>) {
+                            result = ((Comparable)cell1).compareTo(cell2);
+                        } else {
+                            String str1 = cell1.toString();
+                            String str2 = cell2.toString();
+                            result = str1.compareTo(str2);
+                        }
+                        if (co.isDescending()) {
+                            result = -result;
+                        }
+                        if (result != 0) {
+                            break;
+                        }
                     }
-                    if (co.isDescending()) {
-                        result = -result;
-                    }
-                    if (result != 0) {
-                        break;
-                    }
+                    return result;
                 }
-                return result;
+            });
+        } finally {
+            if (onSuccess != null) {
+                onSuccess.run();
             }
-        });
+        }
     }
 
     synchronized void readNextSegment()
@@ -871,7 +879,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (getDataContainer() != null && dataPumpJob == null) {
             dataReceiver.setHasMoreData(false);
             dataReceiver.setNextSegmentRead(true);
-            runDataPump(curRows.size(), getSegmentMaxRows(), null);
+            runDataPump(curRows.size(), getSegmentMaxRows(), null, null);
         }
     }
 
@@ -884,7 +892,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
     }
 
-    private synchronized void runDataPump(final int offset, final int maxRows, final GridPos oldPos)
+    private synchronized void runDataPump(
+        final int offset,
+        final int maxRows,
+        final GridPos oldPos,
+        final Runnable finalizer)
     {
         if (dataPumpJob == null) {
             dataPumpJob = new ResultSetDataPumpJob(this);
@@ -904,6 +916,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                                     spreadsheet.setCursor(new GridPos(curColNum, curRowNum), false);
                                 } else {
                                     spreadsheet.setCursor(new GridPos(0, curColNum), false);
+                                }
+                                if (finalizer != null) {
+                                    finalizer.run();
                                 }
                             }
                         });
