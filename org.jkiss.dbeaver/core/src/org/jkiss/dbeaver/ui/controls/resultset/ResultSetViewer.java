@@ -1917,7 +1917,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 int index = column.getIndex();
                 for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
                     if (co.getColumnIndex() == index) {
-                        column.setSort(co.isDescending() ? SWT.DOWN : SWT.UP);
+                        column.setSort(co.isDescending() ? SWT.UP : SWT.DOWN);
                         break;
                     }
                 }
