@@ -286,8 +286,8 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
         rules.add( new EndOfLineRule( "--", commentToken )); //$NON-NLS-1$
 
         // Add rules for delimited identifiers and string literals.
-        rules.add( new NestedMultiLineRule( "'", "'", stringToken, (char) 0 )); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        rules.add( new NestedMultiLineRule( "\"", "\"", stringToken, (char) 0 )); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        rules.add( new NestedMultiLineRule( "'", "'", stringToken, '\\' )); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        rules.add( new NestedMultiLineRule( "\"", "\"", stringToken, '\\' )); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 
         // Add rules for multi-line comments
         rules.add(new NestedMultiLineRule("/*", "*/", commentToken, (char) 0, true));
