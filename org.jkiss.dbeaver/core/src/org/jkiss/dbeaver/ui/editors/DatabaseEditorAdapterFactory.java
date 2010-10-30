@@ -32,11 +32,13 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
             }
             if (adaptableObject instanceof IDatabaseEditor) {
                 DBNNode node = ((IDatabaseEditor) adaptableObject).getEditorInput().getTreeNode();
-                DBSObject dbsObject = node.getObject();
-                if (dbsObject != null) {
-                    DBPDataSource dataSource = dbsObject.getDataSource();
-                    if (dataSource != null) {
-                        return dataSource.getContainer();
+                if (node != null) {
+                    DBSObject dbsObject = node.getObject();
+                    if (dbsObject != null) {
+                        DBPDataSource dataSource = dbsObject.getDataSource();
+                        if (dataSource != null) {
+                            return dataSource.getContainer();
+                        }
                     }
                 }
             }
@@ -44,9 +46,11 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
         } else if (DBPObject.class.isAssignableFrom(adapterType)) {
             if (adaptableObject instanceof IDatabaseEditor) {
                 DBNNode node = ((IDatabaseEditor) adaptableObject).getEditorInput().getTreeNode();
-                DBSObject object = node.getObject();
-                if (object != null && adapterType.isAssignableFrom(object.getClass())) {
-                    return object;
+                if (node != null) {
+                    DBSObject object = node.getObject();
+                    if (object != null && adapterType.isAssignableFrom(object.getClass())) {
+                        return object;
+                    }
                 }
             }
         }
