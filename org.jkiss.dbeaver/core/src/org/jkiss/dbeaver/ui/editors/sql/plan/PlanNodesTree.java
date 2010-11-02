@@ -85,7 +85,6 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
     {
         super(parent, style, workbenchPart, CONTENT_PROVIDER);
         this.dataSourceProvider = dataSourceProvider;
-        setShowName(false);
         setFitWidth(true);
 
         createContextMenu();

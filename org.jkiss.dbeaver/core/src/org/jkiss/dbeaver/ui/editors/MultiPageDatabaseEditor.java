@@ -45,7 +45,7 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
 
     protected void setTitleImage(ImageDescriptor titleImage)
     {
-    	if (getContainer().isDisposed()) {
+    	if (getContainer() != null && getContainer().isDisposed()) {
     		return;
     	}
         if (editorImage != null) {

@@ -56,7 +56,7 @@ public class MySQLEngine implements DBSObject {
         this.supportsSavepoints = "YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE_SUPPORT_SAVEPOINTS));
     }
 
-    @Property(name = "Name", viewable = true, order = 1)
+    @Property(name = "Engine", viewable = true, order = 1)
     public String getName()
     {
         return name;

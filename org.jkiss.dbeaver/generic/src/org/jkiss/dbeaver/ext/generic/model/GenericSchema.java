@@ -56,7 +56,7 @@ public class GenericSchema extends GenericEntityContainer implements DBSSchema
         return this;
     }
 
-    @Property(name = "Schema Name", order = 1)
+    @Property(name = "Schema Name", viewable = true, order = 1)
     public String getName()
     {
         return schemaName;

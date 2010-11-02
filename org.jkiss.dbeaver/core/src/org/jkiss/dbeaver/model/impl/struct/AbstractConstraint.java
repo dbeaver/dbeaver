@@ -47,7 +47,7 @@ public abstract class AbstractConstraint<DATASOURCE extends DBPDataSource, TABLE
         return null;
     }
 
-    @Property(name = "Name", viewable = false, order = 1)
+    @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
         return name;

@@ -82,7 +82,7 @@ public class MySQLIndex extends AbstractIndex
         return this.indexType;
     }
 
-    @Property(name = "Index Name", order = 1)
+    @Property(name = "Index Name", viewable = true, order = 1)
     public String getName()
     {
         return indexName;

@@ -41,7 +41,7 @@ public abstract class AbstractProcedure<
         return container;
     }
 
-    @Property(name = "Procedure Name", order = 1)
+    @Property(name = "Procedure Name", viewable = true, order = 1)
     public String getName()
     {
         return name;

@@ -72,7 +72,7 @@ public class MySQLUser implements DBAUser
             resultSet);
     }
 
-    //@Property(name = "User name", viewable = true, order = 1)
+    @Property(name = "User name", viewable = true, order = 1)
     public String getName() {
         return username + "@" + host;
     }

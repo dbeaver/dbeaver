@@ -12,8 +12,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.TableEditor;
-import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
@@ -44,10 +42,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private final static Object LOADING_VALUE = new Object();
 
+    private static class ObjectColumn {
+        Item item;
+        PropertyAnnoDescriptor prop;
+    }
+
     private boolean isTree;
     private boolean isFitWidth;
-    private boolean showName;
-    private boolean loadProperties;
+    //private boolean showName;
+    //private boolean loadProperties;
 
     private StructuredViewer itemsViewer;
     private List<Item> columns = new ArrayList<Item>();
@@ -76,8 +79,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         super(parent, style, workbenchPart);
         this.isTree = contentProvider instanceof ITreeContentProvider;
         this.isFitWidth = false;
-        this.showName = true;
-        this.loadProperties = true;
         this.linkLayout = new TextLayout(parent.getDisplay());
         this.linkColor = parent.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
         this.linkCursor = parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND);
@@ -125,7 +126,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 if (hoverItem != null && selectedColumn >= 0) {
                     Object element = hoverItem.getData();
                     ItemRow<OBJECT_TYPE> row = itemMap.get(element);
-                    int checkColumn = showName ? selectedColumn - 1 : selectedColumn;
+                    int checkColumn = selectedColumn;
                     ItemCell<OBJECT_TYPE> cell = checkColumn < 0 ? null : row.getCell(checkColumn);
                     if (cell != null) {
                         Object cellValue = cell.value;
@@ -240,24 +241,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public ISelectionProvider getSelectionProvider()
     {
         return itemsViewer;
-    }
-
-    public boolean isLoadProperties() {
-        return loadProperties;
-    }
-
-    public void setLoadProperties(boolean loadProperties) {
-        this.loadProperties = loadProperties;
-    }
-
-    public boolean isShowName()
-    {
-        return showName;
-    }
-
-    public void setShowName(boolean showName)
-    {
-        this.showName = showName;
     }
 
     public boolean isFitWidth()
@@ -409,22 +392,18 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     int result;
                     ItemRow<OBJECT_TYPE> row1 = itemMap.get(e1);
                     ItemRow<OBJECT_TYPE> row2 = itemMap.get(e2);
-                    if (showName && colIndex == 0) {
-                        result = getObjectLabel(row1.object).compareToIgnoreCase(getObjectLabel(row2.object));
+                    Object value1 = row1.getValue(colIndex);
+                    Object value2 = row2.getValue(colIndex);
+                    if (value1 == null && value2 == null) {
+                        result = 0;
+                    } else if (value1 == null) {
+                        result = -1;
+                    } else if (value2 == null) {
+                        result = 1;
+                    } else if (value1 instanceof Comparable) {
+                        result = ((Comparable)value1).compareTo(value2);
                     } else {
-                        Object value1 = row1.getValue(showName ? colIndex - 1 : colIndex);
-                        Object value2 = row2.getValue(showName ? colIndex - 1 : colIndex);
-                        if (value1 == null && value2 == null) {
-                            result = 0;
-                        } else if (value1 == null) {
-                            result = -1;
-                        } else if (value2 == null) {
-                            result = 1;
-                        } else if (value1 instanceof Comparable) {
-                            result = ((Comparable)value1).compareTo(value2);
-                        } else {
-                            result = value1.toString().compareToIgnoreCase(value2.toString());
-                        }
+                        result = value1.toString().compareToIgnoreCase(value2.toString());
                     }
                     return sortDirection == SWT.DOWN ? result : -result;
                 }
@@ -455,9 +434,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         public String getColumnText(Object element, int columnIndex)
         {
             ItemRow<OBJECT_TYPE> row = itemMap.get(element);
-            if (showName && columnIndex == 0) {
-                return getObjectLabel(row.object);
-            }
             ItemCell<OBJECT_TYPE> cell = getCellByIndex(row, columnIndex);
             if (cell == null || cell.value == null) {
                 return "";
@@ -488,10 +464,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (itemsControl.isDisposed()) {
                 return;
             }
-            if (showName) {
-                createColumn("Name", "Name", null);
-            }
-
             List<OBJECT_TYPE> objectList = new ArrayList<OBJECT_TYPE>();
             if (!CommonUtils.isEmpty(items)) {
                 for (OBJECT_TYPE item : items) {
@@ -534,7 +506,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             Object itemObject = getObjectValue(item);
 
             List<PropertyAnnoDescriptor> annoProps = null;
-            if (loadProperties) {
+            {
                 if (itemObject instanceof IAdaptable) {
                     IPropertySource propertySource = (IPropertySource)((IAdaptable)itemObject).getAdapter(IPropertySource.class);
                     if (propertySource != null) {
@@ -741,7 +713,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             } else {
                 Object element = hoverItem.getData();
                 ItemRow<OBJECT_TYPE> row = itemMap.get(element);
-                int checkColumn = showName ? selectedColumn - 1 : selectedColumn;
+                int checkColumn = selectedColumn;
                 ItemCell<OBJECT_TYPE> cell = checkColumn < 0 ? null : row.getCell(checkColumn);
                 if (cell == null) {
                     resetCursor();

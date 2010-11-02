@@ -41,7 +41,7 @@ public abstract class AbstractTable<
         return container;
     }
 
-    @Property(name = "Table Name", order = 1)
+    @Property(name = "Table Name", viewable = true, order = 1)
     public String getName()
     {
         return tableName;

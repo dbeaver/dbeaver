@@ -51,7 +51,7 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         this.ordinalPosition = ordinalPosition;
     }
 
-    @Property(name = "Column Name", order = 1)
+    @Property(name = "Column Name", viewable = true, order = 1)
     public String getName()
     {
         return name;
