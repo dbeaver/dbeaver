@@ -98,12 +98,6 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
     }
 
     @Override
-    protected String getObjectLabel(DBNNode item)
-    {
-        return item.getNodeName();
-    }
-
-    @Override
     protected Image getObjectImage(DBNNode item)
     {
         return item.getNodeIconDefault();

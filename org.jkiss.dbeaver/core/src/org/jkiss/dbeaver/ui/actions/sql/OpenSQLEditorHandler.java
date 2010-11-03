@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.actions.sql;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -35,7 +36,7 @@ public class OpenSQLEditorHandler extends DataSourceHandler {
                 tempFile = DBeaverCore.getInstance().makeTempFile(
                     VoidProgressMonitor.INSTANCE,
                     DBeaverCore.getInstance().getAutosaveFolder(VoidProgressMonitor.INSTANCE),
-                    dataSourceContainer.getName(),
+                    CommonUtils.escapeIdentifier(dataSourceContainer.getName()),
                     "sql");
             }
             catch (IOException e) {

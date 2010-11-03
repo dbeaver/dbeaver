@@ -220,7 +220,11 @@ public class PropertyAnnoDescriptor implements IPropertyDescriptor
 
     public static List<PropertyAnnoDescriptor> extractAnnotations(Object object)
     {
-        Class theClass = object.getClass();
+        return extractAnnotations(object.getClass());
+    }
+    
+    public static List<PropertyAnnoDescriptor> extractAnnotations(Class<?> theClass)
+    {
         Method[] methods = theClass.getMethods();
         List<PropertyAnnoDescriptor> annoProps = new ArrayList<PropertyAnnoDescriptor>();
         for (Method method : methods) {

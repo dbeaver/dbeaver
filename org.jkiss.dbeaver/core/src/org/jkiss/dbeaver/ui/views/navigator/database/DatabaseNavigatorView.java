@@ -56,7 +56,13 @@ public class DatabaseNavigatorView extends ViewPart
      */
     public void createPartControl(Composite parent)
     {
+        // Create tree
+        // TODO: there are problems with this tree when we have a lot of items.
+        // TODO: I may set SWT.SINGLE style and it'll solve the problem at least when traversing tree
+        // TODO: But we need multiple selection (to copy, export, etc)
+        // TODO: need to do something with it
         this.viewer = new TreeViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+        this.viewer.setUseHashlookup(true);
         this.viewer.setLabelProvider(new DatabaseNavigatorLabelProvider(this));
         this.viewer.setContentProvider(new DatabaseNavigatorContentProvider(this));
         this.viewer.setInput(model.getRoot());

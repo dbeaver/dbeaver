@@ -13,10 +13,8 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -103,12 +101,6 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
     }
 
     @Override
-    protected String getObjectLabel(DBCPlanNode item)
-    {
-        return null;
-    }
-
-    @Override
     protected Image getObjectImage(DBCPlanNode item)
     {
         return null;
@@ -118,7 +110,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
     public void clearData()
     {
         super.clearData();
-        createColumn("", "", null);
+        //createColumn("", "", null);
     }
 
     public void fillData(DBCQueryPlanner planner, String query)
