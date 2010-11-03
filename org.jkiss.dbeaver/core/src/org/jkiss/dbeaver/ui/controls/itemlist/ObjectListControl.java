@@ -64,7 +64,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private StructuredViewer itemsViewer;
     private List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
     private SortListener sortListener;
-    //private Map<Object, ItemRow<OBJECT_TYPE>> itemMap = new IdentityHashMap<Object, ItemRow<OBJECT_TYPE>>();
     private IDoubleClickListener doubleClickHandler;
     private LoadingJob<Collection<OBJECT_TYPE>> loadingJob;
 
@@ -136,7 +135,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     Object element = hoverItem.getData();
                     int checkColumn = selectedColumn;
                     Object cellValue = getCellValue(element, checkColumn);
-                    if (isHyperlink(cellValue) && getCellLinkBounds(hoverItem, checkColumn).contains(e.x, e.y)) {
+                    if (isHyperlink(cellValue) && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(e.x, e.y)) {
                         navigateHyperlink(cellValue);
                     }
                 }
@@ -344,26 +343,24 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    private Rectangle getCellLinkBounds(Item item, int column) {
-        return new Rectangle(0, 0, 0, 0);
+    private Rectangle getCellLinkBounds(Item item, int column, Object cellValue) {
+        prepareLinkStyle(cellValue, linkColor);
+
+        Rectangle itemBounds;
+        if (isTree) {
+            itemBounds = ((TreeItem)item).getBounds(column);
+        } else {
+            itemBounds = ((TableItem)item).getBounds(column);
+        }
+
+        Rectangle linkBounds = linkLayout.getBounds();
+        linkBounds.x += itemBounds.x;
+        linkBounds.y += itemBounds.y + 1;
+        linkBounds.height -= 2;
+
+        return linkBounds;
     }
 
-
-/*
-    private ItemCell<OBJECT_TYPE> getCellByIndex(ItemRow<OBJECT_TYPE> row, int index)
-    {
-        ObjectColumn column = columns.get(index);
-        if (column.item.isDisposed()) {
-            return null;
-        }
-        for (ItemCell<OBJECT_TYPE> cell : row.cells) {
-            if (cell.prop.getId().equals(column.prop.getId())) {
-                return cell;
-            }
-        }
-        return null;
-    }
-*/
 
     protected abstract DBPDataSource getDataSource();
     /**
@@ -462,8 +459,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         public String getColumnText(Object element, int columnIndex)
         {
-            //ItemRow<OBJECT_TYPE> row = itemMap.get(element);
-            //ItemCell<OBJECT_TYPE> cell = getCellByIndex(row, columnIndex);
             Object cellValue = getCellValue(element, columnIndex);
             if (cellValue == null) {
                 return "";
@@ -549,79 +544,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
         }
 
-/*
-        private void addRow(OBJECT_TYPE item)
-        {
-            Object itemObject = getObjectValue(item);
-
-            List<PropertyAnnoDescriptor> annoProps = null;
-            {
-                if (itemObject instanceof IAdaptable) {
-                    IPropertySource propertySource = (IPropertySource)((IAdaptable)itemObject).getAdapter(IPropertySource.class);
-                    if (propertySource != null) {
-                        annoProps = PropertyAnnoDescriptor.extractProperties(propertySource);
-                    }
-                }
-                if (annoProps == null) {
-                    annoProps = PropertyAnnoDescriptor.extractAnnotations(itemObject);
-                }
-            }
-
-            List<ItemCell<OBJECT_TYPE>> cells = new ArrayList<ItemCell<OBJECT_TYPE>>();
-            if (annoProps != null) {
-                for (PropertyAnnoDescriptor descriptor : annoProps) {
-                    // Check control is disposed
-                    if (isDisposed()) {
-                        break;
-                    }
-                    // Skip unviewable items
-                    if (!descriptor.isViewable()) {
-                        continue;
-                    }
-                    // Add column if necessary
-                    ObjectColumn propColumn = null;
-                    for (ObjectColumn column : columns) {
-                        if (descriptor.getId().equals(column.prop.getId())) {
-                            propColumn = column;
-                            break;
-                        }
-                    }
-                    if (propColumn == null) {
-                        createColumn(descriptor.getDisplayName(), descriptor.getDescription(), descriptor.getId());
-                    }
-                    // Read property value
-                    Object value;
-                    if (descriptor.isLazy()) {
-                        value = LOADING_VALUE;
-                    } else {
-                        try {
-                            value = descriptor.readValue(itemObject, null);
-                        }
-                        catch (IllegalAccessException e) {
-                            log.error(e);
-                            continue;
-                        }
-                        catch (InvocationTargetException e) {
-                            log.error(e.getTargetException());
-                            continue;
-                        }
-                    }
-                    ItemCell<OBJECT_TYPE> cell = new ItemCell<OBJECT_TYPE>(item, descriptor, value);
-                    cells.add(cell);
-                    if (descriptor.isLazy()) {
-                        lazyItems.add(cell);
-                    }
-                }
-            }
-            ItemRow<OBJECT_TYPE> row = new ItemRow<OBJECT_TYPE>(item, cells);
-            itemMap.put(item, row);
-            //rows.add(row);
-
-            if (itemMap.size() % 10 == 0) {
-                setInfo(itemMap.size() + " items");
-            }
-        }
-*/
     }
 
 /*
@@ -677,8 +599,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
 			switch(event.type) {
 				case SWT.PaintItem: {
-                    //ItemRow<OBJECT_TYPE> row = itemMap.get(event.item.getData());
-                    //ItemCell<OBJECT_TYPE> cell = row == null ? null : getCellByIndex(row, event.index);
                     Object cellValue = getCellValue(event.item.getData(), event.index);
                     if (cellValue != null ) {
                         GC gc = event.gc;
@@ -691,41 +611,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             }
                         } else if (isHyperlink(cellValue)) {
                             boolean isSelected = linkColor.equals(gc.getBackground());
-                            // Clear item
-                            Rectangle itemBounds;
-                            if (isTree) {
-                                itemBounds = ((TreeItem)event.item).getBounds(event.index);
-                            } else {
-                                itemBounds = ((TableItem)event.item).getBounds(event.index);
-                            }
-
-                            //Color oldFg = gc.getBackground();
-                            //if (isSelected) {
-                            //    gc.setBackground(linkColor);
-                            //}
-                            //gc.fillRectangle(itemBounds.x, itemBounds.y + 1, itemBounds.width, itemBounds.height - 2);
-                            //gc.setBackground(oldFg);
-
                             // Print link
-                            TextStyle linkStyle = new TextStyle(
-                                getFont(),
-                                isSelected ? gc.getForeground() : linkColor,
-                                null);
-                            linkStyle.underline = true;
-                            linkStyle.underlineStyle = SWT.UNDERLINE_LINK;
-
-                            String text = getCellString(cellValue);
-                            linkLayout.setText(text);
-                            linkLayout.setIndent(3);
-                            linkLayout.setStyle(linkStyle, 0, text.length());
+                            prepareLinkStyle(cellValue, isSelected ? gc.getForeground() : linkColor);
                             linkLayout.draw(gc, event.x, event.y + 1);
-/*
-                            cell.linkBounds = linkLayout.getBounds();
-                            cell.linkBounds.x += itemBounds.x;
-                            cell.linkBounds.y += itemBounds.y + 1;
-                            cell.linkBounds.height -= 2;
-*/
-                            //event.gc.drawText(cell.value.toString(), event.x, event.y);
                         }
                     }
 					break;
@@ -766,59 +654,36 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 resetCursor();
             } else {
                 Object element = hoverItem.getData();
-/*
-                ItemRow<OBJECT_TYPE> row = itemMap.get(element);
+
                 int checkColumn = selectedColumn;
-                ItemCell<OBJECT_TYPE> cell = checkColumn < 0 ? null : row.getCell(checkColumn);
-                if (cell == null) {
+                Object cellValue = getCellValue(element, checkColumn);
+                if (cellValue == null) {
                     resetCursor();
                 } else {
-                    Object cellValue = cell.value;
-                    if (isHyperlink(cellValue) && cell.linkBounds != null && cell.linkBounds.contains(e.x, e.y)) {
+                    if (isHyperlink(cellValue) && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(e.x, e.y)) {
                         getItemsViewer().getControl().setCursor(linkCursor);
                     } else {
                         resetCursor();
                     }
                 }
-*/
             }
         }
     }
 
-    private static class ItemCell<OBJECT_TYPE>
+    private void prepareLinkStyle(Object cellValue, Color foreground)
     {
-        final OBJECT_TYPE object;
-        final PropertyAnnoDescriptor prop;
-        Object value;
-        Rectangle linkBounds;
+        // Print link
+        TextStyle linkStyle = new TextStyle(
+            getFont(),
+            foreground,
+            null);
+        linkStyle.underline = true;
+        linkStyle.underlineStyle = SWT.UNDERLINE_LINK;
 
-        ItemCell(OBJECT_TYPE object, PropertyAnnoDescriptor prop, Object value)
-        {
-            this.object = object;
-            this.prop = prop;
-            this.value = value;
-        }
-
-    }
-
-    private static class ItemRow<OBJECT_TYPE>
-    {
-        final OBJECT_TYPE object;
-        final List<ItemCell<OBJECT_TYPE>> cells;
-
-        ItemRow(OBJECT_TYPE object, List<ItemCell<OBJECT_TYPE>> cells)
-        {
-            this.object = object;
-            this.cells = cells;
-        }
-        ItemCell<OBJECT_TYPE> getCell(int index)
-        {
-            return index >= cells.size() ? null : cells.get(index);
-        }
-        Object getValue(int index)
-        {
-            return index >= cells.size() ? null : cells.get(index).value;
-        }
+        String text = getCellString(cellValue);
+        linkLayout.setText(text);
+        linkLayout.setIndent(3);
+        linkLayout.setStyle(linkStyle, 0, text.length());
     }
 
     private static String getCellString(Object value)
