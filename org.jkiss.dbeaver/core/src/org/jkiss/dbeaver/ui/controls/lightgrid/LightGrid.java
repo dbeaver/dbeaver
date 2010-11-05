@@ -2232,12 +2232,12 @@ public class LightGrid extends Canvas {
     /**
      * Determines if the mouse is hovering on a column resizer and changes the
      * pointer and sets field appropriately.
+     * Also checks if mouse if hovering on a column sorter control.
      *
      * @param x mouse x
      * @param y mouse y
-     * @return true if this event has been consumed.
      */
-    private boolean handleHoverOnColumnResizer(int x, int y)
+    private void handleHoverOnColumnHeader(int x, int y)
     {
         boolean overSorter = false, overResizer = false;
         if (y <= headerHeight) {
@@ -2267,7 +2267,7 @@ public class LightGrid extends Canvas {
         }
         if (overSorter != hoveringOnColumnSorter) {
             if (overSorter) {
-                setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+                setCursor(columnBeingSorted.getSortRenderer().getHoverCursor());
             } else {
                 columnBeingSorted = null;
                 setCursor(null);
@@ -2285,7 +2285,6 @@ public class LightGrid extends Canvas {
             }
             hoveringOnColumnResizer = overResizer;
         }
-        return overResizer;
     }
 
     /**
@@ -3071,7 +3070,7 @@ public class LightGrid extends Canvas {
         cellColumnSelectedOnLastMouseDown = false;
 
         if (hoveringOnColumnSorter) {
-            handleHoverOnColumnResizer(e.x, e.y);
+            handleHoverOnColumnHeader(e.x, e.y);
             if (hoveringOnColumnSorter) {
                 return;
             }
@@ -3218,7 +3217,7 @@ public class LightGrid extends Canvas {
                     col.fireMoved();
                 }
                 resizingColumn = false;
-                handleHoverOnColumnResizer(e.x, e.y);
+                handleHoverOnColumnHeader(e.x, e.y);
                 return;
             }
 
@@ -3244,7 +3243,7 @@ public class LightGrid extends Canvas {
         cellSelectedOnLastMouseDown = false;
 
         if (hoveringOnColumnSorter) {
-            handleHoverOnColumnResizer(e.x, e.y);
+            handleHoverOnColumnHeader(e.x, e.y);
             if (hoveringOnColumnSorter) {
                 if (e.button == 1) {
                     Event event = new Event();
@@ -3260,7 +3259,7 @@ public class LightGrid extends Canvas {
         }
         if (resizingColumn) {
             resizingColumn = false;
-            handleHoverOnColumnResizer(e.x, e.y); // resets cursor if
+            handleHoverOnColumnHeader(e.x, e.y); // resets cursor if
             // necessary
             return;
         }
@@ -3456,7 +3455,8 @@ public class LightGrid extends Canvas {
         handleCellHover(x, y);
 
         if (columnHeadersVisible) {
-            if (handleHoverOnColumnResizer(x, y)) {
+            handleHoverOnColumnHeader(x, y);
+            //if (handleHoverOnColumnHeader(x, y)) {
 //                if (hoveringItem != null || !hoveringDetail.equals("") || hoveringColumn != null
 //                    || hoveringColumnHeader != null || hoverColumnGroupHeader != null)
 //                {
@@ -3469,8 +3469,8 @@ public class LightGrid extends Canvas {
 //                    Rectangle clientArea = getClientArea();
 //                    redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
 //                }
-                return;
-            }
+                //return;
+            //}
         }
     }
 
@@ -3862,7 +3862,7 @@ public class LightGrid extends Canvas {
             hoveringColumn = col;
             hoveringColumnHeader = hoverColHeader;
 
-            // TODO: guest why did they put redraw on mouse move??? It took fucking much memory and processor
+            // TODO: guess why did they put redraw on mouse move??? It took fucking much memory and processor
             //Rectangle clientArea = getClientArea();
             //redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
 

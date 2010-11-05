@@ -4,6 +4,7 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
@@ -217,4 +218,7 @@ public abstract class AbstractRenderer implements IGridRenderer
         return display;
     }
 
+    public Cursor getHoverCursor() {
+        return null;
+    }
 }

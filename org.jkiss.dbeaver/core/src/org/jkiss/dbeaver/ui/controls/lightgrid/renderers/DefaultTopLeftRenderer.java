@@ -21,13 +21,13 @@ public class DefaultTopLeftRenderer extends AbstractRenderer {
 
     public DefaultTopLeftRenderer(LightGrid grid) {
         super(grid);
-        cfgButton = new Button(grid, SWT.FLAT | SWT.ARROW | SWT.DOWN);
+        //cfgButton = new Button(grid, SWT.FLAT | SWT.ARROW | SWT.DOWN);
         //cfgButton.setText("...");
     }
 
     @Override
     public void setBounds(Rectangle bounds) {
-        cfgButton.setBounds(bounds);
+        //cfgButton.setBounds(bounds);
 
         super.setBounds(bounds);
     }
@@ -58,7 +58,7 @@ public class DefaultTopLeftRenderer extends AbstractRenderer {
             getBounds().x + getBounds().width,
             getBounds().y + getBounds().height - 1);
 
-        cfgButton.redraw();
+        //cfgButton.redraw();
 
     }
 

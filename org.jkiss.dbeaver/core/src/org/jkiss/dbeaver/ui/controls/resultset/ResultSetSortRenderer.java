@@ -5,10 +5,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
@@ -22,6 +19,7 @@ class ResultSetSortRenderer extends AbstractRenderer {
     private Image arrowUp;
     private Image arrowDown;
     private GridColumn column;
+    private Cursor hoverCursor;
 
     ResultSetSortRenderer(GridColumn column)
     {
@@ -30,6 +28,7 @@ class ResultSetSortRenderer extends AbstractRenderer {
         this.asterisk = DBIcon.SORT_UNKNOWN.getImage();
         this.arrowUp = DBIcon.SORT_DECREASE.getImage();
         this.arrowDown = DBIcon.SORT_INCREASE.getImage();
+        this.hoverCursor = getDisplay().getSystemCursor(SWT.CURSOR_HAND);
         Rectangle imgBounds = arrowUp.getBounds();
         setSize(imgBounds.width, imgBounds.height);
     }
@@ -63,4 +62,8 @@ class ResultSetSortRenderer extends AbstractRenderer {
 */
     }
 
+    @Override
+    public Cursor getHoverCursor() {
+        return hoverCursor;
+    }
 }

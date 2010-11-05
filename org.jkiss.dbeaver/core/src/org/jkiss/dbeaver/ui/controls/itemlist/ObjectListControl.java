@@ -105,6 +105,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             table.setLinesVisible (true);
             table.setHeaderVisible(true);
             itemsViewer = tableViewer;
+            //UIUtils.applyCustomTolTips(table);
             //TableEditor editor = new TableEditor(table);
         }
         itemsViewer.setContentProvider(contentProvider);
@@ -650,6 +651,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             } else {
                 hoverItem = detectTableItem(e.x, e.y);
             }
+            //String tip = null;
             if (hoverItem == null || selectedColumn < 0) {
                 resetCursor();
             } else {
@@ -660,6 +662,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 if (cellValue == null) {
                     resetCursor();
                 } else {
+                    //tip = getCellString(cellValue);
                     if (isHyperlink(cellValue) && getCellLinkBounds(hoverItem, checkColumn, cellValue).contains(e.x, e.y)) {
                         getItemsViewer().getControl().setCursor(linkCursor);
                     } else {
@@ -667,6 +670,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     }
                 }
             }
+            //setToolTipText(tip);
         }
     }
 

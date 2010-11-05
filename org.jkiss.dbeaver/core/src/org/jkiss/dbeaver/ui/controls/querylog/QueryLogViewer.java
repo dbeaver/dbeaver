@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
 import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.ui.TableToolTip;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -253,6 +254,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         logTable.setHeaderVisible(true);
         GridData gd = new GridData(GridData.FILL_BOTH);
         logTable.setLayoutData(gd);
+
+        new TableToolTip(logTable);
 
         createColumns();
 
