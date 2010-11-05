@@ -21,6 +21,8 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 public abstract class AbstractRenderer implements IGridRenderer
 {
     protected final LightGrid grid;
+    /** Display used to create GC to perform painting. */
+    private final Display display;
 
     private int column = -1;
     private int row = -1;
@@ -39,9 +41,6 @@ public abstract class AbstractRenderer implements IGridRenderer
 
     /** The bounds the renderer paints on. */
     private Rectangle bounds = new Rectangle(0, 0, 0, 0);
-
-    /** Display used to create GC to perform painting. */
-    private final Display display;
 
     protected AbstractRenderer(LightGrid grid) {
         this.grid = grid;

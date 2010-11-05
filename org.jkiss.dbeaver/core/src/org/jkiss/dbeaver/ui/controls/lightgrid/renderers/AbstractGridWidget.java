@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 public abstract class AbstractGridWidget extends AbstractRenderer implements IGridWidget
 {
 
-    String hoverDetail = "";
+    private String hoverDetail = "";
 
     protected AbstractGridWidget(LightGrid grid) {
         super(grid);

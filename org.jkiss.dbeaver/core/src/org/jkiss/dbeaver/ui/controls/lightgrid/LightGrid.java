@@ -258,11 +258,6 @@ public class LightGrid extends Canvas {
     private boolean linesVisible = true;
 
     /**
-     * Are tree lines visible?
-     */
-    private boolean treeLinesVisible = true;
-
-    /**
      * Grid line color.
      */
     private Color lineColor;
@@ -1077,17 +1072,6 @@ public class LightGrid extends Canvas {
     }
 
     /**
-     * Returns true if the tree lines are visible.
-     *
-     * @return Returns the treeLinesVisible.
-     */
-    public boolean getTreeLinesVisible()
-    {
-        checkWidget();
-        return treeLinesVisible;
-    }
-
-    /**
      * Returns the next visible item in the table.
      *
      * @return next visible item or null
@@ -1783,18 +1767,6 @@ public class LightGrid extends Canvas {
     {
         checkWidget();
         this.linesVisible = linesVisible;
-        redraw();
-    }
-
-    /**
-     * Sets the tree line visibility.
-     *
-     * @param treeLinesVisible
-     */
-    public void setTreeLinesVisible(boolean treeLinesVisible)
-    {
-        checkWidget();
-        this.treeLinesVisible = treeLinesVisible;
         redraw();
     }
 
@@ -4613,50 +4585,6 @@ public class LightGrid extends Canvas {
             scrollValuesObsolete = true;
             redraw();
         }
-    }
-
-    /**
-     * Query the grid for all currently visible rows and columns
-     * <p>
-     * <b>This support is provisional and may change</b>
-     * </p>
-     *
-     * @return all currently visible rows and columns
-     */
-    public GridVisibleRange getVisibleRange()
-    {
-        //FIXME I think we should remember the topIndex in the onPaint-method
-        int topIndex = getTopIndex();
-        int bottomIndex = getBottomIndex();
-        int startColumnIndex = getStartColumnIndex();
-        int endColumnIndex = getEndColumnIndex();
-
-        GridVisibleRange range = new GridVisibleRange();
-        range.setItems(new int[0]);
-        range.setColumns(new GridColumn[0]);
-
-        if (topIndex <= bottomIndex) {
-            if (getItemCount() > 0) {
-                range.setItems(new int[bottomIndex - topIndex + 1]);
-                for (int i = topIndex; i <= bottomIndex; i++) {
-                    range.getItems()[i - topIndex] = i;
-                }
-            }
-        }
-
-        if (startColumnIndex <= endColumnIndex) {
-            if (columns.size() > 0) {
-                List<GridColumn> cols = new ArrayList<GridColumn>();
-                for (int i = startColumnIndex; i <= endColumnIndex; i++) {
-                    GridColumn col = columns.get(i);
-                    cols.add(col);
-                }
-
-                range.setColumns(cols.toArray(new GridColumn[cols.size()]));
-            }
-        }
-
-        return range;
     }
 
     int getStartColumnIndex()

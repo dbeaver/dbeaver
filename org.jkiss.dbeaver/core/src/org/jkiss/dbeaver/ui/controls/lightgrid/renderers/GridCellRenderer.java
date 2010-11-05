@@ -142,7 +142,7 @@ public abstract class GridCellRenderer extends AbstractGridWidget
      * enough to show the entire text.  If <code>preferred</code> is <code>false</code> then the 
      * returned bounds should be be relative to the current bounds.
      * 
-     * @param item item to calculate text bounds.
+     * @param row item to calculate text bounds.
      * @param preferred true if the preferred width of the text should be returned.
      * @return bounds of the text.
      */

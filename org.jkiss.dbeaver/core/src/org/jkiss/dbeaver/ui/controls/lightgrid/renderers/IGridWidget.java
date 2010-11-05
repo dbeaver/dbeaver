@@ -14,10 +14,10 @@ public interface IGridWidget extends IGridRenderer
 {
     // Event type constants
     /** Hover State. */
-    int MouseMove = SWT.MouseMove;
+    static final int MouseMove = SWT.MouseMove;
 
     /** Mouse down state. */
-    int LeftMouseButtonDown = SWT.MouseDown;
+    static final int LeftMouseButtonDown = SWT.MouseDown;
 
     /**
      * Mechanism used to notify the light weight widgets that an event occurred

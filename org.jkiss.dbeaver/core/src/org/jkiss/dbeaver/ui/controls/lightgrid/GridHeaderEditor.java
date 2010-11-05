@@ -21,16 +21,12 @@ import org.eclipse.swt.widgets.Listener;
  */
 class GridHeaderEditor extends ControlEditor {
 
-	private LightGrid table;
-
+	private LightGrid grid;
 	private GridColumn column;
-
-	ControlListener columnListener;
-
-	Listener resizeListener;
+	private ControlListener columnListener;
+	private Listener resizeListener;
 
 	private final SelectionListener scrollListener;
-
 	private final Listener mouseOverListener;
 
 	/**
@@ -42,12 +38,12 @@ class GridHeaderEditor extends ControlEditor {
 	GridHeaderEditor(final GridColumn column) {
 		super(column.getParent());
 
-		this.table = column.getParent();
+		this.grid = column.getParent();
 		this.column = column;
 
 		columnListener = new ControlListener() {
 			public void controlMoved(ControlEvent e) {
-				table.getDisplay().asyncExec(new Runnable() {
+				grid.getDisplay().asyncExec(new Runnable() {
 
 					public void run() {
 						layout();
@@ -80,10 +76,10 @@ class GridHeaderEditor extends ControlEditor {
 		mouseOverListener = new Listener() {
 
 			public void handleEvent(Event event) {
-				if (table.getCursor() != null) {
+				if (grid.getCursor() != null) {
 					// We need to reset because it could be that when we left the resizer was active
-					table.hoveringOnColumnResizer=false;
-					table.setCursor(null);
+					grid.hoveringOnColumnResizer=false;
+					grid.setCursor(null);
 				}
 			}
 
@@ -92,14 +88,14 @@ class GridHeaderEditor extends ControlEditor {
 		// The following three listeners are workarounds for
 		// Eclipse bug 105764
 		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=105764
-		table.addListener(SWT.Resize, resizeListener);
+		grid.addListener(SWT.Resize, resizeListener);
 
-		if (table.getVerticalScrollBarProxy() != null) {
-			table.getVerticalScrollBarProxy().addSelectionListener(
+		if (grid.getVerticalScrollBarProxy() != null) {
+			grid.getVerticalScrollBarProxy().addSelectionListener(
 					scrollListener);
 		}
-		if (table.getHorizontalScrollBarProxy() != null) {
-			table.getHorizontalScrollBarProxy().addSelectionListener(
+		if (grid.getHorizontalScrollBarProxy() != null) {
+			grid.getHorizontalScrollBarProxy().addSelectionListener(
 					scrollListener);
 		}
 
@@ -122,38 +118,34 @@ class GridHeaderEditor extends ControlEditor {
 
 	/**
 	 * Removes all associations between the TableEditor and the cell in the
-	 * table. The Table and the editor Control are <b>not</b> disposed.
+	 * grid. The Table and the editor Control are <b>not</b> disposed.
 	 */
 	public void dispose() {
-		if (!table.isDisposed() && !column.isDisposed()) {
+		if (!grid.isDisposed() && !column.isDisposed()) {
 			column.removeControlListener(columnListener);
 		}
 
-		if (!table.isDisposed()) {
-			table.removeListener(SWT.Resize, resizeListener);
+		if (!grid.isDisposed()) {
+			grid.removeListener(SWT.Resize, resizeListener);
 
-			if (table.getVerticalScrollBarProxy() != null)
-				table.getVerticalScrollBarProxy().removeSelectionListener(
+			if (grid.getVerticalScrollBarProxy() != null)
+				grid.getVerticalScrollBarProxy().removeSelectionListener(
 						scrollListener);
 
-			if (table.getHorizontalScrollBarProxy() != null)
-				table.getHorizontalScrollBarProxy().removeSelectionListener(
+			if (grid.getHorizontalScrollBarProxy() != null)
+				grid.getHorizontalScrollBarProxy().removeSelectionListener(
 						scrollListener);
 		}
 
 		columnListener = null;
 		resizeListener = null;
-		table = null;
+		grid = null;
 		super.dispose();
 	}
 
 	/**
 	 * Sets the zero based index of the column of the cell being tracked by this
 	 * editor.
-	 * 
-	 * @param column
-	 *            the zero based index of the column of the cell being tracked
-	 *            by this editor
 	 */
 	void initColumn() {
 
@@ -165,7 +157,7 @@ class GridHeaderEditor extends ControlEditor {
 	 * {@inheritDoc}
 	 */
 	public void layout() {
-		if (table.isDisposed())
+		if (grid.isDisposed())
 			return;
 
 		boolean hadFocus = false;
@@ -181,7 +173,7 @@ class GridHeaderEditor extends ControlEditor {
 		if (rect == null || rect.x < 0) {
 			getEditor().setVisible(false);
 			return;
-		} else if(table.getItemHeaderWidth()>0&&table.getItemHeaderWidth()>rect.x){
+		} else if(grid.getItemHeaderWidth()>0&& grid.getItemHeaderWidth()>rect.x){
 			getEditor().setVisible(false);
 		    return;
 		}else {

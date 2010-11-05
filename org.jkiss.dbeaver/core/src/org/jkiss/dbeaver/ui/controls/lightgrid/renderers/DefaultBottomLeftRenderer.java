@@ -25,8 +25,7 @@ public class DefaultBottomLeftRenderer extends AbstractRenderer {
 	 * {@inheritDoc}
 	 */
 	public void paint(GC gc) {
-		gc.setBackground(getDisplay().getSystemColor(
-				SWT.COLOR_WIDGET_BACKGROUND));
+		gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
 		gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width,
 				getBounds().height + 1);

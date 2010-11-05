@@ -31,17 +31,15 @@ import org.eclipse.swt.widgets.Listener;
  */
 public class GridEditor extends ControlEditor
 {
-    LightGrid grid;
+    private LightGrid grid;
 
     //GridItem item;
 
-    int column = -1;
-    int row = -1;
+    private int column = -1;
+    private int row = -1;
 
-    ControlListener columnListener;
-    
-    Listener resizeListener;
-
+    private ControlListener columnListener;
+    private Listener resizeListener;
     private SelectionListener scrollListener;
 
     /**
@@ -266,8 +264,7 @@ public class GridEditor extends ControlEditor
      * parent being the Table control specified in the TableEditor constructor.
      * 
      * @param editor the Control that is displayed above the cell being edited
-     * @param item the TableItem for the row of the cell being tracked by this
-     * editor
+     * @param row the row of the cell being tracked by this editor
      * @param column the zero based index of the column of the cell being
      * tracked by this editor
      */

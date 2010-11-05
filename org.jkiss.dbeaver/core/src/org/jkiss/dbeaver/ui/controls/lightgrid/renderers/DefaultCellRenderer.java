@@ -16,13 +16,13 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
  */
 public class DefaultCellRenderer extends GridCellRenderer {
 
-    private int leftMargin = 4;
-    private int rightMargin = 4;
-    private int topMargin = 0;
+    private static final int leftMargin = 4;
+    private static final int rightMargin = 4;
+    private static final int topMargin = 0;
     //private int bottomMargin = 0;
-    private int textTopMargin = 1;
+    private static final int textTopMargin = 1;
     //private int textBottomMargin = 2;
-    private int insideMargin = 3;
+    private static final int insideMargin = 3;
     //private int treeIndent = 20;
 
     public DefaultCellRenderer(LightGrid grid)
@@ -101,7 +101,11 @@ public class DefaultCellRenderer extends GridCellRenderer {
             }
         }
 
-        gc.drawString(text, getBounds().x + x, getBounds().y + textTopMargin + topMargin, true);
+        gc.drawString(
+            text,
+            getBounds().x + x,
+            getBounds().y + textTopMargin + topMargin,
+            true);
 
         if (grid.getLinesVisible()) {
             if (isCellSelected()) {

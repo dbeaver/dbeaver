@@ -24,12 +24,12 @@ public class GridColumn extends Item {
 	 */
 	private static final int DEFAULT_WIDTH = 10;
 
-    private int topMargin = 3;
-    private int bottomMargin = 3;
-    private int leftMargin = 6;
-    private int rightMargin = 6;
-    private int imageSpacing = 3;
-    private int insideMargin = 3;
+    private static final int topMargin = 3;
+    private static final int bottomMargin = 3;
+    private static final int leftMargin = 6;
+    private static final int rightMargin = 6;
+    private static final int imageSpacing = 3;
+    private static final int insideMargin = 3;
 
 	/**
 	 * Parent table.
@@ -126,8 +126,9 @@ public class GridColumn extends Item {
 		initCellRenderer();
 
 /*
-        Button btn = new Button(grid, SWT.PUSH);
+        Button btn = new Button(grid, SWT.PUSH | SWT.NO_FOCUS);
         btn.setText("xxx");
+
         setHeaderControl(btn);
 */
 	}

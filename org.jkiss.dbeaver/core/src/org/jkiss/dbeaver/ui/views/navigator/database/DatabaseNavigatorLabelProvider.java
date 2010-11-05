@@ -29,14 +29,14 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
 {
     static final Log log = LogFactory.getLog(DatabaseNavigatorLabelProvider.class);
 
-    private DatabaseNavigatorView view;
+    //private DatabaseNavigatorView view;
     private Font normalFont;
     private Font defaultFont;
     private Color lockedForeground;
 
     DatabaseNavigatorLabelProvider(DatabaseNavigatorView view)
     {
-        this.view = view;
+        //this.view = view;
         this.normalFont = view.getNavigatorViewer().getControl().getFont();
         this.defaultFont = UIUtils.makeBoldFont(normalFont);
         this.lockedForeground = view.getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_GRAY);
