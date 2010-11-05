@@ -352,6 +352,9 @@ public class SQLQueryJob extends DataSourceJob
 
             try {
                 while ((!hasLimits() || rowCount < rsMaxRows) && resultSet.nextRow()) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     rowCount++;
 
                     if (rowCount % 100 == 0) {

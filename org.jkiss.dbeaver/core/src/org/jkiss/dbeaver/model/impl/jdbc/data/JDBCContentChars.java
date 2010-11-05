@@ -23,7 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
- * JDBCBLOB
+ * JDBCContentChars
  *
  * @author Serge Rider
  */

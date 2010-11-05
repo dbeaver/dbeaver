@@ -9,14 +9,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
@@ -26,7 +29,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
- * JDBCBLOB
+ * JDBCContentBLOB
  *
  * @author Serge Rider
  */
@@ -65,22 +68,31 @@ public class JDBCContentBLOB extends JDBCContentAbstract implements DBDContent {
         throws DBCException
     {
         if (storage == null && blob != null) {
-            // Create new local storage
-            IFile tempFile;
-            try {
-                tempFile = ContentUtils.createTempContentFile(monitor, "blob" + blob.hashCode());
+            long contentLength = getContentLength();
+            if (contentLength < DBeaverCore.getInstance().getGlobalPreferenceStore().getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE)) {
+                try {
+                    storage = BytesContentStorage.createFromStream(blob.getBinaryStream(), contentLength);
+                }
+                catch (Exception e) {
+                    throw new DBCException(e);
+                }
+            } else {
+                // Create new local storage
+                IFile tempFile;
+                try {
+                    tempFile = ContentUtils.createTempContentFile(monitor, "blob" + blob.hashCode());
+                }
+                catch (IOException e) {
+                    throw new DBCException(e);
+                }
+                try {
+                    ContentUtils.copyStreamToFile(monitor, blob.getBinaryStream(), contentLength, tempFile);
+                } catch (Exception e) {
+                    ContentUtils.deleteTempFile(monitor, tempFile);
+                    throw new DBCException(e);
+                }
+                this.storage = new TemporaryContentStorage(tempFile);
             }
-            catch (IOException e) {
-                throw new DBCException(e);
-            }
-            try {
-                ContentUtils.copyStreamToFile(monitor, blob.getBinaryStream(), blob.length(), tempFile);
-            } catch (Exception e) {
-                ContentUtils.deleteTempFile(monitor, tempFile);
-                throw new DBCException(e);
-            }
-            this.storage = new TemporaryContentStorage(tempFile);
-
         }
         return storage;
     }

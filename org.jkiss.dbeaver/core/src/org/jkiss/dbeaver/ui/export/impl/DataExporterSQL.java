@@ -128,8 +128,8 @@ public class DataExporterSQL extends DataExporterAbstract {
                 // Content
                 // Inline textual content and handle binaries in some special way
                 DBDContent content = (DBDContent)row[i];
-                DBDContentStorage cs = content.getContents(monitor);
                 try {
+                    DBDContentStorage cs = content.getContents(monitor);
                     if (ContentUtils.isTextContent(content)) {
                         writeStringValue(cs.getContentReader());
                     } else {
@@ -137,7 +137,7 @@ public class DataExporterSQL extends DataExporterAbstract {
                     }
                 }
                 finally {
-                    cs.release();
+                    content.release();
                 }
             } else if (value instanceof File) {
                 out.write("@");

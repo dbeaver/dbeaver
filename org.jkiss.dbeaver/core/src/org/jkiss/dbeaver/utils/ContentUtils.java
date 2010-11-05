@@ -310,8 +310,8 @@ public class ContentUtils {
     public static void copyStreamToFile(DBRProgressMonitor monitor, InputStream inputStream, long contentLength, IFile localFile)
         throws DBException, IOException
     {
+        //localFile.appendContents(inputStream, true, false, monitor.getNestedMonitor());
         File file = localFile.getLocation().toFile();
-
         try {
             OutputStream outputStream = new FileOutputStream(file);
             try {
@@ -324,6 +324,8 @@ public class ContentUtils {
         finally {
             inputStream.close();
         }
+        syncFile(monitor, localFile);
+
     }
 
     public static void copyReaderToFile(DBRProgressMonitor monitor, Reader reader, long contentLength, String charset, IFile localFile)
@@ -353,5 +355,18 @@ public class ContentUtils {
         finally {
             reader.close();
         }
+        syncFile(monitor, localFile);
     }
+
+    private static void syncFile(DBRProgressMonitor monitor, IFile localFile) {
+        // Sync file with contents
+        try {
+            localFile.refreshLocal(IFile.DEPTH_ZERO, monitor.getNestedMonitor());
+        }
+        catch (CoreException e) {
+            log.warn("Could not synchronize file '" + localFile + "' with contents", e);
+        }
+    }
+
+
 }

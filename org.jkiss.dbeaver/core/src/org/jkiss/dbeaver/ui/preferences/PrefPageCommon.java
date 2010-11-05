@@ -24,6 +24,7 @@ public class PrefPageCommon extends TargetPrefPage
     private Button autoCommitCheck;
     private Button rollbackOnErrorCheck;
     private Spinner resultSetSize;
+    private Spinner memoryContentSize;
 
     public PrefPageCommon()
     {
@@ -37,7 +38,8 @@ public class PrefPageCommon extends TargetPrefPage
         return
             store.contains(PrefConstants.RESULT_SET_MAX_ROWS) ||
             store.contains(PrefConstants.QUERY_ROLLBACK_ON_ERROR) ||
-            store.contains(PrefConstants.DEFAULT_AUTO_COMMIT)
+            store.contains(PrefConstants.DEFAULT_AUTO_COMMIT) ||
+            store.contains(PrefConstants.MEMORY_CONTENT_MAX_SIZE)
             ;
     }
 
@@ -72,6 +74,17 @@ public class PrefPageCommon extends TargetPrefPage
             resultSetSize.setMaximum(1024 * 1024);
         }
 
+        {
+            Group performanceGroup = UIUtils.createControlGroup(composite, "Performance", 2, SWT.NONE, 0);
+            UIUtils.createControlLabel(performanceGroup, "Maximum LOB length to keep in memory");
+
+            memoryContentSize = new Spinner(performanceGroup, SWT.BORDER);
+            memoryContentSize.setSelection(0);
+            memoryContentSize.setDigits(0);
+            memoryContentSize.setIncrement(1);
+            memoryContentSize.setMinimum(0);
+            memoryContentSize.setMaximum(1024 * 1024 * 1024);
+        }
         return composite;
     }
 
@@ -81,6 +94,7 @@ public class PrefPageCommon extends TargetPrefPage
             autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
             rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
             resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
+            memoryContentSize.setSelection(store.getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -92,6 +106,7 @@ public class PrefPageCommon extends TargetPrefPage
             store.setValue(PrefConstants.DEFAULT_AUTO_COMMIT, autoCommitCheck.getSelection());
             store.setValue(PrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
             store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
+            store.setValue(PrefConstants.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -103,6 +118,7 @@ public class PrefPageCommon extends TargetPrefPage
         store.setToDefault(PrefConstants.DEFAULT_AUTO_COMMIT);
         store.setToDefault(PrefConstants.QUERY_ROLLBACK_ON_ERROR);
         store.setToDefault(PrefConstants.RESULT_SET_MAX_ROWS);
+        store.setToDefault(PrefConstants.MEMORY_CONTENT_MAX_SIZE);
     }
 
     public void applyData(Object data)

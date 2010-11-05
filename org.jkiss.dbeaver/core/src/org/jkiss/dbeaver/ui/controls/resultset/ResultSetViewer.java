@@ -469,6 +469,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         } else {
             statusLabel.setForeground(null);
         }
+        if (status == null) {
+            status = "???";
+        }
         statusLabel.setText(status);
     }
 

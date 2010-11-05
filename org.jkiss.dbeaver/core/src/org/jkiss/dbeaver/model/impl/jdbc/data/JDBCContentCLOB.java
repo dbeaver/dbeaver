@@ -9,14 +9,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueClonable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
@@ -26,7 +29,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
- * JDBCBLOB
+ * JDBCContentCLOB
  *
  * @author Serge Rider
  */
@@ -65,22 +68,31 @@ public class JDBCContentCLOB extends JDBCContentAbstract implements DBDContent {
         throws DBCException
     {
         if (storage == null && clob != null) {
-            // Create new local storage
-            IFile tempFile;
-            try {
-                tempFile = ContentUtils.createTempContentFile(monitor, "clob" + clob.hashCode());
+            long contentLength = getContentLength();
+            if (contentLength < DBeaverCore.getInstance().getGlobalPreferenceStore().getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE)) {
+                try {
+                    storage = StringContentStorage.createFromReader(clob.getCharacterStream(), contentLength);
+                }
+                catch (Exception e) {
+                    throw new DBCException(e);
+                }
+            } else {
+                // Create new local storage
+                IFile tempFile;
+                try {
+                    tempFile = ContentUtils.createTempContentFile(monitor, "clob" + clob.hashCode());
+                }
+                catch (IOException e) {
+                    throw new DBCException(e);
+                }
+                try {
+                    ContentUtils.copyReaderToFile(monitor, clob.getCharacterStream(), contentLength, ContentUtils.DEFAULT_FILE_CHARSET, tempFile);
+                } catch (Exception e) {
+                    ContentUtils.deleteTempFile(monitor, tempFile);
+                    throw new DBCException(e);
+                }
+                this.storage = new TemporaryContentStorage(tempFile);
             }
-            catch (IOException e) {
-                throw new DBCException(e);
-            }
-            try {
-                ContentUtils.copyReaderToFile(monitor, clob.getCharacterStream(), clob.length(), ContentUtils.DEFAULT_FILE_CHARSET, tempFile);
-            } catch (Exception e) {
-                ContentUtils.deleteTempFile(monitor, tempFile);
-                throw new DBCException(e);
-            }
-            this.storage = new TemporaryContentStorage(tempFile);
-            
         }
         return storage;
     }
