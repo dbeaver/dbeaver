@@ -7,8 +7,10 @@ package org.jkiss.dbeaver.ui.controls.itemlist;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -17,18 +19,17 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.views.properties.PropertyAnnoDescriptor;
 
-import javax.imageio.spi.ServiceRegistry;
 import java.lang.reflect.InvocationTargetException;
 import java.text.Collator;
 import java.util.*;
@@ -41,8 +42,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 {
     static final Log log = LogFactory.getLog(ObjectListControl.class);
 
-    //private final static Object LOADING_VALUE = new Object();
     private final static String LOADING_LABEL = "...";
+    private final static String DATA_OBJECT_COLUMN = "objectColumn";
+    private final static int LAZY_LOAD_DELAY = 100;
 
     private static class ObjectColumn {
         Item item;
@@ -66,6 +68,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private SortListener sortListener;
     private IDoubleClickListener doubleClickHandler;
     private LoadingJob<Collection<OBJECT_TYPE>> loadingJob;
+    private Map<Item, List<ObjectColumn>> lazyObjects;
+    private Job lazyLoadingJob = null;
 
     private final TextLayout linkLayout;
     private final Color linkColor;
@@ -322,6 +326,86 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
+    private synchronized void addLazyObject(Item item, ObjectColumn column)
+    {
+        if (lazyObjects == null) {
+            lazyObjects = new IdentityHashMap<Item, List<ObjectColumn>>();
+        }
+        List<ObjectColumn> lazyColumns = lazyObjects.get(item);
+        if (lazyColumns == null) {
+            lazyColumns = new ArrayList<ObjectColumn>();
+            lazyObjects.put(item, lazyColumns);
+            //System.out.println("LAZY: " + object);
+        }
+        if (!lazyColumns.contains(column)) {
+            lazyColumns.add(column);
+        }
+        if (lazyLoadingJob == null) {
+            lazyLoadingJob = new AbstractUIJob("Lazy objects loader") {
+                @Override
+                protected IStatus runInUIThread(DBRProgressMonitor monitor)
+                {
+                    Map<Item, List<ObjectColumn>> objectMap = obtainLazyObjects();
+                    if (isDisposed()) {
+                        return Status.OK_STATUS;
+                    }
+                    for (Map.Entry<Item, List<ObjectColumn>> entry : objectMap.entrySet()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        Item item = entry.getKey();
+                        Object object = getObjectValue((OBJECT_TYPE) item.getData());
+                        for (ObjectColumn column : entry.getValue()) {
+                            try {
+                                Object lazyValue = column.prop.readValue(object, monitor);
+                                String stringValue = getCellString(lazyValue);
+                                int columnIndex = columns.indexOf(column);
+                                if (item instanceof TreeItem) {
+                                    ((TreeItem) item).setText(columnIndex, stringValue);
+                                } else {
+                                    ((TableItem) item).setText(columnIndex, stringValue);
+                                }
+                            }
+                            catch (IllegalAccessException e) {
+                                log.error(e);
+                                return null;
+                            }
+                            catch (InvocationTargetException e) {
+                                log.error(e.getTargetException());
+                                return null;
+                            }
+                        }
+                    }
+                    return Status.OK_STATUS;
+                }
+            };
+            lazyLoadingJob.addJobChangeListener(new JobChangeAdapter() {
+                @Override
+                public void done(IJobChangeEvent event)
+                {
+                    synchronized (ObjectListControl.this) {
+                        if (lazyObjects == null || lazyObjects.isEmpty()) {
+                            lazyLoadingJob = null;
+                        } else {
+                            lazyLoadingJob.schedule(LAZY_LOAD_DELAY);
+                        }
+                    }
+                }
+            });
+            lazyLoadingJob.schedule(LAZY_LOAD_DELAY);
+        }
+    }
+
+    private synchronized Map<Item, List<ObjectColumn>> obtainLazyObjects()
+    {
+        if (lazyObjects == null) {
+            return null;
+        }
+        Map<Item, List<ObjectColumn>> tmp = lazyObjects;
+        lazyObjects = null;
+        return tmp;
+    }
+
     private Object getCellValue(Object object, int columnIndex)
     {
         ObjectColumn column = columns.get(columnIndex);
@@ -332,7 +416,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return LOADING_LABEL;
         }
         try {
-            return column.prop.readValue(getObjectValue((OBJECT_TYPE) object), null);
+            return column.prop.readValue(getObjectValue((OBJECT_TYPE)object), null);
         }
         catch (IllegalAccessException e) {
             log.error(e);
@@ -380,18 +464,20 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             TreeColumn column = new TreeColumn (getTree(), SWT.NONE);
             column.setText(prop.getDisplayName());
             column.setToolTipText(prop.getDescription());
-            column.setData(prop);
+            //column.setData(prop);
             column.addListener(SWT.Selection, sortListener);
             newColumn = column;
         } else {
             TableColumn column = new TableColumn (getTable(), SWT.NONE);
             column.setText(prop.getDisplayName());
             column.setToolTipText(prop.getDescription());
-            column.setData(prop);
+            //column.setData(prop);
             column.addListener(SWT.Selection, sortListener);
             newColumn = column;
         }
-        this.columns.add(new ObjectColumn(newColumn, objctClass, prop));
+        ObjectColumn objectColumn = new ObjectColumn(newColumn, objctClass, prop);
+        this.columns.add(objectColumn);
+        newColumn.setData(DATA_OBJECT_COLUMN, objectColumn);
     }
 
     private class SortListener implements Listener
@@ -402,7 +488,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         public void handleEvent(Event e) {
             Collator collator = Collator.getInstance();
             Item column = (Item)e.widget;
-            final int colIndex = columns.indexOf(column);
+            final int colIndex = isTree ? getTree().indexOf((TreeColumn) column) : getTable().indexOf((TableColumn)column );
             if (prevColumn == column) {
                 // Set reverse order
                 sortDirection = sortDirection == SWT.UP ? SWT.DOWN : SWT.UP;
@@ -461,12 +547,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         public String getColumnText(Object element, int columnIndex)
         {
             Object cellValue = getCellValue(element, columnIndex);
-            if (cellValue == null) {
-                return "";
-            }
-            if (cellValue instanceof Boolean) {
-                return "";
-            }
             if (!sampleItems && isHyperlink(cellValue)) {
                 return "";
             }
@@ -601,6 +681,17 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 			switch(event.type) {
 				case SWT.PaintItem: {
                     Object cellValue = getCellValue(event.item.getData(), event.index);
+                    if (cellValue == LOADING_LABEL) {
+                        Object itemValue;
+                        if (isTree) {
+                            itemValue = ((TreeItem)event.item).getText(event.index);
+                        } else {
+                            itemValue = ((TableItem)event.item).getText(event.index);
+                        }
+                        if (itemValue == LOADING_LABEL) {
+                            addLazyObject((Item)event.item, columns.get(event.index));
+                        }
+                    }
                     if (cellValue != null ) {
                         GC gc = event.gc;
                         if (cellValue instanceof Boolean) {
@@ -692,6 +783,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private static String getCellString(Object value)
     {
+        if (value == null) {
+            return "";
+        }
+        if (value instanceof Boolean) {
+            return "";
+        }
         if (value instanceof DBPNamedObject) {
             value = ((DBPNamedObject)value).getName();
         }
