@@ -58,6 +58,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
+    private static class LazyObject {
+        final Object object;
+        final List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
+        final List<String> values = new ArrayList<String>();
+        private LazyObject(Object object)
+        {
+            this.object = object;
+        }
+    }
     private boolean isTree;
     private boolean isFitWidth;
     //private boolean showName;
@@ -68,7 +77,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private SortListener sortListener;
     private IDoubleClickListener doubleClickHandler;
     private LoadingJob<Collection<OBJECT_TYPE>> loadingJob;
-    private Map<Item, List<ObjectColumn>> lazyObjects;
+    private Map<Item, LazyObject> lazyObjects;
     private Job lazyLoadingJob = null;
 
     private final TextLayout linkLayout;
@@ -329,42 +338,39 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private synchronized void addLazyObject(Item item, ObjectColumn column)
     {
         if (lazyObjects == null) {
-            lazyObjects = new IdentityHashMap<Item, List<ObjectColumn>>();
+            lazyObjects = new IdentityHashMap<Item, LazyObject>();
         }
-        List<ObjectColumn> lazyColumns = lazyObjects.get(item);
-        if (lazyColumns == null) {
-            lazyColumns = new ArrayList<ObjectColumn>();
-            lazyObjects.put(item, lazyColumns);
+        LazyObject lazyObject = lazyObjects.get(item);
+        if (lazyObject == null) {
+            lazyObject = new LazyObject(item.getData());
+            lazyObjects.put(item, lazyObject);
             //System.out.println("LAZY: " + object);
         }
-        if (!lazyColumns.contains(column)) {
-            lazyColumns.add(column);
+        if (!lazyObject.columns.contains(column)) {
+            lazyObject.columns.add(column);
         }
         if (lazyLoadingJob == null) {
             lazyLoadingJob = new AbstractUIJob("Lazy objects loader") {
                 @Override
-                protected IStatus runInUIThread(DBRProgressMonitor monitor)
+                protected IStatus runInUIThread(final DBRProgressMonitor monitor)
                 {
-                    Map<Item, List<ObjectColumn>> objectMap = obtainLazyObjects();
+                    final Map<Item, LazyObject> objectMap = obtainLazyObjects();
                     if (isDisposed()) {
                         return Status.OK_STATUS;
                     }
-                    for (Map.Entry<Item, List<ObjectColumn>> entry : objectMap.entrySet()) {
+                    for (Map.Entry<Item, LazyObject> entry : objectMap.entrySet()) {
                         if (monitor.isCanceled()) {
                             break;
                         }
-                        Item item = entry.getKey();
-                        Object object = getObjectValue((OBJECT_TYPE) item.getData());
-                        for (ObjectColumn column : entry.getValue()) {
+                        Object object = getObjectValue((OBJECT_TYPE) entry.getValue().object);
+                        for (ObjectColumn column : entry.getValue().columns) {
+                            if (monitor.isCanceled()) {
+                                break;
+                            }
                             try {
                                 Object lazyValue = column.prop.readValue(object, monitor);
                                 String stringValue = getCellString(lazyValue);
-                                int columnIndex = columns.indexOf(column);
-                                if (item instanceof TreeItem) {
-                                    ((TreeItem) item).setText(columnIndex, stringValue);
-                                } else {
-                                    ((TableItem) item).setText(columnIndex, stringValue);
-                                }
+                                entry.getValue().values.add(stringValue);
                             }
                             catch (IllegalAccessException e) {
                                 log.error(e);
@@ -376,6 +382,32 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             }
                         }
                     }
+                    
+                    getDisplay().asyncExec(new Runnable() {
+                        public void run()
+                        {
+                            if (isDisposed()) {
+                                return;
+                            }
+                            for (Map.Entry<Item, LazyObject> entry : objectMap.entrySet()) {
+                                if (monitor.isCanceled()) {
+                                    break;
+                                }
+                                Item item = entry.getKey();
+                                for (int i = 0, columnsSize = entry.getValue().columns.size(); i < columnsSize; i++) {
+                                    ObjectColumn column = entry.getValue().columns.get(i);
+                                    String columnValue = entry.getValue().values.get(i);
+                                    int columnIndex = columns.indexOf(column);
+                                    if (item instanceof TreeItem) {
+                                        ((TreeItem) item).setText(columnIndex, columnValue);
+                                    } else {
+                                        ((TableItem) item).setText(columnIndex, columnValue);
+                                    }
+                                }
+                            }
+                        }
+                    });
+
                     return Status.OK_STATUS;
                 }
             };
@@ -396,12 +428,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    private synchronized Map<Item, List<ObjectColumn>> obtainLazyObjects()
+    private synchronized Map<Item, LazyObject> obtainLazyObjects()
     {
         if (lazyObjects == null) {
             return null;
         }
-        Map<Item, List<ObjectColumn>> tmp = lazyObjects;
+        Map<Item, LazyObject> tmp = lazyObjects;
         lazyObjects = null;
         return tmp;
     }
