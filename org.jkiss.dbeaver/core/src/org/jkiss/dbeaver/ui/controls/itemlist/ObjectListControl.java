@@ -338,7 +338,20 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private synchronized void addLazyObject(Item item, ObjectColumn column)
     {
         if (lazyObjects == null) {
-            lazyObjects = new IdentityHashMap<Item, LazyObject>();
+            lazyObjects = new TreeMap<Item, LazyObject>(new Comparator<Item>() {
+                public int compare(Item o1, Item o2)
+                {
+                    int index1, index2;
+                    if (isTree) {
+                        index1 = getTree().indexOf((TreeItem) o1);
+                        index2 = getTree().indexOf((TreeItem) o2);
+                    } else {
+                        index1 = getTable().indexOf((TableItem) o1);
+                        index2 = getTable().indexOf((TableItem) o2);
+                    }
+                    return index1 - index2;
+                }
+            });
         }
         LazyObject lazyObject = lazyObjects.get(item);
         if (lazyObject == null) {
