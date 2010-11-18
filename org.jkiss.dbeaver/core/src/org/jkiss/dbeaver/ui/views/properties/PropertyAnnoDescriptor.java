@@ -179,6 +179,9 @@ public class PropertyAnnoDescriptor implements IPropertyDescriptor
     public Object readValue(Object object, DBRProgressMonitor progressMonitor)
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
+        if (object == null) {
+            return null;
+        }
         Object value;
         if (propertyDescriptor != null) {
             value = propertySource.getPropertyValue(propertyDescriptor.getId());

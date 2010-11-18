@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -61,7 +62,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private static class LazyObject {
         final Object object;
         final List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
-        final List<String> values = new ArrayList<String>();
         private LazyObject(Object object)
         {
             this.object = object;
@@ -350,67 +350,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             lazyObject.columns.add(column);
         }
         if (lazyLoadingJob == null) {
-            lazyLoadingJob = new AbstractUIJob("Lazy objects loader") {
-                @Override
-                protected IStatus runInUIThread(final DBRProgressMonitor monitor)
-                {
-                    final Map<Item, LazyObject> objectMap = obtainLazyObjects();
-                    if (isDisposed()) {
-                        return Status.OK_STATUS;
-                    }
-                    for (Map.Entry<Item, LazyObject> entry : objectMap.entrySet()) {
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
-                        Object object = getObjectValue((OBJECT_TYPE) entry.getValue().object);
-                        for (ObjectColumn column : entry.getValue().columns) {
-                            if (monitor.isCanceled()) {
-                                break;
-                            }
-                            try {
-                                Object lazyValue = column.prop.readValue(object, monitor);
-                                String stringValue = getCellString(lazyValue);
-                                entry.getValue().values.add(stringValue);
-                            }
-                            catch (IllegalAccessException e) {
-                                log.error(e);
-                                return null;
-                            }
-                            catch (InvocationTargetException e) {
-                                log.error(e.getTargetException());
-                                return null;
-                            }
-                        }
-                    }
-                    
-                    getDisplay().asyncExec(new Runnable() {
-                        public void run()
-                        {
-                            if (isDisposed()) {
-                                return;
-                            }
-                            for (Map.Entry<Item, LazyObject> entry : objectMap.entrySet()) {
-                                if (monitor.isCanceled()) {
-                                    break;
-                                }
-                                Item item = entry.getKey();
-                                for (int i = 0, columnsSize = entry.getValue().columns.size(); i < columnsSize; i++) {
-                                    ObjectColumn column = entry.getValue().columns.get(i);
-                                    String columnValue = entry.getValue().values.get(i);
-                                    int columnIndex = columns.indexOf(column);
-                                    if (item instanceof TreeItem) {
-                                        ((TreeItem) item).setText(columnIndex, columnValue);
-                                    } else {
-                                        ((TableItem) item).setText(columnIndex, columnValue);
-                                    }
-                                }
-                            }
-                        }
-                    });
-
-                    return Status.OK_STATUS;
-                }
-            };
+            lazyLoadingJob = new LazyLoaderJob();
             lazyLoadingJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void done(IJobChangeEvent event)
@@ -450,12 +390,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         try {
             return column.prop.readValue(getObjectValue((OBJECT_TYPE)object), null);
         }
-        catch (IllegalAccessException e) {
-            log.error(e);
-            return null;
-        }
         catch (InvocationTargetException e) {
             log.error(e.getTargetException());
+            return null;
+        }
+        catch (Exception e) {
+            log.error(e);
             return null;
         }
     }
@@ -825,5 +765,69 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             value = ((DBPNamedObject)value).getName();
         }
         return UIUtils.makeStringForUI(value).toString();
+    }
+
+    private class LazyLoaderJob extends AbstractJob {
+        public LazyLoaderJob()
+        {
+            super("Lazy objects loader");
+        }
+
+        @Override
+        protected IStatus run(final DBRProgressMonitor monitor)
+        {
+            final Map<Item, LazyObject> objectMap = obtainLazyObjects();
+            if (isDisposed()) {
+                return Status.OK_STATUS;
+            }
+            for (Map.Entry<Item, LazyObject> entry : objectMap.entrySet()) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                final Item item = entry.getKey();
+                final LazyObject lazyObject = entry.getValue();
+                Object object = getObjectValue((OBJECT_TYPE) lazyObject.object);
+                final List<String> stringValues = new ArrayList<String>(lazyObject.columns.size());
+                for (ObjectColumn column : lazyObject.columns) {
+                    if (monitor.isCanceled() || isDisposed()) {
+                        break;
+                    }
+                    try {
+                        Object lazyValue = column.prop.readValue(object, monitor);
+                        stringValues.add(getCellString(lazyValue));
+                    }
+                    catch (IllegalAccessException e) {
+                        log.error(e);
+                        return RuntimeUtils.makeExceptionStatus(e);
+                    }
+                    catch (InvocationTargetException e) {
+                        log.error(e.getTargetException());
+                        return RuntimeUtils.makeExceptionStatus(e.getTargetException());
+                    }
+                }
+
+                // Save read values in tree/table items
+                getDisplay().syncExec(new Runnable() {
+                    public void run()
+                    {
+                        for (int i = 0, columnsSize = lazyObject.columns.size(); i < columnsSize; i++) {
+                            ObjectColumn column = lazyObject.columns.get(i);
+                            int columnIndex = columns.indexOf(column);
+                            String stringValue = stringValues.get(i);
+                            if (monitor.isCanceled() || isDisposed() || item.isDisposed()) {
+                                return;
+                            }
+                            if (item instanceof TreeItem) {
+                                ((TreeItem) item).setText(columnIndex, stringValue);
+                            } else {
+                                ((TableItem) item).setText(columnIndex, stringValue);
+                            }
+                        }
+                    }
+                });
+            }
+
+            return Status.OK_STATUS;
+        }
     }
 }
