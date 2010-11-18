@@ -9,6 +9,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeObject;
@@ -108,6 +109,7 @@ public class DBNTreeObject extends DBNTreeNode implements DBSObject
         return ICommandIds.CMD_OPEN_OBJECT;
     }
 
+    @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
         return meta.getLabel();

@@ -380,6 +380,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private Object getCellValue(Object object, int columnIndex)
     {
+        if (columnIndex >= columns.size()) {
+            return null;
+        }
         ObjectColumn column = columns.get(columnIndex);
         if (column.item.isDisposed()) {
             return null;
