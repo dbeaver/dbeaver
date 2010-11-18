@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -26,6 +27,12 @@ public class ListContentProvider implements IStructuredContentProvider {
     {
         if (inputElement instanceof Collection) {
             return ((Collection<?>)inputElement).toArray();
+        } else if (inputElement.getClass().isArray()) {
+            if (inputElement.getClass().getComponentType().isPrimitive()) {
+                return null;
+            } else {
+                return (Object[])inputElement;
+            }
         }
         return null;
     }

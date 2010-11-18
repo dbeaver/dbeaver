@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.SortedMap;
 
@@ -202,7 +203,7 @@ public class UIUtils {
                 column.pack();
                 totalWidth += column.getWidth();
             }
-            if (totalWidth > table.getClientArea().width) {
+            if (table.getClientArea().width > 0 && totalWidth > table.getClientArea().width) {
                 int extraSpace = totalWidth - table.getClientArea().width;
                 for (TableColumn tc : table.getColumns()) {
                     double ratio = (double) tc.getWidth() / totalWidth;
@@ -570,4 +571,12 @@ public class UIUtils {
         dialog.open();
     }
 
+    public static String formatMessage(String message, Object ... args)
+    {
+        if (message == null) {
+            return "";
+        } else { 
+            return MessageFormat.format(message, args);
+        }
+    }
 }

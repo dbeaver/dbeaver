@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -288,6 +289,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return resultSetProvider.getDataContainer();
     }
 
+    public DBDColumnBinding[] getMetaColumns()
+    {
+        return metaColumns;
+    }
+
     public DBDDataFilter getDataFilter()
     {
         return dataFilter;
@@ -550,7 +556,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             editor.closeValueEditor();
         }
         if (!openEditors.isEmpty()) {
-            log.warn("Some value editors are still registered at resulset: " + openEditors.size());
+            log.warn("Some value editors are still registered at resultset: " + openEditors.size());
         }
         openEditors.clear();
     }
@@ -693,7 +699,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             @Override
             public void run()
             {
-                UIUtils.showMessageBox(spreadsheet.getShell(), "Order/Filter", "Filter settings");
+                ResultSetFilterDialog filterDialog = new ResultSetFilterDialog(ResultSetViewer.this);
+                if (filterDialog.open() == IDialogConstants.OK_ID) {
+                    // Refresh result set
+                }
             }
         });
         manager.add(new Action("Export Resultset ... ", DBIcon.EXPORT.getImageDescriptor()) {
@@ -709,7 +718,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         });
     }
 
-    private boolean supportsDataFilter()
+    boolean supportsDataFilter()
     {
         return (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
     }
@@ -721,9 +730,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         int newSort;
         if (columnOrder == null) {
             if (dataReceiver.isHasMoreData() && supportsDataFilter()) {
-                if (!ConfirmationDialog.confirmAction(
+                if (!ConfirmationDialog.confirmActionWithParams(
                     spreadsheet.getShell(),
-                    PrefConstants.CONFIRM_ORDER_RESULTSET))
+                    PrefConstants.CONFIRM_ORDER_RESULTSET,
+                    metaColumn.getColumn().getName()))
                 {
                     return;
                 }

@@ -11,6 +11,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ResourceBundle;
 
@@ -88,18 +89,23 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
 
     public static boolean confirmAction(Shell shell, String id)
     {
+        return confirmActionWithParams(shell, id);
+    }
+
+    public static boolean confirmActionWithParams(Shell shell, String id, Object ... args)
+    {
         ResourceBundle bundle = DBeaverActivator.getInstance().getResourceBundle();
         String titleKey = getResourceKey(id, RES_KEY_TITLE);
-        String messageKey= getResourceKey(id, RES_KEY_MESSAGE);
+        String messageKey = getResourceKey(id, RES_KEY_MESSAGE);
         String toggleKey = getResourceKey(id, RES_KEY_TOGGLE_MESSAGE);
         String prefKey = PREF_KEY_PREFIX + id;
 
         return open(
             CONFIRM,
             shell,
-            bundle.getString(titleKey),
-            bundle.getString(messageKey),
-            bundle.getString(toggleKey),
+            UIUtils.formatMessage(bundle.getString(titleKey), args),
+            UIUtils.formatMessage(bundle.getString(messageKey), args),
+            UIUtils.formatMessage(bundle.getString(toggleKey), args),
             false,
             prefKey) == 0;
     }
