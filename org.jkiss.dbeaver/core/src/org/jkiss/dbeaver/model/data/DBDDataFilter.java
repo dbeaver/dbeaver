@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import net.sf.jkiss.utils.CommonUtils;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -113,5 +115,32 @@ public class DBDDataFilter {
     public void setWhere(String where)
     {
         this.where = where;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof DBDDataFilter)) {
+            return false;
+        }
+        DBDDataFilter source = (DBDDataFilter)obj;
+        if (orderColumns.size() != source.orderColumns.size() || filters.size() != source.filters.size()) {
+            return false;
+        }
+        for (int i = 0, orderColumnsSize = source.orderColumns.size(); i < orderColumnsSize; i++) {
+            if (!orderColumns.get(i).equals(source.orderColumns.get(i))) {
+                return false;
+            }
+        }
+        for (int i = 0, filtersSize = source.filters.size(); i < filtersSize; i++) {
+            if (!filters.get(i).equals(source.filters.get(i))) {
+                return false;
+            }
+        }
+        return CommonUtils.equalObjects(this.order, source.order) &&
+            CommonUtils.equalObjects(this.where, source.where);
     }
 }

@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import net.sf.jkiss.utils.CommonUtils;
+
 /**
  * Column order
  */
@@ -47,4 +49,15 @@ public class DBDColumnOrder {
         this.descending = descending;
     }
 
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (!(obj instanceof DBDColumnOrder)) {
+            return false;
+        }
+        DBDColumnOrder source = (DBDColumnOrder)obj;
+        return CommonUtils.equalObjects(this.columnName, source.columnName) &&
+            this.columnIndex == source.columnIndex &&
+            this.descending == source.descending;
+    }
 }

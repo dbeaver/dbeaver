@@ -135,6 +135,13 @@ public class ResultSetFilterDialog extends Dialog {
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
     }
 
+    @Override
+    protected void okPressed()
+    {
+        resultSetViewer.setDataFilter(dataFilter);
+        super.okPressed();
+    }
+
     class ColumnLabelProvider extends LabelProvider implements ITableLabelProvider
     {
         public Image getColumnImage(Object element, int columnIndex)

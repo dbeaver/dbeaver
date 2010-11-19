@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.data.criteria.DBDCriterion;
 
 /**
@@ -57,5 +58,17 @@ public class DBDColumnFilter {
     public void setWhere(String where)
     {
         this.where = where;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (!(obj instanceof DBDColumnFilter)) {
+            return false;
+        }
+        DBDColumnFilter source = (DBDColumnFilter)obj;
+        return CommonUtils.equalObjects(this.columnName, source.columnName) &&
+            this.columnIndex == source.columnIndex &&
+            CommonUtils.equalObjects(this.where, source.where);
     }
 }

@@ -299,6 +299,33 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return dataFilter;
     }
 
+    public void setDataFilter(final DBDDataFilter dataFilter)
+    {
+        if (this.dataFilter.equals(dataFilter)) {
+            return;
+        }
+        this.dataFilter = dataFilter;
+        reorderResultSet(new Runnable() {
+            public void run()
+            {
+                // Update all columns ordering
+                if (!spreadsheet.isDisposed() && metaColumns != null) {
+                    for (int i = 0, metaColumnsLength = metaColumns.length; i < metaColumnsLength; i++) {
+                        DBDColumnBinding column = metaColumns[i];
+                        DBDColumnOrder columnOrder = dataFilter.getOrderColumn(column.getColumnName());
+                        GridColumn gridColumn = spreadsheet.getGrid().getColumn(i);
+                        if (columnOrder == null) {
+                            gridColumn.setSort(SWT.DEFAULT);
+                        } else {
+                            gridColumn.setSort(columnOrder.isDescending() ? SWT.UP : SWT.DOWN);
+                        }
+                    }
+                    spreadsheet.redrawGrid();
+                }
+            }
+        });
+    }
+
     public ResultSetMode getMode()
     {
         return mode;
@@ -738,7 +765,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     return;
                 }
             }
-            columnOrder = new DBDColumnOrder(metaColumn.getColumnName(), column.getIndex(), false);
+            columnOrder = new DBDColumnOrder(metaColumn.getColumnName(), column.getIndex() + 1, false);
             dataFilter.addOrderColumn(columnOrder);
             newSort = SWT.DOWN;
 
@@ -852,8 +879,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 {
                     int result = 0;
                     for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
-                        Object cell1 = row1[co.getColumnIndex()];
-                        Object cell2 = row2[co.getColumnIndex()];
+                        Object cell1 = row1[co.getColumnIndex() - 1];
+                        Object cell2 = row2[co.getColumnIndex() - 1];
                         if (cell1 == cell2) {
                             result = 0;
                         } else if (DBUtils.isNullValue(cell1)) {
