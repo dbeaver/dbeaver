@@ -11,10 +11,10 @@ import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.TableEditor;
-import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -57,6 +57,7 @@ public class ResultSetFilterDialog extends Dialog {
         //layout.
         group.setLayout(layout);
         GridData gd = new GridData(GridData.FILL_BOTH);
+        //gd.verticalIndent = 0;
         //gd.widthHint = getParentShell().getBounds().width - 200;
         group.setLayoutData(gd);
 
@@ -67,7 +68,7 @@ public class ResultSetFilterDialog extends Dialog {
             columnsViewer = new TableViewer(columnsGroup, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
             columnsViewer.setContentProvider(new ListContentProvider());
             columnsViewer.setLabelProvider(new ColumnLabelProvider());
-            Table columnsTable = columnsViewer.getTable();
+            final Table columnsTable = columnsViewer.getTable();
             gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             //gd.heightHint = 300;
@@ -79,7 +80,13 @@ public class ResultSetFilterDialog extends Dialog {
             criteriaColumn = UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Criteria");
 
             //columnsTable.addListener(SWT.PaintItem, new ColumnPaintListener());
-            TableEditor tableEditor = new TableEditor(columnsTable);
+            final TableEditor tableEditor = new TableEditor(columnsTable);
+            tableEditor.horizontalAlignment = SWT.CENTER;
+            tableEditor.verticalAlignment = SWT.TOP;
+            tableEditor.grabHorizontal = true;
+            tableEditor.minimumWidth = 50;
+
+            columnsTable.addMouseListener(new ColumnsMouseListener(tableEditor, columnsTable));
         }
 
         {
@@ -87,20 +94,10 @@ public class ResultSetFilterDialog extends Dialog {
 
             UIUtils.createLabelText(filterGroup, "Order by", "");
             UIUtils.createLabelText(filterGroup, "Where", "");
-/*
-            filterViewer = new TableViewer(filterGroup, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
-            filterViewer.setContentProvider(new ListContentProvider());
-            Table filterTable = filterViewer.getTable();
-            filterTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-            filterTable.setHeaderVisible(true);
-            filterTable.setLinesVisible(true);
-            UIUtils.createTableColumn(filterTable, SWT.LEFT, "Num");
-            UIUtils.createTableColumn(filterTable, SWT.LEFT, "Text");
-*/
+
             if (!resultSetViewer.supportsDataFilter()) {
                 filterGroup.setEnabled(false);
                 ControlEnableState.disable(filterGroup);
-                //UIUtils.
             }
         }
 
@@ -114,6 +111,13 @@ public class ResultSetFilterDialog extends Dialog {
         if (criteriaColumn.getWidth() < 200) {
             criteriaColumn.setWidth(200);
         }
+
+        if (!resultSetViewer.supportsDataFilter()) {
+            Label warnLabel = new Label(group, SWT.NONE);
+            warnLabel.setText("Data filters and custom orderings are disabled for custom queries");
+            warnLabel.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_RED));
+        }
+
 
         return parent;
     }
@@ -140,7 +144,7 @@ public class ResultSetFilterDialog extends Dialog {
                 return ((IObjectImageProvider)column.getColumn()).getObjectImage(); 
             }
             if (columnIndex == 1) {
-                DBDColumnOrder orderColumn = dataFilter.getOrderColumn(column.getColumn().getName());
+                DBDColumnOrder orderColumn = dataFilter.getOrderColumn(column.getColumnName());
                 if (orderColumn != null) {
                     return orderColumn.isDescending() ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
                 }
@@ -152,9 +156,9 @@ public class ResultSetFilterDialog extends Dialog {
         {
             DBDColumnBinding column = (DBDColumnBinding) element;
             switch (columnIndex) {
-                case 0: return column.getColumn().getName();
+                case 0: return column.getColumnName();
                 case 1: {
-                    int orderColumnIndex = dataFilter.getOrderColumnIndex(column.getColumn().getName());
+                    int orderColumnIndex = dataFilter.getOrderColumnIndex(column.getColumnName());
                     if (orderColumnIndex >= 0) {
                         return String.valueOf(orderColumnIndex + 1);
                     } else {
@@ -167,6 +171,7 @@ public class ResultSetFilterDialog extends Dialog {
 
     }
 
+/*
     class ColumnPaintListener implements Listener {
 
         public void handleEvent(Event event) {
@@ -179,7 +184,7 @@ public class ResultSetFilterDialog extends Dialog {
                     if (event.index == 1) {
                         TableItem tableItem = (TableItem) event.item;
                         DBDColumnBinding columnBinding = (DBDColumnBinding)tableItem.getData();
-                        DBDColumnOrder orderColumn = dataFilter.getOrderColumn(columnBinding.getColumn().getName());
+                        DBDColumnOrder orderColumn = dataFilter.getOrderColumn(columnBinding.getColumnName());
                         if (orderColumn != null) {
                             int columnWidth = table.getColumn(1).getWidth();
                             Image image = orderColumn.isDescending() ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
@@ -192,6 +197,98 @@ public class ResultSetFilterDialog extends Dialog {
             }
         }
     }
+*/
 
+    private class ColumnsMouseListener implements MouseListener {
+        private final TableEditor tableEditor;
+        private final Table columnsTable;
 
+        public ColumnsMouseListener(TableEditor tableEditor, Table columnsTable)
+        {
+            this.tableEditor = tableEditor;
+            this.columnsTable = columnsTable;
+        }
+
+        private void disposeOldEditor()
+        {
+            Control oldEditor = tableEditor.getEditor();
+            if (oldEditor != null) oldEditor.dispose();
+        }
+
+        public void mouseDoubleClick(MouseEvent e)
+        {
+            handleColumnClick(e, true);
+        }
+
+        public void mouseDown(MouseEvent e)
+        {
+        }
+
+        public void mouseUp(MouseEvent e)
+        {
+            handleColumnClick(e, false);
+        }
+
+        private void handleColumnClick(MouseEvent e, boolean isDef) {
+            // Clean up any previous editor control
+            disposeOldEditor();
+
+            TableItem item = columnsTable.getItem(new Point(e.x, e.y));
+            if (item == null) {
+                return;
+            }
+            int columnIndex = UIUtils.getColumnAtPos(columnsTable, item, e.x, e.y);
+            if (columnIndex <= 0) {
+                return;
+            }
+            if (columnIndex == 1) {
+                if (isDef) {
+                    toggleColumnOrder(item);
+                }
+            } else if (columnIndex == 2 && resultSetViewer.supportsDataFilter()) {
+                showEditor(item);
+            }
+        }
+
+        private void toggleColumnOrder(TableItem item)
+        {
+            DBDColumnBinding column = (DBDColumnBinding) item.getData();
+            DBDColumnOrder columnOrder = dataFilter.getOrderColumn(column.getColumnName());
+            if (columnOrder == null) {
+                dataFilter.addOrderColumn(new DBDColumnOrder(column.getColumnName(), column.getColumnIndex(), false));
+            } else if (!columnOrder.isDescending()) {
+                columnOrder.setDescending(true);
+            } else {
+                dataFilter.removeOrderColumn(columnOrder);
+            }
+            columnsViewer.refresh();
+        }
+
+        private void showEditor(TableItem item) {
+            // Identify the selected row
+            Text text = new Text(columnsTable, SWT.BORDER);
+            text.setText(item.getText(2));
+            text.addModifyListener(new ModifyListener() {
+                public void modifyText(ModifyEvent e) {
+                    Text text = (Text) tableEditor.getEditor();
+                    tableEditor.getItem().setText(2, text.getText());
+                }
+            });
+            text.selectAll();
+            text.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e)
+                {
+                    if (e.keyCode == SWT.CR) {
+                        e.doit = false;
+                    }
+                }
+            });
+            //if (isDef) {
+                // Selected by mouse
+                text.setFocus();
+            //}
+            tableEditor.setEditor(text, item, 2);
+        }
+    }
 }

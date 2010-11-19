@@ -21,6 +21,16 @@ public class DBDColumnBinding {
         this.valueHandler = valueHandler;
     }
 
+    public String getColumnName()
+    {
+        return column.getName();
+    }
+
+    public int getColumnIndex()
+    {
+        return column.getIndex();
+    }
+
     public DBCColumnMetaData getColumn() {
         return column;
     }

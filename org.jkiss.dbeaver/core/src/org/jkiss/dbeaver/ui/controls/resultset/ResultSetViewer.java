@@ -344,7 +344,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         GC gc = new GC(spreadsheet);
         gc.setFont(spreadsheet.getFont());
         for (DBDColumnBinding column : metaColumns) {
-            Point ext = gc.stringExtent(column.getColumn().getName());
+            Point ext = gc.stringExtent(column.getColumnName());
             if (ext.x > defaultWidth) {
                 defaultWidth = ext.x;
             }
@@ -726,19 +726,19 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     public void changeSorting(final GridColumn column)
     {
         DBDColumnBinding metaColumn = metaColumns[column.getIndex()];
-        DBDColumnOrder columnOrder = dataFilter.getOrderColumn(metaColumn.getColumn().getName());
+        DBDColumnOrder columnOrder = dataFilter.getOrderColumn(metaColumn.getColumnName());
         int newSort;
         if (columnOrder == null) {
             if (dataReceiver.isHasMoreData() && supportsDataFilter()) {
                 if (!ConfirmationDialog.confirmActionWithParams(
                     spreadsheet.getShell(),
                     PrefConstants.CONFIRM_ORDER_RESULTSET,
-                    metaColumn.getColumn().getName()))
+                    metaColumn.getColumnName()))
                 {
                     return;
                 }
             }
-            columnOrder = new DBDColumnOrder(metaColumn.getColumn().getName(), column.getIndex(), false);
+            columnOrder = new DBDColumnOrder(metaColumn.getColumnName(), column.getIndex(), false);
             dataFilter.addOrderColumn(columnOrder);
             newSort = SWT.DOWN;
 
@@ -1199,7 +1199,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     {
         for (int i = 0; i < metaColumns.length; i++) {
             DBDColumnBinding column = metaColumns[i];
-            if (column.getValueLocator().getTable() == table && column.getColumn().getName().equals(columnName)) {
+            if (column.getValueLocator().getTable() == table && column.getColumnName().equals(columnName)) {
                 return i;
             }
         }
@@ -1357,7 +1357,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         public DBCColumnMetaData getColumnMetaData(DBCTableMetaData table, String columnName)
         {
             for (DBDColumnBinding column : metaColumns) {
-                if (column.getColumn().getTable() == table && column.getColumn().getName().equals(columnName)) {
+                if (column.getColumn().getTable() == table && column.getColumnName().equals(columnName)) {
                     return column.getColumn();
                 }
             }
@@ -2127,7 +2127,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         {
             int rowNumber = ((Number) element).intValue();
             if (mode == ResultSetMode.RECORD) {
-                return metaColumns[rowNumber].getColumn().getName();
+                return metaColumns[rowNumber].getColumnName();
             } else {
                 return String.valueOf(rowNumber + 1);
             }

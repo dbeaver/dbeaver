@@ -182,15 +182,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         Point pt = new Point(x, y);
         TableItem item = getTable().getItem(pt);
         if (item == null) return null;
-        int columnCount = getTable().getColumnCount();
-        for (int i = 0; i < columnCount; i++) {
-            Rectangle rect = item.getBounds(i);
-            if (rect.contains(pt)) {
-                selectedItem = getTable().indexOf(item);
-                selectedColumn = i;
-                break;
-            }
-        }
+        selectedColumn = UIUtils.getColumnAtPos(getTable(), item, x, y);
+        selectedItem = getTable().indexOf(item);
         return item;
     }
 
