@@ -117,6 +117,11 @@ public class DBDDataFilter {
         this.where = where;
     }
 
+    public boolean hasCustomFilters()
+    {
+        return !filters.isEmpty() || !CommonUtils.isEmpty(this.order) || !CommonUtils.isEmpty(this.where);
+    }
+
     @Override
     public boolean equals(Object obj)
     {
@@ -143,4 +148,5 @@ public class DBDDataFilter {
         return CommonUtils.equalObjects(this.order, source.order) &&
             CommonUtils.equalObjects(this.where, source.where);
     }
+
 }

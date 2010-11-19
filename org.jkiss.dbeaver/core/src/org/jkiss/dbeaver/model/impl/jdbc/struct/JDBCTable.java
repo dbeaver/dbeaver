@@ -65,7 +65,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         StringBuilder query = new StringBuilder(100);
         query.append("SELECT * FROM ").append(getFullQualifiedName());
         if (dataFilter != null) {
-            if (!CommonUtils.isEmpty(dataFilter.getOrderColumns())) {
+            if (!CommonUtils.isEmpty(dataFilter.getOrderColumns()) || !CommonUtils.isEmpty(dataFilter.getOrder())) {
                 query.append(" ORDER BY ");
                 boolean hasOrder = false;
                 for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
@@ -75,6 +75,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                         query.append(" DESC");
                     }
                     hasOrder = true;
+                }
+                if (!CommonUtils.isEmpty(dataFilter.getOrder())) {
+                    if (hasOrder) query.append(',');
+                    query.append(dataFilter.getOrder());
                 }
             }
         }

@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -33,6 +34,8 @@ public class ResultSetFilterDialog extends Dialog {
     private TableViewer columnsViewer;
     //private TableViewer filterViewer;
     private DBDDataFilter dataFilter;
+    private Text orderText;
+    private Text whereText;
 
     public ResultSetFilterDialog(ResultSetViewer resultSetViewer)
     {
@@ -92,8 +95,8 @@ public class ResultSetFilterDialog extends Dialog {
         {
             Group filterGroup = UIUtils.createControlGroup(group, "Custom", 2, GridData.FILL_BOTH, 0);
 
-            UIUtils.createLabelText(filterGroup, "Order by", "");
-            UIUtils.createLabelText(filterGroup, "Where", "");
+            orderText = UIUtils.createLabelText(filterGroup, "Order by", dataFilter.getOrder());
+            whereText = UIUtils.createLabelText(filterGroup, "Where", dataFilter.getWhere());
 
             if (!resultSetViewer.supportsDataFilter()) {
                 filterGroup.setEnabled(false);
@@ -132,12 +135,22 @@ public class ResultSetFilterDialog extends Dialog {
     protected void createButtonsForButtonBar(Composite parent)
     {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
+        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
     @Override
     protected void okPressed()
     {
+        if (!CommonUtils.isEmpty(orderText.getText())) {
+            dataFilter.setOrder(orderText.getText());
+        } else {
+            dataFilter.setOrder(null);
+        }
+        if (!CommonUtils.isEmpty(whereText.getText())) {
+            dataFilter.setWhere(whereText.getText());
+        } else {
+            dataFilter.setWhere(null);
+        }
         resultSetViewer.setDataFilter(dataFilter);
         super.okPressed();
     }

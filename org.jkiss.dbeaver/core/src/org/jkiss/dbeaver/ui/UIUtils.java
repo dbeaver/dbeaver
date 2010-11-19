@@ -382,7 +382,9 @@ public class UIUtils {
         createControlLabel(parent, label);
 
         Text text = new Text(parent, style);
-        text.setText(value);
+        if (value != null) {
+            text.setText(value);
+        }
 
         if (layoutData != null) {
             text.setLayoutData(layoutData);

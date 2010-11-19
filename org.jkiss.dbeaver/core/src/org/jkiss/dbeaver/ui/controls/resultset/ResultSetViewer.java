@@ -683,41 +683,41 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         // Custom oldValue items
         final int columnIndex = (mode == ResultSetMode.GRID ? cell.col : cell.row);
         final int rowIndex = (mode == ResultSetMode.GRID ? cell.row : curRowNum);
-        if (rowIndex < 0 || curRows.size() <= rowIndex || columnIndex < 0 || columnIndex >= metaColumns.length) {
-            return;
-        }
-        final ResultSetValueController valueController = new ResultSetValueController(
-            curRows.get(rowIndex),
-            columnIndex,
-            null);
-        final Object value = valueController.getValue();
+        boolean noCellSelected = (rowIndex < 0 || curRows.size() <= rowIndex || columnIndex < 0 || columnIndex >= metaColumns.length);
+        if (!noCellSelected) {
+            final ResultSetValueController valueController = new ResultSetValueController(
+                curRows.get(rowIndex),
+                columnIndex,
+                null);
+            final Object value = valueController.getValue();
 
-        // Standard items
-        manager.add(new Separator());
-        manager.add(new Action("Edit ...") {
-            @Override
-            public void run()
-            {
-                showCellEditor(cell, false, null);
-            }
-        });
-        if (!DBUtils.isNullValue(value)) {
-            manager.add(new Action("Set to NULL") {
+            // Standard items
+            manager.add(new Separator());
+            manager.add(new Action("Edit ...") {
                 @Override
                 public void run()
                 {
-                    valueController.updateValue(DBUtils.makeNullValue(value));
+                    showCellEditor(cell, false, null);
                 }
             });
-        }
+            if (!DBUtils.isNullValue(value)) {
+                manager.add(new Action("Set to NULL") {
+                    @Override
+                    public void run()
+                    {
+                        valueController.updateValue(DBUtils.makeNullValue(value));
+                    }
+                });
+            }
 
-        // Menus from value handler
-        try {
-            manager.add(new Separator());
-            metaColumns[columnIndex].getValueHandler().fillContextMenu(manager, valueController);
-        }
-        catch (Exception e) {
-            log.error(e);
+            // Menus from value handler
+            try {
+                manager.add(new Separator());
+                metaColumns[columnIndex].getValueHandler().fillContextMenu(manager, valueController);
+            }
+            catch (Exception e) {
+                log.error(e);
+            }
         }
 
         // Export and other utility methods
@@ -854,7 +854,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void reorderResultSet(Runnable onSuccess)
     {
-        if (dataReceiver.isHasMoreData() && supportsDataFilter()) {
+        if ((dataReceiver.isHasMoreData() || dataFilter.hasCustomFilters()) && supportsDataFilter()) {
             if (resultSetProvider != null && resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
                 int segmentSize = getSegmentMaxRows();
                 if (curRowNum >= segmentSize) {
@@ -1986,7 +1986,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 column.setSort(SWT.DEFAULT);
                 int index = column.getIndex();
                 for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
-                    if (co.getColumnIndex() == index) {
+                    if (co.getColumnIndex() - 1 == index) {
                         column.setSort(co.isDescending() ? SWT.UP : SWT.DOWN);
                         break;
                     }
