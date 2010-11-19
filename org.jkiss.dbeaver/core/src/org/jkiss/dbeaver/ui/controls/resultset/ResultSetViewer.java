@@ -726,7 +726,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     public void changeSorting(final GridColumn column)
     {
         DBDColumnBinding metaColumn = metaColumns[column.getIndex()];
-        DBDColumnOrder columnOrder = dataFilter.getOrderColumn(metaColumn.getColumn());
+        DBDColumnOrder columnOrder = dataFilter.getOrderColumn(metaColumn.getColumn().getName());
         int newSort;
         if (columnOrder == null) {
             if (dataReceiver.isHasMoreData() && supportsDataFilter()) {
@@ -738,7 +738,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     return;
                 }
             }
-            columnOrder = new DBDColumnOrder(metaColumn.getColumn(), column.getIndex(), false);
+            columnOrder = new DBDColumnOrder(metaColumn.getColumn().getName(), column.getIndex(), false);
             dataFilter.addOrderColumn(columnOrder);
             newSort = SWT.DOWN;
 

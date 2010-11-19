@@ -70,7 +70,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 boolean hasOrder = false;
                 for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
                     if (hasOrder) query.append(',');
-                    query.append(DBUtils.getQuotedIdentifier(getDataSource(), co.getColumnMetaData().getName()));
+                    query.append(DBUtils.getQuotedIdentifier(getDataSource(), co.getColumnName()));
                     if (co.isDescending()) {
                         query.append(" DESC");
                     }

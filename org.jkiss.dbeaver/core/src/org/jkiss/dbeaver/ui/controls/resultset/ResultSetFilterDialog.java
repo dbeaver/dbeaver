@@ -13,12 +13,15 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.TableEditor;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
+import org.jkiss.dbeaver.model.data.DBDColumnOrder;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -29,11 +32,13 @@ public class ResultSetFilterDialog extends Dialog {
 
     private TableViewer columnsViewer;
     //private TableViewer filterViewer;
+    private DBDDataFilter dataFilter;
 
     public ResultSetFilterDialog(ResultSetViewer resultSetViewer)
     {
         super(resultSetViewer.getControl().getShell());
         this.resultSetViewer = resultSetViewer;
+        this.dataFilter = new DBDDataFilter(resultSetViewer.getDataFilter());
     }
 
     protected boolean isResizable() {
@@ -73,6 +78,7 @@ public class ResultSetFilterDialog extends Dialog {
             UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Order");
             criteriaColumn = UIUtils.createTableColumn(columnsTable, SWT.LEFT, "Criteria");
 
+            //columnsTable.addListener(SWT.PaintItem, new ColumnPaintListener());
             TableEditor tableEditor = new TableEditor(columnsTable);
         }
 
@@ -133,6 +139,12 @@ public class ResultSetFilterDialog extends Dialog {
             if (columnIndex == 0 && column.getColumn() instanceof IObjectImageProvider) {
                 return ((IObjectImageProvider)column.getColumn()).getObjectImage(); 
             }
+            if (columnIndex == 1) {
+                DBDColumnOrder orderColumn = dataFilter.getOrderColumn(column.getColumn().getName());
+                if (orderColumn != null) {
+                    return orderColumn.isDescending() ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
+                }
+            }
             return null;
         }
 
@@ -141,10 +153,45 @@ public class ResultSetFilterDialog extends Dialog {
             DBDColumnBinding column = (DBDColumnBinding) element;
             switch (columnIndex) {
                 case 0: return column.getColumn().getName();
+                case 1: {
+                    int orderColumnIndex = dataFilter.getOrderColumnIndex(column.getColumn().getName());
+                    if (orderColumnIndex >= 0) {
+                        return String.valueOf(orderColumnIndex + 1);
+                    } else {
+                        return "";
+                    }
+                }
                 default: return "";
             }
         }
 
     }
+
+    class ColumnPaintListener implements Listener {
+
+        public void handleEvent(Event event) {
+            Table table = columnsViewer.getTable();
+            if (table.isDisposed()) {
+                return;
+            }
+            switch(event.type) {
+                case SWT.PaintItem: {
+                    if (event.index == 1) {
+                        TableItem tableItem = (TableItem) event.item;
+                        DBDColumnBinding columnBinding = (DBDColumnBinding)tableItem.getData();
+                        DBDColumnOrder orderColumn = dataFilter.getOrderColumn(columnBinding.getColumn().getName());
+                        if (orderColumn != null) {
+                            int columnWidth = table.getColumn(1).getWidth();
+                            Image image = orderColumn.isDescending() ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
+                            event.gc.drawImage(image, event.x + (columnWidth - image.getBounds().width) / 2, event.y);
+                            event.doit = false;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
 
 }

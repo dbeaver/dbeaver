@@ -4,27 +4,32 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
-
 /**
  * Column order
  */
 public class DBDColumnOrder {
 
-    private final DBCColumnMetaData columnMetaData;
+    private final String columnName;
     private final int columnIndex;
     private boolean descending;
 
-    public DBDColumnOrder(DBCColumnMetaData columnMetaData, int columnIndex, boolean descending)
+    public DBDColumnOrder(String columnName, int columnIndex, boolean descending)
     {
-        this.columnMetaData = columnMetaData;
+        this.columnName = columnName;
         this.columnIndex = columnIndex;
         this.descending = descending;
     }
 
-    public DBCColumnMetaData getColumnMetaData()
+    public DBDColumnOrder(DBDColumnOrder source)
     {
-        return columnMetaData;
+        this.columnName = source.columnName;
+        this.columnIndex = source.columnIndex;
+        this.descending = source.descending;
+    }
+
+    public String getColumnName()
+    {
+        return columnName;
     }
 
     public int getColumnIndex()
