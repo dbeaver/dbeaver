@@ -126,7 +126,7 @@ public class DataSourceRegistry implements DBPRegistry
         this.dataSourceProviders.clear();
     }
 
-    public synchronized void closeConnections()
+    public synchronized boolean closeConnections()
     {
         boolean hasConnections = false;
         for (DataSourceDescriptor dataSource : dataSources) {
@@ -136,30 +136,19 @@ public class DataSourceRegistry implements DBPRegistry
             }
         }
         if (!hasConnections) {
-            return;
+            return true;
         }
         try {
-            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    for (DataSourceDescriptor dataSource : dataSources) {
-                        if (dataSource.isConnected()) {
-                            try {
-                                // Cancel al jobs
-                                Job.getJobManager().cancel(dataSource.getDataSource());
-                                // Disconnect
-                                dataSource.disconnect(monitor);
-                            } catch (Exception ex) {
-                                log.error("Can't shutdown data source", ex);
-                            }
-                        }
-                    }
-                }
-            });
+            DisconnectTask disconnectTask = new DisconnectTask();
+            DBeaverCore.getInstance().runAndWait2(disconnectTask);
+            return disconnectTask.disconnected;
         } catch (InvocationTargetException e) {
             log.error("Can't close opened connections", e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }
+
+        return true;
     }
 
     public DBeaverCore getCore()
@@ -755,4 +744,21 @@ public class DataSourceRegistry implements DBPRegistry
         }
     }
 
+    private class DisconnectTask implements DBRRunnableWithProgress {
+        boolean disconnected;
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            for (DataSourceDescriptor dataSource : dataSources) {
+                if (dataSource.isConnected()) {
+                    try {
+                        // Cancel al jobs
+                        Job.getJobManager().cancel(dataSource.getDataSource());
+                        // Disconnect
+                        disconnected = dataSource.disconnect(monitor);
+                    } catch (Exception ex) {
+                        log.error("Can't shutdown data source", ex);
+                    }
+                }
+            }
+        }
+    }
 }

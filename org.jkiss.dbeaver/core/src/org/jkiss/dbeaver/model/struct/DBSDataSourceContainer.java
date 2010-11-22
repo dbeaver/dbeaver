@@ -61,10 +61,15 @@ public interface DBSDataSourceContainer extends DBSEntity
      * Connection will be closed in separate job, so no progress monitor is required.
      * @param monitor progress monitor
      * @throws DBException on error
+     * @return true on disconnect, false if disconnect action was canceled
      */
-    void disconnect(DBRProgressMonitor monitor) throws DBException;
+    boolean disconnect(DBRProgressMonitor monitor) throws DBException;
 
-    void reconnect(DBRProgressMonitor monitor) throws DBException;
+    /**
+     * Reconnects datasource.
+     * @return true on reconnect, false if reconnect action was canceled
+     */
+    boolean reconnect(DBRProgressMonitor monitor) throws DBException;
 
     void acquire(DBPDataSourceUser user);
 

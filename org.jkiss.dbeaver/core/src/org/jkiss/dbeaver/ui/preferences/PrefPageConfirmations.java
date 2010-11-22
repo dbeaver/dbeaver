@@ -34,7 +34,7 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.confirmations";
 
-    private Map<String, Button> confirmChecks = new HashMap<String, Button>();
+    private Map<String, Combo> confirmChecks = new HashMap<String, Combo>();
 
     public void init(IWorkbench workbench)
     {
@@ -46,11 +46,13 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Composite filterSettings = UIUtils.createPlaceholder(composite, 2, 5);
+        Composite filterSettings = UIUtils.createPlaceholder(composite, 1, 5);
 
-        Group groupObjects = UIUtils.createControlGroup(filterSettings, "Confirm actions", 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 150);
+        Group groupObjects = UIUtils.createControlGroup(filterSettings, "Confirm actions", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
         createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_EXIT);
         createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ORDER_RESULTSET);
+        createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_RS_EDIT_CLOSE);
+        createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_TXN_DISCONNECT);
 
         performDefaults();
 
@@ -62,8 +64,11 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
         ResourceBundle bundle = DBeaverActivator.getInstance().getResourceBundle();
         String labelKey = ConfirmationDialog.getResourceKey(id, ConfirmationDialog.RES_KEY_TITLE);
 
-        Button checkbox = UIUtils.createCheckbox(parent, bundle.getString(labelKey), false);
-        confirmChecks.put(id, checkbox);
+        UIUtils.createControlLabel(parent, bundle.getString(labelKey));
+        Combo combo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
+            //UIUtils.createCheckbox(parent, bundle.getString(labelKey), false);
+        combo.setItems(new String[] {"Always", "Never", "Prompt"} );
+        confirmChecks.put(id, combo);
     }
 
     @Override
@@ -71,10 +76,16 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
     {
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
 
-        for (Map.Entry<String, Button> entry : confirmChecks.entrySet()) {
+        for (Map.Entry<String, Combo> entry : confirmChecks.entrySet()) {
             String id = entry.getKey();
             String value = store.getString(ConfirmationDialog.PREF_KEY_PREFIX + id);
-            entry.getValue().setSelection(!ConfirmationDialog.ALWAYS.equals(value));
+            if (ConfirmationDialog.ALWAYS.equals(value)) {
+                entry.getValue().select(0);
+            } else if (ConfirmationDialog.NEVER.equals(value)) {
+                entry.getValue().select(1);
+            } else {
+                entry.getValue().select(2);
+            }
         }
 
         super.performDefaults();
@@ -85,13 +96,13 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
     {
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
 
-
-        for (Map.Entry<String, Button> entry : confirmChecks.entrySet()) {
+        for (Map.Entry<String, Combo> entry : confirmChecks.entrySet()) {
             String id = entry.getKey();
-            if (entry.getValue().getSelection()) {
+            int selectionIndex = entry.getValue().getSelectionIndex();
+            if (selectionIndex == 2) {
                 store.setToDefault(ConfirmationDialog.PREF_KEY_PREFIX + id);
             } else {
-                store.setValue(ConfirmationDialog.PREF_KEY_PREFIX + id, ConfirmationDialog.ALWAYS);
+                store.setValue(ConfirmationDialog.PREF_KEY_PREFIX + id, selectionIndex == 0 ? ConfirmationDialog.ALWAYS : ConfirmationDialog.NEVER);
             }
         }
 

@@ -75,7 +75,10 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
             saveAndCleanup();
             // Disconnect all connections
             if (DBeaverCore.getInstance() != null) {
-                DBeaverCore.getInstance().getDataSourceRegistry().closeConnections();
+                // Try to close all connections
+                if (!DBeaverCore.getInstance().getDataSourceRegistry().closeConnections()) {
+                    return false;
+                }
                 // Wait for all datasource jobs to finish
                 DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor)

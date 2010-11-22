@@ -9,8 +9,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -27,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
@@ -282,18 +286,18 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         }
     }
 
-    public void disconnect(final DBRProgressMonitor monitor)
+    public boolean disconnect(final DBRProgressMonitor monitor)
         throws DBException
     {
-        disconnect(monitor, true);
+        return disconnect(monitor, true);
     }
 
-    void disconnect(final DBRProgressMonitor monitor, boolean reflect)
+    boolean disconnect(final DBRProgressMonitor monitor, boolean reflect)
         throws DBException
     {
         if (dataSource == null) {
             log.error("Datasource is not connected");
-            return;
+            return true;
         }
 
         monitor.beginTask("Disconnect from '" + getName() + "'", 3);
@@ -316,7 +320,22 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Rollback transaction");
         try {
             if (context.isConnected() && !context.getTransactionManager().isAutoCommit()) {
-                context.getTransactionManager().rollback(null);
+                // Ask for confirmation
+                TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer();
+                Display display = Display.getDefault();
+                if (display != null) {
+                    display.syncExec(closeConfirmer);
+                }
+                switch (closeConfirmer.result) {
+                    case IDialogConstants.YES_ID:
+                        context.getTransactionManager().commit();
+                        break;
+                    case IDialogConstants.NO_ID:
+                        context.getTransactionManager().rollback(null);
+                        break;
+                    default:
+                        return false;
+                }
             }
         }
         catch (Throwable e) {
@@ -344,21 +363,27 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
                 false);
             firePropertyChange();
         }
+
+        return true;
     }
 
-    public void reconnect(final DBRProgressMonitor monitor)
+    public boolean reconnect(final DBRProgressMonitor monitor)
         throws DBException
     {
-        reconnect(monitor, true);
+        return reconnect(monitor, true);
     }
 
-    public void reconnect(final DBRProgressMonitor monitor, boolean reflect)
+    public boolean reconnect(final DBRProgressMonitor monitor, boolean reflect)
         throws DBException
     {
         if (isConnected()) {
-            disconnect(monitor, reflect);
+            if (!disconnect(monitor, reflect)) {
+                return false;
+            }
         }
         connect(monitor, reflect);
+
+        return true;
     }
 
     public void acquire(DBPDataSourceUser user)
@@ -480,4 +505,15 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
     }
 
+    private class TransactionCloseConfirmer implements Runnable {
+        int result = IDialogConstants.NO_ID;
+        public void run()
+        {
+            result = ConfirmationDialog.showConfirmDialog(
+                null,
+                PrefConstants.CONFIRM_TXN_DISCONNECT,
+                ConfirmationDialog.QUESTION_WITH_CANCEL,
+                getName());
+        }
+    }
 }
