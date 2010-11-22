@@ -189,7 +189,7 @@ public class SQLEditor extends BaseTextEditor
 
     public boolean isDirty()
     {
-        return super.isDirty();
+        return (resultsView != null && resultsView.isDirty()) || super.isDirty();
     }
 
     public void close(boolean save)
@@ -921,7 +921,12 @@ public class SQLEditor extends BaseTextEditor
             messageBox.open();
             return ISaveablePart2.CANCEL;
         }
-        return ISaveablePart2.YES;
+
+        if (resultsView.isDirty()) {
+            return resultsView.promptToSaveOnClose();
+        } else {
+            return ISaveablePart2.YES;
+        }
     }
 
     public void loadFromExternalFile()

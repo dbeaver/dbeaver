@@ -7,11 +7,15 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.source.ISharedTextColors;
@@ -27,6 +31,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
@@ -67,7 +72,7 @@ import java.util.List;
 /**
  * ResultSetViewer
  */
-public class ResultSetViewer extends Viewer implements ISpreadsheetController, IPropertyChangeListener
+public class ResultSetViewer extends Viewer implements ISpreadsheetController, IPropertyChangeListener, ISaveablePart2
 {
     static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
@@ -618,6 +623,62 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.updateGridCursor(-1, -1);
     }
 
+    public boolean allowDiscardData()
+    {
+        if (!isDirty()) {
+            return true;
+        } else {
+            switch (promptToSaveOnClose()) {
+                case ISaveablePart2.YES:
+                case ISaveablePart2.NO:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+    }
+
+    public int promptToSaveOnClose()
+    {
+        int result = ConfirmationDialog.showConfirmDialog(
+            spreadsheet.getShell(),
+            PrefConstants.CONFIRM_RS_EDIT_CLOSE,
+            ConfirmationDialog.QUESTION_WITH_CANCEL);
+        if (result == IDialogConstants.YES_ID) {
+            applyChanges();
+            return ISaveablePart2.YES;
+        } else if (result == IDialogConstants.NO_ID) {
+            rejectChanges();
+            return ISaveablePart2.NO;
+        } else {
+            return ISaveablePart2.CANCEL;
+        }
+    }
+
+    public void doSave(IProgressMonitor monitor)
+    {
+        applyChanges();
+    }
+
+    public void doSaveAs()
+    {
+    }
+
+    public boolean isDirty()
+    {
+        return !editedValues.isEmpty() || !addedRows.isEmpty() || !removedRows.isEmpty();
+    }
+
+    public boolean isSaveAsAllowed()
+    {
+        return false;
+    }
+
+    public boolean isSaveOnCloseNeeded()
+    {
+        return true;
+    }
+
     public boolean isEditable()
     {
         return !updateInProgress;
@@ -841,6 +902,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void refresh()
     {
+        if (!allowDiscardData()) {
+            return;
+        }
         int oldRowNum = curRowNum;
         int oldColNum = curColNum;
 

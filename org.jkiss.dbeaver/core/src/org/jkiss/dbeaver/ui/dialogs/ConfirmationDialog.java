@@ -94,6 +94,11 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
 
     public static boolean confirmActionWithParams(Shell shell, String id, Object ... args)
     {
+        return showConfirmDialog(shell, id, CONFIRM, args) == 0;
+    }
+
+    public static int showConfirmDialog(Shell shell, String id, int type, Object ... args)
+    {
         ResourceBundle bundle = DBeaverActivator.getInstance().getResourceBundle();
         String titleKey = getResourceKey(id, RES_KEY_TITLE);
         String messageKey = getResourceKey(id, RES_KEY_MESSAGE);
@@ -101,13 +106,13 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         String prefKey = PREF_KEY_PREFIX + id;
 
         return open(
-            CONFIRM,
+            type,
             shell,
             UIUtils.formatMessage(bundle.getString(titleKey), args),
             UIUtils.formatMessage(bundle.getString(messageKey), args),
             UIUtils.formatMessage(bundle.getString(toggleKey), args),
             false,
-            prefKey) == 0;
+            prefKey);
     }
 
     public static String getResourceKey(String id, String key)

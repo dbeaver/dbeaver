@@ -652,6 +652,7 @@ public class Spreadsheet extends Composite implements Listener {
         if (oldEditor != null) {
             oldEditor.dispose();
             this.setFocus();
+            tableEditor.setEditor(null);
         }
     }
 

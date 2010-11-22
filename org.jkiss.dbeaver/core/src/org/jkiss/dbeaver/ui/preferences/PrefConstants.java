@@ -28,5 +28,6 @@ public final class PrefConstants
 
     public static final String CONFIRM_EXIT = "exit";
     public static final String CONFIRM_ORDER_RESULTSET = "order.resultset";
+    public static final String CONFIRM_RS_EDIT_CLOSE = "close.resultset.edit";
 
 }
