@@ -401,7 +401,7 @@ public class Spreadsheet extends Composite implements Listener {
                 cancelInlineEditor();
                 break;
             case LightGrid.Event_ChangeSort:
-                spreadsheetController.changeSorting((GridColumn) event.data);
+                spreadsheetController.changeSorting((GridColumn) event.data, event.stateMask);
                 break;
         }
     }

@@ -72,6 +72,11 @@ public class DBDDataFilter {
         return orderColumns.remove(columnOrder);
     }
 
+    public void clearOrderColumns()
+    {
+        orderColumns.clear();
+    }
+
     public List<DBDColumnFilter> getFilters()
     {
         return filters;

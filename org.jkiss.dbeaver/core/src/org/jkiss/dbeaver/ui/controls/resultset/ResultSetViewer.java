@@ -313,22 +313,27 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         reorderResultSet(true, new Runnable() {
             public void run()
             {
-                // Update all columns ordering
-                if (!spreadsheet.isDisposed() && metaColumns != null && mode == ResultSetMode.GRID) {
-                    for (int i = 0, metaColumnsLength = metaColumns.length; i < metaColumnsLength; i++) {
-                        DBDColumnBinding column = metaColumns[i];
-                        DBDColumnOrder columnOrder = dataFilter.getOrderColumn(column.getColumnName());
-                        GridColumn gridColumn = spreadsheet.getGrid().getColumn(i);
-                        if (columnOrder == null) {
-                            gridColumn.setSort(SWT.DEFAULT);
-                        } else {
-                            gridColumn.setSort(columnOrder.isDescending() ? SWT.UP : SWT.DOWN);
-                        }
-                    }
-                    spreadsheet.redrawGrid();
-                }
+                resetColumnOrdering();
             }
         });
+    }
+
+    // Update all columns ordering
+    private void resetColumnOrdering()
+    {
+        if (!spreadsheet.isDisposed() && metaColumns != null && mode == ResultSetMode.GRID) {
+            for (int i = 0, metaColumnsLength = metaColumns.length; i < metaColumnsLength; i++) {
+                DBDColumnBinding column = metaColumns[i];
+                DBDColumnOrder columnOrder = dataFilter.getOrderColumn(column.getColumnName());
+                GridColumn gridColumn = spreadsheet.getGrid().getColumn(i);
+                if (columnOrder == null) {
+                    gridColumn.setSort(SWT.DEFAULT);
+                } else {
+                    gridColumn.setSort(columnOrder.isDescending() ? SWT.UP : SWT.DOWN);
+                }
+            }
+            spreadsheet.redrawGrid();
+        }
     }
 
     public ResultSetMode getMode()
@@ -753,11 +758,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
     }
 
-    public void changeSorting(final GridColumn column)
+    public void changeSorting(final GridColumn column, final int state)
     {
+        boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
+        boolean altPressed = (state & SWT.ALT) == SWT.ALT;
+        if (ctrlPressed) {
+            dataFilter.clearOrderColumns();
+        }
         DBDColumnBinding metaColumn = metaColumns[column.getIndex()];
         DBDColumnOrder columnOrder = dataFilter.getOrderColumn(metaColumn.getColumnName());
-        int newSort;
+        //int newSort;
         if (columnOrder == null) {
             if (dataReceiver.isHasMoreData() && supportsDataFilter()) {
                 if (!ConfirmationDialog.confirmActionWithParams(
@@ -768,27 +778,24 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     return;
                 }
             }
-            columnOrder = new DBDColumnOrder(metaColumn.getColumnName(), column.getIndex() + 1, false);
+            columnOrder = new DBDColumnOrder(metaColumn.getColumnName(), column.getIndex() + 1, altPressed);
             dataFilter.addOrderColumn(columnOrder);
-            newSort = SWT.DOWN;
+            //newSort = SWT.DOWN;
 
         } else {
             if (!columnOrder.isDescending()) {
-                columnOrder.setDescending(true);
-                newSort = SWT.UP;
+                columnOrder.setDescending(!altPressed);
+                //newSort = SWT.UP;
             } else {
-                newSort = SWT.DEFAULT;
+                //newSort = SWT.DEFAULT;
                 dataFilter.removeOrderColumn(columnOrder);
             }
         }
-        final int sort = newSort;
+        //final int sort = newSort;
         reorderResultSet(false, new Runnable() {
             public void run()
             {
-                if (!column.isDisposed()) {
-                    column.setSort(sort);
-                    spreadsheet.redrawGrid();
-                }
+                resetColumnOrdering();
             }
         });
     }

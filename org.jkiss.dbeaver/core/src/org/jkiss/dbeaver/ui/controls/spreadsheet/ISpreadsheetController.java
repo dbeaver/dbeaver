@@ -29,5 +29,7 @@ public interface ISpreadsheetController {
         GridPos cell,
         IMenuManager manager);
 
-    void changeSorting(GridColumn column);
+    void changeSorting(
+        GridColumn column,
+        int state);
 }

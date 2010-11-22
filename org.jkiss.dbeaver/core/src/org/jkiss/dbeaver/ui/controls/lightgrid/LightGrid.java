@@ -3222,6 +3222,7 @@ public class LightGrid extends Canvas {
                     event.x = e.x;
                     event.y = e.y;
                     event.data = columnBeingSorted;
+                    event.stateMask = e.stateMask;
                     notifyListeners(Event_ChangeSort, event);
                     return;
                 }
