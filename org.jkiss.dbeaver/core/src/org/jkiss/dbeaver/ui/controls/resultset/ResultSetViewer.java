@@ -171,7 +171,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 updateGridCursor(event.x, event.y);
             }
         });
-
+        this.spreadsheet.getGrid().setTopLeftRenderer(new ResultSetTopLeftRenderer(this));
         applyThemeSettings();
     }
 
@@ -284,6 +284,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         updateEditControls();
     }
 
+    Spreadsheet getSpreadsheet()
+    {
+        return spreadsheet;
+    }
+
     public DBSDataContainer getDataContainer()
     {
         return resultSetProvider.getDataContainer();
@@ -309,7 +314,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             public void run()
             {
                 // Update all columns ordering
-                if (!spreadsheet.isDisposed() && metaColumns != null) {
+                if (!spreadsheet.isDisposed() && metaColumns != null && mode == ResultSetMode.GRID) {
                     for (int i = 0, metaColumnsLength = metaColumns.length; i < metaColumnsLength; i++) {
                         DBDColumnBinding column = metaColumns[i];
                         DBDColumnOrder columnOrder = dataFilter.getOrderColumn(column.getColumnName());
@@ -602,6 +607,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
 
         spreadsheet.reinitState();
+
         spreadsheet.setRedraw(true);
 
         this.updateGridCursor(-1, -1);
@@ -726,10 +732,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             @Override
             public void run()
             {
-                ResultSetFilterDialog filterDialog = new ResultSetFilterDialog(ResultSetViewer.this);
-                if (filterDialog.open() == IDialogConstants.OK_ID) {
-                    // Refresh result set
-                }
+                new ResultSetFilterDialog(ResultSetViewer.this).open();
             }
         });
         manager.add(new Action("Export Resultset ... ", DBIcon.EXPORT.getImageDescriptor()) {

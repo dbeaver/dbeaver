@@ -101,43 +101,13 @@ public class LightGrid extends Canvas {
     private List<GridColumn> columns = new ArrayList<GridColumn>();
 
     private int maxColumnDefWidth = 1000;
-    /**
-     * Renderer to paint the top left area when both column and row headers are
-     * shown.
-     */
+
     private IGridRenderer topLeftRenderer;
-
-    /**
-     * Renderer to paint the bottom left area when row headers and column footers are shown
-     */
     private IGridRenderer bottomLeftRenderer;
-
-    /**
-     * Renderer used to paint row headers.
-     */
     private IGridRenderer rowHeaderRenderer;
-
-    /**
-     * Renderer used to paint empty column headers, used when the columns don't
-     * fill the horz space.
-     */
     private IGridRenderer emptyColumnHeaderRenderer;
-
-    /**
-     * Renderer used to paint empty column footers, used when the columns don't
-     * fill the horz space.
-     */
     private IGridRenderer emptyColumnFooterRenderer;
-
-    /**
-     * Renderer used to paint empty cells to fill horz and vert space.
-     */
     private GridCellRenderer emptyCellRenderer;
-
-    /**
-     * Renderer used to paint empty row headers when the rows don't fill the
-     * vertical space.
-     */
     private IGridRenderer emptyRowHeaderRenderer;
 
     /**
