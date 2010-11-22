@@ -305,7 +305,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return;
         }
         this.dataFilter = dataFilter;
-        reorderResultSet(new Runnable() {
+        reorderResultSet(true, new Runnable() {
             public void run()
             {
                 // Update all columns ordering
@@ -779,7 +779,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
         final int sort = newSort;
-        reorderResultSet(new Runnable() {
+        reorderResultSet(false, new Runnable() {
             public void run()
             {
                 if (!column.isDisposed()) {
@@ -852,9 +852,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
-    private void reorderResultSet(Runnable onSuccess)
+    private void reorderResultSet(boolean force, Runnable onSuccess)
     {
-        if ((dataReceiver.isHasMoreData() || dataFilter.hasCustomFilters()) && supportsDataFilter()) {
+        if ((force || dataReceiver.isHasMoreData() || dataFilter.hasCustomFilters()) && supportsDataFilter()) {
             if (resultSetProvider != null && resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
                 int segmentSize = getSegmentMaxRows();
                 if (curRowNum >= segmentSize) {
@@ -1951,6 +1951,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             throws DBCException
         {
 
+        }
+
+        public void close()
+        {
         }
     }
 

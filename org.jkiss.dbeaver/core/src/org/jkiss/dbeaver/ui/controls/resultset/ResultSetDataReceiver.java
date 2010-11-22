@@ -122,7 +122,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         throws DBCException
     {
         if (!nextSegmentRead && !dataReload && metaColumns != null) {
-            // Read locators metadata
+            // Read locators' metadata
             DBUtils.findValueLocators(context.getProgressMonitor(), metaColumns);
         }
 
@@ -137,13 +137,17 @@ class ResultSetDataReceiver implements DBDDataReceiver {
 
                 // Check for more data
                 hasMoreData = rows.size() >= resultSetViewer.getSegmentMaxRows();
-                nextSegmentRead = false;
-                dataReload = false;
-
-                errors.clear();
-                rows = new ArrayList<Object[]>();
             }
         });
+    }
+
+    public void close()
+    {
+        nextSegmentRead = false;
+        dataReload = false;
+
+        errors.clear();
+        rows = new ArrayList<Object[]>();
     }
 
 }

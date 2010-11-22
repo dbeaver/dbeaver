@@ -17,10 +17,11 @@ public class DBDColumnFilter {
     private DBDCriterion criterion;
     private String where;
 
-    public DBDColumnFilter(String columnName, int columnIndex)
+    public DBDColumnFilter(String columnName, int columnIndex, String where)
     {
         this.columnName = columnName;
         this.columnIndex = columnIndex;
+        this.where = where;
     }
 
     public DBDColumnFilter(DBDColumnFilter source)

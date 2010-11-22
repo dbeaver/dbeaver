@@ -244,6 +244,12 @@ public class DataExportJob extends AbstractJob {
             }
         }
 
+        public void close()
+        {
+            metaColumns = null;
+            row = null;
+        }
+
         private File saveContentToFile(DBRProgressMonitor monitor, DBDContent content)
             throws IOException, DBCException
         {

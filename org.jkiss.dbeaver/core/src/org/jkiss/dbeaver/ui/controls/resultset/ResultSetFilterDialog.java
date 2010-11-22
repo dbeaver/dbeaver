@@ -21,6 +21,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
+import org.jkiss.dbeaver.model.data.DBDColumnFilter;
 import org.jkiss.dbeaver.model.data.DBDColumnOrder;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -185,6 +186,14 @@ public class ResultSetFilterDialog extends Dialog {
                         return "";
                     }
                 }
+                case 2: {
+                    DBDColumnFilter filterColumn = dataFilter.getFilterColumn(column.getColumnName());
+                    if (filterColumn != null) {
+                        return filterColumn.getWhere();
+                    } else {
+                        return "";
+                    }
+                }
                 default: return "";
             }
         }
@@ -237,7 +246,7 @@ public class ResultSetFilterDialog extends Dialog {
 
         public void mouseDoubleClick(MouseEvent e)
         {
-            handleColumnClick(e, true);
+            //handleColumnClick(e, true);
         }
 
         public void mouseDown(MouseEvent e)
@@ -262,9 +271,9 @@ public class ResultSetFilterDialog extends Dialog {
                 return;
             }
             if (columnIndex == 1) {
-                if (isDef) {
+                //if (isDef) {
                     toggleColumnOrder(item);
-                }
+                //}
             } else if (columnIndex == 2 && resultSetViewer.supportsDataFilter()) {
                 showEditor(item);
             }
@@ -284,17 +293,32 @@ public class ResultSetFilterDialog extends Dialog {
             columnsViewer.refresh();
         }
 
-        private void showEditor(TableItem item) {
+        private void showEditor(final TableItem item) {
             // Identify the selected row
             Text text = new Text(columnsTable, SWT.BORDER);
             text.setText(item.getText(2));
             text.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e) {
                     Text text = (Text) tableEditor.getEditor();
-                    tableEditor.getItem().setText(2, text.getText());
+                    String criteria = text.getText().trim();
+                    DBDColumnBinding column = (DBDColumnBinding) item.getData();
+                    DBDColumnFilter filterColumn = dataFilter.getFilterColumn(column.getColumnName());
+                    if (CommonUtils.isEmpty(criteria)) {
+                        if (filterColumn != null) {
+                            dataFilter.removeFilterColumn(filterColumn);
+                        }
+                    } else {
+                        if (filterColumn != null) {
+                            filterColumn.setWhere(criteria);
+                        } else {
+                            dataFilter.addFilterColumn(new DBDColumnFilter(column.getColumnName(), column.getColumnIndex(), criteria));
+                        }
+                    }
+                    tableEditor.getItem().setText(2, criteria);
                 }
             });
             text.selectAll();
+/*
             text.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e)
@@ -304,10 +328,10 @@ public class ResultSetFilterDialog extends Dialog {
                     }
                 }
             });
-            //if (isDef) {
-                // Selected by mouse
-                text.setFocus();
-            //}
+*/
+            // Selected by mouse
+            text.setFocus();
+
             tableEditor.setEditor(text, item, 2);
         }
     }

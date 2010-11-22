@@ -22,12 +22,17 @@ public interface DBDDataReceiver {
         throws DBCException;
 
     /**
-     * Called after entire result set is fetched and closed.
-     * This method is called even if fetchStart wasn't called in this data receiver (may occur if statement throws an error)
+     * Called after entire result set if fetched.
      * @throws DBCException on error
      * @param context execution context
      */
     void fetchEnd(DBCExecutionContext context)
         throws DBCException;
+
+    /**
+     * Called after entire result set is fetched and closed.
+     * This method is called even if fetchStart wasn't called in this data receiver (may occur if statement throws an error)
+     */
+    void close();
 
 }

@@ -65,6 +65,27 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         StringBuilder query = new StringBuilder(100);
         query.append("SELECT * FROM ").append(getFullQualifiedName());
         if (dataFilter != null) {
+            // Construct WHERE
+            if (!CommonUtils.isEmpty(dataFilter.getFilters()) || !CommonUtils.isEmpty(dataFilter.getWhere())) {
+                query.append(" WHERE ");
+                boolean hasWhere = false;
+                if (!CommonUtils.isEmpty(dataFilter.getFilters())) {
+                    for (DBDColumnFilter filter : dataFilter.getFilters()) {
+                        if (hasWhere) query.append(" AND ");
+                        hasWhere = true;
+                        query
+                            .append(DBUtils.getQuotedIdentifier(getDataSource(), filter.getColumnName()))
+                            .append(' ')
+                            .append(filter.getWhere());
+                    }
+                }
+                if (!CommonUtils.isEmpty(dataFilter.getWhere())) {
+                    if (hasWhere) query.append(" AND ");
+                    query.append(dataFilter.getWhere());
+                }
+            }
+
+            // Construct ORDER BY
             if (!CommonUtils.isEmpty(dataFilter.getOrderColumns()) || !CommonUtils.isEmpty(dataFilter.getOrder())) {
                 query.append(" ORDER BY ");
                 boolean hasOrder = false;
@@ -97,19 +118,28 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             try {
                 dataReceiver.fetchStart(context, dbResult);
 
-                long rowCount = 0;
-                while (dbResult.nextRow()) {
-                    if (monitor.isCanceled() || (hasLimits && rowCount >= maxRows)) {
-                        // Fetch not more than max rows
-                        break;
-                    }
-                    dataReceiver.fetchRow(context, dbResult);
-                    rowCount++;
-                    if (rowCount % 100 == 0) {
-                        monitor.subTask(rowCount + " rows fetched");
-                        monitor.worked(100);
-                    }
+                long rowCount;
+                try {
+                    rowCount = 0;
+                    while (dbResult.nextRow()) {
+                        if (monitor.isCanceled() || (hasLimits && rowCount >= maxRows)) {
+                            // Fetch not more than max rows
+                            break;
+                        }
+                        dataReceiver.fetchRow(context, dbResult);
+                        rowCount++;
+                        if (rowCount % 100 == 0) {
+                            monitor.subTask(rowCount + " rows fetched");
+                            monitor.worked(100);
+                        }
 
+                    }
+                } finally {
+                    try {
+                        dataReceiver.fetchEnd(context);
+                    } catch (DBCException e) {
+                        log.error("Error while finishing result set fetch", e);
+                    }
                 }
                 return rowCount;
             }
@@ -119,11 +149,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
         finally {
             dbStat.close();
-            try {
-                dataReceiver.fetchEnd(context);
-            } catch (DBCException e) {
-                log.error("Error while finishing result set fetch", e);
-            }
+            dataReceiver.close();
         }
     }
 
@@ -346,6 +372,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
         finally {
             dbResult.close();
+            keysReceiver.close();
         }
     }
 

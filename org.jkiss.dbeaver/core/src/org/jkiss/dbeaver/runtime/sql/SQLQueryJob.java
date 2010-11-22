@@ -373,6 +373,7 @@ public class SQLQueryJob extends DataSourceJob
                 } catch (DBCException e) {
                     log.error("Error while handling end of result set fetch", e);
                 }
+                dataReceiver.close();
             }
 
             result.setRowCount(rowCount);
