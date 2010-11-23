@@ -53,9 +53,10 @@ public class SelectDataSourceDialog extends Dialog {
         ItemListControl dsList = new ItemListControl(group, SWT.BORDER, null, rootNode);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
-        gd.widthHint = 300;
+        gd.minimumWidth = 300;
         dsList.setLayoutData(gd);
         //dsList.setLoadProperties(false);
+        dsList.setBrief(true);
         dsList.fillData();
         dsList.getNavigatorViewer().addSelectionChangedListener(new ISelectionChangedListener()
         {

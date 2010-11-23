@@ -13,17 +13,19 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.ISaveablePart2;
-import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IObjectImageProvider;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceUser;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -32,7 +34,6 @@ import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 import java.text.DateFormat;
@@ -117,6 +118,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         this.connectionInfo = connectionInfo;
     }
 
+    @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
         return name;
@@ -131,6 +133,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         return id;
     }
 
+    @Property(name = "Description", order = 100)
     public String getDescription()
     {
         return description;
@@ -424,47 +427,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     {
         if (DBSDataSourceContainer.class.isAssignableFrom(adapter)) {
             return this;
-        } else if (adapter == IPropertySource.class) {
-            DBPDataSourceInfo info = null;
-            if (this.isConnected()) {
-                info = this.getDataSource().getInfo();
-            }
-            StringBuilder addr = new StringBuilder();
-            if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                addr.append(connectionInfo.getHostName());
-            }
-            if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                addr.append(':').append(connectionInfo.getHostPort());
-            }
-
-            PropertyCollector props = new PropertyCollector(this, false);
-            props.addProperty("driverType", "Driver Type", driver.getName());
-            if (info != null) {
-                //props.addProperty("driverName", "Driver Name", info.getDriverName() + " " + info.getDriverVersion());
-            }
-            props.addProperty("address", "Address", addr.toString());
-            props.addProperty("database", "Database Name", connectionInfo.getDatabaseName());
-            if (info != null) {
-                //props.addProperty("databaseType", "Database Type", info.getDatabaseProductName() + " " + info.getDatabaseProductVersion());
-            }
-            props.addProperty("url", "URL", connectionInfo.getUrl());
-            if (isConnected() && dataSource.getInfo() != null) {
-                String serverName = dataSource.getInfo().getDatabaseProductName();
-                String serverVersion = dataSource.getInfo().getDatabaseProductVersion();
-                if (serverName != null) {
-                    props.addProperty("server-name", "Server", serverName + (serverVersion == null ? "" : " [" + serverVersion + "]"));
-                }
-
-                String driverName = dataSource.getInfo().getDriverName();
-                String driverVersion = dataSource.getInfo().getDriverVersion();
-                if (driverName != null) {
-                    props.addProperty("driver-name", "Driver", driverName + (driverVersion == null ? "" : " [" + driverVersion + "]"));
-                }
-                if (connectTime != null) {
-                    props.addProperty("connect-time", "Connect Time", DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(connectTime));
-                }
-            }
-            return props;
         }
         return null;
     }
@@ -495,7 +457,8 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         }
     }
 
-    public static String generateNewId(DriverDescriptor driver) {
+    public static String generateNewId(DriverDescriptor driver)
+    {
         return driver.getId() + "-" + System.currentTimeMillis() + "-" + new Random().nextInt();
     }
 
@@ -503,6 +466,72 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     {
         DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
         DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
+    }
+
+    @Property(name = "Driver Type", viewable = true, order = 2)
+    public String getPropertyDriverType()
+    {
+        return driver.getName();
+    }
+
+    @Property(name = "Address", order = 3)
+    public String getPropertyAddress()
+    {
+        StringBuilder addr = new StringBuilder();
+        if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
+            addr.append(connectionInfo.getHostName());
+        }
+        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+            addr.append(':').append(connectionInfo.getHostPort());
+        }
+        return addr.toString();
+    }
+
+    @Property(name = "Database", order = 4)
+    public String getPropertyDatabase()
+    {
+        return connectionInfo.getDatabaseName();
+    }
+
+    @Property(name = "URL", order = 5)
+    public String getPropertyURL()
+    {
+        return connectionInfo.getUrl();
+    }
+
+    @Property(name = "Server", order = 6)
+    public String getPropertyServerName()
+    {
+        if (isConnected() && dataSource.getInfo() != null) {
+            String serverName = dataSource.getInfo().getDatabaseProductName();
+            String serverVersion = dataSource.getInfo().getDatabaseProductVersion();
+            if (serverName != null) {
+                return serverName + (serverVersion == null ? "" : " [" + serverVersion + "]");
+            }
+        }
+        return null;
+    }
+
+    @Property(name = "Driver", order = 7)
+    public String getPropertyDriver()
+    {
+        if (isConnected() && dataSource.getInfo() != null) {
+            String driverName = dataSource.getInfo().getDriverName();
+            String driverVersion = dataSource.getInfo().getDriverVersion();
+            if (driverName != null) {
+                return driverName + (driverVersion == null ? "" : " [" + driverVersion + "]");
+            }
+        }
+        return null;
+    }
+
+    @Property(name = "Connect Time", order = 8)
+    public String getPropertyConnectTime()
+    {
+        if (connectTime != null) {
+            return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(connectTime);
+        }
+        return null;
     }
 
     private class TransactionCloseConfirmer implements Runnable {

@@ -68,6 +68,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
     private boolean isTree;
     private boolean isFitWidth;
+    private boolean isBrief;
     //private boolean showName;
     //private boolean loadProperties;
 
@@ -253,14 +254,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return itemsViewer;
     }
 
-    public boolean isFitWidth()
-    {
-        return isFitWidth;
-    }
-
     public void setFitWidth(boolean fitWidth)
     {
         isFitWidth = fitWidth;
+    }
+
+    public void setBrief(boolean brief)
+    {
+        isBrief = brief;
     }
 
     protected boolean isHyperlink(Object cellValue)
@@ -562,6 +563,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 for (Class<?> objectClass : classList) {
                     List<PropertyAnnoDescriptor> props = PropertyAnnoDescriptor.extractAnnotations(objectClass);
                     for (PropertyAnnoDescriptor prop : props) {
+                        if (isBrief && !prop.isViewable()) {
+                            continue;
+                        }
                         createColumn(objectClass, prop);
                     }
                 }
