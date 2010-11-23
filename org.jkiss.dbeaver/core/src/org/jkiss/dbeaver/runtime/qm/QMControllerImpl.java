@@ -60,6 +60,11 @@ public class QMControllerImpl implements QMController {
       	defaultHandler = null;
     }
 
+    public QMMCollector getMetaCollector()
+    {
+        return metaHandler;
+    }
+
     public QMExecutionHandler getDefaultHandler() {
         return defaultHandler;
     }

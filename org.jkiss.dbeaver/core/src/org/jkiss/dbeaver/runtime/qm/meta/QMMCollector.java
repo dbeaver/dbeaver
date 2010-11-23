@@ -105,7 +105,7 @@ public class QMMCollector extends DefaultExecutionHandler {
         return events;
     }
 
-    private QMMSessionInfo getSession(DBPDataSource dataSource)
+    public QMMSessionInfo getSession(DBPDataSource dataSource)
     {
         QMMSessionInfo session = sessionMap.get(dataSource.getContainer().getId());
         if (session == null) {

@@ -26,9 +26,14 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
@@ -323,21 +328,29 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Rollback transaction");
         try {
             if (context.isConnected() && !context.getTransactionManager().isAutoCommit()) {
-                // Ask for confirmation
-                TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer();
-                Display display = Display.getDefault();
-                if (display != null) {
-                    display.syncExec(closeConfirmer);
-                }
-                switch (closeConfirmer.result) {
-                    case IDialogConstants.YES_ID:
-                        context.getTransactionManager().commit();
-                        break;
-                    case IDialogConstants.NO_ID:
-                        context.getTransactionManager().rollback(null);
-                        break;
-                    default:
-                        return false;
+                // Check current transaction
+                // If there are some executions in last savepoint then ask user about commit/rollback
+                QMMCollector qmm = DBeaverCore.getInstance().getQueryManager().getMetaCollector();
+                QMMSessionInfo qmmSession = qmm.getSession(getDataSource());
+                QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
+                QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
+                if (sp != null && (sp.getPrevious() != null || sp.hasUserExecutions())) {
+                    // Ask for confirmation
+                    TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer();
+                    Display display = Display.getDefault();
+                    if (display != null) {
+                        display.syncExec(closeConfirmer);
+                    }
+                    switch (closeConfirmer.result) {
+                        case IDialogConstants.YES_ID:
+                            context.getTransactionManager().commit();
+                            break;
+                        case IDialogConstants.NO_ID:
+                            context.getTransactionManager().rollback(null);
+                            break;
+                        default:
+                            return false;
+                    }
                 }
             }
         }

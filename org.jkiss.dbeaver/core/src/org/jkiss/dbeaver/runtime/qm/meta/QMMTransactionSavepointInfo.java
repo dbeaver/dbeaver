@@ -101,4 +101,17 @@ public class QMMTransactionSavepointInfo extends QMMObject {
         return "SAVEPOINT" + (name == null ? "" : name);
     }
 
+    public boolean hasUserExecutions()
+    {
+        for (QMMStatementExecuteInfo exec = lastExecute; exec != null; exec = exec.getPrevious()) {
+            switch (exec.getStatement().getPurpose()) {
+                case USER:
+                case USER_SCRIPT:
+                    return true;
+                default:
+                    break;
+            }
+        }
+        return false;
+    }
 }
