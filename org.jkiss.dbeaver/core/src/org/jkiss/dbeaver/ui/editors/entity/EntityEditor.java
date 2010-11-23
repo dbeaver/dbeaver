@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.ui.editors.entity;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
@@ -25,6 +27,8 @@ import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 
@@ -104,18 +108,26 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         addContributions(EntityEditorDescriptor.POSITION_START);
 
         final List<TabInfo> tabs = new ArrayList<TabInfo>();
+        DBRRunnableWithProgress tabsCollector = new DBRRunnableWithProgress() {
+            public void run(DBRProgressMonitor monitor)
+            {
+                tabs.addAll(collectTabs(monitor));
+            }
+        };
+        DBNNode node = getEditorInput().getTreeNode();
         try {
-            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
-                public void run(DBRProgressMonitor monitor)
-                {
-                    tabs.addAll(collectTabs(monitor));
-                }
-            });
+            if (node.isLazyNode()) {
+                DBeaverCore.getInstance().runAndWait2(tabsCollector);
+            } else {
+                tabsCollector.run(VoidProgressMonitor.INSTANCE);
+            }
         } catch (InvocationTargetException e) {
             log.error(e.getTargetException());
         } catch (InterruptedException e) {
             // just go further
         }
+
+        //tabs.addAll(collectTabs(VoidProgressMonitor.INSTANCE));
 
         for (TabInfo tab : tabs) {
             if (tab.meta == null) {

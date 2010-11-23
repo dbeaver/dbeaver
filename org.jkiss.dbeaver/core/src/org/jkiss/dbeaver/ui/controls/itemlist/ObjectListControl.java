@@ -144,7 +144,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 } else {
                     hoverItem = detectTableItem(e.x, e.y);
                 }
-                if (hoverItem != null && selectedColumn >= 0) {
+                if (hoverItem != null && selectedColumn >= 0 && e.button == 1) {
                     Object element = hoverItem.getData();
                     int checkColumn = selectedColumn;
                     Object cellValue = getCellValue(element, checkColumn);
