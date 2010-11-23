@@ -247,7 +247,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         //gl.marginBottom = 5;
         statusBar.setLayout(gl);
         
-        statusLabel = new Text(statusBar, SWT.MULTI | SWT.READ_ONLY);
+        statusLabel = new Text(statusBar, SWT.READ_ONLY);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         statusLabel.setLayoutData(gd);
         statusLabel.setBackground(statusBar.getBackground());

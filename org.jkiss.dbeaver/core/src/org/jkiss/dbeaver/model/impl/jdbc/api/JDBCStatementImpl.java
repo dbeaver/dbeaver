@@ -53,7 +53,7 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
         this.connection.getProgressMonitor().startBlock(
             this,
             this.description == null ?
-                (query == null ? "?" : query)  :
+                (query == null ? "?" : JDBCUtils.limitQueryLength(query, 200))  :
                 this.description);
     }
 

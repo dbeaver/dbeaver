@@ -41,14 +41,6 @@ public class NestedMultiLineRule extends MultiLineRule
                 // Skip the escaped character.
                 scanner.read();
             }
-            else if (fStartSequence.length > 0 && c == fStartSequence[0])
-            {
-                // Check if the nested start sequence has been found.
-                if (sequenceDetected(scanner, fStartSequence, false))
-                {
-                    _commentNestingDepth++;
-                }
-            }
             else if (fEndSequence.length > 0 && c == fEndSequence[0])
             {
                 // Check if the specified end sequence has been found.
@@ -59,6 +51,14 @@ public class NestedMultiLineRule extends MultiLineRule
                 if (_commentNestingDepth <= 0)
                 {
                     return true;
+                }
+            }
+            else if (fStartSequence.length > 0 && c == fStartSequence[0])
+            {
+                // Check if the nested start sequence has been found.
+                if (sequenceDetected(scanner, fStartSequence, false))
+                {
+                    _commentNestingDepth++;
                 }
             }
             //previousWasEscapeCharacter = (c == fEscapeCharacter);

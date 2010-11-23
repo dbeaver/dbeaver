@@ -347,4 +347,9 @@ public class JDBCUtils
                 "SQL State: " + warning.getSQLState());
         }
     }
+
+    public static String limitQueryLength(String query, int maxLength)
+    {
+        return query == null || query.length() <= maxLength ? query : query.substring(0, maxLength);
+    }
 }
