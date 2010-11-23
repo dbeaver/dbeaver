@@ -90,7 +90,7 @@
                     sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
                     webURL="http://oracle.com"
                     description="Oracle thin driver">
-                    <library path="drivers/ojdbc5.jar"/>
+                    <library path="drivers/ojdbc6.jar"/>
                     <query label="GET_ACTIVE_DB">select sys_context( 'userenv', 'current_schema' ) from dual</query>
                     <query label="SET_ACTIVE_DB">alter session set current_schema=?</query>
                 </driver>
