@@ -50,8 +50,12 @@ public class DirectedGraphLayoutVisitor
 		if (graph.nodes.size() > 0)
 		{	
 			addDiagramEdges(diagram);
-			new NodeJoiningDirectedGraphLayout().visit(graph);
-			applyDiagramResults(diagram);
+            try {
+                new NodeJoiningDirectedGraphLayout().visit(graph);
+            } catch (Exception e) {
+                log.error("Diagram layout error", e);
+            }
+            applyDiagramResults(diagram);
 		}
 
 	}

@@ -36,4 +36,5 @@ public class NodeJoiningDirectedGraphLayout extends DirectedGraphLayout
 
 		super.visit(graph);
 	}
+
 }

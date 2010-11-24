@@ -378,9 +378,9 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                     if (table2 == null) {
                         //log.warn("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
                     } else {
-                        if (table1 != table2) {
+                        //if (table1 != table2) {
                             new ERDAssociation(fk, table2, table1);
-                        }
+                        //}
                     }
                 }
 
