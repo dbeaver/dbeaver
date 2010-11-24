@@ -430,6 +430,29 @@ public class UIUtils {
         return button;
     }
 
+    public static Text createCheckText(Composite parent, String label, String value, boolean checked, int textWidth)
+    {
+        final Button checkbox = UIUtils.createCheckbox(parent, label, checked);
+        final Text text = new Text(parent, SWT.BORDER);
+        text.setText(value);
+        text.setEnabled(checked);
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        if (textWidth > 0) {
+            gd.widthHint = 200;
+        }
+        text.setLayoutData(gd);
+
+        checkbox.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                text.setEnabled(checkbox.getSelection());
+            }
+        });
+
+        return text;
+    }
+
     public static Shell getActiveShell()
     {
         IWorkbench workbench = PlatformUI.getWorkbench();

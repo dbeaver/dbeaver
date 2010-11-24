@@ -44,6 +44,10 @@ public interface DBSDataSourceContainer extends DBSEntity
 
     boolean isShowSystemObjects();
 
+    String getCatalogFilter();
+
+    String getSchemaFilter();
+
     boolean isConnected();
 
     /**

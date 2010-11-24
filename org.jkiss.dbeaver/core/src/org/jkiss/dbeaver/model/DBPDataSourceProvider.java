@@ -15,8 +15,6 @@ public interface DBPDataSourceProvider
 {
     void init(DBPApplication application);
 
-    void close();
-
     DBPPropertyGroup getConnectionProperties(
         DBPDriver driver,
         DBPConnectionInfo connectionInfo)
@@ -26,5 +24,7 @@ public interface DBPDataSourceProvider
         DBRProgressMonitor monitor,
         DBSDataSourceContainer container)
         throws DBException;
+
+    void close();
 
 }

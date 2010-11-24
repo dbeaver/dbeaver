@@ -30,6 +30,11 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
         setNeedsProgressMonitor(true);
     }
 
+    public DataSourceDescriptor getDataSourceDescriptor()
+    {
+        return null;
+    }
+    
     public boolean performFinish()
     {
         if (getPageSettings() != null) {

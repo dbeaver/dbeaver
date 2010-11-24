@@ -37,6 +37,11 @@ public class EditConnectionWizard extends ConnectionWizard
         setWindowTitle("Edit connection");
     }
 
+    public DataSourceDescriptor getDataSourceDescriptor()
+    {
+        return dataSource;
+    }
+
     public ConnectionPageFinal getPageFinal()
     {
         return pageFinal;

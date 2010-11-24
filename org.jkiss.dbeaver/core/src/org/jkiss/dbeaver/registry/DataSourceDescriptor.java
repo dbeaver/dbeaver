@@ -62,6 +62,8 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     private String description;
     private boolean savePassword;
     private boolean showSystemObjects;
+    private String catalogFilter;
+    private String schemaFilter;
     private Date createDate;
     private Date updateDate;
     private Date loginDate;
@@ -162,6 +164,26 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     public void setShowSystemObjects(boolean showSystemObjects)
     {
         this.showSystemObjects = showSystemObjects;
+    }
+
+    public String getCatalogFilter()
+    {
+        return catalogFilter;
+    }
+
+    public void setCatalogFilter(String catalogFilter)
+    {
+        this.catalogFilter = catalogFilter;
+    }
+
+    public String getSchemaFilter()
+    {
+        return schemaFilter;
+    }
+
+    public void setSchemaFilter(String schemaFilter)
+    {
+        this.schemaFilter = schemaFilter;
     }
 
     public DBSObject getParentObject()

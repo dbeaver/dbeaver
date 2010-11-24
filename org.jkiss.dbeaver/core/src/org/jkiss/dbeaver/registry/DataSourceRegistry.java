@@ -512,6 +512,12 @@ public class DataSourceRegistry implements DBPRegistry
         }
         xml.addAttribute("save-password", dataSource.isSavePassword());
         xml.addAttribute("show-system-objects", dataSource.isShowSystemObjects());
+        if (!CommonUtils.isEmpty(dataSource.getCatalogFilter())) {
+            xml.addAttribute("filter-catalog", dataSource.getCatalogFilter());
+        }
+        if (!CommonUtils.isEmpty(dataSource.getSchemaFilter())) {
+            xml.addAttribute("filter-schema", dataSource.getSchemaFilter());
+        }
         {
             DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
             xml.startElement("connection");
@@ -693,6 +699,8 @@ public class DataSourceRegistry implements DBPRegistry
                 }
                 curDataSource.setSavePassword("true".equals(atts.getValue("save-password")));
                 curDataSource.setShowSystemObjects("true".equals(atts.getValue("show-system-objects")));
+                curDataSource.setCatalogFilter(atts.getValue("filter-catalog"));
+                curDataSource.setSchemaFilter(atts.getValue("filter-schema"));
                 dataSources.add(curDataSource);
             } else if (localName.equals("connection")) {
                 if (curDataSource != null) {
