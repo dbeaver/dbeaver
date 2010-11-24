@@ -83,12 +83,12 @@ public class DirectedGraphLayoutVisitor
 		graph.nodes.add(entityNode);
 
         Node sourceAnchor = new Node(Boolean.TRUE, entityNode);
-        sourceAnchor.width = preferredSize.width;
-		sourceAnchor.height = preferredSize.height;
+        sourceAnchor.width = 0;
+		sourceAnchor.height = 0;
 
         Node targetAnchor = new Node(Boolean.FALSE, entityNode);
-        targetAnchor.width = preferredSize.width;
-		targetAnchor.height = preferredSize.height;
+        targetAnchor.width = 0;
+		targetAnchor.height = 0;
 	}
 
 	protected void addDiagramEdges(AbstractGraphicalEditPart diagram)
