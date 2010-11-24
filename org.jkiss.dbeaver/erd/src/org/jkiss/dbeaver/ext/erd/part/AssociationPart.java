@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.erd.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -76,6 +77,11 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         Label relationshipLabel = new Label(association.getObject().getName());
         conn.add(relationshipLabel, relationshipLocator);
 */
+        Label toolTip = new Label(getAssociation().getObject().getConstraintType().getName() + " " + getAssociation().getObject().getFullQualifiedName());
+        toolTip.setIcon(DBIcon.TREE_FOREIGN_KEY.getImage());
+        //toolTip.setTextPlacement(PositionConstants.SOUTH);
+        //toolTip.setIconTextGap();
+        conn.setToolTip(toolTip);
 
         return conn;
     }

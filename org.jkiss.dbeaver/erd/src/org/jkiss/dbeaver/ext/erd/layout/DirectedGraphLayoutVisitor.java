@@ -38,8 +38,7 @@ public class DirectedGraphLayoutVisitor
 	 */
 	public void layoutDiagram(AbstractGraphicalEditPart diagram)
 	{
-
-		partToNodesMap = new HashMap<EditPart, Object>();
+		partToNodesMap = new IdentityHashMap<EditPart, Object>();
 		
 		graph = new DirectedGraph();
         graph.setDirection(PositionConstants.SOUTH);

@@ -7,11 +7,10 @@
  */
 package org.jkiss.dbeaver.ext.erd.figures;
 
-import org.eclipse.draw2d.ColorConstants;
-import org.eclipse.draw2d.Figure;
-import org.eclipse.draw2d.LineBorder;
-import org.eclipse.draw2d.ToolbarLayout;
+import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.text.TextFlow;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.erd.model.ERDTable;
 import org.jkiss.dbeaver.ui.DBIcon;
 
@@ -31,9 +30,11 @@ public class EntityFigure extends Figure
 	public EntityFigure(ERDTable table)
 	{
         this.table = table;
+        Image tableImage = table.getObject().isView() ? DBIcon.TREE_VIEW.getImage() : DBIcon.TREE_TABLE.getImage();
+
         attributeFigure = new AttributeFigure(table);
         nameLabel = new EditableLabel(table.getObject().getName());
-        nameLabel.setIcon(table.getObject().isView() ? DBIcon.TREE_VIEW.getImage() : DBIcon.TREE_TABLE.getImage());
+        nameLabel.setIcon(tableImage);
         nameLabel.setForegroundColor(ColorConstants.black);
 
 		ToolbarLayout layout = new ToolbarLayout();
@@ -52,6 +53,9 @@ public class EntityFigure extends Figure
 		add(nameLabel);
 		add(attributeFigure);
 
+        Label toolTip = new Label(table.getObject().getTableType() + " " + table.getObject().getFullQualifiedName());
+        toolTip.setIcon(tableImage);
+        setToolTip(toolTip);
 	}
 
 	public void setSelected(boolean isSelected)
