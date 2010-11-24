@@ -15,6 +15,10 @@ import org.eclipse.gef.Request;
 import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.tools.DirectEditManager;
 import org.eclipse.jface.viewers.TextCellEditor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ext.erd.directedit.ColumnNameTypeCellEditorValidator;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
@@ -50,17 +54,23 @@ public class AttributePart extends PropertyAwarePart
         editableLabel.setIcon(column.getLabelImage());
 
         DiagramPart diagramPart = (DiagramPart) getParent().getParent();
+        Font columnFont = diagramPart.getNormalFont();
+        Color columnColor = diagramPart.getContentPane().getForegroundColor();
         if (column.isInPrimaryKey()) {
+            columnFont = diagramPart.getBoldFont();
+/*
             if (!column.isInForeignKey()) {
-                editableLabel.setFont(diagramPart.getBoldFont());
+                columnFont = diagramPart.getBoldFont();
             } else {
-                editableLabel.setFont(diagramPart.getBoldItalicFont());
+                columnFont = diagramPart.getBoldItalicFont();
             }
-        } else if (column.isInForeignKey()) {
-            editableLabel.setFont(diagramPart.getItalicFont());
-        } else {
-            //editableLabel.setFont(diagramPart.getNormalFont());
+*/
         }
+        if (column.isInForeignKey()) {
+            columnColor = Display.getDefault().getSystemColor(SWT.COLOR_DARK_BLUE);
+        }
+        editableLabel.setFont(columnFont);
+        editableLabel.setForegroundColor(columnColor);
         return editableLabel;
     }
 

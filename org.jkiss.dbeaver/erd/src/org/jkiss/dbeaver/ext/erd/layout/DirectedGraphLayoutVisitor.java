@@ -13,10 +13,7 @@ import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.draw2d.graph.DirectedGraph;
-import org.eclipse.draw2d.graph.Edge;
-import org.eclipse.draw2d.graph.Node;
-import org.eclipse.draw2d.graph.NodeList;
+import org.eclipse.draw2d.graph.*;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
@@ -68,22 +65,30 @@ public class DirectedGraphLayoutVisitor
 		//IFigure fig = diagram.getFigure();
 		for (Object child : diagram.getChildren())
 		{
-			addEntityNodes((GraphicalEditPart) child);
+			addEntityNode((GraphicalEditPart) child);
 		}
 	}
 
 	/**
 	 * Adds nodes to the graph object for use by the GraphLayoutManager
 	 */
-	protected void addEntityNodes(GraphicalEditPart entityPart)
+	protected void addEntityNode(GraphicalEditPart entityPart)
 	{
-		Node n = new Node(entityPart);
+		Subgraph entityNode = new Subgraph(entityPart);
         Dimension preferredSize = entityPart.getFigure().getPreferredSize(400, 300);
-        n.width = preferredSize.width;
-		n.height = preferredSize.height;
-		n.setPadding(new Insets(10, 8, 10, 12));
-		partToNodesMap.put(entityPart, n);
-		graph.nodes.add(n);
+        entityNode.width = preferredSize.width;
+		entityNode.height = preferredSize.height;
+		entityNode.setPadding(new Insets(10, 8, 10, 12));
+		partToNodesMap.put(entityPart, entityNode);
+		graph.nodes.add(entityNode);
+
+        Node sourceAnchor = new Node(Boolean.TRUE, entityNode);
+        sourceAnchor.width = preferredSize.width;
+		sourceAnchor.height = preferredSize.height;
+
+        Node targetAnchor = new Node(Boolean.FALSE, entityNode);
+        targetAnchor.width = preferredSize.width;
+		targetAnchor.height = preferredSize.height;
 	}
 
 	protected void addDiagramEdges(AbstractGraphicalEditPart diagram)
@@ -117,6 +122,14 @@ public class DirectedGraphLayoutVisitor
             log.warn("Source or target node not found");
             return;
         }
+
+        if (source instanceof Subgraph) {
+            source = ((Subgraph)source).members.getNode(0);
+        }
+        if (target instanceof Subgraph) {
+            target = ((Subgraph)target).members.getNode(1);
+        }
+
 		Edge e = new Edge(connectionPart, source, target);
         e.setPadding(10);
 		e.weight = 2;
@@ -178,7 +191,6 @@ public class DirectedGraphLayoutVisitor
 				{
 					bends.add(new AbsoluteBendpoint(x, y + vn.height));
 					bends.add(new AbsoluteBendpoint(x, y));
-
 				}
 				else
 				{
@@ -188,9 +200,21 @@ public class DirectedGraphLayoutVisitor
 */
 			}
 			conn.setRoutingConstraint(bends);
-		}
-		else
-		{
+        } else if (e.source.getParent() != null && e.source.getParent() == e.target.getParent()) {
+            // Self link
+            List<RelativeBendpoint> bends = new ArrayList<RelativeBendpoint>();
+            {
+                RelativeBendpoint bp1 = new RelativeBendpoint(conn);
+                bp1.setRelativeDimensions(new Dimension(100, 0), new Dimension(100, 100));
+                bends.add(bp1);
+            }
+            {
+                RelativeBendpoint bp2 = new RelativeBendpoint(conn);
+                bp2.setRelativeDimensions(new Dimension(100, 120), new Dimension(100, 150));
+                bends.add(bp2);
+            }
+            conn.setRoutingConstraint(bends);
+		} else {
 			conn.setRoutingConstraint(Collections.EMPTY_LIST);
 		}
 
