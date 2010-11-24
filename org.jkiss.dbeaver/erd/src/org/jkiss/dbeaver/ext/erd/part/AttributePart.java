@@ -67,7 +67,7 @@ public class AttributePart extends PropertyAwarePart
 */
         }
         if (column.isInForeignKey()) {
-            columnColor = Display.getDefault().getSystemColor(SWT.COLOR_DARK_BLUE);
+            //columnColor = Display.getDefault().getSystemColor(SWT.COLOR_DARK_BLUE);
         }
         editableLabel.setFont(columnFont);
         editableLabel.setForegroundColor(columnColor);
@@ -181,7 +181,7 @@ public class AttributePart extends PropertyAwarePart
 	
 	
 
-	private ERDTableColumn getColumn()
+	public ERDTableColumn getColumn()
 	{
 		return (ERDTableColumn) getModel();
 	}
