@@ -28,7 +28,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         {
             Composite loginGroup = UIUtils.createControlGroup(parent, "Login", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 200);
 
-            UIUtils.createLabelText(loginGroup, "Username", getUser().getName());
+            UIUtils.createLabelText(loginGroup, "User Name", getUser().getName());
             UIUtils.createLabelText(loginGroup, "Host", getUser().getHost());
 
             UIUtils.createLabelText(loginGroup, "Password", "", SWT.BORDER | SWT.PASSWORD);

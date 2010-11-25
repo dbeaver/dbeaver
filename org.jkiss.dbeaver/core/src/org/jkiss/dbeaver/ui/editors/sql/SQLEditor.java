@@ -735,7 +735,7 @@ public class SQLEditor extends BaseTextEditor
 */
                                 } else if (result.getUpdateCount() != null) {
                                     if (result.getUpdateCount() == 0) {
-                                        setStatus("No rows updated", false);
+                                        setStatus("Statement executed - no rows updated", false);
                                     } else {
                                         setStatus(String.valueOf(result.getUpdateCount()) + " row(s) updated", false);
                                     }

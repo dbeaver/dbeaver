@@ -12,6 +12,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegesPairList;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
@@ -24,7 +25,7 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * MySQLUserEditorGeneral
+ * MySQLUserEditorPrivileges
  */
 public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 {
@@ -34,20 +35,19 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     private org.eclipse.swt.widgets.List catList;
     private PrivilegesPairList privPair;
 
-    private Map<String, Map<String, Boolean>> catalogPrivileges;
+    private volatile Map<String, Map<String, Boolean>> catalogPrivileges;
+    private boolean isLoaded = false;
 
     public void createPartControl(Composite parent)
     {
         pageControl = new PageControl(parent, SWT.NONE);
 
-        Composite container = new Composite(pageControl, SWT.NONE);
-        GridLayout gl = new GridLayout(3, false);
-        container.setLayout(gl);
+        Composite container = UIUtils.createPlaceholder(pageControl, 3, 5);
         GridData gd = new GridData(GridData.FILL_BOTH);
         container.setLayoutData(gd);
 
         {
-            Composite catalogGroup = UIUtils.createControlGroup(container, "Catalog", 1, GridData.FILL_VERTICAL, 200);
+            Composite catalogGroup = UIUtils.createControlGroup(container, "Catalog", 1, GridData.FILL_VERTICAL, 250);
 
             catList = new org.eclipse.swt.widgets.List(catalogGroup, SWT.BORDER | SWT.SINGLE);
             gd = new GridData(GridData.FILL_BOTH);
@@ -69,7 +69,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
 
         {
-            Composite privsGroup = UIUtils.createControlGroup(container, "Privileges", 1, GridData.FILL_VERTICAL, 0);
+            Composite privsGroup = UIUtils.createControlGroup(container, "Privileges", 1, GridData.FILL_VERTICAL, 500);
             gd = (GridData)privsGroup.getLayoutData();
             gd.horizontalSpan = 2;
             gd.widthHint = 400;
@@ -80,28 +80,27 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         pageControl.createProgressPanel();
     }
 
-    public void activatePart()
+    public synchronized void activatePart()
     {
-        try {
-            LoadingUtils.executeService(
-                new DatabaseLoadService<Map<String, Map<String, Boolean>>>("Load catalog privileges", getUser().getDataSource()) {
-                    public Map<String, Map<String, Boolean>> evaluate()
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        try {
-                            return getUser().getCatalogPrivileges(getProgressMonitor());
-                        }
-                        catch (DBException e) {
-                            log.error(e);
-                        }
-                        return null;
+        if (isLoaded) {
+            return;
+        }
+        isLoaded = true;
+        LoadingUtils.executeService(
+            new DatabaseLoadService<Map<String, Map<String, Boolean>>>("Load catalog privileges", getUser().getDataSource()) {
+                public Map<String, Map<String, Boolean>> evaluate()
+                    throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        return getUser().getCatalogPrivileges(getProgressMonitor());
                     }
-                },
-                pageControl.createLoadVisualizer());
-        }
-        catch (Exception ex) {
-            log.error("Can't obtain trigger body", ex);
-        }
+                    catch (DBException e) {
+                        log.error(e);
+                    }
+                    return null;
+                }
+            },
+            pageControl.createLoadVisualizer());
     }
 
     private class PageControl extends ProgressPageControl {

@@ -20,7 +20,6 @@ import org.jkiss.dbeaver.model.DBPObject;
 public abstract class AbstractDatabaseObjectEditor<OBJECT_MANAGER extends IDatabaseObjectManager<? extends DBPObject>>
     extends EditorPart implements IDatabaseObjectEditor<OBJECT_MANAGER>
 {
-
     private OBJECT_MANAGER objectManager;
 
     public void init(IEditorSite site, IEditorInput input)
