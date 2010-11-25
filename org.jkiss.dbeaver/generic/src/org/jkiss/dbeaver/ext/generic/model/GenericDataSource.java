@@ -141,13 +141,11 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                                 // Some drivers uses TABLE_QUALIFIER instead of catalog
                                 catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_QUALIFIER);
                             }
-                            if (!catalogFilters.isEmpty()) {
-                                if (SQLUtils.matchesAnyLike(catalogName, catalogFilters)) {
-                                    catalogNames.add(catalogName);
-                                    monitor.subTask("Extract catalogs - " + catalogName);
-                                } else {
-                                    catalogsFiltered = true;
-                                }
+                            if (catalogFilters.isEmpty() || SQLUtils.matchesAnyLike(catalogName, catalogFilters)) {
+                                catalogNames.add(catalogName);
+                                monitor.subTask("Extract catalogs - " + catalogName);
+                            } else {
+                                catalogsFiltered = true;
                             }
                             if (monitor.isCanceled()) {
                                 break;
@@ -202,7 +200,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                 dbResult = context.getMetaData().getSchemas(
                     catalog == null ? null : catalog.getName(),
                     schemaFilters.size() == 1 ? schemaFilters.get(0) : null);
-            } catch (AbstractMethodError e) {
+            } catch (Throwable e) {
                 // This method not supported (may be old driver version)
                 // Use general schema reading method
                 dbResult = context.getMetaData().getSchemas();
@@ -250,9 +248,9 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                 dbResult.close();
             }
             return tmpSchemas;
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             // Schemas do not supported - jsut ignore this error
-            log.warn("Caould not obtain schema list", ex);
+            log.warn("Could not read schema list", ex);
             return null;
         }
     }
