@@ -107,13 +107,14 @@
                 <driver
                     id="mssql"
                     label="MS SQL Server"
-                    class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
-                    sampleURL="jdbc:sqlserver://{host}[:{port}][;DatabaseName={database}]"
+                    class="net.sourceforge.jtds.jdbc.Driver"
+                    sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
                     webURL="http://microsoft.com"
                     description="MS SQL Server standard driver">
                     <query label="GET_ACTIVE_DB">select db_name()</query>
                     <query label="SET_ACTIVE_DB">use ?</query>
-                    <library path="drivers/sqljdbc4.jar"/>
+                    <!--library path="drivers/sqljdbc4.jar"/-->
+                    <library path="drivers/jtds-1.2.5.jar"/>
                 </driver>
                 <driver
                     id="odbc"
