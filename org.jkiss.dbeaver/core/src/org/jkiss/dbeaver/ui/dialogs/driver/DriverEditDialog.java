@@ -99,7 +99,6 @@ public class DriverEditDialog extends Dialog
 
         Composite group = (Composite) super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 400;
         gd.widthHint = 500;
         group.setLayoutData(gd);
 
@@ -162,7 +161,9 @@ public class DriverEditDialog extends Dialog
             //ListViewer list = new ListViewer(libsGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
             {
                 Composite libsListGroup = new Composite(libsGroup, SWT.TOP);
-                libsListGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+                gd = new GridData(GridData.FILL_BOTH);
+                gd.heightHint = 200;
+                libsListGroup.setLayoutData(gd);
                 GridLayout layout = new GridLayout(1, false);
                 layout.marginHeight = 0;
                 layout.marginWidth = 0;
