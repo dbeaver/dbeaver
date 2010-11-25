@@ -441,6 +441,7 @@ public class UIUtils {
             gd.widthHint = 200;
         }
         text.setLayoutData(gd);
+        text.setData("check", checkbox);
 
         checkbox.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -451,6 +452,17 @@ public class UIUtils {
         });
 
         return text;
+    }
+
+    public static void enableCheckText(Text text, boolean enable)
+    {
+        if (text != null) {
+            final Button checkbox = (Button) text.getData("check");
+            if (checkbox != null) {
+                checkbox.setEnabled(enable);
+                text.setEnabled(enable && checkbox.getSelection());
+            }
+        }
     }
 
     public static Shell getActiveShell()

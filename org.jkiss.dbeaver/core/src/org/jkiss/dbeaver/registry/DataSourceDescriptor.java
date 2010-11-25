@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -42,10 +41,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * DataSourceDescriptor
@@ -72,7 +68,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
     private DBPDataSource dataSource;
 
-    private transient List<DBPDataSourceUser> users = new ArrayList<DBPDataSourceUser>();
+    private transient final List<DBPDataSourceUser> users = new ArrayList<DBPDataSourceUser>();
     private transient Image iconNormal;
     private transient Image iconConnected;
     private transient Image iconError;
@@ -196,7 +192,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     {
         this.reconnect(monitor, false);
 
-        getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
+        getRegistry().fireDataSourceEvent(
             DBPEvent.Action.OBJECT_UPDATE,
             DataSourceDescriptor.this);
 
@@ -243,9 +239,9 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         return dataSource;
     }
 
-    public DBeaverCore getViewCallback()
+    public DataSourceRegistry getRegistry()
     {
-        return driver.getProviderDescriptor().getRegistry().getCore();
+        return driver.getProviderDescriptor().getRegistry();
     }
 
     public boolean isConnected()
@@ -293,7 +289,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             connectTime = new Date();
 
             if (reflect) {
-                getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
+                getRegistry().fireDataSourceEvent(
                     DBPEvent.Action.OBJECT_UPDATE,
                     DataSourceDescriptor.this,
                     true);
@@ -303,7 +299,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             // Failed
             connectFailed = true;
             if (reflect) {
-                getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
+                getRegistry().fireDataSourceEvent(
                     DBPEvent.Action.OBJECT_UPDATE,
                     DataSourceDescriptor.this,
                     false);
@@ -395,7 +391,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         connectTime = null;
 
         if (reflect) {
-            getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
+            getRegistry().fireDataSourceEvent(
                 DBPEvent.Action.OBJECT_UPDATE,
                 this,
                 false);
@@ -424,14 +420,25 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         return true;
     }
 
+    public Collection<DBPDataSourceUser> getUsers()
+    {
+        synchronized (users) {
+            return new ArrayList<DBPDataSourceUser>(users);
+        }
+    }
+
     public void acquire(DBPDataSourceUser user)
     {
-        users.add(user);
+        synchronized (users) {
+            users.add(user);
+        }
     }
 
     public void release(DBPDataSourceUser user)
     {
-        users.remove(user);
+        synchronized (users) {
+            users.remove(user);
+        }
     }
 
     public void fireEvent(DBPEvent event) {

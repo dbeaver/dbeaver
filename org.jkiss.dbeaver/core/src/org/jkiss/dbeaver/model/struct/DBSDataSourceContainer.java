@@ -9,7 +9,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+
+import java.util.Collection;
 
 /**
  * DBSDataSourceContainer
@@ -40,8 +41,6 @@ public interface DBSDataSourceContainer extends DBSEntity
      */
     DBPDataSource getDataSource();
 
-    DBRRunnableContext getViewCallback();
-
     boolean isShowSystemObjects();
 
     String getCatalogFilter();
@@ -71,9 +70,13 @@ public interface DBSDataSourceContainer extends DBSEntity
 
     /**
      * Reconnects datasource.
+     * @param monitor progress monitor
      * @return true on reconnect, false if reconnect action was canceled
+     * @throws org.jkiss.dbeaver.DBException on any DB error
      */
     boolean reconnect(DBRProgressMonitor monitor) throws DBException;
+
+    Collection<DBPDataSourceUser> getUsers();
 
     void acquire(DBPDataSourceUser user);
 

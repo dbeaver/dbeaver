@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -16,8 +18,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IEmbeddedPart;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -29,6 +33,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
 {
+    static final Log log = LogFactory.getLog(ConnectionPageFinal.class);
+
     private ConnectionWizard wizard;
     private DataSourceDescriptor dataSourceDescriptor;
     private Text connectionNameText;
@@ -69,6 +75,16 @@ class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
         if (dataSourceDescriptor != null) {
             savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
             showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
+            catFilterText.setText(CommonUtils.getString(dataSourceDescriptor.getCatalogFilter()));
+            schemaFilterText.setText(CommonUtils.getString(dataSourceDescriptor.getSchemaFilter()));
+            long features = 0;
+            try {
+                features = dataSourceDescriptor.getDriver().getDataSourceProvider().getFeatures();
+            } catch (DBException e) {
+                log.error("Can't obtain data source provider instance", e);
+            }
+            UIUtils.enableCheckText(catFilterText, (features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0);
+            UIUtils.enableCheckText(schemaFilterText, (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
         }
     }
 
@@ -154,8 +170,8 @@ class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
         if (!dataSource.isSavePassword()) {
             dataSource.resetPassword();
         }
-        dataSource.setCatalogFilter(catFilterText == null ? null : catFilterText.getText());
-        dataSource.setSchemaFilter(schemaFilterText == null ? null : schemaFilterText.getText());
+        dataSource.setCatalogFilter(catFilterText == null || !catFilterText.isEnabled() ? null : catFilterText.getText());
+        dataSource.setSchemaFilter(schemaFilterText == null || !schemaFilterText.isEnabled() ? null : schemaFilterText.getText());
     }
 
     private void testConnection()

@@ -43,7 +43,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
             if (!dataSourceDescriptor.isSavePassword()) {
                 // Ask for password
                 if (!askForPassword(dataSourceDescriptor)) {
-                    dataSourceDescriptor.getViewCallback().getDataSourceRegistry().fireDataSourceEvent(
+                    dataSourceDescriptor.getRegistry().fireDataSourceEvent(
                         DBPEvent.Action.OBJECT_UPDATE,
                         dataSourceContainer,
                         false);

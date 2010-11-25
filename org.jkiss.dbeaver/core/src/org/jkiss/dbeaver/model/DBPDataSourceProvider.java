@@ -13,7 +13,12 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
  */
 public interface DBPDataSourceProvider
 {
+    public static final long FEATURE_CATALOGS    = 1;
+    public static final long FEATURE_SCHEMAS     = 2;
+
     void init(DBPApplication application);
+
+    long getFeatures();
 
     DBPPropertyGroup getConnectionProperties(
         DBPDriver driver,

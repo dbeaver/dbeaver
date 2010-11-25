@@ -54,5 +54,11 @@ public final class SQLUtils {
         }
         return query;
     }
-    
+
+    public static boolean matchesLike(String string, String like)
+    {
+        like = like.replace("%", ".*").replace("_", ".");
+        Pattern pattern = Pattern.compile(like, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+        return pattern.matcher(string).matches();
+    }
 }

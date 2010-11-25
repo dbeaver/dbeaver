@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -135,11 +136,16 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                         while (dbResult.next()) {
                             String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
                             if (CommonUtils.isEmpty(catalogName)) {
+                                // Some drivers uses TABLE_QUALIFIER instead of catalog
                                 catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_QUALIFIER);
                             }
                             if (!CommonUtils.isEmpty(catalogName)) {
-                                catalogNames.add(catalogName);
-                                monitor.subTask("Extract catalogs - " + catalogName);
+                                if (CommonUtils.isEmpty(getContainer().getCatalogFilter()) ||
+                                    SQLUtils.matchesLike(catalogName, getContainer().getCatalogFilter()))
+                                {
+                                    catalogNames.add(catalogName);
+                                    monitor.subTask("Extract catalogs - " + catalogName);
+                                }
                             }
                             if (monitor.isCanceled()) {
                                 break;
@@ -186,13 +192,18 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         throws DBException
     {
         try {
+            String schemaPattern = getContainer().getSchemaFilter();
+            if (CommonUtils.isEmpty(schemaPattern)) {
+                schemaPattern = null;
+            }
+
             List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
             JDBCResultSet dbResult;
             if (catalog == null) {
                 dbResult = context.getMetaData().getSchemas();
             } else {
                 try {
-                    dbResult = context.getMetaData().getSchemas(catalog.getName(), null);
+                    dbResult = context.getMetaData().getSchemas(catalog.getName(), schemaPattern);
                 } catch (Throwable e) {
                     // This method not supported (may be old driver version)
                     // Use general schema reading method
@@ -204,9 +215,14 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                 while (dbResult.next()) {
                     String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
                     if (CommonUtils.isEmpty(schemaName)) {
+                        // some drivers uses TABLE_OWNER column instead of TABLE_SCHEM
                         schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_OWNER);
                     }
                     if (CommonUtils.isEmpty(schemaName)) {
+                        continue;
+                    }
+                    if (!CommonUtils.isEmpty(schemaPattern) && !SQLUtils.matchesLike(schemaName, schemaPattern)) {
+                        // Check pattern
                         continue;
                     }
 
@@ -235,6 +251,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
             return tmpSchemas;
         } catch (SQLException ex) {
             // Schemas do not supported - jsut ignore this error
+            log.warn("Caould not obtain schema list", ex);
             return null;
         }
     }

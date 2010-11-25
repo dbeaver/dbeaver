@@ -41,6 +41,11 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider {
         return ovrValue != null ? ovrValue : super.getConnectionPropertyDefaultValue(name, value);
     }
 
+    public long getFeatures()
+    {
+        return FEATURE_CATALOGS;
+    }
+
     public DBPDataSource openDataSource(
         DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException

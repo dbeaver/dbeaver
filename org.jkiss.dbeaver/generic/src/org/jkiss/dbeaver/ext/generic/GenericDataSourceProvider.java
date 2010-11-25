@@ -17,6 +17,11 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
     {
     }
 
+    public long getFeatures()
+    {
+        return FEATURE_CATALOGS | FEATURE_SCHEMAS;
+    }
+
     public DBPDataSource openDataSource(
         DBRProgressMonitor monitor,
         DBSDataSourceContainer container)

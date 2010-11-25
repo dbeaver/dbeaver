@@ -112,14 +112,25 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
 
             // Read catalogs
             List<MySQLCatalog> tmpCatalogs = new ArrayList<MySQLCatalog>();
-            dbStat = context.prepareStatement("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
+            StringBuilder catalogQuery = new StringBuilder("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
+            if (!CommonUtils.isEmpty(getContainer().getCatalogFilter())) {
+                catalogQuery.append(" WHERE ").append(MySQLConstants.COL_SCHEMA_NAME).append(" LIKE ?");
+            }
+            dbStat = context.prepareStatement(catalogQuery.toString());
             try {
+                if (!CommonUtils.isEmpty(getContainer().getCatalogFilter())) {
+                    dbStat.setString(1, getContainer().getCatalogFilter());
+                }
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {
-                        String schemaName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SCHEMA_NAME);
-                        if (!CommonUtils.isEmpty(schemaName)) {
-                            MySQLCatalog catalog = new MySQLCatalog(this, schemaName);
+                        String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SCHEMA_NAME);
+                        if (!CommonUtils.isEmpty(catalogName)) {
+                            if (!getContainer().isShowSystemObjects() && catalogName.equalsIgnoreCase(MySQLConstants.INFO_SCHEMA_NAME)) {
+                                // Skip system catalog
+                                continue;
+                            }
+                            MySQLCatalog catalog = new MySQLCatalog(this, catalogName);
                             catalog.setDefaultCharset(
                                 JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_CHARACTER_SET_NAME));
                             catalog.setDefaultCollation(
