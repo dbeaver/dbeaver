@@ -198,20 +198,22 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
 
             List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
             JDBCResultSet dbResult;
-            if (catalog == null) {
+            try {
+                dbResult = context.getMetaData().getSchemas(
+                    catalog == null ? null : catalog.getName(),
+                    schemaFilters.size() == 1 ? schemaFilters.get(0) : null);
+            } catch (AbstractMethodError e) {
+                // This method not supported (may be old driver version)
+                // Use general schema reading method
                 dbResult = context.getMetaData().getSchemas();
-            } else {
-                try {
-                    dbResult = context.getMetaData().getSchemas(catalog.getName(), null);
-                } catch (AbstractMethodError e) {
-                    // This method not supported (may be old driver version)
-                    // Use general schema reading method
-                    dbResult = context.getMetaData().getSchemas();
-                }
             }
+
 
             try {
                 while (dbResult.next()) {
+                    if (context.getProgressMonitor().isCanceled()) {
+                        break;
+                    }
                     String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
                     if (CommonUtils.isEmpty(schemaName)) {
                         // some drivers uses TABLE_OWNER column instead of TABLE_SCHEM
@@ -224,7 +226,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                         // Check pattern
                         continue;
                     }
-
+                    context.getProgressMonitor().subTask("Schema " + schemaName);
                     String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CATALOG);
 
                     if (!CommonUtils.isEmpty(catalogName)) {

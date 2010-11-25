@@ -944,7 +944,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         return makeResultSet(
             getOriginal().getSchemas(),
-            "Loa schemas");
+            "Load schemas");
     }
 
     public JDBCResultSet getCatalogs()
