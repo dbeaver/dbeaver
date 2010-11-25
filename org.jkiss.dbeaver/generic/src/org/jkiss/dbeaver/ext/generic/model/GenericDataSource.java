@@ -204,7 +204,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
             } else {
                 try {
                     dbResult = context.getMetaData().getSchemas(catalog.getName(), schemaPattern);
-                } catch (Throwable e) {
+                } catch (AbstractMethodError e) {
                     // This method not supported (may be old driver version)
                     // Use general schema reading method
                     dbResult = context.getMetaData().getSchemas();
