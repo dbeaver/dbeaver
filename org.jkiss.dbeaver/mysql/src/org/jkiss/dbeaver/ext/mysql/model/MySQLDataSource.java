@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
@@ -113,13 +114,20 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
             // Read catalogs
             List<MySQLCatalog> tmpCatalogs = new ArrayList<MySQLCatalog>();
             StringBuilder catalogQuery = new StringBuilder("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
-            if (!CommonUtils.isEmpty(getContainer().getCatalogFilter())) {
-                catalogQuery.append(" WHERE ").append(MySQLConstants.COL_SCHEMA_NAME).append(" LIKE ?");
+            List<String> catalogFilters = SQLUtils.splitFilter(getContainer().getCatalogFilter());
+            if (!catalogFilters.isEmpty()) {
+                catalogQuery.append(" WHERE ");
+                for (int i = 0; i < catalogFilters.size(); i++) {
+                    if (i > 0) catalogQuery.append(" OR ");
+                    catalogQuery.append(MySQLConstants.COL_SCHEMA_NAME).append(" LIKE ?");
+                }
             }
             dbStat = context.prepareStatement(catalogQuery.toString());
             try {
-                if (!CommonUtils.isEmpty(getContainer().getCatalogFilter())) {
-                    dbStat.setString(1, getContainer().getCatalogFilter());
+                if (!catalogFilters.isEmpty()) {
+                    for (int i = 0; i < catalogFilters.size(); i++) {
+                        dbStat.setString(i + 1, catalogFilters.get(i));
+                    }
                 }
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {

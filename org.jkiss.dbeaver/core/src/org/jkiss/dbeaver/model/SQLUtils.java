@@ -4,9 +4,11 @@
 
 package org.jkiss.dbeaver.model;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,6 +55,24 @@ public final class SQLUtils {
             }
         }
         return query;
+    }
+
+    public static List<String> splitFilter(String filter)
+    {
+        if (CommonUtils.isEmpty(filter)) {
+            return Collections.emptyList();
+        }
+        return CommonUtils.splitString(filter, ',');
+    }
+
+    public static boolean matchesAnyLike(String string, Collection<String> likes)
+    {
+        for (String like : likes) {
+            if (matchesLike(string, like)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean matchesLike(String string, String like)

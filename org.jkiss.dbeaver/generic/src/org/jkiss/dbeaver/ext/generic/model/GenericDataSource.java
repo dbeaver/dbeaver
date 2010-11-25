@@ -125,10 +125,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                     dbResult.close();
                 }
             }
+            boolean catalogsFiltered = false;
             {
                 // Read catalogs
                 monitor.subTask("Extract catalogs");
                 monitor.worked(1);
+                List<String> catalogFilters = SQLUtils.splitFilter(getContainer().getCatalogFilter());
                 List<String> catalogNames = new ArrayList<String>();
                 try {
                     JDBCResultSet dbResult = metaData.getCatalogs();
@@ -139,12 +141,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                                 // Some drivers uses TABLE_QUALIFIER instead of catalog
                                 catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_QUALIFIER);
                             }
-                            if (!CommonUtils.isEmpty(catalogName)) {
-                                if (CommonUtils.isEmpty(getContainer().getCatalogFilter()) ||
-                                    SQLUtils.matchesLike(catalogName, getContainer().getCatalogFilter()))
-                                {
+                            if (!catalogFilters.isEmpty()) {
+                                if (SQLUtils.matchesAnyLike(catalogName, catalogFilters)) {
                                     catalogNames.add(catalogName);
                                     monitor.subTask("Extract catalogs - " + catalogName);
+                                } else {
+                                    catalogsFiltered = true;
                                 }
                             }
                             if (monitor.isCanceled()) {
@@ -157,7 +159,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                 } catch (SQLException e) {
                     // Error reading catalogs - just skip em
                 }
-                if (!catalogNames.isEmpty()) {
+                if (!catalogNames.isEmpty() || catalogsFiltered) {
                     this.catalogs = new ArrayList<GenericCatalog>();
                     for (String catalogName : catalogNames) {
                         GenericCatalog catalog = new GenericCatalog(this, catalogName);
@@ -166,16 +168,16 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                 }
             }
 
-            if (CommonUtils.isEmpty(catalogs)) {
+            if (CommonUtils.isEmpty(catalogs) && !catalogsFiltered) {
                 // Catalogs not supported - try to read root schemas
                 monitor.subTask("Extract schemas");
                 monitor.worked(1);
                 List<GenericSchema> tmpSchemas = loadSchemas(context, null);
-                if (!tmpSchemas.isEmpty()) {
+                if (tmpSchemas != null) {
                     this.schemas = tmpSchemas;
                 }
 
-                if (CommonUtils.isEmpty(schemas)) {
+                if (schemas == null) {
                     structureContainer = new DataSourceEntityContainer();
                     structureContainer.initCache();
                 }
@@ -192,10 +194,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         throws DBException
     {
         try {
-            String schemaPattern = getContainer().getSchemaFilter();
-            if (CommonUtils.isEmpty(schemaPattern)) {
-                schemaPattern = null;
-            }
+            List<String> schemaFilters = SQLUtils.splitFilter(getContainer().getSchemaFilter());
 
             List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
             JDBCResultSet dbResult;
@@ -203,7 +202,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                 dbResult = context.getMetaData().getSchemas();
             } else {
                 try {
-                    dbResult = context.getMetaData().getSchemas(catalog.getName(), schemaPattern);
+                    dbResult = context.getMetaData().getSchemas(catalog.getName(), null);
                 } catch (AbstractMethodError e) {
                     // This method not supported (may be old driver version)
                     // Use general schema reading method
@@ -221,7 +220,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                     if (CommonUtils.isEmpty(schemaName)) {
                         continue;
                     }
-                    if (!CommonUtils.isEmpty(schemaPattern) && !SQLUtils.matchesLike(schemaName, schemaPattern)) {
+                    if (!schemaFilters.isEmpty() && !SQLUtils.matchesAnyLike(schemaName, schemaFilters)) {
                         // Check pattern
                         continue;
                     }
