@@ -199,7 +199,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
             if (provider == null || !provider.isDriversManagable()) {
                 provider = onlyManagableProvider;
             }
-            EditDriverDialog dialog = new EditDriverDialog(getShell(), provider);
+            DriverEditDialog dialog = new DriverEditDialog(getShell(), provider);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 treeControl.refresh(provider);
             }
@@ -209,7 +209,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
     private void editDriver()
     {
         if (selectedDriver != null) {
-            EditDriverDialog dialog = new EditDriverDialog(getShell(), selectedDriver);
+            DriverEditDialog dialog = new DriverEditDialog(getShell(), selectedDriver);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 // Do nothing
             }

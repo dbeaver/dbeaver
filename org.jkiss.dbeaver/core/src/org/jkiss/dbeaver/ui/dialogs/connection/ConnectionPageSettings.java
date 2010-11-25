@@ -17,7 +17,7 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.ui.dialogs.driver.EditDriverDialog;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -160,7 +160,7 @@ class ConnectionPageSettings extends WizardPage implements IDataSourceConnection
 
     public boolean openDriverEditor()
     {
-        EditDriverDialog dialog = new EditDriverDialog(wizard.getShell(), this.getDriver());
+        DriverEditDialog dialog = new DriverEditDialog(wizard.getShell(), this.getDriver());
         return dialog.open() == IDialogConstants.OK_ID;
     }
 

@@ -28,18 +28,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     private DataSourceProviderDescriptor providerDescriptor;
     private String id;
-    private String name;
-    private String description;
+    private String name, origName;
+    private String description, origDescription;
+    private String driverClassName, origClassName;
+    private Integer driverDefaultPort, origDefaultPort;
+    private String sampleURL, origSampleURL;
+    private String webURL, origWebURL;
     private Image icon;
-    private String driverClassName;
-    private Integer driverDefaultPort;
-    private String sampleURL;
-    private String webURL;
     private boolean supportsDriverProperties;
     private boolean custom;
     private boolean modified;
     private boolean disabled;
-    private List<DriverLibraryDescriptor> libraries = new ArrayList<DriverLibraryDescriptor>();
+    private List<DriverLibraryDescriptor> libraries = new ArrayList<DriverLibraryDescriptor>(), origLibraries;
     private List<PropertyGroupDescriptor> propertyGroups = new ArrayList<PropertyGroupDescriptor>();
     private List<DriverCustomQueryDescriptor> customQueries = new ArrayList<DriverCustomQueryDescriptor>();
 
@@ -62,33 +62,35 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         super(providerDescriptor.getContributor());
         this.providerDescriptor = providerDescriptor;
         this.id = CommonUtils.getString(config.getAttribute("id"));
-        this.name = CommonUtils.getString(config.getAttribute("label"));
-        this.description = config.getAttribute("description");
-        String iconName = config.getAttribute("icon");
-        if (!CommonUtils.isEmpty(iconName)) {
-            this.icon = iconToImage(iconName);
-        }
-        if (this.icon == null) {
-            this.icon = DBIcon.GEN_DATABASE.getImage();
-        }
-        this.driverClassName = config.getAttribute("class");
+        this.origName = this.name = CommonUtils.getString(config.getAttribute("label"));
+        this.origDescription = this.description = config.getAttribute("description");
+        this.origClassName = this.driverClassName = config.getAttribute("class");
         if (config.getAttribute("defaultPort") != null) {
             try {
-                this.driverDefaultPort = new Integer(config.getAttribute("defaultPort"));
+                this.origDefaultPort = this.driverDefaultPort = new Integer(config.getAttribute("defaultPort"));
             }
             catch (NumberFormatException ex) {
                 log.warn("Bad default port for driver '" + name + "' specified: " + ex.getMessage());
             }
         }
-        this.sampleURL = config.getAttribute("sampleURL");
-        this.webURL = config.getAttribute("webURL");
+        this.origSampleURL = this.sampleURL = config.getAttribute("sampleURL");
+        this.origWebURL = this.webURL = config.getAttribute("webURL");
         this.supportsDriverProperties = !"false".equals(config.getAttribute("supportsDriverProperties"));
         this.custom = false;
         this.isLoaded = false;
 
         IConfigurationElement[] libElements = config.getChildren("library");
         for (IConfigurationElement lib : libElements) {
-            libraries.add(new DriverLibraryDescriptor(this, lib));
+            this.libraries.add(new DriverLibraryDescriptor(this, lib));
+        }
+        this.origLibraries = new ArrayList<DriverLibraryDescriptor>(this.libraries);
+
+        String iconName = config.getAttribute("icon");
+        if (!CommonUtils.isEmpty(iconName)) {
+            this.icon = iconToImage(iconName);
+        }
+        if (this.icon == null) {
+            this.icon = DBIcon.GEN_DATABASE.getImage();
         }
 
         IConfigurationElement[] propElements = config.getChildren(PropertyGroupDescriptor.PROPERTY_GROUP_TAG);
@@ -193,7 +195,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public void setDriverClassName(String driverClassName)
     {
-        this.driverClassName = driverClassName;
+        if (this.driverClassName == null || !this.driverClassName.equals(driverClassName)) {
+            this.driverClassName = driverClassName;
+            this.driverInstance = null;
+            this.driverClass = null;
+            this.isLoaded = false;
+        }
     }
 
     public Object getDriverInstance()
@@ -395,6 +402,41 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.classLoader = new DriverClassLoader(
             libraryURLs.toArray(new URL[libraryURLs.size()]),
             ClassLoader.getSystemClassLoader());
+    }
+
+    public String getOrigName()
+    {
+        return origName;
+    }
+
+    public String getOrigDescription()
+    {
+        return origDescription;
+    }
+
+    public String getOrigClassName()
+    {
+        return origClassName;
+    }
+
+    public Integer getOrigDefaultPort()
+    {
+        return origDefaultPort;
+    }
+
+    public String getOrigSampleURL()
+    {
+        return origSampleURL;
+    }
+
+    public String getOrigWebURL()
+    {
+        return origWebURL;
+    }
+
+    public List<DriverLibraryDescriptor> getOrigLibraries()
+    {
+        return origLibraries;
     }
 }
 

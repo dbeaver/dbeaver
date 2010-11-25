@@ -39,11 +39,11 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * EditDriverDialog
+ * DriverEditDialog
  */
-public class EditDriverDialog extends Dialog
+public class DriverEditDialog extends Dialog
 {
-    static final Log log = LogFactory.getLog(EditDriverDialog.class);
+    static final Log log = LogFactory.getLog(DriverEditDialog.class);
 
     private DataSourceProviderDescriptor provider;
     private DriverDescriptor driver;
@@ -60,14 +60,14 @@ public class EditDriverDialog extends Dialog
     private Text driverURLText;
     private Text driverPortText;
 
-    public EditDriverDialog(Shell shell, DriverDescriptor driver)
+    public DriverEditDialog(Shell shell, DriverDescriptor driver)
     {
         super(shell);
         this.driver = driver;
         this.provider = driver.getProviderDescriptor();
     }
 
-    public EditDriverDialog(Shell shell, DataSourceProviderDescriptor provider)
+    public DriverEditDialog(Shell shell, DataSourceProviderDescriptor provider)
     {
         super(shell);
         this.provider = provider;
@@ -355,6 +355,10 @@ public class EditDriverDialog extends Dialog
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         if (provider.isDriversManagable()) {
+            Button resetButton = createButton(parent, IDialogConstants.RETRY_ID, "Reset to Defaults", false);
+            if (driver.isCustom()) {
+                resetButton.setEnabled(false);
+            }
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
         } else {
@@ -382,6 +386,32 @@ public class EditDriverDialog extends Dialog
             getButton(IDialogConstants.OK_ID).setEnabled(
                 !CommonUtils.isEmpty(driverNameText.getText()) &&
                 !CommonUtils.isEmpty(driverClassText.getText()));
+        }
+    }
+
+    private void resetSettings()
+    {
+        driverNameText.setText(CommonUtils.getString(driver.getOrigName()));
+        driverDescText.setText(CommonUtils.getString(driver.getOrigDescription()));
+        driverClassText.setText(CommonUtils.getString(driver.getOrigClassName()));
+        driverURLText.setText(CommonUtils.getString(driver.getOrigSampleURL()));
+        driverPortText.setText(driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort().toString());
+        libList.getList().removeAll();
+        for (DriverLibraryDescriptor lib : driver.getOrigLibraries()) {
+            if (lib.isDisabled()) {
+                continue;
+            }
+            libList.getList().add(lib.getLibraryFile().getPath());
+        }
+    }
+
+    @Override
+    protected void buttonPressed(int buttonId)
+    {
+        if (buttonId == IDialogConstants.RETRY_ID) {
+            resetSettings();
+        } else {
+            super.buttonPressed(buttonId);
         }
     }
 
