@@ -64,11 +64,6 @@ public class ProgressPageControl extends Composite
         }
     }
 
-    protected int getProgressCellCount()
-    {
-        return 0;
-    }
-
     public final Composite createProgressPanel()
     {
         return createProgressPanel(this);
@@ -91,13 +86,14 @@ public class ProgressPageControl extends Composite
         Composite infoGroup = new Composite(container, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         infoGroup.setLayoutData(gd);
-        GridLayout gl = new GridLayout(getProgressCellCount() + 3, false);
+        GridLayout gl = new GridLayout(4, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         infoGroup.setLayout(gl);
 
         listInfoLabel = new Label(infoGroup, SWT.NONE);
         gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.minimumWidth = 100;
         listInfoLabel.setLayoutData(gd);
 
         progressBar = new ProgressBar(infoGroup, SWT.SMOOTH | SWT.HORIZONTAL);
@@ -130,7 +126,12 @@ public class ProgressPageControl extends Composite
         progressBar.setVisible(false);
         progressTools.setVisible(false);
 
-        return infoGroup;
+        Composite customControls = new Composite(infoGroup, SWT.NONE);
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        customControls.setLayoutData(gd);
+        customControls.setLayout(new FillLayout(SWT.HORIZONTAL));
+
+        return customControls;
     }
 
     @Override

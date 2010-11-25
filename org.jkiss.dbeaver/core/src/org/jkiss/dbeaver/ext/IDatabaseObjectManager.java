@@ -19,8 +19,11 @@ public interface IDatabaseObjectManager<OBJECT_TYPE extends DBSObject> extends I
 
     boolean supportsEdit();
 
+    boolean isDirty();
+
     void saveChanges(DBRProgressMonitor monitor) throws DBException;
 
     void resetChanges(DBRProgressMonitor monitor);
 
+    void addCommand(IDatabaseObjectCommand<OBJECT_TYPE> command);
 }

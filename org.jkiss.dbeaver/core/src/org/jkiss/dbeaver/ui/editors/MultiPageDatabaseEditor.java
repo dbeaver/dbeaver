@@ -79,11 +79,6 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
     {
     }
 
-    public boolean isDirty()
-    {
-        return false;
-    }
-
     public boolean isSaveAsAllowed()
     {
         return false;

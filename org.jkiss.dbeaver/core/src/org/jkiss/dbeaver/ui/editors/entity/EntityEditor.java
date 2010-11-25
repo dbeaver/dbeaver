@@ -8,7 +8,6 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 
@@ -52,6 +52,36 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 
     private IDatabaseObjectManager objectManager;
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
+
+    @Override
+    public boolean isDirty()
+    {
+        return objectManager.isDirty();
+    }
+
+    /**
+     * Saves data in all nested editors
+     * @param monitor progress monitor
+     */
+    public void doSave(IProgressMonitor monitor)
+    {
+        if (objectManager.isDirty()) {
+            try {
+                objectManager.saveChanges(new DefaultProgressMonitor(monitor));
+            } catch (DBException e) {
+                UIUtils.showErrorDialog(getSite().getShell(), "Could not save '" + objectManager.getObject().getName() + "'", e.getMessage(), e);
+            }
+        }
+/*
+        int pageCount = getPageCount();
+        for (int i = 0; i < pageCount; i++) {
+            IEditorPart nestedEditor = getEditor(pageCount);
+            if (nestedEditor != null && nestedEditor.isDirty()) {
+                nestedEditor.doSave(monitor);
+            }
+        }
+*/
+    }
 
     protected void createPages()
     {

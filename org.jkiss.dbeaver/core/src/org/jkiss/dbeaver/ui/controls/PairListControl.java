@@ -211,6 +211,11 @@ public class PairListControl<ELEMENT> extends Composite
         fromTable.remove(fromTable.getSelectionIndices());
 
         updateControls();
+
+        Event event = new Event();
+        event.widget = this;
+        event.data = checkList;
+        super.notifyListeners(SWT.Modify, event);
     }
 
 }

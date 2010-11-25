@@ -10,15 +10,15 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegesPairList;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
@@ -37,6 +37,13 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
     private volatile Map<String, Map<String, Boolean>> catalogPrivileges;
     private boolean isLoaded = false;
+    private boolean dirty = false;
+
+    @Override
+    public boolean isDirty()
+    {
+        return dirty;
+    }
 
     public void createPartControl(Composite parent)
     {
@@ -75,6 +82,13 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             gd.widthHint = 400;
 
             privPair = new PrivilegesPairList(privsGroup);
+            privPair.addListener(SWT.Modify, new Listener() {
+                public void handleEvent(Event event)
+                {
+                    dirty = true;
+                    firePropertyChange(PROP_DIRTY);
+                }
+            });
         }
 
         pageControl.createProgressPanel();
@@ -103,9 +117,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             pageControl.createLoadVisualizer());
     }
 
-    private class PageControl extends ProgressPageControl {
+    private class PageControl extends ObjectEditorPageControl {
         public PageControl(Composite parent, int style) {
-            super(parent, style, getSite().getPart());
+            super(parent, style, MySQLUserEditorPrivileges.this);
         }
 
         public ProgressVisualizer<Map<String, Map<String, Boolean>>> createLoadVisualizer() {
@@ -124,6 +138,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 for (String catalog : catalogPrivileges.keySet()) {
                     catList.add(catalog);
                 }
+                //setInfo(String.valueOf(catalogPrivileges.size()) + " privileges");
             }
         }
 

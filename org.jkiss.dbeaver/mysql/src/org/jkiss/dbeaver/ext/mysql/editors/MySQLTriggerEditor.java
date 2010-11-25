@@ -16,7 +16,7 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 /**
  * MySQLTriggerEditor
  */
-public class MySQLTriggerEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManager<MySQLTrigger>>
+public class MySQLTriggerEditor extends AbstractDatabaseObjectEditor<MySQLTrigger, IDatabaseObjectManager<MySQLTrigger>>
 {
     static final Log log = LogFactory.getLog(MySQLTriggerEditor.class);
 

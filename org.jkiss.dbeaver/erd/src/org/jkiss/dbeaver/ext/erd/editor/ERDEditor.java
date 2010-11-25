@@ -159,7 +159,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
 
     @Override
     public void createPartControl(Composite parent) {
-        progressControl = new ProgressControl(parent, SWT.NONE, this.getSite().getPart());
+        progressControl = new ProgressControl(parent, SWT.NONE, this);
 
         super.createPartControl(progressControl.createContentContainer());
 
@@ -729,6 +729,10 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         objectManager = manager;
     }
 
+    public void resetObjectChanges()
+    {
+    }
+
     public void activatePart() {
         if (isLoaded) {
             return;
@@ -875,10 +879,6 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         @Override
         public void dispose() {
             super.dispose();
-        }
-
-        protected int getProgressCellCount() {
-            return 1;
         }
 
         @Override

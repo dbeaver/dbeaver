@@ -22,7 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * MySQLDDLEditor
  */
-public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManager<MySQLTable>>
+public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<MySQLTable, IDatabaseObjectManager<MySQLTable>>
 {
     static final Log log = LogFactory.getLog(MySQLDDLEditor.class);
 

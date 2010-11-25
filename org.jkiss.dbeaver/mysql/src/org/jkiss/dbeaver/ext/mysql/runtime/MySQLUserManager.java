@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.runtime.AbstractDatabaseObjectManager;
 public class MySQLUserManager extends AbstractDatabaseObjectManager<MySQLUser> {
     @Override
     public boolean supportsEdit() {
-        return super.supportsEdit();
+        return true;
     }
 
     @Override

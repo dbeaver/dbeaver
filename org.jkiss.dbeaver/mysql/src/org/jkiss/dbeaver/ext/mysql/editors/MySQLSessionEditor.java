@@ -84,7 +84,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
 
     public void createPartControl(Composite parent) {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
-        pageControl = new PageControl(parent, SWT.NONE, getSite().getPart());
+        pageControl = new PageControl(parent, SWT.NONE, this);
 
         SashForm sash = new SashForm(pageControl, SWT.VERTICAL | SWT.SMOOTH);
         sash.setSashWidth(10);
@@ -299,11 +299,6 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
 
         public PageControl(Composite parent, int style, IWorkbenchPart workbenchPart) {
             super(parent, style, workbenchPart);
-        }
-
-        @Override
-        protected int getProgressCellCount() {
-            return 3;
         }
 
         @Override

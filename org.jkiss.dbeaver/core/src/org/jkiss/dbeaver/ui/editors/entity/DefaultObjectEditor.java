@@ -111,7 +111,7 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart
             gd = new GridData(GridData.FILL_BOTH);
             //gd.heightHint = 100;
             properties.getControl().setLayoutData(gd);
-            properties.setCurrentObject(getSite().getPart(), itemObject);
+            properties.setCurrentObject(this, itemObject);
         }
     }
 

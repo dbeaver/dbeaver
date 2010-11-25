@@ -14,7 +14,7 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 /**
  * DatabaseDataEditor
  */
-public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManager<DBSDataContainer>> implements ResultSetProvider
+public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataContainer, IDatabaseObjectManager<DBSDataContainer>> implements ResultSetProvider
 {
 
     private ResultSetViewer resultSetView;

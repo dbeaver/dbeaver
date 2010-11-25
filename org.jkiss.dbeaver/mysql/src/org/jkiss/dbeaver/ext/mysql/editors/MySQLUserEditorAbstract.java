@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 /**
  * MySQLUserEditorAbstract
  */
-public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEditor<MySQLUserManager>
+public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEditor<MySQLUser, MySQLUserManager>
 {
 
     public MySQLUser getUser() {

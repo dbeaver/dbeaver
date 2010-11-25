@@ -16,7 +16,7 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 /**
  * MySQLProcedureEditor
  */
-public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<IDatabaseObjectManager<MySQLProcedure>>
+public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<MySQLProcedure, IDatabaseObjectManager<MySQLProcedure>>
 {
     static final Log log = LogFactory.getLog(MySQLProcedureEditor.class);
 
