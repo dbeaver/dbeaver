@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
@@ -68,6 +69,12 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         if (objectManager.isDirty()) {
             try {
                 objectManager.saveChanges(new DefaultProgressMonitor(monitor));
+                Display.getDefault().asyncExec(new Runnable() {
+                    public void run()
+                    {
+                        firePropertyChange(PROP_DIRTY);
+                    }
+                });
             } catch (DBException e) {
                 UIUtils.showErrorDialog(getSite().getShell(), "Could not save '" + objectManager.getObject().getName() + "'", e.getMessage(), e);
             }

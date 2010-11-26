@@ -14,7 +14,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.DatabaseObjectChangeAction;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegesPairList;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
+import org.jkiss.dbeaver.runtime.AbstractDatabaseObjectCommand;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -37,13 +40,6 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
     private volatile Map<String, Map<String, Boolean>> catalogPrivileges;
     private boolean isLoaded = false;
-    private boolean dirty = false;
-
-    @Override
-    public boolean isDirty()
-    {
-        return dirty;
-    }
 
     public void createPartControl(Composite parent)
     {
@@ -85,8 +81,15 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             privPair.addListener(SWT.Modify, new Listener() {
                 public void handleEvent(Event event)
                 {
-                    dirty = true;
-                    firePropertyChange(PROP_DIRTY);
+                    addChangeCommand(new AbstractDatabaseObjectCommand<MySQLUser>() {
+                        public void updateObjectState(MySQLUser object)
+                        {
+                        }
+                        public DatabaseObjectChangeAction[] getChangeActions()
+                        {
+                            return null;
+                        }
+                    });
                 }
             });
         }

@@ -72,22 +72,19 @@ public class ObjectEditorPageControl extends ProgressPageControl {
         saveChangesButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                try {
-                    DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
-                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                        {
-                            try {
-                                getEditorPart().getObjectManager().saveChanges(monitor);
-                            } catch (DBException e1) {
-                                throw new InvocationTargetException(e1);
-                            }
+                DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
+                        getEditorPart().doSave(monitor.getNestedMonitor());
+/*
+                        try {
+                            getObjectManager().saveChanges(monitor);
+                        } catch (DBException e1) {
+                            throw new InvocationTargetException(e1);
                         }
-                    });
-                } catch (InvocationTargetException e1) {
-                    log.error("Error saving editor's content", e1.getTargetException());
-                } catch (InterruptedException e1) {
-                    // do nothing
-                }
+*/
+                    }
+                });
             }
         });
 
