@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.DatabaseObjectChangeAction;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegesPairList;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.runtime.AbstractDatabaseObjectCommand;
@@ -81,11 +81,16 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             privPair.addListener(SWT.Modify, new Listener() {
                 public void handleEvent(Event event)
                 {
-                    addChangeCommand(new AbstractDatabaseObjectCommand<MySQLUser>() {
-                        public void updateObjectState(MySQLUser object)
+                    addChangeCommand(new AbstractDatabaseObjectCommand<MySQLUser>("Grant privilege") {
+                        public void doLocal(MySQLUser object)
                         {
                         }
-                        public DatabaseObjectChangeAction[] getChangeActions()
+
+                        public void undoLocal(MySQLUser object)
+                        {
+                        }
+
+                        public IDatabasePersistAction[] getPersistActions()
                         {
                             return null;
                         }

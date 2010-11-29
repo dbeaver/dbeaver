@@ -8,6 +8,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.Collection;
+
 /**
  * IDatabaseObjectManager
  */
@@ -24,6 +26,8 @@ public interface IDatabaseObjectManager<OBJECT_TYPE extends DBSObject> extends I
     void saveChanges(DBRProgressMonitor monitor) throws DBException;
 
     void resetChanges(DBRProgressMonitor monitor);
+
+    Collection<IDatabaseObjectCommand<OBJECT_TYPE>> getCommands();
 
     void addCommand(IDatabaseObjectCommand<OBJECT_TYPE> command);
 }

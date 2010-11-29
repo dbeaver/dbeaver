@@ -11,18 +11,28 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface IDatabaseObjectCommand<OBJECT_TYPE extends DBSObject> {
 
+    public static final long FLAG_NONE = 0;
+    public static final long FLAG_PERMANENT = 1;
+
     public enum MergeResult {
         NONE,
         CANCEL_PREVIOUS,
-        CANCEL_BOTH
+        CANCEL_BOTH,
+        ABSORBED
     }
 
-    String getDescription();
+    String getTitle();
 
-    void updateObjectState(OBJECT_TYPE object);
+    long getFlags();
 
-    MergeResult merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand);
+    void doLocal(OBJECT_TYPE object);
 
-    DatabaseObjectChangeAction[] getChangeActions();
+    void undoLocal(OBJECT_TYPE object);
+
+    MergeResult doMerge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand);
+
+    void undoMerge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand);
+
+    IDatabasePersistAction[] getPersistActions();
 
 }

@@ -8,7 +8,7 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.ext.IObjectImageProvider;
+import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ui.DBIcon;
 

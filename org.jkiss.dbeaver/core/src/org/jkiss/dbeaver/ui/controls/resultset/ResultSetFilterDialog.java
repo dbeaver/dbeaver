@@ -19,7 +19,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ext.IObjectImageProvider;
+import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 import org.jkiss.dbeaver.model.data.DBDColumnFilter;
 import org.jkiss.dbeaver.model.data.DBDColumnOrder;
@@ -162,7 +162,7 @@ public class ResultSetFilterDialog extends Dialog {
         {
             DBDColumnBinding column = (DBDColumnBinding) element;
             if (columnIndex == 0 && column.getColumn() instanceof IObjectImageProvider) {
-                return ((IObjectImageProvider)column.getColumn()).getObjectImage(); 
+                return ((IObjectImageProvider)column.getColumn()).getObjectImage();
             }
             if (columnIndex == 1) {
                 DBDColumnOrder orderColumn = dataFilter.getOrderColumn(column.getColumnName());

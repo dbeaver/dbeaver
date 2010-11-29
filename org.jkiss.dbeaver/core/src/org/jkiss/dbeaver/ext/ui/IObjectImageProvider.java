@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ext;
+package org.jkiss.dbeaver.ext.ui;
 
 import org.eclipse.swt.graphics.Image;
 

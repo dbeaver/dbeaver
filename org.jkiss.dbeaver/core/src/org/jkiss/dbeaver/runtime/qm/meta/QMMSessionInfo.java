@@ -43,7 +43,9 @@ public class QMMSessionInfo extends QMMObject {
         }
         for (QMMStatementInfo stat = statementStack; stat != null; stat = stat.getPrevious()) {
             if (!stat.isClosed()) {
-                log.warn("Statement '" + stat.getObjectId() + "' is not closed");
+                DBCStatement statRef = stat.getReference();
+                String query = statRef == null ? "?" : statRef.getQueryString();
+                log.warn("Statement " + stat.getObjectId() + " (" + query + ") is not closed");
                 stat.close();
             }
         }
@@ -108,6 +110,7 @@ public class QMMSessionInfo extends QMMObject {
                 return stat;
             }
         }
+        log.warn("Statement " + statement + " meta info not found");
         return null;
     }
 
@@ -118,7 +121,7 @@ public class QMMSessionInfo extends QMMObject {
                 return stat;
             }
         }
-        log.warn("Statement meta info not found");
+        log.warn("Statement " + statement + " meta info not found");
         return null;
     }
 
@@ -129,7 +132,7 @@ public class QMMSessionInfo extends QMMObject {
                 return exec;
             }
         }
-        log.warn("Statement execution meta info not found");
+        log.warn("Statement " + statement + " execution meta info not found");
         return null;
     }
 

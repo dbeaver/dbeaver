@@ -11,14 +11,30 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * Abstract object command
  */
 public abstract class AbstractDatabaseObjectCommand<OBJECT_TYPE extends DBSObject> implements IDatabaseObjectCommand<OBJECT_TYPE> {
-    public String getDescription()
+    private final String title;
+
+    protected AbstractDatabaseObjectCommand(String title)
     {
-        return "";
+        this.title = title;
     }
 
-    public MergeResult merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand)
+    public String getTitle()
+    {
+        return title;
+    }
+
+    public long getFlags()
+    {
+        return FLAG_NONE;
+    }
+
+    public MergeResult doMerge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand)
     {
         return MergeResult.NONE;
+    }
+
+    public void undoMerge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand)
+    {
     }
 
 }

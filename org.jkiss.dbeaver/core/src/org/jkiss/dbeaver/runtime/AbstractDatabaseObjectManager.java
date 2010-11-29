@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -54,6 +55,11 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
 
     public void resetChanges(DBRProgressMonitor monitor) {
         commands.clear();
+    }
+
+    public Collection<IDatabaseObjectCommand<OBJECT_TYPE>> getCommands()
+    {
+        return commands;
     }
 
     public void addCommand(IDatabaseObjectCommand<OBJECT_TYPE> command)
