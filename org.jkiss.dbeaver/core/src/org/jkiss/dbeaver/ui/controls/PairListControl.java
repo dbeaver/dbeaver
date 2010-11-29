@@ -27,6 +27,9 @@ public class PairListControl<ELEMENT> extends Composite
 {
     static final Log log = LogFactory.getLog(PairListControl.class);
 
+    public static final int MOVE_LEFT = 0;
+    public static final int MOVE_RIGHT = 1;
+
     private Table leftList;
     private Table rightList;
 
@@ -199,11 +202,14 @@ public class PairListControl<ELEMENT> extends Composite
     {
         Table fromTable = toRight ? leftList : rightList;
         Table toTable = toRight ? rightList : leftList;
-        Collection<?> checkList = toRight ? rightElements : leftElements;
+        Collection<ELEMENT> checkList = toRight ? rightElements : leftElements;
+        List<ELEMENT> movedElements = new ArrayList<ELEMENT>();
 
         for (TableItem item : fromTable.getSelection()) {
-            TableItem newItem = createListItem(toTable, item.getData());
-            if (!checkList.contains(newItem.getData())) {
+            ELEMENT element = (ELEMENT) item.getData();
+            movedElements.add(element);
+            TableItem newItem = createListItem(toTable, element);
+            if (!checkList.contains(element)) {
                 newItem.setFont(movedFont);
             }
         }
@@ -213,9 +219,12 @@ public class PairListControl<ELEMENT> extends Composite
         updateControls();
 
         Event event = new Event();
+        event.detail = toRight ? MOVE_RIGHT : MOVE_LEFT;
         event.widget = this;
-        event.data = checkList;
-        super.notifyListeners(SWT.Modify, event);
+        for (ELEMENT element : movedElements) {
+            event.data = element;
+            super.notifyListeners(SWT.Modify, event);
+        }
     }
 
 }

@@ -4,8 +4,11 @@
 
 package org.jkiss.dbeaver.ui.editors.entity;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.AbstractDatabaseObjectManager;
+import org.jkiss.dbeaver.model.impl.edit.AbstractDatabaseObjectManager;
 
 /**
  * DefaultDatabaseObjectManager
@@ -13,6 +16,12 @@ import org.jkiss.dbeaver.runtime.AbstractDatabaseObjectManager;
 public class DefaultDatabaseObjectManager extends AbstractDatabaseObjectManager<DBSObject> {
 
     public DefaultDatabaseObjectManager() {
+    }
+
+    @Override
+    protected void executePersistAction(DBCExecutionContext context, IDatabasePersistAction action, boolean undo) throws DBException
+    {
+        throw new DBException("Object persistence is not implemented");
     }
 
 }

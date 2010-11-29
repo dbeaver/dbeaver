@@ -14,18 +14,19 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegesPairList;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
-import org.jkiss.dbeaver.runtime.AbstractDatabaseObjectCommand;
+import org.jkiss.dbeaver.ext.mysql.runtime.MySQLCommandGrantPrivilege;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
+import org.jkiss.dbeaver.ui.controls.PairListControl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * MySQLUserEditorPrivileges
@@ -40,6 +41,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
     private volatile Map<String, Map<String, Boolean>> catalogPrivileges;
     private boolean isLoaded = false;
+    private String selectedCatalog;
 
     public void createPartControl(Composite parent)
     {
@@ -60,9 +62,11 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 public void widgetSelected(SelectionEvent e) {
                     int selIndex = catList.getSelectionIndex();
                     if (selIndex < 0) {
+                        selectedCatalog = null;
                         privPair.setModel(Collections.<String, Boolean>emptyMap());
                     } else {
-                        Map<String, Boolean> privs = catalogPrivileges.get(catList.getItem(selIndex));
+                        selectedCatalog = catList.getItem(selIndex);
+                        Map<String, Boolean> privs = catalogPrivileges.get(selectedCatalog);
                         if (privs != null) {
                             privPair.setModel(privs);
                         }
@@ -81,20 +85,37 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             privPair.addListener(SWT.Modify, new Listener() {
                 public void handleEvent(Event event)
                 {
-                    addChangeCommand(new AbstractDatabaseObjectCommand<MySQLUser>("Grant privilege") {
-                        public void doLocal(MySQLUser object)
-                        {
-                        }
-
-                        public void undoLocal(MySQLUser object)
-                        {
-                        }
-
-                        public IDatabasePersistAction[] getPersistActions()
-                        {
-                            return null;
-                        }
-                    });
+                    final Map<String, Boolean> privs = catalogPrivileges.get(selectedCatalog);
+                    final String privilege = (String) event.data;
+                    final boolean grant = event.detail == PairListControl.MOVE_RIGHT;
+                    privs.put(privilege, grant);
+                    addChangeCommand(
+                        new MySQLCommandGrantPrivilege(
+                            grant,
+                            getDatabaseObject(),
+                            selectedCatalog,
+                            privilege),
+                        new IDatabaseObjectCommandReflector<MySQLCommandGrantPrivilege>() {
+                            public void redoCommand(MySQLCommandGrantPrivilege command)
+                            {
+                                privs.put(privilege, grant);
+                                updateUI();
+                            }
+                            public void undoCommand(MySQLCommandGrantPrivilege command)
+                            {
+                                privs.put(privilege, !grant);
+                                updateUI();
+                            }
+                            private void updateUI()
+                            {
+                                if (!catList.isDisposed()) {
+                                    int selIndex = catList.getSelectionIndex();
+                                    if (selIndex >= 0) {
+                                        catList.setSelection(selIndex);
+                                    }
+                                }
+                            }
+                        });
                 }
             });
         }
@@ -141,8 +162,12 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 if (privs == null) {
                     return;
                 }
-                catalogPrivileges = privs;
-
+                // Copy privileges
+                catalogPrivileges = new TreeMap<String, Map<String, Boolean>>();
+                for (Map.Entry<String, Map<String, Boolean>> entry : privs.entrySet()) {
+                    catalogPrivileges.put(entry.getKey(), new TreeMap<String, Boolean>(entry.getValue()));
+                }
+                // Fill catalog list
                 for (String catalog : catalogPrivileges.keySet()) {
                     catList.add(catalog);
                 }

@@ -10,8 +10,16 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegesPairList;
+import org.jkiss.dbeaver.ext.mysql.runtime.MySQLCommandGrantPrivilege;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.PairListControl;
+
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * MySQLUserEditorGeneral
@@ -19,6 +27,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 {
     static final Log log = LogFactory.getLog(MySQLUserEditorGeneral.class);
+    private Map<String, Boolean> privileges;
 
     public void createPartControl(Composite parent)
     {
@@ -51,8 +60,40 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
             gd.horizontalSpan = 2;
             gd.widthHint = 400;
 
-            PrivilegesPairList privPair = new PrivilegesPairList(privsGroup);
-            privPair.setModel(getUser().getGlobalPrivileges());
+            final PrivilegesPairList privPair = new PrivilegesPairList(privsGroup);
+            privileges = new TreeMap<String, Boolean>(getUser().getGlobalPrivileges());
+            privPair.setModel(privileges);
+
+            privPair.addListener(SWT.Modify, new Listener() {
+                public void handleEvent(Event event)
+                {
+                    final String privilege = (String) event.data;
+                    final boolean grant = event.detail == PairListControl.MOVE_RIGHT;
+                    addChangeCommand(
+                        new MySQLCommandGrantPrivilege(
+                            grant,
+                            getDatabaseObject(),
+                            null,
+                            privilege),
+                        new IDatabaseObjectCommandReflector<MySQLCommandGrantPrivilege>() {
+                            public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                            {
+                                privileges.put(privilege, grant);
+                                if (!privPair.isDisposed()) {
+                                    privPair.setModel(privileges);
+                                }
+                            }
+                            public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                            {
+                                privileges.put(privilege, !grant);
+                                if (!privPair.isDisposed()) {
+                                    privPair.setModel(privileges);
+                                }
+                            }
+                        });
+                }
+            });
+
         }
     }
 

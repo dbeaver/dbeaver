@@ -6,13 +6,14 @@ package org.jkiss.dbeaver.ext.mysql.runtime;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCDatabaseObjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.AbstractDatabaseObjectManager;
 
 /**
  * MySQLUserManager
  */
-public class MySQLUserManager extends AbstractDatabaseObjectManager<MySQLUser> {
+public class MySQLUserManager extends JDBCDatabaseObjectManager<MySQLUser> {
+
     @Override
     public boolean supportsEdit() {
         return true;
@@ -27,4 +28,5 @@ public class MySQLUserManager extends AbstractDatabaseObjectManager<MySQLUser> {
     public void resetChanges(DBRProgressMonitor monitor) {
         super.resetChanges(monitor);
     }
+
 }

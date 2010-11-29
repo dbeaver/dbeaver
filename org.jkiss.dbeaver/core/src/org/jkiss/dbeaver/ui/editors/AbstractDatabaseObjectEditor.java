@@ -12,6 +12,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
+import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -86,6 +87,10 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
         return objectManager;
     }
 
+    public OBJECT_TYPE getDatabaseObject() {
+        return objectManager.getObject();
+    }
+
     public void initObjectEditor(OBJECT_MANAGER objectManager) {
         this.objectManager = objectManager;
     }
@@ -95,9 +100,19 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
 
     }
 
+/*
     protected void addChangeCommand(IDatabaseObjectCommand<OBJECT_TYPE> command)
     {
-        this.objectManager.addCommand(command);
+        this.objectManager.addCommand(command, null);
+        firePropertyChange(PROP_DIRTY);
+    }
+*/
+
+    protected <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>> void addChangeCommand(
+        COMMAND command,
+        IDatabaseObjectCommandReflector<COMMAND> reflector)
+    {
+        this.objectManager.addCommand(command, reflector);
         firePropertyChange(PROP_DIRTY);
     }
 

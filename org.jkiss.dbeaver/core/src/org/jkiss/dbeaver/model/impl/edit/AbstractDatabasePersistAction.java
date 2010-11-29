@@ -2,9 +2,8 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.runtime;
+package org.jkiss.dbeaver.model.impl.edit;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 
 /**
@@ -12,35 +11,30 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
  */
 public class AbstractDatabasePersistAction implements IDatabasePersistAction {
 
-    private final String script;
     private final String title;
-    private final Image icon;
+    private final String script;
+    private final String undoScript;
 
-    public AbstractDatabasePersistAction(String script, String title, Image icon)
+    public AbstractDatabasePersistAction(String title, String script, String undoScript)
     {
-        this.script = script;
         this.title = title;
-        this.icon = icon;
+        this.script = script;
+        this.undoScript = undoScript;
     }
 
-    public AbstractDatabasePersistAction(String script, String title)
+    public AbstractDatabasePersistAction(String title, String script)
     {
-        this(script, title, null);
+        this(title, script, null);
     }
 
     public AbstractDatabasePersistAction(String script)
     {
-        this(script, null, null);
+        this("", script, null);
     }
 
     public String getTitle()
     {
         return title;
-    }
-
-    public Image getIcon()
-    {
-        return icon;
     }
 
     public String getScript()
@@ -50,6 +44,7 @@ public class AbstractDatabasePersistAction implements IDatabasePersistAction {
 
     public String getUndoScript()
     {
-        return null;
+        return undoScript;
     }
+
 }

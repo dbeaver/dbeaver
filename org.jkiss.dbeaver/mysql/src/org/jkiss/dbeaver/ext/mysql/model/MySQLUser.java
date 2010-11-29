@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -157,6 +158,20 @@ public class MySQLUser implements DBAUser
         }
         finally {
             context.close();
+        }
+    }
+
+    public void updatePrivilege(String schema, String privilege, boolean grant)
+    {
+        if (schema == null) {
+            globalPrivileges.put(privilege, grant);
+        } else {
+            Map<String, Boolean> schemaPrivs = catalogPrivileges.get(schema);
+            if (schemaPrivs == null) {
+                schemaPrivs = new TreeMap<String, Boolean>();
+                catalogPrivileges.put(schema, schemaPrivs);
+            }
+            schemaPrivs.put(privilege, grant);
         }
     }
 

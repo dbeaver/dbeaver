@@ -29,5 +29,8 @@ public interface IDatabaseObjectManager<OBJECT_TYPE extends DBSObject> extends I
 
     Collection<IDatabaseObjectCommand<OBJECT_TYPE>> getCommands();
 
-    void addCommand(IDatabaseObjectCommand<OBJECT_TYPE> command);
+    <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>> void addCommand(
+        COMMAND command,
+        IDatabaseObjectCommandReflector<COMMAND> reflector);
+
 }

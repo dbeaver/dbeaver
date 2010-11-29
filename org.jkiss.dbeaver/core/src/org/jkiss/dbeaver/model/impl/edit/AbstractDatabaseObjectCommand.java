@@ -2,8 +2,9 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.runtime;
+package org.jkiss.dbeaver.model.impl.edit;
 
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -12,10 +13,17 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public abstract class AbstractDatabaseObjectCommand<OBJECT_TYPE extends DBSObject> implements IDatabaseObjectCommand<OBJECT_TYPE> {
     private final String title;
+    private final Image icon;
+
+    protected AbstractDatabaseObjectCommand(String title, Image icon)
+    {
+        this.title = title;
+        this.icon = icon;
+    }
 
     protected AbstractDatabaseObjectCommand(String title)
     {
-        this.title = title;
+        this(title, null);
     }
 
     public String getTitle()
@@ -23,18 +31,19 @@ public abstract class AbstractDatabaseObjectCommand<OBJECT_TYPE extends DBSObjec
         return title;
     }
 
+    public Image getIcon()
+    {
+        return icon;
+    }
+
     public long getFlags()
     {
         return FLAG_NONE;
     }
 
-    public MergeResult doMerge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand)
+    public MergeResult merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand, boolean undo)
     {
         return MergeResult.NONE;
-    }
-
-    public void undoMerge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand)
-    {
     }
 
 }

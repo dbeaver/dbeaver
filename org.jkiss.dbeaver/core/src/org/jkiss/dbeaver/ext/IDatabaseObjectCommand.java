@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext;
 
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -23,15 +24,13 @@ public interface IDatabaseObjectCommand<OBJECT_TYPE extends DBSObject> {
 
     String getTitle();
 
+    Image getIcon();
+
     long getFlags();
 
-    void doLocal(OBJECT_TYPE object);
+    void updateModel(OBJECT_TYPE object, boolean undo);
 
-    void undoLocal(OBJECT_TYPE object);
-
-    MergeResult doMerge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand);
-
-    void undoMerge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand);
+    MergeResult merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand, boolean undo);
 
     IDatabasePersistAction[] getPersistActions();
 
