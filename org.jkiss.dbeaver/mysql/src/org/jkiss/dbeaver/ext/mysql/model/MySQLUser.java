@@ -79,7 +79,7 @@ public class MySQLUser implements DBAUser
     }
 
     public String getUserName() {
-        return username;
+        return "'" + username + "'@'" + host + "'";
     }
 
     public String getObjectId() {
@@ -132,7 +132,7 @@ public class MySQLUser implements DBAUser
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM mysql.db WHERE User=?");
             try {
-                dbStat.setString(1, getUserName());
+                dbStat.setString(1, username);
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     if (catalogPrivNames == null) {

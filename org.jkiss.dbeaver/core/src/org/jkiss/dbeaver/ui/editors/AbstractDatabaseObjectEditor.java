@@ -43,16 +43,26 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
     public void doSave(IProgressMonitor monitor)
     {
         if (objectManager.isDirty()) {
+            Throwable error = null;
             try {
                 objectManager.saveChanges(new DefaultProgressMonitor(monitor));
+            } catch (DBException e) {
+                error = e;
+            }
+            finally {
+                final Throwable saveError = error;
                 Display.getDefault().asyncExec(new Runnable() {
                     public void run()
                     {
                         firePropertyChange(PROP_DIRTY);
+                        if (saveError != null) {
+                            UIUtils.showErrorDialog(
+                                getSite().getShell(),
+                                "Could not save '" + objectManager.getObject().getName() + "'",
+                                saveError.getMessage());
+                        }
                     }
                 });
-            } catch (DBException e) {
-                UIUtils.showErrorDialog(getSite().getShell(), "Could not save '" + objectManager.getObject().getName() + "'", e.getMessage(), e);
             }
         }
     }

@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.ui.IObjectEditorPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * MultiPageDatabaseEditor
@@ -48,11 +49,11 @@ public abstract class MultiPageDatabaseEditor<INPUT_TYPE extends IDatabaseEditor
     	if (getContainer() != null && getContainer().isDisposed()) {
     		return;
     	}
-        if (editorImage != null) {
-            editorImage.dispose();
-        }
+        Image oldImage = editorImage;
         editorImage = titleImage.createImage();
         super.setTitleImage(editorImage);
+
+        UIUtils.dispose(oldImage);
     }
 
     public void dispose()

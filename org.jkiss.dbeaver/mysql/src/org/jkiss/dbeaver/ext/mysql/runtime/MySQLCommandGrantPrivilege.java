@@ -32,12 +32,13 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
 
     public IDatabasePersistAction[] getPersistActions()
     {
-        String grantScript = "GRANT" + privilege +
-            " ON " + (CommonUtils.isEmpty(schema) ? "*.*" : schema) +
-            " TO '" + user.getName() + "'";
-        String revokeScript = "REVOKE" + privilege +
-            " ON " + (CommonUtils.isEmpty(schema) ? "*.*" : schema) +
-            " FROM '" + user.getName() + "'";
+        String privName = privilege.replace("_", " ");
+        String grantScript = "GRANT " + privName +
+            " ON " + (CommonUtils.isEmpty(schema) ? "*" : schema) + ".*" +
+            " TO " + user.getUserName() + "";
+        String revokeScript = "REVOKE " + privName +
+            " ON " + (CommonUtils.isEmpty(schema) ? "*" : schema) + ".*" +
+            " FROM " + user.getUserName() + "";
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
                 "Grant privilege",

@@ -29,6 +29,11 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         IDatabasePersistAction action;
         boolean executed = false;
         Throwable error;
+
+        public PersistInfo(IDatabasePersistAction action)
+        {
+            this.action = action;
+        }
     }
 
     private class CommandInfo {
@@ -39,8 +44,8 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     }
 
     private OBJECT_TYPE object;
-    private List<CommandInfo> commands = new ArrayList<CommandInfo>();
-    private List<CommandInfo> undidCommands = new ArrayList<CommandInfo>();
+    private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
+    private final List<CommandInfo> undidCommands = new ArrayList<CommandInfo>();
 
     public DBPDataSource getDataSource() {
         return object.getDataSource();
@@ -64,63 +69,118 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
 
     public boolean isDirty()
     {
-        if (commands.isEmpty()) {
+        synchronized (commands) {
+            if (commands.isEmpty()) {
+                return false;
+            }
+            // If we have at least one not executed command then we are dirty
+            for (CommandInfo commandInfo : commands) {
+                if (!commandInfo.executed) {
+                    return true;
+                }
+            }
+            // Nope
             return false;
         }
-        // If we have at least one not executed command then we are dirty
-        for (CommandInfo commandInfo : commands) {
-            if (!commandInfo.executed) {
-                return true;
-            }
-        }
-        // Nope
-        return false;
     }
 
     public void saveChanges(DBRProgressMonitor monitor) throws DBException {
-        // TODO: implement object save
-        commands.clear();
+        synchronized (commands) {
+            // Make list of not-executed commands
+            List<CommandInfo> runCommands = new ArrayList<CommandInfo>();
+            for (CommandInfo cmd : commands) {
+                if (!cmd.executed) {
+                    runCommands.add(cmd);
+                }
+            }
+
+            for (int i = 0, runCommandsSize = runCommands.size(); i < runCommandsSize; i++) {
+                CommandInfo cmd = runCommands.get(i);
+                // Persist changes
+                IDatabasePersistAction[] persistActions = cmd.command.getPersistActions();
+                if (CommonUtils.isEmpty(cmd.persistActions) && !CommonUtils.isEmpty(persistActions)) {
+                    cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
+                    for (IDatabasePersistAction action : persistActions) {
+                        cmd.persistActions.add(new PersistInfo(action));
+                    }
+                }
+                if (!CommonUtils.isEmpty(cmd.persistActions)) {
+                    DBCExecutionContext context = openCommandPersistContext(monitor, cmd.command);
+                    try {
+                        for (PersistInfo persistInfo : cmd.persistActions) {
+                            if (!persistInfo.executed) {
+                                try {
+                                    executePersistAction(context, persistInfo.action, false);
+                                } catch (DBException e) {
+                                    persistInfo.error = e;
+                                    persistInfo.executed = false;
+                                    throw e;
+                                }
+                                persistInfo.executed = true;
+                            }
+                        }
+                    } finally {
+                        closePersistContext(context);
+                    }
+                }
+                // Update model
+                cmd.command.updateModel(getObject(), false);
+
+                // done
+                cmd.executed = true;
+            }
+        }
     }
 
     public void resetChanges(DBRProgressMonitor monitor) {
-        commands.clear();
+        synchronized (commands) {
+            commands.clear();
+        }
     }
 
     public Collection<IDatabaseObjectCommand<OBJECT_TYPE>> getCommands()
     {
-        List<IDatabaseObjectCommand<OBJECT_TYPE>> cmdCopy = new ArrayList<IDatabaseObjectCommand<OBJECT_TYPE>>(commands.size());
-        for (CommandInfo cmdInfo : commands) {
-            cmdCopy.add(cmdInfo.command);
+        synchronized (commands) {
+            List<IDatabaseObjectCommand<OBJECT_TYPE>> cmdCopy = new ArrayList<IDatabaseObjectCommand<OBJECT_TYPE>>(commands.size());
+            for (CommandInfo cmdInfo : commands) {
+                cmdCopy.add(cmdInfo.command);
+            }
+            return cmdCopy;
         }
-        return cmdCopy;
     }
 
     public <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>> void addCommand(
         COMMAND command,
         IDatabaseObjectCommandReflector<COMMAND> reflector)
     {
-        CommandInfo commandInfo = new CommandInfo();
-        commandInfo.command = command;
-        commandInfo.reflector = reflector;
-        commands.add(commandInfo);
-        undidCommands.clear();
+        synchronized (commands) {
+            CommandInfo commandInfo = new CommandInfo();
+            commandInfo.command = command;
+            commandInfo.reflector = reflector;
+            commands.add(commandInfo);
+            undidCommands.clear();
+        }
     }
 
     public boolean canUndoCommand()
     {
-        if (commands.isEmpty()) {
-            return false;
+        synchronized (commands) {
+            if (commands.isEmpty()) {
+                return false;
+            }
+            CommandInfo lastCommand = commands.get(commands.size() - 1);
+            // We can't undo permanent commands, check this flag in last command
+            return
+                !lastCommand.executed ||
+                (lastCommand.command.getFlags() & IDatabaseObjectCommand.FLAG_PERMANENT) != IDatabaseObjectCommand.FLAG_PERMANENT;
         }
-        CommandInfo lastCommand = commands.get(commands.size() - 1);
-        // We can't undo permanent commands, check this flag in last command
-        return
-            !lastCommand.executed ||
-            (lastCommand.command.getFlags() & IDatabaseObjectCommand.FLAG_PERMANENT) != IDatabaseObjectCommand.FLAG_PERMANENT;
     }
 
     public boolean canRedoCommand()
     {
-        return !undidCommands.isEmpty();
+        synchronized (commands) {
+            return !undidCommands.isEmpty();
+        }
     }
 
     public void undoCommand(DBRProgressMonitor monitor)
@@ -129,35 +189,37 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         if (!canUndoCommand()) {
             throw new IllegalStateException("Can't undo command");
         }
-        CommandInfo lastCommand = commands.remove(commands.size() - 1);
-        if (lastCommand.executed && hasPersistedActions(lastCommand)) {
-            // This command was executed and persisted
-            DBCExecutionContext context = openCommandPersistContext(monitor, lastCommand.command);
-            try {
-                // Undo all persisted actions in reverse order
-                for (int i = lastCommand.persistActions.size(); i > 0; i++) {
-                    PersistInfo persistInfo = lastCommand.persistActions.get(i - 1);
-                    if (persistInfo.executed) {
-                        executePersistAction(context, persistInfo.action, true);
-                        persistInfo.executed = false;
+        synchronized (commands) {
+            CommandInfo lastCommand = commands.remove(commands.size() - 1);
+            if (lastCommand.executed && hasPersistedActions(lastCommand)) {
+                // This command was executed and persisted
+                DBCExecutionContext context = openCommandPersistContext(monitor, lastCommand.command);
+                try {
+                    // Undo all persisted actions in reverse order
+                    for (int i = lastCommand.persistActions.size(); i > 0; i++) {
+                        PersistInfo persistInfo = lastCommand.persistActions.get(i - 1);
+                        if (persistInfo.executed) {
+                            executePersistAction(context, persistInfo.action, true);
+                            persistInfo.executed = false;
+                        }
                     }
+                } finally {
+                    closePersistContext(context);
                 }
-            } finally {
-                closePersistContext(context);
+                // Undo model changes
+                lastCommand.command.updateModel(getObject(), true);
+            } else {
+                // Command wasn't really executed
+                // Just undo UI changes
             }
-            // Undo model changes
-            lastCommand.command.updateModel(getObject(), true);
-        } else {
-            // Command wasn't really executed
-            // Just undo UI changes
-        }
-        lastCommand.executed = false;
+            lastCommand.executed = false;
 
-        // Undo UI changes and put command in undid command stack
-        if (lastCommand.reflector != null) {
-            lastCommand.reflector.undoCommand(lastCommand.command);
+            // Undo UI changes and put command in undid command stack
+            if (lastCommand.reflector != null) {
+                lastCommand.reflector.undoCommand(lastCommand.command);
+            }
+            undidCommands.add(lastCommand);
         }
-        undidCommands.add(lastCommand);
     }
 
     private boolean hasPersistedActions(CommandInfo commandInfo)
@@ -194,13 +256,15 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         if (!canRedoCommand()) {
             throw new IllegalStateException("Can't redo command");
         }
-        // Just redo UI changes and put command on the top of stack
-        CommandInfo commandInfo = undidCommands.remove(undidCommands.size() - 1);
-        if (commandInfo.reflector != null) {
-            commandInfo.reflector.redoCommand(commandInfo.command);
+        synchronized (commands) {
+            // Just redo UI changes and put command on the top of stack
+            CommandInfo commandInfo = undidCommands.remove(undidCommands.size() - 1);
+            if (commandInfo.reflector != null) {
+                commandInfo.reflector.redoCommand(commandInfo.command);
+            }
+            commandInfo.executed = true;
+            commands.add(commandInfo);
         }
-        commandInfo.executed = true;
-        commands.add(commandInfo);
     }
 
     protected abstract void executePersistAction(
