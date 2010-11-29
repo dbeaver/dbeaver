@@ -18,6 +18,7 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
+import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
 import java.util.*;
 
@@ -64,16 +65,22 @@ public class DirectedGraphLayoutVisitor
 		//IFigure fig = diagram.getFigure();
 		for (Object child : diagram.getChildren())
 		{
-			addEntityNode((GraphicalEditPart) child);
+			addEntityNode((EntityPart) child);
 		}
 	}
 
 	/**
 	 * Adds nodes to the graph object for use by the GraphLayoutManager
 	 */
-	protected void addEntityNode(GraphicalEditPart entityPart)
+	protected void addEntityNode(EntityPart entityPart)
 	{
-		Subgraph entityNode = new Subgraph(entityPart);
+		Node entityNode;
+        boolean hasSelfLinks = entityPart.getTable().hasSelfLinks();
+        if (hasSelfLinks) {
+            entityNode = new Subgraph(entityPart);
+        } else {
+            entityNode = new Node(entityPart);
+        }
         Dimension preferredSize = entityPart.getFigure().getPreferredSize(400, 300);
         entityNode.width = preferredSize.width;
 		entityNode.height = preferredSize.height;
@@ -81,13 +88,18 @@ public class DirectedGraphLayoutVisitor
 		partToNodesMap.put(entityPart, entityNode);
 		graph.nodes.add(entityNode);
 
-        Node sourceAnchor = new Node(Boolean.TRUE, entityNode);
-        sourceAnchor.width = 0;
-		sourceAnchor.height = 0;
+        if (hasSelfLinks) {
+            Node sourceAnchor = new Node("Fake node for source links", (Subgraph) entityNode);
+            sourceAnchor.width = 0;
+		    sourceAnchor.height = 0;
 
-        Node targetAnchor = new Node(Boolean.FALSE, entityNode);
-        targetAnchor.width = 0;
-		targetAnchor.height = 0;
+            Node targetAnchor = new Node("Fake node for target links", (Subgraph) entityNode);
+            targetAnchor.width = 0;
+            targetAnchor.height = 0;
+        }
+
+/*
+*/
 	}
 
 	protected void addDiagramEdges(AbstractGraphicalEditPart diagram)
@@ -122,10 +134,8 @@ public class DirectedGraphLayoutVisitor
             return;
         }
 
-        if (source instanceof Subgraph) {
+        if (source instanceof Subgraph && target instanceof Subgraph) {
             source = ((Subgraph)source).members.getNode(0);
-        }
-        if (target instanceof Subgraph) {
             target = ((Subgraph)target).members.getNode(1);
         }
 

@@ -154,6 +154,16 @@ public class ERDTable extends ERDObject<DBSTable>
         this.primary = primary;
     }
 
+    public boolean hasSelfLinks()
+    {
+        for (ERDAssociation association : foreignKeyRelationships) {
+            if (association.getPrimaryKeyTable() == this) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 	public String toString()
 	{
 		return object.getName();
