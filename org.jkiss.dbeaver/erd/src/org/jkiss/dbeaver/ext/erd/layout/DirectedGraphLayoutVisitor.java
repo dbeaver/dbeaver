@@ -75,8 +75,7 @@ public class DirectedGraphLayoutVisitor
 	protected void addEntityNode(EntityPart entityPart)
 	{
 		Node entityNode;
-        boolean hasSelfLinks = entityPart.getTable().hasSelfLinks();
-        if (hasSelfLinks) {
+        if (entityPart.getTable().hasSelfLinks()) {
             entityNode = new Subgraph(entityPart);
         } else {
             entityNode = new Node(entityPart);
@@ -88,7 +87,7 @@ public class DirectedGraphLayoutVisitor
 		partToNodesMap.put(entityPart, entityNode);
 		graph.nodes.add(entityNode);
 
-        if (hasSelfLinks) {
+        if (entityNode instanceof Subgraph) {
             Node sourceAnchor = new Node("Fake node for source links", (Subgraph) entityNode);
             sourceAnchor.width = 0;
 		    sourceAnchor.height = 0;
