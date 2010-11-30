@@ -45,6 +45,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
 
     private List<MySQLEngine> engines;
     private List<MySQLCatalog> catalogs;
+    private List<MySQLPrivilege> privileges;
     private List<MySQLUser> users;
     private MySQLCatalog activeCatalog;
 
@@ -395,6 +396,51 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
                             userList.add(user);
                         }
                     return userList;
+                } finally {
+                    dbResult.close();
+                }
+            } finally {
+                dbStat.close();
+            }
+        }
+        catch (SQLException ex) {
+            throw new DBException(ex);
+        }
+        finally {
+            context.close();
+        }
+    }
+
+    public List<MySQLPrivilege> getPrivileges(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        if (privileges == null) {
+            privileges = loadPrivileges(monitor);
+        }
+        return privileges;
+    }
+
+    public MySQLPrivilege getPrivilege(DBRProgressMonitor monitor, String name)
+        throws DBException
+    {
+        return DBUtils.findObject(getPrivileges(monitor), name);
+    }
+
+    private List<MySQLPrivilege> loadPrivileges(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load privileges");
+        try {
+            JDBCPreparedStatement dbStat = context.prepareStatement("SHOW PRIVILEGES");
+            try {
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    List<MySQLPrivilege> privileges = new ArrayList<MySQLPrivilege>();
+                    while (dbResult.next()) {
+                            MySQLPrivilege user = new MySQLPrivilege(this, dbResult);
+                            privileges.add(user);
+                        }
+                    return privileges;
                 } finally {
                     dbResult.close();
                 }

@@ -79,6 +79,10 @@ public class MySQLUser implements DBAUser
     }
 
     public String getUserName() {
+        return username;
+    }
+
+    public String getFullName() {
         return "'" + username + "'@'" + host + "'";
     }
 

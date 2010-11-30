@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.mysql.runtime;
 
 import net.sf.jkiss.utils.CommonUtils;
@@ -35,10 +39,10 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
         String privName = privilege.replace("_", " ");
         String grantScript = "GRANT " + privName +
             " ON " + (CommonUtils.isEmpty(schema) ? "*" : schema) + ".*" +
-            " TO " + user.getUserName() + "";
+            " TO " + user.getFullName() + "";
         String revokeScript = "REVOKE " + privName +
             " ON " + (CommonUtils.isEmpty(schema) ? "*" : schema) + ".*" +
-            " FROM " + user.getUserName() + "";
+            " FROM " + user.getFullName() + "";
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
                 "Grant privilege",
