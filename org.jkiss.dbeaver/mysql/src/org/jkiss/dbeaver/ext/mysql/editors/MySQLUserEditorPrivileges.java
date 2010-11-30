@@ -7,26 +7,28 @@ package org.jkiss.dbeaver.ext.mysql.editors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
-import org.jkiss.dbeaver.ext.mysql.controls.PrivilegesPairList;
-import org.jkiss.dbeaver.ext.mysql.runtime.MySQLCommandGrantPrivilege;
+import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
-import org.jkiss.dbeaver.ui.controls.PairListControl;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * MySQLUserEditorPrivileges
@@ -36,91 +38,144 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     static final Log log = LogFactory.getLog(MySQLUserEditorPrivileges.class);
 
     private PageControl pageControl;
-    private org.eclipse.swt.widgets.List catList;
-    private PrivilegesPairList privPair;
+    private Table catalogsTable;
+    private Table tablesTable;
 
-    private volatile Map<String, Map<String, Boolean>> catalogPrivileges;
     private boolean isLoaded = false;
-    private String selectedCatalog;
+    private MySQLCatalog selectedCatalog;
+    private MySQLTable selectedTable;
+    private PrivilegeTableControl tablePrivilegesTable;
+    private PrivilegeTableControl otherPrivilegesTable;
+    private volatile List<MySQLGrant> grants;
+
+    private Font boldFont;
 
     public void createPartControl(Composite parent)
     {
-        pageControl = new PageControl(parent, SWT.NONE);
+        boldFont = UIUtils.makeBoldFont(parent.getFont());
+
+        pageControl = new PageControl(parent);
 
         Composite container = UIUtils.createPlaceholder(pageControl, 3, 5);
         GridData gd = new GridData(GridData.FILL_BOTH);
         container.setLayoutData(gd);
 
         {
-            Composite catalogGroup = UIUtils.createControlGroup(container, "Catalog", 1, GridData.FILL_VERTICAL, 250);
+            Composite catalogGroup = UIUtils.createControlGroup(container, "Catalogs", 1, GridData.FILL_VERTICAL, 200);
 
-            catList = new org.eclipse.swt.widgets.List(catalogGroup, SWT.BORDER | SWT.SINGLE);
+            catalogsTable = new Table(catalogGroup, SWT.BORDER | SWT.SINGLE);
+            catalogsTable.setHeaderVisible(true);
             gd = new GridData(GridData.FILL_BOTH);
-            catList.setLayoutData(gd);
-            catList.addSelectionListener(new SelectionAdapter() {
+            catalogsTable.setLayoutData(gd);
+            catalogsTable.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    int selIndex = catList.getSelectionIndex();
-                    if (selIndex < 0) {
+                    int selIndex = catalogsTable.getSelectionIndex();
+                    if (selIndex <= 0) {
                         selectedCatalog = null;
-                        privPair.setModel(Collections.<String, Boolean>emptyMap());
                     } else {
-                        selectedCatalog = catList.getItem(selIndex);
-                        Map<String, Boolean> privs = catalogPrivileges.get(selectedCatalog);
-                        if (privs != null) {
-                            privPair.setModel(privs);
-                        }
+                        selectedCatalog = (MySQLCatalog) catalogsTable.getItem(selIndex).getData();
                     }
+                    showCatalogTables();
+                    showGrants();
                 }
             });
+            UIUtils.createTableColumn(catalogsTable, SWT.LEFT, "Catalog");
+            {
+                TableItem item = new TableItem(catalogsTable, SWT.NONE);
+                item.setText("% (All)");
+                item.setImage(DBIcon.TREE_CATALOG.getImage());
+            }
+            for (MySQLCatalog catalog : getUser().getDataSource().getCatalogs()) {
+                TableItem item = new TableItem(catalogsTable, SWT.NONE);
+                item.setText(catalog.getName());
+                item.setImage(DBIcon.TREE_CATALOG.getImage());
+                item.setData(catalog);
+            }
+            UIUtils.packColumns(catalogsTable);
         }
 
         {
-            Composite privsGroup = UIUtils.createControlGroup(container, "Privileges", 1, GridData.FILL_VERTICAL, 500);
-            gd = (GridData)privsGroup.getLayoutData();
-            gd.horizontalSpan = 2;
-            gd.widthHint = 400;
+            Composite catalogGroup = UIUtils.createControlGroup(container, "Tables", 1, GridData.FILL_VERTICAL, 200);
 
-            privPair = new PrivilegesPairList(privsGroup);
-            privPair.addListener(SWT.Modify, new Listener() {
-                public void handleEvent(Event event)
-                {
-                    final Map<String, Boolean> privs = catalogPrivileges.get(selectedCatalog);
-                    final String privilege = (String) event.data;
-                    final boolean grant = event.detail == PairListControl.MOVE_RIGHT;
-                    privs.put(privilege, grant);
-                    addChangeCommand(
-                        new MySQLCommandGrantPrivilege(
-                            grant,
-                            getDatabaseObject(),
-                            selectedCatalog,
-                            privilege),
-                        new IDatabaseObjectCommandReflector<MySQLCommandGrantPrivilege>() {
-                            public void redoCommand(MySQLCommandGrantPrivilege command)
-                            {
-                                privs.put(privilege, grant);
-                                updateUI();
-                            }
-                            public void undoCommand(MySQLCommandGrantPrivilege command)
-                            {
-                                privs.put(privilege, !grant);
-                                updateUI();
-                            }
-                            private void updateUI()
-                            {
-                                if (!catList.isDisposed()) {
-                                    int selIndex = catList.getSelectionIndex();
-                                    if (selIndex >= 0) {
-                                        catList.setSelection(selIndex);
-                                    }
-                                }
-                            }
-                        });
+            tablesTable = new Table(catalogGroup, SWT.BORDER | SWT.SINGLE);
+            tablesTable.setHeaderVisible(true);
+            gd = new GridData(GridData.FILL_BOTH);
+            tablesTable.setLayoutData(gd);
+            tablesTable.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    int selIndex = tablesTable.getSelectionIndex();
+                    if (selIndex <= 0) {
+                        selectedTable = null;
+                    } else {
+                        selectedTable = (MySQLTable) tablesTable.getItem(selIndex).getData();
+                    }
+                    showGrants();
                 }
             });
+            UIUtils.createTableColumn(tablesTable, SWT.LEFT, "Table");
+            UIUtils.packColumns(tablesTable);
         }
+        Composite ph = UIUtils.createPlaceholder(container, 1);
+        ph.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        tablePrivilegesTable = new PrivilegeTableControl(ph, "Table Privileges", false);
+        gd = new GridData(GridData.FILL_BOTH);
+        tablePrivilegesTable.setLayoutData(gd);
+
+        otherPrivilegesTable = new PrivilegeTableControl(ph, "Other Privileges", false);
+        gd = new GridData(GridData.FILL_BOTH);
+        otherPrivilegesTable.setLayoutData(gd);
+
+        catalogsTable.setSelection(0);
+        showCatalogTables();
 
         pageControl.createProgressPanel();
+
+        parent.addDisposeListener(new DisposeListener() {
+            public void widgetDisposed(DisposeEvent e)
+            {
+                UIUtils.dispose(boldFont);
+            }
+        });
+    }
+
+    private void showCatalogTables()
+    {
+        LoadingUtils.executeService(
+            new DatabaseLoadService<Collection<MySQLTable>>("Load tables", getUser().getDataSource()) {
+                public Collection<MySQLTable> evaluate()
+                    throws InvocationTargetException, InterruptedException
+                {
+                    if (selectedCatalog == null) {
+                        return Collections.emptyList();
+                    }
+                    try {
+                        return selectedCatalog.getTables(getProgressMonitor());
+                    }
+                    catch (DBException e) {
+                        log.error(e);
+                    }
+                    return null;
+                }
+            },
+            pageControl.createTablesLoadVisualizer());
+    }
+
+    private void showGrants()
+    {
+        if (grants == null) {
+            return;
+        }
+        List<MySQLGrant> curGrants = new ArrayList<MySQLGrant>();
+        for (MySQLGrant grant : grants) {
+            if (grant.matches(selectedCatalog) && grant.matches(selectedTable)) {
+                curGrants.add(grant);
+            }
+        }
+        tablePrivilegesTable.fillGrants(curGrants);
+        otherPrivilegesTable.fillGrants(curGrants);
     }
 
     public synchronized void activatePart()
@@ -130,49 +185,119 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
         isLoaded = true;
         LoadingUtils.executeService(
-            new DatabaseLoadService<Map<String, Map<String, Boolean>>>("Load catalog privileges", getUser().getDataSource()) {
-                public Map<String, Map<String, Boolean>> evaluate()
-                    throws InvocationTargetException, InterruptedException
+            new DatabaseLoadService<java.util.List<MySQLPrivilege>>("Load privileges", getUser().getDataSource()) {
+                public java.util.List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        return getUser().getCatalogPrivileges(getProgressMonitor());
+                        return getUser().getDataSource().getPrivileges(getProgressMonitor());
                     }
                     catch (DBException e) {
-                        log.error(e);
+                        throw new InvocationTargetException(e);
                     }
-                    return null;
                 }
             },
-            pageControl.createLoadVisualizer());
+            pageControl.createPrivilegesLoadVisualizer());
     }
 
-    private class PageControl extends ObjectEditorPageControl {
-        public PageControl(Composite parent, int style) {
-            super(parent, style, MySQLUserEditorPrivileges.this);
-        }
+    @Override
+    protected PageControl getPageControl()
+    {
+        return pageControl;
+    }
 
-        public ProgressVisualizer<Map<String, Map<String, Boolean>>> createLoadVisualizer() {
-            return new SessionsVisualizer();
-        }
-
-        private class SessionsVisualizer extends ProgressVisualizer<Map<String, Map<String, Boolean>>> {
-            @Override
-            public void completeLoading(Map<String, Map<String, Boolean>> privs) {
-                super.completeLoading(privs);
-                if (privs == null) {
-                    return;
-                }
-                // Copy privileges
-                catalogPrivileges = new TreeMap<String, Map<String, Boolean>>();
-                for (Map.Entry<String, Map<String, Boolean>> entry : privs.entrySet()) {
-                    catalogPrivileges.put(entry.getKey(), new TreeMap<String, Boolean>(entry.getValue()));
-                }
-                // Fill catalog list
-                for (String catalog : catalogPrivileges.keySet()) {
-                    catList.add(catalog);
-                }
-                //setInfo(String.valueOf(catalogPrivileges.size()) + " privileges");
+    @Override
+    protected void processGrants(List<MySQLGrant> grantsTmp)
+    {
+        this.grants = new ArrayList<MySQLGrant>(grantsTmp);
+        for (Iterator<MySQLGrant> i = grants.iterator(); i.hasNext();) {
+            MySQLGrant grant = i.next();
+            if (!grant.isAllPrivileges() && !grant.hasNonAdminPrivileges()) {
+                i.remove();
             }
+        }
+        // Highlight granted catalogs
+        for (TableItem item : catalogsTable.getItems()) {
+            MySQLCatalog catalog = (MySQLCatalog)item.getData();
+            item.setFont(null);
+            for (MySQLGrant grant : grants) {
+                if (grant.matches(catalog)) {
+                    item.setFont(boldFont);
+                    break;
+                }
+            }
+        }
+        showGrants();
+        showCatalogTables();
+    }
+
+    private class PageControl extends UserPageControl {
+        public PageControl(Composite parent) {
+            super(parent);
+        }
+
+        public ProgressVisualizer<Collection<MySQLTable>> createTablesLoadVisualizer() {
+            return new ProgressVisualizer<Collection<MySQLTable>>() {
+                public void completeLoading(Collection<MySQLTable> tables) {
+                    super.completeLoading(tables);
+                    if (tablesTable.isDisposed()) {
+                        return;
+                    }
+                    tablesTable.removeAll();
+                    {
+                        TableItem item = new TableItem(tablesTable, SWT.NONE);
+                        item.setText("% (All)");
+                        item.setImage(DBIcon.TREE_TABLE.getImage());
+                        if (grants != null) {
+                            for (MySQLGrant grant : grants) {
+                                if (grant.matches(selectedCatalog) && grant.matches((MySQLTable) null)) {
+                                    item.setFont(boldFont);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    for (MySQLTable table : tables) {
+                        TableItem item = new TableItem(tablesTable, SWT.NONE);
+                        item.setText(table.getName());
+                        item.setImage(table.isView() ? DBIcon.TREE_VIEW.getImage() : DBIcon.TREE_TABLE.getImage());
+                        item.setData(table);
+
+                        if (grants != null) {
+                            for (MySQLGrant grant : grants) {
+                                if (grant.matches(selectedCatalog) && grant.matches(table)) {
+                                    item.setFont(boldFont);
+                                    break;
+                                }
+                            }
+                        }
+
+                    }
+                    UIUtils.packColumns(tablesTable);
+                }
+            };
+        }
+
+        public ProgressVisualizer<java.util.List<MySQLPrivilege>> createPrivilegesLoadVisualizer() {
+            return new ProgressVisualizer<java.util.List<MySQLPrivilege>>() {
+                public void completeLoading(java.util.List<MySQLPrivilege> privs) {
+                    super.completeLoading(privs);
+                    List<MySQLPrivilege> otherPrivs = new ArrayList<MySQLPrivilege>();
+                    List<MySQLPrivilege> tablePrivs = new ArrayList<MySQLPrivilege>();
+                    for (MySQLPrivilege priv : privs) {
+                        if (priv.getKind() == MySQLPrivilege.Kind.ADMIN) {
+                            continue;
+                        }
+                        if (priv.getContext().contains("Table")) {
+                            tablePrivs.add(priv);
+                        } else {
+                            otherPrivs.add(priv);
+                        }
+                    }
+                    tablePrivilegesTable.fillPrivileges(tablePrivs);
+                    otherPrivilegesTable.fillPrivileges(otherPrivs);
+                    loadGrants();
+                }
+            };
         }
 
     }

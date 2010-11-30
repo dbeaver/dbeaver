@@ -187,8 +187,8 @@
             class="org.jkiss.dbeaver.ext.mysql.editors.MySQLUserEditorPrivileges"
             objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"
             main="false"
-            label="Privileges"
-            description="Global user privileges"
+            label="Schema Privileges"
+            description="Schema user privileges"
             position="additions_start"
             icon="#user">
         </editor>

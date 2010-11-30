@@ -420,6 +420,18 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         return privileges;
     }
 
+    public List<MySQLPrivilege> getPrivileges(DBRProgressMonitor monitor, MySQLPrivilege.Kind kind)
+        throws DBException
+    {
+        List<MySQLPrivilege> privs = new ArrayList<MySQLPrivilege>();
+        for (MySQLPrivilege priv : getPrivileges(monitor)) {
+            if (priv.getKind() == kind) {
+                privs.add(priv);
+            }
+        }
+        return privs;
+    }
+
     public MySQLPrivilege getPrivilege(DBRProgressMonitor monitor, String name)
         throws DBException
     {

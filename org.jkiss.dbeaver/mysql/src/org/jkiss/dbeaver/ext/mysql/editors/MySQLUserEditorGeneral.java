@@ -4,38 +4,41 @@
 
 package org.jkiss.dbeaver.ext.mysql.editors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
-import org.jkiss.dbeaver.ext.mysql.controls.PrivilegesPairList;
-import org.jkiss.dbeaver.ext.mysql.runtime.MySQLCommandGrantPrivilege;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
+import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.PairListControl;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 /**
  * MySQLUserEditorGeneral
  */
 public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 {
-    static final Log log = LogFactory.getLog(MySQLUserEditorGeneral.class);
-    private Map<String, Boolean> privileges;
+    //static final Log log = LogFactory.getLog(MySQLUserEditorGeneral.class);
+
+    private PageControl pageControl;
+    private boolean isLoaded;
+    private PrivilegeTableControl privTable;
 
     public void createPartControl(Composite parent)
     {
-        GridLayout gl = new GridLayout(2, false);
-        parent.setLayout(gl);
+        pageControl = new PageControl(parent);
+
+        Composite container = UIUtils.createPlaceholder(pageControl, 2, 5);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        container.setLayoutData(gd);
 
         {
-            Composite loginGroup = UIUtils.createControlGroup(parent, "Login", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 200);
+            Composite loginGroup = UIUtils.createControlGroup(container, "Login", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 200);
 
             UIUtils.createLabelText(loginGroup, "User Name", getUser().getName());
             UIUtils.createLabelText(loginGroup, "Host", getUser().getHost());
@@ -45,7 +48,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         }
 
         {
-            Composite limitsGroup = UIUtils.createControlGroup(parent, "Limits", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 200);
+            Composite limitsGroup = UIUtils.createControlGroup(container, "Limits", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 200);
 
             UIUtils.createLabelText(limitsGroup, "Max Queries", "" + getUser().getMaxQuestions());
             UIUtils.createLabelText(limitsGroup, "Max Updates", "" + getUser().getMaxUpdates());
@@ -55,11 +58,11 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 
 
         {
-            Composite privsGroup = UIUtils.createControlGroup(parent, "Privileges", 3, GridData.FILL_VERTICAL, 0);
-            GridData gd = (GridData)privsGroup.getLayoutData();
+            privTable = new PrivilegeTableControl(container, "DBA Privileges", true);
+            gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
-            gd.widthHint = 400;
-
+            privTable.setLayoutData(gd);
+/*
             final PrivilegesPairList privPair = new PrivilegesPairList(privsGroup);
             privileges = new TreeMap<String, Boolean>(getUser().getGlobalPrivileges());
             privPair.setModel(privileges);
@@ -94,11 +97,58 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                 }
             });
 
+*/
         }
+        pageControl.createProgressPanel();
     }
 
     public void activatePart()
     {
+        if (isLoaded) {
+            return;
+        }
+        isLoaded = true;
+        LoadingUtils.executeService(
+            new DatabaseLoadService<List<MySQLPrivilege>>("Load catalog privileges", getUser().getDataSource()) {
+                public List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        return getUser().getDataSource().getPrivileges(getProgressMonitor(), MySQLPrivilege.Kind.ADMIN);
+                    }
+                    catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            },
+            pageControl.createLoadVisualizer());
+    }
+
+    @Override
+    protected PageControl getPageControl()
+    {
+        return pageControl;
+    }
+
+    @Override
+    protected void processGrants(List<MySQLGrant> grants)
+    {
+        privTable.fillGrants(grants);
+    }
+
+    private class PageControl extends UserPageControl {
+        public PageControl(Composite parent) {
+            super(parent);
+        }
+        public ProgressVisualizer<List<MySQLPrivilege>> createLoadVisualizer() {
+            return new ProgressVisualizer<List<MySQLPrivilege>>() {
+                public void completeLoading(List<MySQLPrivilege> privs) {
+                    super.completeLoading(privs);
+                    privTable.fillPrivileges(privs);
+                    loadGrants();
+                }
+            };
+        }
+
     }
 
 }

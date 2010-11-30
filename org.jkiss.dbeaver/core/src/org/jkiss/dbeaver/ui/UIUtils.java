@@ -628,4 +628,16 @@ public class UIUtils {
             return MessageFormat.format(message, args);
         }
     }
+
+    public static Button createPushButton(Composite parent, String label, Image image)
+    {
+        Button button = new Button(parent, SWT.PUSH);
+        if (label != null) {
+            button.setText(label);
+        }
+        if (image != null) {
+            button.setImage(image);
+        }
+        return button;
+    }
 }

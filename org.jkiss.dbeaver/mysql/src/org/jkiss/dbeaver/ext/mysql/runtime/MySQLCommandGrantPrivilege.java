@@ -31,7 +31,7 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
 
     public void updateModel(MySQLUser object, boolean undo)
     {
-        this.user.updatePrivilege(schema, privilege, undo ? !grant : grant);
+        //this.user.updatePrivilege(schema, privilege, undo ? !grant : grant);
     }
 
     public IDatabasePersistAction[] getPersistActions()

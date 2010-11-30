@@ -7,24 +7,22 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
 
 /**
  * MySQLUser
@@ -38,10 +36,6 @@ public class MySQLUser implements DBAUser
     private String host;
     private String passwordHash;
 
-    private Map<String, Boolean> globalPrivileges;
-    private List<String> catalogPrivNames;
-    private Map<String, Map<String, Boolean>> catalogPrivileges;
-
     private String sslType;
     private byte[] sslCipher;
     private byte[] x509Issuer;
@@ -51,6 +45,8 @@ public class MySQLUser implements DBAUser
     private int maxUpdates;
     private int maxConnections;
     private int maxUserConnections;
+
+    private List<MySQLGrant> grants;
 
     public MySQLUser(MySQLDataSource dataSource, ResultSet resultSet) {
         this.dataSource = dataSource;
@@ -67,10 +63,6 @@ public class MySQLUser implements DBAUser
         this.maxUpdates = JDBCUtils.safeGetInt(resultSet, "max_updates");
         this.maxConnections = JDBCUtils.safeGetInt(resultSet, "max_connections");
         this.maxUserConnections = JDBCUtils.safeGetInt(resultSet, "max_user_connections");
-
-        this.globalPrivileges = MySQLUtils.collectPrivileges(
-            MySQLUtils.collectPrivilegeNames(resultSet),
-            resultSet);
     }
 
     @Property(name = "User name", viewable = true, order = 1)
@@ -98,7 +90,7 @@ public class MySQLUser implements DBAUser
         return dataSource;
     }
 
-    public JDBCDataSource getDataSource() {
+    public MySQLDataSource getDataSource() {
         return dataSource;
     }
 
@@ -115,41 +107,64 @@ public class MySQLUser implements DBAUser
         return passwordHash;
     }
 
-    public Map<String, Boolean> getGlobalPrivileges() {
-        return globalPrivileges;
-    }
-
-    public List<String> getCatalogPrivNames(DBRProgressMonitor monitor)
+    public List<MySQLGrant> getGrants(DBRProgressMonitor monitor)
         throws DBException
     {
-        getCatalogPrivileges(monitor);
-        return catalogPrivNames;
-    }
-
-    public Map<String, Map<String, Boolean>> getCatalogPrivileges(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (catalogPrivileges != null) {
-            return catalogPrivileges;
+        if (this.grants != null) {
+            return this.grants;
         }
+        
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read catalog privileges");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM mysql.db WHERE User=?");
+            JDBCPreparedStatement dbStat = context.prepareStatement("SHOW GRANTS FOR " + getFullName());
             try {
-                dbStat.setString(1, username);
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    if (catalogPrivNames == null) {
-                        catalogPrivNames = MySQLUtils.collectPrivilegeNames(dbResult);
-                    }
-                    Map<String, Map<String, Boolean>> privs = new TreeMap<String, Map<String, Boolean>>();
+                    List<MySQLGrant> grants = new ArrayList<MySQLGrant>();
                     while (dbResult.next()) {
-                        privs.put(
-                            dbResult.getString("db"),
-                            MySQLUtils.collectPrivileges(catalogPrivNames, dbResult));
+                        List<MySQLPrivilege> privileges = new ArrayList<MySQLPrivilege>();
+                        boolean allPrivilegesFlag = false;
+                        boolean grantOption = false;
+                        String catalog = null;
+                        String table = null;
+
+                        String grantString = JDBCUtils.safeGetString(dbResult, 1).trim().toUpperCase();
+                        if (grantString.endsWith(" WITH GRANT OPTION")) {
+                            grantOption = true;//privileges.add(getDataSource().getPrivilege(monitor, MySQLPrivilege.GRANT_PRIVILEGE));
+                        }
+                        Matcher matcher = MySQLGrant.GRANT_PATTERN.matcher(grantString);
+                        if (matcher.find()) {
+                            StringTokenizer st = new StringTokenizer(matcher.group(1), ",");
+                            while (st.hasMoreTokens()) {
+                                String privName = st.nextToken().trim();
+                                if (privName.equalsIgnoreCase(MySQLPrivilege.ALL_PRIVILEGES)) {
+                                    allPrivilegesFlag = true;
+                                    continue;
+                                }
+                                MySQLPrivilege priv = getDataSource().getPrivilege(monitor, privName);
+                                if (priv == null) {
+                                    log.warn("Could not find privilege '" + privName + "'");
+                                } else {
+                                    privileges.add(priv);
+                                }
+                            }
+                            catalog = matcher.group(2);
+                            table = matcher.group(3);
+                        } else {
+                            log.warn("Could not parse GRANT string: " + grantString);
+                            continue;
+                        }
+                        grants.add(
+                            new MySQLGrant(
+                                this,
+                                privileges,
+                                catalog,
+                                table,
+                                allPrivilegesFlag,
+                                grantOption));
                     }
-                    catalogPrivileges = privs;
-                    return catalogPrivileges;
+                    this.grants = grants;
+                    return this.grants;
                 } finally {
                     dbResult.close();
                 }
@@ -162,20 +177,6 @@ public class MySQLUser implements DBAUser
         }
         finally {
             context.close();
-        }
-    }
-
-    public void updatePrivilege(String schema, String privilege, boolean grant)
-    {
-        if (schema == null) {
-            globalPrivileges.put(privilege, grant);
-        } else {
-            Map<String, Boolean> schemaPrivs = catalogPrivileges.get(schema);
-            if (schemaPrivs == null) {
-                schemaPrivs = new TreeMap<String, Boolean>();
-                catalogPrivileges.put(schema, schemaPrivs);
-            }
-            schemaPrivs.put(privilege, grant);
         }
     }
 
