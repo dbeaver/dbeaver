@@ -63,7 +63,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         {
             Composite catalogGroup = UIUtils.createControlGroup(container, "Catalogs", 1, GridData.FILL_VERTICAL, 200);
 
-            catalogsTable = new Table(catalogGroup, SWT.BORDER | SWT.SINGLE);
+            catalogsTable = new Table(catalogGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
             catalogsTable.setHeaderVisible(true);
             gd = new GridData(GridData.FILL_BOTH);
             catalogsTable.setLayoutData(gd);
@@ -98,7 +98,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         {
             Composite catalogGroup = UIUtils.createControlGroup(container, "Tables", 1, GridData.FILL_VERTICAL, 200);
 
-            tablesTable = new Table(catalogGroup, SWT.BORDER | SWT.SINGLE);
+            tablesTable = new Table(catalogGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
             tablesTable.setHeaderVisible(true);
             gd = new GridData(GridData.FILL_BOTH);
             tablesTable.setLayoutData(gd);
@@ -120,11 +120,11 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         Composite ph = UIUtils.createPlaceholder(container, 1);
         ph.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        tablePrivilegesTable = new PrivilegeTableControl(ph, "Table Privileges", false);
+        tablePrivilegesTable = new PrivilegeTableControl(ph, "Table Privileges");
         gd = new GridData(GridData.FILL_BOTH);
         tablePrivilegesTable.setLayoutData(gd);
 
-        otherPrivilegesTable = new PrivilegeTableControl(ph, "Other Privileges", false);
+        otherPrivilegesTable = new PrivilegeTableControl(ph, "Other Privileges");
         gd = new GridData(GridData.FILL_BOTH);
         otherPrivilegesTable.setLayoutData(gd);
 

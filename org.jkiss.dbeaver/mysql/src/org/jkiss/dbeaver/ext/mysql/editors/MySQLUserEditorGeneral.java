@@ -58,7 +58,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 
 
         {
-            privTable = new PrivilegeTableControl(container, "DBA Privileges", true);
+            privTable = new PrivilegeTableControl(container, "DBA Privileges");
             gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
             privTable.setLayoutData(gd);

@@ -21,7 +21,7 @@ public class MySQLPrivilege implements DBAPrivilege
 {
     static final Log log = LogFactory.getLog(MySQLPrivilege.class);
 
-    public static final String GRANT_PRIVILEGE = "Grant";
+    public static final String GRANT_PRIVILEGE = "Grant Option";
     public static final String ALL_PRIVILEGES = "All Privileges";
 
     public static enum Kind {

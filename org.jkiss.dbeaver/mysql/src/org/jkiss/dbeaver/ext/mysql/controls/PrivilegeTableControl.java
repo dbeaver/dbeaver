@@ -5,8 +5,10 @@
 package org.jkiss.dbeaver.ext.mysql.controls;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -26,13 +28,10 @@ import java.util.List;
 public class PrivilegeTableControl extends Composite {
 
     private Table privTable;
-    private Button grantOptionCheck;
-    private boolean showGrantOption;
 
-    public PrivilegeTableControl(Composite parent, String title, boolean showGrantOption)
+    public PrivilegeTableControl(Composite parent, String title)
     {
         super(parent, SWT.NONE);
-        this.showGrantOption = showGrantOption;
         GridLayout gl = new GridLayout(1, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
@@ -50,15 +49,12 @@ public class PrivilegeTableControl extends Composite {
         gd.minimumWidth = 400;
         privTable.setLayoutData(gd);
         UIUtils.createTableColumn(privTable, SWT.LEFT, "Privilege");
+        UIUtils.createTableColumn(privTable, SWT.LEFT, "Grant Option");
         UIUtils.createTableColumn(privTable, SWT.LEFT, "Description");
         UIUtils.packColumns(privTable);
 
         Composite buttonsPanel = UIUtils.createPlaceholder(privsGroup, 3);
         buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (showGrantOption) {
-            grantOptionCheck = UIUtils.createCheckbox(buttonsPanel, "With Grant Option", false);
-            grantOptionCheck.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        }
 
         Button checkButton = UIUtils.createPushButton(buttonsPanel, "Check All", null);
         checkButton.addSelectionListener(new SelectionAdapter() {
@@ -87,13 +83,25 @@ public class PrivilegeTableControl extends Composite {
         }
         privTable.removeAll();
         for (MySQLPrivilege priv : privs) {
-            if (showGrantOption && priv.getName().equalsIgnoreCase(MySQLPrivilege.GRANT_PRIVILEGE)) {
+            if (priv.getName().equalsIgnoreCase(MySQLPrivilege.GRANT_PRIVILEGE)) {
                 continue;
             }
             TableItem item = new TableItem(privTable, SWT.NONE);
             item.setText(0, priv.getName());
-            item.setText(1, priv.getDescription());
+            item.setText(2, priv.getDescription());
             item.setData(priv);
+
+            Button checkbox = new Button(privTable, SWT.CHECK);
+            checkbox.pack();
+            TableEditor editor = new TableEditor(privTable);
+            editor.setEditor(checkbox, item, 1);
+            Point size = checkbox.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+            editor.minimumWidth = size.x;
+            editor.minimumHeight = size.y;
+            editor.horizontalAlignment = SWT.CENTER;
+            editor.verticalAlignment = SWT.CENTER;
+
+            item.setData("grant", checkbox);
         }
         UIUtils.packColumns(privTable);
     }
@@ -102,24 +110,17 @@ public class PrivilegeTableControl extends Composite {
     {
         for (TableItem item : privTable.getItems()) {
             MySQLPrivilege privilege = (MySQLPrivilege) item.getData();
-            boolean checked = false;
+            Button grantCheck = (Button)item.getData("grant");
+            boolean checked = false, grantOption = false;
             for (MySQLGrant grant : grants) {
                 if (grant.isAllPrivileges() || grant.getPrivileges().contains(privilege)) {
                     checked = true;
+                    grantOption = grant.isGrantOption();
                     break;
                 }
             }
             item.setChecked(checked);
-        }
-        if (showGrantOption) {
-            boolean hasGrantOption = false;
-            for (MySQLGrant grant : grants) {
-                if (grant.isGrantOption()) {
-                    hasGrantOption = true;
-                    break;
-                }
-            }
-            grantOptionCheck.setSelection(hasGrantOption);
+            grantCheck.setSelection(grantOption);
         }
     }
 }
