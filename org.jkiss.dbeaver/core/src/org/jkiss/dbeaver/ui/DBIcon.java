@@ -87,6 +87,7 @@ public enum DBIcon
     LOAD("load", "/icons/file/load.png"),
     ACCEPT("accept", "/icons/sql/accept.png"),
     REJECT("reject", "/icons/sql/cancel.png"),
+    REVERT("revert", "/icons/sql/revert.png"),
     IMPORT("import", "/icons/file/import.png"),
     EXPORT("export", "/icons/file/export.png"),
     REFRESH("refresh", "/icons/refresh.png"),
@@ -117,7 +118,8 @@ public enum DBIcon
     SQL_ANALYSE("sql_analyse", "/icons/sql/sql_analyse.png"),
     SQL_EXPLAIN_PLAN("sql_explain", "/icons/sql/sql_plan.png"),
     SQL_VALIDATE("sql_validate", "/icons/sql/sql_validate.png"),
-
+    SQL_PREVIEW("sql_preview", "/icons/sql/sql_preview.png"),
+    SAVE_TO_DATABASE("save_to_db", "/icons/sql/save_to_database.png"),
 
     OVER_SUCCESS("over_success", "/icons/over/success_ovr.png"),
     OVER_FAILED("over_failed", "/icons/over/failed_ovr.png"),
