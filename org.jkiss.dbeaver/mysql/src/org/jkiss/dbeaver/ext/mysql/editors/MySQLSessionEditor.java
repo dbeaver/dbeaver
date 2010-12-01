@@ -171,25 +171,29 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
                     JDBCExecutionContext context = getDataSource().openContext(this.getProgressMonitor(), DBCExecutionPurpose.UTIL, "Retrieve process list");
                     try {
                         JDBCPreparedStatement dbStat = context.prepareStatement("SHOW FULL PROCESSLIST");
-                        JDBCResultSet dbResult = dbStat.executeQuery();
                         try {
-                            List<SessionInfo> sessions = new ArrayList<SessionInfo>();
-                            while (dbResult.next()) {
-                                SessionInfo session = new SessionInfo(
-                                    JDBCUtils.safeGetString(dbResult, "id"),
-                                    JDBCUtils.safeGetString(dbResult, "user"),
-                                    JDBCUtils.safeGetString(dbResult, "host"),
-                                    JDBCUtils.safeGetString(dbResult, "db"),
-                                    JDBCUtils.safeGetString(dbResult, "command"),
-                                    JDBCUtils.safeGetString(dbResult, "time"),
-                                    JDBCUtils.safeGetString(dbResult, "state"),
-                                    JDBCUtils.safeGetString(dbResult, "info")
-                                );
-                                sessions.add(session);
+                            JDBCResultSet dbResult = dbStat.executeQuery();
+                            try {
+                                List<SessionInfo> sessions = new ArrayList<SessionInfo>();
+                                while (dbResult.next()) {
+                                    SessionInfo session = new SessionInfo(
+                                        JDBCUtils.safeGetString(dbResult, "id"),
+                                        JDBCUtils.safeGetString(dbResult, "user"),
+                                        JDBCUtils.safeGetString(dbResult, "host"),
+                                        JDBCUtils.safeGetString(dbResult, "db"),
+                                        JDBCUtils.safeGetString(dbResult, "command"),
+                                        JDBCUtils.safeGetString(dbResult, "time"),
+                                        JDBCUtils.safeGetString(dbResult, "state"),
+                                        JDBCUtils.safeGetString(dbResult, "info")
+                                    );
+                                    sessions.add(session);
+                                }
+                                return sessions;
+                            } finally {
+                                dbResult.close();
                             }
-                            return sessions;
                         } finally {
-                            dbResult.close();
+                            dbStat.close();
                         }
                     }
                     catch (SQLException e) {
