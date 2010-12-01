@@ -375,7 +375,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.new.sql.editor" class="org.jkiss.dbeaver.ui.actions.sql.OpenSQLEditorHandler">
+        <handler commandId="org.jkiss.dbeaver.core.new.sql.editor" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLEditorHandler">
             <enabledWhen>
                 <or>
                     <with variable="selection">
@@ -393,7 +393,7 @@
 
         <!-- SQL editor handlers -->
         
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" class="org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementHandler">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteStatementHandler">
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
@@ -402,7 +402,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <!--handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.actions.sql.ExecuteStatementHandler">
+        <!--handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.editors.sql.handlerss.handlers.ExecuteStatementHandler">
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
@@ -411,7 +411,7 @@
                 </with>
             </enabledWhen>
         </handler-->
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" class="org.jkiss.dbeaver.ui.actions.sql.ExecuteScriptHandler">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteScriptHandler">
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
@@ -420,7 +420,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" class="org.jkiss.dbeaver.ui.actions.sql.ExplainPlanHandler">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExplainPlanHandler">
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
@@ -429,7 +429,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse" class="org.jkiss.dbeaver.ui.actions.sql.AnalyseStatementHandler">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse" class="org.jkiss.dbeaver.ui.editors.sql.handlers.AnalyseStatementHandler">
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
@@ -438,7 +438,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate" class="org.jkiss.dbeaver.ui.actions.sql.ValidateStatementHandler">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ValidateStatementHandler">
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
@@ -448,14 +448,14 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" class="org.jkiss.dbeaver.ui.actions.sql.SaveSQLFileHandler">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SaveSQLFileHandler">
             <enabledWhen>
                 <with variable="activeEditor">
                     <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" class="org.jkiss.dbeaver.ui.actions.sql.OpenSQLFileHandler">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLFileHandler">
             <enabledWhen>
                 <with variable="activeEditor">
                     <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
