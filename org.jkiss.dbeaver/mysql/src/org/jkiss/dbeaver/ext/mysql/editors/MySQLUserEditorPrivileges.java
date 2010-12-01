@@ -169,15 +169,15 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
                                 privTable.checkPrivilege(privilege, isGrant);
-                                updateLocalData(privilege, isGrant, curCatalog, curTable);
                             }
+                            updateLocalData(privilege, isGrant, curCatalog, curTable);
                         }
                         public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
                                 privTable.checkPrivilege(privilege, !isGrant);
-                                updateLocalData(privilege, !isGrant, curCatalog, curTable);
                             }
+                            updateLocalData(privilege, !isGrant, curCatalog, curTable);
                         }
                     });
             }
