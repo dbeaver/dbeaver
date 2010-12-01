@@ -329,6 +329,11 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         return dataTypeMap.get(typeName);
     }
 
+    public String getScriptDelimiter()
+    {
+        return ";";
+    }
+
     private void addDataType(JDBCDataType dataType)
     {
         dataTypeList.add(dataType);

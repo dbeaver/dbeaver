@@ -11,11 +11,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
@@ -30,8 +33,10 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.dialogs.ViewTextDialog;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
@@ -40,10 +45,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * EntityEditor
@@ -118,6 +120,30 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                 }
             });
         }
+    }
+
+    public void showChanges()
+    {
+        Collection<IDatabaseObjectCommand> commands = getObjectManager().getCommands();
+        StringBuilder script = new StringBuilder();
+        for (IDatabaseObjectCommand command : commands) {
+            IDatabasePersistAction[] persistActions = command.getPersistActions();
+            if (!CommonUtils.isEmpty(persistActions)) {
+                for (IDatabasePersistAction action : persistActions) {
+                    if (script.length() > 0) {
+                        script.append('\n');
+                    }
+                    script.append(action.getScript());
+                    script.append(getObjectManager().getDataSource().getInfo().getScriptDelimiter());
+                }
+            }
+        }
+        Shell shell = getSite().getShell();
+        ViewTextDialog dialog = new ViewTextDialog(shell, "Script", script.toString());
+        dialog.setTextWidth(0);
+        dialog.setTextHeight(0);
+        dialog.setImage(DBIcon.SQL_PREVIEW.getImage());
+        dialog.open();
     }
 
     protected void createPages()

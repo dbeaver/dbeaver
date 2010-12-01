@@ -123,6 +123,13 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
         if (!CommonUtils.isEmpty(additional) && !additional.equals(catalogSeparator)) {
             catalogSeparator += additional;
         }
+        statementDelimiter = null;
+        if (dataSourceInfo != null) {
+            statementDelimiter = dataSourceInfo.getScriptDelimiter();
+        }
+        if (statementDelimiter == null) {
+            statementDelimiter = ";";
+        }
         loadSyntax(dataSourceInfo);
         changeRules();
     }

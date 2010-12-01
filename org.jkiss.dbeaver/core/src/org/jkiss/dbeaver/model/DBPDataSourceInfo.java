@@ -196,4 +196,9 @@ public interface DBPDataSourceInfo
      */
     DBSDataType getSupportedDataType(String typeName);
 
+    /**
+     * Script delimiter character
+     * @return
+     */
+    String getScriptDelimiter();
 }

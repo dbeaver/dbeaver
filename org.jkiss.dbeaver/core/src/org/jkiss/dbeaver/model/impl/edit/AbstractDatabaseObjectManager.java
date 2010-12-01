@@ -147,7 +147,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
-    public Collection<IDatabaseObjectCommand<OBJECT_TYPE>> getCommands()
+    public Collection<? extends IDatabaseObjectCommand<OBJECT_TYPE>> getCommands()
     {
         synchronized (commands) {
             List<IDatabaseObjectCommand<OBJECT_TYPE>> cmdCopy = new ArrayList<IDatabaseObjectCommand<OBJECT_TYPE>>(commands.size());

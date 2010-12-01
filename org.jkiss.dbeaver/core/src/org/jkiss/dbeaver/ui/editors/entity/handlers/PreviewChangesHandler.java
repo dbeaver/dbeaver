@@ -19,7 +19,7 @@ public class PreviewChangesHandler extends AbstractHandler
     {
         EntityEditor editor = (EntityEditor)Platform.getAdapterManager().getAdapter(HandlerUtil.getActiveEditor(event), EntityEditor.class);
         if (editor != null) {
-            ///editor.getObjectManager().saveChanges(null);
+            editor.showChanges();
         }
         return null;
     }

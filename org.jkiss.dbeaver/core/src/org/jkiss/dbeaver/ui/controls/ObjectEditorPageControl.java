@@ -10,9 +10,11 @@ import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 
 public class ObjectEditorPageControl extends ProgressPageControl {
 
+/*
     private Button saveChangesButton;
     private Button viewChangesButton;
     private Button resetChangesButton;
+*/
 
     public ObjectEditorPageControl(Composite parent, int style, IDatabaseObjectEditor workbenchPart)
     {
@@ -40,7 +42,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
 
     @Override
     protected Composite createProgressPanel(Composite container) {
-        Composite panel = super.createProgressPanel(container);
+        return super.createProgressPanel(container);
 
 /*
         viewChangesButton = new Button(panel, SWT.PUSH);
@@ -101,8 +103,6 @@ public class ObjectEditorPageControl extends ProgressPageControl {
             }
         });
 */
-
-        return panel;
     }
 
 }

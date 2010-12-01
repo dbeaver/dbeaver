@@ -129,7 +129,10 @@ public class ProgressPageControl extends Composite
         Composite customControls = new Composite(infoGroup, SWT.NONE);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
         customControls.setLayoutData(gd);
-        customControls.setLayout(new FillLayout(SWT.HORIZONTAL));
+        customControls.setLayout(new FillLayout());
+
+        Label phLabel = new Label(customControls, SWT.NONE);
+        phLabel.setText(" ");
 
         return customControls;
     }
