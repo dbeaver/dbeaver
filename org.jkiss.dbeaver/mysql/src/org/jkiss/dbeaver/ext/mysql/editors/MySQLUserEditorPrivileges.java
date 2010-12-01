@@ -154,40 +154,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 final boolean isGrant = event.detail == 1;
                 final MySQLCatalog curCatalog = selectedCatalog;
                 final MySQLTable curTable = selectedTable;
-                // Modify local grants (and clear grants cache in user objects)
-                getUser().clearGrantsCache();
-                boolean found = false;
-                for (MySQLGrant grant : grants) {
-                    if (grant.matches(curCatalog) && grant.matches(curTable)) {
-                        if (privilege.isGrantOption()) {
-                            grant.setGrantOption(isGrant);
-                        } else if (isGrant) {
-                            if (!grant.getPrivileges().contains(privilege)) {
-                                grant.addPrivilege(privilege);
-                            }
-                        } else {
-                            grant.removePrivilege(privilege);
-                        }
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    List<MySQLPrivilege> privileges = new ArrayList<MySQLPrivilege>();
-                    if (!privilege.isGrantOption()) {
-                        privileges.add(privilege);
-                    }
-                    MySQLGrant grant = new MySQLGrant(
-                        getUser(),
-                        privileges,
-                        curCatalog == null ? "*" : curCatalog.getName(),
-                        curTable == null ? "*" : curTable.getName(),
-                        false,
-                        privilege.isGrantOption());
-                    grants.add(grant);
-                }
-                highlightCatalogs();
-                highlightTables();
+                updateLocalData(privilege, isGrant, curCatalog, curTable);
+
                 // Add command
                 addChangeCommand(
                     new MySQLCommandGrantPrivilege(
@@ -201,17 +169,57 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
                                 privTable.checkPrivilege(privilege, isGrant);
+                                updateLocalData(privilege, isGrant, curCatalog, curTable);
                             }
                         }
                         public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
                                 privTable.checkPrivilege(privilege, !isGrant);
+                                updateLocalData(privilege, !isGrant, curCatalog, curTable);
                             }
                         }
                     });
             }
         });
+    }
+
+    private void updateLocalData(MySQLPrivilege privilege, boolean isGrant, MySQLCatalog curCatalog, MySQLTable curTable)
+    {
+        // Modify local grants (and clear grants cache in user objects)
+        getUser().clearGrantsCache();
+        boolean found = false;
+        for (MySQLGrant grant : grants) {
+            if (grant.matches(curCatalog) && grant.matches(curTable)) {
+                if (privilege.isGrantOption()) {
+                    grant.setGrantOption(isGrant);
+                } else if (isGrant) {
+                    if (!grant.getPrivileges().contains(privilege)) {
+                        grant.addPrivilege(privilege);
+                    }
+                } else {
+                    grant.removePrivilege(privilege);
+                }
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            List<MySQLPrivilege> privileges = new ArrayList<MySQLPrivilege>();
+            if (!privilege.isGrantOption()) {
+                privileges.add(privilege);
+            }
+            MySQLGrant grant = new MySQLGrant(
+                getUser(),
+                privileges,
+                curCatalog == null ? "*" : curCatalog.getName(),
+                curTable == null ? "*" : curTable.getName(),
+                false,
+                privilege.isGrantOption());
+            grants.add(grant);
+        }
+        highlightCatalogs();
+        highlightTables();
     }
 
     private void showCatalogTables()
