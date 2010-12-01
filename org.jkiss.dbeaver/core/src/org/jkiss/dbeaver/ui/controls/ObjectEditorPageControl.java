@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 

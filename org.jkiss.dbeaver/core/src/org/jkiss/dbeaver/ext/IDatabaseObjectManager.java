@@ -31,6 +31,10 @@ public interface IDatabaseObjectManager<OBJECT_TYPE extends DBSObject> extends I
 
     void resetChanges(DBRProgressMonitor monitor) throws DBException;
 
+    void undoCommand(DBRProgressMonitor monitor) throws DBException;
+
+    void redoCommand(DBRProgressMonitor monitor) throws DBException;
+
     Collection<? extends IDatabaseObjectCommand<OBJECT_TYPE>> getCommands();
 
     <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>> void addCommand(

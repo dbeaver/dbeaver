@@ -271,7 +271,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
             if (commandInfo.reflector != null) {
                 commandInfo.reflector.redoCommand(commandInfo.command);
             }
-            commandInfo.executed = true;
+            commandInfo.executed = false;
             commands.add(commandInfo);
         }
     }

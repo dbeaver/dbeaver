@@ -23,8 +23,4 @@ public interface IDatabaseObjectEditor<OBJECT_MANAGER extends IDatabaseObjectMan
      */
     void initObjectEditor(OBJECT_MANAGER manager);
 
-    /**
-     * Reloads data for UI controls from object manager
-     */
-    void resetObjectChanges();
 }

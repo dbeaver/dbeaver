@@ -103,19 +103,48 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     public void revertChanges()
     {
         if (objectManager.isDirty()) {
-            DBeaverCore.getInstance().runInUI(getSite().getWorkbenchWindow(), new DBRRunnableWithProgress() {
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        getObjectManager().resetChanges(monitor);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
             Display.getDefault().asyncExec(new Runnable() {
                 public void run()
                 {
+                    try {
+                        getObjectManager().resetChanges(VoidProgressMonitor.INSTANCE);
+                    } catch (DBException e) {
+                        UIUtils.showErrorDialog(getSite().getShell(), "Revert", e.getMessage());
+                    }
+                    firePropertyChange(IEditorPart.PROP_DIRTY);
+                }
+            });
+        }
+    }
+
+    public void undoChanges()
+    {
+        if (objectManager.canUndoCommand()) {
+            Display.getDefault().asyncExec(new Runnable() {
+                public void run()
+                {
+                    try {
+                        getObjectManager().undoCommand(VoidProgressMonitor.INSTANCE);
+                    } catch (DBException e) {
+                        UIUtils.showErrorDialog(getSite().getShell(), "Undo", e.getMessage());
+                    }
+                    firePropertyChange(IEditorPart.PROP_DIRTY);
+                }
+            });
+        }
+    }
+
+    public void redoChanges()
+    {
+        if (objectManager.canRedoCommand()) {
+            Display.getDefault().asyncExec(new Runnable() {
+                public void run()
+                {
+                    try {
+                        getObjectManager().redoCommand(VoidProgressMonitor.INSTANCE);
+                    } catch (DBException e) {
+                        UIUtils.showErrorDialog(getSite().getShell(), "Redo", e.getMessage());
+                    }
                     firePropertyChange(IEditorPart.PROP_DIRTY);
                 }
             });

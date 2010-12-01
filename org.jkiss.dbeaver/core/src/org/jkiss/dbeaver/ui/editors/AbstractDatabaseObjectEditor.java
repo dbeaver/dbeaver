@@ -105,12 +105,7 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
         this.objectManager = objectManager;
     }
 
-    public void resetObjectChanges()
-    {
-
-    }
-
-/*
+    /*
     protected void addChangeCommand(IDatabaseObjectCommand<OBJECT_TYPE> command)
     {
         this.objectManager.addCommand(command, null);

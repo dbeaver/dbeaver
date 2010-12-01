@@ -729,10 +729,6 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         objectManager = manager;
     }
 
-    public void resetObjectChanges()
-    {
-    }
-
     public void activatePart() {
         if (isLoaded) {
             return;
