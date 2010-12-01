@@ -36,7 +36,7 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
 
     public void updateModel(MySQLUser object)
     {
-        this.user.reloadGrants();
+        this.user.clearGrantsCache();
     }
 
     public IDatabasePersistAction[] getPersistActions()

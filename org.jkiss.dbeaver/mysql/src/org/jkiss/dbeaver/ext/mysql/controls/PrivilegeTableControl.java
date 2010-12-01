@@ -135,7 +135,7 @@ public class PrivilegeTableControl extends Composite {
             boolean checked = false;//, grantOption = false;
             for (MySQLGrant grant : grants) {
                 if (grant.isAllPrivileges() || grant.getPrivileges().contains(privilege) ||
-                    (grant.isGrantOption() && privilege.getName().equalsIgnoreCase(MySQLPrivilege.GRANT_PRIVILEGE)))
+                    (grant.isGrantOption() && privilege.isGrantOption()))
                 {
                     checked = true;
                     //grantOption = grant.isGrantOption();

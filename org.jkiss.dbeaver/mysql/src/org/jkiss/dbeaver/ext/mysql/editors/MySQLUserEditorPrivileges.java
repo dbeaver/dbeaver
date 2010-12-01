@@ -151,12 +151,47 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             public void handleEvent(Event event)
             {
                 final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
-                final boolean grant = event.detail == 1;
+                final boolean isGrant = event.detail == 1;
                 final MySQLCatalog curCatalog = selectedCatalog;
                 final MySQLTable curTable = selectedTable;
+                // Modify local grants (and clear grants cache in user objects)
+                getUser().clearGrantsCache();
+                boolean found = false;
+                for (MySQLGrant grant : grants) {
+                    if (grant.matches(curCatalog) && grant.matches(curTable)) {
+                        if (privilege.isGrantOption()) {
+                            grant.setGrantOption(isGrant);
+                        } else if (isGrant) {
+                            if (!grant.getPrivileges().contains(privilege)) {
+                                grant.addPrivilege(privilege);
+                            }
+                        } else {
+                            grant.removePrivilege(privilege);
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    List<MySQLPrivilege> privileges = new ArrayList<MySQLPrivilege>();
+                    if (!privilege.isGrantOption()) {
+                        privileges.add(privilege);
+                    }
+                    MySQLGrant grant = new MySQLGrant(
+                        getUser(),
+                        privileges,
+                        curCatalog == null ? "*" : curCatalog.getName(),
+                        curTable == null ? "*" : curTable.getName(),
+                        false,
+                        privilege.isGrantOption());
+                    grants.add(grant);
+                }
+                highlightCatalogs();
+                highlightTables();
+                // Add command
                 addChangeCommand(
                     new MySQLCommandGrantPrivilege(
-                        grant,
+                        isGrant,
                         getDatabaseObject(),
                         curCatalog,
                         curTable,
@@ -165,13 +200,13 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
-                                privTable.checkPrivilege(privilege, grant);
+                                privTable.checkPrivilege(privilege, isGrant);
                             }
                         }
                         public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
-                                privTable.checkPrivilege(privilege, !grant);
+                                privTable.checkPrivilege(privilege, !isGrant);
                             }
                         }
                     });
@@ -253,19 +288,43 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 i.remove();
             }
         }
+        highlightCatalogs();
+
+        showGrants();
+        showCatalogTables();
+    }
+
+    private void highlightCatalogs()
+    {
         // Highlight granted catalogs
         for (TableItem item : catalogsTable.getItems()) {
             MySQLCatalog catalog = (MySQLCatalog)item.getData();
             item.setFont(null);
-            for (MySQLGrant grant : grants) {
-                if (grant.matches(catalog)) {
-                    item.setFont(boldFont);
-                    break;
+            if (grants != null) {
+                for (MySQLGrant grant : grants) {
+                    if (grant.matches(catalog) && !grant.isEmpty()) {
+                        item.setFont(boldFont);
+                        break;
+                    }
                 }
             }
         }
-        showGrants();
-        showCatalogTables();
+    }
+
+    private void highlightTables()
+    {
+        for (TableItem item : tablesTable.getItems()) {
+            MySQLTable table = (MySQLTable) item.getData();
+            item.setFont(null);
+            if (grants != null) {
+                for (MySQLGrant grant : grants) {
+                    if (grant.matches(selectedCatalog) && grant.matches(table) && !grant.isEmpty()) {
+                        item.setFont(boldFont);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     private class PageControl extends UserPageControl {
@@ -285,31 +344,14 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         TableItem item = new TableItem(tablesTable, SWT.NONE);
                         item.setText("% (All)");
                         item.setImage(DBIcon.TREE_TABLE.getImage());
-                        if (grants != null) {
-                            for (MySQLGrant grant : grants) {
-                                if (grant.matches(selectedCatalog) && grant.matches((MySQLTable) null)) {
-                                    item.setFont(boldFont);
-                                    break;
-                                }
-                            }
-                        }
                     }
                     for (MySQLTable table : tables) {
                         TableItem item = new TableItem(tablesTable, SWT.NONE);
                         item.setText(table.getName());
                         item.setImage(table.isView() ? DBIcon.TREE_VIEW.getImage() : DBIcon.TREE_TABLE.getImage());
                         item.setData(table);
-
-                        if (grants != null) {
-                            for (MySQLGrant grant : grants) {
-                                if (grant.matches(selectedCatalog) && grant.matches(table)) {
-                                    item.setFont(boldFont);
-                                    break;
-                                }
-                            }
-                        }
-
                     }
+                    highlightTables();
                     UIUtils.packColumns(tablesTable);
                 }
             };

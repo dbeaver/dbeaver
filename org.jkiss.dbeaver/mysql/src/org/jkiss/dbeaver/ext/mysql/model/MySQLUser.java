@@ -107,7 +107,7 @@ public class MySQLUser implements DBAUser
         return passwordHash;
     }
 
-    public void reloadGrants()
+    public void clearGrantsCache()
     {
         this.grants = null;
     }

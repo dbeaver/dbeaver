@@ -65,9 +65,29 @@ public class MySQLGrant {
         return allPrivileges;
     }
 
+    public void addPrivilege(MySQLPrivilege privilege)
+    {
+        privileges.add(privilege);
+    }
+
+    public void removePrivilege(MySQLPrivilege privilege)
+    {
+        privileges.remove(privilege);
+    }
+
     public boolean isGrantOption()
     {
         return grantOption;
+    }
+
+    public void setGrantOption(boolean grantOption)
+    {
+        this.grantOption = grantOption;
+    }
+
+    public boolean isEmpty()
+    {
+        return privileges.isEmpty() && !isAllPrivileges() && !isGrantOption();
     }
 
     public boolean matches(MySQLCatalog catalog)
@@ -89,4 +109,5 @@ public class MySQLGrant {
         }
         return false;
     }
+
 }
