@@ -23,6 +23,10 @@ public interface IDatabaseObjectManager<OBJECT_TYPE extends DBSObject> extends I
 
     boolean isDirty();
 
+    boolean canUndoCommand();
+
+    boolean canRedoCommand();
+
     void saveChanges(DBRProgressMonitor monitor) throws DBException;
 
     void resetChanges(DBRProgressMonitor monitor);

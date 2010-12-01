@@ -58,6 +58,13 @@
                 properties="canMove,editable,changed"
                 type="org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid">
         </propertyTester>
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
+                id="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
+                namespace="org.jkiss.dbeaver.ui.editors.entity"
+                properties="dirty,canUndo,canRedo"
+                type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
+        </propertyTester>
 
     </extension>
     <extension point="org.eclipse.ui.views">
@@ -463,6 +470,53 @@
             </enabledWhen>
         </handler>
 
+        <!-- Entity editor handlers -->
+        <handler commandId="org.eclipse.ui.file.save" class="org.jkiss.dbeaver.ui.editors.entity.handlers.ApplyChangesHandler">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.entity.dirty"/>
+                    </adapt>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.file.revert" class="org.jkiss.dbeaver.ui.editors.entity.handlers.RevertChangesHandler">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.entity.dirty"/>
+                    </adapt>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.text.contentAssist.proposals" class="org.jkiss.dbeaver.ui.editors.entity.handlers.PreviewChangesHandler">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.entity.dirty"/>
+                    </adapt>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ui.editors.entity.handlers.UndoChangesHandler">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.entity.canUndo"/>
+                    </adapt>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ui.editors.entity.handlers.RedoChangesHandler">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.entity.canRedo"/>
+                    </adapt>
+                </with>
+            </activeWhen>
+        </handler>
+
         <!-- Spreadsheet handlers -->
         <handler commandId="org.eclipse.ui.edit.text.goto.lineStart" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
@@ -815,6 +869,47 @@
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+            </toolbar>
+        </menuContribution>
+
+        <!-- Entity editor -->
+        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar">
+            <toolbar id="entityEditorExecute" label="Entity Editor">
+                <command commandId="org.eclipse.ui.file.save" icon="icons/sql/save_to_database.png">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.eclipse.ui.file.revert" icon="icons/sql/revert.png">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.eclipse.ui.edit.text.contentAssist.proposals" icon="icons/sql/sql_preview.png">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.eclipse.ui.edit.undo">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.eclipse.ui.edit.redo">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
                         </with>
                     </visibleWhen>
                 </command>

@@ -53,6 +53,7 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
         createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ORDER_RESULTSET);
         createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_RS_EDIT_CLOSE);
         createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_TXN_DISCONNECT);
+        createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ENTITY_EDIT_CLOSE);
 
         performDefaults();
 

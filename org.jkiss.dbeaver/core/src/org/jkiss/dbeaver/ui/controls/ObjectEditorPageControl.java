@@ -9,8 +9,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IPropertyListener;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -29,6 +27,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
     {
         super(parent, style, workbenchPart);
 
+/*
         workbenchPart.addPropertyListener(new IPropertyListener() {
             public void propertyChanged(Object source, int propId)
             {
@@ -40,6 +39,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
                 }
             }
         });
+*/
     }
 
     public IDatabaseObjectEditor getEditorPart()
