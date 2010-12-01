@@ -12,9 +12,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface IDatabaseObjectCommand<OBJECT_TYPE extends DBSObject> {
 
-    public static final long FLAG_NONE = 0;
-    public static final long FLAG_PERMANENT = 1;
-
     public enum MergeResult {
         NONE,
         CANCEL_PREVIOUS,
@@ -25,8 +22,6 @@ public interface IDatabaseObjectCommand<OBJECT_TYPE extends DBSObject> {
     String getTitle();
 
     Image getIcon();
-
-    long getFlags();
 
     void updateModel(OBJECT_TYPE object);
 

@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.runtime;
 
+import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
@@ -53,6 +54,22 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
                 "Grant privilege",
                 grant ? grantScript : revokeScript)
         };
+    }
+
+    @Override
+    public MergeResult merge(IDatabaseObjectCommand<MySQLUser> prevCommand)
+    {
+        if (prevCommand instanceof MySQLCommandGrantPrivilege) {
+            MySQLCommandGrantPrivilege prevGrant = (MySQLCommandGrantPrivilege)prevCommand;
+            if (prevGrant.schema == schema && prevGrant.table == table && prevGrant.privilege == privilege) {
+                if (prevGrant.grant == grant) {
+                    return MergeResult.ABSORBED;
+                } else {
+                    return MergeResult.CANCEL_BOTH;
+                }
+            }
+        }
+        return super.merge(prevCommand);
     }
 
     private String getObjectName()

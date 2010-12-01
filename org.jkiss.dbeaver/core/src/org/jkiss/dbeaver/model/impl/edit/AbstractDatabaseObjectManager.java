@@ -45,6 +45,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     private OBJECT_TYPE object;
     private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
     private final List<CommandInfo> undidCommands = new ArrayList<CommandInfo>();
+    private List<CommandInfo> mergedCommands = null;
 
     public DBPDataSource getDataSource() {
         return object.getDataSource();
@@ -69,15 +70,16 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     public boolean isDirty()
     {
         synchronized (commands) {
-            return !commands.isEmpty();
+            return !getMergedCommands().isEmpty();
         }
     }
 
     public void saveChanges(DBRProgressMonitor monitor) throws DBException {
         synchronized (commands) {
+            List<CommandInfo> mergedCommands = getMergedCommands();
             // Make list of not-executed commands
-            while (!commands.isEmpty()) {
-                CommandInfo cmd = commands.get(0);
+            while (!mergedCommands.isEmpty()) {
+                CommandInfo cmd = mergedCommands.get(0);
                 // Persist changes
                 IDatabasePersistAction[] persistActions = cmd.command.getPersistActions();
                 if (CommonUtils.isEmpty(cmd.persistActions) && !CommonUtils.isEmpty(persistActions)) {
@@ -109,8 +111,11 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
                 cmd.command.updateModel(getObject());
 
                 // done
-                commands.remove(0);
+                mergedCommands.remove(0);
             }
+            clearMergedCommands();
+            clearUndidCommands();
+            commands.clear();
         }
     }
 
@@ -120,7 +125,8 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
             while (!commands.isEmpty()) {
                 undoCommand(monitor);
             }
-            undidCommands.clear();
+            clearUndidCommands();
+            clearMergedCommands();
         }
     }
 
@@ -128,7 +134,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     {
         synchronized (commands) {
             List<IDatabaseObjectCommand<OBJECT_TYPE>> cmdCopy = new ArrayList<IDatabaseObjectCommand<OBJECT_TYPE>>(commands.size());
-            for (CommandInfo cmdInfo : commands) {
+            for (CommandInfo cmdInfo : getMergedCommands()) {
                 cmdCopy.add(cmdInfo.command);
             }
             return cmdCopy;
@@ -144,7 +150,9 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
             commandInfo.command = command;
             commandInfo.reflector = reflector;
             commands.add(commandInfo);
-            undidCommands.clear();
+
+            clearUndidCommands();
+            clearMergedCommands();
         }
     }
 
@@ -175,23 +183,8 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
                 lastCommand.reflector.undoCommand(lastCommand.command);
             }
             undidCommands.add(lastCommand);
+            clearMergedCommands();
         }
-    }
-
-    protected DBCExecutionContext openCommandPersistContext(
-        DBRProgressMonitor monitor,
-        IDatabaseObjectCommand<OBJECT_TYPE> command)
-        throws DBException
-    {
-        return object.getDataSource().openContext(
-            monitor,
-            DBCExecutionPurpose.USER_SCRIPT,
-            "Undo " + command.getTitle());
-    }
-
-    protected void closePersistContext(DBCExecutionContext context)
-    {
-        context.close();
     }
 
     public void redoCommand(DBRProgressMonitor monitor)
@@ -206,7 +199,73 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
                 commandInfo.reflector.redoCommand(commandInfo.command);
             }
             commands.add(commandInfo);
+            clearMergedCommands();
         }
+    }
+
+    private void clearUndidCommands()
+    {
+        undidCommands.clear();
+    }
+
+    private List<CommandInfo> getMergedCommands()
+    {
+        if (mergedCommands != null) {
+            return mergedCommands;
+        }
+        mergedCommands = new ArrayList<CommandInfo>();
+
+        for (int i = 0; i < commands.size(); i++) {
+            CommandInfo lastCommand = commands.get(i);
+            CommandInfo firstCommand = null;
+            IDatabaseObjectCommand.MergeResult result = IDatabaseObjectCommand.MergeResult.NONE;
+            for (int k = mergedCommands.size(); k > 0; k--) {
+                firstCommand = mergedCommands.get(k - 1);
+                result = lastCommand.command.merge(firstCommand.command);
+                if (result != IDatabaseObjectCommand.MergeResult.NONE) {
+                    break;
+                }
+            }
+            switch (result) {
+            case NONE:
+                // Add command to list
+                mergedCommands.add(lastCommand);
+                break;
+            case ABSORBED:
+                // Command absorbed by previous one
+                continue;
+            case CANCEL_PREVIOUS:
+                mergedCommands.remove(firstCommand);
+                mergedCommands.add(lastCommand);
+                break;
+            case CANCEL_BOTH:
+                mergedCommands.remove(firstCommand);
+                break;
+            }
+        }
+        
+        return mergedCommands;
+    }
+
+    private void clearMergedCommands()
+    {
+        mergedCommands = null;
+    }
+
+    protected DBCExecutionContext openCommandPersistContext(
+        DBRProgressMonitor monitor,
+        IDatabaseObjectCommand<OBJECT_TYPE> command)
+        throws DBException
+    {
+        return object.getDataSource().openContext(
+            monitor,
+            DBCExecutionPurpose.USER_SCRIPT,
+            "Execute " + command.getTitle());
+    }
+
+    protected void closePersistContext(DBCExecutionContext context)
+    {
+        context.close();
     }
 
     protected abstract void executePersistAction(

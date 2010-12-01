@@ -86,6 +86,9 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
         //    this.done();
         //}
         blocks.remove(blocks.size() - 1);
+        if (blocks.isEmpty()) {
+            this.done();
+        }
     }
 
     public DBRBlockingObject getActiveBlock()

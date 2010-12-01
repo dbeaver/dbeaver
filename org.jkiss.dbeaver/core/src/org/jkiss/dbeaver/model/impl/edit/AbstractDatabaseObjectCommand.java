@@ -36,11 +36,6 @@ public abstract class AbstractDatabaseObjectCommand<OBJECT_TYPE extends DBSObjec
         return icon;
     }
 
-    public long getFlags()
-    {
-        return FLAG_NONE;
-    }
-
     public MergeResult merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand)
     {
         return MergeResult.NONE;
