@@ -72,7 +72,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     public boolean preShutdown()
     {
         try {
-            saveAndCleanup();
+            if (!saveAndCleanup()) {
+                return false;
+            }
             // Disconnect all connections
             if (DBeaverCore.getInstance() != null) {
                 // Try to close all connections
@@ -112,7 +114,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         }
     }
 
-    private void saveAndCleanup()
+    private boolean saveAndCleanup()
     {
         final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         IProgressMonitor nullMonitor = new NullProgressMonitor();
@@ -137,29 +139,35 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                     log.error("Can't obtain editor storage", ex);
                 }
             }
+            // Save all other editors
+            if (!workbenchPage.saveAllEditors(true)) {
+                return false;
+            }
         }
 
-        IFolder tempFolder;
+        IFolder tempFolder = null;
         try {
             tempFolder = DBeaverCore.getInstance().getAutosaveFolder(VoidProgressMonitor.INSTANCE);
         }
         catch (IOException e) {
             log.error(e);
-            return;
         }
-        try {
-            IResource[] tempResources = tempFolder.members();
-            for (IResource tempResource : tempResources) {
-                if (tempResource instanceof IFile) {
-                    IFile tempFile = (IFile)tempResource;
-                    if (!openFiles.contains(tempFile.getLocation().toFile())) {
-                        tempFile.delete(true, false, nullMonitor);
+        if (tempFolder != null) {
+            try {
+                IResource[] tempResources = tempFolder.members();
+                for (IResource tempResource : tempResources) {
+                    if (tempResource instanceof IFile) {
+                        IFile tempFile = (IFile)tempResource;
+                        if (!openFiles.contains(tempFile.getLocation().toFile())) {
+                            tempFile.delete(true, false, nullMonitor);
+                        }
                     }
                 }
+            } catch (CoreException ex) {
+                log.warn("Error deleting autosave files", ex);
             }
-        } catch (CoreException ex) {
-            log.warn("Error deleting autosave files", ex);
         }
+        return true;
     }
 
     private void cleanupLobFiles(DBRProgressMonitor monitor)
