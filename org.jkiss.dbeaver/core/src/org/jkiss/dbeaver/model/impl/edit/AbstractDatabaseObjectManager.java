@@ -132,8 +132,17 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
-    public void resetChanges(DBRProgressMonitor monitor) {
+    public void resetChanges(DBRProgressMonitor monitor) throws DBException
+    {
         synchronized (commands) {
+            while (!commands.isEmpty()) {
+                CommandInfo lastCommand = commands.get(commands.size() - 1);
+                if (!lastCommand.executed) {
+                    undoCommand(monitor);
+                } else {
+                    break;
+                }
+            }
             commands.clear();
         }
     }

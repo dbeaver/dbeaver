@@ -98,6 +98,28 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 */
     }
 
+    public void revertChanges()
+    {
+        if (objectManager.isDirty()) {
+            DBeaverCore.getInstance().runInUI(getSite().getWorkbenchWindow(), new DBRRunnableWithProgress() {
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        getObjectManager().resetChanges(monitor);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
+            Display.getDefault().asyncExec(new Runnable() {
+                public void run()
+                {
+                    firePropertyChange(IEditorPart.PROP_DIRTY);
+                }
+            });
+        }
+    }
+
     protected void createPages()
     {
         addPropertyListener(new IPropertyListener() {
@@ -229,33 +251,13 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             PrefConstants.CONFIRM_ENTITY_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL,
             getObjectManager().getObject().getName());
-        if (result == IDialogConstants.CANCEL_ID) {
-            return ISaveablePart2.CANCEL;
-        }
-        try {
-            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    if (result == IDialogConstants.YES_ID) {
-                        try {
-                            getObjectManager().saveChanges(monitor);
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    } else if (result == IDialogConstants.NO_ID) {
-                        getObjectManager().resetChanges(monitor);
-                    }
-                }
-            });
-        } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(getSite().getShell(), "Persist changes", e.getMessage());
-        } catch (InterruptedException e) {
-            // do nothing
-        }
         if (result == IDialogConstants.YES_ID) {
+//            getWorkbenchPart().getSite().getPage().saveEditor(this, false);
             return ISaveablePart2.YES;
-        } else {
+        } else if (result == IDialogConstants.NO_ID) {
             return ISaveablePart2.NO;
+        } else {
+            return ISaveablePart2.CANCEL;
         }
     }
 

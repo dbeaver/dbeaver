@@ -19,14 +19,4 @@ public class MySQLUserManager extends JDBCDatabaseObjectManager<MySQLUser> {
         return true;
     }
 
-    @Override
-    public void saveChanges(DBRProgressMonitor monitor) throws DBException {
-        super.saveChanges(monitor);
-    }
-
-    @Override
-    public void resetChanges(DBRProgressMonitor monitor) {
-        super.resetChanges(monitor);
-    }
-
 }

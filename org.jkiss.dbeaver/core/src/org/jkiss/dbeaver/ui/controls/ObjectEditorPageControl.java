@@ -4,18 +4,9 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.ui.DBIcon;
-
-import java.lang.reflect.InvocationTargetException;
 
 public class ObjectEditorPageControl extends ProgressPageControl {
 
@@ -51,6 +42,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
     protected Composite createProgressPanel(Composite container) {
         Composite panel = super.createProgressPanel(container);
 
+/*
         viewChangesButton = new Button(panel, SWT.PUSH);
         viewChangesButton.setText("Preview");
         viewChangesButton.setImage(DBIcon.SQL_SCRIPT_EXECUTE.getImage());
@@ -75,13 +67,11 @@ public class ObjectEditorPageControl extends ProgressPageControl {
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
                         getEditorPart().doSave(monitor.getNestedMonitor());
-/*
                         try {
                             getObjectManager().saveChanges(monitor);
                         } catch (DBException e1) {
                             throw new InvocationTargetException(e1);
                         }
-*/
                     }
                 });
             }
@@ -110,6 +100,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
                 }
             }
         });
+*/
 
         return panel;
     }

@@ -20,7 +20,7 @@ public class ApplyChangesHandler extends AbstractHandler
     {
         EntityEditor editor = (EntityEditor)Platform.getAdapterManager().getAdapter(HandlerUtil.getActiveEditor(event), EntityEditor.class);
         if (editor != null) {
-            ///editor.getObjectManager().saveChanges(null);
+            editor.getSite().getPage().saveEditor(editor, false);
         }
         return null;
     }

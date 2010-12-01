@@ -507,7 +507,7 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ui.editors.entity.handlers.RedoChangesHandler">
+        <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.ui.editors.entity.handlers.RedoChangesHandler">
             <activeWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
