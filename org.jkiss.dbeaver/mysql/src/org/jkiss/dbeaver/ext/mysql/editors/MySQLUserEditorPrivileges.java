@@ -13,15 +13,15 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.ext.mysql.runtime.MySQLCommandGrantPrivilege;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.List;
 
 /**
  * MySQLUserEditorPrivileges
@@ -137,6 +138,43 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             public void widgetDisposed(DisposeEvent e)
             {
                 UIUtils.dispose(boldFont);
+            }
+        });
+
+        addGrantListener(tablePrivilegesTable);
+        addGrantListener(otherPrivilegesTable);
+    }
+
+    private void addGrantListener(final PrivilegeTableControl privTable)
+    {
+        privTable.addListener(SWT.Modify, new Listener() {
+            public void handleEvent(Event event)
+            {
+                final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
+                final boolean grant = event.detail == 1;
+                final MySQLCatalog curCatalog = selectedCatalog;
+                final MySQLTable curTable = selectedTable;
+                addChangeCommand(
+                    new MySQLCommandGrantPrivilege(
+                        grant,
+                        getDatabaseObject(),
+                        curCatalog,
+                        curTable,
+                        privilege),
+                    new IDatabaseObjectCommandReflector<MySQLCommandGrantPrivilege>() {
+                        public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                        {
+                            if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
+                                privTable.checkPrivilege(privilege, grant);
+                            }
+                        }
+                        public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                        {
+                            if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
+                                privTable.checkPrivilege(privilege, !grant);
+                            }
+                        }
+                    });
             }
         });
     }

@@ -7,10 +7,14 @@ package org.jkiss.dbeaver.ext.mysql.editors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
+import org.jkiss.dbeaver.ext.mysql.runtime.MySQLCommandGrantPrivilege;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -62,42 +66,36 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
             gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
             privTable.setLayoutData(gd);
-/*
-            final PrivilegesPairList privPair = new PrivilegesPairList(privsGroup);
-            privileges = new TreeMap<String, Boolean>(getUser().getGlobalPrivileges());
-            privPair.setModel(privileges);
 
-            privPair.addListener(SWT.Modify, new Listener() {
+            privTable.addListener(SWT.Modify, new Listener() {
                 public void handleEvent(Event event)
                 {
-                    final String privilege = (String) event.data;
-                    final boolean grant = event.detail == PairListControl.MOVE_RIGHT;
+                    final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
+                    final boolean grant = event.detail == 1;
                     addChangeCommand(
                         new MySQLCommandGrantPrivilege(
                             grant,
                             getDatabaseObject(),
                             null,
+                            null,
                             privilege),
                         new IDatabaseObjectCommandReflector<MySQLCommandGrantPrivilege>() {
                             public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                             {
-                                privileges.put(privilege, grant);
-                                if (!privPair.isDisposed()) {
-                                    privPair.setModel(privileges);
+                                if (!privTable.isDisposed()) {
+                                    privTable.checkPrivilege(privilege, grant);
                                 }
                             }
                             public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                             {
-                                privileges.put(privilege, !grant);
-                                if (!privPair.isDisposed()) {
-                                    privPair.setModel(privileges);
+                                if (!privTable.isDisposed()) {
+                                    privTable.checkPrivilege(privilege, !grant);
                                 }
                             }
                         });
                 }
             });
 
-*/
         }
         pageControl.createProgressPanel();
     }

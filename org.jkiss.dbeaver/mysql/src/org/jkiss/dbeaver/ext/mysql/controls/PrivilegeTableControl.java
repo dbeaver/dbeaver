@@ -11,10 +11,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -48,6 +45,16 @@ public class PrivilegeTableControl extends Composite {
         gd = new GridData(GridData.FILL_BOTH);
         gd.minimumWidth = 400;
         privTable.setLayoutData(gd);
+        privTable.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                if (e.detail == SWT.CHECK) {
+                    TableItem item = (TableItem) e.item;
+                    notifyPrivilegeCheck((MySQLPrivilege)item.getData(), item.getChecked());
+                }
+            }
+        });
         UIUtils.createTableColumn(privTable, SWT.LEFT, "Privilege");
         //UIUtils.createTableColumn(privTable, SWT.LEFT, "Grant Option");
         UIUtils.createTableColumn(privTable, SWT.LEFT, "Description");
@@ -61,7 +68,10 @@ public class PrivilegeTableControl extends Composite {
             public void widgetSelected(SelectionEvent e)
             {
                 for (TableItem item : privTable.getItems()) {
-                    item.setChecked(true);
+                    if (!item.getChecked()) {
+                        item.setChecked(true);
+                        notifyPrivilegeCheck((MySQLPrivilege)item.getData(), true);
+                    }
                 }
             }
         });
@@ -70,10 +80,22 @@ public class PrivilegeTableControl extends Composite {
             public void widgetSelected(SelectionEvent e)
             {
                 for (TableItem item : privTable.getItems()) {
-                    item.setChecked(false);
+                    if (item.getChecked()) {
+                        item.setChecked(false);
+                        notifyPrivilegeCheck((MySQLPrivilege)item.getData(), false);
+                    }
                 }
             }
         });
+    }
+
+    private void notifyPrivilegeCheck(MySQLPrivilege privilege, boolean checked)
+    {
+        Event event = new Event();
+        event.detail = checked ? 1 : 0;
+        event.widget = this;
+        event.data = privilege;
+        super.notifyListeners(SWT.Modify, event);
     }
 
     public void fillPrivileges(Collection<MySQLPrivilege> privs)
@@ -83,11 +105,6 @@ public class PrivilegeTableControl extends Composite {
         }
         privTable.removeAll();
         for (MySQLPrivilege priv : privs) {
-/*
-            if (priv.getName().equalsIgnoreCase(MySQLPrivilege.GRANT_PRIVILEGE)) {
-                continue;
-            }
-*/
             TableItem item = new TableItem(privTable, SWT.NONE);
             item.setText(0, priv.getName());
             item.setText(1, priv.getDescription());
@@ -115,11 +132,13 @@ public class PrivilegeTableControl extends Composite {
         for (TableItem item : privTable.getItems()) {
             MySQLPrivilege privilege = (MySQLPrivilege) item.getData();
             //Button grantCheck = (Button)item.getData("grant");
-            boolean checked = false, grantOption = false;
+            boolean checked = false;//, grantOption = false;
             for (MySQLGrant grant : grants) {
-                if (grant.isAllPrivileges() || grant.getPrivileges().contains(privilege)) {
+                if (grant.isAllPrivileges() || grant.getPrivileges().contains(privilege) ||
+                    (grant.isGrantOption() && privilege.getName().equalsIgnoreCase(MySQLPrivilege.GRANT_PRIVILEGE)))
+                {
                     checked = true;
-                    grantOption = grant.isGrantOption();
+                    //grantOption = grant.isGrantOption();
                     break;
                 }
             }
@@ -127,4 +146,15 @@ public class PrivilegeTableControl extends Composite {
             //grantCheck.setSelection(grantOption);
         }
     }
+
+    public void checkPrivilege(MySQLPrivilege privilege, boolean grant)
+    {
+        for (TableItem item : privTable.getItems()) {
+            if (item.getData() == privilege) {
+                item.setChecked(grant);
+                break;
+            }
+        }
+    }
+
 }

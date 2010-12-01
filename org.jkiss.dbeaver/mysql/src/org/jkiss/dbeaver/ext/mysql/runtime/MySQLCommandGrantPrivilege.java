@@ -4,9 +4,12 @@
 
 package org.jkiss.dbeaver.ext.mysql.runtime;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabaseObjectCommand;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 
@@ -17,15 +20,17 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
 
     private boolean grant;
     private MySQLUser user;
-    private String schema;
-    private String privilege;
+    private MySQLCatalog schema;
+    private MySQLTable table;
+    private MySQLPrivilege privilege;
 
-    public MySQLCommandGrantPrivilege(boolean grant, MySQLUser user, String schema, String privilege)
+    public MySQLCommandGrantPrivilege(boolean grant, MySQLUser user, MySQLCatalog schema, MySQLTable table, MySQLPrivilege privilege)
     {
         super(grant ? "Grant privilege" : "Revoke privilege");
         this.grant = grant;
         this.user = user;
         this.schema = schema;
+        this.table = table;
         this.privilege = privilege;
     }
 
@@ -36,12 +41,12 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
 
     public IDatabasePersistAction[] getPersistActions()
     {
-        String privName = privilege.replace("_", " ");
+        String privName = privilege.getName();
         String grantScript = "GRANT " + privName +
-            " ON " + (CommonUtils.isEmpty(schema) ? "*" : schema) + ".*" +
+            " ON " + getObjectName() +
             " TO " + user.getFullName() + "";
         String revokeScript = "REVOKE " + privName +
-            " ON " + (CommonUtils.isEmpty(schema) ? "*" : schema) + ".*" +
+            " ON " + getObjectName() +
             " FROM " + user.getFullName() + "";
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
@@ -49,6 +54,13 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
                 grant ? grantScript : revokeScript,
                 grant ? revokeScript : grantScript)
         };
+    }
+
+    private String getObjectName()
+    {
+        return
+            (schema == null ? "*" : DBUtils.getQuotedIdentifier(schema)) + "." +
+            (table == null ? "*" : DBUtils.getQuotedIdentifier(table));
     }
 
 }
