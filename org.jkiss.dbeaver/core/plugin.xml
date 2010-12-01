@@ -878,21 +878,21 @@
         <!-- Entity editor -->
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar">
             <toolbar id="entityEditorExecute" label="Entity Editor">
-                <command commandId="org.eclipse.ui.file.save" icon="icons/sql/save_to_database.png">
+                <command commandId="org.eclipse.ui.file.save" icon="icons/sql/save_to_database.png" label="Persist Changes">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
                         </with>
                     </visibleWhen>
                 </command>
-                <command commandId="org.eclipse.ui.file.revert" icon="icons/sql/revert.png">
+                <command commandId="org.eclipse.ui.file.revert" icon="icons/sql/revert.png" label="Revert Changes">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
                         </with>
                     </visibleWhen>
                 </command>
-                <command commandId="org.eclipse.ui.edit.text.contentAssist.proposals" icon="icons/sql/sql_preview.png">
+                <command commandId="org.eclipse.ui.edit.text.contentAssist.proposals" icon="icons/sql/sql_preview.png" label="Changes Script">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>

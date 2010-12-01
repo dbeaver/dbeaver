@@ -13,6 +13,4 @@ public interface IDatabasePersistAction {
 
     String getScript();
 
-    String getUndoScript();
-
 }

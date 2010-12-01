@@ -34,9 +34,9 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
         this.privilege = privilege;
     }
 
-    public void updateModel(MySQLUser object, boolean undo)
+    public void updateModel(MySQLUser object)
     {
-        //this.user.updatePrivilege(schema, privilege, undo ? !grant : grant);
+        this.user.reloadGrants();
     }
 
     public IDatabasePersistAction[] getPersistActions()
@@ -51,8 +51,7 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
                 "Grant privilege",
-                grant ? grantScript : revokeScript,
-                grant ? revokeScript : grantScript)
+                grant ? grantScript : revokeScript)
         };
     }
 

@@ -28,9 +28,9 @@ public interface IDatabaseObjectCommand<OBJECT_TYPE extends DBSObject> {
 
     long getFlags();
 
-    void updateModel(OBJECT_TYPE object, boolean undo);
+    void updateModel(OBJECT_TYPE object);
 
-    MergeResult merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand, boolean undo);
+    MergeResult merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand);
 
     IDatabasePersistAction[] getPersistActions();
 

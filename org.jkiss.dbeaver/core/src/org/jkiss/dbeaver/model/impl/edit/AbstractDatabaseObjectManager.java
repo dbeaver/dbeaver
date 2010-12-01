@@ -40,7 +40,6 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         IDatabaseObjectCommand<OBJECT_TYPE> command;
         IDatabaseObjectCommandReflector reflector;
         List<PersistInfo> persistActions;
-        boolean executed = false;
     }
 
     private OBJECT_TYPE object;
@@ -70,32 +69,15 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     public boolean isDirty()
     {
         synchronized (commands) {
-            if (commands.isEmpty()) {
-                return false;
-            }
-            // If we have at least one not executed command then we are dirty
-            for (CommandInfo commandInfo : commands) {
-                if (!commandInfo.executed) {
-                    return true;
-                }
-            }
-            // Nope
-            return false;
+            return !commands.isEmpty();
         }
     }
 
     public void saveChanges(DBRProgressMonitor monitor) throws DBException {
         synchronized (commands) {
             // Make list of not-executed commands
-            List<CommandInfo> runCommands = new ArrayList<CommandInfo>();
-            for (CommandInfo cmd : commands) {
-                if (!cmd.executed) {
-                    runCommands.add(cmd);
-                }
-            }
-
-            for (int i = 0, runCommandsSize = runCommands.size(); i < runCommandsSize; i++) {
-                CommandInfo cmd = runCommands.get(i);
+            while (!commands.isEmpty()) {
+                CommandInfo cmd = commands.get(0);
                 // Persist changes
                 IDatabasePersistAction[] persistActions = cmd.command.getPersistActions();
                 if (CommonUtils.isEmpty(cmd.persistActions) && !CommonUtils.isEmpty(persistActions)) {
@@ -110,7 +92,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
                         for (PersistInfo persistInfo : cmd.persistActions) {
                             if (!persistInfo.executed) {
                                 try {
-                                    executePersistAction(context, persistInfo.action, false);
+                                    executePersistAction(context, persistInfo.action);
                                 } catch (DBException e) {
                                     persistInfo.error = e;
                                     persistInfo.executed = false;
@@ -124,10 +106,10 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
                     }
                 }
                 // Update model
-                cmd.command.updateModel(getObject(), false);
+                cmd.command.updateModel(getObject());
 
                 // done
-                cmd.executed = true;
+                commands.remove(0);
             }
         }
     }
@@ -136,14 +118,9 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     {
         synchronized (commands) {
             while (!commands.isEmpty()) {
-                CommandInfo lastCommand = commands.get(commands.size() - 1);
-                if (!lastCommand.executed) {
-                    undoCommand(monitor);
-                } else {
-                    break;
-                }
+                undoCommand(monitor);
             }
-            commands.clear();
+            undidCommands.clear();
         }
     }
 
@@ -174,14 +151,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     public boolean canUndoCommand()
     {
         synchronized (commands) {
-            if (commands.isEmpty()) {
-                return false;
-            }
-            CommandInfo lastCommand = commands.get(commands.size() - 1);
-            // We can't undo permanent commands, check this flag in last command
-            return
-                !lastCommand.executed ||
-                (lastCommand.command.getFlags() & IDatabaseObjectCommand.FLAG_PERMANENT) != IDatabaseObjectCommand.FLAG_PERMANENT;
+            return !commands.isEmpty();
         }
     }
 
@@ -200,48 +170,12 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
         synchronized (commands) {
             CommandInfo lastCommand = commands.remove(commands.size() - 1);
-            if (lastCommand.executed && hasPersistedActions(lastCommand)) {
-                // This command was executed and persisted
-                DBCExecutionContext context = openCommandPersistContext(monitor, lastCommand.command);
-                try {
-                    // Undo all persisted actions in reverse order
-                    for (int i = lastCommand.persistActions.size(); i > 0; i++) {
-                        PersistInfo persistInfo = lastCommand.persistActions.get(i - 1);
-                        if (persistInfo.executed) {
-                            executePersistAction(context, persistInfo.action, true);
-                            persistInfo.executed = false;
-                        }
-                    }
-                } finally {
-                    closePersistContext(context);
-                }
-                // Undo model changes
-                lastCommand.command.updateModel(getObject(), true);
-            } else {
-                // Command wasn't really executed
-                // Just undo UI changes
-            }
-            lastCommand.executed = false;
-
             // Undo UI changes and put command in undid command stack
             if (lastCommand.reflector != null) {
                 lastCommand.reflector.undoCommand(lastCommand.command);
             }
             undidCommands.add(lastCommand);
         }
-    }
-
-    private boolean hasPersistedActions(CommandInfo commandInfo)
-    {
-        if (CommonUtils.isEmpty(commandInfo.persistActions)) {
-            return false;
-        }
-        for (PersistInfo persistInfo : commandInfo.persistActions) {
-            if (persistInfo.executed) {
-                return true;
-            }
-        }
-        return false;
     }
 
     protected DBCExecutionContext openCommandPersistContext(
@@ -271,15 +205,13 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
             if (commandInfo.reflector != null) {
                 commandInfo.reflector.redoCommand(commandInfo.command);
             }
-            commandInfo.executed = false;
             commands.add(commandInfo);
         }
     }
 
     protected abstract void executePersistAction(
         DBCExecutionContext context,
-        IDatabasePersistAction action,
-        boolean undo)
+        IDatabasePersistAction action)
         throws DBException;
 
 }

@@ -41,7 +41,7 @@ public abstract class AbstractDatabaseObjectCommand<OBJECT_TYPE extends DBSObjec
         return FLAG_NONE;
     }
 
-    public MergeResult merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand, boolean undo)
+    public MergeResult merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand)
     {
         return MergeResult.NONE;
     }

@@ -17,9 +17,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 public abstract class JDBCDatabaseObjectManager<OBJECT_TYPE extends DBSObject> extends AbstractDatabaseObjectManager<OBJECT_TYPE> {
 
     @Override
-    protected void executePersistAction(DBCExecutionContext context, IDatabasePersistAction action, boolean undo) throws DBException
+    protected void executePersistAction(DBCExecutionContext context, IDatabasePersistAction action) throws DBException
     {
-        String script = undo ? action.getUndoScript() : action.getScript();
+        String script = action.getScript();
 
         DBCStatement dbStat = context.prepareStatement(script, false, false, false);
         try {

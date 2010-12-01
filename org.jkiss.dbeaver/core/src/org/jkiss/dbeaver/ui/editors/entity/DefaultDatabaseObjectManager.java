@@ -19,7 +19,7 @@ public class DefaultDatabaseObjectManager extends AbstractDatabaseObjectManager<
     }
 
     @Override
-    protected void executePersistAction(DBCExecutionContext context, IDatabasePersistAction action, boolean undo) throws DBException
+    protected void executePersistAction(DBCExecutionContext context, IDatabasePersistAction action) throws DBException
     {
         throw new DBException("Object persistence is not implemented");
     }

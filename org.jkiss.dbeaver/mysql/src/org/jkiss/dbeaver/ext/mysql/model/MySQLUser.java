@@ -107,6 +107,11 @@ public class MySQLUser implements DBAUser
         return passwordHash;
     }
 
+    public void reloadGrants()
+    {
+        this.grants = null;
+    }
+
     public List<MySQLGrant> getGrants(DBRProgressMonitor monitor)
         throws DBException
     {
