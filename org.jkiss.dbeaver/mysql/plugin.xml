@@ -95,12 +95,17 @@
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSAdminister" label="Administer" iconId="#settings" description="Maintenance/Settings">
                     <object type="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor" label="Sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"/>
-                    <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="User Privileges" iconId="#privileges" description="User privileges">
-                        <items label="Privilege" path="privileges" property="privileges" iconId="#privileges" navigable="false" virtual="true"/>
-                    </folder>
                     <folder type="org.jkiss.dbeaver.model.struct.DBSVariables" label="Variables" iconId="#variables" description="Server variables"/>
                     <folder type="org.jkiss.dbeaver.model.struct.DBSLogs" label="Server Logs" iconId="#logs" description="Server logs"/>
                     <folder type="org.jkiss.dbeaver.model.struct.DBSRepl" label="Replication Status" iconId="#repl" description="Replication Status"/>
+                </folder>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSInfo" label="Information" iconId="#information" description="Database information">
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLEngine" label="Engines" iconId="#info" description="Database engines">
+                        <items label="Engine" path="engines" property="engines" iconId="#info" navigable="false" virtual="true"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="User Privileges" iconId="#info" description="User privileges">
+                        <items label="Privilege" path="privileges" property="privileges" iconId="#info" navigable="false" virtual="true"/>
+                    </folder>
                 </folder>
             </tree>
             <drivers managable="false">
