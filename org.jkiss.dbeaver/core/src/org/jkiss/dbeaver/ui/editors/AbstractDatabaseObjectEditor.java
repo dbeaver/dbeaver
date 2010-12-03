@@ -113,7 +113,7 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
     }
 */
 
-    protected <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>> void addChangeCommand(
+    public <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>> void addChangeCommand(
         COMMAND command,
         IDatabaseObjectCommandReflector<COMMAND> reflector)
     {
