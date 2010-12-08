@@ -7,10 +7,9 @@ package org.jkiss.dbeaver.model.impl.edit;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * Database object modifier
+ * Database object property handler
  */
 public interface DatabaseObjectPropertyHandler<OBJECT_TYPE extends DBSObject> {
 
-    void modify(OBJECT_TYPE object, Object value);
 
 }

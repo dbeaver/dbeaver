@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ext.mysql.runtime;
 
+import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabaseObjectCommand;
@@ -27,7 +29,26 @@ public class MySQLCommandChangeUser extends AbstractDatabaseObjectCommand<MySQLU
 
     public void updateModel(MySQLUser object)
     {
+        for (Map.Entry<UserPropertyHandler, Object> entry : userProps.entrySet()) {
+            switch (entry.getKey()) {
+                case MAX_QUERIES: object.setMaxQuestions(CommonUtils.toInt(entry.getValue())); break;
+                case MAX_UPDATES: object.setMaxUpdates(CommonUtils.toInt(entry.getValue())); break;
+                case MAX_CONNECTIONS: object.setMaxConnections(CommonUtils.toInt(entry.getValue())); break;
+                case MAX_USER_CONNECTIONS: object.setMaxUserConnections(CommonUtils.toInt(entry.getValue())); break;
+                default:
+                    break;
+            }
+        }
+    }
 
+    @Override
+    public void validateCommand(MySQLUser object) throws DBException
+    {
+        String passValue = CommonUtils.toString(userProps.get(UserPropertyHandler.PASSWORD));
+        String confirmValue = CommonUtils.toString(userProps.get(UserPropertyHandler.PASSWORD_CONFIRM));
+        if (!CommonUtils.isEmpty(passValue) && !CommonUtils.equalObjects(passValue, confirmValue)) {
+            throw new DBException("Password confirmation value is invalid");
+        }
     }
 
     public IDatabasePersistAction[] getPersistActions(MySQLUser object)

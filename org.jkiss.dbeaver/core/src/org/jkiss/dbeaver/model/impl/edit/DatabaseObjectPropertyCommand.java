@@ -77,7 +77,9 @@ public class DatabaseObjectPropertyCommand<OBJECT_TYPE extends DBSObject> extend
 
     public void updateModel(OBJECT_TYPE object)
     {
-        handler.modify(object, newValue);
+        if (handler instanceof DatabaseObjectPropertyUpdater) {
+            ((DatabaseObjectPropertyUpdater<OBJECT_TYPE>)handler).updateModel(object, newValue);
+        }
     }
 
     public IDatabasePersistAction[] getPersistActions(OBJECT_TYPE object)

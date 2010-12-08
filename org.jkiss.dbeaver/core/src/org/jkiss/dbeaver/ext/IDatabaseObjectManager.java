@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext;
 
+import org.eclipse.jface.window.IShellProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -17,7 +18,7 @@ public interface IDatabaseObjectManager<OBJECT_TYPE extends DBSObject> extends I
 
     OBJECT_TYPE getObject();
 
-    void init(OBJECT_TYPE object);
+    void init(IShellProvider shellProvider, OBJECT_TYPE object);
 
     boolean supportsEdit();
 

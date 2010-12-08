@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.edit;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.jface.window.IShellProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
@@ -15,10 +16,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * AbstractDatabaseObjectManager
@@ -58,6 +58,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
+    private IShellProvider shellProvider;
     private OBJECT_TYPE object;
     private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
     private final List<CommandInfo> undidCommands = new ArrayList<CommandInfo>();
@@ -72,10 +73,11 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     }
 
     @SuppressWarnings("unchecked")
-    public void init(OBJECT_TYPE object) {
+    public void init(IShellProvider shellProvider, OBJECT_TYPE object) {
         if (object == null) {
             throw new IllegalArgumentException("Object can't be NULL");
         }
+        this.shellProvider = shellProvider;
         this.object = object;
 
         // Clear all commands
@@ -98,6 +100,15 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     public void saveChanges(DBRProgressMonitor monitor) throws DBException {
         synchronized (commands) {
             List<CommandInfo> mergedCommands = getMergedCommands();
+            // Validate commands
+            for (CommandInfo cmd : mergedCommands) {
+                try {
+                    cmd.command.validateCommand(object);
+                } catch (DBException e) {
+                    UIUtils.showErrorDialog(shellProvider.getShell(), "Validation failed", e.getMessage());
+                    return;
+                }
+            }
             // Make list of not-executed commands
             while (!mergedCommands.isEmpty()) {
                 CommandInfo cmd = mergedCommands.get(0);
@@ -286,6 +297,28 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     protected void closePersistContext(DBCExecutionContext context)
     {
         context.close();
+    }
+
+    protected <HANDLER_TYPE extends DatabaseObjectPropertyHandler> Map<HANDLER_TYPE, Object> filterPropertyCommands(
+        List<CommandInfo> commands,
+        Class<HANDLER_TYPE> handlerClass,
+        boolean removeCommands)
+    {
+        Map<HANDLER_TYPE, Object> userProps = new HashMap<HANDLER_TYPE, Object>();
+        boolean hasPermissionChanges = false;
+        for (Iterator<CommandInfo> cmdIter = commands.iterator(); cmdIter.hasNext(); ) {
+            CommandInfo cmd = cmdIter.next();
+            if (cmd.getCommand() instanceof DatabaseObjectPropertyCommand) {
+                DatabaseObjectPropertyCommand propCommand = (DatabaseObjectPropertyCommand)cmd.getCommand();
+                if (handlerClass.isAssignableFrom(propCommand.getHandler().getClass())) {
+                    userProps.put(handlerClass.cast(propCommand.getHandler()), propCommand.getNewValue());
+                    if (removeCommands) {
+                        cmdIter.remove();
+                    }
+                }
+            }
+        }
+        return userProps;
     }
 
     protected void filterCommands(List<CommandInfo> commands)

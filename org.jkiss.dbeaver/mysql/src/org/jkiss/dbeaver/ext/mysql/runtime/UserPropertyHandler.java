@@ -12,29 +12,11 @@ import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectPropertyHandler;
 * User property handler
 */
 public enum UserPropertyHandler implements DatabaseObjectPropertyHandler<MySQLUser> {
-    PASSWORD {public void modify(MySQLUser object, Object value)
-        {
-            // do not change anything for password
-        }},
-    PASSWORD_CONFIRM {public void modify(MySQLUser object, Object value)
-        {
-            // do not change anything for password
-        }},
-    MAX_QUERIES{public void modify(MySQLUser object, Object value)
-        {
-            object.setMaxQuestions(CommonUtils.toInt(value));
-        }},
-    MAX_UPDATES{public void modify(MySQLUser object, Object value)
-        {
-            object.setMaxUpdates(CommonUtils.toInt(value));
-        }},
-    MAX_CONNECTIONS{public void modify(MySQLUser object, Object value)
-        {
-            object.setMaxConnections(CommonUtils.toInt(value));
-        }},
-    MAX_USER_CONNECTIONS{public void modify(MySQLUser object, Object value)
-        {
-            object.setMaxUserConnections(CommonUtils.toInt(value));
-        }}
+    PASSWORD,
+    PASSWORD_CONFIRM,
+    MAX_QUERIES,
+    MAX_UPDATES,
+    MAX_CONNECTIONS,
+    MAX_USER_CONNECTIONS
 
 }
