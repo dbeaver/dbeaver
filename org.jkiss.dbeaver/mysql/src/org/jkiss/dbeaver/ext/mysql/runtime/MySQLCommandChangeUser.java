@@ -6,27 +6,23 @@ package org.jkiss.dbeaver.ext.mysql.runtime;
 
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
-import org.jkiss.dbeaver.model.impl.edit.ControlDatabaseObjectCommand;
+import org.jkiss.dbeaver.model.impl.edit.AbstractDatabaseObjectCommand;
+import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectPropertyCommand;
+
+import java.util.Map;
 
 /**
  * Grant/Revoke privilege command
  */
-public class MySQLCommandChangeUser extends ControlDatabaseObjectCommand<MySQLUser> {
+public class MySQLCommandChangeUser extends AbstractDatabaseObjectCommand<MySQLUser> {
 
-    public enum UserProperty {
-        PASSWORD,
-        MAX_QUERIES,
-        MAX_UPDATES,
-        MAX_CONNECTIONS,
-        MAX_USER_CONNECTIONS
-    }
+    private Map<UserPropertyHandler, Object> userProps;
 
-    private UserProperty property;
-
-    public MySQLCommandChangeUser(UserProperty property)
+    protected MySQLCommandChangeUser(Map<UserPropertyHandler, Object> userProps)
     {
-        super("Change " + property);
-        this.property = property;
+        super("Update user");
+        this.userProps = userProps;
     }
 
     public void updateModel(MySQLUser object)
@@ -34,8 +30,12 @@ public class MySQLCommandChangeUser extends ControlDatabaseObjectCommand<MySQLUs
 
     }
 
-    public IDatabasePersistAction[] getPersistActions()
+    public IDatabasePersistAction[] getPersistActions(MySQLUser object)
     {
-        return new IDatabasePersistAction[0];
+        return new IDatabasePersistAction[] {
+            new AbstractDatabasePersistAction(
+                "Update user record",
+                "BLAH-BLAH")
+        };
     }
 }

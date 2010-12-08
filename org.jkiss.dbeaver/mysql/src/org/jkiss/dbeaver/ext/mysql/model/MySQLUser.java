@@ -221,7 +221,7 @@ public class MySQLUser implements DBAUser
         return maxQuestions;
     }
 
-    void setMaxQuestions(int maxQuestions) {
+    public void setMaxQuestions(int maxQuestions) {
         this.maxQuestions = maxQuestions;
     }
 
@@ -229,7 +229,7 @@ public class MySQLUser implements DBAUser
         return maxUpdates;
     }
 
-    void setMaxUpdates(int maxUpdates) {
+    public void setMaxUpdates(int maxUpdates) {
         this.maxUpdates = maxUpdates;
     }
 
@@ -237,7 +237,7 @@ public class MySQLUser implements DBAUser
         return maxConnections;
     }
 
-    void setMaxConnections(int maxConnections) {
+    public void setMaxConnections(int maxConnections) {
         this.maxConnections = maxConnections;
     }
 
@@ -245,7 +245,7 @@ public class MySQLUser implements DBAUser
         return maxUserConnections;
     }
 
-    void setMaxUserConnections(int maxUserConnections) {
+    public void setMaxUserConnections(int maxUserConnections) {
         this.maxUserConnections = maxUserConnections;
     }
 

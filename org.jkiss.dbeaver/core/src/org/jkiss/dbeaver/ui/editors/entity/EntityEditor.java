@@ -156,7 +156,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         Collection<IDatabaseObjectCommand> commands = getObjectManager().getCommands();
         StringBuilder script = new StringBuilder();
         for (IDatabaseObjectCommand command : commands) {
-            IDatabasePersistAction[] persistActions = command.getPersistActions();
+            IDatabasePersistAction[] persistActions = command.getPersistActions(getObjectManager().getObject());
             if (!CommonUtils.isEmpty(persistActions)) {
                 for (IDatabasePersistAction action : persistActions) {
                     if (script.length() > 0) {

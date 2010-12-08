@@ -20,16 +20,14 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<MySQLUser> {
 
     private boolean grant;
-    private MySQLUser user;
     private MySQLCatalog schema;
     private MySQLTable table;
     private MySQLPrivilege privilege;
 
-    public MySQLCommandGrantPrivilege(boolean grant, MySQLUser user, MySQLCatalog schema, MySQLTable table, MySQLPrivilege privilege)
+    public MySQLCommandGrantPrivilege(boolean grant, MySQLCatalog schema, MySQLTable table, MySQLPrivilege privilege)
     {
         super(grant ? "Grant privilege" : "Revoke privilege");
         this.grant = grant;
-        this.user = user;
         this.schema = schema;
         this.table = table;
         this.privilege = privilege;
@@ -37,18 +35,18 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
 
     public void updateModel(MySQLUser object)
     {
-        this.user.clearGrantsCache();
+        object.clearGrantsCache();
     }
 
-    public IDatabasePersistAction[] getPersistActions()
+    public IDatabasePersistAction[] getPersistActions(MySQLUser object)
     {
         String privName = privilege.getName();
         String grantScript = "GRANT " + privName +
             " ON " + getObjectName() +
-            " TO " + user.getFullName() + "";
+            " TO " + object.getFullName() + "";
         String revokeScript = "REVOKE " + privName +
             " ON " + getObjectName() +
-            " FROM " + user.getFullName() + "";
+            " FROM " + object.getFullName() + "";
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
                 "Grant privilege",

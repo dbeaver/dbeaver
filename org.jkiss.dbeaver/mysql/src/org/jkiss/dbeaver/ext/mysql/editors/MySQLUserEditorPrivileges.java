@@ -160,7 +160,6 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 addChangeCommand(
                     new MySQLCommandGrantPrivilege(
                         isGrant,
-                        getDatabaseObject(),
                         curCatalog,
                         curTable,
                         privilege),

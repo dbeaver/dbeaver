@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.edit;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -34,6 +35,11 @@ public abstract class AbstractDatabaseObjectCommand<OBJECT_TYPE extends DBSObjec
     public Image getIcon()
     {
         return icon;
+    }
+
+    public void validateCommand(OBJECT_TYPE object) throws DBException
+    {
+        // do nothing by default
     }
 
     public MergeResult merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand)

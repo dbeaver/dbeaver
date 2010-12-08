@@ -393,6 +393,18 @@ public class UIUtils {
         return text;
     }
 
+    public static Spinner createLabelSpinner(Composite parent, String label, int value, int minimum, int maximum)
+    {
+        createControlLabel(parent, label);
+
+        Spinner spinner = new Spinner(parent, SWT.BORDER);
+        spinner.setSelection(value);
+        spinner.setMinimum(minimum);
+        spinner.setMaximum(maximum);
+
+        return spinner;
+    }
+
     public static Button createLabelCheckbox(Composite parent, String label, boolean checked)
     {
         return createLabelCheckbox(parent, label, checked, SWT.NONE);

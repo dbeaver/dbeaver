@@ -11,8 +11,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
 import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
+import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
 import java.util.Calendar;
@@ -21,19 +22,32 @@ import java.util.Date;
 /**
  * Abstract object command
  */
-public abstract class ControlCommandListener {
+public class ControlCommandListener <OBJECT_TYPE extends DBSObject> {
 
     static final Log log = LogFactory.getLog(ControlCommandListener.class);
 
-    private final AbstractDatabaseObjectEditor objectEditor;
+    private final AbstractDatabaseObjectEditor<OBJECT_TYPE, ? extends IDatabaseObjectManager<OBJECT_TYPE>> objectEditor;
     private final Widget widget;
+    private final DatabaseObjectPropertyHandler<OBJECT_TYPE> handler;
     private Object originalValue;
     //private Object newValue;
 
-    protected ControlCommandListener(AbstractDatabaseObjectEditor objectEditor, Widget widget)
+    public static <OBJECT_TYPE extends DBSObject> void create(
+        AbstractDatabaseObjectEditor<OBJECT_TYPE, ? extends IDatabaseObjectManager<OBJECT_TYPE>> objectEditor,
+        Widget widget,
+        DatabaseObjectPropertyHandler<OBJECT_TYPE> handler)
+    {
+        new ControlCommandListener<OBJECT_TYPE>(objectEditor, widget, handler); 
+    }
+
+    public ControlCommandListener(
+        AbstractDatabaseObjectEditor<OBJECT_TYPE, ? extends IDatabaseObjectManager<OBJECT_TYPE>> objectEditor,
+        Widget widget,
+        DatabaseObjectPropertyHandler<OBJECT_TYPE> handler)
     {
         this.objectEditor = objectEditor;
         this.widget = widget;
+        this.handler = handler;
 
         WidgetListener listener = new WidgetListener();
         widget.addListener(SWT.FocusIn, listener);
@@ -44,13 +58,6 @@ public abstract class ControlCommandListener {
                 //widget.removeListener();
             }
         });
-    }
-
-    protected abstract ControlDatabaseObjectCommand createCommand();
-
-    public Widget getWidget()
-    {
-        return widget;
     }
 
     private Object readWidgetValue()
@@ -65,7 +72,7 @@ public abstract class ControlCommandListener {
         } else if (widget instanceof Button) {
             return ((Button)widget).getSelection();
         } else if (widget instanceof Spinner) {
-            return ((Spinner)widget).getText();
+            return ((Spinner)widget).getSelection();
         } else if (widget instanceof List) {
             return ((List)widget).getSelection();
         } else if (widget instanceof DateTime) {
@@ -91,17 +98,13 @@ public abstract class ControlCommandListener {
             return;
         }
         if (widget instanceof Text) {
-            ((Text)widget).setText(value == null ? "" : value.toString());
+            ((Text)widget).setText(CommonUtils.toString(value));
         } else if (widget instanceof Combo) {
-            ((Combo)widget).setText(value == null ? "" : value.toString());
+            ((Combo)widget).setText(CommonUtils.toString(value));
         } else if (widget instanceof Button) {
             ((Button)widget).setSelection(value != null && Boolean.TRUE.equals(value));
         } else if (widget instanceof Spinner) {
-            try {
-                ((Spinner)widget).setSelection(value == null ? 0 : Integer.parseInt(value.toString()));
-            } catch (NumberFormatException e) {
-                log.debug(e);
-            }
+            ((Spinner)widget).setSelection(CommonUtils.toInt(value));
         } else if (widget instanceof List) {
             ((List)widget).setSelection((String[])value);
         } else if (widget instanceof DateTime) {
@@ -134,16 +137,16 @@ public abstract class ControlCommandListener {
                 {
                     final Object newValue = readWidgetValue();
                     if (!CommonUtils.equalObjects(newValue, originalValue)) {
-                        final ControlDatabaseObjectCommand command = createCommand();
+                        final DatabaseObjectPropertyCommand<OBJECT_TYPE> command = new DatabaseObjectPropertyCommand<OBJECT_TYPE>(handler);
                         command.setOldValue(originalValue);
                         command.setNewValue(newValue);
-                        objectEditor.addChangeCommand(command, new IDatabaseObjectCommandReflector() {
-                            public void redoCommand(IDatabaseObjectCommand iDatabaseObjectCommand)
+                        objectEditor.addChangeCommand(command, new IDatabaseObjectCommandReflector<DatabaseObjectPropertyCommand<OBJECT_TYPE>>() {
+                            public void redoCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> object_typeControlDatabaseObjectCommand)
                             {
                                 writeWidgetValue(command.getNewValue());
                             }
 
-                            public void undoCommand(IDatabaseObjectCommand iDatabaseObjectCommand)
+                            public void undoCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> object_typeControlDatabaseObjectCommand)
                             {
                                 writeWidgetValue(command.getOldValue());
                             }

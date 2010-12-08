@@ -25,8 +25,8 @@ import java.util.List;
  */
 public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObject> implements IDatabaseObjectManager<OBJECT_TYPE> {
 
-    private class PersistInfo {
-        IDatabasePersistAction action;
+    private static class PersistInfo {
+        final IDatabasePersistAction action;
         boolean executed = false;
         Throwable error;
 
@@ -36,10 +36,26 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
-    private class CommandInfo {
-        IDatabaseObjectCommand<OBJECT_TYPE> command;
-        IDatabaseObjectCommandReflector reflector;
+    protected class CommandInfo {
+        final IDatabaseObjectCommand<OBJECT_TYPE> command;
+        final IDatabaseObjectCommandReflector reflector;
         List<PersistInfo> persistActions;
+
+        public CommandInfo(IDatabaseObjectCommand<OBJECT_TYPE> command, IDatabaseObjectCommandReflector reflector)
+        {
+            this.command = command;
+            this.reflector = reflector;
+        }
+
+        public IDatabaseObjectCommand<OBJECT_TYPE> getCommand()
+        {
+            return command;
+        }
+
+        public IDatabaseObjectCommandReflector getReflector()
+        {
+            return reflector;
+        }
     }
 
     private OBJECT_TYPE object;
@@ -61,6 +77,11 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
             throw new IllegalArgumentException("Object can't be NULL");
         }
         this.object = object;
+
+        // Clear all commands
+        this.commands.clear();
+        clearUndidCommands();
+        clearMergedCommands();
     }
 
     public boolean supportsEdit() {
@@ -81,11 +102,13 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
             while (!mergedCommands.isEmpty()) {
                 CommandInfo cmd = mergedCommands.get(0);
                 // Persist changes
-                IDatabasePersistAction[] persistActions = cmd.command.getPersistActions();
-                if (CommonUtils.isEmpty(cmd.persistActions) && !CommonUtils.isEmpty(persistActions)) {
-                    cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
-                    for (IDatabasePersistAction action : persistActions) {
-                        cmd.persistActions.add(new PersistInfo(action));
+                if (CommonUtils.isEmpty(cmd.persistActions)) {
+                    IDatabasePersistAction[] persistActions = cmd.command.getPersistActions(object);
+                    if (!CommonUtils.isEmpty(persistActions)) {
+                        cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
+                        for (IDatabasePersistAction action : persistActions) {
+                            cmd.persistActions.add(new PersistInfo(action));
+                        }
                     }
                 }
                 if (!CommonUtils.isEmpty(cmd.persistActions)) {
@@ -146,10 +169,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         IDatabaseObjectCommandReflector<COMMAND> reflector)
     {
         synchronized (commands) {
-            CommandInfo commandInfo = new CommandInfo();
-            commandInfo.command = command;
-            commandInfo.reflector = reflector;
-            commands.add(commandInfo);
+            commands.add(new CommandInfo(command, reflector));
 
             clearUndidCommands();
             clearMergedCommands();
@@ -243,7 +263,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
                 break;
             }
         }
-        
+        filterCommands(mergedCommands);
         return mergedCommands;
     }
 
@@ -266,6 +286,11 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     protected void closePersistContext(DBCExecutionContext context)
     {
         context.close();
+    }
+
+    protected void filterCommands(List<CommandInfo> commands)
+    {
+        // do nothing by default
     }
 
     protected abstract void executePersistAction(
