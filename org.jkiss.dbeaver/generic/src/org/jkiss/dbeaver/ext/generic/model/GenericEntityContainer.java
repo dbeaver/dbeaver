@@ -169,6 +169,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         protected TableCache()
         {
             super(getDataSource(), JDBCConstants.TABLE_NAME);
+            setListOrderComparator(DBUtils.<GenericTable>nameComparator());
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
@@ -366,6 +367,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         ProceduresCache()
         {
             super(getDataSource(), JDBCConstants.PROCEDURE_NAME);
+            setListOrderComparator(DBUtils.<GenericProcedure>nameComparator());
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)

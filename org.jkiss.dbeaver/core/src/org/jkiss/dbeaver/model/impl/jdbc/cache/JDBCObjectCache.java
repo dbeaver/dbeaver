@@ -15,10 +15,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Various objects cache
@@ -28,6 +25,8 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
     protected final JDBCDataSource dataSource;
     private List<OBJECT> objectList;
     private Map<String, OBJECT> objectMap;
+    private boolean caseSensitive;
+    private Comparator<OBJECT> listOrderComparator;
 
     protected JDBCObjectCache(JDBCDataSource dataSource)
     {
@@ -37,6 +36,16 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
     JDBCDataSource getDataSource()
     {
         return dataSource;
+    }
+
+    protected void setCaseSensitive(boolean caseSensitive)
+    {
+        this.caseSensitive = caseSensitive;
+    }
+
+    public void setListOrderComparator(Comparator<OBJECT> listOrderComparator)
+    {
+        this.listOrderComparator = listOrderComparator;
     }
 
     abstract protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
@@ -60,7 +69,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
         if (objectMap == null) {
             this.loadObjects(monitor);
         }
-        return objectMap.get(name);
+        return objectMap.get(caseSensitive ? name : name.toUpperCase());
     }
 
     public void clearCache()
@@ -92,7 +101,7 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
                             continue;
                         }
                         tmpObjectList.add(object);
-                        tmpObjectMap.put(object.getName(), object);
+                        tmpObjectMap.put(caseSensitive ? object.getName() : object.getName().toUpperCase(), object);
 
                         monitor.subTask(object.getName());
                         if (monitor.isCanceled()) {
@@ -115,6 +124,9 @@ public abstract class JDBCObjectCache<OBJECT extends DBSObject> {
             context.close();
         }
 
+        if (listOrderComparator != null) {
+            Collections.sort(tmpObjectList, listOrderComparator);
+        }
         this.objectList = tmpObjectList;
         this.objectMap = tmpObjectMap;
     }

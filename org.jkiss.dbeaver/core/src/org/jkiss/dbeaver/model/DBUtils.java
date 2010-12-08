@@ -32,6 +32,16 @@ public final class DBUtils {
 
     static final Log log = LogFactory.getLog(DBUtils.class);
 
+    public static <TYPE extends DBSObject> Comparator<TYPE> nameComparator()
+    {
+        return new Comparator<TYPE>() {
+            public int compare(DBSObject o1, DBSObject o2)
+            {
+                return o1.getName().compareTo(o2.getName());
+            }
+        };
+    }
+
     public static String getQuotedIdentifier(DBSObject object)
     {
         return getQuotedIdentifier(object.getDataSource(), object.getName());
