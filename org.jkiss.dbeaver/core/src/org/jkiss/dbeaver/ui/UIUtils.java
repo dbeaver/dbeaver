@@ -398,9 +398,9 @@ public class UIUtils {
         createControlLabel(parent, label);
 
         Spinner spinner = new Spinner(parent, SWT.BORDER);
-        spinner.setSelection(value);
         spinner.setMinimum(minimum);
         spinner.setMaximum(maximum);
+        spinner.setSelection(value);
 
         return spinner;
     }
