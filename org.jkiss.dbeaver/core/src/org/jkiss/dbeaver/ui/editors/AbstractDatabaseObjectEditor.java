@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectPropertyCommand;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -121,4 +122,15 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
         firePropertyChange(PROP_DIRTY);
     }
 
+    public void removeChangeCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> command)
+    {
+        this.objectManager.removeCommand(command);
+        firePropertyChange(PROP_DIRTY);
+    }
+
+    public void updateChangeCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> command)
+    {
+        this.objectManager.updateCommand(command);
+        firePropertyChange(PROP_DIRTY);
+    }
 }

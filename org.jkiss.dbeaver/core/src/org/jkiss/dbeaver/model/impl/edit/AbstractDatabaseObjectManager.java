@@ -187,6 +187,28 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
+    public void removeCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> command)
+    {
+        synchronized (commands) {
+            for (CommandInfo cmd : commands) {
+                if (cmd.command == command) {
+                    commands.remove(cmd);
+                    break;
+                }
+            }
+            clearUndidCommands();
+            clearMergedCommands();
+        }
+    }
+
+    public void updateCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> object_typeDatabaseObjectPropertyCommand)
+    {
+        synchronized (commands) {
+            clearUndidCommands();
+            clearMergedCommands();
+        }
+    }
+
     public boolean canUndoCommand()
     {
         synchronized (commands) {

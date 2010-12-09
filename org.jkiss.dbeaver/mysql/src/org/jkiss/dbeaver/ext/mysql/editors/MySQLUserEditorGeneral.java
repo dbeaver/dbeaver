@@ -49,10 +49,10 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
             Text hostText = UIUtils.createLabelText(loginGroup, "Host", getUser().getHost());
             hostText.setEditable(false);
 
-            Text passwordText = UIUtils.createLabelText(loginGroup, "Password", "", SWT.BORDER | SWT.PASSWORD);
+            Text passwordText = UIUtils.createLabelText(loginGroup, "Password", "**********", SWT.BORDER | SWT.PASSWORD);
             ControlCommandListener.create(this, passwordText, UserPropertyHandler.PASSWORD);
 
-            Text confirmText = UIUtils.createLabelText(loginGroup, "Confirm", "", SWT.BORDER | SWT.PASSWORD);
+            Text confirmText = UIUtils.createLabelText(loginGroup, "Confirm", "**********", SWT.BORDER | SWT.PASSWORD);
             ControlCommandListener.create(this, confirmText, UserPropertyHandler.PASSWORD_CONFIRM);
         }
 

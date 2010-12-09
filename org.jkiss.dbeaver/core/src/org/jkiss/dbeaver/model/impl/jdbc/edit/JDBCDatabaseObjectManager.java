@@ -6,10 +6,12 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabaseObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 /**
  * JDBC DatabaseObjectManager implementation
@@ -24,6 +26,8 @@ public abstract class JDBCDatabaseObjectManager<OBJECT_TYPE extends DBSObject> e
         DBCStatement dbStat = context.prepareStatement(script, false, false, false);
         try {
             dbStat.executeStatement();
+        } catch (DBCException e) {
+            throw new DBCException("Could not execute script:" + ContentUtils.getDefaultLineSeparator() + script, e);
         } finally {
             dbStat.close();
         }

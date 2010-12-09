@@ -38,7 +38,7 @@ public class MySQLUserManager extends JDBCDatabaseObjectManager<MySQLUser> {
             // Add user change in the beginning
             commands.add(0, new CommandInfo(new MySQLCommandChangeUser(userProps), null));
         }
-        if (hasPermissionChanges) {
+        if (!userProps.isEmpty() || hasPermissionChanges) {
             // Add privileges flush to the tail
             commands.add(new CommandInfo(new DatabaseObjectScriptCommand<MySQLUser>("Flush privileges", "FLUSH PRIVILEGES"), null));
         }

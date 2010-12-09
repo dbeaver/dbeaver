@@ -81,4 +81,9 @@ public final class SQLUtils {
         Pattern pattern = Pattern.compile(like, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
         return pattern.matcher(string).matches();
     }
+
+    public static String escapeString(String string)
+    {
+        return string.replaceAll("'", "\\'");
+    }
 }

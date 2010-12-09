@@ -31,6 +31,7 @@ public class ControlCommandListener <OBJECT_TYPE extends DBSObject> {
     private final DatabaseObjectPropertyHandler<OBJECT_TYPE> handler;
     private Object originalValue;
     //private Object newValue;
+    private DatabaseObjectPropertyCommand<OBJECT_TYPE> curCommand;
 
     public static <OBJECT_TYPE extends DBSObject> void create(
         AbstractDatabaseObjectEditor<OBJECT_TYPE, ? extends IDatabaseObjectManager<OBJECT_TYPE>> objectEditor,
@@ -52,6 +53,7 @@ public class ControlCommandListener <OBJECT_TYPE extends DBSObject> {
         WidgetListener listener = new WidgetListener();
         widget.addListener(SWT.FocusIn, listener);
         widget.addListener(SWT.FocusOut, listener);
+        widget.addListener(SWT.Modify, listener);
         widget.addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e)
             {
@@ -135,22 +137,39 @@ public class ControlCommandListener <OBJECT_TYPE extends DBSObject> {
                 }
                 case SWT.FocusOut:
                 {
+                    // Forgot current command
+                    if (curCommand != null) {
+                        curCommand = null;
+                    }
+                    break;
+                }
+                case SWT.Modify:
+                {
                     final Object newValue = readWidgetValue();
-                    if (!CommonUtils.equalObjects(newValue, originalValue)) {
-                        final DatabaseObjectPropertyCommand<OBJECT_TYPE> command = new DatabaseObjectPropertyCommand<OBJECT_TYPE>(handler);
-                        command.setOldValue(originalValue);
-                        command.setNewValue(newValue);
-                        objectEditor.addChangeCommand(command, new IDatabaseObjectCommandReflector<DatabaseObjectPropertyCommand<OBJECT_TYPE>>() {
-                            public void redoCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> object_typeControlDatabaseObjectCommand)
-                            {
-                                writeWidgetValue(command.getNewValue());
-                            }
-
-                            public void undoCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> object_typeControlDatabaseObjectCommand)
-                            {
-                                writeWidgetValue(command.getOldValue());
-                            }
-                        });
+                    if (curCommand == null) {
+                        if (!CommonUtils.equalObjects(newValue, originalValue)) {
+                            curCommand = new DatabaseObjectPropertyCommand<OBJECT_TYPE>(handler);
+                            curCommand.setOldValue(originalValue);
+                            curCommand.setNewValue(newValue);
+                            objectEditor.addChangeCommand(curCommand, new IDatabaseObjectCommandReflector<DatabaseObjectPropertyCommand<OBJECT_TYPE>>() {
+                                public void redoCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> object_typeControlDatabaseObjectCommand)
+                                {
+                                    writeWidgetValue(curCommand.getNewValue());
+                                }
+                                public void undoCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> object_typeControlDatabaseObjectCommand)
+                                {
+                                    writeWidgetValue(curCommand.getOldValue());
+                                }
+                            });
+                        }
+                    } else {
+                        if (CommonUtils.equalObjects(originalValue, newValue)) {
+                            objectEditor.removeChangeCommand(curCommand);
+                            curCommand = null;
+                        } else {
+                            curCommand.setNewValue(newValue);
+                            objectEditor.updateChangeCommand(curCommand);
+                        }
                     }
                     break;
                 }
