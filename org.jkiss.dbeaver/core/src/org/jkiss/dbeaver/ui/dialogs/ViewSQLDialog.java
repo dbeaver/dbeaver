@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.ui.dialogs;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -76,20 +78,16 @@ public class ViewSQLDialog extends Dialog {
         sqlViewer.createPartControl(editorPH);
         sqlViewer.reloadSyntaxRules();
 
+        composite.addDisposeListener(new DisposeListener() {
+            public void widgetDisposed(DisposeEvent e)
+            {
+                if (sqlViewer != null) {
+                    sqlViewer.dispose();
+                    sqlViewer = null;
+                }
+            }
+        });
         return parent;
-    }
-
-    @Override
-    public int open()
-    {
-        int result = super.open();
-
-        if (sqlViewer != null) {
-            sqlViewer.dispose();
-            sqlViewer = null;
-        }
-
-        return result;
     }
 
     @Override
