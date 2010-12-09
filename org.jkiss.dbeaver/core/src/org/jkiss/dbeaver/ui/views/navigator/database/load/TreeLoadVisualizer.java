@@ -105,7 +105,7 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
         TreeLoadNode placeHolder = TreeLoadNode.createPlaceHolder(parent);
         if (placeHolder != null && TreeLoadNode.canBeginLoading(parent)) {
             TreeLoadVisualizer visualizer = new TreeLoadVisualizer(viewer, placeHolder, parent);
-            LoadingUtils.executeService(service, visualizer);
+            LoadingUtils.createService(service, visualizer).schedule();
             return new Object[]{placeHolder};
         }
         return EMPTY_ELEMENT_ARRAY;

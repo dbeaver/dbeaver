@@ -117,19 +117,20 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
             return;
         }
         isLoaded = true;
-        LoadingUtils.executeService(
+        LoadingUtils.createService(
             new DatabaseLoadService<List<MySQLPrivilege>>("Load catalog privileges", getUser().getDataSource()) {
                 public List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        return getUser().getDataSource().getPrivileges(getProgressMonitor(), MySQLPrivilege.Kind.ADMIN);
+                        return getUser().getDataSource().getPrivilegesByKind(getProgressMonitor(), MySQLPrivilege.Kind.ADMIN);
                     }
                     catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
                 }
             },
-            pageControl.createLoadVisualizer());
+            pageControl.createLoadVisualizer())
+            .schedule();
     }
 
     @Override

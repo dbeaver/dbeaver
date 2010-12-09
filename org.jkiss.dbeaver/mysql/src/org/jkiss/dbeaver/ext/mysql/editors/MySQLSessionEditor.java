@@ -160,7 +160,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
 
     private void refreshSessions()
     {
-        LoadingUtils.executeService(
+        LoadingUtils.createService(
             new DatabaseLoadService<List<SessionInfo>>("Load active session list", getDataSource()) {
                 public List<SessionInfo> evaluate()
                     throws InvocationTargetException, InterruptedException
@@ -204,7 +204,8 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
                     }
                 }
             },
-            pageControl.createRefreshVisualizer());
+            pageControl.createRefreshVisualizer())
+            .schedule();
     }
 
     private void killSession(final SessionInfo session, final boolean killConnection) {
@@ -216,7 +217,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
             return;
         }
 
-        LoadingUtils.executeService(
+        LoadingUtils.createService(
             new DatabaseLoadService<SessionInfo>("Kill " + (killConnection ? ("session " + session.pid) : ("query " + session.info)), getDataSource()) {
                 public SessionInfo evaluate()
                     throws InvocationTargetException, InterruptedException
@@ -243,7 +244,8 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
                     }
                 }
             },
-            pageControl.createKillVisualizer());
+            pageControl.createKillVisualizer())
+            .schedule();
     }
 
     public MySQLDataSource getDataSource()

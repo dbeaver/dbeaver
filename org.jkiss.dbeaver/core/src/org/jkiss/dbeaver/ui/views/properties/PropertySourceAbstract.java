@@ -15,7 +15,6 @@ import org.eclipse.ui.views.properties.PropertySheet;
 import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
@@ -94,9 +93,10 @@ public class PropertySourceAbstract implements IPropertySource
                         // We assume that it can be called ONLY by properties viewer
                         // So, start lazy loading job to update it after value will be loaded
                         String loadText = "Loading";
-                        LoadingUtils.executeService(
+                        LoadingUtils.createService(
                             new PropertySheetLoadService(annoDescriptor),
-                            new PropertySheetLoadVisualizer(id, loadText));
+                            new PropertySheetLoadVisualizer(id, loadText))
+                            .schedule();
                         // Return dummy string for now
                         propValues.put(id, loadText);
                         return loadText;

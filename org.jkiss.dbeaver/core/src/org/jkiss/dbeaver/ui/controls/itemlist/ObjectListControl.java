@@ -297,6 +297,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 loadingJob = null;
             }
         });
+        loadingJob.schedule();
     }
 
     public void clearData()
@@ -543,6 +544,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         public void completeLoading(Collection<OBJECT_TYPE> items)
         {
             super.completeLoading(items);
+            clearData();
 
             Control itemsControl = itemsViewer.getControl();
             if (itemsControl.isDisposed()) {
@@ -601,7 +603,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 /*
                 // Load all lazy items in one job
                 if (!CommonUtils.isEmpty(lazyItems)) {
-                    LoadingUtils.executeService(
+                    LoadingUtils.createService(
                         new ValueLoadService(lazyItems),
                         new ValuesLoadVisualizer());
                 }

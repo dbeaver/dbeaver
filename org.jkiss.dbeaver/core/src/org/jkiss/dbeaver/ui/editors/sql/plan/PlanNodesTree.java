@@ -115,9 +115,8 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
 
     public void fillData(DBCQueryPlanner planner, String query)
     {
-        super.clearData();
         super.loadData(
-            LoadingUtils.executeService(
+            LoadingUtils.createService(
                 new ExplainPlanService(planner, query),
                 new ObjectsLoadVisualizer()));
     }

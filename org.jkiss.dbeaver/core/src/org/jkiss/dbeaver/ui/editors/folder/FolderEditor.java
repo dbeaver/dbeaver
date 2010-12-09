@@ -55,7 +55,6 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
         getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
 
             if (!itemControl.isDisposed()) {
-                itemControl.clearData();
                 itemControl.fillData();
             }
 

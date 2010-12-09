@@ -757,7 +757,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
             // Do not start new one while old is running
             return;
         }
-        diagramLoadingJob = LoadingUtils.executeService(
+        diagramLoadingJob = LoadingUtils.createService(
             new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
                 public EntityDiagram evaluate()
                     throws InvocationTargetException, InterruptedException {
@@ -778,6 +778,7 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
                 diagramLoadingJob = null;
             }
         });
+        diagramLoadingJob.schedule();
     }
 
     public PaletteRoot createPaletteRoot() {

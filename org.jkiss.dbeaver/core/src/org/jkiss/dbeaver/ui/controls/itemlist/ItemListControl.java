@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerOpenObject;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.utils.ViewUtils;
@@ -71,9 +72,10 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
 
     public void fillData(DBXTreeNode metaNode)
     {
-        super.loadData(LoadingUtils.executeService(
+        LoadingJob<Collection<DBNNode>> loadingJob = LoadingUtils.createService(
             new ItemLoadService(metaNode),
-            new ObjectsLoadVisualizer()));
+            new ObjectsLoadVisualizer());
+        super.loadData(loadingJob);
     }
 
     public DBNNode getRootNode() {

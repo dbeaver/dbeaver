@@ -420,7 +420,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         return privileges;
     }
 
-    public List<MySQLPrivilege> getPrivileges(DBRProgressMonitor monitor, MySQLPrivilege.Kind kind)
+    public List<MySQLPrivilege> getPrivilegesByKind(DBRProgressMonitor monitor, MySQLPrivilege.Kind kind)
         throws DBException
     {
         List<MySQLPrivilege> privs = new ArrayList<MySQLPrivilege>();
@@ -467,6 +467,66 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
             context.close();
         }
     }
+
+    public List<MySQLParameter> getSessionStatus(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return loadParameters(monitor, true, false);
+    }
+
+    public List<MySQLParameter> getGlobalStatus(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return loadParameters(monitor, true, true);
+    }
+
+    public List<MySQLParameter> getSessionVariables(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return loadParameters(monitor, false, false);
+    }
+
+    public List<MySQLParameter> getGlobalVariables(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return loadParameters(monitor, false, true);
+    }
+
+    private List<MySQLParameter> loadParameters(DBRProgressMonitor monitor, boolean status, boolean global) throws DBException
+    {
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load status");
+        try {
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SHOW " + 
+                (global ? "GLOBAL " : "") + 
+                (status ? "STATUS" : "VARIABLES"));
+            try {
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    List<MySQLParameter> parameters = new ArrayList<MySQLParameter>();
+                    while (dbResult.next()) {
+                        MySQLParameter parameter = new MySQLParameter(
+                            this,
+                            JDBCUtils.safeGetString(dbResult, "variable_name"),
+                            JDBCUtils.safeGetString(dbResult, "value"));
+                        parameters.add(parameter);
+                    }
+                    return parameters;
+                } finally {
+                    dbResult.close();
+                }
+            } finally {
+                dbStat.close();
+            }
+        }
+        catch (SQLException ex) {
+            throw new DBException(ex);
+        }
+        finally {
+            context.close();
+        }
+    }
+
 
     @Override
     public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {

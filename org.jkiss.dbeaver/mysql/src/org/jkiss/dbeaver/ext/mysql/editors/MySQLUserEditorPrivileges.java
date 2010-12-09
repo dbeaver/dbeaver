@@ -223,7 +223,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
     private void showCatalogTables()
     {
-        LoadingUtils.executeService(
+        LoadingUtils.createService(
             new DatabaseLoadService<Collection<MySQLTable>>("Load tables", getUser().getDataSource()) {
                 public Collection<MySQLTable> evaluate()
                     throws InvocationTargetException, InterruptedException
@@ -240,7 +240,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                     return null;
                 }
             },
-            pageControl.createTablesLoadVisualizer());
+            pageControl.createTablesLoadVisualizer())
+            .schedule();
     }
 
     private void showGrants()
@@ -264,7 +265,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             return;
         }
         isLoaded = true;
-        LoadingUtils.executeService(
+        LoadingUtils.createService(
             new DatabaseLoadService<java.util.List<MySQLPrivilege>>("Load privileges", getUser().getDataSource()) {
                 public java.util.List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException
                 {
@@ -276,7 +277,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                     }
                 }
             },
-            pageControl.createPrivilegesLoadVisualizer());
+            pageControl.createPrivilegesLoadVisualizer())
+            .schedule();
     }
 
     @Override
