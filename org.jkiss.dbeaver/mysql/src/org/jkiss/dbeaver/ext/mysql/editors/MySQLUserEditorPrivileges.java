@@ -13,6 +13,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
@@ -57,12 +58,15 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
         pageControl = new PageControl(parent);
 
-        Composite container = UIUtils.createPlaceholder(pageControl, 3, 5);
+        Composite container = UIUtils.createPlaceholder(pageControl, 2, 5);
         GridData gd = new GridData(GridData.FILL_BOTH);
         container.setLayoutData(gd);
 
+        Composite leftPane = UIUtils.createPlaceholder(container, 2);
+        leftPane.setLayoutData(new GridData(GridData.FILL_BOTH));
+        leftPane.setLayout(new GridLayout(2, true));
         {
-            Composite catalogGroup = UIUtils.createControlGroup(container, "Catalogs", 1, GridData.FILL_VERTICAL, 200);
+            Composite catalogGroup = UIUtils.createControlGroup(leftPane, "Catalogs", 1, GridData.FILL_BOTH, 0);
 
             catalogsTable = new Table(catalogGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
             catalogsTable.setHeaderVisible(true);
@@ -97,9 +101,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
 
         {
-            Composite catalogGroup = UIUtils.createControlGroup(container, "Tables", 1, GridData.FILL_VERTICAL, 200);
+            Composite tablesGroup = UIUtils.createControlGroup(leftPane, "Tables", 1, GridData.FILL_BOTH, 0);
 
-            tablesTable = new Table(catalogGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
+            tablesTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
             tablesTable.setHeaderVisible(true);
             gd = new GridData(GridData.FILL_BOTH);
             tablesTable.setLayoutData(gd);

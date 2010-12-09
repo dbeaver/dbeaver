@@ -38,7 +38,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         pageControl = new PageControl(parent);
 
         Composite container = UIUtils.createPlaceholder(pageControl, 2, 5);
-        GridData gd = new GridData(GridData.FILL_BOTH);
+        GridData gd = new GridData(GridData.FILL_VERTICAL);
         container.setLayoutData(gd);
 
         {
