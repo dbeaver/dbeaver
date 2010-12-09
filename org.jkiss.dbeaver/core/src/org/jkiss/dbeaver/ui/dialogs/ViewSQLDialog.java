@@ -12,29 +12,30 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
+import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
 public class ViewSQLDialog extends Dialog {
 
-    private IEditorSite parentSite;
+    private IEditorSite subSite;
     private DBPDataSource dataSource;
     private String title;
     private String text;
     private SQLEditorBase sqlViewer;
     private Image image;
 
-    public ViewSQLDialog(IEditorSite parentSite, DBPDataSource dataSource, String title, String text)
+    public ViewSQLDialog(final IEditorSite parentSite, DBPDataSource dataSource, String title, String text)
     {
         super(parentSite.getShell());
-        this.parentSite = parentSite;
         this.dataSource = dataSource;
         this.title = title;
         this.text = text;
+
+        this.subSite = new SubEditorSite(parentSite);
     }
 
     public void setImage(Image image)
@@ -68,7 +69,7 @@ public class ViewSQLDialog extends Dialog {
             }
         };
         try {
-            sqlViewer.init(parentSite, new StringEditorInput(title, text, true));
+            sqlViewer.init(subSite, new StringEditorInput(title, text, true));
         } catch (PartInitException e) {
             UIUtils.showErrorDialog(getShell(), title, null, e);
         }

@@ -169,7 +169,8 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             }
         }
 
-        ViewSQLDialog dialog = new ViewSQLDialog(getEditorSite(), getDataSource(), "script", script.toString());
+        ViewSQLDialog dialog = new ViewSQLDialog(getEditorSite(), getDataSource(), "Changes Script", script.toString());
+        dialog.setImage(DBIcon.SQL_PREVIEW.getImage());
         dialog.open();
 /*
 
