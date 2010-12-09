@@ -7,14 +7,12 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.formatter.ContentFormatter;
 import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.formatter.IFormattingStrategy;
-import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
-import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
-import org.eclipse.jface.text.hyperlink.MultipleHyperlinkPresenter;
-import org.eclipse.jface.text.hyperlink.URLHyperlinkDetector;
+import org.eclipse.jface.text.hyperlink.*;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.information.IInformationProvider;
 import org.eclipse.jface.text.information.InformationPresenter;
@@ -29,12 +27,15 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ui.editors.sql.assist.SQLAssistProposalsService;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLCommentAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLStringAutoIndentStrategy;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLDoubleClickStrategy;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLFormattingStrategy;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.util.BestMatchHover;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLAnnotationHover;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLInformationProvider;
@@ -48,17 +49,11 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
     /**
      * The editor with which this configuration is associated.
      */
-    private SQLEditor editor;
-    /**
-     * The completion processor for completing the user's typing.
-     */
-    private SQLCompletionProcessor completionProcessor;
-    /**
-     * The content assist proposal service for database objects.
-     */
-    private SQLAssistProposalsService fDBProposalsService;
+    private IEditorPart editor;
+    private SQLSyntaxManager syntaxManager;
 
-    private SQLHyperlinkDetector hyperlinkDetector;
+    private IContentAssistProcessor completionProcessor;
+    private IHyperlinkDetector hyperlinkDetector;
 
     /**
      * This class implements a single token scanner.
@@ -76,11 +71,16 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      *
      * @param editor the SQLEditor to configure
      */
-    public SQLEditorSourceViewerConfiguration(SQLEditor editor)
+    public SQLEditorSourceViewerConfiguration(
+        IEditorPart editor,
+        SQLSyntaxManager syntaxManager,
+        IContentAssistProcessor completionProcessor,
+        IHyperlinkDetector hyperlinkDetector)
     {
         this.editor = editor;
-        this.completionProcessor = new SQLCompletionProcessor(this.editor);
-        this.hyperlinkDetector = new SQLHyperlinkDetector(this.editor);
+        this.syntaxManager = syntaxManager;
+        this.completionProcessor = completionProcessor;
+        this.hyperlinkDetector = hyperlinkDetector;
     }
 
     /**
@@ -135,13 +135,8 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
         // Set content assist processors for various content types.
-        if (completionProcessor == null) {
-            completionProcessor = new SQLCompletionProcessor(editor);
-        }
-        assistant.setContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
-        SQLAssistProposalsService proposalsService = getDBProposalsService();
-        if (proposalsService != null) {
-            completionProcessor.setProposalsService(proposalsService);
+        if (completionProcessor != null) {
+            assistant.setContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
         }
 
         // Configure how content assist information will appear.
@@ -191,7 +186,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         ContentFormatter formatter = new ContentFormatter();
         formatter.setDocumentPartitioning(SQLPartitionScanner.SQL_PARTITIONING);
 
-        IFormattingStrategy formattingStrategy = new SQLFormattingStrategy(editor.getSyntaxManager());
+        IFormattingStrategy formattingStrategy = new SQLFormattingStrategy(syntaxManager);
         for (String ct : SQLPartitionScanner.SQL_PARTITION_TYPES) {
             formatter.setFormattingStrategy(formattingStrategy, ct);
         }
@@ -199,17 +194,6 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         formatter.enablePartitionAwareFormatting(false);
 
         return formatter;
-    }
-
-    /**
-     * Gets the <code>DBProposalsService</code> object that provides content
-     * assist services for this editor.
-     *
-     * @return the current <code>DBProposalsService</code> object
-     */
-    public SQLAssistProposalsService getDBProposalsService()
-    {
-        return fDBProposalsService;
     }
 
     /**
@@ -239,8 +223,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         reconciler.setDocumentPartitioning(docPartitioning);
 
         // Add a "damager-repairer" for changes in default text (SQL code).
-        SQLSyntaxManager sqlCodeScanner = editor.getSyntaxManager();
-        DefaultDamagerRepairer dr = new DefaultDamagerRepairer(sqlCodeScanner);
+        DefaultDamagerRepairer dr = new DefaultDamagerRepairer(syntaxManager);
 
         reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
         reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
@@ -249,27 +232,27 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         // We just need a scanner that does nothing but returns a token with
         // the corrresponding text attributes
         dr = new DefaultDamagerRepairer(new SingleTokenScanner(
-            new TextAttribute(sqlCodeScanner.getColor(SQLSyntaxManager.CONFIG_COLOR_COMMENT))));
+            new TextAttribute(syntaxManager.getColor(SQLSyntaxManager.CONFIG_COLOR_COMMENT))));
         reconciler.setDamager(dr, SQLPartitionScanner.SQL_MULTILINE_COMMENT);
         reconciler.setRepairer(dr, SQLPartitionScanner.SQL_MULTILINE_COMMENT);
 
         // Add a "damager-repairer" for changes witin one-line SQL comments.
         dr = new DefaultDamagerRepairer(new SingleTokenScanner(
-            new TextAttribute(sqlCodeScanner.getColor(SQLSyntaxManager.CONFIG_COLOR_COMMENT))));
+            new TextAttribute(syntaxManager.getColor(SQLSyntaxManager.CONFIG_COLOR_COMMENT))));
         reconciler.setDamager(dr, SQLPartitionScanner.SQL_COMMENT);
         reconciler.setRepairer(dr, SQLPartitionScanner.SQL_COMMENT);
 
         // Add a "damager-repairer" for changes witin quoted literals.
         dr = new DefaultDamagerRepairer(
             new SingleTokenScanner(
-                new TextAttribute(sqlCodeScanner.getColor(SQLSyntaxManager.CONFIG_COLOR_STRING))));
+                new TextAttribute(syntaxManager.getColor(SQLSyntaxManager.CONFIG_COLOR_STRING))));
         reconciler.setDamager(dr, SQLPartitionScanner.SQL_STRING);
         reconciler.setRepairer(dr, SQLPartitionScanner.SQL_STRING);
 
         // Add a "damager-repairer" for changes witin delimited identifiers.
         dr = new DefaultDamagerRepairer(
             new SingleTokenScanner(
-                new TextAttribute(sqlCodeScanner.getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER))));
+                new TextAttribute(syntaxManager.getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER))));
         reconciler.setDamager(dr, SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER);
         reconciler.setRepairer(dr, SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER);
 
@@ -281,14 +264,9 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      *
      * @return the SQLEditor that this object configures
      */
-    public SQLEditor getSQLEditor()
+    public IEditorPart getSQLEditor()
     {
         return editor;
-    }
-
-    public void setSQLEditor(SQLEditor editor)
-    {
-        this.editor = editor;
     }
 
     /**
@@ -307,15 +285,13 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      * Sets the <code>ISQLDBProposalsService</code> object that provides content
      * assist services for this viewer to the given object.
      *
-     * @param dbProposalsService the object to set
-     */
     public void setDBProposalsService(SQLAssistProposalsService dbProposalsService)
     {
         fDBProposalsService = dbProposalsService;
         if (completionProcessor != null) {
             completionProcessor.setProposalsService(dbProposalsService);
         }
-    }
+    }*/
 
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer)
     {
@@ -372,8 +348,8 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
 
     void onDataSourceChange()
     {
-        if (hyperlinkDetector != null) {
-            hyperlinkDetector.clearCache();
+        if (hyperlinkDetector instanceof IHyperlinkDetectorExtension) {
+            ((IHyperlinkDetectorExtension)hyperlinkDetector).dispose();
         }
     }
 

@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.*;
@@ -18,6 +19,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -49,6 +51,7 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
     public static final String CONFIG_COLOR_TEXT = "org.jkiss.dbeaver.sql.editor.color.text.foreground";
     public static final String CONFIG_COLOR_BACKGROUND = "org.jkiss.dbeaver.sql.editor.color.text.background";
 
+    private IWorkbenchPart owner;
     private IThemeManager themeManager;
 
     private TreeMap<String, KeywordType> allKeywords = new TreeMap<String, KeywordType>();
@@ -68,9 +71,9 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
     private Set<SQLScriptPosition> addedPositions = new HashSet<SQLScriptPosition>();
     private Set<SQLScriptPosition> removedPositions = new HashSet<SQLScriptPosition>();
 
-    public SQLSyntaxManager(IWorkbenchPart workbenchPart)
+    public SQLSyntaxManager()
     {
-        themeManager = workbenchPart.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
+        themeManager = DBeaverCore.getInstance().getWorkbench().getThemeManager();
         themeManager.addPropertyChangeListener(this);
     }
 

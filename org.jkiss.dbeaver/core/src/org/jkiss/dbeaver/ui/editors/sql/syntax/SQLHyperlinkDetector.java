@@ -13,6 +13,7 @@ import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -24,7 +25,6 @@ import org.jkiss.dbeaver.model.struct.DBSTablePath;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 import java.util.*;
 
@@ -36,27 +36,26 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 {
     static final Log log = LogFactory.getLog(SQLHyperlinkDetector.class);
 
+    private IDataSourceProvider dataSourceProvider;
+    private SQLSyntaxManager syntaxManager;
+
     private static class TableLookupCache {
         List<DBNNode> nodes;
         boolean loading = true;
     }
 
-    private SQLEditor editor;
     private Map<String, TableLookupCache> linksCache = new HashMap<String, TableLookupCache>();
 
-    public SQLHyperlinkDetector(SQLEditor editor)
-    {
-        this.editor = editor;
-    }
 
-    public synchronized void clearCache()
+    public SQLHyperlinkDetector(IDataSourceProvider dataSourceProvider, SQLSyntaxManager syntaxManager)
     {
-        linksCache.clear();
+        this.dataSourceProvider = dataSourceProvider;
+        this.syntaxManager = syntaxManager;
     }
 
     public synchronized IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks)
     {
-        if (region == null || textViewer == null || !editor.getDataSourceContainer().isConnected()) {
+        if (region == null || textViewer == null || dataSourceProvider.getDataSource() == null) {
             return null;
         }
 
@@ -67,7 +66,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 
         int offset = region.getOffset();
 
-        SQLIdentifierDetector wordDetector = new SQLIdentifierDetector(editor.getSyntaxManager().getCatalogSeparator());
+        SQLIdentifierDetector wordDetector = new SQLIdentifierDetector(syntaxManager.getCatalogSeparator());
         int docLength = document.getLength();
         int identStart = offset;
         int identEnd = offset;
@@ -110,11 +109,11 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        if (editor.getSyntaxManager().getKeywordType(identifier.toUpperCase()) == SQLSyntaxManager.KeywordType.KEYWORD) {
+        if (syntaxManager.getKeywordType(identifier.toUpperCase()) == SQLSyntaxManager.KeywordType.KEYWORD) {
             // Skip keywords
             return null;
         }
-        DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, editor.getDataSource());
+        DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, dataSourceProvider.getDataSource());
         if (structureAssistant == null) {
             return null;
         }
@@ -175,6 +174,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
     public void dispose()
     {
         super.dispose();
+        linksCache.clear();
     }
 
     private class TablesFinderJob extends DataSourceJob {
@@ -185,7 +185,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 
         protected TablesFinderJob(DBSStructureAssistant structureAssistant, String word, TableLookupCache cache)
         {
-            super("Find table names for '" + word + "'", DBIcon.SQL_EXECUTE.getImageDescriptor(), editor.getDataSource());
+            super("Find table names for '" + word + "'", DBIcon.SQL_EXECUTE.getImageDescriptor(), dataSourceProvider.getDataSource());
             this.structureAssistant = structureAssistant;
             this.word = word;
             this.cache = cache;

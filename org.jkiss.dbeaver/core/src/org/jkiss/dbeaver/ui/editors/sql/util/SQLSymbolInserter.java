@@ -16,7 +16,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 
 import java.util.ArrayList;
@@ -31,11 +31,13 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
     private final String CATEGORY = toString();
     private IPositionUpdater positionUpdater = new ExclusivePositionUpdater(CATEGORY);
     private List<SymbolLevel> bracketLevelStack = new ArrayList<SymbolLevel>();
-    private SQLEditor editor;
+    private AbstractTextEditor editor;
+    private ISourceViewer sourceViewer;
 
-    public SQLSymbolInserter(SQLEditor editor)
+    public SQLSymbolInserter(AbstractTextEditor editor, ISourceViewer sourceViewer)
     {
         this.editor = editor;
+        this.sourceViewer = sourceViewer;
     }
 
     public void setCloseSingleQuotesEnabled(boolean enabled)
@@ -117,10 +119,9 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
             return;
         }
 
-        ISourceViewer sourceviewer = editor.getSV();
-        IDocument document = sourceviewer.getDocument();
+        IDocument document = sourceViewer.getDocument();
 
-        final Point selection = sourceviewer.getSelectedRange();
+        final Point selection = sourceViewer.getSelectedRange();
         final int offset = selection.x;
         final int length = selection.y;
 
@@ -207,15 +208,15 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                     document.addPosition(CATEGORY, level.firstPosition);
                     document.addPosition(CATEGORY, level.secondPosition);
 
-                    level.uI = new EditorLinkedModeUI(model, sourceviewer);
+                    level.uI = new EditorLinkedModeUI(model, sourceViewer);
                     level.uI.setSimpleMode(true);
                     level.uI.setExitPolicy(new ExitPolicy(closingCharacter, getEscapeCharacter(closingCharacter), bracketLevelStack));
-                    level.uI.setExitPosition(sourceviewer, offset + 2, 0, Integer.MAX_VALUE);
+                    level.uI.setExitPosition(sourceViewer, offset + 2, 0, Integer.MAX_VALUE);
                     level.uI.setCyclingMode(LinkedModeUI.CYCLE_NEVER);
                     level.uI.enter();
 
                     IRegion newSelection = level.uI.getSelectedRegion();
-                    sourceviewer.setSelectedRange(newSelection.getOffset(), newSelection.getLength());
+                    sourceViewer.setSelectedRange(newSelection.getOffset(), newSelection.getLength());
 
                     event.doit = false;
 
@@ -243,7 +244,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
         }
 
         // remove brackets
-        final IDocument document = editor.getSV().getDocument();
+        final IDocument document = sourceViewer.getDocument();
         if (document instanceof IDocumentExtension) {
             IDocumentExtension extension = (IDocumentExtension) document;
             extension.registerPostNotificationReplace(null, new IDocumentExtension.IReplace() {
@@ -336,7 +337,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
 
         private boolean isMasked(int offset)
         {
-            IDocument document = editor.getSV().getDocument();
+            IDocument document = sourceViewer.getDocument();
             try {
                 return escapeCharacter == document.getChar(offset - 1);
             }

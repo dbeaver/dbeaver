@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.dialogs.ViewTextDialog;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
@@ -167,12 +168,18 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                 }
             }
         }
+
+        ViewSQLDialog dialog = new ViewSQLDialog(getEditorSite(), getDataSource(), "script", script.toString());
+        dialog.open();
+/*
+
         Shell shell = getSite().getShell();
         ViewTextDialog dialog = new ViewTextDialog(shell, "Script", script.toString());
         dialog.setTextWidth(0);
         dialog.setTextHeight(0);
         dialog.setImage(DBIcon.SQL_PREVIEW.getImage());
         dialog.open();
+*/
     }
 
     protected void createPages()

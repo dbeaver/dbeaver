@@ -41,10 +41,17 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
 
     private static final int DEFAULT_BUFFER_SIZE = 10000;
 
-    private static IFile getFileFromInput(Object element)
+    private static IStorage getStorageFromInput(Object element)
     {
         if (element instanceof IAdaptable) {
-            return (IFile) ((IAdaptable) element).getAdapter(IFile.class);
+            IFile file = (IFile) ((IAdaptable) element).getAdapter(IFile.class);
+            if (file != null) {
+                return file;
+            }
+            IStorage storage = (IStorage) ((IAdaptable) element).getAdapter(IStorage.class);
+            if (storage != null) {
+                return storage;
+            }
         }
         return null;
     }
@@ -52,15 +59,15 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
     @Override
     protected Document createDocument(Object element) throws CoreException
     {
-        IFile file = getFileFromInput(element);
-        if (file != null) {
+        IStorage object = getStorageFromInput(element);
+        if (object != null) {
             Document document = createEmptyDocument();
-            if (setDocumentContent(document, file)) {
+            if (setDocumentContent(document, object)) {
                 return document;
             }
         }
 
-        throw new IllegalArgumentException("Project document provider supports only path editor input");
+        throw new IllegalArgumentException("Project document provider supports only editor inputs which provides IStorage facility");
     }
 
     private Document createEmptyDocument()
@@ -77,9 +84,9 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
     @Override
     public boolean isReadOnly(Object element)
     {
-        IFile file = getFileFromInput(element);
-        if (file != null) {
-            return file.isReadOnly();
+        IStorage storage = getStorageFromInput(element);
+        if (storage  != null) {
+            return storage.isReadOnly();
         }
         return super.isReadOnly(element);
     }
@@ -92,10 +99,9 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
 
     public boolean isDeleted(Object element)
     {
-        IFile file = getFileFromInput(element);
-        if (file != null) {
-            return !file.exists();
-
+        IStorage storage = getStorageFromInput(element);
+        if (storage instanceof IResource) {
+            return !((IResource)storage).exists();
         }
         return super.isDeleted(element);
     }
@@ -103,11 +109,11 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
     @Override
     protected void doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite) throws CoreException
     {
-        IFile file = getFileFromInput(element);
-        if (file == null) {
+        IStorage storage = getStorageFromInput(element);
+        if (storage == null) {
             throw new CoreException(new Status(Status.ERROR, DBeaverConstants.PLUGIN_ID, "Could not obtain file from editor input"));
         }
-        String encoding = file.getCharset();
+        String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : ContentUtils.getDefaultFileEncoding());
 
         Charset charset;
         try {
@@ -136,31 +142,35 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
             throw new CoreException(RuntimeUtils.makeExceptionStatus(ex));
         }
 
-        if (file.exists()) {
+        if (storage instanceof IFile) {
+            IFile file = (IFile)storage;
 
-            // inform about the upcoming content change
-            fireElementStateChanging(element);
-            try {
-                file.setContents(stream, true, true, monitor);
-            } catch (CoreException x) {
-                // inform about failure
-                fireElementStateChangeFailed(element);
-                throw x;
-            } catch (RuntimeException x) {
-                // inform about failure
-                fireElementStateChangeFailed(element);
-                throw x;
-            }
+            if (file.exists()) {
 
-        } else {
-            try {
-                monitor.beginTask("Save file '" + file.getName() + "'", 2000);
-                //ContainerCreator creator = new ContainerCreator(file.getWorkspace(), file.getParent().getFullPath());
-                //creator.createContainer(new SubProgressMonitor(monitor, 1000));
-                file.create(stream, false, monitor);
-            }
-            finally {
-                monitor.done();
+                // inform about the upcoming content change
+                fireElementStateChanging(element);
+                try {
+                    file.setContents(stream, true, true, monitor);
+                } catch (CoreException x) {
+                    // inform about failure
+                    fireElementStateChangeFailed(element);
+                    throw x;
+                } catch (RuntimeException x) {
+                    // inform about failure
+                    fireElementStateChangeFailed(element);
+                    throw x;
+                }
+
+            } else {
+                try {
+                    monitor.beginTask("Save file '" + file.getName() + "'", 2000);
+                    //ContainerCreator creator = new ContainerCreator(file.getWorkspace(), file.getParent().getFullPath());
+                    //creator.createContainer(new SubProgressMonitor(monitor, 1000));
+                    file.create(stream, false, monitor);
+                }
+                finally {
+                    monitor.done();
+                }
             }
         }
     }
@@ -176,12 +186,13 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
         };
     }
 
-    protected boolean setDocumentContent(IDocument document, IFile file) throws CoreException
+    protected boolean setDocumentContent(IDocument document, IStorage storage) throws CoreException
     {
         try {
-            InputStream contentStream = file.getContents();
+            InputStream contentStream = storage.getContents();
             try {
-                setDocumentContent(document, contentStream, file.getCharset());
+                String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : ContentUtils.getDefaultFileEncoding());
+                setDocumentContent(document, contentStream, encoding);
             } finally {
                 ContentUtils.close(contentStream);
             }
@@ -242,42 +253,44 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
         if (element instanceof IEditorInput) {
 
             IEditorInput input = (IEditorInput) element;
-            IFile file = getFileFromInput(input);
-
-            try {
-                refreshFile(file);
-            } catch (CoreException x) {
-                log.warn("Could not refresh file", x);
-            }
-
-            IDocument d;
-            IStatus s = null;
-
-            try {
-                d = createDocument(element);
-            } catch (CoreException x) {
-                log.warn("Could not create document", x);
-                s = x.getStatus();
-                d = createEmptyDocument();
-            }
-
-            // Set the initial line delimiter
-            if (d instanceof IDocumentExtension4) {
-                String initialLineDelimiter = ContentUtils.getDefaultLineSeparator();
-                if (initialLineDelimiter != null) {
-                    ((IDocumentExtension4) d).setInitialLineDelimiter(initialLineDelimiter);
+            IStorage storage = getStorageFromInput(input);
+            if (storage instanceof IFile) {
+                IFile file = (IFile)storage;
+                try {
+                    refreshFile(file);
+                } catch (CoreException x) {
+                    log.warn("Could not refresh file", x);
                 }
+
+                IDocument d;
+                IStatus s = null;
+
+                try {
+                    d = createDocument(element);
+                } catch (CoreException x) {
+                    log.warn("Could not create document", x);
+                    s = x.getStatus();
+                    d = createEmptyDocument();
+                }
+
+                // Set the initial line delimiter
+                if (d instanceof IDocumentExtension4) {
+                    String initialLineDelimiter = ContentUtils.getDefaultLineSeparator();
+                    if (initialLineDelimiter != null) {
+                        ((IDocumentExtension4) d).setInitialLineDelimiter(initialLineDelimiter);
+                    }
+                }
+
+                IAnnotationModel m = createAnnotationModel(element);
+                FileSynchronizer f = new FileSynchronizer(input);
+                f.install();
+
+                FileInfo info = new FileInfo(d, m, f);
+                info.fModificationStamp = computeModificationStamp(file);
+                info.fStatus = s;
+
+                return info;
             }
-
-            IAnnotationModel m = createAnnotationModel(element);
-            FileSynchronizer f = new FileSynchronizer(input);
-            f.install();
-
-            FileInfo info = new FileInfo(d, m, f);
-            info.fModificationStamp = computeModificationStamp(file);
-            info.fStatus = s;
-
-            return info;
         }
 
         return super.createElementInfo(element);
@@ -318,54 +331,57 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
             return;
         }
 
-        IFile file = getFileFromInput(fileEditorInput);
-        IDocument document = createEmptyDocument();
-        IStatus status = null;
-
-        try {
+        IStorage storage = getStorageFromInput(fileEditorInput);
+        if (storage instanceof IFile) {
+            IFile file = (IFile)storage;
+            IDocument document = createEmptyDocument();
+            IStatus status = null;
 
             try {
-                refreshFile(file);
+
+                try {
+                    refreshFile(file);
+                } catch (CoreException x) {
+                    log.error("handleElementContentChanged", x);
+                }
+
+                setDocumentContent(document, file);
             } catch (CoreException x) {
-                log.error("handleElementContentChanged", x);
+                status = x.getStatus();
             }
 
-            setDocumentContent(document, file);
-        } catch (CoreException x) {
-            status = x.getStatus();
-        }
+            String newContent = document.get();
 
-        String newContent = document.get();
+            if (!newContent.equals(info.fDocument.get())) {
 
-        if (!newContent.equals(info.fDocument.get())) {
+                // set the new content and fire content related events
+                fireElementContentAboutToBeReplaced(fileEditorInput);
 
-            // set the new content and fire content related events
-            fireElementContentAboutToBeReplaced(fileEditorInput);
+                removeUnchangedElementListeners(fileEditorInput, info);
 
-            removeUnchangedElementListeners(fileEditorInput, info);
+                info.fDocument.removeDocumentListener(info);
+                info.fDocument.set(newContent);
+                info.fCanBeSaved = false;
+                info.fModificationStamp = computeModificationStamp(file);
+                info.fStatus = status;
 
-            info.fDocument.removeDocumentListener(info);
-            info.fDocument.set(newContent);
-            info.fCanBeSaved = false;
-            info.fModificationStamp = computeModificationStamp(file);
-            info.fStatus = status;
+                addUnchangedElementListeners(fileEditorInput, info);
 
-            addUnchangedElementListeners(fileEditorInput, info);
+                fireElementContentReplaced(fileEditorInput);
 
-            fireElementContentReplaced(fileEditorInput);
+            } else {
 
-        } else {
+                removeUnchangedElementListeners(fileEditorInput, info);
 
-            removeUnchangedElementListeners(fileEditorInput, info);
+                // fires only the dirty state related event
+                info.fCanBeSaved = false;
+                info.fModificationStamp = computeModificationStamp(file);
+                info.fStatus = status;
 
-            // fires only the dirty state related event
-            info.fCanBeSaved = false;
-            info.fModificationStamp = computeModificationStamp(file);
-            info.fStatus = status;
+                addUnchangedElementListeners(fileEditorInput, info);
 
-            addUnchangedElementListeners(fileEditorInput, info);
-
-            fireElementDirtyStateChanged(fileEditorInput, false);
+                fireElementDirtyStateChanged(fileEditorInput, false);
+            }
         }
     }
 
@@ -443,7 +459,8 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
          */
         protected IFile getFile()
         {
-            return getFileFromInput(fFileEditorInput);
+            IStorage storage = getStorageFromInput(fFileEditorInput);
+            return storage instanceof IFile ? (IFile)storage : null;
         }
 
         /**

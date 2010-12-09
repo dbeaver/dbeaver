@@ -15,20 +15,17 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.source.*;
-import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
-import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
-import org.eclipse.jface.text.source.projection.ProjectionSupport;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -39,14 +36,12 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
-import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
@@ -74,22 +69,21 @@ import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.sql.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
-import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
-import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * SQL Executor
  */
-public class SQLEditor extends BaseTextEditor
-    implements
-        IResourceChangeListener, IDataSourceProvider, IDataSourceContainerProvider, DBPEventListener, ISaveablePart2, ResultSetProvider
+public class SQLEditor extends SQLEditorBase
+    implements IResourceChangeListener, IDataSourceContainerProvider, DBPEventListener, ISaveablePart2, ResultSetProvider
 {
-    static final Log log = LogFactory.getLog(SQLEditor.class);
 
     static final int PAGE_INDEX_RESULTSET = 0;
     static final int PAGE_INDEX_PLAN = 1;
@@ -107,14 +101,6 @@ public class SQLEditor extends BaseTextEditor
 
     private ExplainPlanViewer planView;
     private SQLLogPanel logViewer;
-    private SQLSyntaxManager syntaxManager;
-
-    private ProjectionSupport projectionSupport;
-
-    private ProjectionAnnotationModel annotationModel;
-    private Map<Annotation, Position> curAnnotations;
-
-    private SQLSymbolInserter symbolInserter = null;
 
     private SQLQueryJob curJob;
     private boolean curJobRunning;
@@ -123,7 +109,6 @@ public class SQLEditor extends BaseTextEditor
     private static Image imgDataGrid;
     private static Image imgExplainPlan;
     private static Image imgLog;
-    private IAnnotationAccess annotationAccess;
 
     static {
         imgDataGrid = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage();
@@ -134,12 +119,9 @@ public class SQLEditor extends BaseTextEditor
     public SQLEditor()
     {
         super();
-        setDocumentProvider(new SQLDocumentProvider());
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
         DataSourceRegistry.getDefault().addDataSourceListener(this);
         dataContainer = new DataContainer();
-
-        setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(this));
     }
 
     public DBPDataSource getDataSource()
@@ -164,39 +146,14 @@ public class SQLEditor extends BaseTextEditor
         onDataSourceChange();
     }
 
-    public ISourceViewer getSV() {
-        return getSourceViewer();
-    }
-
-    public SQLSyntaxManager getSyntaxManager()
-    {
-        return syntaxManager;
-    }
-
     public ResultSetViewer getResultsView()
     {
         return resultsView;
     }
 
-    public IDocument getDocument()
-    {
-        IDocumentProvider provider = getDocumentProvider();
-        return provider == null ? null : provider.getDocument(getEditorInput());
-    }
-
-    public ProjectionAnnotationModel getAnnotationModel()
-    {
-        return annotationModel;
-    }
-
     public boolean isDirty()
     {
         return (resultsView != null && resultsView.isDirty()) || super.isDirty();
-    }
-
-    public void close(boolean save)
-    {
-        super.close(save);
     }
 
     private boolean checkConnected()
@@ -214,7 +171,6 @@ public class SQLEditor extends BaseTextEditor
 
     public void createPartControl(Composite parent)
     {
-        syntaxManager = new SQLSyntaxManager(this);
         setRangeIndicator(new DefaultRangeIndicator());
 
         sashForm = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
@@ -223,20 +179,6 @@ public class SQLEditor extends BaseTextEditor
         super.createPartControl(sashForm);
 
         editorControl = sashForm.getChildren()[0];
-
-        getSourceViewer().getTextWidget().addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e)
-            {
-                //getSourceViewer().getTextWidget().setEnabled(true);
-            }
-
-            @Override
-            public void focusLost(FocusEvent e)
-            {
-                //getSourceViewer().getTextWidget().setEnabled(false);
-            }
-        });
 
         {
             resultTabs = new CTabFolder(sashForm, SWT.TOP | SWT.FLAT);
@@ -274,48 +216,11 @@ public class SQLEditor extends BaseTextEditor
             resultTabs.setSelection(0);
         }
 
-        ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
-        projectionSupport = new ProjectionSupport(
-            viewer,
-            getAnnotationAccess(),
-            getSharedColors());
-        projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.error");
-        projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning");
-        projectionSupport.install();
-
-        viewer.doOperation(ProjectionViewer.TOGGLE);
-
-        annotationModel = viewer.getProjectionAnnotationModel();
-
-        // Symbol inserter
-        {
-            symbolInserter = new SQLSymbolInserter(this);
-
-            IPreferenceStore preferenceStore = DBeaverCore.getInstance().getGlobalPreferenceStore();
-            boolean closeSingleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
-            boolean closeDoubleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
-            boolean closeBrackets = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
-
-            symbolInserter.setCloseSingleQuotesEnabled(closeSingleQuotes);
-            symbolInserter.setCloseDoubleQuotesEnabled(closeDoubleQuotes);
-            symbolInserter.setCloseBracketsEnabled(closeBrackets);
-
-            ISourceViewer sourceViewer = getSourceViewer();
-            if (sourceViewer instanceof ITextViewerExtension) {
-                ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(symbolInserter);
-            }
-        }
-
         // Check connection
         checkConnected();
 
         // Update controls
         onDataSourceChange();
-    }
-
-    private ISharedTextColors getSharedColors()
-    {
-        return DBeaverCore.getInstance().getSharedTextColors();
     }
 
     protected void createActions()
@@ -355,53 +260,6 @@ public class SQLEditor extends BaseTextEditor
         addAction(menu, ACTION_CONTENT_FORMAT_PROPOSAL);
         //addAction(menu, ACTION_DEFINE_FOLDING_REGION);
         menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-    }
-
-    protected ISourceViewer createSourceViewer(Composite parent,
-        IVerticalRuler ruler, int styles)
-    {
-        OverviewRuler overviewRuler = new OverviewRuler(
-            getAnnotationAccess(),
-            VERTICAL_RULER_WIDTH,
-            getSharedColors());
-
-        return new SQLEditorSourceViewer(
-            parent,
-            ruler,
-            overviewRuler,
-            true,
-            styles);
-    }
-
-    private IAnnotationAccess getAnnotationAccess()
-    {
-        if (annotationAccess == null) {
-            annotationAccess = new SQLMarkerAnnotationAccess();
-        }
-        return annotationAccess;
-    }
-
-/*
-    protected void adjustHighlightRange(int offset, int length)
-    {
-        ISourceViewer viewer = getSourceViewer();
-        if (viewer instanceof ITextViewerExtension5) {
-            ITextViewerExtension5 extension = (ITextViewerExtension5) viewer;
-            extension.exposeModelRange(new Region(offset, length));
-        }
-    }
-*/
-
-    public Object getAdapter(Class required)
-    {
-        if (projectionSupport != null) {
-            Object adapter = projectionSupport.getAdapter(
-                getSourceViewer(), required);
-            if (adapter != null)
-                return adapter;
-        }
-
-        return super.getAdapter(required);
     }
 
     public SQLEditorInput getEditorInput()
@@ -476,8 +334,8 @@ public class SQLEditor extends BaseTextEditor
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
         String selText = selection.getText().trim();
         selText = selText.trim();
-        if (selText.endsWith(syntaxManager.getStatementDelimiter())) {
-            selText = selText.substring(0, selText.length() - syntaxManager.getStatementDelimiter().length());
+        if (selText.endsWith(getSyntaxManager().getStatementDelimiter())) {
+            selText = selText.substring(0, selText.length() - getSyntaxManager().getStatementDelimiter().length());
         }
         if (!CommonUtils.isEmpty(selText)) {
             sqlQuery = new SQLStatementInfo(selText);
@@ -549,6 +407,7 @@ public class SQLEditor extends BaseTextEditor
         }
 
         // Parse range
+        SQLSyntaxManager syntaxManager = getSyntaxManager();
         syntaxManager.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
         for (;;) {
@@ -581,7 +440,7 @@ public class SQLEditor extends BaseTextEditor
                     String queryText = document.get(statementStart, tokenOffset - statementStart);
                     queryText = queryText.trim();
                     if (queryText.endsWith(syntaxManager.getStatementDelimiter())) {
-                        queryText = queryText.substring(0, queryText.length() - syntaxManager.getStatementDelimiter().length()); 
+                        queryText = queryText.substring(0, queryText.length() - syntaxManager.getStatementDelimiter().length());
                     }
                     // make script line
                     SQLStatementInfo statementInfo = new SQLStatementInfo(queryText.trim());
@@ -618,6 +477,7 @@ public class SQLEditor extends BaseTextEditor
             }
         }
 */
+        SQLSyntaxManager syntaxManager = getSyntaxManager();
 
         List<SQLStatementInfo> queryList = new ArrayList<SQLStatementInfo>();
         syntaxManager.setRange(document, startOffset, length);
@@ -811,26 +671,7 @@ public class SQLEditor extends BaseTextEditor
         SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
         SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXPLAIN);
 
-        // Refresh syntax
-        if (syntaxManager != null) {
-            syntaxManager.changeDataSource(getDataSource());
-        }
-        ProjectionViewer projectionViewer = (ProjectionViewer)getSourceViewer();
-        IDocument document = getDocument();
-        if (projectionViewer != null && document != null && document.getLength() > 0) {
-            // Refresh viewer
-            //projectionViewer.getTextWidget().redraw();
-            try {
-                projectionViewer.reinitializeProjection();
-            } catch (BadLocationException ex) {
-                log.warn("Error refreshing projection", ex);
-            }
-        }
-
-        // Update configuration
-        if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
-            ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
-        }
+        reloadSyntaxRules();
     }
 
     public void dispose()
@@ -838,10 +679,6 @@ public class SQLEditor extends BaseTextEditor
         closeSession();
 
         DataSourceRegistry.getDefault().removeDataSourceListener(this);
-        if (syntaxManager != null) {
-            syntaxManager.dispose();
-            syntaxManager = null;
-        }
         if (planView != null) {
             planView.dispose();
             planView = null;
@@ -878,54 +715,6 @@ public class SQLEditor extends BaseTextEditor
                 }
             );
         }
-    }
-
-    public synchronized void updateFoldingStructure(int offset, int length, List<Position> positions)
-    {
-        if (curAnnotations == null) {
-            curAnnotations = new HashMap<Annotation, Position>();
-        }
-        List<Annotation> deletedAnnotations = new ArrayList<Annotation>();
-        Map<Annotation, Position> newAnnotations = new HashMap<Annotation, Position>();
-
-        // Delete all annotations if specified range
-        for (Map.Entry<Annotation,Position> entry : curAnnotations.entrySet()) {
-            int entryOffset = entry.getValue().getOffset();
-            if (entryOffset >= offset && entryOffset < offset + length) {
-                deletedAnnotations.add(entry.getKey());
-            }
-        }
-        for (Annotation annotation : deletedAnnotations) {
-            curAnnotations.remove(annotation);
-        }
-
-        // Add new annotations
-        for (Position position : positions) {
-            ProjectionAnnotation annotation = new ProjectionAnnotation();
-            newAnnotations.put(annotation, position);
-        }
-
-        // Modify annotation set
-        annotationModel.modifyAnnotations(
-            deletedAnnotations.toArray(new Annotation[deletedAnnotations.size()]),
-            newAnnotations,
-            null);
-
-        // Update current annotations
-        curAnnotations.putAll(newAnnotations);
-    }
-
-    private void asyncExec(Runnable runnable)
-    {
-        getSite().getShell().getDisplay().asyncExec(runnable);
-    }
-
-    public boolean isDisposed()
-    {
-        return
-            getSourceViewer() == null ||
-            getSourceViewer().getTextWidget() == null ||
-            getSourceViewer().getTextWidget().isDisposed();
     }
 
     public int promptToSaveOnClose()
