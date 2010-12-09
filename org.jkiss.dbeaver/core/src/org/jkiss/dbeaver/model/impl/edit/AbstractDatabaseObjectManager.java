@@ -100,6 +100,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     public void saveChanges(DBRProgressMonitor monitor) throws DBException {
         synchronized (commands) {
             List<CommandInfo> mergedCommands = getMergedCommands();
+
             // Validate commands
             for (CommandInfo cmd : mergedCommands) {
                 try {
@@ -109,47 +110,51 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
                     return;
                 }
             }
-            // Make list of not-executed commands
-            while (!mergedCommands.isEmpty()) {
-                CommandInfo cmd = mergedCommands.get(0);
-                // Persist changes
-                if (CommonUtils.isEmpty(cmd.persistActions)) {
-                    IDatabasePersistAction[] persistActions = cmd.command.getPersistActions(object);
-                    if (!CommonUtils.isEmpty(persistActions)) {
-                        cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
-                        for (IDatabasePersistAction action : persistActions) {
-                            cmd.persistActions.add(new PersistInfo(action));
-                        }
-                    }
-                }
-                if (!CommonUtils.isEmpty(cmd.persistActions)) {
-                    DBCExecutionContext context = openCommandPersistContext(monitor, cmd.command);
-                    try {
-                        for (PersistInfo persistInfo : cmd.persistActions) {
-                            if (!persistInfo.executed) {
-                                try {
-                                    executePersistAction(context, persistInfo.action);
-                                } catch (DBException e) {
-                                    persistInfo.error = e;
-                                    persistInfo.executed = false;
-                                    throw e;
-                                }
-                                persistInfo.executed = true;
+            try {
+                // Make list of not-executed commands
+                while (!mergedCommands.isEmpty()) {
+                    CommandInfo cmd = mergedCommands.get(0);
+                    // Persist changes
+                    if (CommonUtils.isEmpty(cmd.persistActions)) {
+                        IDatabasePersistAction[] persistActions = cmd.command.getPersistActions(object);
+                        if (!CommonUtils.isEmpty(persistActions)) {
+                            cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
+                            for (IDatabasePersistAction action : persistActions) {
+                                cmd.persistActions.add(new PersistInfo(action));
                             }
                         }
-                    } finally {
-                        closePersistContext(context);
                     }
-                }
-                // Update model
-                cmd.command.updateModel(getObject());
+                    if (!CommonUtils.isEmpty(cmd.persistActions)) {
+                        DBCExecutionContext context = openCommandPersistContext(monitor, cmd.command);
+                        try {
+                            for (PersistInfo persistInfo : cmd.persistActions) {
+                                if (!persistInfo.executed) {
+                                    try {
+                                        executePersistAction(context, persistInfo.action);
+                                    } catch (DBException e) {
+                                        persistInfo.error = e;
+                                        persistInfo.executed = false;
+                                        throw e;
+                                    }
+                                    persistInfo.executed = true;
+                                }
+                            }
+                        } finally {
+                            closePersistContext(context);
+                        }
+                    }
+                    // Update model
+                    cmd.command.updateModel(getObject());
 
-                // done
-                mergedCommands.remove(0);
+                    // done
+                    mergedCommands.remove(0);
+                }
             }
-            clearMergedCommands();
-            clearUndidCommands();
-            commands.clear();
+            finally {
+                clearMergedCommands();
+                clearUndidCommands();
+                commands.clear();
+            }
         }
     }
 
@@ -187,7 +192,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
-    public void removeCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> command)
+    public <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>> void removeCommand(COMMAND command)
     {
         synchronized (commands) {
             for (CommandInfo cmd : commands) {
@@ -201,7 +206,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
-    public void updateCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> object_typeDatabaseObjectPropertyCommand)
+    public <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>> void updateCommand(COMMAND command)
     {
         synchronized (commands) {
             clearUndidCommands();

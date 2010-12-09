@@ -79,15 +79,15 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         if (objectManager.isDirty()) {
             try {
                 objectManager.saveChanges(new DefaultProgressMonitor(monitor));
-                Display.getDefault().asyncExec(new Runnable() {
-                    public void run()
-                    {
-                        firePropertyChange(IEditorPart.PROP_DIRTY);
-                    }
-                });
             } catch (DBException e) {
                 UIUtils.showErrorDialog(getSite().getShell(), "Could not save '" + objectManager.getObject().getName() + "'", e.getMessage(), e);
             }
+            Display.getDefault().asyncExec(new Runnable() {
+                public void run()
+                {
+                    firePropertyChange(IEditorPart.PROP_DIRTY);
+                }
+            });
         }
 /*
         int pageCount = getPageCount();
