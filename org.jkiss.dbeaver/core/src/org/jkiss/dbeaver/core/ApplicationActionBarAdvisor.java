@@ -15,9 +15,9 @@ import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.jkiss.dbeaver.ui.actions.common.AboutBoxAction;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
-import org.jkiss.dbeaver.ui.views.qm.QueryManagerView;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView;
+import org.jkiss.dbeaver.ui.views.qm.QueryManagerView;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 /**
@@ -32,6 +32,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     // in the fill methods.  This ensures that the actions aren't recreated
     // when fillActionBars is called with FILL_PROXY.
     private IWorkbenchAction exitAction;
+    private IWorkbenchAction saveAction;
+    private IWorkbenchAction findAction;
     private IActionDelegate aboutAction;
     private IWorkbenchAction newWindowAction;
     //private IWorkbenchAction viewPropertiesAction;
@@ -78,6 +80,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         exitAction = ActionFactory.QUIT.create(window);
         register(exitAction);
 
+        saveAction = ActionFactory.SAVE.create(window);
+        register(saveAction);
+
+        findAction = ActionFactory.FIND.create(window);
+        register(findAction);
+
+
         //aboutAction = ActionFactory.ABOUT.create(window);
         //register(aboutAction);
         aboutAction = new AboutBoxAction(window);
@@ -113,6 +122,15 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         // File
         fileMenu.add(viewPreferencesAction);
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.CLOSE_EXT));
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.SAVE_EXT));
+        fileMenu.add(saveAction);
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.PRINT_EXT));
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.OPEN_EXT));
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.IMPORT_EXT));
+        fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         fileMenu.add(new Separator("end"));
         fileMenu.add(exitAction);
 
@@ -122,7 +140,12 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         editMenu.add(new Separator(IWorkbenchActionConstants.FIND_EXT));
 
         // Navigate
+        navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.NAV_START));
+        navigateMenu.add(findAction);
+        navigateMenu.add(new Separator(IWorkbenchActionConstants.OPEN_EXT));
+        navigateMenu.add(new Separator(IWorkbenchActionConstants.SHOW_EXT));
         navigateMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+        navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.NAV_END));
 
         // Database
         databaseMenu.add(new Separator("driverGroup"));
