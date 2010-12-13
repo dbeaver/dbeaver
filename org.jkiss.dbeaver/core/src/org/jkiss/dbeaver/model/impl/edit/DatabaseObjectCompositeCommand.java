@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.model.impl.edit;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.HashMap;
@@ -43,12 +42,6 @@ public abstract class DatabaseObjectCompositeCommand<OBJECT_TYPE extends DBSObje
     public void addPropertyHandler(HANDLER_TYPE handler, Object value)
     {
         properties.put(handler, value);
-    }
-
-    @Override
-    public Object merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand, Map<String, Object> userParams)
-    {
-        return null;
     }
 
     @Override

@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.edit;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;
@@ -44,7 +45,16 @@ public abstract class AbstractDatabaseObjectCommand<OBJECT_TYPE extends DBSObjec
         // do nothing by default
     }
 
-    public Object merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand, Map<String, Object> userParams)
+    public void updateModel(OBJECT_TYPE object)
+    {
+    }
+
+    public IDatabaseObjectCommand<OBJECT_TYPE> merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand, Map<String, Object> userParams)
+    {
+        return this;
+    }
+
+    public IDatabasePersistAction[] getPersistActions(OBJECT_TYPE object)
     {
         return null;
     }

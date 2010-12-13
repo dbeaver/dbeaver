@@ -57,7 +57,7 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
     }
 
     @Override
-    public Object merge(IDatabaseObjectCommand<MySQLUser> prevCommand, Map<String, Object> userParams)
+    public IDatabaseObjectCommand<MySQLUser> merge(IDatabaseObjectCommand<MySQLUser> prevCommand, Map<String, Object> userParams)
     {
         if (prevCommand instanceof MySQLCommandGrantPrivilege) {
             MySQLCommandGrantPrivilege prevGrant = (MySQLCommandGrantPrivilege)prevCommand;
@@ -65,7 +65,7 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
                 if (prevGrant.grant == grant) {
                     return prevCommand;
                 } else {
-                    return MERGE_CANCEL_BOTH;
+                    return null;
                 }
             }
         }

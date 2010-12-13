@@ -60,7 +60,7 @@ public class DatabaseObjectPropertyCommand<OBJECT_TYPE extends DBSObject> extend
     }
 
     @Override
-    public Object merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand, Map<String, Object> userParams)
+    public IDatabaseObjectCommand<OBJECT_TYPE> merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand, Map<String, Object> userParams)
     {
         String compositeName = handler.getClass().getName() + PROP_COMPOSITE_COMMAND;
         DatabaseObjectCompositeCommand compositeCommand = (DatabaseObjectCompositeCommand)userParams.get(compositeName);

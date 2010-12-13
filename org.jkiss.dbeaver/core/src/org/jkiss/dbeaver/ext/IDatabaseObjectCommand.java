@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ext;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.edit.AbstractDatabaseObjectCommand;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;
@@ -14,8 +15,6 @@ import java.util.Map;
  * Object change command
  */
 public interface IDatabaseObjectCommand<OBJECT_TYPE extends DBSObject> {
-
-    public static final Object MERGE_CANCEL_BOTH = new Object();
 
     String getTitle();
 
@@ -31,7 +30,7 @@ public interface IDatabaseObjectCommand<OBJECT_TYPE extends DBSObject> {
 
     void updateModel(OBJECT_TYPE object);
 
-    Object merge(
+    IDatabaseObjectCommand<OBJECT_TYPE> merge(
         IDatabaseObjectCommand<OBJECT_TYPE> prevCommand,
         Map<String, Object> userParams);
 

@@ -293,54 +293,50 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
             CommandInfo lastCommand = commands.get(i);
             lastCommand.mergedBy = null;
             CommandInfo firstCommand = null;
-            Object result = null;
+            IDatabaseObjectCommand<OBJECT_TYPE> result = lastCommand.command;
             for (int k = mergedCommands.size(); k > 0; k--) {
                 firstCommand = mergedCommands.get(k - 1);
                 result = lastCommand.command.merge(firstCommand.command, userParams);
-                if (result != null) {
+                if (result != lastCommand.command) {
                     break;
                 }
             }
-            if (result == IDatabaseObjectCommand.MERGE_CANCEL_BOTH) {
+            if (result == null) {
                 // Remove first and skip last command
                 mergedCommands.remove(firstCommand);
                 continue;
             }
 
             mergedCommands.add(lastCommand);
-            if (result == null) {
-                // Simply add command to queue
-            } else if (result == lastCommand) {
-                // Remove first command from queue
-                firstCommand.mergedBy = lastCommand;
-            } else if (result == firstCommand) {
+            if (result == lastCommand.command) {
+                // No changes
+                //firstCommand.mergedBy = lastCommand;
+            } else if (firstCommand != null && result == firstCommand.command) {
                 // Remove last command from queue
                 lastCommand.mergedBy = firstCommand;
-            } else if (result instanceof IDatabaseObjectCommand) {
-                IDatabaseObjectCommand mergedByCommand = (IDatabaseObjectCommand)result;
-                CommandInfo mergedBy = mergedByMap.get(mergedByCommand);
+            } else {
+                // Some other command
+                // May be it is some earlier command from queue or some new command (e.g. composite)
+                CommandInfo mergedBy = mergedByMap.get(result);
                 if (mergedBy == null) {
                     // Try to find in command stack
                     for (int k = i; k >= 0; k--) {
-                        if (commands.get(k).command == mergedByCommand) {
+                        if (commands.get(k).command == result) {
                             mergedBy = commands.get(k);
                             break;
                         }
                     }
                     if (mergedBy == null) {
                         // Create new command info
-                        mergedBy = new CommandInfo(mergedByCommand, null);
+                        mergedBy = new CommandInfo(result, null);
                     }
-                    mergedByMap.put(mergedByCommand, mergedBy);
+                    mergedByMap.put(result, mergedBy);
                 }
                 lastCommand.mergedBy = mergedBy;
                 if (!mergedCommands.contains(mergedBy)) {
                     mergedCommands.add(mergedBy);
                 }
-            } else {
-                // Unknown result type
             }
-
         }
         filterCommands(mergedCommands);
         return mergedCommands;
