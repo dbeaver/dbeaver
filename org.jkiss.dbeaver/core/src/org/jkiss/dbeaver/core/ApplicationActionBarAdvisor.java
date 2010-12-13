@@ -33,6 +33,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     // when fillActionBars is called with FILL_PROXY.
     private IWorkbenchAction exitAction;
     private IWorkbenchAction saveAction;
+    private IWorkbenchAction closeAction;
     private IWorkbenchAction findAction;
     private IActionDelegate aboutAction;
     private IWorkbenchAction newWindowAction;
@@ -83,6 +84,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         saveAction = ActionFactory.SAVE.create(window);
         register(saveAction);
 
+        closeAction = ActionFactory.CLOSE.create(window);
+        register(closeAction);
+
         findAction = ActionFactory.FIND.create(window);
         register(findAction);
 
@@ -132,6 +136,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         fileMenu.add(new GroupMarker(IWorkbenchActionConstants.IMPORT_EXT));
         fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         fileMenu.add(new Separator("end"));
+        fileMenu.add(closeAction);
         fileMenu.add(exitAction);
 
         // Edit
