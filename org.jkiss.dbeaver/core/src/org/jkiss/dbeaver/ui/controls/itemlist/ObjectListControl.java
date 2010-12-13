@@ -821,24 +821,26 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
 
                 // Save read values in tree/table items
-                getDisplay().syncExec(new Runnable() {
-                    public void run()
-                    {
-                        for (int i = 0, columnsSize = lazyObject.columns.size(); i < columnsSize; i++) {
-                            ObjectColumn column = lazyObject.columns.get(i);
-                            int columnIndex = columns.indexOf(column);
-                            String stringValue = stringValues.get(i);
-                            if (monitor.isCanceled() || isDisposed() || item.isDisposed()) {
-                                return;
-                            }
-                            if (item instanceof TreeItem) {
-                                ((TreeItem) item).setText(columnIndex, stringValue);
-                            } else {
-                                ((TableItem) item).setText(columnIndex, stringValue);
+                if (!isDisposed()) {
+                    getDisplay().syncExec(new Runnable() {
+                        public void run()
+                        {
+                            for (int i = 0, columnsSize = lazyObject.columns.size(); i < columnsSize; i++) {
+                                ObjectColumn column = lazyObject.columns.get(i);
+                                int columnIndex = columns.indexOf(column);
+                                String stringValue = stringValues.get(i);
+                                if (monitor.isCanceled() || isDisposed() || item.isDisposed()) {
+                                    return;
+                                }
+                                if (item instanceof TreeItem) {
+                                    ((TreeItem) item).setText(columnIndex, stringValue);
+                                } else {
+                                    ((TableItem) item).setText(columnIndex, stringValue);
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
 
             return Status.OK_STATUS;

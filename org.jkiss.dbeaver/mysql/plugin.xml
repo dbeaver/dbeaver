@@ -91,6 +91,7 @@
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSUser" label="Users" iconId="#users" description="Users">
                     <items label="User" path="users" property="users" iconId="#user">
+                        <action type="create"></action>
                     </items>
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSAdminister" label="Administer" iconId="#settings" description="Maintenance/Settings">

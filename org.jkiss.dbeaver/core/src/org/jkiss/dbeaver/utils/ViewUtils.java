@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
 
 import java.lang.reflect.InvocationTargetException;
@@ -165,20 +166,24 @@ public class ViewUtils
             public void menuShown(MenuEvent e)
             {
                 Menu m = (Menu)e.widget;
-                DBNNode dbmNode = ViewUtils.getSelectedNode(navigatorModelView);
-                if (dbmNode != null && !dbmNode.isLocked()) {
-                    String defaultCommandId = dbmNode.getDefaultCommandId();
+                DBNNode node = ViewUtils.getSelectedNode(navigatorModelView);
+                if (node != null && !node.isLocked()) {
+                    String defaultCommandId = node.getDefaultCommandId();
                     if (defaultCommandId != null) {
                         // Dirty hack
                         // Get contribution item from menu item and check it's ID
-                        // In DBeaver all action's IDs are equals to action class names
-                        // So we can compare it with our default action's class
                         for (MenuItem item : m.getItems()) {
                             Object itemData = item.getData();
                             if (itemData instanceof IContributionItem) {
                                 String contribId = ((IContributionItem)itemData).getId();
                                 if (contribId != null && contribId.equals(defaultCommandId)) {
                                     m.setDefaultItem(item);
+                                }
+                                if (ICommandIds.CMD_OPEN_OBJECT.equals(contribId)) {
+                                    if (node instanceof DBNTreeNode) {
+                                        DBNTreeNode treeNode = (DBNTreeNode)node;
+                                        item.setText("Edit " + treeNode.getMeta().getLabel());
+                                    }
                                 }
                             }
                         }
