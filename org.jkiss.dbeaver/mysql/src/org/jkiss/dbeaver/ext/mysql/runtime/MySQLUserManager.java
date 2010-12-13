@@ -26,23 +26,10 @@ public class MySQLUserManager extends JDBCDatabaseObjectManager<MySQLUser> {
 
     protected void filterCommands(List<CommandInfo> commands)
     {
-        Map<UserPropertyHandler, Object> userProps = filterPropertyCommands(commands, UserPropertyHandler.class, true);
-        boolean hasPermissionChanges = false;
-        for (CommandInfo cmd : commands) {
-            if (cmd.getCommand() instanceof MySQLCommandGrantPrivilege) {
-                hasPermissionChanges = true;
-            }
-        }
-        
-        if (!userProps.isEmpty()) {
-            // Add user change in the beginning
-            commands.add(0, new CommandInfo(new MySQLCommandChangeUser(userProps), null));
-        }
-        if (!userProps.isEmpty() || hasPermissionChanges) {
+        if (!commands.isEmpty()) {
             // Add privileges flush to the tail
             commands.add(new CommandInfo(new DatabaseObjectScriptCommand<MySQLUser>("Flush privileges", "FLUSH PRIVILEGES"), null));
         }
-
     }
 
 }

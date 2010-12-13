@@ -40,6 +40,8 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         final IDatabaseObjectCommand<OBJECT_TYPE> command;
         final IDatabaseObjectCommandReflector reflector;
         List<PersistInfo> persistActions;
+        CommandInfo mergedBy = null;
+        boolean executed = false;
 
         public CommandInfo(IDatabaseObjectCommand<OBJECT_TYPE> command, IDatabaseObjectCommandReflector reflector)
         {
@@ -112,8 +114,14 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
             }
             try {
                 // Make list of not-executed commands
-                while (!mergedCommands.isEmpty()) {
-                    CommandInfo cmd = mergedCommands.get(0);
+                for (int i = 0; i < mergedCommands.size(); i++) {
+                    CommandInfo cmd = mergedCommands.get(i);
+                    if (cmd.mergedBy != null) {
+                        cmd = cmd.mergedBy;
+                    }
+                    if (cmd.executed) {
+                        continue;
+                    }
                     // Persist changes
                     if (CommonUtils.isEmpty(cmd.persistActions)) {
                         IDatabasePersistAction[] persistActions = cmd.command.getPersistActions(object);
@@ -128,15 +136,16 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
                         DBCExecutionContext context = openCommandPersistContext(monitor, cmd.command);
                         try {
                             for (PersistInfo persistInfo : cmd.persistActions) {
-                                if (!persistInfo.executed) {
-                                    try {
-                                        executePersistAction(context, persistInfo.action);
-                                    } catch (DBException e) {
-                                        persistInfo.error = e;
-                                        persistInfo.executed = false;
-                                        throw e;
-                                    }
+                                if (persistInfo.executed) {
+                                    continue;
+                                }
+                                try {
+                                    executePersistAction(context, persistInfo.action);
                                     persistInfo.executed = true;
+                                } catch (DBException e) {
+                                    persistInfo.error = e;
+                                    persistInfo.executed = false;
+                                    throw e;
                                 }
                             }
                         } finally {
@@ -145,15 +154,15 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
                     }
                     // Update model
                     cmd.command.updateModel(getObject());
+                    cmd.executed = true;
 
-                    // done
-                    mergedCommands.remove(0);
+                    // Remove executed command from stack
+                    commands.remove(cmd);
                 }
             }
             finally {
                 clearMergedCommands();
                 clearUndidCommands();
-                commands.clear();
             }
         }
     }
@@ -174,7 +183,12 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         synchronized (commands) {
             List<IDatabaseObjectCommand<OBJECT_TYPE>> cmdCopy = new ArrayList<IDatabaseObjectCommand<OBJECT_TYPE>>(commands.size());
             for (CommandInfo cmdInfo : getMergedCommands()) {
-                cmdCopy.add(cmdInfo.command);
+                if (cmdInfo.mergedBy != null) {
+                    cmdInfo = cmdInfo.mergedBy;
+                }
+                if (!cmdCopy.contains(cmdInfo.command)) {
+                    cmdCopy.add(cmdInfo.command);
+                }
             }
             return cmdCopy;
         }
@@ -182,7 +196,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
 
     public <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>> void addCommand(
         COMMAND command,
-        IDatabaseObjectCommandReflector<COMMAND> reflector)
+        IDatabaseObjectCommandReflector<OBJECT_TYPE, COMMAND> reflector)
     {
         synchronized (commands) {
             commands.add(new CommandInfo(command, reflector));
@@ -273,33 +287,60 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
         mergedCommands = new ArrayList<CommandInfo>();
 
+        final Map<IDatabaseObjectCommand, CommandInfo> mergedByMap = new IdentityHashMap<IDatabaseObjectCommand, CommandInfo>();
+        final Map<String, Object> userParams = new HashMap<String, Object>();
         for (int i = 0; i < commands.size(); i++) {
             CommandInfo lastCommand = commands.get(i);
+            lastCommand.mergedBy = null;
             CommandInfo firstCommand = null;
-            IDatabaseObjectCommand.MergeResult result = IDatabaseObjectCommand.MergeResult.NONE;
+            Object result = null;
             for (int k = mergedCommands.size(); k > 0; k--) {
                 firstCommand = mergedCommands.get(k - 1);
-                result = lastCommand.command.merge(firstCommand.command);
-                if (result != IDatabaseObjectCommand.MergeResult.NONE) {
+                result = lastCommand.command.merge(firstCommand.command, userParams);
+                if (result != null) {
                     break;
                 }
             }
-            switch (result) {
-            case NONE:
-                // Add command to list
-                mergedCommands.add(lastCommand);
-                break;
-            case ABSORBED:
-                // Command absorbed by previous one
+            if (result == IDatabaseObjectCommand.MERGE_CANCEL_BOTH) {
+                // Remove first and skip last command
+                mergedCommands.remove(firstCommand);
                 continue;
-            case CANCEL_PREVIOUS:
-                mergedCommands.remove(firstCommand);
-                mergedCommands.add(lastCommand);
-                break;
-            case CANCEL_BOTH:
-                mergedCommands.remove(firstCommand);
-                break;
             }
+
+            mergedCommands.add(lastCommand);
+            if (result == null) {
+                // Simply add command to queue
+            } else if (result == lastCommand) {
+                // Remove first command from queue
+                firstCommand.mergedBy = lastCommand;
+            } else if (result == firstCommand) {
+                // Remove last command from queue
+                lastCommand.mergedBy = firstCommand;
+            } else if (result instanceof IDatabaseObjectCommand) {
+                IDatabaseObjectCommand mergedByCommand = (IDatabaseObjectCommand)result;
+                CommandInfo mergedBy = mergedByMap.get(mergedByCommand);
+                if (mergedBy == null) {
+                    // Try to find in command stack
+                    for (int k = i; k >= 0; k--) {
+                        if (commands.get(k).command == mergedByCommand) {
+                            mergedBy = commands.get(k);
+                            break;
+                        }
+                    }
+                    if (mergedBy == null) {
+                        // Create new command info
+                        mergedBy = new CommandInfo(mergedByCommand, null);
+                    }
+                    mergedByMap.put(mergedByCommand, mergedBy);
+                }
+                lastCommand.mergedBy = mergedBy;
+                if (!mergedCommands.contains(mergedBy)) {
+                    mergedCommands.add(mergedBy);
+                }
+            } else {
+                // Unknown result type
+            }
+
         }
         filterCommands(mergedCommands);
         return mergedCommands;
@@ -326,32 +367,11 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         context.close();
     }
 
-    protected <HANDLER_TYPE extends DatabaseObjectPropertyHandler> Map<HANDLER_TYPE, Object> filterPropertyCommands(
-        List<CommandInfo> commands,
-        Class<HANDLER_TYPE> handlerClass,
-        boolean removeCommands)
-    {
-        Map<HANDLER_TYPE, Object> userProps = new HashMap<HANDLER_TYPE, Object>();
-        boolean hasPermissionChanges = false;
-        for (Iterator<CommandInfo> cmdIter = commands.iterator(); cmdIter.hasNext(); ) {
-            CommandInfo cmd = cmdIter.next();
-            if (cmd.getCommand() instanceof DatabaseObjectPropertyCommand) {
-                DatabaseObjectPropertyCommand propCommand = (DatabaseObjectPropertyCommand)cmd.getCommand();
-                if (handlerClass.isAssignableFrom(propCommand.getHandler().getClass())) {
-                    userProps.put(handlerClass.cast(propCommand.getHandler()), propCommand.getNewValue());
-                    if (removeCommands) {
-                        cmdIter.remove();
-                    }
-                }
-            }
-        }
-        return userProps;
-    }
-
     protected void filterCommands(List<CommandInfo> commands)
     {
         // do nothing by default
     }
+
 
     protected abstract void executePersistAction(
         DBCExecutionContext context,

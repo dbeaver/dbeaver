@@ -40,7 +40,7 @@ public interface IDatabaseObjectManager<OBJECT_TYPE extends DBSObject> extends I
     Collection<? extends IDatabaseObjectCommand<OBJECT_TYPE>> getCommands();
 
     <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>>
-    void addCommand(COMMAND command, IDatabaseObjectCommandReflector<COMMAND> reflector);
+    void addCommand(COMMAND command, IDatabaseObjectCommandReflector<OBJECT_TYPE, COMMAND> reflector);
 
     <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>>
     void removeCommand(COMMAND command);

@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.ext.mysql.runtime;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
+import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectCompositeCommand;
 import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectPropertyHandler;
 
 /**
@@ -17,6 +17,11 @@ public enum UserPropertyHandler implements DatabaseObjectPropertyHandler<MySQLUs
     MAX_QUERIES,
     MAX_UPDATES,
     MAX_CONNECTIONS,
-    MAX_USER_CONNECTIONS
+    MAX_USER_CONNECTIONS;
 
+
+    public MySQLCommandChangeUser createCompositeCommand()
+    {
+        return new MySQLCommandChangeUser();
+    }
 }

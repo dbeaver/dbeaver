@@ -9,28 +9,24 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.SQLUtils;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabaseObjectCommand;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectPropertyCommand;
+import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectCompositeCommand;
 
 import java.util.Map;
 
 /**
  * Grant/Revoke privilege command
  */
-public class MySQLCommandChangeUser extends AbstractDatabaseObjectCommand<MySQLUser> {
+public class MySQLCommandChangeUser extends DatabaseObjectCompositeCommand<MySQLUser, UserPropertyHandler> {
 
-    private Map<UserPropertyHandler, Object> userProps;
-
-    protected MySQLCommandChangeUser(Map<UserPropertyHandler, Object> userProps)
+    protected MySQLCommandChangeUser()
     {
         super("Update user");
-        this.userProps = userProps;
     }
 
     public void updateModel(MySQLUser object)
     {
-        for (Map.Entry<UserPropertyHandler, Object> entry : userProps.entrySet()) {
+        for (Map.Entry<UserPropertyHandler, Object> entry : getProperties().entrySet()) {
             switch (entry.getKey()) {
                 case MAX_QUERIES: object.setMaxQuestions(CommonUtils.toInt(entry.getValue())); break;
                 case MAX_UPDATES: object.setMaxUpdates(CommonUtils.toInt(entry.getValue())); break;
@@ -45,8 +41,8 @@ public class MySQLCommandChangeUser extends AbstractDatabaseObjectCommand<MySQLU
     @Override
     public void validateCommand(MySQLUser object) throws DBException
     {
-        String passValue = CommonUtils.toString(userProps.get(UserPropertyHandler.PASSWORD));
-        String confirmValue = CommonUtils.toString(userProps.get(UserPropertyHandler.PASSWORD_CONFIRM));
+        String passValue = CommonUtils.toString(getProperty(UserPropertyHandler.PASSWORD));
+        String confirmValue = CommonUtils.toString(getProperty(UserPropertyHandler.PASSWORD_CONFIRM));
         if (!CommonUtils.isEmpty(passValue) && !CommonUtils.equalObjects(passValue, confirmValue)) {
             throw new DBException("Password confirmation value is invalid");
         }
@@ -57,7 +53,7 @@ public class MySQLCommandChangeUser extends AbstractDatabaseObjectCommand<MySQLU
         StringBuilder script = new StringBuilder();
         script.append("UPDATE mysql.user SET ");
         boolean hasSet = false;
-        for (Map.Entry<UserPropertyHandler, Object> entry : userProps.entrySet()) {
+        for (Map.Entry<UserPropertyHandler, Object> entry : getProperties().entrySet()) {
             if (entry.getKey() == UserPropertyHandler.PASSWORD_CONFIRM) {
                 continue;
             }

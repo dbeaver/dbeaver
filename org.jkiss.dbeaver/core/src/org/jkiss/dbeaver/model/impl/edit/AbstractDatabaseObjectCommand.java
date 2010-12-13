@@ -9,6 +9,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.Map;
+
 /**
  * Abstract object command
  */
@@ -42,9 +44,9 @@ public abstract class AbstractDatabaseObjectCommand<OBJECT_TYPE extends DBSObjec
         // do nothing by default
     }
 
-    public MergeResult merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand)
+    public Object merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand, Map<String, Object> userParams)
     {
-        return MergeResult.NONE;
+        return null;
     }
 
 }

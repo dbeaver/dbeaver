@@ -11,5 +11,5 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface DatabaseObjectPropertyHandler<OBJECT_TYPE extends DBSObject> {
 
-
+    DatabaseObjectCompositeCommand<OBJECT_TYPE, ? extends DatabaseObjectPropertyHandler<OBJECT_TYPE>> createCompositeCommand(); 
 }

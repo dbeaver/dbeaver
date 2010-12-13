@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.ext.mysql.runtime.MySQLCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.mysql.runtime.UserPropertyHandler;
 import org.jkiss.dbeaver.model.impl.edit.ControlCommandListener;
@@ -90,7 +91,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                             null,
                             null,
                             privilege),
-                        new IDatabaseObjectCommandReflector<MySQLCommandGrantPrivilege>() {
+                        new IDatabaseObjectCommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
                             public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                             {
                                 if (!privTable.isDisposed()) {

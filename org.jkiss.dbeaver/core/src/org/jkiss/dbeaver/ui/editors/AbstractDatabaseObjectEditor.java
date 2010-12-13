@@ -116,7 +116,7 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
 
     public <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>> void addChangeCommand(
         COMMAND command,
-        IDatabaseObjectCommandReflector<COMMAND> reflector)
+        IDatabaseObjectCommandReflector<OBJECT_TYPE, COMMAND> reflector)
     {
         this.objectManager.addCommand(command, reflector);
         firePropertyChange(PROP_DIRTY);

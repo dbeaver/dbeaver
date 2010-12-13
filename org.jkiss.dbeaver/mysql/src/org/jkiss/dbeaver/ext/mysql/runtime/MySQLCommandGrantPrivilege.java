@@ -14,6 +14,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabaseObjectCommand;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 
+import java.util.Map;
+
 /**
  * Grant/Revoke privilege command
  */
@@ -55,19 +57,19 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
     }
 
     @Override
-    public MergeResult merge(IDatabaseObjectCommand<MySQLUser> prevCommand)
+    public Object merge(IDatabaseObjectCommand<MySQLUser> prevCommand, Map<String, Object> userParams)
     {
         if (prevCommand instanceof MySQLCommandGrantPrivilege) {
             MySQLCommandGrantPrivilege prevGrant = (MySQLCommandGrantPrivilege)prevCommand;
             if (prevGrant.schema == schema && prevGrant.table == table && prevGrant.privilege == privilege) {
                 if (prevGrant.grant == grant) {
-                    return MergeResult.ABSORBED;
+                    return prevCommand;
                 } else {
-                    return MergeResult.CANCEL_BOTH;
+                    return MERGE_CANCEL_BOTH;
                 }
             }
         }
-        return super.merge(prevCommand);
+        return super.merge(prevCommand, userParams);
     }
 
     private String getObjectName()

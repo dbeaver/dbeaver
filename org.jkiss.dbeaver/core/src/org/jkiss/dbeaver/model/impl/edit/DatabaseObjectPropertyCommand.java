@@ -10,10 +10,15 @@ import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.Map;
+
 /**
  * Abstract object command
  */
 public class DatabaseObjectPropertyCommand<OBJECT_TYPE extends DBSObject> extends AbstractDatabaseObjectCommand<OBJECT_TYPE> {
+
+    public static final String PROP_COMPOSITE_COMMAND = ".composite";
+
     private DatabaseObjectPropertyHandler<OBJECT_TYPE> handler;
     private Object oldValue;
     private Object newValue;
@@ -55,16 +60,16 @@ public class DatabaseObjectPropertyCommand<OBJECT_TYPE extends DBSObject> extend
     }
 
     @Override
-    public MergeResult merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand)
+    public Object merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand, Map<String, Object> userParams)
     {
-        if (prevCommand instanceof DatabaseObjectPropertyCommand) {
-            DatabaseObjectPropertyCommand prevPropCommand = (DatabaseObjectPropertyCommand) prevCommand;
-            if (prevPropCommand.getHandler() == this.getHandler()) {
-                // Double change of the same property
-                return MergeResult.CANCEL_PREVIOUS;
-            }
+        String compositeName = handler.getClass().getName() + PROP_COMPOSITE_COMMAND;
+        DatabaseObjectCompositeCommand compositeCommand = (DatabaseObjectCompositeCommand)userParams.get(compositeName);
+        if (compositeCommand == null) {
+            compositeCommand = handler.createCompositeCommand();
+            userParams.put(compositeName, compositeCommand);
         }
-        return MergeResult.NONE;
+        compositeCommand.addPropertyHandler(handler, newValue);
+        return compositeCommand;
     }
 
     @Override

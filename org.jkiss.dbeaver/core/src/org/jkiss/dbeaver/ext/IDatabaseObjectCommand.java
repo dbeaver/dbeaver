@@ -8,17 +8,14 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.Map;
+
 /**
  * Object change command
  */
 public interface IDatabaseObjectCommand<OBJECT_TYPE extends DBSObject> {
 
-    public enum MergeResult {
-        NONE,
-        CANCEL_PREVIOUS,
-        CANCEL_BOTH,
-        ABSORBED
-    }
+    public static final Object MERGE_CANCEL_BOTH = new Object();
 
     String getTitle();
 
@@ -34,7 +31,9 @@ public interface IDatabaseObjectCommand<OBJECT_TYPE extends DBSObject> {
 
     void updateModel(OBJECT_TYPE object);
 
-    MergeResult merge(IDatabaseObjectCommand<OBJECT_TYPE> prevCommand);
+    Object merge(
+        IDatabaseObjectCommand<OBJECT_TYPE> prevCommand,
+        Map<String, Object> userParams);
 
     IDatabasePersistAction[] getPersistActions(OBJECT_TYPE object);
 

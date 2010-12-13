@@ -151,7 +151,7 @@ public class ControlCommandListener <OBJECT_TYPE extends DBSObject> {
                             curCommand = new DatabaseObjectPropertyCommand<OBJECT_TYPE>(handler);
                             curCommand.setOldValue(originalValue);
                             curCommand.setNewValue(newValue);
-                            objectEditor.addChangeCommand(curCommand, new IDatabaseObjectCommandReflector<DatabaseObjectPropertyCommand<OBJECT_TYPE>>() {
+                            objectEditor.addChangeCommand(curCommand, new IDatabaseObjectCommandReflector<OBJECT_TYPE, DatabaseObjectPropertyCommand<OBJECT_TYPE>>() {
                                 public void redoCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> object_typeControlDatabaseObjectCommand)
                                 {
                                     writeWidgetValue(curCommand.getNewValue());
