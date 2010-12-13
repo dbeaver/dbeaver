@@ -116,7 +116,7 @@
 
         <command id="org.jkiss.dbeaver.core.edit.connection" name="Edit Connection" description="Open connection editor dialog" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.new.sql.editor" name="Open SQL Editor" description="Open SQL Editor" categoryId="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.open.object" name="Edit Object" description="Open object editor" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.object.open" name="Edit Object" description="Open object editor" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.statement" name="Execute SQL Statement" description="Execute Statement" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.script" name="Execute SQL Script" description="Execute Script" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -162,7 +162,7 @@
         <image commandId="org.jkiss.dbeaver.core.edit.connection" icon="icons/tree/edit_item.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.new.sql.editor" icon="icons/sql/sql_script.png"/>
-        <image commandId="org.jkiss.dbeaver.core.open.object" icon="icons/tree/edit_item.png"/>
+        <image commandId="org.jkiss.dbeaver.core.object.open" icon="icons/tree/edit_item.png"/>
 
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" icon="icons/sql/sql_exec.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" icon="icons/sql/sql_script_exec.png"/>
@@ -371,10 +371,30 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.open.object" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerOpenObject">
+        <handler commandId="org.jkiss.dbeaver.core.object.open" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen">
+            <enabledWhen>
+                <with variable="selection">
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+
+        <handler commandId="org.jkiss.dbeaver.core.object.create" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectCreate">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+
+        <handler commandId="org.jkiss.dbeaver.core.object.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectDelete">
+            <enabledWhen>
+                <with variable="selection">
                     <iterate operator="and">
                         <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
                     </iterate>
@@ -801,7 +821,7 @@
 
         <!-- All Context menus -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-            <command commandId="org.jkiss.dbeaver.core.open.object">
+            <command commandId="org.jkiss.dbeaver.core.object.open">
                 <visibleWhen checkEnabled="true"/>
             </command>
 

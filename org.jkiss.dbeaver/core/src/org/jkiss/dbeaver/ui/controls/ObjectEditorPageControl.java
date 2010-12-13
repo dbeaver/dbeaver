@@ -16,11 +16,7 @@ import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -71,49 +67,30 @@ public class ObjectEditorPageControl extends ProgressPageControl {
     protected Composite createProgressPanel(Composite container) {
         Composite panel = super.createProgressPanel(container);
 
-/*
-        viewChangesButton = new Button(panel, SWT.PUSH);
-        viewChangesButton.setText("Preview");
-        viewChangesButton.setImage(DBIcon.SQL_SCRIPT_EXECUTE.getImage());
-        viewChangesButton.setToolTipText("View all changes as script");
-        viewChangesButton.setEnabled(false);
-        viewChangesButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-
-            }
-        });
-*/
-        saveChangesButton = new Button(panel, SWT.PUSH);
-        saveChangesButton.setText("Save / Preview");
-        saveChangesButton.setImage(DBIcon.SAVE_TO_DATABASE.getImage());
-        saveChangesButton.setToolTipText("Persist all changes");
-        saveChangesButton.setEnabled(false);
-        saveChangesButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                try {
-                    getMainEditorPart().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
-                        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                        {
-                            getMainEditorPart().doSave(monitor);
-                        }
-                    });
-                } catch (InvocationTargetException e1) {
-                    UIUtils.showErrorDialog(getShell(), "Save DB object", null, e1.getTargetException());
-                } catch (InterruptedException e1) {
-                    // do nothing
-                }
-/*
-                DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
-
+        if (getEditorPart().getObjectManager().supportsEdit()) {
+            saveChangesButton = new Button(panel, SWT.PUSH);
+            saveChangesButton.setText("Save / Preview");
+            saveChangesButton.setImage(DBIcon.SAVE_TO_DATABASE.getImage());
+            saveChangesButton.setToolTipText("Persist all changes");
+            saveChangesButton.setEnabled(false);
+            saveChangesButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    try {
+                        getMainEditorPart().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
+                            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                            {
+                                getMainEditorPart().doSave(monitor);
+                            }
+                        });
+                    } catch (InvocationTargetException e1) {
+                        UIUtils.showErrorDialog(getShell(), "Save DB object", null, e1.getTargetException());
+                    } catch (InterruptedException e1) {
+                        // do nothing
                     }
-                });
-*/
-            }
-        });
+                }
+            });
+        }
 /*
         resetChangesButton = new Button(panel, SWT.PUSH);
         resetChangesButton.setText("Reset");

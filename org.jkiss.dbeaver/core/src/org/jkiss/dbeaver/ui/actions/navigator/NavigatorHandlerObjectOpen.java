@@ -32,28 +32,31 @@ import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 
-public class NavigatorHandlerOpenObject extends AbstractHandler {
+public class NavigatorHandlerObjectOpen extends AbstractHandler {
 
-    static final Log log = LogFactory.getLog(NavigatorHandlerOpenObject.class);
+    static final Log log = LogFactory.getLog(NavigatorHandlerObjectOpen.class);
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         if (selection instanceof IStructuredSelection) {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
-            Object element = structSelection.getFirstElement();
-            DBNNode node = null;
-            if (element instanceof DBNNode) {
-                node = (DBNNode)element;
-            } else {
-                DBSObject object = (DBSObject) Platform.getAdapterManager().getAdapter(element, DBSObject.class);
-                if (object != null) {
-                    node = getNodeByObject(object);
+            for (Iterator iter = structSelection.iterator(); iter.hasNext(); ) {
+                Object element = iter.next();
+                DBNNode node = null;
+                if (element instanceof DBNNode) {
+                    node = (DBNNode)element;
+                } else {
+                    DBSObject object = (DBSObject) Platform.getAdapterManager().getAdapter(element, DBSObject.class);
+                    if (object != null) {
+                        node = getNodeByObject(object);
+                    }
                 }
-            }
-            if (node != null) {
-                openEntityEditor(node, null, HandlerUtil.getActiveWorkbenchWindow(event));
+                if (node != null) {
+                    openEntityEditor(node, null, HandlerUtil.getActiveWorkbenchWindow(event));
+                }
             }
         }
         return null;

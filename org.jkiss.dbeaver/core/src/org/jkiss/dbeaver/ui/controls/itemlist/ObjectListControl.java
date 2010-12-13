@@ -398,7 +398,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return LOADING_LABEL;
         }
         try {
-            return column.prop.readValue(getObjectValue((OBJECT_TYPE)object), null);
+            Object objectValue = getObjectValue((OBJECT_TYPE) object);
+            if (objectValue != null && column.objectClass.isAssignableFrom(objectValue.getClass())) {
+                return column.prop.readValue(objectValue, null);
+            } else {
+                return null;
+            }
         }
         catch (InvocationTargetException e) {
             log.error(e.getTargetException());
