@@ -7,6 +7,9 @@ package org.jkiss.dbeaver.ui.dialogs;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Image;
@@ -29,6 +32,7 @@ public class ViewSQLDialog extends Dialog {
     private String text;
     private SQLEditorBase sqlViewer;
     private Image image;
+    private boolean showSaveButton = false;
 
     public ViewSQLDialog(final IEditorSite parentSite, DBPDataSource dataSource, String title, String text)
     {
@@ -43,6 +47,11 @@ public class ViewSQLDialog extends Dialog {
     public void setImage(Image image)
     {
         this.image = image;
+    }
+
+    public void setShowSaveButton(boolean showSaveButton)
+    {
+        this.showSaveButton = showSaveButton;
     }
 
     protected boolean isResizable() {
@@ -93,7 +102,30 @@ public class ViewSQLDialog extends Dialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
+        if (showSaveButton) {
+            createButton(parent, IDialogConstants.PROCEED_ID, "Persist", true);
+            createButton(parent, IDialogConstants.DETAILS_ID, "Copy", false);
+            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+        } else {
+            createButton(parent, IDialogConstants.DETAILS_ID, "Copy", false);
+            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
+        }
     }
 
+    @Override
+    protected void buttonPressed(int buttonId)
+    {
+        if (buttonId == IDialogConstants.DETAILS_ID) {
+            Clipboard clipboard = new Clipboard(getShell().getDisplay());
+            TextTransfer textTransfer = TextTransfer.getInstance();
+            clipboard.setContents(
+                new Object[]{text},
+                new Transfer[]{textTransfer});
+        } else if (buttonId == IDialogConstants.PROCEED_ID) {
+            setReturnCode(IDialogConstants.PROCEED_ID);
+            close();
+        } else {
+            super.buttonPressed(buttonId);
+        }
+    }
 }

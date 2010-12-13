@@ -43,6 +43,7 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
 
     public void doSave(IProgressMonitor monitor)
     {
+/*
         if (objectManager.isDirty()) {
             Throwable error = null;
             try {
@@ -66,6 +67,7 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
                 });
             }
         }
+*/
     }
 
     public void doSaveAs()

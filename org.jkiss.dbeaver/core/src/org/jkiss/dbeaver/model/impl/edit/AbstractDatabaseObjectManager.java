@@ -122,6 +122,9 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
                     if (cmd.executed) {
                         continue;
                     }
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     // Persist changes
                     if (CommonUtils.isEmpty(cmd.persistActions)) {
                         IDatabasePersistAction[] persistActions = cmd.command.getPersistActions(object);
@@ -138,6 +141,9 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
                             for (PersistInfo persistInfo : cmd.persistActions) {
                                 if (persistInfo.executed) {
                                     continue;
+                                }
+                                if (monitor.isCanceled()) {
+                                    break;
                                 }
                                 try {
                                     executePersistAction(context, persistInfo.action);
@@ -294,11 +300,15 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
             lastCommand.mergedBy = null;
             CommandInfo firstCommand = null;
             IDatabaseObjectCommand<OBJECT_TYPE> result = lastCommand.command;
-            for (int k = mergedCommands.size(); k > 0; k--) {
-                firstCommand = mergedCommands.get(k - 1);
-                result = lastCommand.command.merge(firstCommand.command, userParams);
-                if (result != lastCommand.command) {
-                    break;
+            if (mergedCommands.isEmpty()) {
+                result = lastCommand.command.merge(null, userParams);
+            } else {
+                for (int k = mergedCommands.size(); k > 0; k--) {
+                    firstCommand = mergedCommands.get(k - 1);
+                    result = lastCommand.command.merge(firstCommand.command, userParams);
+                    if (result != lastCommand.command) {
+                        break;
+                    }
                 }
             }
             if (result == null) {

@@ -4,13 +4,32 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IPropertyListener;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
+
+import java.lang.reflect.InvocationTargetException;
 
 public class ObjectEditorPageControl extends ProgressPageControl {
 
-/*
     private Button saveChangesButton;
+/*
     private Button viewChangesButton;
     private Button resetChangesButton;
 */
@@ -19,19 +38,17 @@ public class ObjectEditorPageControl extends ProgressPageControl {
     {
         super(parent, style, workbenchPart);
 
-/*
-        workbenchPart.addPropertyListener(new IPropertyListener() {
+        getMainEditorPart().addPropertyListener(new IPropertyListener() {
             public void propertyChanged(Object source, int propId)
             {
                 if (propId == IEditorPart.PROP_DIRTY) {
                     boolean dirty = ((IEditorPart) source).isDirty();
                     saveChangesButton.setEnabled(dirty);
-                    viewChangesButton.setEnabled(dirty);
-                    resetChangesButton.setEnabled(dirty);
+                    //viewChangesButton.setEnabled(dirty);
+                    //resetChangesButton.setEnabled(dirty);
                 }
             }
         });
-*/
     }
 
     public IDatabaseObjectEditor getEditorPart()
@@ -39,9 +56,20 @@ public class ObjectEditorPageControl extends ProgressPageControl {
         return (IDatabaseObjectEditor) getWorkbenchPart();
     }
 
+    public IEditorPart getMainEditorPart()
+    {
+        IWorkbenchPart part = getWorkbenchPart();
+        IWorkbenchPartSite site = part.getSite();
+        if (site instanceof MultiPageEditorSite) {
+            return ((MultiPageEditorSite)site).getMultiPageEditor();
+        } else {
+            return (IEditorPart)part;
+        }
+    }
+
     @Override
     protected Composite createProgressPanel(Composite container) {
-        return super.createProgressPanel(container);
+        Composite panel = super.createProgressPanel(container);
 
 /*
         viewChangesButton = new Button(panel, SWT.PUSH);
@@ -55,29 +83,38 @@ public class ObjectEditorPageControl extends ProgressPageControl {
 
             }
         });
-
+*/
         saveChangesButton = new Button(panel, SWT.PUSH);
-        saveChangesButton.setText("Save");
-        saveChangesButton.setImage(DBIcon.ACCEPT.getImage());
+        saveChangesButton.setText("Save / Preview");
+        saveChangesButton.setImage(DBIcon.SAVE_TO_DATABASE.getImage());
         saveChangesButton.setToolTipText("Persist all changes");
         saveChangesButton.setEnabled(false);
         saveChangesButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                try {
+                    getMainEditorPart().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
+                        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                        {
+                            getMainEditorPart().doSave(monitor);
+                        }
+                    });
+                } catch (InvocationTargetException e1) {
+                    UIUtils.showErrorDialog(getShell(), "Save DB object", null, e1.getTargetException());
+                } catch (InterruptedException e1) {
+                    // do nothing
+                }
+/*
                 DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
-                        getEditorPart().doSave(monitor.getNestedMonitor());
-                        try {
-                            getObjectManager().saveChanges(monitor);
-                        } catch (DBException e1) {
-                            throw new InvocationTargetException(e1);
-                        }
+
                     }
                 });
+*/
             }
         });
-
+/*
         resetChangesButton = new Button(panel, SWT.PUSH);
         resetChangesButton.setText("Reset");
         resetChangesButton.setImage(DBIcon.REJECT.getImage());
@@ -102,6 +139,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
             }
         });
 */
+        return panel;
     }
 
 }

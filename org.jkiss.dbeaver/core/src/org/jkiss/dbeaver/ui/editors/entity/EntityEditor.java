@@ -77,7 +77,15 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
      */
     public void doSave(IProgressMonitor monitor)
     {
-        if (objectManager.isDirty()) {
+        if (!objectManager.isDirty()) {
+            return;
+        }
+
+        monitor.beginTask("Preview changes", 1);
+        int previewResult = showChanges(true);
+        monitor.done();
+
+        if (previewResult == IDialogConstants.PROCEED_ID) {
             try {
                 objectManager.saveChanges(new DefaultProgressMonitor(monitor));
             } catch (DBException e) {
@@ -90,15 +98,6 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                 }
             });
         }
-/*
-        int pageCount = getPageCount();
-        for (int i = 0; i < pageCount; i++) {
-            IEditorPart nestedEditor = getEditor(pageCount);
-            if (nestedEditor != null && nestedEditor.isDirty()) {
-                nestedEditor.doSave(monitor);
-            }
-        }
-*/
     }
 
     public void revertChanges()
@@ -152,7 +151,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         }
     }
 
-    public void showChanges()
+    public int showChanges(boolean allowSave)
     {
         Collection<IDatabaseObjectCommand> commands = getObjectManager().getCommands();
         StringBuilder script = new StringBuilder();
@@ -169,9 +168,9 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             }
         }
 
-        ViewSQLDialog dialog = new ViewSQLDialog(getEditorSite(), getDataSource(), "Changes Script", script.toString());
-        dialog.setImage(DBIcon.SQL_PREVIEW.getImage());
-        dialog.open();
+        ChangesPreviewer changesPreviewer = new ChangesPreviewer(script, allowSave);
+        getSite().getShell().getDisplay().syncExec(changesPreviewer);
+        return changesPreviewer.getResult();
 /*
 
         Shell shell = getSite().getShell();
@@ -515,5 +514,35 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             }
         }*/
         return super.getAdapter(adapter);
+    }
+
+    private class ChangesPreviewer implements Runnable {
+
+        private final StringBuilder script;
+        private final boolean allowSave;
+        private int result;
+
+        public ChangesPreviewer(StringBuilder script, boolean allowSave)
+        {
+            this.script = script;
+            this.allowSave = allowSave;
+        }
+
+        public void run()
+        {
+            ViewSQLDialog dialog = new ViewSQLDialog(
+                getEditorSite(),
+                getDataSource(),
+                allowSave ? "Persist Changes" : "Preview Changes", 
+                script.toString());
+            dialog.setShowSaveButton(allowSave);
+            dialog.setImage(DBIcon.SQL_PREVIEW.getImage());
+            result = dialog.open();
+        }
+
+        public int getResult()
+        {
+            return result;
+        }
     }
 }
