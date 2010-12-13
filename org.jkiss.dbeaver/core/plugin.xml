@@ -139,7 +139,7 @@
         <command id="org.jkiss.dbeaver.core.resultset.applyChanges" name="Apply changes" description="Apply data changes" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.rejectChanges" name="Reject changes" description="Reject data changes" categoryId="org.jkiss.dbeaver.core.rs"/>
 
-        <command id="org.jkiss.dbeaver.core.edit.copy.special" name="Copy full qualified name" description="Copy special" categoryId="org.jkiss.dbeaver.core.util"/>
+        <command id="org.jkiss.dbeaver.core.edit.copy.special" name="Advanced Copy" description="Copy special" categoryId="org.jkiss.dbeaver.core.util"/>
 
         <command id="org.jkiss.dbeaver.core.qm.filter" name="Filters ..." description="Set query manager filter" categoryId="org.jkiss.dbeaver.core.util"/>
         <command id="org.jkiss.dbeaver.core.qm.clear" name="Clear log" description="Clear query manager log" categoryId="org.jkiss.dbeaver.core.util"/>
@@ -696,13 +696,16 @@
         <menuContribution allPopups="false" locationURI="menu:edit?before=additions">
             <command commandId="org.eclipse.ui.edit.cut"/>
             <command commandId="org.eclipse.ui.edit.copy"/>
+            <command commandId="org.jkiss.dbeaver.core.edit.copy.special"/>
             <command commandId="org.eclipse.ui.edit.paste"/>
             <command commandId="org.eclipse.ui.edit.delete"/>
         </menuContribution>
 
         <!-- Refresh -->
         <menuContribution allPopups="false" locationURI="menu:file?before=end">
+            <command commandId="org.eclipse.ui.file.save"/>
             <command commandId="org.eclipse.ui.file.refresh"/>
+            <command commandId="org.eclipse.ui.file.close"/>
         </menuContribution>
 
         <!-- Database menu -->
@@ -812,7 +815,7 @@
                     </with>
                 </visibleWhen>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.edit.copy.special">
+            <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="Copy full qualified name">
                 <visibleWhen>
                     <with variable="selection">
                         <count value="+"/>

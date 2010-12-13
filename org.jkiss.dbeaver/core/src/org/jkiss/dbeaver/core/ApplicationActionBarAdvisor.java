@@ -32,8 +32,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     // in the fill methods.  This ensures that the actions aren't recreated
     // when fillActionBars is called with FILL_PROXY.
     private IWorkbenchAction exitAction;
-    private IWorkbenchAction saveAction;
-    private IWorkbenchAction closeAction;
     private IWorkbenchAction findAction;
     private IActionDelegate aboutAction;
     private IWorkbenchAction newWindowAction;
@@ -81,12 +79,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         exitAction = ActionFactory.QUIT.create(window);
         register(exitAction);
 
-        saveAction = ActionFactory.SAVE.create(window);
-        register(saveAction);
-
-        closeAction = ActionFactory.CLOSE.create(window);
-        register(closeAction);
-
         findAction = ActionFactory.FIND.create(window);
         register(findAction);
 
@@ -126,17 +118,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         // File
         fileMenu.add(viewPreferencesAction);
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.CLOSE_EXT));
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.SAVE_EXT));
-        fileMenu.add(saveAction);
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.PRINT_EXT));
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.OPEN_EXT));
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.IMPORT_EXT));
         fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         fileMenu.add(new Separator("end"));
-        fileMenu.add(closeAction);
         fileMenu.add(exitAction);
 
         // Edit
