@@ -4,9 +4,6 @@
 
 package org.jkiss.dbeaver.ui.actions.navigator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.Platform;
@@ -16,13 +13,9 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
@@ -31,12 +24,9 @@ import org.jkiss.dbeaver.ui.editors.folder.FolderEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 
-public class NavigatorHandlerObjectOpen extends AbstractHandler {
-
-    static final Log log = LogFactory.getLog(NavigatorHandlerObjectOpen.class);
+public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
 
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
@@ -60,24 +50,6 @@ public class NavigatorHandlerObjectOpen extends AbstractHandler {
             }
         }
         return null;
-    }
-
-    public static DBNNode getNodeByObject(DBSObject object)
-    {
-        DBNModel model = DBeaverCore.getInstance().getNavigatorModel();
-        DBNNode node = model.findNode(object);
-        if (node == null) {
-            NodeLoader nodeLoader = new NodeLoader(model, object);
-            try {
-                DBeaverCore.getInstance().runAndWait2(nodeLoader);
-            } catch (InvocationTargetException e) {
-                log.warn("Could not load node for object '" + object.getName() + "'", e.getTargetException());
-            } catch (InterruptedException e) {
-                // do nothing
-            }
-            node = nodeLoader.node;
-        }
-        return node;
     }
 
     public static void openEntityEditor(DBNNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
@@ -123,21 +95,4 @@ public class NavigatorHandlerObjectOpen extends AbstractHandler {
         }
     }
 
-
-    private static class NodeLoader implements DBRRunnableWithProgress {
-        private final DBNModel model;
-        private final DBSObject object;
-        private DBNNode node;
-
-        public NodeLoader(DBNModel model, DBSObject object)
-        {
-            this.model = model;
-            this.object = object;
-        }
-
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-        {
-            node = model.getNodeByObject(monitor, object, true);
-        }
-    }
 }

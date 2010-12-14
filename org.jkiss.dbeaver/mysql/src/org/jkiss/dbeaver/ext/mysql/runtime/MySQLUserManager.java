@@ -5,9 +5,11 @@
 package org.jkiss.dbeaver.ext.mysql.runtime;
 
 import org.jkiss.dbeaver.ext.IDatabaseObjectManagerEx;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectScriptCommand;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCDatabaseObjectManager;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;
 
@@ -29,9 +31,9 @@ public class MySQLUserManager extends JDBCDatabaseObjectManager<MySQLUser> imple
         }
     }
 
-    public void createNewObject(MySQLUser copyFrom)
+    public MySQLUser createNewObject(DBSObject parent, MySQLUser copyFrom)
     {
-
+        return new MySQLUser((MySQLDataSource) parent, null);
     }
 
     public void deleteObject(MySQLUser object)

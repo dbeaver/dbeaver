@@ -50,19 +50,21 @@ public class MySQLUser implements DBAUser
 
     public MySQLUser(MySQLDataSource dataSource, ResultSet resultSet) {
         this.dataSource = dataSource;
-        this.username = JDBCUtils.safeGetString(resultSet, "user");
-        this.host = JDBCUtils.safeGetString(resultSet, "host");
-        this.passwordHash = JDBCUtils.safeGetString(resultSet, "password");
+        if (resultSet != null) {
+            this.username = JDBCUtils.safeGetString(resultSet, "user");
+            this.host = JDBCUtils.safeGetString(resultSet, "host");
+            this.passwordHash = JDBCUtils.safeGetString(resultSet, "password");
 
-        this.sslType = JDBCUtils.safeGetString(resultSet, "ssl_type");
-        this.sslCipher = JDBCUtils.safeGetBytes(resultSet, "ssl_cipher");
-        this.x509Issuer = JDBCUtils.safeGetBytes(resultSet, "x509_issuer");
-        this.x509Subject = JDBCUtils.safeGetBytes(resultSet, "x509_subject");
+            this.sslType = JDBCUtils.safeGetString(resultSet, "ssl_type");
+            this.sslCipher = JDBCUtils.safeGetBytes(resultSet, "ssl_cipher");
+            this.x509Issuer = JDBCUtils.safeGetBytes(resultSet, "x509_issuer");
+            this.x509Subject = JDBCUtils.safeGetBytes(resultSet, "x509_subject");
 
-        this.maxQuestions = JDBCUtils.safeGetInt(resultSet, "max_questions");
-        this.maxUpdates = JDBCUtils.safeGetInt(resultSet, "max_updates");
-        this.maxConnections = JDBCUtils.safeGetInt(resultSet, "max_connections");
-        this.maxUserConnections = JDBCUtils.safeGetInt(resultSet, "max_user_connections");
+            this.maxQuestions = JDBCUtils.safeGetInt(resultSet, "max_questions");
+            this.maxUpdates = JDBCUtils.safeGetInt(resultSet, "max_updates");
+            this.maxConnections = JDBCUtils.safeGetInt(resultSet, "max_connections");
+            this.maxUserConnections = JDBCUtils.safeGetInt(resultSet, "max_user_connections");
+        }
     }
 
     @Property(name = "User name", viewable = true, order = 1)

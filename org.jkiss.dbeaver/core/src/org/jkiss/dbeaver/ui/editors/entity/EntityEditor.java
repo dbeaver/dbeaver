@@ -343,7 +343,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         DBNNode node = getEditorInput().getTreeNode();
         if (node instanceof DBNDataSource && !((DBNDataSource)node).getDataSourceContainer().isConnected()) {
             // Do not add children tabs
-        } else {
+        } else if (node != null) {
             try {
                 List<? extends DBNNode> children = node.getChildren(monitor);
                 if (children != null) {
@@ -438,8 +438,9 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             int index = addPage(nodeEditor, getEditorInput());
             setPageText(index, node.getNodeName());
             setPageImage(index, node.getNodeIconDefault());
-            if (getEditorInput().getTreeNode() instanceof DBNTreeNode) {
-                setPageToolTip(index, ((DBNTreeNode)getEditorInput().getTreeNode()).getMeta().getLabel() + " " + node.getNodeName());
+            DBNNode editorNode = getEditorInput().getTreeNode();
+            if (editorNode instanceof DBNTreeNode) {
+                setPageToolTip(index, ((DBNTreeNode)editorNode).getMeta().getLabel() + " " + node.getNodeName());
             }
             editorMap.put("node." + node.getNodeName(), nodeEditor);
         } catch (PartInitException ex) {

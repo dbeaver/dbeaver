@@ -12,8 +12,6 @@ import org.eclipse.core.commands.ExecutionException;
 
 public class NavigatorHandlerObjectDelete extends AbstractHandler {
 
-    static final Log log = LogFactory.getLog(NavigatorHandlerObjectDelete.class);
-
     public Object execute(ExecutionEvent event) throws ExecutionException {
         return null;
     }

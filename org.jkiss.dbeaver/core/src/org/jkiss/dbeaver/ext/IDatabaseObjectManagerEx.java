@@ -16,7 +16,7 @@ import java.util.Collection;
  */
 public interface IDatabaseObjectManagerEx<OBJECT_TYPE extends DBSObject> extends IDatabaseObjectManager<OBJECT_TYPE> {
 
-    void createNewObject(OBJECT_TYPE copyFrom);
+    OBJECT_TYPE createNewObject(DBSObject parent, OBJECT_TYPE copyFrom);
 
     void deleteObject(OBJECT_TYPE object);
 

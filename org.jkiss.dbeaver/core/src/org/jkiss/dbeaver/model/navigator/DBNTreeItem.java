@@ -25,7 +25,6 @@ public class DBNTreeItem extends DBNTreeNode
         if (this.getModel() != null) {
             this.getModel().addNode(this);
         }
-
     }
 
     protected void dispose()
