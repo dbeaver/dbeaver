@@ -63,10 +63,6 @@ public abstract class AbstractTable<
         this.tableType = tableType;
     }
 
-    public String getObjectId() {
-        return getParentObject().getObjectId() + "." + getName();
-    }
-
     @SuppressWarnings("unchecked")
     public DATASOURCE getDataSource()
     {

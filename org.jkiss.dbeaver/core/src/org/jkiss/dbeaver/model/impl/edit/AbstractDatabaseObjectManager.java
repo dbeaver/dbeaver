@@ -92,7 +92,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     public boolean isDirty()
     {
         synchronized (commands) {
-            return !getMergedCommands().isEmpty();
+            return !object.isPersisted() || !getMergedCommands().isEmpty();
         }
     }
 

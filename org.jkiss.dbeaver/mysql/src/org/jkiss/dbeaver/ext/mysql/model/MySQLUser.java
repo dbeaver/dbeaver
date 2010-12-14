@@ -86,10 +86,6 @@ public class MySQLUser implements DBAUser
         return "'" + username + "'@'" + host + "'";
     }
 
-    public String getObjectId() {
-        return getName();
-    }
-
     public String getDescription() {
         return null;
     }

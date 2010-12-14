@@ -22,10 +22,6 @@ public abstract class AbstractIndex implements DBSIndex
         return getColumns(monitor);
     }
 
-    public String getObjectId() {
-        return getTable().getObjectId() + "." + getName();
-    }
-
     public boolean isPersisted()
     {
         return true;

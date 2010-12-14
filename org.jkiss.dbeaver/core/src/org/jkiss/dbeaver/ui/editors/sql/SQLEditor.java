@@ -7,8 +7,6 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -22,7 +20,6 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -859,11 +856,6 @@ public class SQLEditor extends SQLEditorBase
         public long deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns) throws DBException
         {
             throw new DBException("Not Implemented");
-        }
-
-        public String getObjectId()
-        {
-            return getName();
         }
 
         public String getDescription()

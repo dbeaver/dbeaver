@@ -52,10 +52,6 @@ public abstract class AbstractProcedure<
         this.name = tableName;
     }
 
-    public String getObjectId() {
-        return getParentObject().getObjectId() + getName();
-    }
-
     @Property(name = "Procedure Description", viewable = true, order = 100)
     public String getDescription()
     {

@@ -53,10 +53,6 @@ public abstract class AbstractConstraint<DATASOURCE extends DBPDataSource, TABLE
         return name;
     }
 
-    public String getObjectId() {
-        return getTable().getObjectId() + "." + getName();
-    }
-
     @Property(name = "Description", viewable = true, order = 100)
     public String getDescription()
     {

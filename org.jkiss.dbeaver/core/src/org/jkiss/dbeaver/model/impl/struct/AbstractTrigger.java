@@ -76,10 +76,6 @@ public abstract class AbstractTrigger implements DBSTrigger
         this.ordinalPosition = ordinalPosition;
     }
 
-    public String getObjectId() {
-        return getParentObject().getObjectId() + "." + getName();
-    }
-
     @Property(name = "Trigger Description", viewable = true, order = 100)
     public String getDescription()
     {

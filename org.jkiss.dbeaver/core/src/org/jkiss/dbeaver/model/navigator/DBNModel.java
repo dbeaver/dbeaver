@@ -179,7 +179,7 @@ public class DBNModel implements DBPEventListener {
 
     void addNode(DBNNode node)
     {
-        addNode(node, true);
+        addNode(node, false);
     }
 
     void addNode(DBNNode node, boolean reflect)
@@ -207,7 +207,7 @@ public class DBNModel implements DBPEventListener {
 
     void removeNode(DBNNode node)
     {
-        removeNode(node, true);
+        removeNode(node, false);
     }
 
     void removeNode(DBNNode node, boolean reflect)
@@ -265,6 +265,9 @@ public class DBNModel implements DBPEventListener {
 
     void fireNodeEvent(final DBNEvent event)
     {
+        if (listeners.isEmpty()) {
+            return;
+        }
         for (IDBNListener listener :  new ArrayList<IDBNListener>(listeners)) {
             listener.nodeChanged(event);
         }

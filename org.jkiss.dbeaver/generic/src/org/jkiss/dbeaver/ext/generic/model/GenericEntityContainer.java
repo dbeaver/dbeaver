@@ -73,10 +73,6 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         return procedureCache;
     }
 
-    public String getObjectId() {
-        return getParentObject() + "." + getName();
-    }
-
     public abstract GenericDataSource getDataSource();
 
     public boolean isPersisted()

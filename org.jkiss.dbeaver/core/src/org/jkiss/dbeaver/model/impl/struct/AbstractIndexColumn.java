@@ -11,9 +11,6 @@ import org.jkiss.dbeaver.model.struct.DBSIndexColumn;
  */
 public abstract class AbstractIndexColumn implements DBSIndexColumn
 {
-    public String getObjectId() {
-        return getIndex().getObjectId() + "." + getName();
-    }
 
     public boolean isPersisted()
     {

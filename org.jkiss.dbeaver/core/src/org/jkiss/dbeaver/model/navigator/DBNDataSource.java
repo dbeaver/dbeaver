@@ -33,12 +33,12 @@ public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject, IA
         super(parentNode);
         this.dataSource = dataSource;
         this.treeRoot = dataSource.getDriver().getProviderDescriptor().getTreeDescriptor();
-        this.getModel().addNode(this);
+        this.getModel().addNode(this, true);
     }
 
     protected void dispose()
     {
-        this.getModel().removeNode(this);
+        this.getModel().removeNode(this, true);
 /*
         if (this.dataSource.isConnected()) {
             try {

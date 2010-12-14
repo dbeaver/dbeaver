@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -25,6 +26,7 @@ import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
+import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -36,26 +38,38 @@ public class NavigatorHandlerObjectCreate extends NavigatorHandlerObjectBase {
         if (selection instanceof IStructuredSelection) {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
             Object element = structSelection.getFirstElement();
-            DBNTreeFolder folder = null;
-            if (element instanceof DBNTreeFolder) {
-                folder = (DBNTreeFolder) element;
-            } else if (element instanceof DBNTreeItem) {
-                DBNNode parentNode = ((DBNTreeItem) element).getParentNode();
-                if (parentNode instanceof DBNTreeFolder) {
-                    folder = (DBNTreeFolder) parentNode;
+            if (element instanceof DBNNode) {
+                if (createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), (DBNNode) element)) {
+                    return null;
                 }
             }
-            if (folder == null || !(folder.getValueObject() instanceof DBSObject)) {
-                log.error("Can't create child object for folder " + folder);
-                return null;
+        }
+        return null;
+    }
+
+    private boolean createNewObject(IWorkbenchWindow workbenchWindow, DBNNode element)
+    {
+        DBNTreeFolder folder = null;
+        if (element instanceof DBNTreeFolder) {
+            folder = (DBNTreeFolder) element;
+        } else if (element instanceof DBNTreeItem) {
+            DBNNode parentNode = element.getParentNode();
+            if (parentNode instanceof DBNTreeFolder) {
+                folder = (DBNTreeFolder) parentNode;
             }
-            Class childType = folder.getChildrenType();
-            if (childType != null) {
-                EntityManagerDescriptor entityManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(childType);
-                if (entityManager != null) {
-                    IDatabaseObjectManager<?> objectManager = entityManager.createManager();
-                    if (objectManager instanceof IDatabaseObjectManagerEx<?>) {
-                        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+        }
+        if (folder == null || !(folder.getValueObject() instanceof DBSObject)) {
+            log.error("Can't create child object for folder " + folder);
+            return true;
+        }
+        Class childType = folder.getChildrenType();
+        if (childType != null) {
+            EntityManagerDescriptor entityManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(childType);
+            if (entityManager != null) {
+                IDatabaseObjectManager<?> objectManager = entityManager.createManager();
+                if (objectManager instanceof IDatabaseObjectManagerEx<?>) {
+                    IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
+                    try {
                         ObjectCreator objectCreator = new ObjectCreator(folder, (IDatabaseObjectManagerEx<?>) objectManager);
                         try {
                             workbenchWindow.run(true, true, objectCreator);
@@ -76,10 +90,15 @@ public class NavigatorHandlerObjectCreate extends NavigatorHandlerObjectBase {
                             }
                         }
                     }
+                    finally {
+                        if (oldActivePart instanceof DatabaseNavigatorView) {
+                            workbenchWindow.getActivePage().activate(oldActivePart);
+                        }
+                    }
                 }
             }
         }
-        return null;
+        return false;
     }
 
     private static class ObjectCreator implements IRunnableWithProgress {

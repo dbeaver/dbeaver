@@ -362,8 +362,14 @@ public abstract class DBNTreeNode extends DBNNode {
     }
 
     private static boolean equalObjects(DBSObject object1, DBSObject object2) {
-        return object1 != null && object2 != null &&
-            CommonUtils.equalObjects(object1.getObjectId(), object2.getObjectId());
+        while (object1 != null && object2 != null) {
+            if (object1.getClass() != object2.getClass() || !CommonUtils.equalObjects(object1.getName(), object2.getName())) {
+                return false;
+            }
+            object1 = object1.getParentObject();
+            object2 = object2.getParentObject();
+        }
+        return true;
     }
 
     public abstract DBXTreeNode getMeta();

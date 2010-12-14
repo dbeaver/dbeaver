@@ -6,15 +6,8 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.access.DBAPrivilege;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import java.sql.ResultSet;
 
 /**
  * MySQLParameter
@@ -45,11 +38,6 @@ public class MySQLParameter implements DBSObject
     public Object getValue()
     {
         return value;
-    }
-
-    public String getObjectId()
-    {
-        return getName();
     }
 
     @Property(name = "Description", viewable = true, order = 100)

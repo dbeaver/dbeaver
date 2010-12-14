@@ -115,10 +115,6 @@ public class DBNTreeObject extends DBNTreeNode implements DBSObject
         return meta.getLabel();
     }
 
-    public String getObjectId() {
-        return getParentObject().getObjectId() + "." + meta.getEditorId();
-    }
-
     public String getDescription()
     {
         return meta.getDescription();

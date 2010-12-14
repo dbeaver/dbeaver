@@ -7,8 +7,6 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IProduct;
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -218,10 +216,6 @@ public abstract class JDBCDataSource
     public String getName()
     {
         return container.getName();
-    }
-
-    public String getObjectId() {
-        return container.getObjectId();
     }
 
     public String getDescription()

@@ -55,6 +55,7 @@ public class ObjectPropertyTester extends PropertyTester
             return
                 node instanceof DBNTreeItem &&
                 node.getObject() != null &&
+                node.getObject().isPersisted() &&
                 hasExtendedManager(node.getObject().getClass());
         }
         return false;

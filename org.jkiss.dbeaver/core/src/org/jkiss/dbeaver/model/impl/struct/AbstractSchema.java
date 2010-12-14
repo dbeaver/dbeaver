@@ -17,10 +17,6 @@ public abstract class AbstractSchema implements DBSSchema
         return getName() + " [" + getDataSource().getContainer().getName() + "]";
     }
 
-    public String getObjectId() {
-        return getParentObject() + "." + getName();  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     public boolean isPersisted()
     {
         return true;

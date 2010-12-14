@@ -47,6 +47,18 @@ public final class DBUtils {
         return getQuotedIdentifier(object.getDataSource(), object.getName());
     }
 
+    public static String getUniqueObjectId(DBSObject object)
+    {
+        StringBuilder buffer = new StringBuilder();
+        for (DBSObject obj = object; obj != null; obj = obj.getParentObject()) {
+            if (buffer.length() > 0) {
+                buffer.insert(0, '.');
+            }
+            buffer.insert(0, obj.getName());
+        }
+        return buffer.toString();
+    }
+
     public static String getQuotedIdentifier(DBPDataSource dataSource, String str)
     {
         String quoteString;

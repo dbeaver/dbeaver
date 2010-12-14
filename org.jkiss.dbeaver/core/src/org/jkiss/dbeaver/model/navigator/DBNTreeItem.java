@@ -23,14 +23,16 @@ public class DBNTreeItem extends DBNTreeNode
         this.meta = meta;
         this.object = object;
         if (this.getModel() != null) {
-            this.getModel().addNode(this);
+            this.getModel().addNode(this, !object.isPersisted());
         }
     }
 
     protected void dispose()
     {
         if (this.getModel() != null) {
-            this.getModel().removeNode(this);
+            // Notify model
+            // Reflect changes only if underlying object is not persisted
+            this.getModel().removeNode(this, !getObject().isPersisted());
         }
         this.object = null;
         super.dispose();

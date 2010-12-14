@@ -115,10 +115,13 @@ public class DatabaseNavigatorView extends ViewPart
         switch (event.getAction()) {
             case ADD:
             case REMOVE:
-                if (event.getNode() instanceof DBNDataSource) {
+                final DBNNode parentNode = event.getNode().getParentNode();
+                if (parentNode != null) {
                     asyncExec(new Runnable() { public void run() {
                         if (!viewer.getControl().isDisposed()) {
-                            viewer.refresh();
+                            if (!parentNode.isDisposed()) {
+                                viewer.refresh(parentNode);
+                            }
                         }
                     }});
                 }
