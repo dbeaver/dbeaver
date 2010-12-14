@@ -47,10 +47,12 @@ public class MySQLUser implements DBAUser
     private int maxUserConnections;
 
     private List<MySQLGrant> grants;
+    private boolean persisted;
 
     public MySQLUser(MySQLDataSource dataSource, ResultSet resultSet) {
         this.dataSource = dataSource;
         if (resultSet != null) {
+            this.persisted = true;
             this.username = JDBCUtils.safeGetString(resultSet, "user");
             this.host = JDBCUtils.safeGetString(resultSet, "host");
             this.passwordHash = JDBCUtils.safeGetString(resultSet, "password");
@@ -64,6 +66,10 @@ public class MySQLUser implements DBAUser
             this.maxUpdates = JDBCUtils.safeGetInt(resultSet, "max_updates");
             this.maxConnections = JDBCUtils.safeGetInt(resultSet, "max_connections");
             this.maxUserConnections = JDBCUtils.safeGetInt(resultSet, "max_user_connections");
+        } else {
+            this.persisted = false;
+            this.username = "user";
+            this.host = "%";
         }
     }
 
@@ -96,6 +102,11 @@ public class MySQLUser implements DBAUser
         return dataSource;
     }
 
+    public boolean isPersisted()
+    {
+        return persisted;
+    }
+
     @Property(name = "Host mask", viewable = true, order = 2)
     public String getHost() {
         return host;
@@ -120,7 +131,11 @@ public class MySQLUser implements DBAUser
         if (this.grants != null) {
             return this.grants;
         }
-        
+        if (!isPersisted()) {
+            this.grants = new ArrayList<MySQLGrant>();
+            return this.grants;
+        }
+
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read catalog privileges");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement("SHOW GRANTS FOR " + getFullName());

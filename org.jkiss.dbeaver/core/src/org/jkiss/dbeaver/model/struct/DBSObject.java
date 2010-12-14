@@ -39,4 +39,10 @@ public interface DBSObject extends DBPNamedObject
      */
     DBPDataSource getDataSource();
 
+    /**
+     * Object's persisted flag
+     * @return true if object is persisted in external data source
+     */
+    boolean isPersisted();
+
 }

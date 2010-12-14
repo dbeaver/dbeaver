@@ -73,6 +73,11 @@ public abstract class AbstractTable<
         return (DATASOURCE) container.getDataSource();
     }
 
+    public boolean isPersisted()
+    {
+        return true;
+    }
+
     public DBSObject getParentObject()
     {
         return container;

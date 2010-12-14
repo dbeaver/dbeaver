@@ -239,6 +239,11 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         return dataSource;
     }
 
+    public boolean isPersisted()
+    {
+        return true;
+    }
+
     public DataSourceRegistry getRegistry()
     {
         return driver.getProviderDescriptor().getRegistry();

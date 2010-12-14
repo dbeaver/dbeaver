@@ -129,6 +129,9 @@ public class PrivilegeTableControl extends Composite {
 
     public void fillGrants(List<MySQLGrant> grants)
     {
+        if (grants == null) {
+            return;
+        }
         for (TableItem item : privTable.getItems()) {
             MySQLPrivilege privilege = (MySQLPrivilege) item.getData();
             //Button grantCheck = (Button)item.getData("grant");

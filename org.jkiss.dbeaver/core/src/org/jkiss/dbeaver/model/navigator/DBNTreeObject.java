@@ -135,4 +135,9 @@ public class DBNTreeObject extends DBNTreeNode implements DBSObject
         return parentObject == null ? null : parentObject.getDataSource();
     }
 
+    public boolean isPersisted()
+    {
+        return true;
+    }
+
 }

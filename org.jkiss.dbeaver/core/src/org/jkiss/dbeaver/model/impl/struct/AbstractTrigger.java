@@ -86,6 +86,11 @@ public abstract class AbstractTrigger implements DBSTrigger
         return description;
     }
 
+    public boolean isPersisted()
+    {
+        return true;
+    }
+
     protected void setDescription(String description)
     {
         this.description = description;

@@ -881,6 +881,11 @@ public class SQLEditor extends SQLEditorBase
             return SQLEditor.this.getDataSource();
         }
 
+        public boolean isPersisted()
+        {
+            return true;
+        }
+
         public String getName()
         {
             return curJob == null ? null :

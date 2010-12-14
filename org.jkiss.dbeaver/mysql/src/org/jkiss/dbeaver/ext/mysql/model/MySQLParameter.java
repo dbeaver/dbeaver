@@ -72,4 +72,9 @@ public class MySQLParameter implements DBSObject
     {
         return dataSource;
     }
+
+    public boolean isPersisted()
+    {
+        return true;
+    }
 }

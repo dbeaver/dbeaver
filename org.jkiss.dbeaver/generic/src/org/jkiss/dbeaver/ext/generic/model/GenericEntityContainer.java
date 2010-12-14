@@ -79,6 +79,11 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
 
     public abstract GenericDataSource getDataSource();
 
+    public boolean isPersisted()
+    {
+        return true;
+    }
+
     public abstract GenericCatalog getCatalog();
 
     public abstract GenericSchema getSchema();

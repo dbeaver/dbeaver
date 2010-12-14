@@ -33,6 +33,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     private Font normalFont;
     private Font defaultFont;
     private Color lockedForeground;
+    private Color transientForeground;
 
     DatabaseNavigatorLabelProvider(DatabaseNavigatorView view)
     {
@@ -40,6 +41,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         this.normalFont = view.getNavigatorViewer().getControl().getFont();
         this.defaultFont = UIUtils.makeBoldFont(normalFont);
         this.lockedForeground = view.getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_GRAY);
+        this.transientForeground = view.getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_DARK_RED);
     }
 
     @Override
@@ -95,8 +97,14 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
 
     public Color getForeground(Object element)
     {
-        if (element instanceof DBNNode && ((DBNNode)element).isLocked()) {
-            return lockedForeground;
+        if (element instanceof DBNNode) {
+            DBNNode node = (DBNNode)element;
+            if (node.isLocked()) {
+                return lockedForeground;
+            }
+            if (node.getObject() != null && !node.getObject().isPersisted()) {
+                return transientForeground;
+            }
         }
         return null;
     }

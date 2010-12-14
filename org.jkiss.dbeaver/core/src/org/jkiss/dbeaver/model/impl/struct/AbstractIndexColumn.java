@@ -14,4 +14,9 @@ public abstract class AbstractIndexColumn implements DBSIndexColumn
     public String getObjectId() {
         return getIndex().getObjectId() + "." + getName();
     }
+
+    public boolean isPersisted()
+    {
+        return true;
+    }
 }

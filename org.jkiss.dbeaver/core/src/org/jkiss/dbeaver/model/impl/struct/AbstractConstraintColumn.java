@@ -26,4 +26,9 @@ public abstract class AbstractConstraintColumn implements DBSConstraintColumn, I
     public String getObjectId() {
         return getConstraint().getObjectId() + "." + getName();
     }
+
+    public boolean isPersisted()
+    {
+        return true;
+    }
 }

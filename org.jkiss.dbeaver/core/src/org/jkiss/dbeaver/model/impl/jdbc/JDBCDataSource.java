@@ -239,6 +239,11 @@ public abstract class JDBCDataSource
         return this;
     }
 
+    public boolean isPersisted()
+    {
+        return true;
+    }
+
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException {
         this.dataSourceInfo = null;
         return true;

@@ -72,6 +72,11 @@ public abstract class AbstractProcedure<
         return (DATASOURCE) container.getDataSource();
     }
 
+    public boolean isPersisted()
+    {
+        return true;
+    }
+
     public DBSObject getParentObject()
     {
         return container;

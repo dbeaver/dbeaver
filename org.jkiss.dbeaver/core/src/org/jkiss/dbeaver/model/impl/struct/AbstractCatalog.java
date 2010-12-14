@@ -33,6 +33,11 @@ public abstract class AbstractCatalog<DATASOURCE extends DBPDataSource> implemen
         return dataSource;
     }
 
+    public boolean isPersisted()
+    {
+        return true;
+    }
+
     @Property(name = "Catalog Name", viewable = true, order = 1)
     public String getName()
     {

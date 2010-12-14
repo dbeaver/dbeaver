@@ -127,4 +127,9 @@ public class DBNRoot extends DBNNode implements DBSObject
         return null;
     }
 
+    public boolean isPersisted()
+    {
+        return true;
+    }
+
 }

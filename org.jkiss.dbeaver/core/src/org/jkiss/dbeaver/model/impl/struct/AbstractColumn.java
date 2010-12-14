@@ -159,6 +159,11 @@ public abstract class AbstractColumn implements DBSColumnDefinition
         return description;
     }
 
+    public boolean isPersisted()
+    {
+        return true;
+    }
+
     public void setDescription(String description)
     {
         this.description = description;

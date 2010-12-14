@@ -87,6 +87,11 @@ public class MySQLPrivilege implements DBAPrivilege
         return dataSource;
     }
 
+    public boolean isPersisted()
+    {
+        return true;
+    }
+
     public boolean isGrantOption()
     {
         return name.equalsIgnoreCase(GRANT_PRIVILEGE);

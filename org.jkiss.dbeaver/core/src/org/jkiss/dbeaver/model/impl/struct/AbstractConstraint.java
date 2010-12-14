@@ -84,6 +84,11 @@ public abstract class AbstractConstraint<DATASOURCE extends DBPDataSource, TABLE
         return (DATASOURCE) table.getDataSource();
     }
 
+    public boolean isPersisted()
+    {
+        return true;
+    }
+
     public boolean refreshEntity(DBRProgressMonitor monitor)
         throws DBException
     {
