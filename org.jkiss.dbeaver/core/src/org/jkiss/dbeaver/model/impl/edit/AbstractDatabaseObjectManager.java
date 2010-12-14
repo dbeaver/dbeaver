@@ -120,6 +120,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
                         cmd = cmd.mergedBy;
                     }
                     if (cmd.executed) {
+                        commands.remove(mergedCommands.get(i));
                         continue;
                     }
                     if (monitor.isCanceled()) {
@@ -162,8 +163,8 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
                     cmd.command.updateModel(getObject());
                     cmd.executed = true;
 
-                    // Remove executed command from stack
-                    commands.remove(cmd);
+                    // Remove original command from stack
+                    commands.remove(mergedCommands.get(i));
                 }
             }
             finally {
