@@ -19,7 +19,7 @@ public interface IDatabaseObjectManager<OBJECT_TYPE extends DBSObject> extends I
 
     OBJECT_TYPE getObject();
 
-    void init(IShellProvider shellProvider, OBJECT_TYPE object);
+    void setObject(OBJECT_TYPE object);
 
     boolean supportsEdit();
 

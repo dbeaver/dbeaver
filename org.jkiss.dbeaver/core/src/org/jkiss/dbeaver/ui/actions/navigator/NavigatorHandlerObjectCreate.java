@@ -52,7 +52,8 @@ public class NavigatorHandlerObjectCreate extends NavigatorHandlerObjectBase {
                         IDatabaseObjectManager<?> objectManager = entityManager.createManager();
                         if (objectManager instanceof IDatabaseObjectManagerEx<?>) {
                             IDatabaseObjectManagerEx<?> exManager = (IDatabaseObjectManagerEx<?>)objectManager;
-                            DBSObject newObject = exManager.createNewObject((DBSObject) folder.getValueObject(), null);
+                            exManager.createNewObject((DBSObject) folder.getValueObject(), null);
+                            DBSObject newObject = exManager.getObject();
                             EntityEditorInput editorInput = null;//new EntityEditorInput(folder, objectManager);
                             try {
                                 HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().openEditor(

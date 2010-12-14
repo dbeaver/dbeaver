@@ -31,9 +31,9 @@ public class MySQLUserManager extends JDBCDatabaseObjectManager<MySQLUser> imple
         }
     }
 
-    public MySQLUser createNewObject(DBSObject parent, MySQLUser copyFrom)
+    public void createNewObject(DBSObject parent, MySQLUser copyFrom)
     {
-        return new MySQLUser((MySQLDataSource) parent, null);
+        setObject(new MySQLUser((MySQLDataSource) parent, null));
     }
 
     public void deleteObject(MySQLUser object)

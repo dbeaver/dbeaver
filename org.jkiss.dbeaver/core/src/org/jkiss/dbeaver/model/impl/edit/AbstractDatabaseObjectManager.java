@@ -5,18 +5,16 @@
 package org.jkiss.dbeaver.model.impl.edit;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.jface.window.IShellProvider;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
 import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
-import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.*;
 
@@ -60,7 +58,6 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
-    private IShellProvider shellProvider;
     private OBJECT_TYPE object;
     private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
     private final List<CommandInfo> undidCommands = new ArrayList<CommandInfo>();
@@ -74,12 +71,12 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         return object;
     }
 
-    @SuppressWarnings("unchecked")
-    public void init(IShellProvider shellProvider, OBJECT_TYPE object) {
+    public void setObject(OBJECT_TYPE object) {
+/*
         if (object == null) {
             throw new IllegalArgumentException("Object can't be NULL");
         }
-        this.shellProvider = shellProvider;
+*/
         this.object = object;
 
         // Clear all commands
@@ -105,12 +102,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
 
             // Validate commands
             for (CommandInfo cmd : mergedCommands) {
-                try {
-                    cmd.command.validateCommand(object);
-                } catch (DBException e) {
-                    UIUtils.showErrorDialog(shellProvider.getShell(), "Validation failed", e.getMessage());
-                    return;
-                }
+                cmd.command.validateCommand(object);
             }
             try {
                 // Make list of not-executed commands
