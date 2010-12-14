@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
+import org.jkiss.dbeaver.model.navigator.DBNTreeItem;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
@@ -52,14 +53,6 @@ public class ViewUtils
     static final Log log = LogFactory.getLog(ViewUtils.class);
     //public static final String MENU_ID = "org.jkiss.dbeaver.core.navigationMenu";
     public static final String MB_ADDITIONS_END = "additions_end";
-
-    private static Map<String, String> OBJECT_ACTIONS = new HashMap<String, String>();
-
-    static {
-        OBJECT_ACTIONS.put(ICommandIds.CMD_OPEN_OBJECT, "Edit");
-        OBJECT_ACTIONS.put(ICommandIds.CMD_CREATE_OBJECT, "Create New");
-        OBJECT_ACTIONS.put(ICommandIds.CMD_DELETE_OBJECT, "Delete");
-    }
 
     public static <T> T findView(IWorkbenchWindow workbenchWindow, Class<T> viewClass)
     {
@@ -178,6 +171,7 @@ public class ViewUtils
                 Menu m = (Menu)e.widget;
                 IStructuredSelection selection = (IStructuredSelection) navigatorModelView.getNavigatorViewer().getSelection();
                 DBNNode node = ViewUtils.getSelectedNode(selection);
+                boolean multipleSelection = selection.size() > 1;
                 if (node != null && !node.isLocked()) {
                     String defaultCommandId = node.getDefaultCommandId();
                     if (defaultCommandId != null) {
@@ -190,16 +184,26 @@ public class ViewUtils
                                 if (contribId != null && contribId.equals(defaultCommandId)) {
                                     m.setDefaultItem(item);
                                 }
-                                String action = OBJECT_ACTIONS.get(contribId);
-                                if (action != null) {
-                                    String objectName = "";
-                                    if (selection.size() > 1) {
-                                        objectName = "objects";
-                                    } else if (node instanceof DBNTreeNode) {
-                                        DBNTreeNode treeNode = (DBNTreeNode)node;
-                                        objectName = treeNode.getMeta().getLabel();
+                                if (ICommandIds.CMD_OPEN_OBJECT.equals(contribId)) {
+                                    if (multipleSelection) {
+                                        item.setText("Edit objects");
+                                    } else if (node instanceof DBNTreeItem) {
+                                        item.setText("Edit " + ((DBNTreeItem)node).getMeta().getLabel());
                                     }
-                                    item.setText(action + " " + objectName);
+                                } else if (ICommandIds.CMD_CREATE_OBJECT.equals(contribId)) {
+                                    String objectName = "";
+                                    if (node instanceof DBNTreeFolder) {
+                                        objectName = ((DBNTreeFolder)node).getMeta().getChildren().get(0).getLabel();
+                                    } else if (node instanceof DBNTreeItem) {
+                                        objectName = ((DBNTreeItem)node).getMeta().getLabel();
+                                    }
+                                    item.setText("Create new " + objectName);
+                                } else if (ICommandIds.CMD_DELETE_OBJECT.equals(contribId)) {
+                                    if (multipleSelection) {
+                                        item.setText("Delete objects");
+                                    } else if (node instanceof DBNTreeItem) {
+                                        item.setText("Delete " + ((DBNTreeItem)node).getMeta().getLabel());
+                                    }
                                 }
                             }
                         }

@@ -9,6 +9,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
+import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.ICommandIds;
 
 /**
@@ -97,5 +98,4 @@ public class DBNTreeFolder extends DBNTreeNode implements DBSFolder
             return null;
         }
     }
-
 }

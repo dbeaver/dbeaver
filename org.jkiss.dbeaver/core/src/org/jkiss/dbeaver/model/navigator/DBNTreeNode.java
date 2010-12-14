@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,6 +19,8 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeObject;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -206,6 +209,28 @@ public abstract class DBNTreeNode extends DBNNode {
             monitor.worked(1);
         }
         monitor.done();
+    }
+
+
+    public Class getChildrenType()
+    {
+        if (getMeta().hasChildren() && getMeta().getChildren().size() == 1) {
+            DBXTreeNode childMeta = getMeta().getChildren().get(0);
+            return childMeta instanceof DBXTreeItem ? getChildrenType((DBXTreeItem) childMeta) : null;
+        }
+        return null;
+    }
+
+    private Class getChildrenType(DBXTreeItem childMeta)
+    {
+        Object valueObject = getValueObject();
+        if (valueObject == null) {
+            return null;
+        }
+        String propertyName = childMeta.getPropertyName();
+        Method getter = LoadingUtils.findPropertyReadMethod(valueObject.getClass(), propertyName);
+        Type propType = getter.getGenericReturnType();
+        return BeanUtils.getCollectionType(propType);
     }
 
     /**

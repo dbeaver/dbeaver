@@ -22,8 +22,7 @@ public class LoadingUtils {
 
     static final Log log = LogFactory.getLog(LoadingUtils.class);
 
-    public static Object extractPropertyValue(DBRProgressMonitor monitor, Object object, String propertyName
-    )
+    public static Object extractPropertyValue(DBRProgressMonitor monitor, Object object, String propertyName)
         throws DBException
     {
         // Read property using reflection
@@ -57,7 +56,7 @@ public class LoadingUtils {
         }
     }
 
-    private static Method findPropertyReadMethod(Class<?> clazz, String propertyName)
+    public static Method findPropertyReadMethod(Class<?> clazz, String propertyName)
     {
         String methodName = BeanUtils.propertyNameToMethodName(propertyName);
         String getName = "get" + methodName;

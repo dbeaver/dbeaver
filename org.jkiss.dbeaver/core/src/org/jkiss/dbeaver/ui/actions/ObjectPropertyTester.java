@@ -44,11 +44,7 @@ public class ObjectPropertyTester extends PropertyTester
             Class objectType = null;
             if (node instanceof DBNTreeFolder) {
                 // Try to detect child type
-                DBNTreeFolder folder = (DBNTreeFolder)node;
-                if (!CommonUtils.isEmpty(folder.getMeta().getChildren())) {
-                    DBXTreeNode childMeta = folder.getMeta().getChildren().get(0);
-                    //childMeta.
-                }
+                objectType = ((DBNTreeFolder)node).getChildrenType(); 
             } else if (node instanceof DBNTreeItem) {
                 objectType = node.getObject() == null ? null : node.getObject().getClass();
             }
