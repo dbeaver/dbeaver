@@ -40,7 +40,9 @@ import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * NavigatorUtils
@@ -50,6 +52,14 @@ public class ViewUtils
     static final Log log = LogFactory.getLog(ViewUtils.class);
     //public static final String MENU_ID = "org.jkiss.dbeaver.core.navigationMenu";
     public static final String MB_ADDITIONS_END = "additions_end";
+
+    private static Map<String, String> OBJECT_ACTIONS = new HashMap<String, String>();
+
+    static {
+        OBJECT_ACTIONS.put(ICommandIds.CMD_OPEN_OBJECT, "Edit");
+        OBJECT_ACTIONS.put(ICommandIds.CMD_CREATE_OBJECT, "Create New");
+        OBJECT_ACTIONS.put(ICommandIds.CMD_DELETE_OBJECT, "Delete");
+    }
 
     public static <T> T findView(IWorkbenchWindow workbenchWindow, Class<T> viewClass)
     {
@@ -166,7 +176,8 @@ public class ViewUtils
             public void menuShown(MenuEvent e)
             {
                 Menu m = (Menu)e.widget;
-                DBNNode node = ViewUtils.getSelectedNode(navigatorModelView);
+                IStructuredSelection selection = (IStructuredSelection) navigatorModelView.getNavigatorViewer().getSelection();
+                DBNNode node = ViewUtils.getSelectedNode(selection);
                 if (node != null && !node.isLocked()) {
                     String defaultCommandId = node.getDefaultCommandId();
                     if (defaultCommandId != null) {
@@ -179,11 +190,16 @@ public class ViewUtils
                                 if (contribId != null && contribId.equals(defaultCommandId)) {
                                     m.setDefaultItem(item);
                                 }
-                                if (ICommandIds.CMD_OPEN_OBJECT.equals(contribId)) {
-                                    if (node instanceof DBNTreeNode) {
+                                String action = OBJECT_ACTIONS.get(contribId);
+                                if (action != null) {
+                                    String objectName = "";
+                                    if (selection.size() > 1) {
+                                        objectName = "objects";
+                                    } else if (node instanceof DBNTreeNode) {
                                         DBNTreeNode treeNode = (DBNTreeNode)node;
-                                        item.setText("Edit " + treeNode.getMeta().getLabel());
+                                        objectName = treeNode.getMeta().getLabel();
                                     }
+                                    item.setText(action + " " + objectName);
                                 }
                             }
                         }
@@ -226,17 +242,19 @@ public class ViewUtils
                             catch (DBException e) {
                                 throw new InvocationTargetException(e);
                             }
-                            if (activeChild != dbmNode.getObject()) {
+                            if (activeChild != dbmNode.getObject() && activeChild != null) {
                                 DBNTreeNode treeNode = (DBNTreeNode)dbmNode;
-                                DBXTreeNode nodeMeta = treeNode.getMeta();
-                                String text = "Set active";
-                                if (nodeMeta instanceof DBXTreeItem) {
-                                    DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
-                                    text += " " + itemMeta.getPath();
-                                }
-                                IAction action = makeAction(new NavigatorActionSetActiveObject(), navigatorModelView.getWorkbenchPart(), selection, text, null, null);
+                                if (treeNode.getObject() != null && activeChild.getClass() == treeNode.getObject().getClass()) {
+                                    DBXTreeNode nodeMeta = treeNode.getMeta();
+                                    String text = "Set Active";
+                                    if (nodeMeta instanceof DBXTreeItem) {
+                                        DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
+                                        text += " " + itemMeta.getLabel();
+                                    }
+                                    IAction action = makeAction(new NavigatorActionSetActiveObject(), navigatorModelView.getWorkbenchPart(), selection, text, null, null);
 
-                                manager.add(action);
+                                    manager.add(action);
+                                }
                             }
                         } catch (InvocationTargetException e) {
                             log.warn(e.getTargetException());

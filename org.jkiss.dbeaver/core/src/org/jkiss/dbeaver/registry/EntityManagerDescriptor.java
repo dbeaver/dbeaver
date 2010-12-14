@@ -18,7 +18,7 @@ public class EntityManagerDescriptor extends AbstractDescriptor
     private String name;
 
     private Class objectClass;
-    private Class editorClass;
+    private Class managerClass;
 
     public EntityManagerDescriptor(IConfigurationElement config)
     {
@@ -65,17 +65,17 @@ public class EntityManagerDescriptor extends AbstractDescriptor
         return objectClass;
     }
 
-    public Class getEditorClass()
+    public Class getManagerClass()
     {
-        if (editorClass == null) {
-            editorClass = getObjectClass(className);
+        if (managerClass == null) {
+            managerClass = getObjectClass(className);
         }
-        return editorClass;
+        return managerClass;
     }
 
-    public IDatabaseObjectManager<?> createMannager()
+    public IDatabaseObjectManager<?> createManager()
     {
-        Class clazz = getEditorClass();
+        Class clazz = getManagerClass();
         if (clazz == null) {
             return null;
         }

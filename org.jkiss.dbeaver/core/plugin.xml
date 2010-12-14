@@ -38,6 +38,13 @@
                 type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
         </propertyTester>
         <propertyTester
+                class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
+                id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
+                namespace="org.jkiss.dbeaver.core.object"
+                properties="canCreate,canDelete"
+                type="org.jkiss.dbeaver.model.navigator.DBNNode">
+        </propertyTester>
+        <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.database.editor"
@@ -117,6 +124,8 @@
         <command id="org.jkiss.dbeaver.core.edit.connection" name="Edit Connection" description="Open connection editor dialog" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.new.sql.editor" name="Open SQL Editor" description="Open SQL Editor" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.open" name="Edit Object" description="Open object editor" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.object.create" name="Create Object" description="Create new database object" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.object.delete" name="Delete Object" description="Delete database object" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.statement" name="Execute SQL Statement" description="Execute Statement" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.script" name="Execute SQL Script" description="Execute Script" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -163,6 +172,8 @@
 
         <image commandId="org.jkiss.dbeaver.core.new.sql.editor" icon="icons/sql/sql_script.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.open" icon="icons/tree/edit_item.png"/>
+        <image commandId="org.jkiss.dbeaver.core.object.create" icon="IMG_TOOL_NEW_WIZARD"/>
+        <image commandId="org.jkiss.dbeaver.core.object.delete" icon="IMG_ETOOL_DELETE"/>
 
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" icon="icons/sql/sql_exec.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" icon="icons/sql/sql_script_exec.png"/>
@@ -386,7 +397,7 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+                        <test property="org.jkiss.dbeaver.core.object.canCreate"/>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -396,7 +407,7 @@
             <enabledWhen>
                 <with variable="selection">
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+                        <test property="org.jkiss.dbeaver.core.object.canDelete"/>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -822,6 +833,12 @@
         <!-- All Context menus -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
             <command commandId="org.jkiss.dbeaver.core.object.open">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.object.create">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.object.delete">
                 <visibleWhen checkEnabled="true"/>
             </command>
 
