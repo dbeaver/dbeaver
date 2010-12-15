@@ -55,9 +55,16 @@ public class DatabaseObjectPropertyCommand<OBJECT_TYPE extends DBSObject> extend
         return newValue;
     }
 
-    void setNewValue(Object newValue)
+    void setNewValue(OBJECT_TYPE object, Object newValue)
     {
+        Object prevValue = this.newValue;
+        if (prevValue == null) {
+            prevValue = this.oldValue;
+        }
         this.newValue = newValue;
+        if (handler instanceof DatabaseObjectPropertyReflector) {
+            ((DatabaseObjectPropertyReflector<OBJECT_TYPE>)handler).reflectValueChange(object, prevValue, this.newValue);
+        }
     }
 
     @Override

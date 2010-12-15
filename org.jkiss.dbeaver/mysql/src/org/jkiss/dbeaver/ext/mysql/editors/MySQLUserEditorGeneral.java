@@ -43,13 +43,21 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         GridData gd = new GridData(GridData.FILL_VERTICAL);
         container.setLayoutData(gd);
 
+        boolean newUser = !getDatabaseObject().isPersisted();
         {
             Composite loginGroup = UIUtils.createControlGroup(container, "Login", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 200);
 
             Text userNameText = UIUtils.createLabelText(loginGroup, "User Name", getUser().getUserName());
-            userNameText.setEditable(!getDatabaseObject().isPersisted());
+            userNameText.setEditable(newUser);
+            if (newUser) {
+                ControlCommandListener.create(this, userNameText, UserPropertyHandler.NAME);
+            }
+
             Text hostText = UIUtils.createLabelText(loginGroup, "Host", getUser().getHost());
-            hostText.setEditable(!getDatabaseObject().isPersisted());
+            hostText.setEditable(newUser);
+            if (newUser) {
+                ControlCommandListener.create(this, hostText, UserPropertyHandler.HOST);
+            }
 
             Text passwordText = UIUtils.createLabelText(loginGroup, "Password", DEF_PASSWORD_VALUE, SWT.BORDER | SWT.PASSWORD);
             ControlCommandListener.create(this, passwordText, UserPropertyHandler.PASSWORD);

@@ -32,7 +32,7 @@ public class MySQLUser implements DBAUser
     static final Log log = LogFactory.getLog(MySQLUser.class);
 
     private MySQLDataSource dataSource;
-    private String username;
+    private String userName;
     private String host;
     private String passwordHash;
 
@@ -53,7 +53,7 @@ public class MySQLUser implements DBAUser
         this.dataSource = dataSource;
         if (resultSet != null) {
             this.persisted = true;
-            this.username = JDBCUtils.safeGetString(resultSet, "user");
+            this.userName = JDBCUtils.safeGetString(resultSet, "user");
             this.host = JDBCUtils.safeGetString(resultSet, "host");
             this.passwordHash = JDBCUtils.safeGetString(resultSet, "password");
 
@@ -68,22 +68,27 @@ public class MySQLUser implements DBAUser
             this.maxUserConnections = JDBCUtils.safeGetInt(resultSet, "max_user_connections");
         } else {
             this.persisted = false;
-            this.username = "user";
+            this.userName = "user";
             this.host = "%";
         }
     }
 
     @Property(name = "User name", viewable = true, order = 1)
     public String getName() {
-        return username + "@" + host;
+        return userName + "@" + host;
     }
 
     public String getUserName() {
-        return username;
+        return userName;
+    }
+
+    public void setUserName(String userName)
+    {
+        this.userName = userName;
     }
 
     public String getFullName() {
-        return "'" + username + "'@'" + host + "'";
+        return "'" + userName + "'@'" + host + "'";
     }
 
     public String getDescription() {
@@ -108,7 +113,7 @@ public class MySQLUser implements DBAUser
         return host;
     }
 
-    void setHost(String host) {
+    public void setHost(String host) {
         this.host = host;
     }
 

@@ -4,14 +4,16 @@
 
 package org.jkiss.dbeaver.ext.mysql.runtime;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
-import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectCompositeCommand;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectPropertyHandler;
+import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectPropertyReflector;
 
 /**
 * User property handler
 */
-public enum UserPropertyHandler implements DatabaseObjectPropertyHandler<MySQLUser> {
+public enum UserPropertyHandler implements DatabaseObjectPropertyHandler<MySQLUser>, DatabaseObjectPropertyReflector<MySQLUser> {
     NAME,
     HOST,
     PASSWORD,
@@ -25,5 +27,18 @@ public enum UserPropertyHandler implements DatabaseObjectPropertyHandler<MySQLUs
     public MySQLCommandChangeUser createCompositeCommand()
     {
         return new MySQLCommandChangeUser();
+    }
+
+    public void reflectValueChange(MySQLUser object, Object oldValue, Object newValue)
+    {
+        if (this == NAME || this == HOST) {
+            if (this == NAME) {
+                object.setUserName(CommonUtils.toString(newValue));
+            } else {
+                object.setHost(CommonUtils.toString(newValue));
+            }
+            object.getDataSource().getContainer().fireEvent(
+                new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object));
+        }
     }
 }

@@ -150,7 +150,7 @@ public class ControlCommandListener <OBJECT_TYPE extends DBSObject> {
                         if (!CommonUtils.equalObjects(newValue, originalValue)) {
                             final DatabaseObjectPropertyCommand<OBJECT_TYPE> command = new DatabaseObjectPropertyCommand<OBJECT_TYPE>(handler);
                             command.setOldValue(originalValue);
-                            command.setNewValue(newValue);
+                            command.setNewValue(objectEditor.getDatabaseObject(), newValue);
                             curCommand = command;
                             objectEditor.addChangeCommand(curCommand, new IDatabaseObjectCommandReflector<OBJECT_TYPE, DatabaseObjectPropertyCommand<OBJECT_TYPE>>() {
                                 public void redoCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> object_typeControlDatabaseObjectCommand)
@@ -168,7 +168,7 @@ public class ControlCommandListener <OBJECT_TYPE extends DBSObject> {
                             objectEditor.removeChangeCommand(curCommand);
                             curCommand = null;
                         } else {
-                            curCommand.setNewValue(newValue);
+                            curCommand.setNewValue(objectEditor.getDatabaseObject(), newValue);
                             objectEditor.updateChangeCommand(curCommand);
                         }
                     }
