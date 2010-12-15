@@ -268,7 +268,8 @@ public class DBNModel implements DBPEventListener {
         if (listeners.isEmpty()) {
             return;
         }
-        for (IDBNListener listener :  new ArrayList<IDBNListener>(listeners)) {
+        IDBNListener[] listenersCopy = listeners.toArray(new IDBNListener[listeners.size()]);
+        for (IDBNListener listener :  listenersCopy) {
             listener.nodeChanged(event);
         }
     }

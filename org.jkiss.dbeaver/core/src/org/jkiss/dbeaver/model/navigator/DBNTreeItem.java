@@ -23,7 +23,7 @@ public class DBNTreeItem extends DBNTreeNode
         this.meta = meta;
         this.object = object;
         if (this.getModel() != null) {
-            this.getModel().addNode(this, !object.isPersisted());
+            this.getModel().addNode(this, true);
         }
     }
 
@@ -32,7 +32,7 @@ public class DBNTreeItem extends DBNTreeNode
         if (this.getModel() != null) {
             // Notify model
             // Reflect changes only if underlying object is not persisted
-            this.getModel().removeNode(this, !getObject().isPersisted());
+            this.getModel().removeNode(this, true);
         }
         this.object = null;
         super.dispose();

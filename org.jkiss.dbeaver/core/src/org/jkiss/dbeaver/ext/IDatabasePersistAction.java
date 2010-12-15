@@ -13,4 +13,6 @@ public interface IDatabasePersistAction {
 
     String getScript();
 
+    void handleExecute(Throwable error);
+
 }

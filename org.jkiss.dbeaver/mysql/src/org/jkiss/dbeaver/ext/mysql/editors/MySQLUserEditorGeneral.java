@@ -59,10 +59,11 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                 ControlCommandListener.create(this, hostText, UserPropertyHandler.HOST);
             }
 
-            Text passwordText = UIUtils.createLabelText(loginGroup, "Password", DEF_PASSWORD_VALUE, SWT.BORDER | SWT.PASSWORD);
+            String password = newUser ? "" : DEF_PASSWORD_VALUE;
+            Text passwordText = UIUtils.createLabelText(loginGroup, "Password", password, SWT.BORDER | SWT.PASSWORD);
             ControlCommandListener.create(this, passwordText, UserPropertyHandler.PASSWORD);
 
-            Text confirmText = UIUtils.createLabelText(loginGroup, "Confirm", DEF_PASSWORD_VALUE, SWT.BORDER | SWT.PASSWORD);
+            Text confirmText = UIUtils.createLabelText(loginGroup, "Confirm", password, SWT.BORDER | SWT.PASSWORD);
             ControlCommandListener.create(this, confirmText, UserPropertyHandler.PASSWORD_CONFIRM);
         }
 

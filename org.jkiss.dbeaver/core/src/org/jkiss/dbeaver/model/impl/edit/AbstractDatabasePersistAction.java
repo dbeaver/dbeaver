@@ -35,4 +35,9 @@ public class AbstractDatabasePersistAction implements IDatabasePersistAction {
         return script;
     }
 
+    public void handleExecute(Throwable error)
+    {
+        // do nothing
+    }
+
 }

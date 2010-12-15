@@ -26,7 +26,9 @@ public abstract class JDBCDatabaseObjectManager<OBJECT_TYPE extends DBSObject> e
         DBCStatement dbStat = context.prepareStatement(script, false, false, false);
         try {
             dbStat.executeStatement();
+            action.handleExecute(null);
         } catch (DBCException e) {
+            action.handleExecute(e);
             throw new DBCException("Could not execute script:" + ContentUtils.getDefaultLineSeparator() + script, e);
         } finally {
             dbStat.close();

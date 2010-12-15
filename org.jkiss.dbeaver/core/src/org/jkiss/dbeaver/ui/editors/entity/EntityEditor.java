@@ -105,14 +105,19 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         monitor.done();
 
         if (previewResult == IDialogConstants.PROCEED_ID) {
+            Throwable error = null;
             try {
                 objectManager.saveChanges(new DefaultProgressMonitor(monitor));
             } catch (DBException e) {
-                UIUtils.showErrorDialog(getSite().getShell(), "Could not save '" + objectManager.getObject().getName() + "'", e.getMessage(), e);
+                error = e;
             }
+            final Throwable showError = error;
             Display.getDefault().asyncExec(new Runnable() {
                 public void run()
                 {
+                    if (showError != null) {
+                        UIUtils.showErrorDialog(getSite().getShell(), "Could not save '" + objectManager.getObject().getName() + "'", null, showError);
+                    }
                     firePropertyChange(IEditorPart.PROP_DIRTY);
                 }
             });
@@ -175,6 +180,12 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         Collection<IDatabaseObjectCommand> commands = getObjectManager().getCommands();
         StringBuilder script = new StringBuilder();
         for (IDatabaseObjectCommand command : commands) {
+            try {
+                command.validateCommand(getObjectManager().getObject());
+            } catch (DBException e) {
+                UIUtils.showErrorDialog(getSite().getShell(), "Validation", e.getMessage());
+                return IDialogConstants.CANCEL_ID;
+            }
             IDatabasePersistAction[] persistActions = command.getPersistActions(getObjectManager().getObject());
             if (!CommonUtils.isEmpty(persistActions)) {
                 for (IDatabasePersistAction action : persistActions) {
@@ -495,22 +506,24 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     public void refreshDatabaseContent(final DBNEvent event)
     {
         // Reinit object manager
+        final boolean persisted = objectManager.getObject().isPersisted();
         if (objectManager != null) {
-            if (!objectManager.getObject().isPersisted()) {
-                // do not refresh not persisted objects
-                return;
+            if (persisted) {
+                this.objectManager.setObject(event.getNode().getObject());
             }
-            this.objectManager.setObject(event.getNode().getObject());
         }
         // Refresh visual content in parts
         getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
-            int pageCount = getPageCount();
-            for (int i = 0; i < pageCount; i++) {
-                IWorkbenchPart part = getEditor(i);
-                if (part instanceof IRefreshablePart) {
-                    ((IRefreshablePart)part).refreshPart(event);
+            if (persisted) {
+                int pageCount = getPageCount();
+                for (int i = 0; i < pageCount; i++) {
+                    IWorkbenchPart part = getEditor(i);
+                    if (part instanceof IRefreshablePart) {
+                        ((IRefreshablePart)part).refreshPart(event);
+                    }
                 }
             }
+            setPartName(getEditorInput().getName());
             setTitleImage(getEditorInput().getImageDescriptor());
         }});
     }
