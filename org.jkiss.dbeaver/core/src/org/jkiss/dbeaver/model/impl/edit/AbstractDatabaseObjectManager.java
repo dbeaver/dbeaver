@@ -77,12 +77,14 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
             throw new IllegalArgumentException("Object can't be NULL");
         }
 */
-        this.object = object;
+        if (this.object != object) {
+            this.object = object;
 
-        // Clear all commands
-        this.commands.clear();
-        clearUndidCommands();
-        clearMergedCommands();
+            // Clear all commands
+            this.commands.clear();
+            clearUndidCommands();
+            clearMergedCommands();
+        }
     }
 
     public boolean supportsEdit() {
@@ -230,7 +232,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     public boolean canUndoCommand()
     {
         synchronized (commands) {
-            return !commands.isEmpty();
+            return !commands.isEmpty() && commands.get(commands.size() - 1).command.isUndoable();
         }
     }
 
@@ -249,6 +251,9 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
         synchronized (commands) {
             CommandInfo lastCommand = commands.remove(commands.size() - 1);
+            if (!lastCommand.command.isUndoable()) {
+                throw new IllegalStateException("Last executed command is not undoable");
+            }
             // Undo UI changes and put command in undid command stack
             if (lastCommand.reflector != null) {
                 lastCommand.reflector.undoCommand(lastCommand.command);

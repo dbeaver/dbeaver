@@ -20,6 +20,8 @@ public interface IDatabaseObjectCommand<OBJECT_TYPE extends DBSObject> {
 
     Image getIcon();
 
+    boolean isUndoable();
+
     /**
      * Validates command.
      * If command is fine then just returns, otherwise throws an exception

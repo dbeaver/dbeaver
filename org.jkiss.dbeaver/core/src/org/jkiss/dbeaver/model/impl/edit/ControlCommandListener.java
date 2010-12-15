@@ -148,17 +148,18 @@ public class ControlCommandListener <OBJECT_TYPE extends DBSObject> {
                     final Object newValue = readWidgetValue();
                     if (curCommand == null) {
                         if (!CommonUtils.equalObjects(newValue, originalValue)) {
-                            curCommand = new DatabaseObjectPropertyCommand<OBJECT_TYPE>(handler);
-                            curCommand.setOldValue(originalValue);
-                            curCommand.setNewValue(newValue);
+                            final DatabaseObjectPropertyCommand<OBJECT_TYPE> command = new DatabaseObjectPropertyCommand<OBJECT_TYPE>(handler);
+                            command.setOldValue(originalValue);
+                            command.setNewValue(newValue);
+                            curCommand = command;
                             objectEditor.addChangeCommand(curCommand, new IDatabaseObjectCommandReflector<OBJECT_TYPE, DatabaseObjectPropertyCommand<OBJECT_TYPE>>() {
                                 public void redoCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> object_typeControlDatabaseObjectCommand)
                                 {
-                                    writeWidgetValue(curCommand.getNewValue());
+                                    writeWidgetValue(command.getNewValue());
                                 }
                                 public void undoCommand(DatabaseObjectPropertyCommand<OBJECT_TYPE> object_typeControlDatabaseObjectCommand)
                                 {
-                                    writeWidgetValue(curCommand.getOldValue());
+                                    writeWidgetValue(command.getOldValue());
                                 }
                             });
                         }

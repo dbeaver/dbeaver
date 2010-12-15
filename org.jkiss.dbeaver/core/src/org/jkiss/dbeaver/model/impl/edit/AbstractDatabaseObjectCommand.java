@@ -40,6 +40,11 @@ public abstract class AbstractDatabaseObjectCommand<OBJECT_TYPE extends DBSObjec
         return icon;
     }
 
+    public boolean isUndoable()
+    {
+        return true;
+    }
+
     public void validateCommand(OBJECT_TYPE object) throws DBException
     {
         // do nothing by default

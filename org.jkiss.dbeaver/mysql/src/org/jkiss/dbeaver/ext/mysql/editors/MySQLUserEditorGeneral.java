@@ -29,6 +29,7 @@ import java.util.List;
 public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 {
     //static final Log log = LogFactory.getLog(MySQLUserEditorGeneral.class);
+    public static final String DEF_PASSWORD_VALUE = "**********";
 
     private PageControl pageControl;
     private boolean isLoaded;
@@ -46,14 +47,14 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
             Composite loginGroup = UIUtils.createControlGroup(container, "Login", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 200);
 
             Text userNameText = UIUtils.createLabelText(loginGroup, "User Name", getUser().getUserName());
-            userNameText.setEditable(false);
+            userNameText.setEditable(!getDatabaseObject().isPersisted());
             Text hostText = UIUtils.createLabelText(loginGroup, "Host", getUser().getHost());
-            hostText.setEditable(false);
+            hostText.setEditable(!getDatabaseObject().isPersisted());
 
-            Text passwordText = UIUtils.createLabelText(loginGroup, "Password", "**********", SWT.BORDER | SWT.PASSWORD);
+            Text passwordText = UIUtils.createLabelText(loginGroup, "Password", DEF_PASSWORD_VALUE, SWT.BORDER | SWT.PASSWORD);
             ControlCommandListener.create(this, passwordText, UserPropertyHandler.PASSWORD);
 
-            Text confirmText = UIUtils.createLabelText(loginGroup, "Confirm", "**********", SWT.BORDER | SWT.PASSWORD);
+            Text confirmText = UIUtils.createLabelText(loginGroup, "Confirm", DEF_PASSWORD_VALUE, SWT.BORDER | SWT.PASSWORD);
             ControlCommandListener.create(this, confirmText, UserPropertyHandler.PASSWORD_CONFIRM);
         }
 

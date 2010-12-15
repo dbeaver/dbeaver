@@ -64,6 +64,27 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     }
 
     @Override
+    public void dispose()
+    {
+        if (objectManager != null && objectManager.getObject() != null && !objectManager.getObject().isPersisted()) {
+            // If edited object is still not persisted then remove object's node
+            DBNNode treeNode = getEditorInput().getTreeNode();
+            if (treeNode instanceof DBNTreeItem) {
+                DBNNode parentNode = treeNode.getParentNode();
+                if (parentNode instanceof DBNTreeFolder) {
+                    try {
+                        ((DBNTreeFolder)parentNode).removeChildItem((DBNTreeItem)treeNode);
+                    } catch (DBException e) {
+                        log.error(e);
+                    }
+                }
+            }
+        }
+        objectManager = null;
+        super.dispose();
+    }
+
+    @Override
     public boolean isDirty()
     {
         return objectManager.isDirty();
@@ -198,19 +219,24 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
         DBSObject databaseObject = getEditorInput().getDatabaseObject();
 
-        // Instantiate object manager
-        EntityManagerDescriptor managerDescriptor = editorsRegistry.getEntityManager(databaseObject.getClass());
-        if (managerDescriptor != null) {
-            this.objectManager = managerDescriptor.createManager();
-            if (this.objectManager == null) {
-                log.warn("Could not instantiate object manager '" + managerDescriptor.getName() + "'");
-            }
-        }
-        if (this.objectManager == null) {
-            this.objectManager = new DefaultDatabaseObjectManager();
-        }
+        this.objectManager = getEditorInput().getObjectManager();
 
-        this.objectManager.setObject(databaseObject);
+        if (this.objectManager == null) {
+            // Instantiate new object manager
+            EntityManagerDescriptor managerDescriptor = editorsRegistry.getEntityManager(databaseObject.getClass());
+            if (managerDescriptor != null) {
+                this.objectManager = managerDescriptor.createManager();
+                if (this.objectManager == null) {
+                    log.warn("Could not instantiate object manager '" + managerDescriptor.getName() + "'");
+                }
+            }
+            if (this.objectManager == null) {
+                // Create default object manager
+                this.objectManager = new DefaultDatabaseObjectManager();
+            }
+
+            this.objectManager.setObject(databaseObject);
+        }
 
         // Add object editor page
         EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(databaseObject.getClass());
@@ -470,6 +496,10 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     {
         // Reinit object manager
         if (objectManager != null) {
+            if (!objectManager.getObject().isPersisted()) {
+                // do not refresh not persisted objects
+                return;
+            }
             this.objectManager.setObject(event.getNode().getObject());
         }
         // Refresh visual content in parts

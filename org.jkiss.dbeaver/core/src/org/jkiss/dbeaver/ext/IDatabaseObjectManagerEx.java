@@ -16,6 +16,9 @@ import java.util.Collection;
  */
 public interface IDatabaseObjectManagerEx<OBJECT_TYPE extends DBSObject> extends IDatabaseObjectManager<OBJECT_TYPE> {
 
+    public static final long FEATURE_SAVE_IMMEDIATELY = 1;
+    public static final long FEATURE_CREATE_FROM_PASTE = 2;
+
     void createNewObject(DBSObject parent, OBJECT_TYPE copyFrom);
 
     void deleteObject(OBJECT_TYPE object);

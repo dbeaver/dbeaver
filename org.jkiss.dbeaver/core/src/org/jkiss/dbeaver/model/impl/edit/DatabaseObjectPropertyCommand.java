@@ -23,15 +23,16 @@ public class DatabaseObjectPropertyCommand<OBJECT_TYPE extends DBSObject> extend
     private Object oldValue;
     private Object newValue;
 
-    protected DatabaseObjectPropertyCommand(Image icon, DatabaseObjectPropertyHandler<OBJECT_TYPE> handler)
+    public DatabaseObjectPropertyCommand(DatabaseObjectPropertyHandler<OBJECT_TYPE> handler)
     {
-        super("Change property " + handler, icon);
+        super("Change property " + handler, null);
         this.handler = handler;
     }
 
-    protected DatabaseObjectPropertyCommand(DatabaseObjectPropertyHandler<OBJECT_TYPE> handler)
+    public DatabaseObjectPropertyCommand(DatabaseObjectPropertyHandler<OBJECT_TYPE> handler, Object newValue)
     {
-        this(null, handler);
+        this(handler);
+        this.newValue = newValue;
     }
 
     public DatabaseObjectPropertyHandler<OBJECT_TYPE> getHandler()

@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.ext.mysql.runtime;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManagerEx;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
+import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectPropertyCommand;
+import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectPropertyHandler;
 import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectScriptCommand;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCDatabaseObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -33,11 +35,29 @@ public class MySQLUserManager extends JDBCDatabaseObjectManager<MySQLUser> imple
 
     public void createNewObject(DBSObject parent, MySQLUser copyFrom)
     {
-        setObject(new MySQLUser((MySQLDataSource) parent, null));
+        MySQLUser newUser = new MySQLUser((MySQLDataSource) parent, null);
+        setObject(newUser);
+        addCommand(new NewUserPropertyCommand(UserPropertyHandler.NAME, newUser.getUserName()), null);
+        addCommand(new NewUserPropertyCommand(UserPropertyHandler.HOST, newUser.getHost()), null);
     }
 
     public void deleteObject(MySQLUser object)
     {
 
     }
+
+    private static class NewUserPropertyCommand extends DatabaseObjectPropertyCommand<MySQLUser> {
+        public NewUserPropertyCommand(UserPropertyHandler property, Object value)
+        {
+            super(property, value);
+        }
+
+        @Override
+        public boolean isUndoable()
+        {
+            return false;
+        }
+    }
+
 }
+

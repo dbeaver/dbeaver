@@ -12,6 +12,8 @@ import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectPropertyHandler;
 * User property handler
 */
 public enum UserPropertyHandler implements DatabaseObjectPropertyHandler<MySQLUser> {
+    NAME,
+    HOST,
     PASSWORD,
     PASSWORD_CONFIRM,
     MAX_QUERIES,
