@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
@@ -33,31 +34,32 @@ public class DatabaseEditorListener implements IDBNListener
     public void nodeChanged(final DBNEvent event)
     {
         if (isValuableNode(event.getNode())) {
+            boolean closeEditor = false;
             if (event.getAction() == DBNEvent.Action.REMOVE) {
-                databaseEditor.getSite().getShell().getDisplay().asyncExec(new Runnable() { public void run() {
+                closeEditor = true;
+            } else if (event.getAction() == DBNEvent.Action.UPDATE) {
+                if (event.getNodeChange() == DBNEvent.NodeChange.REFRESH ||
+                    event.getNodeChange() == DBNEvent.NodeChange.LOAD)
+                {
+                    databaseEditor.refreshDatabaseContent(event);
+                } else if (event.getNodeChange() == DBNEvent.NodeChange.UNLOAD) {
+                    closeEditor = true;
+                }
+            }
+            if (closeEditor) {
+                Display.getDefault().asyncExec(new Runnable() { public void run() {
                     IWorkbenchPage workbenchPage = databaseEditor.getSite().getWorkbenchWindow().getActivePage();
                     if (workbenchPage != null) {
                         workbenchPage.closeEditor(databaseEditor, false);
                     }
                 }});
-            } else if (event.getAction() == DBNEvent.Action.UPDATE) {
-                if (event.getNodeChange() == DBNEvent.NodeChange.REFRESH ||
-                    event.getNodeChange() == DBNEvent.NodeChange.LOAD ||
-                    event.getNodeChange() == DBNEvent.NodeChange.UNLOAD)
-                {
-                    databaseEditor.refreshDatabaseContent(event);
-                }
             }
         }
     }
 
     protected boolean isValuableNode(DBNNode node)
     {
-        DBNNode editorNode = databaseEditor.getEditorInput().getTreeNode();
-        while (editorNode instanceof DBNTreeFolder) {
-            editorNode = editorNode.getParentNode();
-        }
-        return node == editorNode;
+        return databaseEditor.getEditorInput().getTreeNode().isChildOf(node);
     }
 
 

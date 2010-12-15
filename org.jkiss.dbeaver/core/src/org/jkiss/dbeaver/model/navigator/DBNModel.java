@@ -37,7 +37,8 @@ public class DBNModel implements DBPEventListener {
 
     private DataSourceRegistry registry;
     private DBNRoot root;
-    private List<IDBNListener> listeners = new ArrayList<IDBNListener>();
+    private final List<IDBNListener> listeners = new ArrayList<IDBNListener>();
+    private transient IDBNListener[] listenersCopy = null;
     private Map<DBSObject, Object> nodeMap = new HashMap<DBSObject, Object>();
     private DBNAdapterFactory nodesAdapter;
 
@@ -71,6 +72,7 @@ public class DBNModel implements DBPEventListener {
             }
         }
         this.listeners.clear();
+        this.listenersCopy = null;
     }
 
     public DBeaverCore getApplication()
@@ -244,17 +246,23 @@ public class DBNModel implements DBPEventListener {
 
     public void addListener(IDBNListener listener)
     {
-        if (this.listeners.contains(listener)) {
-            log.warn("Listener " + listener + " already registered in model");
-        } else {
-            this.listeners.add(listener);
+        synchronized (this.listeners) {
+            if (this.listeners.contains(listener)) {
+                log.warn("Listener " + listener + " already registered in model");
+            } else {
+                this.listeners.add(listener);
+            }
+            this.listenersCopy = this.listeners.toArray(new IDBNListener[this.listeners.size()]);
         }
     }
 
     public void removeListener(IDBNListener listener)
     {
-        if (!this.listeners.remove(listener)) {
-            log.warn("Listener " + listener + " wasn't registered in model");
+        synchronized (this.listeners) {
+            if (!this.listeners.remove(listener)) {
+                log.warn("Listener " + listener + " wasn't registered in model");
+            }
+            this.listenersCopy = this.listeners.toArray(new IDBNListener[this.listeners.size()]);
         }
     }
 
@@ -265,10 +273,13 @@ public class DBNModel implements DBPEventListener {
 
     void fireNodeEvent(final DBNEvent event)
     {
-        if (listeners.isEmpty()) {
-            return;
+        IDBNListener[] listenersCopy;
+        synchronized (this.listeners) {
+            if (listeners.isEmpty()) {
+                return;
+            }
+            listenersCopy = this.listenersCopy;
         }
-        IDBNListener[] listenersCopy = listeners.toArray(new IDBNListener[listeners.size()]);
         for (IDBNListener listener :  listenersCopy) {
             listener.nodeChanged(event);
         }
@@ -298,8 +309,6 @@ public class DBNModel implements DBPEventListener {
                             nodeChange = DBNEvent.NodeChange.LOAD;
                         } else {
                             nodeChange = DBNEvent.NodeChange.UNLOAD;
-                            // Clear unloaded node
-                            dbmNode.clearNode();
                         }
                     } else {
                         nodeChange = DBNEvent.NodeChange.REFRESH;
@@ -308,6 +317,11 @@ public class DBNModel implements DBPEventListener {
                         this,
                         dbmNode, 
                         nodeChange);
+
+                    if (enabled != null && !enabled) {
+                        // Clear disabled node
+                        dbmNode.clearNode();
+                    }
                 }
                 break;
             }
