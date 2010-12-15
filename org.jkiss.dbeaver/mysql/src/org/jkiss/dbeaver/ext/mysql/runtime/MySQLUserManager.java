@@ -8,12 +8,12 @@ import org.jkiss.dbeaver.ext.IDatabaseObjectManagerEx;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectPropertyCommand;
-import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectPropertyHandler;
 import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectScriptCommand;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCDatabaseObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * MySQLUserManager
@@ -41,9 +41,9 @@ public class MySQLUserManager extends JDBCDatabaseObjectManager<MySQLUser> imple
         addCommand(new NewUserPropertyCommand(UserPropertyHandler.HOST, newUser.getHost()), null);
     }
 
-    public void deleteObject(MySQLUser object)
+    public void deleteObject(MySQLUser object, Map<String, Object> options)
     {
-
+        addCommand(new MySQLCommandDropUser(), null);
     }
 
     private static class NewUserPropertyCommand extends DatabaseObjectPropertyCommand<MySQLUser> {

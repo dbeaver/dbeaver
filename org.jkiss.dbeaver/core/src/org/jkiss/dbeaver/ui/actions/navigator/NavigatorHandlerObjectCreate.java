@@ -39,9 +39,9 @@ public class NavigatorHandlerObjectCreate extends NavigatorHandlerObjectBase {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
             Object element = structSelection.getFirstElement();
             if (element instanceof DBNNode) {
-                if (createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), (DBNNode) element)) {
-                    return null;
-                }
+                createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), (DBNNode) element);
+            } else {
+                log.error("Can't create new object based on selected element '" + element + "'");
             }
         }
         return null;
@@ -60,45 +60,52 @@ public class NavigatorHandlerObjectCreate extends NavigatorHandlerObjectBase {
         }
         if (folder == null || !(folder.getValueObject() instanceof DBSObject)) {
             log.error("Can't create child object for folder " + folder);
-            return true;
+            return false;
         }
         Class childType = folder.getChildrenType();
-        if (childType != null) {
-            EntityManagerDescriptor entityManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(childType);
-            if (entityManager != null) {
-                IDatabaseObjectManager<?> objectManager = entityManager.createManager();
-                if (objectManager instanceof IDatabaseObjectManagerEx<?>) {
-                    IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
-                    try {
-                        ObjectCreator objectCreator = new ObjectCreator(folder, (IDatabaseObjectManagerEx<?>) objectManager);
-                        try {
-                            workbenchWindow.run(true, true, objectCreator);
-                        } catch (InvocationTargetException e) {
-                            log.error("Can't create new object", e);
-                        } catch (InterruptedException e) {
-                            // do nothing
-                        }
-                        DBNTreeItem newChild = objectCreator.getNewChild();
-                        if (newChild != null) {
-                            EntityEditorInput editorInput = new EntityEditorInput(newChild, objectManager);
-                            try {
-                                workbenchWindow.getActivePage().openEditor(
-                                    editorInput,
-                                    EntityEditor.class.getName());
-                            } catch (PartInitException e) {
-                                log.error("Can't open editor for new object", e);
-                            }
-                        }
-                    }
-                    finally {
-                        if (oldActivePart instanceof DatabaseNavigatorView) {
-                            workbenchWindow.getActivePage().activate(oldActivePart);
-                        }
-                    }
-                }
+        if (childType == null) {
+            log.error("Can't determine child element type for folder '" + folder.getNodeName() + "'");
+            return false;
+        }
+        EntityManagerDescriptor entityManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(childType);
+        if (entityManager == null) {
+            log.error("Object manager not found for type '" + childType.getName() + "'");
+            return false;
+        }
+        IDatabaseObjectManager<?> objectManager = entityManager.createManager();
+        if (!(objectManager instanceof IDatabaseObjectManagerEx<?>)) {
+            log.error("Object manager '" + objectManager.getClass().getName() + "' do not supports object creation");
+            return false;
+        }
+        IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
+        try {
+            ObjectCreator objectCreator = new ObjectCreator(folder, (IDatabaseObjectManagerEx<?>) objectManager);
+            try {
+                workbenchWindow.run(true, true, objectCreator);
+            } catch (InvocationTargetException e) {
+                log.error("Can't create new object", e);
+                return false;
+            } catch (InterruptedException e) {
+                // do nothing
+            }
+            DBNTreeItem newChild = objectCreator.getNewChild();
+            EntityEditorInput editorInput = new EntityEditorInput(newChild, objectManager);
+            try {
+                workbenchWindow.getActivePage().openEditor(
+                    editorInput,
+                    EntityEditor.class.getName());
+            } catch (PartInitException e) {
+                log.error("Can't open editor for new object", e);
+                return false;
             }
         }
-        return false;
+        finally {
+            if (oldActivePart instanceof DatabaseNavigatorView) {
+                workbenchWindow.getActivePage().activate(oldActivePart);
+            }
+        }
+
+        return true;
     }
 
     private static class ObjectCreator implements IRunnableWithProgress {
