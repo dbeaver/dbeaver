@@ -667,7 +667,7 @@ public class SQLEditor extends SQLEditorBase
         } else {
             resultsView.setStatus("Connected to '" + getDataSource().getContainer().getName() + "'");
         }
-        resultsView.refresh();
+        //resultsView.refresh();
         // Refresh plan view
         planView.refresh();
 
