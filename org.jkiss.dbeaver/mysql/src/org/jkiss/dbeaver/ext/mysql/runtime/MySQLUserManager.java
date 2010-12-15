@@ -43,6 +43,7 @@ public class MySQLUserManager extends JDBCDatabaseObjectManager<MySQLUser> imple
 
     public void deleteObject(MySQLUser object, Map<String, Object> options)
     {
+        setObject(object);
         addCommand(new MySQLCommandDropUser(), null);
     }
 

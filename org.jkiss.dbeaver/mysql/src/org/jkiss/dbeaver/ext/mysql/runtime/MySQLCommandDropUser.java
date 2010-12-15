@@ -20,15 +20,6 @@ public class MySQLCommandDropUser extends DatabaseObjectCompositeCommand<MySQLUs
         super("Drop user");
     }
 
-    public void updateModel(MySQLUser object)
-    {
-    }
-
-    @Override
-    public void validateCommand(MySQLUser object) throws DBException
-    {
-    }
-
     public IDatabasePersistAction[] getPersistActions(final MySQLUser object)
     {
         return new IDatabasePersistAction[] {

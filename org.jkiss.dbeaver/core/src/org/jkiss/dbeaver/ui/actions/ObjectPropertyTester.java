@@ -12,6 +12,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManagerEx;
+import org.jkiss.dbeaver.model.DBPDeletableObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeItem;
@@ -52,7 +53,7 @@ public class ObjectPropertyTester extends PropertyTester
                 objectType != null &&
                 hasExtendedManager(objectType);
         } else if (property.equals(PROP_CAN_DELETE)) {
-            return
+            return node instanceof DBPDeletableObject ||
                 node instanceof DBNTreeItem &&
                 node.getObject() != null &&
                 node.getObject().isPersisted() &&

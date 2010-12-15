@@ -59,7 +59,8 @@ public class DatabaseEditorListener implements IDBNListener
 
     protected boolean isValuableNode(DBNNode node)
     {
-        return databaseEditor.getEditorInput().getTreeNode().isChildOf(node);
+        DBNNode editorNode = databaseEditor.getEditorInput().getTreeNode();
+        return node == editorNode || editorNode.isChildOf(node);
     }
 
 

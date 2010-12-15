@@ -16,12 +16,18 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManagerEx;
+import org.jkiss.dbeaver.model.DBPDeletableObject;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNTreeItem;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 import java.util.Map;
 
 public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
@@ -31,9 +37,11 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
 
         if (selection instanceof IStructuredSelection) {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
-            Object element = structSelection.getFirstElement();
-            if (element instanceof DBNTreeNode) {
-                deleteObject(HandlerUtil.getActiveWorkbenchWindow(event), (DBNTreeNode)element);
+            for (Iterator iter = structSelection.iterator(); iter.hasNext(); ) {
+                Object element = iter.next();
+                if (element instanceof DBNTreeNode) {
+                    deleteObject(HandlerUtil.getActiveWorkbenchWindow(event), (DBNTreeNode)element);
+                }
             }
         }
         return null;
@@ -41,6 +49,27 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
 
     private boolean deleteObject(IWorkbenchWindow workbenchWindow, DBNTreeNode node)
     {
+        if (!ConfirmationDialog.confirmActionWithParams(
+            workbenchWindow.getShell(),
+            PrefConstants.CONFIRM_ENTITY_DELETE,
+            node.getMeta().getLabel(),
+            node.getNodeName()))
+        {
+            return false;
+        }
+
+        // Check for deletable object
+        if (node instanceof DBPDeletableObject) {
+            ((DBPDeletableObject) node).deleteObject(workbenchWindow);
+            return true;
+        }
+
+        if (!(node instanceof DBNTreeItem)) {
+            log.error("Only tree items could be deleted");
+            return false;
+        }
+
+        // Try to delete object using object manager
         DBSObject object = node.getObject();
         if (object == null) {
             log.error("Can't delete node with null object");
@@ -56,9 +85,11 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             log.error("Object manager '" + objectManager.getClass().getName() + "' do not supports object deletion");
             return false;
         }
+
         IDatabaseObjectManagerEx objectManagerEx = (IDatabaseObjectManagerEx)objectManager;
         Map<String, Object> deleteOptions = null;
 
+        // Delete object
         ObjectDeleter deleter = new ObjectDeleter(objectManagerEx, node, deleteOptions);
         try {
             workbenchWindow.run(true, true, deleter);
@@ -67,6 +98,16 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             return false;
         } catch (InterruptedException e) {
             // do nothing
+        }
+
+        // Remove node
+        DBNNode parent = node.getParentNode();
+        if (parent instanceof DBNTreeNode) {
+            try {
+                ((DBNTreeNode)parent).removeChildItem((DBNTreeItem) node);
+            } catch (DBException e) {
+                log.error(e);
+            }
         }
 
         return true;
@@ -87,7 +128,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {
-                objectManager.deleteObject(node.getObject(), null);
+                objectManager.deleteObject(node.getObject(), deleteOptions);
 
                 objectManager.saveChanges(new DefaultProgressMonitor(monitor));
             } catch (DBException e) {

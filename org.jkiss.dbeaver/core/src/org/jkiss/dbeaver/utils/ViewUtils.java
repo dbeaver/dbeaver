@@ -187,8 +187,8 @@ public class ViewUtils
                                 if (ICommandIds.CMD_OPEN_OBJECT.equals(contribId)) {
                                     if (multipleSelection) {
                                         item.setText("Edit objects");
-                                    } else if (node instanceof DBNTreeItem) {
-                                        item.setText("Edit " + ((DBNTreeItem)node).getMeta().getLabel());
+                                    } else if (node instanceof DBNTreeNode) {
+                                        item.setText("Edit " + ((DBNTreeNode)node).getMeta().getLabel());
                                     }
                                 } else if (ICommandIds.CMD_CREATE_OBJECT.equals(contribId)) {
                                     String objectName = "";
@@ -198,11 +198,13 @@ public class ViewUtils
                                         objectName = ((DBNTreeItem)node).getMeta().getLabel();
                                     }
                                     item.setText("Create new " + objectName);
-                                } else if (ICommandIds.CMD_DELETE_OBJECT.equals(contribId)) {
+                                } else if (ICommandIds.CMD_DELETE_OBJECT.equals(contribId) || IWorkbenchCommandConstants.EDIT_DELETE.equals(contribId)) {
                                     if (multipleSelection) {
                                         item.setText("Delete objects");
-                                    } else if (node instanceof DBNTreeItem) {
-                                        item.setText("Delete " + ((DBNTreeItem)node).getMeta().getLabel());
+                                    } else if (node instanceof DBNTreeNode) {
+                                        item.setText("Delete " + ((DBNTreeNode)node).getMeta().getLabel());
+                                    } else {
+                                        item.setText("Delete '" + node.getNodeName() + "'");
                                     }
                                 }
                             }

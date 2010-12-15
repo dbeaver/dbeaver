@@ -31,5 +31,6 @@ public final class PrefConstants
     public static final String CONFIRM_RS_EDIT_CLOSE = "close.resultset.edit";
     public static final String CONFIRM_TXN_DISCONNECT = "disconnect.txn";
     public static final String CONFIRM_ENTITY_EDIT_CLOSE = "close.entity.edit";
+    public static final String CONFIRM_ENTITY_DELETE = "entity.delete";
 
 }

@@ -104,21 +104,10 @@ public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject, IA
     }
 
     public void deleteObject(final IWorkbenchWindow workbenchWindow) {
-        workbenchWindow.getShell().getDisplay().syncExec(new Runnable() {
-            public void run() {
-                if (UIUtils.confirmAction(
-                    workbenchWindow.getShell(),
-                    "Delete connection",
-                    "Are you sure you want to delete connection '" + dataSource.getName() + "'?"))
-                {
-                    // Then delete it
-                    if (dataSource.isConnected()) {
-                        DataSourceDisconnectHandler.execute(dataSource);
-                    }
-                    DataSourceRegistry.getDefault().removeDataSource(dataSource);
-                }
-            }
-        });
+        if (dataSource.isConnected()) {
+            DataSourceDisconnectHandler.execute(dataSource);
+        }
+        DataSourceRegistry.getDefault().removeDataSource(dataSource);
     }
 
     public Object getAdapter(Class adapter) {

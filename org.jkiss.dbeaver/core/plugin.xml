@@ -240,16 +240,6 @@
             </activeWhen>
         </handler>
 
-        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerDelete">
-            <activeWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.DBPDeletableObject"/>
-                    </iterate>
-                </with>
-            </activeWhen>
-        </handler>
         <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh">
             <activeWhen>
                 <with variable="activePart">
@@ -406,11 +396,23 @@
         <handler commandId="org.jkiss.dbeaver.core.object.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectDelete">
             <enabledWhen>
                 <with variable="selection">
+                    <count value="+"/>
                     <iterate operator="and">
                         <test property="org.jkiss.dbeaver.core.object.canDelete"/>
                     </iterate>
                 </with>
             </enabledWhen>
+        </handler>
+
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectDelete">
+            <activeWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <test property="org.jkiss.dbeaver.core.object.canDelete"/>
+                    </iterate>
+                </with>
+            </activeWhen>
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.new.sql.editor" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLEditorHandler">
@@ -838,7 +840,10 @@
             <command commandId="org.jkiss.dbeaver.core.object.create">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.object.delete">
+            <!--command commandId="org.jkiss.dbeaver.core.object.delete">
+                <visibleWhen checkEnabled="true"/>
+            </command-->
+            <command commandId="org.eclipse.ui.edit.delete">
                 <visibleWhen checkEnabled="true"/>
             </command>
 
