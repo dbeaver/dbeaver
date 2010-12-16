@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.IDatabaseObjectManagerEx;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeItem;
+import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
@@ -39,7 +40,7 @@ public class NavigatorHandlerObjectCreate extends NavigatorHandlerObjectBase {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
             Object element = structSelection.getFirstElement();
             if (element instanceof DBNNode) {
-                createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), (DBNNode) element);
+                createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), (DBNNode) element, null);
             } else {
                 log.error("Can't create new object based on selected element '" + element + "'");
             }
@@ -47,7 +48,7 @@ public class NavigatorHandlerObjectCreate extends NavigatorHandlerObjectBase {
         return null;
     }
 
-    private boolean createNewObject(IWorkbenchWindow workbenchWindow, DBNNode element)
+    protected boolean createNewObject(IWorkbenchWindow workbenchWindow, DBNNode element, DBNTreeNode copyFrom)
     {
         DBNTreeFolder folder = null;
         if (element instanceof DBNTreeFolder) {
@@ -67,6 +68,11 @@ public class NavigatorHandlerObjectCreate extends NavigatorHandlerObjectBase {
             log.error("Can't determine child element type for folder '" + folder.getNodeName() + "'");
             return false;
         }
+        DBSObject sourceObject = copyFrom == null ? null : copyFrom.getObject();
+        if (sourceObject != null && sourceObject.getClass() != childType) {
+            log.error("Can't create '" + childType.getName() + "' from '" + sourceObject.getClass().getName() + "'");
+            return false;
+        }
         EntityManagerDescriptor entityManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(childType);
         if (entityManager == null) {
             log.error("Object manager not found for type '" + childType.getName() + "'");
@@ -79,7 +85,9 @@ public class NavigatorHandlerObjectCreate extends NavigatorHandlerObjectBase {
         }
         IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
         try {
-            ObjectCreator objectCreator = new ObjectCreator(folder, (IDatabaseObjectManagerEx<?>) objectManager);
+            IDatabaseObjectManagerEx objectManagerEx = (IDatabaseObjectManagerEx) objectManager;
+            objectManagerEx.createNewObject((DBSObject) folder.getValueObject(), sourceObject);
+            ObjectCreator objectCreator = new ObjectCreator(folder, objectManagerEx);
             try {
                 workbenchWindow.run(true, true, objectCreator);
             } catch (InvocationTargetException e) {
@@ -122,7 +130,6 @@ public class NavigatorHandlerObjectCreate extends NavigatorHandlerObjectBase {
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {
-                objectManager.createNewObject((DBSObject) folder.getValueObject(), null);
                 DBSObject newObject = objectManager.getObject();
 
                 newChild = folder.addChildItem(new DefaultProgressMonitor(monitor), newObject);

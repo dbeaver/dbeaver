@@ -36,6 +36,14 @@ public class MySQLUserManager extends JDBCDatabaseObjectManager<MySQLUser> imple
     public void createNewObject(DBSObject parent, MySQLUser copyFrom)
     {
         MySQLUser newUser = new MySQLUser((MySQLDataSource) parent, null);
+        if (copyFrom != null) {
+            newUser.setUserName(copyFrom.getUserName());
+            newUser.setHost(copyFrom.getHost());
+            newUser.setMaxQuestions(copyFrom.getMaxQuestions());
+            newUser.setMaxUpdates(copyFrom.getMaxUpdates());
+            newUser.setMaxConnections(copyFrom.getMaxConnections());
+            newUser.setMaxUserConnections(copyFrom.getMaxUserConnections());
+        }
         setObject(newUser);
         addCommand(new NewUserPropertyCommand(UserPropertyHandler.NAME, newUser.getUserName()), null);
         addCommand(new NewUserPropertyCommand(UserPropertyHandler.HOST, newUser.getHost()), null);

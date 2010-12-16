@@ -408,7 +408,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectCreate">
+        <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectPaste">
             <activeWhen>
                 <and>
                     <with variable="activePartId">
