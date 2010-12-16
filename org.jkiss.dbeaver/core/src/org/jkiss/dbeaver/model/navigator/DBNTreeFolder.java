@@ -82,7 +82,7 @@ public class DBNTreeFolder extends DBNTreeNode implements DBSFolder
 
     public String getDefaultCommandId()
     {
-        return ICommandIds.CMD_OPEN_OBJECT;
+        return ICommandIds.CMD_OBJECT_OPEN;
     }
 
     public String getItemsType()

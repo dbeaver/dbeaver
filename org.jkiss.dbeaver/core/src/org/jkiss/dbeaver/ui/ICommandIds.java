@@ -14,9 +14,12 @@ package org.jkiss.dbeaver.ui;
 public final class ICommandIds
 {
     public static final String CMD_COPY_SPECIAL = "org.jkiss.dbeaver.core.edit.copy.special";
-    public static final String CMD_OPEN_OBJECT = "org.jkiss.dbeaver.core.object.open";
-    public static final String CMD_CREATE_OBJECT = "org.jkiss.dbeaver.core.object.create";
-    public static final String CMD_DELETE_OBJECT = "org.jkiss.dbeaver.core.object.delete";
+
+    public static final String CMD_OBJECT_OPEN = "org.jkiss.dbeaver.core.object.open";
+    public static final String CMD_OBJECT_CREATE = "org.jkiss.dbeaver.core.object.create";
+    public static final String CMD_OBJECT_DELETE = "org.jkiss.dbeaver.core.object.delete";
+    public static final String CMD_OBJECT_FIND = "org.jkiss.dbeaver.core.object.find";
+
     public static final String CMD_EDIT_CONNECTION = "org.jkiss.dbeaver.core.edit.connection";
     public static final String CMD_EXECUTE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.statement";
     public static final String CMD_EXECUTE_SCRIPT = "org.jkiss.dbeaver.ui.editors.sql.run.script";

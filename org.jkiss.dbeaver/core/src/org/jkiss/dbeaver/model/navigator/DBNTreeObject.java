@@ -106,7 +106,7 @@ public class DBNTreeObject extends DBNTreeNode implements DBSObject
 
     public String getDefaultCommandId()
     {
-        return ICommandIds.CMD_OPEN_OBJECT;
+        return ICommandIds.CMD_OBJECT_OPEN;
     }
 
     @Property(name = "Name", viewable = true, order = 1)

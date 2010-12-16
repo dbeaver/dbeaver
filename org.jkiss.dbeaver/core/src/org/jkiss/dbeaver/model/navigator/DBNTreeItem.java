@@ -62,7 +62,7 @@ public class DBNTreeItem extends DBNTreeNode
 
     public String getDefaultCommandId()
     {
-        return ICommandIds.CMD_OPEN_OBJECT;
+        return ICommandIds.CMD_OBJECT_OPEN;
     }
 
 }

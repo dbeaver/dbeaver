@@ -126,6 +126,7 @@
         <command id="org.jkiss.dbeaver.core.object.open" name="Edit Object" description="Open object editor" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.create" name="Create Object" description="Create new database object" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.delete" name="Delete Object" description="Delete database object" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.object.find" name="Search" description="Search for objects" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.statement" name="Execute SQL Statement" description="Execute Statement" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.script" name="Execute SQL Script" description="Execute Script" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -174,6 +175,7 @@
         <image commandId="org.jkiss.dbeaver.core.object.open" icon="icons/tree/edit_item.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.create" icon="IMG_TOOL_NEW_WIZARD"/>
         <image commandId="org.jkiss.dbeaver.core.object.delete" icon="IMG_ETOOL_DELETE"/>
+        <image commandId="org.jkiss.dbeaver.core.object.find" icon="icons/misc/find.png"/>
 
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" icon="icons/sql/sql_exec.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" icon="icons/sql/sql_script_exec.png"/>
@@ -215,6 +217,19 @@
             <with variable="activePart">
                 <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
             </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.active.db.object">
+            <or>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+                    </iterate>
+                </with>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.ext.IDataSourceProvider"/>
+                </with>
+            </or>
         </definition>
     </extension>
 
@@ -404,6 +419,12 @@
             </enabledWhen>
         </handler>
 
+        <handler commandId="org.jkiss.dbeaver.core.object.find" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectFind">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.core.ui.active.db.object"/>
+            </enabledWhen>
+        </handler>
+
         <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectDelete">
             <activeWhen>
                 <with variable="selection">
@@ -417,17 +438,7 @@
 
         <handler commandId="org.jkiss.dbeaver.core.new.sql.editor" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLEditorHandler">
             <enabledWhen>
-                <or>
-                    <with variable="selection">
-                        <count value="+"/>
-                        <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
-                        </iterate>
-                    </with>
-                    <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.ext.IDataSourceProvider"/>
-                    </with>
-                </or>
+                <reference definitionId="org.jkiss.dbeaver.core.ui.active.db.object"/>
             </enabledWhen>
         </handler>
 
@@ -752,6 +763,7 @@
             <command commandId="org.jkiss.dbeaver.core.disconnect"/>
             <separator name="tools" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.new.sql.editor"/>
+            <command commandId="org.jkiss.dbeaver.core.object.find"/>
             <separator name="session" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.commit"/>
             <command commandId="org.jkiss.dbeaver.core.rollback"/>
@@ -768,6 +780,7 @@
                 <command commandId="org.jkiss.dbeaver.core.disconnect"/>
                 <separator name="tools" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.new.sql.editor"/>
+                <command commandId="org.jkiss.dbeaver.core.object.find"/>
             </toolbar>
             <toolbar id="txn" label="Transactions">
                 <command commandId="org.jkiss.dbeaver.core.commit"/>
@@ -1023,6 +1036,7 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+R"/>
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
+        <key commandId="org.jkiss.dbeaver.core.object.find" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+H"/>
 
         <!-- SQL Editor -->
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>

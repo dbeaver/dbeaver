@@ -126,10 +126,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         editMenu.add(new Separator("undoredo"));
         editMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         editMenu.add(new Separator(IWorkbenchActionConstants.FIND_EXT));
+        editMenu.add(findAction);
 
         // Navigate
         navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.NAV_START));
-        navigateMenu.add(findAction);
         navigateMenu.add(new Separator(IWorkbenchActionConstants.OPEN_EXT));
         navigateMenu.add(new Separator(IWorkbenchActionConstants.SHOW_EXT));
         navigateMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));

@@ -43,9 +43,7 @@ import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * NavigatorUtils
@@ -186,7 +184,7 @@ public class ViewUtils
                                 if (contribId != null && contribId.equals(defaultCommandId)) {
                                     m.setDefaultItem(item);
                                 }
-                                if (ICommandIds.CMD_OPEN_OBJECT.equals(contribId)) {
+                                if (ICommandIds.CMD_OBJECT_OPEN.equals(contribId)) {
                                     EntityManagerDescriptor objectManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(node.getObject().getClass());
                                     String actionName = objectManager == null ? "View" : "Edit";
                                     if (multipleSelection) {
@@ -194,7 +192,7 @@ public class ViewUtils
                                     } else if (node instanceof DBNTreeNode) {
                                         item.setText(actionName + " " + ((DBNTreeNode)node).getMeta().getLabel());
                                     }
-                                } else if (ICommandIds.CMD_CREATE_OBJECT.equals(contribId)) {
+                                } else if (ICommandIds.CMD_OBJECT_CREATE.equals(contribId)) {
                                     String objectName = "";
                                     if (node instanceof DBNTreeFolder) {
                                         objectName = ((DBNTreeFolder)node).getMeta().getChildren().get(0).getLabel();
@@ -202,7 +200,7 @@ public class ViewUtils
                                         objectName = ((DBNTreeItem)node).getMeta().getLabel();
                                     }
                                     item.setText("Create new " + objectName);
-                                } else if (ICommandIds.CMD_DELETE_OBJECT.equals(contribId) || IWorkbenchCommandConstants.EDIT_DELETE.equals(contribId)) {
+                                } else if (ICommandIds.CMD_OBJECT_DELETE.equals(contribId) || IWorkbenchCommandConstants.EDIT_DELETE.equals(contribId)) {
                                     if (multipleSelection) {
                                         item.setText("Delete objects");
                                     } else if (node instanceof DBNTreeNode) {
