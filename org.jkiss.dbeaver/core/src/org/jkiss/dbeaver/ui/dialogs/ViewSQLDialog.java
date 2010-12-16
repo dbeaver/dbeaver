@@ -34,7 +34,7 @@ public class ViewSQLDialog extends Dialog {
     private Image image;
     private boolean showSaveButton = false;
 
-    public ViewSQLDialog(final IEditorSite parentSite, DBPDataSource dataSource, String title, String text)
+    public ViewSQLDialog(final IWorkbenchPartSite parentSite, DBPDataSource dataSource, String title, String text)
     {
         super(parentSite.getShell());
         this.dataSource = dataSource;

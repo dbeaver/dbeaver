@@ -4,36 +4,46 @@
 
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
+import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
 
 /**
 * Sub editor site
 */
 public class SubEditorSite implements IEditorSite {
-    private final IEditorSite parentSite;
+    private final IWorkbenchPartSite parentSite;
     private final IActionBars actionBars;
     private final IKeyBindingService keyBindingService;
     private final ISelectionProvider selectionProvider;
 
-    public SubEditorSite(IEditorSite parentSite)
+    public SubEditorSite(IWorkbenchPartSite parentSite)
     {
         this.parentSite = parentSite;
-        this.actionBars = new SubActionBars(parentSite.getActionBars());
+        if (parentSite instanceof IEditorSite) {
+            this.actionBars = new SubActionBars(((IEditorSite)parentSite).getActionBars());
+        } else if (parentSite instanceof IViewSite) {
+            this.actionBars = new SubActionBars(((IViewSite)parentSite).getActionBars());
+        } else {
+            this.actionBars = new FakeActionBars();
+        }
         this.keyBindingService = new FakeKeyBindingService();
         this.selectionProvider = new FakeSelectionProvider();
     }
 
     public IEditorActionBarContributor getActionBarContributor()
     {
-        return parentSite.getActionBarContributor();
+        if (parentSite instanceof IEditorSite) {
+            return ((IEditorSite)parentSite).getActionBarContributor();
+        } else {
+            return new FakeEditorActionBarContributor();
+        }
     }
 
     public IActionBars getActionBars()
@@ -155,6 +165,54 @@ public class SubEditorSite implements IEditorSite {
         }
 
         public void setSelection(ISelection selection)
+        {
+        }
+    }
+
+    private static class FakeEditorActionBarContributor implements IEditorActionBarContributor {
+
+        public void init(IActionBars bars, IWorkbenchPage page)
+        {
+        }
+
+        public void setActiveEditor(IEditorPart targetEditor)
+        {
+        }
+
+        public void dispose()
+        {
+        }
+    }
+
+    private static class FakeActionBars implements IActionBars {
+
+        public void clearGlobalActionHandlers()
+        {
+        }
+        public IAction getGlobalActionHandler(String actionId)
+        {
+            return null;
+        }
+        public IMenuManager getMenuManager()
+        {
+            return null;
+        }
+        public IServiceLocator getServiceLocator()
+        {
+            return null;
+        }
+        public IStatusLineManager getStatusLineManager()
+        {
+            return null;
+        }
+        public IToolBarManager getToolBarManager()
+        {
+            return null;
+        }
+        public void setGlobalActionHandler(String actionId, IAction handler)
+        {
+        }
+        public void updateActionBars()
         {
         }
     }
