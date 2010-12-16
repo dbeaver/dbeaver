@@ -13,6 +13,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
@@ -21,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.edit.DBOEditorInline;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -37,6 +39,8 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
+import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
@@ -46,7 +50,7 @@ import java.util.*;
 /**
  * DataSourceDescriptor
  */
-public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImageProvider, IAdaptable
+public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImageProvider, IAdaptable, DBOEditorInline
 {
     static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
 
@@ -575,6 +579,14 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
             return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(connectTime);
         }
         return null;
+    }
+
+    public void editObject(IWorkbenchWindow workbenchWindow)
+    {
+        ConnectionDialog dialog = new ConnectionDialog(
+            workbenchWindow,
+            new EditConnectionWizard(this));
+        dialog.open();
     }
 
     private class TransactionCloseConfirmer implements Runnable {

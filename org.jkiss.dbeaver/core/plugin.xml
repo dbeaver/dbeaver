@@ -121,7 +121,6 @@
         <command id="org.jkiss.dbeaver.core.rollback" name="Rollback changes" description="Rollback changes in SQL Session" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.txn.autocommit" name="Transactional mode" description="Changes transactional mode of active session" categoryId="org.jkiss.dbeaver.core.database"/>
 
-        <command id="org.jkiss.dbeaver.core.edit.connection" name="Edit Connection" description="Open connection editor dialog" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.new.sql.editor" name="Open SQL Editor" description="Open SQL Editor" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.open" name="Edit Object" description="Open object editor" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.create" name="Create Object" description="Create new database object" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -169,7 +168,6 @@
         <image commandId="org.jkiss.dbeaver.core.commit" icon="icons/sql/commit.png"/>
         <image commandId="org.jkiss.dbeaver.core.rollback" icon="icons/sql/rollback.png"/>
         <image commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_config.png"/>
-        <image commandId="org.jkiss.dbeaver.core.edit.connection" icon="icons/tree/edit_item.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.new.sql.editor" icon="icons/sql/sql_script.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.open" icon="icons/tree/edit_item.png"/>
@@ -372,17 +370,6 @@
                     <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
                         <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
                     </adapt>
-                </with>
-            </enabledWhen>
-        </handler>
-
-        <handler commandId="org.jkiss.dbeaver.core.edit.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceEditHandler">
-            <enabledWhen>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                        <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    </iterate>
                 </with>
             </enabledWhen>
         </handler>
@@ -823,10 +810,6 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.core.databaseNavigator">
-            <command commandId="org.jkiss.dbeaver.core.edit.connection">
-                <visibleWhen checkEnabled="true"/>
-            </command>
-
             <separator name="connection" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.connect">
                <visibleWhen>

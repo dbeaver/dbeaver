@@ -237,8 +237,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     {
         DBXTreeItem treeRoot = new DBXTreeItem(
             null,
-            "Data Source",
-            "Data Source",
+            "Connection",
+            "Connection",
             config.getAttribute("path"),
             null,
             false,

@@ -55,12 +55,12 @@ public class DBNDataSource extends DBNTreeNode implements IAdaptable, IDataSourc
 
     public Object getValueObject()
     {
-        return dataSource.getDataSource();
+        return dataSource == null ? null : dataSource.getDataSource();
     }
 
     public String getNodeName()
     {
-        return dataSource.getName();
+        return dataSource == null ? "" : dataSource.getName();
     }
 
     public String getNodeDescription()
@@ -70,7 +70,7 @@ public class DBNDataSource extends DBNTreeNode implements IAdaptable, IDataSourc
 
     public String getDefaultCommandId()
     {
-        return ICommandIds.CMD_EDIT_CONNECTION;
+        return ICommandIds.CMD_OBJECT_OPEN;
     }
 
     public boolean isLazyNode()
