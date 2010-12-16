@@ -9,5 +9,5 @@ package org.jkiss.dbeaver.model.struct;
  */
 public interface DBSFolder extends DBSObject
 {
-    String getItemsType();
+
 }

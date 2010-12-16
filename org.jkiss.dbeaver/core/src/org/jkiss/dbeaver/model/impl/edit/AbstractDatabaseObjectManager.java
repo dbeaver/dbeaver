@@ -376,9 +376,12 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     }
 
 
-    protected abstract void executePersistAction(
+    protected void executePersistAction(
         DBCExecutionContext context,
         IDatabasePersistAction action)
-        throws DBException;
+        throws DBException
+    {
+        throw new DBException("Object persistence is not implemented");
+    }
 
 }

@@ -62,8 +62,14 @@ public abstract class DBNNode implements IActionFilter, DBSWrapper
         return parentNode;
     }
 
-    public final boolean isLocked() {
+    public final boolean isLocked()
+    {
         return locked || parentNode != null && parentNode.isLocked();
+    }
+
+    public boolean isManagable()
+    {
+        return false;
     }
 
     public abstract Object getValueObject();

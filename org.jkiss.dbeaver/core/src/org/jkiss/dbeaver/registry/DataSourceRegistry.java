@@ -227,6 +227,16 @@ public class DataSourceRegistry implements DBPRegistry
         return null;
     }
 
+    public DataSourceDescriptor findDataSourceByName(String name)
+    {
+        for (DataSourceDescriptor dsd : dataSources) {
+            if (dsd.getName().equals(name)) {
+                return dsd;
+            }
+        }
+        return null;
+    }
+
     public List<DataSourceDescriptor> getDataSources()
     {
         List<DataSourceDescriptor> dsCopy = new ArrayList<DataSourceDescriptor>(dataSources);

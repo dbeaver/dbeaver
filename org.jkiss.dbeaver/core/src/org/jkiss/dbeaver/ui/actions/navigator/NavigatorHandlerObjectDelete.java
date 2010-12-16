@@ -24,9 +24,8 @@ import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManagerEx;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.DBPDeletableObject;
+import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNTreeItem;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
@@ -70,20 +69,10 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         return null;
     }
 
-    private boolean deleteObject(IWorkbenchWindow workbenchWindow, DBNTreeNode node)
+    private boolean deleteObject(IWorkbenchWindow workbenchWindow, DBNNode node)
     {
-        // Check for deletable object
-        if (node instanceof DBPDeletableObject) {
-            if (!confirmObjectDelete(workbenchWindow, node, null)) {
-                return false;
-            }
-
-            ((DBPDeletableObject) node).deleteObject(workbenchWindow);
-            return true;
-        }
-
-        if (!(node instanceof DBNTreeItem)) {
-            log.error("Only tree items could be deleted");
+        if (!(node.getParentNode() instanceof DBNContainer)) {
+            log.error("Node '" + node + "' doesn't have a container");
             return false;
         }
 
@@ -107,7 +96,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         IDatabaseObjectManagerEx objectManagerEx = (IDatabaseObjectManagerEx)objectManager;
         Map<String, Object> deleteOptions = null;
 
-        objectManagerEx.deleteObject(node.getObject(), deleteOptions);
+        objectManagerEx.setObject(node.getObject());
+        objectManagerEx.deleteObject(deleteOptions);
 
         if (!confirmObjectDelete(workbenchWindow, node, objectManager)) {
             objectManagerEx.resetChanges();
@@ -126,19 +116,21 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         }
 
         // Remove node
-        DBNNode parent = node.getParentNode();
-        if (parent instanceof DBNTreeNode) {
-            try {
-                ((DBNTreeNode)parent).removeChildItem((DBNTreeItem) node);
-            } catch (DBException e) {
-                log.error(e);
+        if (!node.isDisposed()) {
+            DBNNode parent = node.getParentNode();
+            if (parent instanceof DBNContainer) {
+                try {
+                    ((DBNContainer)parent).removeChildItem(node);
+                } catch (DBException e) {
+                    log.error(e);
+                }
             }
         }
 
         return true;
     }
 
-    private boolean confirmObjectDelete(final IWorkbenchWindow workbenchWindow, final DBNTreeNode node, final IDatabaseObjectManager<?> objectManager)
+    private boolean confirmObjectDelete(final IWorkbenchWindow workbenchWindow, final DBNNode node, final IDatabaseObjectManager<?> objectManager)
     {
         if (deleteAll != null) {
             return deleteAll;
@@ -147,11 +139,18 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         String titleKey = ConfirmationDialog.RES_CONFIRM_PREFIX + PrefConstants.CONFIRM_ENTITY_DELETE + "." + ConfirmationDialog.RES_KEY_TITLE;
         String messageKey = ConfirmationDialog.RES_CONFIRM_PREFIX + PrefConstants.CONFIRM_ENTITY_DELETE + "." + ConfirmationDialog.RES_KEY_MESSAGE;
 
+        String nodeTypeName;
+        if (node instanceof DBNTreeNode) {
+            nodeTypeName = ((DBNTreeNode)node).getMeta().getLabel();
+        } else {
+            nodeTypeName = "?";
+        }
+
         MessageDialog dialog = new MessageDialog(
             workbenchWindow.getShell(),
-            UIUtils.formatMessage(bundle.getString(titleKey), node.getMeta().getLabel(), node.getNodeName()),
+            UIUtils.formatMessage(bundle.getString(titleKey), nodeTypeName, node.getNodeName()),
             workbenchWindow.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ETOOL_DELETE),
-            UIUtils.formatMessage(bundle.getString(messageKey), node.getMeta().getLabel(), node.getNodeName()),
+            UIUtils.formatMessage(bundle.getString(messageKey), nodeTypeName, node.getNodeName()),
             MessageDialog.CONFIRM, null, 0)
         {
             @Override
@@ -164,7 +163,16 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
                     createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
                 }
                 if (objectManager != null) {
-                    createButton(parent, IDialogConstants.DETAILS_ID, "View Script", false);
+                    boolean hasScript = false;
+                    for (IDatabaseObjectCommand cmd : objectManager.getCommands()) {
+                        if (!CommonUtils.isEmpty(cmd.getPersistActions(objectManager.getObject()))) {
+                            hasScript = true;
+                            break;
+                        }
+                    }
+                    if (hasScript) {
+                        createButton(parent, IDialogConstants.DETAILS_ID, "View Script", false);
+                    }
                 }
             }
             @Override

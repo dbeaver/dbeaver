@@ -1,15 +1,10 @@
-/*******************************************************************************
- * Copyright (c) 2000, 2010 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *******************************************************************************/
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
 package org.jkiss.dbeaver.ui.dnd;
 
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 
 import java.util.Collection;
@@ -49,5 +44,11 @@ public final class TreeNodeTransfer extends LocalObjectTransfer<Collection<DBNNo
 	protected String[] getTypeNames() {
 		return new String[] { TYPE_NAME };
 	}
+
+    public static Collection<DBNNode> getFromClipboard()
+    {
+        Clipboard clipboard = new Clipboard(Display.getDefault());
+        return (Collection<DBNNode>) clipboard.getContents(TreeNodeTransfer.getInstance());
+    }
 
 }

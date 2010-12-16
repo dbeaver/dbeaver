@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -17,7 +18,7 @@ import java.util.List;
 /**
  * DBNRoot
  */
-public class DBNRoot extends DBNNode implements DBSObject
+public class DBNRoot extends DBNNode implements DBNContainer
 {
     private List<DBNDataSource> dataSources = new ArrayList<DBNDataSource>();
 
@@ -41,7 +42,29 @@ public class DBNRoot extends DBNNode implements DBSObject
 
     public Object getValueObject()
     {
-        return null;
+        return this;
+    }
+
+    public Class getChildrenType()
+    {
+        return DataSourceDescriptor.class;
+    }
+
+    public DBNNode addChildItem(DBRProgressMonitor monitor, DBSObject childObject) throws DBException
+    {
+        if (childObject instanceof DataSourceDescriptor) {
+            return addDataSource((DataSourceDescriptor)childObject);
+        }
+        throw new IllegalArgumentException("Only data source descriptors could be added to root node");
+    }
+
+    public void removeChildItem(DBNNode item) throws DBException
+    {
+        if (item instanceof DBNDataSource) {
+            removeDataSource(((DBNDataSource)item).getObject());
+        } else {
+            throw new IllegalArgumentException("Only data source descriptors could be removed from root node");
+        }
     }
 
     public String getNodeName()
@@ -85,10 +108,11 @@ public class DBNRoot extends DBNNode implements DBSObject
         return false;
     }
 
-    void addDataSource(DataSourceDescriptor descriptor)
+    DBNDataSource addDataSource(DataSourceDescriptor descriptor)
     {
-        dataSources.add(
-            new DBNDataSource(this, descriptor));
+        DBNDataSource newNode = new DBNDataSource(this, descriptor);
+        dataSources.add(newNode);
+        return newNode;
     }
 
     void removeDataSource(DataSourceDescriptor descriptor)

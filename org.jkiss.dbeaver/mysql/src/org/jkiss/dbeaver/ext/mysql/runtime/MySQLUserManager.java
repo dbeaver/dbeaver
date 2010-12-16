@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ext.mysql.runtime;
 
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManagerEx;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
@@ -33,7 +34,7 @@ public class MySQLUserManager extends JDBCDatabaseObjectManager<MySQLUser> imple
         }
     }
 
-    public void createNewObject(DBSObject parent, MySQLUser copyFrom)
+    public boolean createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, MySQLUser copyFrom)
     {
         MySQLUser newUser = new MySQLUser((MySQLDataSource) parent, null);
         if (copyFrom != null) {
@@ -47,11 +48,12 @@ public class MySQLUserManager extends JDBCDatabaseObjectManager<MySQLUser> imple
         setObject(newUser);
         addCommand(new NewUserPropertyCommand(UserPropertyHandler.NAME, newUser.getUserName()), null);
         addCommand(new NewUserPropertyCommand(UserPropertyHandler.HOST, newUser.getHost()), null);
+
+        return true;
     }
 
-    public void deleteObject(MySQLUser object, Map<String, Object> options)
+    public void deleteObject(Map<String, Object> options)
     {
-        setObject(object);
         addCommand(new MySQLCommandDropUser(), null);
     }
 

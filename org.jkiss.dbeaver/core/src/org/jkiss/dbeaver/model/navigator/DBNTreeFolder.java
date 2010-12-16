@@ -4,17 +4,26 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import net.sf.jkiss.utils.BeanUtils;
+import net.sf.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
+import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
+import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.List;
 
 /**
  * DBNTreeFolder
  */
-public class DBNTreeFolder extends DBNTreeNode implements DBSFolder
+public class DBNTreeFolder extends DBNTreeNode implements DBNContainer
 {
     private DBXTreeFolder meta;
 
@@ -85,17 +94,60 @@ public class DBNTreeFolder extends DBNTreeNode implements DBSFolder
         return ICommandIds.CMD_OBJECT_OPEN;
     }
 
-    public String getItemsType()
-    {
-        return meta.getType();
-    }
-
     public Class<?> getItemsClass()
     {
         try {
-            return Class.forName(getItemsType());
+            String itemsType = meta.getType();
+            return CommonUtils.isEmpty(itemsType) ? null : Class.forName(itemsType);
         } catch (ClassNotFoundException e) {
             return null;
         }
     }
+
+    public Class getChildrenType()
+    {
+        if (getMeta().hasChildren() && getMeta().getChildren().size() == 1) {
+            DBXTreeNode childMeta = getMeta().getChildren().get(0);
+            return childMeta instanceof DBXTreeItem ? getChildrenType((DBXTreeItem) childMeta) : null;
+        }
+        return null;
+    }
+
+    private Class getChildrenType(DBXTreeItem childMeta)
+    {
+        Object valueObject = getValueObject();
+        if (valueObject == null) {
+            return null;
+        }
+        String propertyName = childMeta.getPropertyName();
+        Method getter = LoadingUtils.findPropertyReadMethod(valueObject.getClass(), propertyName);
+        Type propType = getter.getGenericReturnType();
+        return BeanUtils.getCollectionType(propType);
+    }
+
+    public DBNTreeItem addChildItem(DBRProgressMonitor monitor, DBSObject childObject) throws DBException
+    {
+        List<DBXTreeNode> childMetas = getMeta().getChildren();
+        if (childMetas.size() != 1 || !(childMetas.get(0) instanceof DBXTreeItem)) {
+            throw new DBException("It's not allowed to add child items to node '" + getNodeName() + "'");
+        }
+        DBXTreeItem childMeta = (DBXTreeItem)childMetas.get(0);
+        // Ensure that children are loaded
+        getChildren(monitor);
+        // Add new child item
+        DBNTreeItem childItem = new DBNTreeItem(this, childMeta, childObject);
+        this.childNodes.add(childItem);
+
+        return childItem;
+    }
+
+    public void removeChildItem(DBNNode item) throws DBException
+    {
+        if (!(item instanceof DBNTreeNode) || CommonUtils.isEmpty(childNodes) || !childNodes.contains(item)) {
+            throw new DBException("Item '" + item.getNodeName() + "' do not belongs to node '" + getNodeName() + "' and can't be removed from it");
+        }
+        childNodes.remove(item);
+        item.dispose();
+    }
+
 }

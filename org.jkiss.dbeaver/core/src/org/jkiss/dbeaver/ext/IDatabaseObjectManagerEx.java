@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ext;
 
 import org.eclipse.jface.window.IShellProvider;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -26,18 +27,19 @@ public interface IDatabaseObjectManagerEx<OBJECT_TYPE extends DBSObject> extends
      * Real object creation will be performed by saveChanges function.
      * Additionally implementation could add initial command(s) to this manager.
      * This function can be invoked only once per one manager.
+     * @param workbenchWindow
      * @param parent parent object
      * @param copyFrom template for new object (usually result of "paste" operation)
+     * @return true to show object's editor. Otherwise object will be just saved
      */
-    void createNewObject(DBSObject parent, OBJECT_TYPE copyFrom);
+    boolean createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, OBJECT_TYPE copyFrom);
 
     /**
      * Deletes specified object.
      * Actually this function should not delete object but add command(s) to the manager.
      * Real object's delete will be performed by saveChanges function.
-     * @param object object to delete
      * @param options delete options. Options are set by delete wizard.
      */
-    void deleteObject(OBJECT_TYPE object, Map<String, Object> options);
+    void deleteObject(Map<String, Object> options);
 
 }

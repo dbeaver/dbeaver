@@ -31,7 +31,7 @@ import java.util.List;
 public abstract class DBNTreeNode extends DBNNode {
     static final Log log = LogFactory.getLog(DBNTreeNode.class);
 
-    private List<DBNTreeNode> childNodes;
+    protected List<DBNTreeNode> childNodes;
 
     protected DBNTreeNode(DBNNode parentNode)
     {
@@ -212,27 +212,6 @@ public abstract class DBNTreeNode extends DBNNode {
     }
 
 
-    public Class getChildrenType()
-    {
-        if (getMeta().hasChildren() && getMeta().getChildren().size() == 1) {
-            DBXTreeNode childMeta = getMeta().getChildren().get(0);
-            return childMeta instanceof DBXTreeItem ? getChildrenType((DBXTreeItem) childMeta) : null;
-        }
-        return null;
-    }
-
-    private Class getChildrenType(DBXTreeItem childMeta)
-    {
-        Object valueObject = getValueObject();
-        if (valueObject == null) {
-            return null;
-        }
-        String propertyName = childMeta.getPropertyName();
-        Method getter = LoadingUtils.findPropertyReadMethod(valueObject.getClass(), propertyName);
-        Type propType = getter.getGenericReturnType();
-        return BeanUtils.getCollectionType(propType);
-    }
-
     /**
      * Extract items using reflect api
      * @param monitor progress monitor
@@ -334,31 +313,6 @@ public abstract class DBNTreeNode extends DBNNode {
         List<DBNTreeNode> newChildren = new ArrayList<DBNTreeNode>();
         loadChildren(monitor, getMeta(), childNodes, newChildren);
         childNodes = newChildren;
-    }
-
-    public DBNTreeItem addChildItem(DBRProgressMonitor monitor, DBSObject childObject) throws DBException
-    {
-        List<DBXTreeNode> childMetas = getMeta().getChildren();
-        if (childMetas.size() != 1 || !(childMetas.get(0) instanceof DBXTreeItem)) {
-            throw new DBException("It's not allowed to add child items to node '" + getNodeName() + "'");
-        }
-        DBXTreeItem childMeta = (DBXTreeItem)childMetas.get(0);
-        // Ensure that children are loaded
-        getChildren(monitor);
-        // Add new child item
-        DBNTreeItem childItem = new DBNTreeItem(this, childMeta, childObject);
-        this.childNodes.add(childItem);
-
-        return childItem;
-    }
-
-    public void removeChildItem(DBNTreeItem item) throws DBException
-    {
-        if (CommonUtils.isEmpty(childNodes) || !childNodes.contains(item)) {
-            throw new DBException("Item '" + item.getNodeName() + "' do not belongs to node '" + getNodeName() + "' and can't be removed from it");
-        }
-        childNodes.remove(item);
-        item.dispose();
     }
 
     private static boolean equalObjects(DBSObject object1, DBSObject object2) {

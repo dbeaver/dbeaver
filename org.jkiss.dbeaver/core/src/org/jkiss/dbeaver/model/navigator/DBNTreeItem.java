@@ -65,4 +65,8 @@ public class DBNTreeItem extends DBNTreeNode
         return ICommandIds.CMD_OBJECT_OPEN;
     }
 
+    public final boolean isManagable() 
+    {
+        return true;
+    }
 }

@@ -5,25 +5,20 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.DBPDeletableObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
 
 /**
  * DBNDataSource
  */
-public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject, IAdaptable, IDataSourceContainerProvider
+public class DBNDataSource extends DBNTreeNode implements IAdaptable, IDataSourceContainerProvider
 {
     private DataSourceDescriptor dataSource;
     private DBXTreeNode treeRoot;
@@ -83,6 +78,11 @@ public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject, IA
         return false;
     }
 
+    public boolean isManagable()
+    {
+        return true;
+    }
+
     public DBXTreeNode getMeta()
     {
         return treeRoot;
@@ -101,13 +101,6 @@ public class DBNDataSource extends DBNTreeNode implements DBPDeletableObject, IA
             //dataSource.connect(monitor);
         }
         return dataSource.isConnected();
-    }
-
-    public void deleteObject(final IWorkbenchWindow workbenchWindow) {
-        if (dataSource.isConnected()) {
-            DataSourceDisconnectHandler.execute(dataSource);
-        }
-        DataSourceRegistry.getDefault().removeDataSource(dataSource);
     }
 
     public Object getAdapter(Class adapter) {

@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
-import org.jkiss.dbeaver.model.navigator.DBNTreeItem;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
@@ -199,8 +198,8 @@ public class ViewUtils
                                     String objectName = "";
                                     if (node instanceof DBNTreeFolder) {
                                         objectName = ((DBNTreeFolder)node).getMeta().getChildren().get(0).getLabel();
-                                    } else if (node instanceof DBNTreeItem) {
-                                        objectName = ((DBNTreeItem)node).getMeta().getLabel();
+                                    } else if (node instanceof DBNTreeNode) {
+                                        objectName = ((DBNTreeNode)node).getMeta().getLabel();
                                     }
                                     item.setText("Create new " + objectName);
                                 } else if (ICommandIds.CMD_OBJECT_DELETE.equals(contribId) || IWorkbenchCommandConstants.EDIT_DELETE.equals(contribId)) {
