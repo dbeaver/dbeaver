@@ -4,16 +4,12 @@
 
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
-import org.eclipse.ui.IStorageEditorInput;
-import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.io.ByteArrayInputStream;

@@ -24,6 +24,7 @@ import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -185,10 +187,12 @@ public class ViewUtils
                                     m.setDefaultItem(item);
                                 }
                                 if (ICommandIds.CMD_OPEN_OBJECT.equals(contribId)) {
+                                    EntityManagerDescriptor objectManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(node.getObject().getClass());
+                                    String actionName = objectManager == null ? "View" : "Edit";
                                     if (multipleSelection) {
-                                        item.setText("Edit objects");
+                                        item.setText(actionName + " objects");
                                     } else if (node instanceof DBNTreeNode) {
-                                        item.setText("Edit " + ((DBNTreeNode)node).getMeta().getLabel());
+                                        item.setText(actionName + " " + ((DBNTreeNode)node).getMeta().getLabel());
                                     }
                                 } else if (ICommandIds.CMD_CREATE_OBJECT.equals(contribId)) {
                                     String objectName = "";
