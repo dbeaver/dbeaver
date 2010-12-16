@@ -20,9 +20,10 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
-import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
-import org.jkiss.dbeaver.ext.IDatabaseObjectManagerEx;
+import org.jkiss.dbeaver.model.edit.DBOCommand;
+import org.jkiss.dbeaver.model.edit.DBOEditor;
+import org.jkiss.dbeaver.model.edit.DBOManager;
+import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -87,42 +88,52 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             log.error("Object manager not found for type '" + object.getClass().getName() + "'");
             return false;
         }
-        IDatabaseObjectManager<?> objectManager = entityManager.createManager();
-        if (!(objectManager instanceof IDatabaseObjectManagerEx<?>)) {
+        DBOManager<?> objectManager = entityManager.createManager();
+        if (!(objectManager instanceof DBOCreator<?>)) {
             log.error("Object manager '" + objectManager.getClass().getName() + "' do not supports object deletion");
             return false;
         }
 
-        IDatabaseObjectManagerEx objectManagerEx = (IDatabaseObjectManagerEx)objectManager;
+        DBOCreator objectCreator = (DBOCreator)objectManager;
         Map<String, Object> deleteOptions = null;
 
-        objectManagerEx.setObject(node.getObject());
-        objectManagerEx.deleteObject(deleteOptions);
+        objectCreator.setObject(node.getObject());
 
-        if (!confirmObjectDelete(workbenchWindow, node, objectManager)) {
-            objectManagerEx.resetChanges();
+        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, objectManager);
+        if (confirmResult == ConfirmResult.NO) {
             return false;
         }
 
-        // Delete object
-        ObjectDeleter deleter = new ObjectDeleter(objectManagerEx);
-        try {
-            workbenchWindow.run(true, true, deleter);
-        } catch (InvocationTargetException e) {
-            log.error("Can't delete object", e);
-            return false;
-        } catch (InterruptedException e) {
-            // do nothing
+        objectCreator.deleteObject(deleteOptions);
+
+        if (confirmResult == ConfirmResult.DETAILS) {
+            if (!showScript(workbenchWindow, (DBOEditor<?>) objectManager)) {
+                ((DBOEditor)objectCreator).resetChanges();
+                return false;
+            }
         }
 
-        // Remove node
-        if (!node.isDisposed()) {
-            DBNNode parent = node.getParentNode();
-            if (parent instanceof DBNContainer) {
-                try {
-                    ((DBNContainer)parent).removeChildItem(node);
-                } catch (DBException e) {
-                    log.error(e);
+        if (objectCreator instanceof DBOEditor) {
+            // Delete object
+            ObjectDeleter deleter = new ObjectDeleter((DBOEditor)objectCreator);
+            try {
+                workbenchWindow.run(true, true, deleter);
+            } catch (InvocationTargetException e) {
+                log.error("Can't delete object", e);
+                return false;
+            } catch (InterruptedException e) {
+                // do nothing
+            }
+
+            // Remove node
+            if (!node.isDisposed()) {
+                DBNNode parent = node.getParentNode();
+                if (parent instanceof DBNContainer) {
+                    try {
+                        ((DBNContainer)parent).removeChildItem(node);
+                    } catch (DBException e) {
+                        log.error(e);
+                    }
                 }
             }
         }
@@ -130,10 +141,46 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         return true;
     }
 
-    private boolean confirmObjectDelete(final IWorkbenchWindow workbenchWindow, final DBNNode node, final IDatabaseObjectManager<?> objectManager)
+    private boolean showScript(IWorkbenchWindow workbenchWindow, DBOEditor<?> objectManager)
+    {
+        Collection<? extends DBOCommand> commands = objectManager.getCommands();
+        StringBuilder script = new StringBuilder();
+        for (DBOCommand command : commands) {
+            IDatabasePersistAction[] persistActions = command.getPersistActions(objectManager.getObject());
+            if (!CommonUtils.isEmpty(persistActions)) {
+                for (IDatabasePersistAction action : persistActions) {
+                    if (script.length() > 0) {
+                        script.append('\n');
+                    }
+                    script.append(action.getScript());
+                    script.append(objectManager.getDataSource().getInfo().getScriptDelimiter());
+                }
+            }
+        }
+        DatabaseNavigatorView view = ViewUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
+        if (view != null) {
+            ViewSQLDialog dialog = new ViewSQLDialog(
+                view.getSite(),
+                objectManager.getDataSource(),
+                "Delete script",
+                script.toString());
+            dialog.setImage(DBIcon.SQL_PREVIEW.getImage());
+            dialog.setShowSaveButton(true);
+            return dialog.open() == IDialogConstants.PROCEED_ID;
+        } else {
+            return false;
+        }
+    }
+
+    enum ConfirmResult {
+        YES,
+        NO,
+        DETAILS,
+    }
+    private ConfirmResult confirmObjectDelete(final IWorkbenchWindow workbenchWindow, final DBNNode node, final DBOManager<?> objectManager)
     {
         if (deleteAll != null) {
-            return deleteAll;
+            return deleteAll ? ConfirmResult.YES : ConfirmResult.NO;
         }
         ResourceBundle bundle = DBeaverActivator.getInstance().getResourceBundle();
         String titleKey = ConfirmationDialog.RES_CONFIRM_PREFIX + PrefConstants.CONFIRM_ENTITY_DELETE + "." + ConfirmationDialog.RES_KEY_TITLE;
@@ -162,78 +209,38 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
                     createButton(parent, IDialogConstants.YES_TO_ALL_ID, IDialogConstants.YES_TO_ALL_LABEL, false);
                     createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
                 }
-                if (objectManager != null) {
-                    boolean hasScript = false;
-                    for (IDatabaseObjectCommand cmd : objectManager.getCommands()) {
-                        if (!CommonUtils.isEmpty(cmd.getPersistActions(objectManager.getObject()))) {
-                            hasScript = true;
-                            break;
-                        }
-                    }
-                    if (hasScript) {
-                        createButton(parent, IDialogConstants.DETAILS_ID, "View Script", false);
-                    }
-                }
-            }
-            @Override
-            protected void buttonPressed(int buttonId)
-            {
-                if (buttonId == IDialogConstants.DETAILS_ID) {
-                    Collection<? extends IDatabaseObjectCommand> commands = objectManager.getCommands();
-                    StringBuilder script = new StringBuilder();
-                    for (IDatabaseObjectCommand command : commands) {
-                        IDatabasePersistAction[] persistActions = command.getPersistActions(objectManager.getObject());
-                        if (!CommonUtils.isEmpty(persistActions)) {
-                            for (IDatabasePersistAction action : persistActions) {
-                                if (script.length() > 0) {
-                                    script.append('\n');
-                                }
-                                script.append(action.getScript());
-                                script.append(objectManager.getDataSource().getInfo().getScriptDelimiter());
-                            }
-                        }
-                    }
-                    DatabaseNavigatorView view = ViewUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
-                    if (view != null) {
-                        ViewSQLDialog dialog = new ViewSQLDialog(
-                            view.getSite(),
-                            objectManager.getDataSource(),
-                            "Delete script",
-                            script.toString());
-                        dialog.setImage(DBIcon.SQL_PREVIEW.getImage());
-                        dialog.open();
-                    }
-
-                } else {
-                    super.buttonPressed(buttonId);
+                if (objectManager instanceof DBOEditor) {
+                    createButton(parent, IDialogConstants.DETAILS_ID, "View Script", false);
                 }
             }
         };
         int result = dialog.open();
         switch (result) {
             case IDialogConstants.YES_ID:
-                return true;
+                return ConfirmResult.YES;
             case IDialogConstants.YES_TO_ALL_ID:
                 deleteAll = true;
-                return true;
+                return ConfirmResult.YES;
             case IDialogConstants.NO_ID:
-                return false;
+                return ConfirmResult.NO;
             case IDialogConstants.CANCEL_ID:
             case -1:
                 deleteAll = false;
-                return false;
+                return ConfirmResult.NO;
+            case IDialogConstants.DETAILS_ID:
+                return ConfirmResult.DETAILS;
             default:
                 log.warn("Unsupported confirmation dialog result: " + result);
-                return false;
+                return ConfirmResult.NO;
         }
     }
 
     private static class ObjectDeleter implements IRunnableWithProgress {
-        private final IDatabaseObjectManagerEx objectManager;
+        private final DBOEditor objectManager;
 
-        public ObjectDeleter(IDatabaseObjectManagerEx objectManagerEx)
+        public ObjectDeleter(DBOEditor objectCreator)
         {
-            this.objectManager = objectManagerEx;
+            this.objectManager = objectCreator;
         }
 
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException

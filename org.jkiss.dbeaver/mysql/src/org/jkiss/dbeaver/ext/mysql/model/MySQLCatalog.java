@@ -91,6 +91,7 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
         this.defaultCollation = defaultCollation;
     }
 
+    @Property(name = "SQL Path", viewable = true, order = 3)
     public String getSqlPath()
     {
         return sqlPath;

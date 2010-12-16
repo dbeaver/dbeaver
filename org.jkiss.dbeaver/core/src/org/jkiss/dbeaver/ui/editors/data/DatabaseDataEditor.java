@@ -5,7 +5,7 @@
 package org.jkiss.dbeaver.ui.editors.data;
 
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
+import org.jkiss.dbeaver.model.edit.DBOManager;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -14,7 +14,7 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 /**
  * DatabaseDataEditor
  */
-public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataContainer, IDatabaseObjectManager<DBSDataContainer>> implements ResultSetProvider
+public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataContainer, DBOManager<DBSDataContainer>> implements ResultSetProvider
 {
 
     private ResultSetViewer resultSetView;

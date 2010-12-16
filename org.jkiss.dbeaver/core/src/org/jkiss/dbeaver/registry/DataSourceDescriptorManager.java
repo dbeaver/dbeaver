@@ -5,10 +5,10 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.ext.IDatabaseObjectManagerEx;
+import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabaseObjectCommand;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabaseObjectManager;
+import org.jkiss.dbeaver.model.impl.edit.DBOCommandImpl;
+import org.jkiss.dbeaver.model.impl.edit.DBOManagerImpl;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * DataSourceDescriptorManager
  */
-public class DataSourceDescriptorManager extends AbstractDatabaseObjectManager<DataSourceDescriptor> implements IDatabaseObjectManagerEx<DataSourceDescriptor> {
+public class DataSourceDescriptorManager extends DBOManagerImpl<DataSourceDescriptor> implements DBOCreator<DataSourceDescriptor> {
 
     public boolean createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, DataSourceDescriptor copyFrom)
     {
@@ -54,16 +54,10 @@ public class DataSourceDescriptorManager extends AbstractDatabaseObjectManager<D
 
     public void deleteObject(Map<String, Object> options)
     {
-        addCommand(new AbstractDatabaseObjectCommand<DataSourceDescriptor>("Delete data source") {
-            @Override
-            public void updateModel(DataSourceDescriptor object)
-            {
-                if (object.isConnected()) {
-                    DataSourceDisconnectHandler.execute(object);
-                }
-                DataSourceRegistry.getDefault().removeDataSource(object);
-            }
-        }, null);
+        if (getObject().isConnected()) {
+            DataSourceDisconnectHandler.execute(getObject());
+        }
+        DataSourceRegistry.getDefault().removeDataSource(getObject());
     }
 
 }

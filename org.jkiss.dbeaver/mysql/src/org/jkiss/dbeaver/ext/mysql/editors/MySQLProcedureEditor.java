@@ -9,14 +9,14 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
+import org.jkiss.dbeaver.model.edit.DBOManager;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 
 /**
  * MySQLProcedureEditor
  */
-public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<MySQLProcedure, IDatabaseObjectManager<MySQLProcedure>>
+public class MySQLProcedureEditor extends AbstractDatabaseObjectEditor<MySQLProcedure, DBOManager<MySQLProcedure>>
 {
     static final Log log = LogFactory.getLog(MySQLProcedureEditor.class);
 

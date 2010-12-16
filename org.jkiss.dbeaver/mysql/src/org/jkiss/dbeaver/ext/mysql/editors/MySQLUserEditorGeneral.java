@@ -8,14 +8,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
+import org.jkiss.dbeaver.model.edit.DBOCommandReflector;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.ext.mysql.runtime.MySQLCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.mysql.runtime.UserPropertyHandler;
-import org.jkiss.dbeaver.model.impl.edit.ControlCommandListener;
+import org.jkiss.dbeaver.model.edit.prop.ControlPropertyCommandListener;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -50,37 +50,37 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
             Text userNameText = UIUtils.createLabelText(loginGroup, "User Name", getUser().getUserName());
             userNameText.setEditable(newUser);
             if (newUser) {
-                ControlCommandListener.create(this, userNameText, UserPropertyHandler.NAME);
+                ControlPropertyCommandListener.create(this, userNameText, UserPropertyHandler.NAME);
             }
 
             Text hostText = UIUtils.createLabelText(loginGroup, "Host", getUser().getHost());
             hostText.setEditable(newUser);
             if (newUser) {
-                ControlCommandListener.create(this, hostText, UserPropertyHandler.HOST);
+                ControlPropertyCommandListener.create(this, hostText, UserPropertyHandler.HOST);
             }
 
             String password = newUser ? "" : DEF_PASSWORD_VALUE;
             Text passwordText = UIUtils.createLabelText(loginGroup, "Password", password, SWT.BORDER | SWT.PASSWORD);
-            ControlCommandListener.create(this, passwordText, UserPropertyHandler.PASSWORD);
+            ControlPropertyCommandListener.create(this, passwordText, UserPropertyHandler.PASSWORD);
 
             Text confirmText = UIUtils.createLabelText(loginGroup, "Confirm", password, SWT.BORDER | SWT.PASSWORD);
-            ControlCommandListener.create(this, confirmText, UserPropertyHandler.PASSWORD_CONFIRM);
+            ControlPropertyCommandListener.create(this, confirmText, UserPropertyHandler.PASSWORD_CONFIRM);
         }
 
         {
             Composite limitsGroup = UIUtils.createControlGroup(container, "Limits", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
             Spinner maxQueriesText = UIUtils.createLabelSpinner(limitsGroup, "Max Queries", getUser().getMaxQuestions(), 0, Integer.MAX_VALUE);
-            ControlCommandListener.create(this, maxQueriesText, UserPropertyHandler.MAX_QUERIES);
+            ControlPropertyCommandListener.create(this, maxQueriesText, UserPropertyHandler.MAX_QUERIES);
 
             Spinner maxUpdatesText = UIUtils.createLabelSpinner(limitsGroup, "Max Updates",  getUser().getMaxUpdates(), 0, Integer.MAX_VALUE);
-            ControlCommandListener.create(this, maxUpdatesText, UserPropertyHandler.MAX_UPDATES);
+            ControlPropertyCommandListener.create(this, maxUpdatesText, UserPropertyHandler.MAX_UPDATES);
 
             Spinner maxConnectionsText = UIUtils.createLabelSpinner(limitsGroup, "Max Connections", getUser().getMaxConnections(), 0, Integer.MAX_VALUE);
-            ControlCommandListener.create(this, maxConnectionsText, UserPropertyHandler.MAX_CONNECTIONS);
+            ControlPropertyCommandListener.create(this, maxConnectionsText, UserPropertyHandler.MAX_CONNECTIONS);
 
             Spinner maxUserConnectionsText = UIUtils.createLabelSpinner(limitsGroup, "Max User Connections", getUser().getMaxUserConnections(), 0, Integer.MAX_VALUE);
-            ControlCommandListener.create(this, maxUserConnectionsText, UserPropertyHandler.MAX_USER_CONNECTIONS);
+            ControlPropertyCommandListener.create(this, maxUserConnectionsText, UserPropertyHandler.MAX_USER_CONNECTIONS);
         }
 
 
@@ -101,7 +101,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                             null,
                             null,
                             privilege),
-                        new IDatabaseObjectCommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
+                        new DBOCommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
                             public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                             {
                                 if (!privTable.isDisposed()) {

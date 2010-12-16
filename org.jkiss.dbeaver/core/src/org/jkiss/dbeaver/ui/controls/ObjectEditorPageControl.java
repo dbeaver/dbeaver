@@ -17,6 +17,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
+import org.jkiss.dbeaver.model.edit.DBOEditor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -67,7 +68,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
     protected Composite createProgressPanel(Composite container) {
         Composite panel = super.createProgressPanel(container);
 
-        if (getEditorPart().getObjectManager().supportsEdit()) {
+        if (getEditorPart().getObjectManager() instanceof DBOEditor) {
             saveChangesButton = new Button(panel, SWT.PUSH);
             saveChangesButton.setText("Save / Preview");
             saveChangesButton.setImage(DBIcon.SAVE_TO_DATABASE.getImage());

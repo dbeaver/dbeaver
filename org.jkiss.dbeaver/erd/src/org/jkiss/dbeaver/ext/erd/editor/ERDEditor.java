@@ -38,7 +38,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
+import org.jkiss.dbeaver.model.edit.DBOManager;
 import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 import org.jkiss.dbeaver.ext.erd.action.DiagramRefreshAction;
@@ -73,12 +73,12 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
     implements
     CommandStackListener,
     ISelectionListener,
-    IDatabaseObjectEditor<IDatabaseObjectManager<DBSObject>>,
+    IDatabaseObjectEditor<DBOManager<DBSObject>>,
     IRefreshablePart
 {
     static final Log log = LogFactory.getLog(ERDEditor.class);
 
-    private IDatabaseObjectManager<DBSObject> objectManager;
+    private DBOManager<DBSObject> objectManager;
     private ProgressControl progressControl;
 
     /**
@@ -721,11 +721,11 @@ public class ERDEditor extends GraphicalEditorWithFlyoutPalette
         return isLoaded;
     }
 
-    public IDatabaseObjectManager<DBSObject> getObjectManager() {
+    public DBOManager<DBSObject> getObjectManager() {
         return objectManager;
     }
 
-    public void initObjectEditor(IDatabaseObjectManager<DBSObject> manager) {
+    public void initObjectEditor(DBOManager<DBSObject> manager) {
         objectManager = manager;
     }
 

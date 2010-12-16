@@ -2,11 +2,11 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ext;
+package org.jkiss.dbeaver.model.edit;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabaseObjectCommand;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;
@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Object change command
  */
-public interface IDatabaseObjectCommand<OBJECT_TYPE extends DBSObject> {
+public interface DBOCommand<OBJECT_TYPE extends DBSObject> {
 
     String getTitle();
 
@@ -32,8 +32,8 @@ public interface IDatabaseObjectCommand<OBJECT_TYPE extends DBSObject> {
 
     void updateModel(OBJECT_TYPE object);
 
-    IDatabaseObjectCommand<OBJECT_TYPE> merge(
-        IDatabaseObjectCommand<OBJECT_TYPE> prevCommand,
+    DBOCommand<OBJECT_TYPE> merge(
+        DBOCommand<OBJECT_TYPE> prevCommand,
         Map<String, Object> userParams);
 
     IDatabasePersistAction[] getPersistActions(OBJECT_TYPE object);

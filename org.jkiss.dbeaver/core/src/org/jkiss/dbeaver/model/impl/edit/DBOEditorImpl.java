@@ -6,11 +6,10 @@ package org.jkiss.dbeaver.model.impl.edit;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
-import org.jkiss.dbeaver.ext.IDatabaseObjectCommandReflector;
-import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.edit.DBOCommand;
+import org.jkiss.dbeaver.model.edit.DBOCommandReflector;
+import org.jkiss.dbeaver.model.edit.DBOEditor;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -19,9 +18,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import java.util.*;
 
 /**
- * AbstractDatabaseObjectManager
+ * DBOEditorImpl
  */
-public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObject> implements IDatabaseObjectManager<OBJECT_TYPE> {
+public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOManagerImpl<OBJECT_TYPE> implements DBOEditor<OBJECT_TYPE> {
 
     private static class PersistInfo {
         final IDatabasePersistAction action;
@@ -35,66 +34,37 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
     }
 
     protected class CommandInfo {
-        final IDatabaseObjectCommand<OBJECT_TYPE> command;
-        final IDatabaseObjectCommandReflector reflector;
+        final DBOCommand<OBJECT_TYPE> command;
+        final DBOCommandReflector reflector;
         List<PersistInfo> persistActions;
         CommandInfo mergedBy = null;
         boolean executed = false;
 
-        public CommandInfo(IDatabaseObjectCommand<OBJECT_TYPE> command, IDatabaseObjectCommandReflector reflector)
+        public CommandInfo(DBOCommand<OBJECT_TYPE> command, DBOCommandReflector reflector)
         {
             this.command = command;
             this.reflector = reflector;
         }
 
-        public IDatabaseObjectCommand<OBJECT_TYPE> getCommand()
+        public DBOCommand<OBJECT_TYPE> getCommand()
         {
             return command;
         }
 
-        public IDatabaseObjectCommandReflector getReflector()
+        public DBOCommandReflector getReflector()
         {
             return reflector;
         }
     }
 
-    private OBJECT_TYPE object;
     private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
     private final List<CommandInfo> undidCommands = new ArrayList<CommandInfo>();
     private List<CommandInfo> mergedCommands = null;
 
-    public DBPDataSource getDataSource() {
-        return object.getDataSource();
-    }
-
-    public OBJECT_TYPE getObject() {
-        return object;
-    }
-
-    public void setObject(OBJECT_TYPE object) {
-/*
-        if (object == null) {
-            throw new IllegalArgumentException("Object can't be NULL");
-        }
-*/
-        if (this.object != object) {
-            this.object = object;
-
-            // Clear all commands
-            this.commands.clear();
-            clearUndidCommands();
-            clearMergedCommands();
-        }
-    }
-
-    public boolean supportsEdit() {
-        return false;
-    }
-
     public boolean isDirty()
     {
         synchronized (commands) {
-            return !object.isPersisted() || !getMergedCommands().isEmpty();
+            return !getObject().isPersisted() || !getMergedCommands().isEmpty();
         }
     }
 
@@ -104,7 +74,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
 
             // Validate commands
             for (CommandInfo cmd : mergedCommands) {
-                cmd.command.validateCommand(object);
+                cmd.command.validateCommand(getObject());
             }
             try {
                 // Make list of not-executed commands
@@ -122,7 +92,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
                     }
                     // Persist changes
                     if (CommonUtils.isEmpty(cmd.persistActions)) {
-                        IDatabasePersistAction[] persistActions = cmd.command.getPersistActions(object);
+                        IDatabasePersistAction[] persistActions = cmd.command.getPersistActions(getObject());
                         if (!CommonUtils.isEmpty(persistActions)) {
                             cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
                             for (IDatabasePersistAction action : persistActions) {
@@ -179,10 +149,10 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
-    public Collection<? extends IDatabaseObjectCommand<OBJECT_TYPE>> getCommands()
+    public Collection<? extends DBOCommand<OBJECT_TYPE>> getCommands()
     {
         synchronized (commands) {
-            List<IDatabaseObjectCommand<OBJECT_TYPE>> cmdCopy = new ArrayList<IDatabaseObjectCommand<OBJECT_TYPE>>(commands.size());
+            List<DBOCommand<OBJECT_TYPE>> cmdCopy = new ArrayList<DBOCommand<OBJECT_TYPE>>(commands.size());
             for (CommandInfo cmdInfo : getMergedCommands()) {
                 if (cmdInfo.mergedBy != null) {
                     cmdInfo = cmdInfo.mergedBy;
@@ -195,9 +165,9 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
-    public <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>> void addCommand(
+    public <COMMAND extends DBOCommand<OBJECT_TYPE>> void addCommand(
         COMMAND command,
-        IDatabaseObjectCommandReflector<OBJECT_TYPE, COMMAND> reflector)
+        DBOCommandReflector<OBJECT_TYPE, COMMAND> reflector)
     {
         synchronized (commands) {
             commands.add(new CommandInfo(command, reflector));
@@ -207,7 +177,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
-    public <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>> void removeCommand(COMMAND command)
+    public <COMMAND extends DBOCommand<OBJECT_TYPE>> void removeCommand(COMMAND command)
     {
         synchronized (commands) {
             for (CommandInfo cmd : commands) {
@@ -221,7 +191,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
-    public <COMMAND extends IDatabaseObjectCommand<OBJECT_TYPE>> void updateCommand(COMMAND command)
+    public <COMMAND extends DBOCommand<OBJECT_TYPE>> void updateCommand(COMMAND command)
     {
         synchronized (commands) {
             clearUndidCommands();
@@ -290,13 +260,13 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
         mergedCommands = new ArrayList<CommandInfo>();
 
-        final Map<IDatabaseObjectCommand, CommandInfo> mergedByMap = new IdentityHashMap<IDatabaseObjectCommand, CommandInfo>();
+        final Map<DBOCommand, CommandInfo> mergedByMap = new IdentityHashMap<DBOCommand, CommandInfo>();
         final Map<String, Object> userParams = new HashMap<String, Object>();
         for (int i = 0; i < commands.size(); i++) {
             CommandInfo lastCommand = commands.get(i);
             lastCommand.mergedBy = null;
             CommandInfo firstCommand = null;
-            IDatabaseObjectCommand<OBJECT_TYPE> result = lastCommand.command;
+            DBOCommand<OBJECT_TYPE> result = lastCommand.command;
             if (mergedCommands.isEmpty()) {
                 result = lastCommand.command.merge(null, userParams);
             } else {
@@ -356,10 +326,10 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
 
     protected DBCExecutionContext openCommandPersistContext(
         DBRProgressMonitor monitor,
-        IDatabaseObjectCommand<OBJECT_TYPE> command)
+        DBOCommand<OBJECT_TYPE> command)
         throws DBException
     {
-        return object.getDataSource().openContext(
+        return getDataSource().openContext(
             monitor,
             DBCExecutionPurpose.USER_SCRIPT,
             "Execute " + command.getTitle());

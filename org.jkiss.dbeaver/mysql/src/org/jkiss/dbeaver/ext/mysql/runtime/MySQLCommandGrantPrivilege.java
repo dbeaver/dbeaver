@@ -4,14 +4,14 @@
 
 package org.jkiss.dbeaver.ext.mysql.runtime;
 
-import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
+import org.jkiss.dbeaver.model.edit.DBOCommand;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabaseObjectCommand;
+import org.jkiss.dbeaver.model.impl.edit.DBOCommandImpl;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 
 import java.util.Map;
@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * Grant/Revoke privilege command
  */
-public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<MySQLUser> {
+public class MySQLCommandGrantPrivilege extends DBOCommandImpl<MySQLUser> {
 
     private boolean grant;
     private MySQLCatalog schema;
@@ -57,7 +57,7 @@ public class MySQLCommandGrantPrivilege extends AbstractDatabaseObjectCommand<My
     }
 
     @Override
-    public IDatabaseObjectCommand<MySQLUser> merge(IDatabaseObjectCommand<MySQLUser> prevCommand, Map<String, Object> userParams)
+    public DBOCommand<MySQLUser> merge(DBOCommand<MySQLUser> prevCommand, Map<String, Object> userParams)
     {
         if (prevCommand instanceof MySQLCommandGrantPrivilege) {
             MySQLCommandGrantPrivilege prevGrant = (MySQLCommandGrantPrivilege)prevCommand;

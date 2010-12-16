@@ -9,14 +9,15 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabaseObjectManager;
+import org.jkiss.dbeaver.model.impl.edit.DBOEditorImpl;
+import org.jkiss.dbeaver.model.impl.edit.DBOManagerImpl;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 /**
  * JDBC DatabaseObjectManager implementation
  */
-public abstract class JDBCDatabaseObjectManager<OBJECT_TYPE extends DBSObject> extends AbstractDatabaseObjectManager<OBJECT_TYPE> {
+public abstract class DBOEditorJDBC<OBJECT_TYPE extends DBSObject> extends DBOEditorImpl<OBJECT_TYPE> {
 
     @Override
     protected void executePersistAction(DBCExecutionContext context, IDatabasePersistAction action) throws DBException

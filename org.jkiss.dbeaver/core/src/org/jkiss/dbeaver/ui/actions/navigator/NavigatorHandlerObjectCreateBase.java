@@ -11,8 +11,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
-import org.jkiss.dbeaver.ext.IDatabaseObjectManagerEx;
+import org.jkiss.dbeaver.model.edit.DBOCreator;
+import org.jkiss.dbeaver.model.edit.DBOManager;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
@@ -55,14 +55,14 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             log.error("Object manager not found for type '" + childType.getName() + "'");
             return false;
         }
-        IDatabaseObjectManager<?> objectManager = entityManager.createManager();
-        if (!(objectManager instanceof IDatabaseObjectManagerEx<?>)) {
+        DBOManager<?> objectManager = entityManager.createManager();
+        if (!(objectManager instanceof DBOCreator<?>)) {
             log.error("Object manager '" + objectManager.getClass().getName() + "' do not supports object creation");
             return false;
         }
 
-        IDatabaseObjectManagerEx objectManagerEx = (IDatabaseObjectManagerEx) objectManager;
-        if (!objectManagerEx.createNewObject(workbenchWindow, (DBSObject) container.getValueObject(), sourceObject)) {
+        DBOCreator objectCreator = (DBOCreator) objectManager;
+        if (!objectCreator.createNewObject(workbenchWindow, (DBSObject) container.getValueObject(), sourceObject)) {
             // Object created by manager itself
             return true;
         }
@@ -70,7 +70,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         // Save object manager's content
         IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
         try {
-            ObjectSaver objectSaver = new ObjectSaver(container, objectManagerEx);
+            ObjectSaver objectSaver = new ObjectSaver(container, objectCreator);
             try {
                 workbenchWindow.run(true, true, objectSaver);
             } catch (InvocationTargetException e) {
@@ -101,10 +101,10 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
 
     private static class ObjectSaver implements IRunnableWithProgress {
         private final DBNContainer container;
-        private final IDatabaseObjectManagerEx<?> objectManager;
+        private final DBOCreator<?> objectManager;
         DBNNode newChild;
 
-        public ObjectSaver(DBNContainer container, IDatabaseObjectManagerEx<?> objectManager)
+        public ObjectSaver(DBNContainer container, DBOCreator<?> objectManager)
         {
             this.container = container;
             this.objectManager = objectManager;

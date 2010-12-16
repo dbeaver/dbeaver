@@ -4,16 +4,15 @@
 
 package org.jkiss.dbeaver.ext.mysql.runtime;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
+import org.jkiss.dbeaver.model.edit.prop.DBOCommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectCompositeCommand;
 
 /**
  * Grant/Revoke privilege command
  */
-public class MySQLCommandDropUser extends DatabaseObjectCompositeCommand<MySQLUser, UserPropertyHandler> {
+public class MySQLCommandDropUser extends DBOCommandComposite<MySQLUser, UserPropertyHandler> {
 
     protected MySQLCommandDropUser()
     {

@@ -11,7 +11,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
+import org.jkiss.dbeaver.model.edit.DBOManager;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -22,7 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * MySQLDDLEditor
  */
-public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<MySQLTable, IDatabaseObjectManager<MySQLTable>>
+public class MySQLDDLEditor extends AbstractDatabaseObjectEditor<MySQLTable, DBOManager<MySQLTable>>
 {
     static final Log log = LogFactory.getLog(MySQLDDLEditor.class);
 

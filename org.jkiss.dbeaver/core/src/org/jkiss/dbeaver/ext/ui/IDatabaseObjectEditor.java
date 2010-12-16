@@ -6,14 +6,13 @@ package org.jkiss.dbeaver.ext.ui;
 
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.edit.DBOManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * IDatabaseObjectEditor
  */
-public interface IDatabaseObjectEditor<OBJECT_MANAGER extends IDatabaseObjectManager<? extends DBSObject>> extends IObjectEditorPart, IDataSourceProvider, IEditorPart {
+public interface IDatabaseObjectEditor<OBJECT_MANAGER extends DBOManager<? extends DBSObject>> extends IObjectEditorPart, IDataSourceProvider, IEditorPart {
 
     OBJECT_MANAGER getObjectManager();
 

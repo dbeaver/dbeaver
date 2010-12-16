@@ -10,7 +10,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * Script command
  */
-public class DatabaseObjectScriptCommand<OBJECT_TYPE extends DBSObject> extends AbstractDatabaseObjectCommand<OBJECT_TYPE> {
+public class DatabaseObjectScriptCommand<OBJECT_TYPE extends DBSObject> extends DBOCommandImpl<OBJECT_TYPE> {
 
     private String script;
 

@@ -15,8 +15,9 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDatabaseObjectCommand;
-import org.jkiss.dbeaver.ext.IDatabaseObjectManager;
+import org.jkiss.dbeaver.model.edit.DBOCommand;
+import org.jkiss.dbeaver.model.edit.DBOEditor;
+import org.jkiss.dbeaver.model.edit.DBOManager;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.ui.IDatabaseObjectEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
@@ -55,12 +56,17 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 
     private static Map<Class<?>, String> defaultPageMap = new HashMap<Class<?>, String>();
 
-    private IDatabaseObjectManager objectManager;
+    private DBOManager objectManager;
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
 
-    public IDatabaseObjectManager<?> getObjectManager()
+    public DBOManager<?> getObjectManager()
     {
         return objectManager;
+    }
+
+    public DBOEditor<?> getObjectEditor()
+    {
+        return objectManager instanceof DBOEditor ? (DBOEditor<?>) objectManager : null;
     }
 
     @Override
@@ -87,7 +93,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     @Override
     public boolean isDirty()
     {
-        return objectManager.isDirty();
+        return objectManager instanceof DBOEditor && ((DBOEditor) objectManager).isDirty();
     }
 
     /**
@@ -96,7 +102,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
      */
     public void doSave(IProgressMonitor monitor)
     {
-        if (!objectManager.isDirty()) {
+        if (!isDirty()) {
             return;
         }
 
@@ -107,7 +113,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         if (previewResult == IDialogConstants.PROCEED_ID) {
             Throwable error = null;
             try {
-                objectManager.saveChanges(new DefaultProgressMonitor(monitor));
+                getObjectEditor().saveChanges(new DefaultProgressMonitor(monitor));
             } catch (DBException e) {
                 error = e;
             }
@@ -126,33 +132,36 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
 
     public void revertChanges()
     {
-        if (objectManager.isDirty()) {
-            getObjectManager().resetChanges();
+        if (isDirty()) {
+            getObjectEditor().resetChanges();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public void undoChanges()
     {
-        if (objectManager.canUndoCommand()) {
-            getObjectManager().undoCommand();
+        if (getObjectEditor() != null && getObjectEditor().canUndoCommand()) {
+            getObjectEditor().undoCommand();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public void redoChanges()
     {
-        if (objectManager.canRedoCommand()) {
-            getObjectManager().redoCommand();
+        if (getObjectEditor() != null && getObjectEditor().canRedoCommand()) {
+            getObjectEditor().redoCommand();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public int showChanges(boolean allowSave)
     {
-        Collection<? extends IDatabaseObjectCommand> commands = getObjectManager().getCommands();
+        if (getObjectEditor() == null) {
+            return IDialogConstants.CANCEL_ID;
+        }
+        Collection<? extends DBOCommand> commands = getObjectEditor().getCommands();
         StringBuilder script = new StringBuilder();
-        for (IDatabaseObjectCommand command : commands) {
+        for (DBOCommand command : commands) {
             try {
                 command.validateCommand(getObjectManager().getObject());
             } catch (DBException e) {
@@ -409,7 +418,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             Object object = this.objectManager.getObject();
             if (editor instanceof IDatabaseObjectEditor) {
                 try {
-                    Method initMethod = editor.getClass().getMethod("initObjectEditor", IDatabaseObjectManager.class);
+                    Method initMethod = editor.getClass().getMethod("initObjectEditor", DBOManager.class);
                     Type initParam = initMethod.getGenericParameterTypes()[0];
                     if (initParam instanceof ParameterizedType) {
                         Type typeArgument = ((ParameterizedType) initParam).getActualTypeArguments()[0];
