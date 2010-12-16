@@ -5,8 +5,6 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseObjectManagerEx;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabaseObjectCommand;

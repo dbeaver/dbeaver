@@ -60,22 +60,26 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             log.error("Object manager '" + objectManager.getClass().getName() + "' do not supports object creation");
             return false;
         }
+
+        IDatabaseObjectManagerEx objectManagerEx = (IDatabaseObjectManagerEx) objectManager;
+        if (!objectManagerEx.createNewObject(workbenchWindow, (DBSObject) container.getValueObject(), sourceObject)) {
+            // Object created by manager itself
+            return true;
+        }
+
+        // Save object manager's content
         IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
         try {
-            IDatabaseObjectManagerEx objectManagerEx = (IDatabaseObjectManagerEx) objectManager;
-            if (!objectManagerEx.createNewObject(workbenchWindow, (DBSObject) container.getValueObject(), sourceObject)) {
-                return true;
-            }
-            ObjectCreator objectCreator = new ObjectCreator(container, objectManagerEx);
+            ObjectSaver objectSaver = new ObjectSaver(container, objectManagerEx);
             try {
-                workbenchWindow.run(true, true, objectCreator);
+                workbenchWindow.run(true, true, objectSaver);
             } catch (InvocationTargetException e) {
                 log.error("Can't create new object", e);
                 return false;
             } catch (InterruptedException e) {
                 // do nothing
             }
-            DBNNode newChild = objectCreator.getNewChild();
+            DBNNode newChild = objectSaver.getNewChild();
             EntityEditorInput editorInput = new EntityEditorInput(newChild, objectManager);
             try {
                 workbenchWindow.getActivePage().openEditor(
@@ -95,12 +99,12 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         return true;
     }
 
-    private static class ObjectCreator implements IRunnableWithProgress {
+    private static class ObjectSaver implements IRunnableWithProgress {
         private final DBNContainer container;
         private final IDatabaseObjectManagerEx<?> objectManager;
         DBNNode newChild;
 
-        public ObjectCreator(DBNContainer container, IDatabaseObjectManagerEx<?> objectManager)
+        public ObjectSaver(DBNContainer container, IDatabaseObjectManagerEx<?> objectManager)
         {
             this.container = container;
             this.objectManager = objectManager;
