@@ -49,17 +49,12 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
 
     private boolean deleteObject(IWorkbenchWindow workbenchWindow, DBNTreeNode node)
     {
-        if (!ConfirmationDialog.confirmActionWithParams(
-            workbenchWindow.getShell(),
-            PrefConstants.CONFIRM_ENTITY_DELETE,
-            node.getMeta().getLabel(),
-            node.getNodeName()))
-        {
-            return false;
-        }
-
         // Check for deletable object
         if (node instanceof DBPDeletableObject) {
+            if (!confirmObjectDelete(workbenchWindow, node)) {
+                return false;
+            }
+
             ((DBPDeletableObject) node).deleteObject(workbenchWindow);
             return true;
         }
@@ -89,8 +84,15 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         IDatabaseObjectManagerEx objectManagerEx = (IDatabaseObjectManagerEx)objectManager;
         Map<String, Object> deleteOptions = null;
 
+        objectManagerEx.deleteObject(node.getObject(), deleteOptions);
+
+        if (!confirmObjectDelete(workbenchWindow, node)) {
+            objectManagerEx.resetChanges();
+            return false;
+        }
+
         // Delete object
-        ObjectDeleter deleter = new ObjectDeleter(objectManagerEx, node, deleteOptions);
+        ObjectDeleter deleter = new ObjectDeleter(objectManagerEx);
         try {
             workbenchWindow.run(true, true, deleter);
         } catch (InvocationTargetException e) {
@@ -113,23 +115,26 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         return true;
     }
 
+    private boolean confirmObjectDelete(IWorkbenchWindow workbenchWindow, DBNTreeNode node)
+    {
+        return ConfirmationDialog.confirmActionWithParams(
+            workbenchWindow.getShell(),
+            PrefConstants.CONFIRM_ENTITY_DELETE,
+            node.getMeta().getLabel(),
+            node.getNodeName());
+    }
+
     private static class ObjectDeleter implements IRunnableWithProgress {
         private final IDatabaseObjectManagerEx objectManager;
-        private final DBNTreeNode node;
-        private final Map<String, Object> deleteOptions;
 
-        public ObjectDeleter(IDatabaseObjectManagerEx objectManagerEx, DBNTreeNode node, Map<String, Object> deleteOptions)
+        public ObjectDeleter(IDatabaseObjectManagerEx objectManagerEx)
         {
             this.objectManager = objectManagerEx;
-            this.node = node;
-            this.deleteOptions = deleteOptions;
         }
 
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {
-                objectManager.deleteObject(node.getObject(), deleteOptions);
-
                 objectManager.saveChanges(new DefaultProgressMonitor(monitor));
             } catch (DBException e) {
                 throw new InvocationTargetException(e);

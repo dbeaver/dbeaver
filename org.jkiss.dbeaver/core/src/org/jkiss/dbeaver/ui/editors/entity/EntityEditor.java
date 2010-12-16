@@ -58,7 +58,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     private IDatabaseObjectManager objectManager;
     private Map<String, IEditorPart> editorMap = new HashMap<String, IEditorPart>();
 
-    public IDatabaseObjectManager getObjectManager()
+    public IDatabaseObjectManager<?> getObjectManager()
     {
         return objectManager;
     }
@@ -127,57 +127,30 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
     public void revertChanges()
     {
         if (objectManager.isDirty()) {
-            Display.getDefault().asyncExec(new Runnable() {
-                public void run()
-                {
-                    try {
-                        getObjectManager().resetChanges(VoidProgressMonitor.INSTANCE);
-                    } catch (DBException e) {
-                        UIUtils.showErrorDialog(getSite().getShell(), "Revert", e.getMessage());
-                    }
-                    firePropertyChange(IEditorPart.PROP_DIRTY);
-                }
-            });
+            getObjectManager().resetChanges();
+            firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public void undoChanges()
     {
         if (objectManager.canUndoCommand()) {
-            Display.getDefault().asyncExec(new Runnable() {
-                public void run()
-                {
-                    try {
-                        getObjectManager().undoCommand(VoidProgressMonitor.INSTANCE);
-                    } catch (DBException e) {
-                        UIUtils.showErrorDialog(getSite().getShell(), "Undo", e.getMessage());
-                    }
-                    firePropertyChange(IEditorPart.PROP_DIRTY);
-                }
-            });
+            getObjectManager().undoCommand();
+            firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public void redoChanges()
     {
         if (objectManager.canRedoCommand()) {
-            Display.getDefault().asyncExec(new Runnable() {
-                public void run()
-                {
-                    try {
-                        getObjectManager().redoCommand(VoidProgressMonitor.INSTANCE);
-                    } catch (DBException e) {
-                        UIUtils.showErrorDialog(getSite().getShell(), "Redo", e.getMessage());
-                    }
-                    firePropertyChange(IEditorPart.PROP_DIRTY);
-                }
-            });
+            getObjectManager().redoCommand();
+            firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public int showChanges(boolean allowSave)
     {
-        Collection<IDatabaseObjectCommand> commands = getObjectManager().getCommands();
+        Collection<? extends IDatabaseObjectCommand> commands = getObjectManager().getCommands();
         StringBuilder script = new StringBuilder();
         for (IDatabaseObjectCommand command : commands) {
             try {

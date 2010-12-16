@@ -168,11 +168,11 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
-    public void resetChanges(DBRProgressMonitor monitor) throws DBException
+    public void resetChanges()
     {
         synchronized (commands) {
             while (!commands.isEmpty()) {
-                undoCommand(monitor);
+                undoCommand();
             }
             clearUndidCommands();
             clearMergedCommands();
@@ -243,8 +243,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
-    public void undoCommand(DBRProgressMonitor monitor)
-        throws DBException
+    public void undoCommand()
     {
         if (!canUndoCommand()) {
             throw new IllegalStateException("Can't undo command");
@@ -263,7 +262,7 @@ public abstract class AbstractDatabaseObjectManager<OBJECT_TYPE extends DBSObjec
         }
     }
 
-    public void redoCommand(DBRProgressMonitor monitor)
+    public void redoCommand()
     {
         if (!canRedoCommand()) {
             throw new IllegalStateException("Can't redo command");

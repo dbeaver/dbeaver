@@ -31,11 +31,11 @@ public interface IDatabaseObjectManager<OBJECT_TYPE extends DBSObject> extends I
 
     void saveChanges(DBRProgressMonitor monitor) throws DBException;
 
-    void resetChanges(DBRProgressMonitor monitor) throws DBException;
+    void resetChanges();
 
-    void undoCommand(DBRProgressMonitor monitor) throws DBException;
+    void undoCommand();
 
-    void redoCommand(DBRProgressMonitor monitor) throws DBException;
+    void redoCommand();
 
     Collection<? extends IDatabaseObjectCommand<OBJECT_TYPE>> getCommands();
 
