@@ -41,7 +41,7 @@
                 class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 namespace="org.jkiss.dbeaver.core.object"
-                properties="canCreate,canDelete"
+                properties="canCreate,canPaste,canDelete"
                 type="org.jkiss.dbeaver.model.navigator.DBNNode">
         </propertyTester>
         <propertyTester
@@ -406,6 +406,22 @@
                     </iterate>
                 </with>
             </enabledWhen>
+        </handler>
+
+        <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectCreate">
+            <activeWhen>
+                <and>
+                    <with variable="activePartId">
+                        <equals value="org.jkiss.dbeaver.core.databaseNavigator"/>
+                    </with>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <test property="org.jkiss.dbeaver.core.object.canPaste"/>
+                        </iterate>
+                    </with>
+                </and>
+            </activeWhen>
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.object.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectDelete">
@@ -861,24 +877,13 @@
             </command>
 
             <command commandId="org.eclipse.ui.edit.copy">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="+"/>
-                        <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.eclipse.ui.edit.paste">
+                <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="Copy full qualified name">
-                <visibleWhen>
-                    <with variable="selection">
-                        <count value="+"/>
-                        <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSEntityQualified"/>
-                        </iterate>
-                    </with>
-                </visibleWhen>
+                <visibleWhen checkEnabled="true"/>
             </command>
 
             <command commandId="org.jkiss.dbeaver.core.export.data">

@@ -4,10 +4,11 @@
 
 package org.jkiss.dbeaver.ui.actions;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -16,9 +17,13 @@ import org.jkiss.dbeaver.model.DBPDeletableObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeItem;
+import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
-import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
+
+import java.util.Collection;
 
 /**
  * ObjectPropertyTester
@@ -29,6 +34,7 @@ public class ObjectPropertyTester extends PropertyTester
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.object";
     public static final String PROP_CAN_CREATE = "canCreate";
+    public static final String PROP_CAN_PASTE = "canPaste";
     public static final String PROP_CAN_DELETE = "canDelete";
 
     public ObjectPropertyTester() {
@@ -41,7 +47,7 @@ public class ObjectPropertyTester extends PropertyTester
         }
         DBNNode node = (DBNNode)receiver;
 
-        if (property.equals(PROP_CAN_CREATE)) {
+        if (property.equals(PROP_CAN_CREATE) || property.equals(PROP_CAN_PASTE)) {
             Class objectType = null;
             if (node instanceof DBNTreeFolder) {
                 // Try to detect child type
@@ -49,9 +55,29 @@ public class ObjectPropertyTester extends PropertyTester
             } else if (node instanceof DBNTreeItem) {
                 objectType = node.getObject() == null ? null : node.getObject().getClass();
             }
-            return
-                objectType != null &&
-                hasExtendedManager(objectType);
+            if (objectType == null || !hasExtendedManager(objectType)) {
+                return false;
+            }
+            if (property.equals(PROP_CAN_CREATE)) {
+                return true;
+            }
+            // Check objects in clipboard
+            Clipboard clipboard = new Clipboard(Display.getDefault());
+            Object cbNodes = clipboard.getContents(TreeNodeTransfer.getInstance());
+            if (!(cbNodes instanceof Collection)) {
+                return false;
+            }
+            for (Object nodeObject : (Collection)cbNodes) {
+                if (nodeObject instanceof DBNTreeNode) {
+                    DBSObject pasteObject = ((DBNTreeNode) nodeObject).getObject();
+                    if (pasteObject == null || objectType != pasteObject.getClass()) {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+            return true;
         } else if (property.equals(PROP_CAN_DELETE)) {
             return node instanceof DBPDeletableObject ||
                 node instanceof DBNTreeItem &&

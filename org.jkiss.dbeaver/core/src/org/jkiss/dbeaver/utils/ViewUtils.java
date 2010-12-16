@@ -41,9 +41,12 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
+import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * NavigatorUtils
@@ -295,7 +298,7 @@ public class ViewUtils
 
     public static void addDragAndDropSupport(final INavigatorModelView navigatorModelView)
     {
-        Transfer[] types = new Transfer[] {TextTransfer.getInstance()};
+        Transfer[] types = new Transfer[] {TextTransfer.getInstance(), TreeNodeTransfer.getInstance()};
         int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
         final DragSource source = new DragSource(navigatorModelView.getNavigatorViewer().getControl(), operations);
@@ -309,6 +312,7 @@ public class ViewUtils
             }
             public void dragSetData (DragSourceEvent event) {
                 if (!selection.isEmpty()) {
+                    List<DBNNode> nodes = new ArrayList<DBNNode>();
                     String lineSeparator = CommonUtils.getLineSeparator();
                     StringBuilder buf = new StringBuilder();
                     for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {
@@ -316,6 +320,7 @@ public class ViewUtils
                         if (!(nextSelected instanceof DBNNode)) {
                             continue;
                         }
+                        nodes.add((DBNNode)nextSelected);
                         DBSObject object = ((DBNNode)nextSelected).getObject();
                         if (object == null) {
                             continue;
@@ -325,12 +330,59 @@ public class ViewUtils
                         }
                         buf.append(object instanceof DBSEntityQualified ? ((DBSEntityQualified)object).getFullQualifiedName() : object.getName());
                     }
-                    event.data = buf.toString();
+                    if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+                        event.data = buf.toString();
+                    } else {
+                        event.data = nodes;
+                    }
                 } else {
-                    event.data = "";
+                    if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+                        event.data = "";
+                    } else {
+                        event.data = new ArrayList<DBNNode>();
+                    }
                 }
             }
             public void dragFinished(DragSourceEvent event) {
+            }
+        });
+
+        DropTarget dropTarget = new DropTarget(navigatorModelView.getNavigatorViewer().getControl(), DND.DROP_COPY);
+        dropTarget.setTransfer(new Transfer[] {TreeNodeTransfer.getInstance()});
+        dropTarget.addDropListener(new DropTargetListener() {
+            public void dragEnter(DropTargetEvent event)
+            {
+                event.detail = DND.DROP_COPY;
+                event.feedback = DND.FEEDBACK_NONE;
+            }
+
+            public void dragLeave(DropTargetEvent event)
+            {
+                event.detail = DND.DROP_COPY;
+                event.feedback = DND.FEEDBACK_NONE;
+            }
+
+            public void dragOperationChanged(DropTargetEvent event)
+            {
+                event.detail = DND.DROP_COPY;
+                event.feedback = DND.FEEDBACK_NONE;
+            }
+
+            public void dragOver(DropTargetEvent event)
+            {
+                event.detail = DND.DROP_COPY;
+                event.feedback = DND.FEEDBACK_NONE;
+            }
+
+            public void drop(DropTargetEvent event)
+            {
+                int x = 0;
+            }
+
+            public void dropAccept(DropTargetEvent event)
+            {
+                event.detail = DND.DROP_COPY;
+                event.feedback = DND.FEEDBACK_NONE;
             }
         });
     }
