@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.controls.imageview;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
+import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
@@ -85,6 +86,27 @@ public class ImageViewControl extends Composite {
             }
         }
         updateActions();
+
+        // Add DND support
+        Transfer[] types = new Transfer[] {ImageTransfer.getInstance()};
+        int operations = DND.DROP_COPY;
+
+        final DragSource source = new DragSource(canvas, operations);
+        source.setTransfer(types);
+        source.addDragListener (new DragSourceListener() {
+            public void dragStart(DragSourceEvent event) {
+            }
+            public void dragSetData (DragSourceEvent event) {
+                if (canvas.getImageData() != null) {
+                    event.data = canvas.getImageData();
+                } else {
+                    event.data = null;
+                }
+            }
+            public void dragFinished(DragSourceEvent event) {
+            }
+        });
+
     }
 
     @Override

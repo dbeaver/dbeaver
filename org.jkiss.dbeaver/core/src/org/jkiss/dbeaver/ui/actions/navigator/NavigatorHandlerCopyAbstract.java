@@ -34,7 +34,7 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler {
         if (selection instanceof IStructuredSelection) {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
 
-            workbenchWindow.getShell().getDisplay().asyncExec(new Runnable() {
+            workbenchWindow.getShell().getDisplay().syncExec(new Runnable() {
                 public void run() {
                     StringBuilder buf = new StringBuilder();
                     for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ){
