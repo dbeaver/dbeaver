@@ -4,20 +4,23 @@
 
 package org.jkiss.dbeaver.ui.dialogs.search;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -65,6 +68,9 @@ public class FindObjectsDialog extends Dialog {
     private final IWorkbenchPart workbenchPart;
     private java.util.List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private DBSDataSourceContainer currentDataSource;
+    private Table typesTable;
+    private Text searchText;
+    private Button searchButton;
 
     public FindObjectsDialog(IWorkbenchPart workbenchPart, DBSDataSourceContainer currentDataSource)
     {
@@ -85,36 +91,54 @@ public class FindObjectsDialog extends Dialog {
 
         getShell().setText("Find database objects");
         getShell().setImage(DBIcon.FIND.getImage());
-
+        getShell().addShellListener(new ShellAdapter() {
+            @Override
+            public void shellActivated(ShellEvent e)
+            {
+                fillObjectTypes();
+            }
+        });
         Composite composite = (Composite) super.createDialogArea(parent);
 
         {
             Group searchGroup = UIUtils.createControlGroup(composite, "Search", 3, GridData.FILL_HORIZONTAL, 0);
-            Text searchText = UIUtils.createLabelText(searchGroup, "Object Name", "");
+            searchText = UIUtils.createLabelText(searchGroup, "Object Name", "");
+            searchText.addModifyListener(new ModifyListener() {
+                public void modifyText(ModifyEvent e)
+                {
+                    checkSearchEnabled();
+                }
+            });
 
-            Button searchButton = new Button(searchGroup, SWT.PUSH);
+            searchButton = new Button(searchGroup, SWT.PUSH);
             searchButton.setText("Search");
             searchButton.setImage(DBIcon.FIND.getImage());
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
             //gd.horizontalSpan = 2;
             searchButton.setLayoutData(gd);
-
             Shell shell = parent.getShell();
             if (shell != null) {
                 shell.setDefaultButton(searchButton);
             }
 
             Composite optionsGroup = new Composite(searchGroup, SWT.NONE);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            optionsGroup.setLayoutData(gd);
-            GridLayout layout = new GridLayout(7, false);
+            GridLayout layout = new GridLayout(2, false);
             layout.marginHeight = 0;
             layout.marginWidth = 0;
             optionsGroup.setLayout(layout);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 3;
+            optionsGroup.setLayoutData(gd);
 
-            UIUtils.createControlLabel(optionsGroup, "Data Source");
-            Combo dsCombo = new Combo(optionsGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+            Composite optionsGroup2 = new Composite(optionsGroup, SWT.NONE);
+            layout = new GridLayout(2, false);
+            layout.marginHeight = 0;
+            layout.marginWidth = 0;
+            optionsGroup2.setLayout(layout);
+            optionsGroup2.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+
+            UIUtils.createControlLabel(optionsGroup2, "Data Source");
+            Combo dsCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
             for (int i = 0, dataSourcesSize = dataSources.size(); i < dataSourcesSize; i++) {
                 DataSourceDescriptor descriptor = dataSources.get(i);
                 dsCombo.add(descriptor.getName());
@@ -122,17 +146,33 @@ public class FindObjectsDialog extends Dialog {
                     dsCombo.select(i);
                 }
             }
+            dsCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createControlLabel(optionsGroup, "Name match");
-            Combo matchCombo = new Combo(optionsGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+            UIUtils.createControlLabel(optionsGroup2, "Name match");
+            Combo matchCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
             matchCombo.add("Starts with");
             matchCombo.add("Contains");
             matchCombo.add("Mask");
             matchCombo.select(0);
+            matchCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            gd = new GridData();
-            gd.widthHint = 50;
-            UIUtils.createLabelText(optionsGroup, "Max results", "100", SWT.BORDER, gd);
+            Text maxResultsText = UIUtils.createLabelText(optionsGroup2, "Max results", "100", SWT.BORDER, gd);
+            maxResultsText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            typesTable = new Table(optionsGroup, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
+            typesTable.addSelectionListener(new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+                    checkSearchEnabled();
+                }
+            });
+            gd = new GridData(GridData.FILL_BOTH);
+            typesTable.setLayoutData(gd);
+
+            TableColumn typeColumn = new TableColumn(typesTable, SWT.LEFT);
+            typeColumn.setText("Type");
+            TableColumn descColumn = new TableColumn(typesTable, SWT.LEFT);
+            descColumn.setText("Description");
         }
 
         {
@@ -150,6 +190,7 @@ public class FindObjectsDialog extends Dialog {
                     return null;
                 }
             };
+            itemList.setInfo("You have to set search criteria");
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 700;
             gd.heightHint = 500;
@@ -163,6 +204,45 @@ public class FindObjectsDialog extends Dialog {
     protected void createButtonsForButtonBar(Composite parent)
     {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, false);
+    }
+
+    private void fillObjectTypes()
+    {
+        DBSStructureAssistant structureAssistant = null;
+        if (currentDataSource != null) {
+            structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, currentDataSource);
+        }
+        typesTable.removeAll();
+        if (structureAssistant == null) {
+
+        } else {
+            for (DBSObjectType objectType : structureAssistant.getSupportedObjectTypes()) {
+                TableItem item = new TableItem(typesTable, SWT.NONE);
+                item.setText(objectType.getTypeName());
+                if (objectType.getImage() != null) {
+                    item.setImage(0, objectType.getImage());
+                }
+                item.setText(1, objectType.getDescription());
+            }
+        }
+        for (TableColumn column : typesTable.getColumns()) {
+            column.pack();
+        };
+        checkSearchEnabled();
+    }
+
+    private void checkSearchEnabled()
+    {
+        boolean enabled = false;
+        for (TableItem item : typesTable.getItems()) {
+            if (item.getChecked()) {
+                enabled = true;
+            }
+        }
+        if (CommonUtils.isEmpty(searchText.getText())) {
+            enabled = false;
+        }
+        searchButton.setEnabled(enabled);
     }
 
 }

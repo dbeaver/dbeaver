@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBIcon;
 
@@ -14,19 +15,19 @@ import org.jkiss.dbeaver.ui.DBIcon;
  */
 public enum RelationalObjectType implements DBSObjectType {
 
-    TYPE_TABLE("Table", "Table or View", DBIcon.TREE_TABLE.getImageDescriptor(), DBSTable.class),
-    TYPE_TABLE_COLUMN("Table column", "Table column", DBIcon.TREE_COLUMN.getImageDescriptor(), DBSTableColumn.class),
-    TYPE_INDEX("Index", "Index", DBIcon.TREE_INDEX.getImageDescriptor(), DBSIndex.class),
-    TYPE_CONSTRAINT("Constraint", "Table constraint (primary key, foreign key, unique, etc)", DBIcon.TREE_CONSTRAINT.getImageDescriptor(), DBSConstraint.class),
-    TYPE_PROCEDURE("Procedure", "Procedure or function", DBIcon.TREE_PROCEDURE.getImageDescriptor(), DBSProcedure.class),
-    TYPE_TRIGGER("Trigger", "Trigger", DBIcon.TREE_TRIGGER.getImageDescriptor(), DBSTrigger.class);
+    TYPE_TABLE("Table", "Table or View", DBIcon.TREE_TABLE.getImage(), DBSTable.class),
+    TYPE_TABLE_COLUMN("Table column", "Table column", DBIcon.TREE_COLUMN.getImage(), DBSTableColumn.class),
+    TYPE_INDEX("Index", "Index", DBIcon.TREE_INDEX.getImage(), DBSIndex.class),
+    TYPE_CONSTRAINT("Constraint", "Table constraint (primary key, foreign key, unique, etc)", DBIcon.TREE_CONSTRAINT.getImage(), DBSConstraint.class),
+    TYPE_PROCEDURE("Procedure", "Procedure or function", DBIcon.TREE_PROCEDURE.getImage(), DBSProcedure.class),
+    TYPE_TRIGGER("Trigger", "Trigger", DBIcon.TREE_TRIGGER.getImage(), DBSTrigger.class);
 
     private final String typeName;
     private final String description;
-    private final ImageDescriptor image;
+    private final Image image;
     private final Class<? extends DBSObject> objectClass;
 
-    RelationalObjectType(String typeName, String description, ImageDescriptor image, Class<? extends DBSObject> objectClass)
+    RelationalObjectType(String typeName, String description, Image image, Class<? extends DBSObject> objectClass)
     {
         this.typeName = typeName;
         this.description = description;
@@ -44,7 +45,7 @@ public enum RelationalObjectType implements DBSObjectType {
         return description;
     }
 
-    public ImageDescriptor getImage()
+    public Image getImage()
     {
         return image;
     }

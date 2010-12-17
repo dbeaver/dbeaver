@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
 
 /**
  * Object type
@@ -15,7 +16,7 @@ public interface DBSObjectType
 
     String getDescription();
 
-    ImageDescriptor getImage();
+    Image getImage();
 
     Class<? extends DBSObject> getTypeClass();
 }
