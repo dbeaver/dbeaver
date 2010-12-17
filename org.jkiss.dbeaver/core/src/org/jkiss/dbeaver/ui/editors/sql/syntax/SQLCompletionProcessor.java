@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -40,6 +41,11 @@ import java.util.regex.PatternSyntaxException;
 public class SQLCompletionProcessor implements IContentAssistProcessor
 {
     static final Log log = LogFactory.getLog(SQLCompletionProcessor.class);
+
+    private static List<DBSObjectType> TABLE_OBJECT_TYPES = new ArrayList<DBSObjectType>();
+    static {
+        TABLE_OBJECT_TYPES.add(RelationalObjectType.TYPE_TABLE);
+    }
 
     private SQLEditor editor;
     private IContextInformationValidator validator = new Validator();
@@ -173,9 +179,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         if (childObject == null) {
                             DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                             if (structureAssistant != null) {
-                                List<DBSTablePath> tableNames = structureAssistant.findTableNames(monitor, token, 2);
-                                if (!tableNames.isEmpty()) {
-                                    childObject = DBUtils.getTableByPath(monitor, sc, tableNames.get(0));
+                                Collection<DBSObject> tables = structureAssistant.findObjectsByMask(monitor, null, TABLE_OBJECT_TYPES, token, 2);
+                                if (!tables.isEmpty()) {
+                                    childObject = tables.iterator().next();
                                 }
                             }
                         }
@@ -274,9 +280,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 // No such object found - may be it's start of table name
                 DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                 if (structureAssistant != null) {
-                    List<DBSTablePath> tableNames = structureAssistant.findTableNames(monitor, startName, 2);
-                    if (!tableNames.isEmpty()) {
-                        return DBUtils.getTableByPath(monitor, sc, tableNames.get(0));
+                    Collection<DBSObject> tables = structureAssistant.findObjectsByMask(monitor, sc, TABLE_OBJECT_TYPES, startName, 2);
+                    if (!tables.isEmpty()) {
+                        return tables.iterator().next();
                     }
                 }
                 return null;
@@ -326,12 +332,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         List<ICompletionProposal> proposals)
     {
         try {
-            List<DBSTablePath> tableNames = assistant.findTableNames(monitor, tableName + "%", 100);
-            for (DBSTablePath path : tableNames) {
-                DBSObject table = DBUtils.getTableByPath(monitor, rootSC, path);
-                if (table != null) {
-                    proposals.add(makeProposalsFromObject(monitor, table));
-                }
+            Collection<DBSObject> tables = assistant.findObjectsByMask(monitor, rootSC, TABLE_OBJECT_TYPES, tableName + "%", 100);
+            for (DBSObject table : tables) {
+                proposals.add(makeProposalsFromObject(monitor, table));
             }
         } catch (DBException e) {
             log.error(e.getMessage());

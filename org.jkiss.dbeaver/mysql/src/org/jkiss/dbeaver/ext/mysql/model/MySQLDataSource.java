@@ -8,6 +8,7 @@ import com.mysql.jdbc.ConnectionImpl;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
@@ -39,7 +40,7 @@ import java.util.Properties;
 /**
  * GenericDataSource
  */
-public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssistant, DBSEntitySelector, DBCQueryPlanner
+public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector, DBCQueryPlanner, IAdaptable
 {
     static final Log log = LogFactory.getLog(MySQLDataSource.class);
 
@@ -290,47 +291,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         }
     }
 
-    public List<DBSTablePath> findTableNames(DBRProgressMonitor monitor, String tableMask, int maxResults)
-        throws DBException
-    {
-        List<DBSTablePath> pathList = new ArrayList<DBSTablePath>();
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Find tables by name");
-        try {
-            // Load tables
-            String catalogName = getActiveChild(monitor).getName();
-            JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SHOW TABLES LIKE '" + tableMask.toLowerCase() + "'");
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
-                    int tableNum = maxResults;
-                    while (dbResult.next() && tableNum-- > 0) {
-    
-                        String tableName = JDBCUtils.safeGetString(dbResult, 1);
-
-                        pathList.add(
-                            new DBSTablePath(
-                                catalogName,
-                                null,
-                                tableName));
-                    }
-                }
-                finally {
-                    dbResult.close();
-                }
-            } finally {
-                dbStat.close();
-            }
-            return pathList;
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            context.close();
-        }
-    }
-
     @Override
     protected Connection openConnection() throws DBException {
         ConnectionImpl mysqlConnection = (ConnectionImpl)super.openConnection();
@@ -545,4 +505,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSStructureAssis
         return plan;
     }
 
+    public Object getAdapter(Class adapter)
+    {
+        if (adapter == DBSStructureAssistant.class) {
+            return new MySQLStructureAssistant(this);
+        }
+        return null;
+    }
 }

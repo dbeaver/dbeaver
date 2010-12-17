@@ -70,9 +70,10 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
         return schemas;
     }
 
-    public GenericSchema getSchema(String name)
+    public GenericSchema getSchema(DBRProgressMonitor monitor, String name)
+        throws DBException
     {
-        return DBUtils.findObject(schemas, name);
+        return DBUtils.findObject(getSchemas(monitor), name);
     }
 
     public String getName()
@@ -104,7 +105,7 @@ public class GenericCatalog extends GenericEntityContainer implements DBSCatalog
         throws DBException
     {
         if (!CommonUtils.isEmpty(getSchemas(monitor))) {
-            return getSchema(childName);
+            return getSchema(monitor, childName);
         } else {
             return super.getChild(monitor, childName);
         }

@@ -99,12 +99,6 @@ public final class DBUtils {
         return name.toString();
     }
 
-    public static DBSObject getTableByPath(DBRProgressMonitor monitor, DBSEntityContainer rootSC, DBSTablePath path)
-        throws DBException
-    {
-        return getObjectByPath(monitor, rootSC, path.getCatalogName(), path.getSchemaName(), path.getTableName());
-    }
-
     public static DBSObject getObjectByPath(
             DBRProgressMonitor monitor,
             DBSEntityContainer rootSC,

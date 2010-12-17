@@ -1,0 +1,101 @@
+/*
+ * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ */
+
+package org.jkiss.dbeaver.ext.mysql.model;
+
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructureAssistant;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
+
+import java.sql.SQLException;
+import java.util.List;
+
+/**
+ * MySQLStructureAssistant
+ */
+public class MySQLStructureAssistant extends JDBCStructureAssistant
+{
+    private final MySQLDataSource dataSource;
+
+    public MySQLStructureAssistant(MySQLDataSource dataSource)
+    {
+        this.dataSource = dataSource;
+    }
+
+    @Override
+    protected JDBCDataSource getDataSource()
+    {
+        return dataSource;
+    }
+
+    public DBSObjectType[] getSupportedObjectTypes()
+    {
+        return new DBSObjectType[] {
+            RelationalObjectType.TYPE_TABLE
+            };
+    }
+
+    protected void findTablesByMask(
+        DBRProgressMonitor monitor,
+        DBSObject parentObject,
+        String tableNameMask,
+        int maxResults,
+        JDBCDatabaseMetaData metaData,
+        List<DBSObject> objects)
+        throws DBException, SQLException
+    {
+        MySQLCatalog catalog = parentObject instanceof MySQLCatalog ? (MySQLCatalog) parentObject : null;
+        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Find tables by name");
+        try {
+            // Load tables
+            JDBCPreparedStatement dbStat = context.prepareStatement(
+                "SELECT * FROM " + MySQLConstants.META_TABLE_TABLES + " WHERE " +
+                    "TABLE_NAME LIKE '" + tableNameMask.toLowerCase() + "'" +
+                    (catalog == null ? "" : " AND TABLE_SCHEMA=" + DBUtils.getQuotedIdentifier(getDataSource(), catalog.getName()) ) +
+                    " ORDER BY TABLE_NAME");
+            try {
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    int tableNum = maxResults;
+                    while (dbResult.next() && tableNum-- > 0) {
+                        String catalogName = JDBCUtils.safeGetString(dbResult, "TABLE_SCHEMA");
+                        String tableName = JDBCUtils.safeGetString(dbResult, "TABLE_NAME");
+                        MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
+                        if (tableCatalog == null) {
+                            log.debug("Table catalog '" + catalogName + "' not found");
+                            continue;
+                        }
+                        MySQLTable table = tableCatalog.getTable(monitor, tableName);
+                        if (table == null) {
+                            log.debug("Table '" + catalogName + "' not found in catalog '" + tableCatalog.getName() + "'");
+                            continue;
+                        }
+                        objects.add(table);
+                    }
+                }
+                finally {
+                    dbResult.close();
+                }
+            } finally {
+                dbStat.close();
+            }
+        }
+        finally {
+            context.close();
+        }
+    }
+
+}

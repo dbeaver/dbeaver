@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
@@ -23,13 +24,12 @@ import org.jkiss.dbeaver.model.struct.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends JDBCDataSource implements DBPDataSource, JDBCConnector, DBSEntitySelector, DBSStructureAssistant
+public class GenericDataSource extends JDBCDataSource implements DBPDataSource, JDBCConnector, DBSEntitySelector, IAdaptable
 {
     static final Log log = LogFactory.getLog(GenericDataSource.class);
 
@@ -288,7 +288,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         }
         if (!CommonUtils.isEmpty(schemaName)) {
             if (container instanceof GenericCatalog) {
-                container = ((GenericCatalog)container).getSchema(schemaName);
+                container = ((GenericCatalog)container).getSchema(monitor, schemaName);
             } else {
                 container = this.getSchema(schemaName);
             }
@@ -462,64 +462,13 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         }
     }
 
-    public List<DBSTablePath> findTableNames(DBRProgressMonitor monitor, String tableMask, int maxResults) throws DBException
+    public Object getAdapter(Class adapter)
     {
-        JDBCUtils.startConnectionBlock(monitor, getDataSource(), "Looking for tables in '" + getName() + "'");
-
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Find tables by name");
-        try {
-            JDBCDatabaseMetaData metaData = context.getMetaData();
-
-            // Try to find tables in upper case and in lower case
-            List<DBSTablePath> tables = findTableNames(tableMask.toUpperCase(), maxResults, metaData);
-            if (tables == null) {
-                tables = findTableNames(tableMask.toLowerCase(), maxResults, metaData);
-            }
-            return tables == null ? Collections.<DBSTablePath>emptyList() : tables;
-
+        if (adapter == DBSStructureAssistant.class) {
+            return new GenericStructureAssistant(this);
+        } else {
+            return null;
         }
-        catch (SQLException ex) {
-            throw new DBException(ex);
-        }
-        finally {
-            context.close();
-            JDBCUtils.endConnectionBlock(monitor);
-        }
-    }
-
-    private List<DBSTablePath> findTableNames(String tableMask, int maxResults, JDBCDatabaseMetaData metaData)
-        throws SQLException
-    {
-        List<DBSTablePath> pathList = null;
-
-        // Load tables
-        JDBCResultSet dbResult = metaData.getTables(
-            null,
-            null,
-            tableMask,
-            null);
-        try {
-            int tableNum = maxResults;
-            while (dbResult.next() && tableNum-- > 0) {
-
-                String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
-                String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
-                String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
-
-                if (pathList == null) {
-                    pathList = new ArrayList<DBSTablePath>();
-                }
-                pathList.add(
-                    new DBSTablePath(
-                        catalogName,
-                        schemaName,
-                        tableName));
-            }
-        }
-        finally {
-            dbResult.close();
-        }
-        return pathList;
     }
 
     private class DataSourceEntityContainer extends GenericEntityContainer {

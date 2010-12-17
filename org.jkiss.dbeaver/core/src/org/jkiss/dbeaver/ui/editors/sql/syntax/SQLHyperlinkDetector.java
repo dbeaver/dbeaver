@@ -18,10 +18,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.model.struct.DBSTablePath;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
@@ -199,12 +196,12 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             cache.nodes = new ArrayList<DBNNode>();
             try {
                 DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
-                List<DBSTablePath> pathList = structureAssistant.findTableNames(monitor, word, 10);
-                if (!pathList.isEmpty()) {
-                    for (DBSTablePath path : pathList) {
-                        DBSObject object = DBUtils.getTableByPath(monitor, (DBSEntityContainer) getDataSource(), path);
-                        if (object != null) {
-                            DBNNode node = navigatorModel.getNodeByObject(monitor, object, true);
+                List<DBSObjectType> objectTypes = Arrays.asList(structureAssistant.getSupportedObjectTypes());
+                Collection<DBSObject> objects = structureAssistant.findObjectsByMask(monitor, null, objectTypes, word, 10);
+                if (!objects.isEmpty()) {
+                    for (DBSObject object : objects) {
+                        DBNNode node = navigatorModel.getNodeByObject(monitor, object, true);
+                        if (node != null) {
                             cache.nodes.add(node);
                         }
                     }
