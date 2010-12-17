@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.registry.tree;
 
+import org.jkiss.dbeaver.registry.AbstractDescriptor;
+
 /**
  * DBXTreeFolder
  */
@@ -14,9 +16,9 @@ public class DBXTreeFolder extends DBXTreeNode
     private String description;
     private boolean navigable;
 
-    public DBXTreeFolder(DBXTreeNode parent, String type, String label, boolean navigable)
+    public DBXTreeFolder(AbstractDescriptor source, DBXTreeNode parent, String type, String label, boolean navigable)
     {
-        super(parent);
+        super(source, parent);
         this.type = type;
         this.label = label;
         this.navigable = navigable;

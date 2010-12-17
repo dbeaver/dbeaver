@@ -72,7 +72,7 @@ public class AbstractDescriptor {
         return null;
     }
 
-    protected Class<?> getObjectClass(String className)
+    public Class<?> getObjectClass(String className)
     {
         Class<?> objectClass = null;
         try {

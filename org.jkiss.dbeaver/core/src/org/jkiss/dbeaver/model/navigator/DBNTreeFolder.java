@@ -94,14 +94,17 @@ public class DBNTreeFolder extends DBNTreeNode implements DBNContainer
         return ICommandIds.CMD_OBJECT_OPEN;
     }
 
-    public Class<?> getItemsClass()
+    public Class<? extends DBSObject> getItemsClass()
     {
-        try {
-            String itemsType = meta.getType();
-            return CommonUtils.isEmpty(itemsType) ? null : Class.forName(itemsType);
-        } catch (ClassNotFoundException e) {
-            return null;
+        String itemsType = CommonUtils.toString(meta.getType());
+        Class<?> aClass = meta.getSource().getObjectClass(itemsType);
+        if (aClass == null) {
+            throw new IllegalStateException(itemsType);
         }
+        if (!DBSObject.class.isAssignableFrom(aClass)) {
+            throw new IllegalStateException("Class '" + aClass.getName() + "' doesn't extend DBSObject");
+        }
+        return (Class<DBSObject>)aClass ;
     }
 
     public Class getChildrenType()

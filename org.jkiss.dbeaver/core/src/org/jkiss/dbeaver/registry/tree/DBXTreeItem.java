@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.registry.tree;
 
+import org.jkiss.dbeaver.registry.AbstractDescriptor;
+
 /**
  * DBXTreeItem
  */
@@ -18,6 +20,7 @@ public class DBXTreeItem extends DBXTreeNode
     private boolean navigable;
 
     public DBXTreeItem(
+        AbstractDescriptor source,
         DBXTreeNode parent,
         String label,
         String itemLabel,
@@ -27,7 +30,7 @@ public class DBXTreeItem extends DBXTreeNode
         boolean virtual,
         boolean navigable)
     {
-        super(parent);
+        super(source, parent);
         this.label = label;
         this.itemLabel = itemLabel == null ? label : itemLabel;
         this.path = path;

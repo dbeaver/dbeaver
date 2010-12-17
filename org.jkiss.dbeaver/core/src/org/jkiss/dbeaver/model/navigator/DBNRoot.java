@@ -45,7 +45,7 @@ public class DBNRoot extends DBNNode implements DBNContainer
         return this;
     }
 
-    public Class getChildrenType()
+    public Class<DataSourceDescriptor> getItemsClass()
     {
         return DataSourceDescriptor.class;
     }

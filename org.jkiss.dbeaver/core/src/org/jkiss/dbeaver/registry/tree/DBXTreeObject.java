@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.registry.tree;
 
+import org.jkiss.dbeaver.registry.AbstractDescriptor;
+
 /**
  * DBXTreeItem
  */
@@ -13,9 +15,9 @@ public class DBXTreeObject extends DBXTreeNode
     private String description;
     private String editorId;
 
-    public DBXTreeObject(DBXTreeNode parent, String label, String description, String editorId)
+    public DBXTreeObject(AbstractDescriptor source, DBXTreeNode parent, String label, String description, String editorId)
     {
-        super(parent);
+        super(source, parent);
         this.label = label;
         this.description = description;
         this.editorId = editorId;

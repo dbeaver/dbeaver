@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.AbstractDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,18 +18,25 @@ import java.util.List;
  */
 public abstract class DBXTreeNode
 {
+    private final AbstractDescriptor source;
     private DBXTreeNode parent;
     private List<DBXTreeNode> children;
     private DBXTreeNode recursiveLink;
     private Image defaultIcon;
     private List<DBXTreeIcon> icons;
 
-    public DBXTreeNode(DBXTreeNode parent)
+    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent)
     {
+        this.source = source;
         this.parent = parent;
         if (parent != null) {
             parent.addChild(this);
         }
+    }
+
+    public AbstractDescriptor getSource()
+    {
+        return source;
     }
 
     public abstract String getLabel();

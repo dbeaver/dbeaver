@@ -44,7 +44,7 @@ public class ObjectPropertyTester extends PropertyTester
             Class objectType = null;
             if (node instanceof DBNContainer) {
                 // Try to detect child type
-                objectType = ((DBNContainer)node).getChildrenType();
+                objectType = ((DBNContainer)node).getItemsClass();
             } else if (node.isManagable()) {
                 objectType = node.getObject() == null ? null : node.getObject().getClass();
             }

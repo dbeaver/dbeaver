@@ -19,7 +19,9 @@ public interface DBNContainer extends DBSFolder
 {
     Object getValueObject();
 
-    Class getChildrenType();
+    Class<? extends DBSObject> getItemsClass();
+
+    //Class getChildrenType();
 
     DBNNode addChildItem(DBRProgressMonitor monitor, DBSObject childObject) throws DBException;
 

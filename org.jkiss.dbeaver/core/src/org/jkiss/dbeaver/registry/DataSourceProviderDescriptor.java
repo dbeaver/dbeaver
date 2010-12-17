@@ -236,6 +236,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private DBXTreeNode loadTreeInfo(IConfigurationElement config)
     {
         DBXTreeItem treeRoot = new DBXTreeItem(
+            this,
             null,
             "Connection",
             "Connection",
@@ -265,6 +266,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         String nodeType = config.getName();
         if (nodeType.equals("folder")) {
             DBXTreeFolder folder = new DBXTreeFolder(
+                this,
                 parent,
                 config.getAttribute("type"),
                 config.getAttribute("label"),
@@ -273,6 +275,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             child = folder;
         } else if (nodeType.equals("items")) {
             child = new DBXTreeItem(
+                this,
                 parent,
                 config.getAttribute("label"),
                 config.getAttribute("itemLabel"),
@@ -283,6 +286,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 !"false".equals(config.getAttribute("navigable")));
         } else if (nodeType.equals("object")) {
             child = new DBXTreeObject(
+                this,
                 parent,
                 config.getAttribute("label"),
                 config.getAttribute("description"),
