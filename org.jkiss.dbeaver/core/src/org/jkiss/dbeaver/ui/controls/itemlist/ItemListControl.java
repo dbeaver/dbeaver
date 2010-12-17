@@ -14,7 +14,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
@@ -85,12 +84,6 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
     public Viewer getNavigatorViewer()
     {
         return getItemsViewer();
-    }
-
-    @Override
-    protected DBPDataSource getDataSource()
-    {
-        return node.getObject().getDataSource();
     }
 
     @Override

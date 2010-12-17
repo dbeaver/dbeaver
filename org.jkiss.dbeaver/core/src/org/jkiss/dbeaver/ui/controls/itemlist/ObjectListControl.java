@@ -433,8 +433,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return linkBounds;
     }
 
-
-    protected abstract DBPDataSource getDataSource();
     /**
      * Returns object with properties
      * @param item list item

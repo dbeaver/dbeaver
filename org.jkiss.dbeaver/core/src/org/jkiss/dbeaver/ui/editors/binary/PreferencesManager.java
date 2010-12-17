@@ -234,31 +234,6 @@ public class PreferencesManager {
         });
     }
 
-
-    private void createDialog(Shell parentShell)
-    {
-        dialog = new Shell(parentShell, SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
-        GridLayout gridLayout1 = new GridLayout();
-        gridLayout1.marginHeight = 3;
-        gridLayout1.marginWidth = 3;
-        dialog.setLayout(gridLayout1);
-        dialog.setText("Font preferences");
-        createPreferencesPart(dialog);
-        Button buttonDefault = new Button(dialog, SWT.CENTER);
-        buttonDefault.setText("Default");
-        GridData gridData = new GridData();
-        gridData.horizontalIndent = 3;
-        buttonDefault.setLayoutData(gridData);
-        buttonDefault.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
-            public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
-            {
-                setFontData(null);
-            }
-        });
-        createCompositeOkCancel();
-    }
-
-
     /**
      * Creates the part containing all preferences-editing widgets, that is, ok and cancel
      * buttons are left out so we can call this method from both standalone and plugin.
@@ -328,30 +303,6 @@ public class PreferencesManager {
         if (size == 1 || size == 2) size = 3;
 
         return size;
-    }
-
-
-    /**
-     * Creates a self contained standalone dialog
-     *
-     * @param aParentShell
-     * @return SWT.OK or SWT.CANCEL
-     */
-    public int openDialog(Shell aParentShell)
-    {
-        dialogResult = SWT.CANCEL;  // when user presses escape
-        if (dialog == null || dialog.isDisposed())
-            createDialog(aParentShell);
-        dialog.pack();
-        HexManager.reduceDistance(aParentShell, dialog);
-        dialog.open();
-        Display display = parent.getDisplay();
-        while (!dialog.isDisposed()) {
-            if (!display.readAndDispatch())
-                display.sleep();
-        }
-
-        return dialogResult;
     }
 
 

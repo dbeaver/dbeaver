@@ -423,9 +423,6 @@
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.object.find" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectFind">
-            <enabledWhen>
-                <reference definitionId="org.jkiss.dbeaver.core.ui.active.db.object"/>
-            </enabledWhen>
         </handler>
 
         <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectDelete">

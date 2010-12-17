@@ -88,7 +88,6 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
         createContextMenu();
     }
 
-    @Override
     protected DBPDataSource getDataSource()
     {
         return dataSourceProvider.getDataSource();
