@@ -97,12 +97,17 @@ public class DBNTreeFolder extends DBNTreeNode implements DBNContainer
     public Class<? extends DBSObject> getItemsClass()
     {
         String itemsType = CommonUtils.toString(meta.getType());
+        if (CommonUtils.isEmpty(itemsType)) {
+            return null;
+        }
         Class<?> aClass = meta.getSource().getObjectClass(itemsType);
         if (aClass == null) {
-            throw new IllegalStateException(itemsType);
+            log.error("Items class '" + itemsType + "' not found");
+            return null;
         }
         if (!DBSObject.class.isAssignableFrom(aClass)) {
-            throw new IllegalStateException("Class '" + aClass.getName() + "' doesn't extend DBSObject");
+            log.error("Class '" + aClass.getName() + "' doesn't extend DBSObject");
+            return null;
         }
         return (Class<DBSObject>)aClass ;
     }
