@@ -12,21 +12,21 @@ import org.jkiss.dbeaver.ui.DBIcon;
  * Relational database object type.
  * Used by structure assistants
  */
-public class RelationalObjectType implements DBSObjectType {
+public enum RelationalObjectType implements DBSObjectType {
 
-    public static final RelationalObjectType TYPE_TABLE = new RelationalObjectType("Table", "Table or View", DBIcon.TREE_TABLE.getImageDescriptor(), DBSTable.class);
-    public static final RelationalObjectType TYPE_TABLE_COLUMN = new RelationalObjectType("Table column", "Table column", DBIcon.TREE_COLUMN.getImageDescriptor(), DBSTableColumn.class);
-    public static final RelationalObjectType TYPE_INDEX = new RelationalObjectType("Index", "Index", DBIcon.TREE_INDEX.getImageDescriptor(), DBSIndex.class);
-    public static final RelationalObjectType TYPE_CONSTRAINT = new RelationalObjectType("Constraint", "Table constraint (primary key, foreign key, unique, etc)", DBIcon.TREE_CONSTRAINT.getImageDescriptor(), DBSConstraint.class);
-    public static final RelationalObjectType TYPE_PROCEDURE = new RelationalObjectType("Procedure", "Procedure or function", DBIcon.TREE_PROCEDURE.getImageDescriptor(), DBSProcedure.class);
-    public static final RelationalObjectType TYPE_TRIGGER = new RelationalObjectType("Trigger", "Trigger", DBIcon.TREE_TRIGGER.getImageDescriptor(), DBSTrigger.class);
+    TYPE_TABLE("Table", "Table or View", DBIcon.TREE_TABLE.getImageDescriptor(), DBSTable.class),
+    TYPE_TABLE_COLUMN("Table column", "Table column", DBIcon.TREE_COLUMN.getImageDescriptor(), DBSTableColumn.class),
+    TYPE_INDEX("Index", "Index", DBIcon.TREE_INDEX.getImageDescriptor(), DBSIndex.class),
+    TYPE_CONSTRAINT("Constraint", "Table constraint (primary key, foreign key, unique, etc)", DBIcon.TREE_CONSTRAINT.getImageDescriptor(), DBSConstraint.class),
+    TYPE_PROCEDURE("Procedure", "Procedure or function", DBIcon.TREE_PROCEDURE.getImageDescriptor(), DBSProcedure.class),
+    TYPE_TRIGGER("Trigger", "Trigger", DBIcon.TREE_TRIGGER.getImageDescriptor(), DBSTrigger.class);
 
     private final String typeName;
     private final String description;
     private final ImageDescriptor image;
     private final Class<? extends DBSObject> objectClass;
 
-    public RelationalObjectType(String typeName, String description, ImageDescriptor image, Class<? extends DBSObject> objectClass)
+    RelationalObjectType(String typeName, String description, ImageDescriptor image, Class<? extends DBSObject> objectClass)
     {
         this.typeName = typeName;
         this.description = description;
@@ -49,9 +49,9 @@ public class RelationalObjectType implements DBSObjectType {
         return image;
     }
 
-    public boolean validInstance(DBSObject object)
+    public Class<? extends DBSObject> getTypeClass()
     {
-        return object != null && objectClass.isAssignableFrom(object.getClass());
+        return objectClass;
     }
 
 }

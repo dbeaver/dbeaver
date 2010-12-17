@@ -17,6 +17,5 @@ public interface DBSObjectType
 
     ImageDescriptor getImage();
 
-    boolean validInstance(DBSObject object);
-
+    Class<? extends DBSObject> getTypeClass();
 }
