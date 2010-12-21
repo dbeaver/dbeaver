@@ -745,11 +745,20 @@
             <command commandId="org.eclipse.ui.edit.delete"/>
         </menuContribution>
 
-        <!-- Refresh -->
+        <!-- File menu-->
         <menuContribution allPopups="false" locationURI="menu:file?before=end">
             <command commandId="org.eclipse.ui.file.save"/>
             <command commandId="org.eclipse.ui.file.refresh"/>
             <command commandId="org.eclipse.ui.file.close"/>
+        </menuContribution>
+
+        <!-- Window menu -->
+
+        <menuContribution allPopups="false" locationURI="menu:window?before=additions">
+            <separator name="editors" visible="true"/>
+            <command commandId="org.eclipse.ui.window.nextEditor"/>
+            <command commandId="org.eclipse.ui.window.previousEditor"/>
+            <command commandId="org.eclipse.ui.window.switchToEditor"/>
         </menuContribution>
 
         <!-- Database menu -->
