@@ -29,6 +29,7 @@ public class NavigatorHandlerObjectFind extends DataSourceHandler {
             if (view == null) {
                 SearchObjectsView searchView = (SearchObjectsView)activePage.showView(SearchObjectsView.VIEW_ID);
                 searchView.setCurrentDataSource(getDataSourceContainer(event, true, false));
+                searchView.afterCreate();
 
                 IViewReference viewReference = (IViewReference) activePage.getReference(searchView);
                 if (!DBeaverCore.getInstance().getGlobalPreferenceStore().getBoolean(VIEW_ACTIVATED)) {

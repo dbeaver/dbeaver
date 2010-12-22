@@ -41,7 +41,9 @@ public class DatabaseEditorListener implements IDBNListener
                 if (event.getNodeChange() == DBNEvent.NodeChange.REFRESH ||
                     event.getNodeChange() == DBNEvent.NodeChange.LOAD)
                 {
-                    databaseEditor.refreshDatabaseContent(event);
+                    if (databaseEditor.getEditorInput().getTreeNode() == event.getNode()) {
+                        databaseEditor.refreshDatabaseContent(event);
+                    }
                 } else if (event.getNodeChange() == DBNEvent.NodeChange.UNLOAD) {
                     closeEditor = true;
                 }

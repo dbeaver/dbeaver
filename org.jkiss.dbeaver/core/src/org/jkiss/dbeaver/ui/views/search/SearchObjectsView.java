@@ -8,13 +8,12 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -122,8 +121,6 @@ public class SearchObjectsView extends ViewPart {
                 dataSourceCombo.select(i);
             }
         }
-
-        getSite().getShell().setDefaultButton(searchButton);
     }
 
     public void createPartControl(Composite parent)
@@ -222,15 +219,13 @@ public class SearchObjectsView extends ViewPart {
             getSite().setSelectionProvider(itemList.getSelectionProvider());
             //itemList.addFocusListener(new ItemsFocusListener());
         }
-
-        //getShell().addShellListener(new ShellListener());
-
-        //return parent;
     }
 
-    protected void createButtonsForButtonBar(Composite parent)
+    public void afterCreate()
     {
-        //createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, false);
+        Shell shell = getSite().getShell();
+        shell.addShellListener(new ShellListener());
+        shell.setDefaultButton(searchButton);
     }
 
     private void updateDataSourceSelection()
@@ -390,32 +385,20 @@ public class SearchObjectsView extends ViewPart {
         }
     }
 
-/*
+
     private class ShellListener extends ShellAdapter {
-        private boolean typesLoaded = false;
-        private ISelectionProvider originalSP;
         @Override
         public void shellActivated(ShellEvent e)
         {
-            if (workbenchPart != null && itemList != null && !itemList.isDisposed()) {
-                originalSP = workbenchPart.getSite().getSelectionProvider();
-                workbenchPart.getSite().setSelectionProvider(itemList.getSelectionProvider());
-                System.out.println("SET SEL PROVIDER");
-                if (!typesLoaded) {
-                    fillObjectTypes();
-                    typesLoaded = true;
-                }
+            if (searchButton != null && !searchButton.isDisposed()) {
+                getSite().getShell().setDefaultButton(searchButton);
             }
         }
 
         @Override
         public void shellDeactivated(ShellEvent e)
         {
-            if (workbenchPart != null && itemList != null && !itemList.isDisposed()) {
-                workbenchPart.getSite().setSelectionProvider(originalSP);
-                System.out.println("CLEAR SEL PROVIDER");
-            }
         }
     }
-*/
+
 }
