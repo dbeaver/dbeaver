@@ -161,6 +161,15 @@ public final class DBUtils {
             String childName = names.get(i);
             DBSObject child = parent.getChild(monitor, childName);
             if (child == null) {
+                if (parent instanceof DBSEntitySelector) {
+                    DBSObject activeChild = ((DBSEntitySelector) parent).getActiveChild(monitor);
+                    if (activeChild instanceof DBSEntityContainer) {
+                        parent = (DBSEntityContainer)activeChild;
+                        child = parent.getChild(monitor, childName);
+                    }
+                }
+            }
+            if (child == null) {
                 break;
             }
             if (i == names.size() - 1) {

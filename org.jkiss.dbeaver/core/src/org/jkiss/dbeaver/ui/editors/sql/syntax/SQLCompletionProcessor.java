@@ -161,12 +161,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         String lastToken = null;
         for (int i = 0; i < tokens.size(); i++) {
-            if (sc == null) {
-                break;
-            }
             String token = tokens.get(i);
             if (i == tokens.size() - 1 && !wordDetector.getWordPart().endsWith(".")) {
                 lastToken = token;
+                break;
+            }
+            if (sc == null) {
                 break;
             }
             // Get next structure container
