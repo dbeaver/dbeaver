@@ -284,7 +284,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         super.dispose();
     }
 
-    protected void loadData(LoadingJob<Collection<OBJECT_TYPE>> job)
+    public void loadData(LoadingJob<Collection<OBJECT_TYPE>> job)
     {
         if (loadingJob != null) {
             // Don't do it twice

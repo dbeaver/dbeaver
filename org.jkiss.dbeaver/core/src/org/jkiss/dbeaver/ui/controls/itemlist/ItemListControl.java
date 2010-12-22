@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * ItemListControl
  */
-public class ItemListControl extends ObjectListControl<DBNNode> implements INavigatorModelView
+public class ItemListControl extends NodeListControl
 {
     static final Log log = LogFactory.getLog(ItemListControl.class);
 
@@ -46,22 +46,7 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
         final IWorkbenchPart workbenchPart,
         DBNNode node)
     {
-        super(parent, style, workbenchPart, new ListContentProvider());
-        this.node = node;
-
-        ViewUtils.addContextMenu(this);
-
-        setDoubleClickHandler(new IDoubleClickListener() {
-            public void doubleClick(DoubleClickEvent event)
-            {
-                // Run default node action
-                DBNNode dbmNode = ViewUtils.getSelectedNode(ItemListControl.this);
-                if (dbmNode == null) {
-                    return;
-                }
-                ViewUtils.runCommand(dbmNode.getDefaultCommandId(), workbenchPart);
-            }
-        });
+        super(parent, style, workbenchPart, node);
     }
 
     public void fillData()
@@ -75,43 +60,6 @@ public class ItemListControl extends ObjectListControl<DBNNode> implements INavi
             new ItemLoadService(metaNode),
             new ObjectsLoadVisualizer());
         super.loadData(loadingJob);
-    }
-
-    public DBNNode getRootNode() {
-        return node;
-    }
-
-    public Viewer getNavigatorViewer()
-    {
-        return getItemsViewer();
-    }
-
-    @Override
-    protected Object getObjectValue(DBNNode item)
-    {
-        return item.getObject();
-    }
-
-    @Override
-    protected Image getObjectImage(DBNNode item)
-    {
-        return item.getNodeIconDefault();
-    }
-
-    @Override
-    protected boolean isHyperlink(Object cellValue)
-    {
-        return cellValue instanceof DBSObject && cellValue != node.getValueObject();
-    }
-
-    protected void navigateHyperlink(Object cellValue)
-    {
-        if (cellValue instanceof DBSObject) {
-            DBNNode node = NavigatorHandlerObjectOpen.getNodeByObject((DBSObject) cellValue);
-            if (node != null) {
-                NavigatorHandlerObjectOpen.openEntityEditor(node, null, workbenchPart.getSite().getWorkbenchWindow());
-            }
-        }
     }
 
     private class ItemLoadService extends DatabaseLoadService<Collection<DBNNode>> {
