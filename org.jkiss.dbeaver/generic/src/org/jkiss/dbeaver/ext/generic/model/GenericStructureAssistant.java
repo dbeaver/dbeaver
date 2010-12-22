@@ -33,7 +33,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
     }
 
     @Override
-    protected JDBCDataSource getDataSource()
+    protected GenericDataSource getDataSource()
     {
         return dataSource;
     }
@@ -54,6 +54,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         List<DBSObject> objects)
         throws DBException, SQLException
     {
+        tableNameMask = getDataSource().getNameConverter().convert(tableNameMask);
         GenericSchema schema = parentObject instanceof GenericSchema ? (GenericSchema)parentObject : null;
         GenericCatalog catalog = parentObject instanceof GenericCatalog ? (GenericCatalog)parentObject :
             schema == null ? null : schema.getCatalog();

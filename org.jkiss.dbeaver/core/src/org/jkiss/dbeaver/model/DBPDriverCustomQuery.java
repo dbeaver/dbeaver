@@ -11,6 +11,6 @@ public interface DBPDriverCustomQuery
 {
     String getName();
 
-    String getQuery();
+    String getValue();
 
 }

@@ -36,6 +36,8 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     public static final String QUERY_GET_ACTIVE_DB = "GET_ACTIVE_DB";
     public static final String QUERY_SET_ACTIVE_DB = "SET_ACTIVE_DB";
 
+    public static final String PARAM_META_CASE = "meta-case";
+
     private List<String> tableTypes;
     private List<GenericCatalog> catalogs;
     private List<GenericSchema> schemas;
@@ -46,6 +48,26 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
 
     private String queryGetActiveDB;
     private String querySetActiveDB;
+    private MetaCase metaCase;
+
+    private static enum MetaCase implements MetaDataNameConverter {
+        NONE {
+            public String convert(String name)
+            {
+                return name;
+            }},
+        UPPER{
+            public String convert(String name)
+            {
+                return name.toUpperCase();
+            }},
+        LOWER{
+            public String convert(String name)
+            {
+                return name.toLowerCase();
+            }}
+    }
+
 
     public GenericDataSource(DBSDataSourceContainer container)
         throws DBException
@@ -53,6 +75,22 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         super(container);
         this.queryGetActiveDB = container.getDriver().getCustomQuery(QUERY_GET_ACTIVE_DB);
         this.querySetActiveDB = container.getDriver().getCustomQuery(QUERY_SET_ACTIVE_DB);
+        String metaCaseName = container.getDriver().getParameter(PARAM_META_CASE);
+        if (!CommonUtils.isEmpty(metaCaseName)) {
+            try {
+                this.metaCase = MetaCase.valueOf(metaCaseName.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn(e);
+                this.metaCase = MetaCase.NONE;
+            }
+        } else {
+            this.metaCase = MetaCase.NONE;
+        }
+    }
+
+    public MetaDataNameConverter getNameConverter()
+    {
+        return metaCase;
     }
 
     public String[] getTableTypes()

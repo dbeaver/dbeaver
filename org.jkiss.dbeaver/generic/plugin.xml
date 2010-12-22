@@ -82,6 +82,7 @@
                     webURL="http://postgresql.org"
                     description="PostgreSQL standard driver">
                     <library path="drivers/postgresql-8.4-701.jdbc4.jar"/>
+                    <parameter name="meta-case" value="lower"/>
                 </driver>
                 <driver
                     id="oracle"
@@ -93,6 +94,7 @@
                     <library path="drivers/ojdbc6.jar"/>
                     <query label="GET_ACTIVE_DB">select sys_context( 'userenv', 'current_schema' ) from dual</query>
                     <query label="SET_ACTIVE_DB">alter session set current_schema=?</query>
+                    <parameter name="meta-case" value="upper"/>
                 </driver>
                 <driver
                     id="db2"

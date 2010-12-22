@@ -34,7 +34,7 @@ public class DriverCustomQueryDescriptor implements DBPDriverCustomQuery
         return name;
     }
 
-    public String getQuery()
+    public String getValue()
     {
         return query;
     }

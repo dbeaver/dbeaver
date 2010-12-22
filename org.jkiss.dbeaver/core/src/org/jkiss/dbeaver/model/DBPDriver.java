@@ -38,6 +38,8 @@ public interface DBPDriver extends DBPObject
 
     String getCustomQuery(String name);
 
+    String getParameter(String name);
+
     void loadDriver()
         throws DBException;
 

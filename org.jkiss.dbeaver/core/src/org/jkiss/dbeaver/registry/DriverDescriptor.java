@@ -17,7 +17,9 @@ import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DriverDescriptor
@@ -42,6 +44,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private List<DriverLibraryDescriptor> libraries = new ArrayList<DriverLibraryDescriptor>(), origLibraries;
     private List<PropertyGroupDescriptor> propertyGroups = new ArrayList<PropertyGroupDescriptor>();
     private List<DriverCustomQueryDescriptor> customQueries = new ArrayList<DriverCustomQueryDescriptor>();
+    private Map<String, String> parameters = new HashMap<String, String>();
 
     private Class driverClass;
     private boolean isLoaded;
@@ -101,6 +104,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         IConfigurationElement[] queryElements = config.getChildren("query");
         for (IConfigurationElement query : queryElements) {
             customQueries.add(new DriverCustomQueryDescriptor(query));
+        }
+
+        IConfigurationElement[] paramElements = config.getChildren("parameter");
+        for (IConfigurationElement param : paramElements) {
+            String paramName = param.getAttribute("name");
+            String paramValue = param.getAttribute("value");
+            if (CommonUtils.isEmpty(paramValue)) {
+                paramValue = param.getValue();
+            }
+            if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
+                parameters.put(paramName, paramValue);
+            }
         }
 
         // Create class loader
@@ -333,10 +348,20 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         for (DBPDriverCustomQuery query : customQueries) {
             if (query.getName().equals(name)) {
-                return query.getQuery();
+                return query.getValue();
             }
         }
         return null;
+    }
+
+    public Map<String, String> getParameters()
+    {
+        return parameters;
+    }
+
+    public String getParameter(String name)
+    {
+        return parameters.get(name);
     }
 
     public void loadDriver()
