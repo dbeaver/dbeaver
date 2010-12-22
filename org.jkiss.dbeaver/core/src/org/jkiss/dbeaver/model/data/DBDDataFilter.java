@@ -102,6 +102,11 @@ public class DBDDataFilter {
         return filters.remove(columnFilter);
     }
 
+    public void clearFilterColumns()
+    {
+        filters.clear();
+    }
+
     public String getOrder()
     {
         return order;

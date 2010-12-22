@@ -137,6 +137,24 @@ public class ResultSetFilterDialog extends Dialog {
     {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+        createButton(parent, IDialogConstants.ABORT_ID, "Reset", false);
+    }
+
+    @Override
+    protected void buttonPressed(int buttonId)
+    {
+        if (buttonId == IDialogConstants.ABORT_ID) {
+            dataFilter.clearOrderColumns();
+            dataFilter.clearFilterColumns();
+            dataFilter.setOrder(null);
+            dataFilter.setWhere(null);
+
+            columnsViewer.setInput(resultSetViewer.getMetaColumns());
+            orderText.setText("");
+            whereText.setText("");
+        } else {
+            super.buttonPressed(buttonId);
+        }
     }
 
     @Override
