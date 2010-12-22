@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.widgets.Display;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -32,9 +31,9 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     private List<Object[]> rows = new ArrayList<Object[]>();
     private boolean hasMoreData;
     private boolean nextSegmentRead;
-    private boolean dataReload;
 
     Map<DBCColumnMetaData, List<DBCException>> errors = new HashMap<DBCColumnMetaData, List<DBCException>>();
+    private boolean updateMetaData;
 
     ResultSetDataReceiver(ResultSetViewer resultSetViewer)
     {
@@ -50,17 +49,8 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         this.hasMoreData = hasMoreData;
     }
 
-    boolean isNextSegmentRead() {
-        return nextSegmentRead;
-    }
-
     void setNextSegmentRead(boolean nextSegmentRead) {
         this.nextSegmentRead = nextSegmentRead;
-    }
-
-    public void setDataReload(boolean dataReload)
-    {
-        this.dataReload = dataReload;
     }
 
     public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet)
@@ -68,7 +58,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     {
         rows.clear();
 
-        if (!nextSegmentRead && !dataReload) {
+        if (!nextSegmentRead) {
             // Get columns metadata
             DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
 
@@ -76,7 +66,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             columnsCount = rsColumns.size();
 
             // Determine type handlers for all columns
-            DBPDataSource dataSource = resultSet.getContext().getDataSource();
+            //DBPDataSource dataSource = resultSet.getContext().getDataSource();
 
             // Extract column info
             metaColumns = new DBDColumnBinding[columnsCount];
@@ -84,7 +74,9 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 metaColumns[i] = DBUtils.getColumnBinding(context, rsColumns.get(i));
             }
 
-            resultSetViewer.setColumnsInfo(metaColumns);
+            updateMetaData = resultSetViewer.setMetaData(metaColumns);
+        } else {
+            updateMetaData = false;
         }
     }
 
@@ -121,7 +113,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     public void fetchEnd(DBCExecutionContext context)
         throws DBCException
     {
-        if (!nextSegmentRead && !dataReload && metaColumns != null) {
+        if (updateMetaData) {
             // Read locators' metadata
             DBUtils.findValueLocators(context.getProgressMonitor(), metaColumns);
         }
@@ -130,7 +122,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             public void run()
             {
                 if (!nextSegmentRead) {
-                    resultSetViewer.setData(rows, dataReload);
+                    resultSetViewer.setData(rows, updateMetaData);
                 } else {
                     resultSetViewer.appendData(rows);
                 }
@@ -144,7 +136,6 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     public void close()
     {
         nextSegmentRead = false;
-        dataReload = false;
 
         errors.clear();
         rows = new ArrayList<Object[]>();

@@ -282,6 +282,11 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return refs;
     }
 
+    public Image getObjectImage()
+    {
+        return JDBCUtils.getDataIcon(this).getImage();
+    }
+
     @Override
     public String toString()
     {
@@ -304,8 +309,29 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return db.toString();
     }
 
-    public Image getObjectImage()
+
+    @Override
+    public boolean equals(Object obj)
     {
-        return JDBCUtils.getDataIcon(this).getImage();
+        if (!(obj instanceof JDBCColumnMetaData)) {
+            return false;
+        }
+        JDBCColumnMetaData col = (JDBCColumnMetaData)obj;
+        return
+            index == col.index &&
+            nullable == col.nullable &&
+            displaySize == col.displaySize &&
+            CommonUtils.equalObjects(label, col.label) &&
+            CommonUtils.equalObjects(name, col.name) &&
+            precision == col.precision &&
+            scale == col.scale &&
+            CommonUtils.equalObjects(catalogName, col.catalogName) &&
+            CommonUtils.equalObjects(schemaName, col.schemaName) &&
+            CommonUtils.equalObjects(tableName, col.tableName) &&
+            type == col.type &&
+            CommonUtils.equalObjects(typeName, col.typeName) &&
+            readOnly == col.readOnly &&
+            writable == col.writable;
     }
+
 }

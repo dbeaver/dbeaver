@@ -32,7 +32,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISaveablePart2;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
@@ -283,7 +282,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_LAST));
         toolBarManager.add(new Separator());
         toolBarManager.add(ViewUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGLE_MODE));
-        toolBarManager.add(ViewUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH, "Refresh result set", DBIcon.RS_REFRESH.getImageDescriptor()));
+        //toolBarManager.add(ViewUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH, "Refresh result set", DBIcon.RS_REFRESH.getImageDescriptor()));
+        // Use simple action for refresh to avoid ambiguous behaviour of F5 shortcut
+        Action refreshAction = new Action("Refresh result set", DBIcon.RS_REFRESH.getImageDescriptor()) {
+            @Override
+            public void run()
+            {
+                refresh();
+            }
+        };
+        toolBarManager.add(refreshAction);
         toolBarManager.createControl(statusBar);
 
         updateEditControls();
@@ -311,7 +319,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void setDataFilter(final DBDDataFilter dataFilter)
     {
-        if (this.dataFilter.equals(dataFilter)) {
+        if (CommonUtils.equalObjects(this.dataFilter, dataFilter)) {
             return;
         }
         this.dataFilter = dataFilter;
@@ -528,13 +536,32 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         statusLabel.setText(statusLabel.getText() + " - " + executionTime + "ms");
     }
 
-    public void setColumnsInfo(DBDColumnBinding[] metaColumns)
+    /**
+     * Sets new metadata of result set
+     * @param columns columns metadata
+     * @return true if new metadata differs from old one, false otherwise
+     */
+    public boolean setMetaData(DBDColumnBinding[] columns)
     {
-        this.metaColumns = metaColumns;
-        this.dataFilter = new DBDDataFilter();
+        boolean update = false;
+        if (this.metaColumns == null || this.metaColumns.length != columns.length) {
+            update = true;
+        } else {
+            for (int i = 0; i < this.metaColumns.length; i++) {
+                if (!this.metaColumns[i].getColumn().equals(columns[i].getColumn())) {
+                    update = true;
+                    break;
+                }
+            }
+        }
+        this.metaColumns = columns;
+        if (update) {
+            this.dataFilter = new DBDDataFilter();
+        }
+        return update;
     }
 
-    public void setData(List<Object[]> rows, boolean dataReload)
+    public void setData(List<Object[]> rows, boolean updateMetaData)
     {
         // Clear previous data
         this.closeEditors();
@@ -544,7 +571,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.origRows.addAll(rows);
         this.curRows.addAll(rows);
 
-        if (!dataReload) {
+        if (updateMetaData) {
             // Check single source flag
             this.singleSourceCells = true;
             DBSTable sourceTable = null;
@@ -920,69 +947,85 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             if (oldRowNum >= segmentSize) {
                 segmentSize = (oldRowNum / segmentSize + 1) * segmentSize;
             }
-            runDataPump(0, segmentSize, new GridPos(oldColNum, oldRowNum), null);
+            runDataPump(0, segmentSize, new GridPos(oldColNum, oldRowNum), new Runnable() {
+                public void run()
+                {
+                    if (!supportsDataFilter() && !dataFilter.getOrderColumns().isEmpty()) {
+                        reorderLocally();
+                    }
+                }
+            });
             updateGridCursor(-1, -1);
             updateEditControls();
         }
     }
 
+    private boolean isServerSideFiltering()
+    {
+        return dataReceiver.isHasMoreData() || dataFilter.hasCustomFilters();
+    }
+
     private void reorderResultSet(boolean force, Runnable onSuccess)
     {
-        if ((force || dataReceiver.isHasMoreData() || dataFilter.hasCustomFilters()) && supportsDataFilter()) {
+        if ((force || isServerSideFiltering()) && supportsDataFilter()) {
             if (resultSetProvider != null && resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
                 int segmentSize = getSegmentMaxRows();
                 if (curRowNum >= segmentSize) {
                     segmentSize = (curRowNum / segmentSize + 1) * segmentSize;
                 }
-                dataReceiver.setDataReload(true);
                 runDataPump(0, segmentSize, new GridPos(curColNum, curRowNum), onSuccess);
             }
             return;
         }
 
         try {
-            rejectChanges();
-
-            // Sort locally
-            curRows = new ArrayList<Object[]>(this.origRows);
-            if (dataFilter.getOrderColumns().isEmpty()) {
-                return;
-            }
-            Collections.sort(curRows, new Comparator<Object[]>() {
-                public int compare(Object[] row1, Object[] row2)
-                {
-                    int result = 0;
-                    for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
-                        Object cell1 = row1[co.getColumnIndex() - 1];
-                        Object cell2 = row2[co.getColumnIndex() - 1];
-                        if (cell1 == cell2) {
-                            result = 0;
-                        } else if (DBUtils.isNullValue(cell1)) {
-                            result = 1;
-                        } else if (DBUtils.isNullValue(cell2)) {
-                            result = -1;
-                        } else if (cell1 instanceof Comparable<?>) {
-                            result = ((Comparable)cell1).compareTo(cell2);
-                        } else {
-                            String str1 = cell1.toString();
-                            String str2 = cell2.toString();
-                            result = str1.compareTo(str2);
-                        }
-                        if (co.isDescending()) {
-                            result = -result;
-                        }
-                        if (result != 0) {
-                            break;
-                        }
-                    }
-                    return result;
-                }
-            });
+            reorderLocally();
         } finally {
             if (onSuccess != null) {
                 onSuccess.run();
             }
         }
+    }
+
+    private void reorderLocally()
+    {
+        rejectChanges();
+
+        // Sort locally
+        curRows = new ArrayList<Object[]>(this.origRows);
+        if (dataFilter.getOrderColumns().isEmpty()) {
+            return;
+        }
+        Collections.sort(curRows, new Comparator<Object[]>() {
+            public int compare(Object[] row1, Object[] row2)
+            {
+                int result = 0;
+                for (DBDColumnOrder co : dataFilter.getOrderColumns()) {
+                    Object cell1 = row1[co.getColumnIndex() - 1];
+                    Object cell2 = row2[co.getColumnIndex() - 1];
+                    if (cell1 == cell2) {
+                        result = 0;
+                    } else if (DBUtils.isNullValue(cell1)) {
+                        result = 1;
+                    } else if (DBUtils.isNullValue(cell2)) {
+                        result = -1;
+                    } else if (cell1 instanceof Comparable<?>) {
+                        result = ((Comparable)cell1).compareTo(cell2);
+                    } else {
+                        String str1 = cell1.toString();
+                        String str2 = cell2.toString();
+                        result = str1.compareTo(str2);
+                    }
+                    if (co.isDescending()) {
+                        result = -result;
+                    }
+                    if (result != 0) {
+                        break;
+                    }
+                }
+                return result;
+            }
+        });
     }
 
     synchronized void readNextSegment()
