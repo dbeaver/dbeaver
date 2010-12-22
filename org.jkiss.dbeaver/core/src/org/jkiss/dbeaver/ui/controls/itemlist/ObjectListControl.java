@@ -575,11 +575,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     }
                 }
             }
-            if (objectList.isEmpty()) {
-                setInfo("No items");
-            } else {
-                setInfo(objectList.size() + " items");
-            }
+            setInfo(getItemsLoadMessage(objectList.size()));
 
             if (!itemsControl.isDisposed()) {
                 // Pack columns
@@ -611,6 +607,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         new ValuesLoadVisualizer());
                 }
 */
+            }
+        }
+
+        protected String getItemsLoadMessage(int count)
+        {
+            if (count == 0) {
+                return "No items";
+            } else {
+                return count + " items";
             }
         }
 

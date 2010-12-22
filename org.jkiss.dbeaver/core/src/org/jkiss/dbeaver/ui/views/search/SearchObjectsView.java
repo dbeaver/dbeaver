@@ -2,20 +2,20 @@
  * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.dialogs.search;
+package org.jkiss.dbeaver.ui.views.search;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -37,7 +37,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class FindObjectsDialog extends Dialog {
+public class SearchObjectsView extends ViewPart {
+
+    public static final String VIEW_ID = "org.jkiss.dbeaver.core.findObjects";
 
     private static final int MATCH_INDEX_STARTS_WITH = 0;
     private static final int MATCH_INDEX_CONTAINS = 1;
@@ -77,7 +79,7 @@ public class FindObjectsDialog extends Dialog {
 
     };
 
-    private final IWorkbenchPart workbenchPart;
+    //private final IWorkbenchPart workbenchPart;
     private java.util.List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private DBSDataSourceContainer currentDataSource;
     private Table typesTable;
@@ -88,26 +90,48 @@ public class FindObjectsDialog extends Dialog {
     private Spinner maxResultsSpinner;
     private SearchResultsControl itemList;
 
-    public FindObjectsDialog(IWorkbenchPart workbenchPart, DBSDataSourceContainer currentDataSource)
+    public SearchObjectsView()
     {
-        super(workbenchPart.getSite().getShell());
-        setShellStyle(SWT.CLOSE | SWT.MODELESS| SWT.BORDER | SWT.TITLE | SWT.RESIZE | SWT.MAX | SWT.MIN);
-        setBlockOnOpen(false);
-        this.workbenchPart = workbenchPart;
+        //super();
+        //setShellStyle(SWT.CLOSE | SWT.MODELESS| SWT.BORDER | SWT.TITLE | SWT.RESIZE | SWT.MAX | SWT.MIN);
+        //setBlockOnOpen(false);
         this.currentDataSource = currentDataSource;
     }
 
-    protected boolean isResizable() {
-    	return true;
+    public DBSDataSourceContainer getCurrentDataSource()
+    {
+        return currentDataSource;
     }
 
-    protected Control createDialogArea(Composite parent)
+    public void setCurrentDataSource(DBSDataSourceContainer currentDataSource)
     {
-        dataSources.addAll(DBeaverCore.getInstance().getDataSourceRegistry().getDataSources());
+        this.currentDataSource = currentDataSource;
+        refreshDataSources();
+        updateDataSourceSelection();
+    }
 
-        getShell().setText("Find database objects");
-        getShell().setImage(DBIcon.FIND.getImage());
-        Composite composite = (Composite) super.createDialogArea(parent);
+    private void refreshDataSources()
+    {
+        dataSources.clear();
+        dataSourceCombo.removeAll();
+        dataSources.addAll(DBeaverCore.getInstance().getDataSourceRegistry().getDataSources());
+        for (int i = 0, dataSourcesSize = dataSources.size(); i < dataSourcesSize; i++) {
+            DataSourceDescriptor descriptor = dataSources.get(i);
+            dataSourceCombo.add(descriptor.getName());
+            if (descriptor == currentDataSource) {
+                dataSourceCombo.select(i);
+            }
+        }
+
+        getSite().getShell().setDefaultButton(searchButton);
+    }
+
+    public void createPartControl(Composite parent)
+    {
+        setPartName("Find database objects");
+        setTitleImage(DBIcon.FIND.getImage());
+
+        Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         {
             Group searchGroup = UIUtils.createControlGroup(composite, "Search", 3, GridData.FILL_HORIZONTAL, 0);
@@ -125,10 +149,6 @@ public class FindObjectsDialog extends Dialog {
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
             //gd.horizontalSpan = 2;
             searchButton.setLayoutData(gd);
-            Shell shell = parent.getShell();
-            if (shell != null) {
-                shell.setDefaultButton(searchButton);
-            }
             searchButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -155,19 +175,12 @@ public class FindObjectsDialog extends Dialog {
 
             UIUtils.createControlLabel(optionsGroup2, "Data Source");
             dataSourceCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (int i = 0, dataSourcesSize = dataSources.size(); i < dataSourcesSize; i++) {
-                DataSourceDescriptor descriptor = dataSources.get(i);
-                dataSourceCombo.add(descriptor.getName());
-                if (descriptor == currentDataSource) {
-                    dataSourceCombo.select(i);
-                }
-            }
             dataSourceCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             dataSourceCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    updateDataSource();
+                    updateDataSourceSelection();
                 }
             });
 
@@ -206,22 +219,21 @@ public class FindObjectsDialog extends Dialog {
             gd.widthHint = 700;
             gd.heightHint = 500;
             itemList.setLayoutData(gd);
-
+            getSite().setSelectionProvider(itemList.getSelectionProvider());
             //itemList.addFocusListener(new ItemsFocusListener());
         }
 
-        getShell().addShellListener(new ShellListener());
+        //getShell().addShellListener(new ShellListener());
 
-        return parent;
+        //return parent;
     }
 
-    @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, false);
+        //createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, false);
     }
 
-    private void updateDataSource()
+    private void updateDataSourceSelection()
     {
         int selectionIndex = dataSourceCombo.getSelectionIndex();
         if (selectionIndex < 0) {
@@ -309,15 +321,32 @@ public class FindObjectsDialog extends Dialog {
         itemList.loadData(loadingJob);
     }
 
+    @Override
+    public void setFocus()
+    {
+        if (searchText != null && !searchText.isDisposed()) {
+            searchText.setFocus();
+        }
+    }
+
     private class SearchResultsControl extends NodeListControl {
         public SearchResultsControl(Composite resultsGroup)
         {
-            super(resultsGroup, SWT.BORDER, FindObjectsDialog.this.workbenchPart, DBeaverCore.getInstance().getNavigatorModel().getRoot());
+            super(resultsGroup, SWT.BORDER, SearchObjectsView.this, DBeaverCore.getInstance().getNavigatorModel().getRoot());
         }
 
         public ObjectsLoadVisualizer createVisualizer()
         {
-            return new ObjectsLoadVisualizer() {};
+            return new ObjectsLoadVisualizer() {
+                protected String getItemsLoadMessage(int count)
+                {
+                    if (count == 0) {
+                        return "No objects like '" + searchText.getText() + "'";
+                    } else {
+                        return count + " objects found";
+                    }
+                }
+            };
         }
     }
 
@@ -361,6 +390,7 @@ public class FindObjectsDialog extends Dialog {
         }
     }
 
+/*
     private class ShellListener extends ShellAdapter {
         private boolean typesLoaded = false;
         private ISelectionProvider originalSP;
@@ -387,4 +417,5 @@ public class FindObjectsDialog extends Dialog {
             }
         }
     }
+*/
 }

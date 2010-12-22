@@ -100,6 +100,16 @@
                 icon="icons/misc/sql.png"
                 name="Query Manager">
         </view>
+        <view
+                id="org.jkiss.dbeaver.core.findObjects"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.views.search.SearchObjectsView"
+                allowMultiple="true"
+                icon="icons/misc/find.png"
+                name="Search">
+        </view>
+        <!--stickyView id="org.jkiss.dbeaver.core.findObjects" closeable="true" moveable="true" location="TOP"/-->
+
     </extension>
 
     <extension point="org.eclipse.ui.commands">

@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ui.actions;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.viewers.ISelection;
@@ -20,6 +22,8 @@ import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
 public abstract class DataSourceHandler extends AbstractHandler {
+
+    static protected final Log log = LogFactory.getLog(DataSourceHandler.class);
 
     protected DBSDataSourceContainer getDataSourceContainer(ExecutionEvent event, boolean useEditor, boolean chooseOnNoSelection)
     {
