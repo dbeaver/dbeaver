@@ -76,8 +76,8 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     private transient Image iconNormal;
     private transient Image iconConnected;
     private transient Image iconError;
-    private transient boolean connectFailed = false;
-    private transient Date connectTime = null;
+    private transient volatile boolean connectFailed = false;
+    private transient volatile Date connectTime = null;
 
 
     public DataSourceDescriptor(
@@ -251,7 +251,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
     public boolean isConnected()
     {
-        return dataSource != null;
+        return connectTime != null;
     }
 
     public void connect(DBRProgressMonitor monitor)
