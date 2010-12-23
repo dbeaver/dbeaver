@@ -128,7 +128,7 @@ public class SearchObjectsView extends ViewPart {
         setPartName("Find database objects");
         setTitleImage(DBIcon.FIND.getImage());
 
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
             Group searchGroup = UIUtils.createControlGroup(composite, "Search", 3, GridData.FILL_HORIZONTAL, 0);
@@ -155,7 +155,7 @@ public class SearchObjectsView extends ViewPart {
             });
 
             Composite optionsGroup = new Composite(searchGroup, SWT.NONE);
-            GridLayout layout = new GridLayout(2, false);
+            GridLayout layout = new GridLayout(3, false);
             layout.marginHeight = 0;
             layout.marginWidth = 0;
             optionsGroup.setLayout(layout);
@@ -163,49 +163,57 @@ public class SearchObjectsView extends ViewPart {
             gd.horizontalSpan = 3;
             optionsGroup.setLayoutData(gd);
 
-            Composite optionsGroup2 = new Composite(optionsGroup, SWT.NONE);
-            layout = new GridLayout(2, false);
-            layout.marginHeight = 0;
-            layout.marginWidth = 0;
-            optionsGroup2.setLayout(layout);
-            optionsGroup2.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            {
+                Composite optionsGroup2 = new Composite(optionsGroup, SWT.NONE);
+                layout = new GridLayout(2, false);
+                layout.marginHeight = 0;
+                layout.marginWidth = 0;
+                optionsGroup2.setLayout(layout);
+                optionsGroup2.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-            UIUtils.createControlLabel(optionsGroup2, "Data Source");
-            dataSourceCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
-            dataSourceCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            dataSourceCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    updateDataSourceSelection();
-                }
-            });
+                UIUtils.createControlLabel(optionsGroup2, "Data Source");
+                dataSourceCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
+                dataSourceCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                dataSourceCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        updateDataSourceSelection();
+                    }
+                });
 
-            UIUtils.createControlLabel(optionsGroup2, "Name match");
-            matchCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
-            matchCombo.add("Starts with");
-            matchCombo.add("Contains");
-            matchCombo.add("Like");
-            matchCombo.select(0);
-            matchCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                UIUtils.createControlLabel(optionsGroup2, "Name match");
+                matchCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
+                matchCombo.add("Starts with");
+                matchCombo.add("Contains");
+                matchCombo.add("Like");
+                matchCombo.select(0);
+                matchCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, "Max results", 100, 1, 10000);
-            maxResultsSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, "Max results", 100, 1, 10000);
+                maxResultsSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            }
 
-            typesTable = new Table(optionsGroup, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
-            typesTable.addSelectionListener(new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    checkSearchEnabled();
-                }
-            });
-            gd = new GridData(GridData.FILL_BOTH);
-            typesTable.setLayoutData(gd);
+            {
+                Table dbTable = new Table(optionsGroup, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
+                dbTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+            }
+            {
+                typesTable = new Table(optionsGroup, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
+                typesTable.addSelectionListener(new SelectionAdapter() {
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        checkSearchEnabled();
+                    }
+                });
+                gd = new GridData(GridData.FILL_BOTH);
+                typesTable.setLayoutData(gd);
 
-            TableColumn typeColumn = new TableColumn(typesTable, SWT.LEFT);
-            typeColumn.setText("Type");
-            TableColumn descColumn = new TableColumn(typesTable, SWT.LEFT);
-            descColumn.setText("Description");
+                TableColumn typeColumn = new TableColumn(typesTable, SWT.LEFT);
+                typeColumn.setText("Type");
+                TableColumn descColumn = new TableColumn(typesTable, SWT.LEFT);
+                descColumn.setText("Description");
+            }
         }
 
         {

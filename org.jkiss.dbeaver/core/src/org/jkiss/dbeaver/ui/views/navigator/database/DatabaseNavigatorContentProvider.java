@@ -9,7 +9,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -29,11 +31,11 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
 
     private static final Object[] EMPTY_CHILDREN = new Object[0];
 
-    private DatabaseNavigatorView view;
+    private TreeViewer viewer;
 
-    DatabaseNavigatorContentProvider(DatabaseNavigatorView view)
+    DatabaseNavigatorContentProvider(TreeViewer viewer)
     {
-        this.view = view;
+        this.viewer = viewer;
     }
 
     public void inputChanged(Viewer v, Object oldInput, Object newInput)
@@ -81,7 +83,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
         }
         if (parentNode.isLazyNode()) {
             return TreeLoadVisualizer.expandChildren(
-                view.getNavigatorViewer(),
+                viewer,
                 new TreeLoadService("Loading", parentNode));
         } else {
             try {
@@ -100,16 +102,16 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                     ex = ((InvocationTargetException)ex).getTargetException();
                 }
                 UIUtils.showErrorDialog(
-                    view.getSite().getShell(),
+                    viewer.getControl().getShell(),
                     "Navigator error",
                     ex.getMessage(),
                     ex);
                 // Collapse this item
-                view.getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                Display.getDefault().asyncExec(new Runnable() {
                     public void run()
                     {
-                        view.getNavigatorViewer().collapseToLevel(parent, 1);
-                        view.getNavigatorViewer().refresh(parent);
+                        viewer.collapseToLevel(parent, 1);
+                        viewer.refresh(parent);
                     }
                 });
                 return EMPTY_CHILDREN;

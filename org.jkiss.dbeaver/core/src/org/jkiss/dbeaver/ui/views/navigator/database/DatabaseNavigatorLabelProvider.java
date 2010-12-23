@@ -6,14 +6,12 @@ package org.jkiss.dbeaver.ui.views.navigator.database;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.viewers.IColorProvider;
-import org.eclipse.jface.viewers.IFontProvider;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -35,13 +33,13 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     private Color lockedForeground;
     private Color transientForeground;
 
-    DatabaseNavigatorLabelProvider(DatabaseNavigatorView view)
+    DatabaseNavigatorLabelProvider(Viewer viewer)
     {
         //this.view = view;
-        this.normalFont = view.getNavigatorViewer().getControl().getFont();
+        this.normalFont = viewer.getControl().getFont();
         this.defaultFont = UIUtils.makeBoldFont(normalFont);
-        this.lockedForeground = view.getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_GRAY);
-        this.transientForeground = view.getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_DARK_RED);
+        this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_GRAY);
+        this.transientForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_RED);
     }
 
     @Override
