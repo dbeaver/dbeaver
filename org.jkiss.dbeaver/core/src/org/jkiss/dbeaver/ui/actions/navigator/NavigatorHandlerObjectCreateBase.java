@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -13,13 +14,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.model.edit.DBOManager;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNContainer;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
-import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -91,7 +93,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             }
         }
         finally {
-            if (oldActivePart instanceof DatabaseNavigatorView) {
+            if (!(oldActivePart instanceof IEditorPart)) {
                 workbenchWindow.getActivePage().activate(oldActivePart);
             }
         }

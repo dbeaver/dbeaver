@@ -9,6 +9,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -23,7 +24,6 @@ import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.editors.folder.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.folder.FolderEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
-import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 
 import java.util.Iterator;
 
@@ -94,7 +94,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
             // Reactivate navigator
             // Actually it still focused but we need to use it's selection
             // I think it is an eclipse bug
-            if (oldActivePart instanceof DatabaseNavigatorView) {
+            if (!(oldActivePart instanceof IEditorPart)) {
                 workbenchWindow.getActivePage().activate(oldActivePart);
             }
         }
