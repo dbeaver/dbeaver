@@ -62,11 +62,14 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
 
         // Load tables
         JDBCPreparedStatement dbStat = context.prepareStatement(
-            "SELECT * FROM " + MySQLConstants.META_TABLE_TABLES + " WHERE " +
-                "TABLE_NAME LIKE '" + tableNameMask.toLowerCase() + "'" +
-                (catalog == null ? "" : " AND TABLE_SCHEMA=" + DBUtils.getQuotedIdentifier(getDataSource(), catalog.getName()) ) +
+            "SELECT * FROM " + MySQLConstants.META_TABLE_TABLES + " WHERE TABLE_NAME LIKE ? " +
+                (catalog == null ? "" : " AND TABLE_SCHEMA=?") +
                 " ORDER BY TABLE_NAME");
         try {
+            dbStat.setString(1, tableNameMask.toLowerCase());
+            if (catalog != null) {
+                dbStat.setString(2, catalog.getName());
+            }
             JDBCResultSet dbResult = dbStat.executeQuery();
             try {
                 int tableNum = maxResults;

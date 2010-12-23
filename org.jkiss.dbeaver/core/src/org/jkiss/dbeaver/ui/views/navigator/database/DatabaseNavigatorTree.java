@@ -26,7 +26,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
     private TreeViewer viewer;
     private DBNModel model;
 
-    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode)
+    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style)
     {
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
@@ -47,7 +47,8 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         // TODO: I may set SWT.SINGLE style and it'll solve the problem at least when traversing tree
         // TODO: But we need multiple selection (to copy, export, etc)
         // TODO: need to do something with it
-        this.viewer = new TreeViewer(this, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+        int treeStyle = SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | style;
+        this.viewer = new TreeViewer(this, treeStyle);
         this.viewer.setUseHashlookup(true);
         this.viewer.setLabelProvider(new DatabaseNavigatorLabelProvider(this.viewer));
         this.viewer.setContentProvider(new DatabaseNavigatorContentProvider(this.viewer));

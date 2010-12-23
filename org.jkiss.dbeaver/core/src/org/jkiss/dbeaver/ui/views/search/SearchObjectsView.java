@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
@@ -35,7 +34,6 @@ import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.List;
 
 public class SearchObjectsView extends ViewPart implements DBPEventListener {
 
@@ -135,7 +133,7 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
 
             {
                 Group sourceGroup = UIUtils.createControlGroup(optionsGroup, "Objects Source", 1, GridData.FILL_BOTH, 0);
-                dataSourceTree = new DatabaseNavigatorTree(sourceGroup, DBeaverCore.getInstance().getNavigatorModel().getRoot());
+                dataSourceTree = new DatabaseNavigatorTree(sourceGroup, DBeaverCore.getInstance().getNavigatorModel().getRoot(), SWT.SINGLE);
                 gd = new GridData(GridData.FILL_BOTH);
                 gd.heightHint = 100;
                 dataSourceTree.setLayoutData(gd);
@@ -217,44 +215,40 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
         shell.setDefaultButton(searchButton);
     }
 
-    private Collection<DBPDataSource> getSelectedDataSources()
+    private DBNNode getSelectedNode()
     {
-        Set<DBPDataSource> dsList = new HashSet<DBPDataSource>();
         IStructuredSelection selection = (IStructuredSelection) dataSourceTree.getViewer().getSelection();
-        for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
-            DBNNode node = (DBNNode) iter.next();
-            DBSObject object = node.getObject();
-            if (object != null && object.getDataSource() != null) {
-                dsList.add(object.getDataSource());
-            }
+        if (!selection.isEmpty()) {
+            return (DBNNode) selection.getFirstElement();
         }
-        return dsList;
+        return null;
     }
 
-    private Collection<DBSStructureAssistant> getSelectedStructureAssistants()
+    private DBPDataSource getSelectedDataSource()
     {
-        java.util.List<DBSStructureAssistant> result = new ArrayList<DBSStructureAssistant>();
-        for (DBPDataSource ds : getSelectedDataSources()) {
-            DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, ds);
-            if (structureAssistant != null) {
-                result.add(structureAssistant);
+        DBNNode node = getSelectedNode();
+        if (node != null) {
+            DBSObject object = node.getObject();
+            if (object != null && object.getDataSource() != null) {
+                return object.getDataSource();
             }
         }
-        return result;
+        return null;
+    }
+
+    private DBSStructureAssistant getSelectedStructureAssistant()
+    {
+        return DBUtils.getAdapter(DBSStructureAssistant.class, getSelectedDataSource());
     }
 
     private void fillObjectTypes()
     {
-        Collection<DBSStructureAssistant> assistants = getSelectedStructureAssistants();
+        DBSStructureAssistant assistant = getSelectedStructureAssistant();
         typesTable.removeAll();
-        if (assistants.isEmpty()) {
+        if (assistant == null) {
             // No structure assistant - no object types
         } else {
-            Set<DBSObjectType> objectTypes = new LinkedHashSet<DBSObjectType>();
-            for (DBSStructureAssistant assistant : assistants) {
-                Collections.addAll(objectTypes, assistant.getSupportedObjectTypes());
-            }
-            for (DBSObjectType objectType : objectTypes) {
+            for (DBSObjectType objectType : assistant.getSupportedObjectTypes()) {
                 TableItem item = new TableItem(typesTable, SWT.NONE);
                 item.setText(objectType.getTypeName());
                 if (objectType.getImage() != null) {
@@ -287,8 +281,15 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
 
     private void performSearch()
     {
-        Collection<DBSStructureAssistant> assistants = getSelectedStructureAssistants();
-        if (assistants.isEmpty()) {
+        DBNNode selectedNode = getSelectedNode();
+        DBSEntityContainer parentObject = null;
+        if (selectedNode.getObject() instanceof DBSEntityContainer) {
+            parentObject = (DBSEntityContainer) selectedNode.getObject();
+        }
+
+        DBPDataSource dataSource = getSelectedDataSource();
+        DBSStructureAssistant assistant = getSelectedStructureAssistant();
+        if (dataSource == null || assistant == null) {
             return;
         }
         java.util.List<DBSObjectType> objectTypes = new ArrayList<DBSObjectType>();
@@ -314,12 +315,10 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
         }
 
         // Start separate service for each data source
-        for (DBSStructureAssistant assistant : assistants) {
-            LoadingJob<Collection<DBNNode>> loadingJob = LoadingUtils.createService(
-                new ObjectSearchService(assistants, objectTypes, objectNameMask, maxResults),
-                itemList.createVisualizer());
-            itemList.loadData(loadingJob);
-        }
+        LoadingJob<Collection<DBNNode>> loadingJob = LoadingUtils.createService(
+            new ObjectSearchService(dataSource, assistant, parentObject, objectTypes, objectNameMask, maxResults),
+            itemList.createVisualizer());
+        itemList.loadData(loadingJob);
     }
 
     @Override
@@ -352,7 +351,7 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                 protected String getItemsLoadMessage(int count)
                 {
                     if (count == 0) {
-                        return "No objects like '" + searchText.getText() + "'";
+                        return "No objects like '" + searchText.getText() + "' in '" + getSelectedNode().getNodeName() + "'";
                     } else {
                         return count + " objects found";
                     }
@@ -361,18 +360,25 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
         }
     }
 
-    private class ObjectSearchService extends AbstractLoadService<Collection<DBNNode>> {
+    private class ObjectSearchService extends DatabaseLoadService<Collection<DBNNode>> {
 
-        private final Collection<DBSStructureAssistant> assistants;
+        private final DBSStructureAssistant structureAssistant;
+        private final DBSObject parentObject;
         private final java.util.List<DBSObjectType> objectTypes;
         private final String objectNameMask;
         private final int maxResults;
-        private transient DBSStructureAssistant structureAssistant;
 
-        private ObjectSearchService(Collection<DBSStructureAssistant> assistants, List<DBSObjectType> objectTypes, String objectNameMask, int maxResults)
+        private ObjectSearchService(
+            DBPDataSource dataSource,
+            DBSStructureAssistant structureAssistant,
+            DBSObject parentObject,
+            java.util.List<DBSObjectType> objectTypes,
+            String objectNameMask,
+            int maxResults)
         {
-            super("Find objects");
-            this.assistants = assistants;
+            super("Find objects", dataSource);
+            this.structureAssistant = structureAssistant;
+            this.parentObject = parentObject;
             this.objectTypes = objectTypes;
             this.objectNameMask = objectNameMask;
             this.maxResults = maxResults;
@@ -382,15 +388,13 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
             throws InvocationTargetException, InterruptedException
         {
             try {
+                DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                 java.util.List<DBNNode> nodes = new ArrayList<DBNNode>();
-                for (DBSStructureAssistant assistant : this.assistants) {
-                    DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
-                    Collection<DBSObject> objects = assistant.findObjectsByMask(getProgressMonitor(), null, objectTypes, objectNameMask, maxResults);
-                    for (DBSObject object : objects) {
-                        DBNNode node = navigatorModel.getNodeByObject(getProgressMonitor(), object, true);
-                        if (node != null) {
-                            nodes.add(node);
-                        }
+                Collection<DBSObject> objects = structureAssistant.findObjectsByMask(getProgressMonitor(), parentObject, objectTypes, objectNameMask, maxResults);
+                for (DBSObject object : objects) {
+                    DBNNode node = navigatorModel.getNodeByObject(getProgressMonitor(), object, true);
+                    if (node != null) {
+                        nodes.add(node);
                     }
                 }
                 return nodes;
@@ -401,11 +405,6 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                     throw new InvocationTargetException(ex);
                 }
             }
-        }
-
-        public Object getFamily()
-        {
-            return SearchObjectsView.this;
         }
     }
 

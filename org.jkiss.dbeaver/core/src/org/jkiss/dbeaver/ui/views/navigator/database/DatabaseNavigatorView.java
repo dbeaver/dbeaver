@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.views.navigator.database;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
@@ -51,7 +52,7 @@ public class DatabaseNavigatorView extends ViewPart implements INavigatorModelVi
     public void createPartControl(Composite parent)
     {
         // Create tree
-        tree = new DatabaseNavigatorTree(parent, model.getRoot());
+        tree = new DatabaseNavigatorTree(parent, model.getRoot(), SWT.MULTI);
 
         tree.getViewer().addSelectionChangedListener(
             new ISelectionChangedListener()
