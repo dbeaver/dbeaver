@@ -50,6 +50,7 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
     private Spinner maxResultsSpinner;
     private SearchResultsControl itemList;
     private DatabaseNavigatorTree dataSourceTree;
+    private Set<DBSObjectType> checkedTypes = new HashSet<DBSObjectType>();
 
     public SearchObjectsView()
     {
@@ -183,6 +184,15 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                 typesTable.addSelectionListener(new SelectionAdapter() {
                     public void widgetSelected(SelectionEvent e)
                     {
+                        //checkedTypes.clear();
+                        for (TableItem item : typesTable.getItems()) {
+                            DBSObjectType objectType = (DBSObjectType) item.getData();
+                            if (item.getChecked()) {
+                                checkedTypes.add(objectType);
+                            } else {
+                                checkedTypes.remove(objectType);
+                            }
+                        }
                         checkSearchEnabled();
                     }
                 });
@@ -256,6 +266,9 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                 }
                 item.setText(1, objectType.getDescription());
                 item.setData(objectType);
+                if (checkedTypes.contains(objectType)) {
+                    item.setChecked(true);
+                }
             }
         }
         for (TableColumn column : typesTable.getColumns()) {
@@ -343,6 +356,22 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
         public SearchResultsControl(Composite resultsGroup)
         {
             super(resultsGroup, SWT.BORDER, SearchObjectsView.this, DBeaverCore.getInstance().getNavigatorModel().getRoot());
+        }
+
+        @Override
+        protected Composite createProgressPanel(Composite container)
+        {
+            Composite panel = super.createProgressPanel(container);
+
+            Button closeButton = new Button(panel, SWT.PUSH);
+            closeButton.setText("Close");
+            closeButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    workbenchPart.getSite().getWorkbenchWindow().getActivePage().hideView(SearchObjectsView.this);
+                }
+            });
+            return panel;
         }
 
         public ObjectsLoadVisualizer createVisualizer()
