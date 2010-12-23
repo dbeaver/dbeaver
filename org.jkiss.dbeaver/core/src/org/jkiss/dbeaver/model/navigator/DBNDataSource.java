@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -93,8 +92,7 @@ public class DBNDataSource extends DBNTreeNode implements IAdaptable, IDataSourc
         dataSource = (DataSourceDescriptor) object;
     }
 
-    protected boolean initializeNode(DBRProgressMonitor monitor)
-        throws DBException
+    public boolean initializeNode()
     {
         if (!dataSource.isConnected()) {
             DataSourceConnectHandler.execute(dataSource);

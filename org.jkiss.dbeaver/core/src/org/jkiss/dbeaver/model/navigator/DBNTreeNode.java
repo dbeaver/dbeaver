@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import net.sf.jkiss.utils.BeanUtils;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,8 +18,6 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeObject;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -113,7 +110,7 @@ public abstract class DBNTreeNode extends DBNNode {
         throws DBException
     {
         if (this.hasChildren() && childNodes == null) {
-            if (this.initializeNode(monitor)) {
+            if (this.initializeNode()) {
                 final List<DBNTreeNode> tmpList = new ArrayList<DBNTreeNode>();
                 loadChildren(monitor, getMeta(), null, tmpList);
                 this.childNodes = tmpList;
@@ -132,8 +129,7 @@ public abstract class DBNTreeNode extends DBNNode {
         return childNodes == null;
     }
 
-    protected boolean initializeNode(DBRProgressMonitor monitor)
-        throws DBException
+    public boolean initializeNode()
     {
         return true;
     }

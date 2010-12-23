@@ -48,40 +48,13 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
     public void completeLoading(Object[] children)
     {
         try {
-            /*
-            Widget widget = viewer.testFindItem(parent);
-            if (widget != null && !widget.isDisposed()) {
-                TreeItem item = (TreeItem) viewer.testFindItem(placeHolder);
-                if (children != null && children.length != 0) {
-                    viewer.add(parent, children);
-                }
-                if (item != null && !item.isDisposed()) {
-                    if (item.getParentItem() != null && !item.getParentItem().isDisposed() || this.parent instanceof IWorkspaceRoot) {
-                        viewer.remove(placeHolder);
-                    }
-                }
-            }
-             */
             viewer.getControl().setRedraw(false);
 
-/*
-            //parent = parent instanceof ConnectionInfo ? ((ConnectionInfo)parent).getConnectionProfile() : parent;
-            TreeItem item = (TreeItem) viewer.testFindItem(placeHolder);
-            if (item != null && !item.isDisposed()) {
-                if (children == null) {
-                    // Some error occured. In good case chldren must be at least an empty array
-                    viewer.collapseToLevel(parent, -1);
-                }
-                viewer.remove(placeHolder);
-                viewer.refresh(parent);
-
-            }
-*/
             Widget widget = viewer.testFindItem(parent);
             if (widget != null && !widget.isDisposed()) {
                 TreeItem item = (TreeItem) viewer.testFindItem(placeHolder);
                 if (children == null) {
-                    // Some error occured. In good case chldren must be at least an empty array
+                    // Some error occurred. In good case children must be at least an empty array
                     viewer.collapseToLevel(parent, -1);
                 } else if (children.length != 0) {
                     viewer.add(parent, children);

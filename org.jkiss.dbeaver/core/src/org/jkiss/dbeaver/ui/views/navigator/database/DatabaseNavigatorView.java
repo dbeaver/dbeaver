@@ -6,16 +6,13 @@ package org.jkiss.dbeaver.ui.views.navigator.database;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.utils.ViewUtils;
@@ -24,15 +21,17 @@ public class DatabaseNavigatorView extends ViewPart implements INavigatorModelVi
 {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseNavigator";
 
+    private DBNModel model;
     private DatabaseNavigatorTree tree;
 
     public DatabaseNavigatorView()
     {
         super();
+        model = DBeaverCore.getInstance().getNavigatorModel();
     }
 
     public DBNNode getRootNode() {
-        return DBeaverCore.getInstance().getNavigatorModel().getRoot();
+        return model.getRoot();
     }
 
     public TreeViewer getNavigatorViewer()
@@ -52,7 +51,7 @@ public class DatabaseNavigatorView extends ViewPart implements INavigatorModelVi
     public void createPartControl(Composite parent)
     {
         // Create tree
-        tree = new DatabaseNavigatorTree(parent);
+        tree = new DatabaseNavigatorTree(parent, model.getRoot());
 
         tree.getViewer().addSelectionChangedListener(
             new ISelectionChangedListener()
@@ -95,6 +94,7 @@ public class DatabaseNavigatorView extends ViewPart implements INavigatorModelVi
 
     public void dispose()
     {
+        model = null;
     }
 
     /**

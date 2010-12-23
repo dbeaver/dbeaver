@@ -95,14 +95,12 @@ public class DBNModel implements DBPEventListener {
         return root;
     }
 
-    public DBNNode findNode(Object object)
+    public DBNNode findNode(DBSObject object)
     {
         if (object instanceof DBNNode) {
             return (DBNNode)object;
-        } else if (object instanceof DBSObject) {
-            return this.getNodeByObject((DBSObject)object);
         } else {
-            return null;
+            return this.getNodeByObject(object);
         }
     }
 

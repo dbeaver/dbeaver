@@ -5,38 +5,35 @@
 package org.jkiss.dbeaver.ui.views.search;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.runtime.load.LoadingUtils;
-import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
+import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 
-public class SearchObjectsView extends ViewPart {
+public class SearchObjectsView extends ViewPart implements DBPEventListener {
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.findObjects";
 
@@ -44,83 +41,35 @@ public class SearchObjectsView extends ViewPart {
     private static final int MATCH_INDEX_CONTAINS = 1;
     private static final int MATCH_INDEX_LIKE = 2;
 
-    private static ITreeContentProvider CONTENT_PROVIDER = new ITreeContentProvider() {
-        public Object[] getElements(Object inputElement)
-        {
-            if (inputElement instanceof Collection) {
-                return ((Collection<?>)inputElement).toArray();
-            }
-            return null;
-        }
-
-        public Object[] getChildren(Object parentElement)
-        {
-            return null;
-        }
-
-        public Object getParent(Object element)
-        {
-            return null;
-        }
-
-        public boolean hasChildren(Object element)
-        {
-            return false;
-        }
-
-        public void dispose()
-        {
-        }
-
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-        {
-        }
-
-    };
-
-    //private final IWorkbenchPart workbenchPart;
-    private java.util.List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
-    private DBSDataSourceContainer currentDataSource;
     private Table typesTable;
     private Text searchText;
     private Button searchButton;
     private Combo matchCombo;
-    private Combo dataSourceCombo;
     private Spinner maxResultsSpinner;
     private SearchResultsControl itemList;
+    private DatabaseNavigatorTree dataSourceTree;
 
     public SearchObjectsView()
     {
-        //super();
-        //setShellStyle(SWT.CLOSE | SWT.MODELESS| SWT.BORDER | SWT.TITLE | SWT.RESIZE | SWT.MAX | SWT.MIN);
-        //setBlockOnOpen(false);
-        this.currentDataSource = currentDataSource;
+        DataSourceRegistry.getDefault().addDataSourceListener(this);
     }
 
-    public DBSDataSourceContainer getCurrentDataSource()
+    @Override
+    public void dispose()
     {
-        return currentDataSource;
+        DataSourceRegistry.getDefault().removeDataSourceListener(this);
+        super.dispose();
     }
 
     public void setCurrentDataSource(DBSDataSourceContainer currentDataSource)
     {
-        this.currentDataSource = currentDataSource;
-        refreshDataSources();
-        updateDataSourceSelection();
-    }
-
-    private void refreshDataSources()
-    {
-        dataSources.clear();
-        dataSourceCombo.removeAll();
-        dataSources.addAll(DBeaverCore.getInstance().getDataSourceRegistry().getDataSources());
-        for (int i = 0, dataSourcesSize = dataSources.size(); i < dataSourcesSize; i++) {
-            DataSourceDescriptor descriptor = dataSources.get(i);
-            dataSourceCombo.add(descriptor.getName());
-            if (descriptor == currentDataSource) {
-                dataSourceCombo.select(i);
-            }
+        DBNNode selNode = DBeaverCore.getInstance().getNavigatorModel().findNode(currentDataSource);
+        if (selNode != null) {
+            dataSourceTree.getViewer().setSelection(new StructuredSelection(selNode), true);
+        } else {
+            dataSourceTree.getViewer().setSelection(new StructuredSelection());
         }
+        fillObjectTypes();
     }
 
     public void createPartControl(Composite parent)
@@ -131,7 +80,9 @@ public class SearchObjectsView extends ViewPart {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
-            Group searchGroup = UIUtils.createControlGroup(composite, "Search", 3, GridData.FILL_HORIZONTAL, 0);
+            Composite searchGroup = new Composite(composite, SWT.NONE);
+            searchGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            searchGroup.setLayout(new GridLayout(3, false));
             searchText = UIUtils.createLabelText(searchGroup, "Object Name", "");
             searchText.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e)
@@ -155,7 +106,7 @@ public class SearchObjectsView extends ViewPart {
             });
 
             Composite optionsGroup = new Composite(searchGroup, SWT.NONE);
-            GridLayout layout = new GridLayout(3, false);
+            GridLayout layout = new GridLayout(3, true);
             layout.marginHeight = 0;
             layout.marginWidth = 0;
             optionsGroup.setLayout(layout);
@@ -164,23 +115,7 @@ public class SearchObjectsView extends ViewPart {
             optionsGroup.setLayoutData(gd);
 
             {
-                Composite optionsGroup2 = new Composite(optionsGroup, SWT.NONE);
-                layout = new GridLayout(2, false);
-                layout.marginHeight = 0;
-                layout.marginWidth = 0;
-                optionsGroup2.setLayout(layout);
-                optionsGroup2.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-
-                UIUtils.createControlLabel(optionsGroup2, "Data Source");
-                dataSourceCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
-                dataSourceCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                dataSourceCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        updateDataSourceSelection();
-                    }
-                });
+                Composite optionsGroup2 = UIUtils.createControlGroup(optionsGroup, "Options", 2, GridData.FILL_BOTH, 0);
 
                 UIUtils.createControlLabel(optionsGroup2, "Name match");
                 matchCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -195,19 +130,61 @@ public class SearchObjectsView extends ViewPart {
             }
 
             {
-                Table dbTable = new Table(optionsGroup, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
-                dbTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+                Group sourceGroup = UIUtils.createControlGroup(optionsGroup, "Objects Source", 1, GridData.FILL_BOTH, 0);
+                dataSourceTree = new DatabaseNavigatorTree(sourceGroup, DBeaverCore.getInstance().getNavigatorModel().getRoot());
+                gd = new GridData(GridData.FILL_BOTH);
+                gd.heightHint = 100;
+                dataSourceTree.setLayoutData(gd);
+
+                dataSourceTree.getViewer().addFilter(new ViewerFilter() {
+                    @Override
+                    public boolean select(Viewer viewer, Object parentElement, Object element)
+                    {
+                        if (element instanceof TreeLoadNode) {
+                            return true;
+                        }
+                        if (element instanceof DBNNode) {
+                            if (element instanceof DBNTreeFolder) {
+                                DBNTreeFolder folder = (DBNTreeFolder)element;
+                                Class<? extends DBSObject> folderItemsClass = folder.getItemsClass();
+                                return folderItemsClass != null && DBSEntityContainer.class.isAssignableFrom(folderItemsClass);
+                            }
+                            if (element instanceof DBNDataSource || ((DBNNode)element).getObject() instanceof DBSEntityContainer) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                });
+                dataSourceTree.getViewer().addSelectionChangedListener(
+                    new ISelectionChangedListener()
+                    {
+                        public void selectionChanged(SelectionChangedEvent event)
+                        {
+                            IStructuredSelection structSel = (IStructuredSelection)event.getSelection();
+                            for (Iterator iter = structSel.iterator(); iter.hasNext(); ) {
+                                Object object = iter.next();
+                                if (object instanceof DBNDataSource) {
+                                    DBNDataSource dsNode = (DBNDataSource)object;
+                                    dsNode.initializeNode();
+                                }
+                            }
+                            fillObjectTypes();
+                        }
+                    }
+                );
             }
+
             {
-                typesTable = new Table(optionsGroup, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
+                Group typesGroup = UIUtils.createControlGroup(optionsGroup, "Object Types", 1, GridData.FILL_BOTH, 0);
+                typesTable = new Table(typesGroup, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
                 typesTable.addSelectionListener(new SelectionAdapter() {
                     public void widgetSelected(SelectionEvent e)
                     {
                         checkSearchEnabled();
                     }
                 });
-                gd = new GridData(GridData.FILL_BOTH);
-                typesTable.setLayoutData(gd);
+                typesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
 
                 TableColumn typeColumn = new TableColumn(typesTable, SWT.LEFT);
                 typeColumn.setText("Type");
@@ -236,28 +213,44 @@ public class SearchObjectsView extends ViewPart {
         shell.setDefaultButton(searchButton);
     }
 
-    private void updateDataSourceSelection()
+    private Collection<DBPDataSource> getSelectedDataSources()
     {
-        int selectionIndex = dataSourceCombo.getSelectionIndex();
-        if (selectionIndex < 0) {
-            currentDataSource = null;
-        } else {
-            currentDataSource = dataSources.get(selectionIndex);
+        Set<DBPDataSource> dsList = new HashSet<DBPDataSource>();
+        IStructuredSelection selection = (IStructuredSelection) dataSourceTree.getViewer().getSelection();
+        for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
+            DBNNode node = (DBNNode) iter.next();
+            DBSObject object = node.getObject();
+            if (object != null && object.getDataSource() != null) {
+                dsList.add(object.getDataSource());
+            }
         }
-        fillObjectTypes();
+        return dsList;
+    }
+
+    private Collection<DBSStructureAssistant> getSelectedStructureAssistants()
+    {
+        java.util.List<DBSStructureAssistant> result = new ArrayList<DBSStructureAssistant>();
+        for (DBPDataSource ds : getSelectedDataSources()) {
+            DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, ds);
+            if (structureAssistant != null) {
+                result.add(structureAssistant);
+            }
+        }
+        return result;
     }
 
     private void fillObjectTypes()
     {
-        DBSStructureAssistant structureAssistant = null;
-        if (currentDataSource != null) {
-            structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, currentDataSource);
-        }
+        Collection<DBSStructureAssistant> assistants = getSelectedStructureAssistants();
         typesTable.removeAll();
-        if (structureAssistant == null) {
+        if (assistants.isEmpty()) {
             // No structure assistant - no object types
         } else {
-            for (DBSObjectType objectType : structureAssistant.getSupportedObjectTypes()) {
+            Set<DBSObjectType> objectTypes = new LinkedHashSet<DBSObjectType>();
+            for (DBSStructureAssistant assistant : assistants) {
+                Collections.addAll(objectTypes, assistant.getSupportedObjectTypes());
+            }
+            for (DBSObjectType objectType : objectTypes) {
                 TableItem item = new TableItem(typesTable, SWT.NONE);
                 item.setText(objectType.getTypeName());
                 if (objectType.getImage() != null) {
@@ -275,23 +268,22 @@ public class SearchObjectsView extends ViewPart {
 
     private void checkSearchEnabled()
     {
-        DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, currentDataSource);
         boolean enabled = false;
-        if (structureAssistant != null) {
-            for (TableItem item : typesTable.getItems()) {
-                if (item.getChecked()) {
-                    enabled = true;
-                }
-            }
-            if (CommonUtils.isEmpty(searchText.getText())) {
-                enabled = false;
+        for (TableItem item : typesTable.getItems()) {
+            if (item.getChecked()) {
+                enabled = true;
             }
         }
+        if (CommonUtils.isEmpty(searchText.getText())) {
+            enabled = false;
+        }
+
         searchButton.setEnabled(enabled);
     }
 
     private void performSearch()
     {
+/*
         DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, currentDataSource);
         if (structureAssistant == null) {
             return;
@@ -322,6 +314,7 @@ public class SearchObjectsView extends ViewPart {
             new ObjectSearchService(currentDataSource.getDataSource(), structureAssistant, objectTypes, objectNameMask, maxResults),
             itemList.createVisualizer());
         itemList.loadData(loadingJob);
+*/
     }
 
     @Override
@@ -330,6 +323,16 @@ public class SearchObjectsView extends ViewPart {
         if (searchText != null && !searchText.isDisposed()) {
             searchText.setFocus();
         }
+    }
+
+    public void handleDataSourceEvent(DBPEvent event)
+    {
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run()
+            {
+                fillObjectTypes();
+            }
+        });
     }
 
     private class SearchResultsControl extends NodeListControl {

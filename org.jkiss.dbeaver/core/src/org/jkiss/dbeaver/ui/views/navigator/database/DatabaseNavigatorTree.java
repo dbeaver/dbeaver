@@ -14,7 +14,6 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -27,11 +26,11 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
     private TreeViewer viewer;
     private DBNModel model;
 
-    public DatabaseNavigatorTree(Composite parent)
+    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode)
     {
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
-        this.model = DBeaverCore.getInstance().getNavigatorModel();
+        this.model = rootNode.getModel();
         this.model.addListener(this);
         addDisposeListener(new DisposeListener() {
             public void widgetDisposed(DisposeEvent e)
@@ -43,7 +42,6 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
             }
         });
 
-
         // Create tree
         // TODO: there are problems with this tree when we have a lot of items.
         // TODO: I may set SWT.SINGLE style and it'll solve the problem at least when traversing tree
@@ -53,7 +51,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         this.viewer.setUseHashlookup(true);
         this.viewer.setLabelProvider(new DatabaseNavigatorLabelProvider(this.viewer));
         this.viewer.setContentProvider(new DatabaseNavigatorContentProvider(this.viewer));
-        this.viewer.setInput(model.getRoot());
+        this.viewer.setInput(rootNode);
     }
 
     public TreeViewer getViewer()
