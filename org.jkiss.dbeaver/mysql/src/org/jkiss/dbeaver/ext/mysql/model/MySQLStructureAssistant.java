@@ -7,8 +7,6 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -48,53 +46,51 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
             };
     }
 
-    protected void findTablesByMask(
-        DBRProgressMonitor monitor,
-        DBSObject parentObject,
-        String tableNameMask,
-        int maxResults,
-        JDBCDatabaseMetaData metaData,
-        List<DBSObject> objects)
-        throws DBException, SQLException
+    @Override
+    protected void findObjectsByMask(JDBCExecutionContext context, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, int maxResults, List<DBSObject> objects) throws DBException, SQLException
     {
-        MySQLCatalog catalog = parentObject instanceof MySQLCatalog ? (MySQLCatalog) parentObject : null;
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Find tables by name");
-        try {
-            // Load tables
-            JDBCPreparedStatement dbStat = context.prepareStatement(
-                "SELECT * FROM " + MySQLConstants.META_TABLE_TABLES + " WHERE " +
-                    "TABLE_NAME LIKE '" + tableNameMask.toLowerCase() + "'" +
-                    (catalog == null ? "" : " AND TABLE_SCHEMA=" + DBUtils.getQuotedIdentifier(getDataSource(), catalog.getName()) ) +
-                    " ORDER BY TABLE_NAME");
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
-                    int tableNum = maxResults;
-                    while (dbResult.next() && tableNum-- > 0) {
-                        String catalogName = JDBCUtils.safeGetString(dbResult, "TABLE_SCHEMA");
-                        String tableName = JDBCUtils.safeGetString(dbResult, "TABLE_NAME");
-                        MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
-                        if (tableCatalog == null) {
-                            log.debug("Table catalog '" + catalogName + "' not found");
-                            continue;
-                        }
-                        MySQLTable table = tableCatalog.getTable(monitor, tableName);
-                        if (table == null) {
-                            log.debug("Table '" + catalogName + "' not found in catalog '" + tableCatalog.getName() + "'");
-                            continue;
-                        }
-                        objects.add(table);
-                    }
-                }
-                finally {
-                    dbResult.close();
-                }
-            } finally {
-                dbStat.close();
-            }
+        if (objectType == RelationalObjectType.TYPE_TABLE) {
+            findTablesByMask(context, parentObject, objectNameMask, maxResults, objects);
         }
-        finally {
-            context.close();
+    }
+
+    private void findTablesByMask(JDBCExecutionContext context, DBSObject parentObject, String tableNameMask, int maxResults, List<DBSObject> objects)
+        throws SQLException, DBException
+    {
+        DBRProgressMonitor monitor = context.getProgressMonitor();
+        MySQLCatalog catalog = parentObject instanceof MySQLCatalog ? (MySQLCatalog) parentObject : null;
+
+        // Load tables
+        JDBCPreparedStatement dbStat = context.prepareStatement(
+            "SELECT * FROM " + MySQLConstants.META_TABLE_TABLES + " WHERE " +
+                "TABLE_NAME LIKE '" + tableNameMask.toLowerCase() + "'" +
+                (catalog == null ? "" : " AND TABLE_SCHEMA=" + DBUtils.getQuotedIdentifier(getDataSource(), catalog.getName()) ) +
+                " ORDER BY TABLE_NAME");
+        try {
+            JDBCResultSet dbResult = dbStat.executeQuery();
+            try {
+                int tableNum = maxResults;
+                while (dbResult.next() && tableNum-- > 0) {
+                    String catalogName = JDBCUtils.safeGetString(dbResult, "TABLE_SCHEMA");
+                    String tableName = JDBCUtils.safeGetString(dbResult, "TABLE_NAME");
+                    MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
+                    if (tableCatalog == null) {
+                        log.debug("Table catalog '" + catalogName + "' not found");
+                        continue;
+                    }
+                    MySQLTable table = tableCatalog.getTable(monitor, tableName);
+                    if (table == null) {
+                        log.debug("Table '" + catalogName + "' not found in catalog '" + tableCatalog.getName() + "'");
+                        continue;
+                    }
+                    objects.add(table);
+                }
+            }
+            finally {
+                dbResult.close();
+            }
+        } finally {
+            dbStat.close();
         }
     }
 

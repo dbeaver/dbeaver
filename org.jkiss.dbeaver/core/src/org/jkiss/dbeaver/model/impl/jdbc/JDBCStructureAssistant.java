@@ -48,11 +48,8 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         List<DBSObject> objects = new ArrayList<DBSObject>();
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Find objects by name");
         try {
-            JDBCDatabaseMetaData metaData = context.getMetaData();
             for (DBSObjectType type : objectTypes) {
-                if (type == RelationalObjectType.TYPE_TABLE) {
-                    findTablesByMask(monitor, parentObject, objectNameMask, maxResults - objects.size(), metaData, objects);
-                }
+                findObjectsByMask(context, type, parentObject, objectNameMask, maxResults - objects.size(), objects);
                 if (objects.size() >= maxResults) {
                     break;
                 }
@@ -67,12 +64,12 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         return objects;
     }
 
-    protected abstract void findTablesByMask(
-        DBRProgressMonitor monitor,
+    protected abstract void findObjectsByMask(
+        JDBCExecutionContext context,
+        DBSObjectType objectType,
         DBSObject parentObject,
-        String tableNameMask,
+        String objectNameMask,
         int maxResults,
-        JDBCDatabaseMetaData metaData,
         List<DBSObject> objects)
         throws DBException, SQLException;
 

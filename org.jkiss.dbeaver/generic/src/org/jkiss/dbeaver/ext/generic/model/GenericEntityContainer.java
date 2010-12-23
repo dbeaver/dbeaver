@@ -136,6 +136,12 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         return procedureCache.getObjects(monitor);
     }
 
+    public GenericProcedure getProcedure(DBRProgressMonitor monitor, String procedureName)
+        throws DBException
+    {
+        return procedureCache.getObject(monitor, procedureName);
+    }
+
     public Collection<? extends DBSEntity> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
