@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.views.search;
 
 import net.sf.jkiss.utils.CommonUtils;
+import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -44,13 +45,16 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
     private static final int MATCH_INDEX_LIKE = 2;
 
     private Table typesTable;
-    private Text searchText;
+    private Combo searchText;
     private Button searchButton;
     private Combo matchCombo;
     private Spinner maxResultsSpinner;
     private SearchResultsControl itemList;
     private DatabaseNavigatorTree dataSourceTree;
+
     private Set<DBSObjectType> checkedTypes = new HashSet<DBSObjectType>();
+    private Set<String> searchHistory = new LinkedHashSet<String>();
+    private Composite searchGroup;
 
     public SearchObjectsView()
     {
@@ -83,10 +87,13 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
-            Composite searchGroup = new Composite(composite, SWT.NONE);
+            searchGroup = new Composite(composite, SWT.NONE);
             searchGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             searchGroup.setLayout(new GridLayout(3, false));
-            searchText = UIUtils.createLabelText(searchGroup, "Object Name", "");
+            UIUtils.createControlLabel(searchGroup, "Object Name");
+            searchText = new Combo(searchGroup, SWT.DROP_DOWN);
+            searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            //UIUtils.createLabelText(searchGroup, "Object Name", "");
             searchText.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e)
                 {
@@ -312,6 +319,13 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
             }
         }
         String objectNameMask = searchText.getText();
+
+        // Save search query
+        if (!searchHistory.contains(objectNameMask)) {
+            searchHistory.add(objectNameMask);
+            searchText.add(objectNameMask);
+        }
+
         int maxResults = maxResultsSpinner.getSelection();
         int matchIndex = matchCombo.getSelectionIndex();
         if (matchIndex == MATCH_INDEX_STARTS_WITH) {
@@ -330,7 +344,7 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
         // Start separate service for each data source
         LoadingJob<Collection<DBNNode>> loadingJob = LoadingUtils.createService(
             new ObjectSearchService(dataSource, assistant, parentObject, objectTypes, objectNameMask, maxResults),
-            itemList.createVisualizer());
+            itemList.createVisualizer(ControlEnableState.disable(searchGroup)));
         itemList.loadData(loadingJob);
     }
 
@@ -374,9 +388,16 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
             return panel;
         }
 
-        public ObjectsLoadVisualizer createVisualizer()
+        public ObjectsLoadVisualizer createVisualizer(final ControlEnableState blockEnableState)
         {
             return new ObjectsLoadVisualizer() {
+                @Override
+                public void completeLoading(Collection<DBNNode> items)
+                {
+                    super.completeLoading(items);
+                    blockEnableState.restore();
+                }
+
                 protected String getItemsLoadMessage(int count)
                 {
                     if (count == 0) {
