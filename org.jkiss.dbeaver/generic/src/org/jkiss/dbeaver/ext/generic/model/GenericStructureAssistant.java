@@ -48,21 +48,22 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
     @Override
     protected void findObjectsByMask(JDBCExecutionContext context, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, int maxResults, List<DBSObject> objects) throws DBException, SQLException
     {
-        if (objectType == RelationalObjectType.TYPE_TABLE) {
-            findTablesByMask(context, parentObject, objectNameMask, maxResults, objects);
-        } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
-            findProceduresByMask(context, parentObject, objectNameMask, maxResults, objects);
-        }
-    }
-
-    private void findTablesByMask(JDBCExecutionContext context, DBSObject parentObject, String tableNameMask, int maxResults, List<DBSObject> objects)
-        throws SQLException, DBException
-    {
-        tableNameMask = getDataSource().getNameConverter().convert(tableNameMask);
-        DBRProgressMonitor monitor = context.getProgressMonitor();
         GenericSchema schema = parentObject instanceof GenericSchema ? (GenericSchema)parentObject : null;
         GenericCatalog catalog = parentObject instanceof GenericCatalog ? (GenericCatalog)parentObject :
             schema == null ? null : schema.getCatalog();
+        objectNameMask = getDataSource().getNameConverter().convert(objectNameMask);
+
+        if (objectType == RelationalObjectType.TYPE_TABLE) {
+            findTablesByMask(context, catalog, schema, objectNameMask, maxResults, objects);
+        } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
+            findProceduresByMask(context, catalog, schema, objectNameMask, maxResults, objects);
+        }
+    }
+
+    private void findTablesByMask(JDBCExecutionContext context, GenericCatalog catalog, GenericSchema schema, String tableNameMask, int maxResults, List<DBSObject> objects)
+        throws SQLException, DBException
+    {
+        DBRProgressMonitor monitor = context.getProgressMonitor();
         JDBCResultSet dbResult = context.getMetaData().getTables(
             catalog == null ? null : catalog.getName(),
             schema == null ? null : schema.getName(),
@@ -105,14 +106,10 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findProceduresByMask(JDBCExecutionContext context, DBSObject parentObject, String procNameMask, int maxResults, List<DBSObject> objects)
+    private void findProceduresByMask(JDBCExecutionContext context, GenericCatalog catalog, GenericSchema schema, String procNameMask, int maxResults, List<DBSObject> objects)
         throws SQLException, DBException
     {
-        procNameMask = getDataSource().getNameConverter().convert(procNameMask);
         DBRProgressMonitor monitor = context.getProgressMonitor();
-        GenericSchema schema = parentObject instanceof GenericSchema ? (GenericSchema)parentObject : null;
-        GenericCatalog catalog = parentObject instanceof GenericCatalog ? (GenericCatalog)parentObject :
-            schema == null ? null : schema.getCatalog();
         JDBCResultSet dbResult = context.getMetaData().getProcedures(
             catalog == null ? null : catalog.getName(),
             schema == null ? null : schema.getName(),

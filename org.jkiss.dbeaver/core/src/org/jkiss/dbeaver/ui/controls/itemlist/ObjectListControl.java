@@ -19,7 +19,6 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -47,14 +46,16 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private final static int LAZY_LOAD_DELAY = 100;
 
     private static class ObjectColumn {
+        String id;
         Item item;
-        Class<?> objectClass;
-        PropertyAnnoDescriptor prop;
+        Map<Class<?>, PropertyAnnoDescriptor> propMap = new IdentityHashMap<Class<?>, PropertyAnnoDescriptor>();
 
         private ObjectColumn(Item item, Class<?> objectClass, PropertyAnnoDescriptor prop) {
+            this.id = CommonUtils.toString(prop.getId());
             this.item = item;
-            this.objectClass = objectClass;
-            this.prop = prop;
+            this.propMap.put(objectClass, prop);
+            //this.objectClass = objectClass;
+            //this.prop = prop;
         }
     }
 
@@ -394,16 +395,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (column.item.isDisposed()) {
             return null;
         }
-        if (column.prop.isLazy()) {
+        Object objectValue = getObjectValue((OBJECT_TYPE) object);
+        if (objectValue == null) {
+            return null;
+        }
+        PropertyAnnoDescriptor prop = column.propMap.get(objectValue.getClass());
+        if (prop == null) {
+            return null;
+        }
+        if (prop.isLazy()) {
             return LOADING_LABEL;
         }
         try {
-            Object objectValue = getObjectValue((OBJECT_TYPE) object);
-            if (objectValue != null && column.objectClass.isAssignableFrom(objectValue.getClass())) {
-                return column.prop.readValue(objectValue, null);
-            } else {
-                return null;
-            }
+            return prop.readValue(objectValue, null);
         }
         catch (InvocationTargetException e) {
             log.error(e.getTargetException());
@@ -442,27 +446,42 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     protected abstract Image getObjectImage(OBJECT_TYPE item);
 
-    protected void createColumn(Class<?> objctClass, PropertyAnnoDescriptor prop)
+    protected void createColumn(Class<?> objectClass, PropertyAnnoDescriptor prop)
     {
-        Item newColumn;
-        if (isTree) {
-            TreeColumn column = new TreeColumn (getTree(), SWT.NONE);
-            column.setText(prop.getDisplayName());
-            column.setToolTipText(prop.getDescription());
-            //column.setData(prop);
-            column.addListener(SWT.Selection, sortListener);
-            newColumn = column;
-        } else {
-            TableColumn column = new TableColumn (getTable(), SWT.NONE);
-            column.setText(prop.getDisplayName());
-            column.setToolTipText(prop.getDescription());
-            //column.setData(prop);
-            column.addListener(SWT.Selection, sortListener);
-            newColumn = column;
+        ObjectColumn objectColumn = null;
+        for (ObjectColumn col : columns) {
+            if (col.id.equals(prop.getId())) {
+                objectColumn = col;
+                break;
+            }
         }
-        ObjectColumn objectColumn = new ObjectColumn(newColumn, objctClass, prop);
-        this.columns.add(objectColumn);
-        newColumn.setData(DATA_OBJECT_COLUMN, objectColumn);
+        if (objectColumn == null) {
+            Item newColumn;
+            if (isTree) {
+                TreeColumn column = new TreeColumn (getTree(), SWT.NONE);
+                column.setText(prop.getDisplayName());
+                column.setToolTipText(prop.getDescription());
+                //column.setData(prop);
+                column.addListener(SWT.Selection, sortListener);
+                newColumn = column;
+            } else {
+                TableColumn column = new TableColumn (getTable(), SWT.NONE);
+                column.setText(prop.getDisplayName());
+                column.setToolTipText(prop.getDescription());
+                //column.setData(prop);
+                column.addListener(SWT.Selection, sortListener);
+                newColumn = column;
+            }
+            objectColumn = new ObjectColumn(newColumn, objectClass, prop);
+            this.columns.add(objectColumn);
+            newColumn.setData(DATA_OBJECT_COLUMN, objectColumn);
+        } else {
+            objectColumn.propMap.put(objectClass, prop);
+            String oldTitle = objectColumn.item.getText();
+            if (!oldTitle.contains(prop.getDisplayName())) {
+                objectColumn.item.setText(CommonUtils.capitalizeWord(objectColumn.id));
+            }
+        }
     }
 
     private class SortListener implements Listener
@@ -809,14 +828,22 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 final Item item = entry.getKey();
                 final LazyObject lazyObject = entry.getValue();
                 Object object = getObjectValue((OBJECT_TYPE) lazyObject.object);
+                if (object == null) {
+                    continue;
+                }
                 final List<String> stringValues = new ArrayList<String>(lazyObject.columns.size());
                 for (ObjectColumn column : lazyObject.columns) {
                     if (monitor.isCanceled() || isDisposed()) {
                         break;
                     }
                     try {
-                        Object lazyValue = column.prop.readValue(object, monitor);
-                        stringValues.add(getCellString(lazyValue));
+                        PropertyAnnoDescriptor prop = column.propMap.get(object.getClass());
+                        if (prop != null) {
+                            Object lazyValue = prop.readValue(object, monitor);
+                            stringValues.add(getCellString(lazyValue));
+                        } else {
+                            stringValues.add("");
+                        }
                     }
                     catch (IllegalAccessException e) {
                         log.error(e);
