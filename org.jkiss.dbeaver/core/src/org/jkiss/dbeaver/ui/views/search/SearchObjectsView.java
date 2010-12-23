@@ -23,7 +23,10 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
@@ -32,6 +35,7 @@ import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.List;
 
 public class SearchObjectsView extends ViewPart implements DBPEventListener {
 
@@ -283,9 +287,8 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
 
     private void performSearch()
     {
-/*
-        DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, currentDataSource);
-        if (structureAssistant == null) {
+        Collection<DBSStructureAssistant> assistants = getSelectedStructureAssistants();
+        if (assistants.isEmpty()) {
             return;
         }
         java.util.List<DBSObjectType> objectTypes = new ArrayList<DBSObjectType>();
@@ -310,11 +313,13 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
             }
         }
 
-        LoadingJob<Collection<DBNNode>> loadingJob = LoadingUtils.createService(
-            new ObjectSearchService(currentDataSource.getDataSource(), structureAssistant, objectTypes, objectNameMask, maxResults),
-            itemList.createVisualizer());
-        itemList.loadData(loadingJob);
-*/
+        // Start separate service for each data source
+        for (DBSStructureAssistant assistant : assistants) {
+            LoadingJob<Collection<DBNNode>> loadingJob = LoadingUtils.createService(
+                new ObjectSearchService(assistants, objectTypes, objectNameMask, maxResults),
+                itemList.createVisualizer());
+            itemList.loadData(loadingJob);
+        }
     }
 
     @Override
@@ -356,17 +361,18 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
         }
     }
 
-    private class ObjectSearchService extends DatabaseLoadService<Collection<DBNNode>> {
+    private class ObjectSearchService extends AbstractLoadService<Collection<DBNNode>> {
 
-        private final DBSStructureAssistant structureAssistant;
+        private final Collection<DBSStructureAssistant> assistants;
         private final java.util.List<DBSObjectType> objectTypes;
         private final String objectNameMask;
         private final int maxResults;
+        private transient DBSStructureAssistant structureAssistant;
 
-        private ObjectSearchService(DBPDataSource dataSource, DBSStructureAssistant structureAssistant, java.util.List<DBSObjectType> objectTypes, String objectNameMask, int maxResults)
+        private ObjectSearchService(Collection<DBSStructureAssistant> assistants, List<DBSObjectType> objectTypes, String objectNameMask, int maxResults)
         {
-            super("Find objects", dataSource);
-            this.structureAssistant = structureAssistant;
+            super("Find objects");
+            this.assistants = assistants;
             this.objectTypes = objectTypes;
             this.objectNameMask = objectNameMask;
             this.maxResults = maxResults;
@@ -376,13 +382,15 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                 java.util.List<DBNNode> nodes = new ArrayList<DBNNode>();
-                Collection<DBSObject> objects = structureAssistant.findObjectsByMask(getProgressMonitor(), null, objectTypes, objectNameMask, maxResults);
-                for (DBSObject object : objects) {
-                    DBNNode node = navigatorModel.getNodeByObject(getProgressMonitor(), object, true);
-                    if (node != null) {
-                        nodes.add(node);
+                for (DBSStructureAssistant assistant : this.assistants) {
+                    DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+                    Collection<DBSObject> objects = assistant.findObjectsByMask(getProgressMonitor(), null, objectTypes, objectNameMask, maxResults);
+                    for (DBSObject object : objects) {
+                        DBNNode node = navigatorModel.getNodeByObject(getProgressMonitor(), object, true);
+                        if (node != null) {
+                            nodes.add(node);
+                        }
                     }
                 }
                 return nodes;
@@ -393,6 +401,11 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                     throw new InvocationTargetException(ex);
                 }
             }
+        }
+
+        public Object getFamily()
+        {
+            return SearchObjectsView.this;
         }
     }
 
