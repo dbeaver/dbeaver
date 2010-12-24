@@ -6,12 +6,14 @@ package org.jkiss.dbeaver.ui.views.search;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IMemento;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -33,6 +35,7 @@ import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 
+import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -44,20 +47,50 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
     private static final int MATCH_INDEX_CONTAINS = 1;
     private static final int MATCH_INDEX_LIKE = 2;
 
+    private static final String PROP_MASK = "search-view.mask";
+    private static final String PROP_MAX_RESULT = "search-view.max-results";
+    private static final String PROP_MATCH_INDEX = "search-view.match-index";
+    private static final String PROP_HISTORY = "search-view.history";
+    private static final String PROP_OBJECT_TYPE = "search-view.object-type";
+
+    private Composite searchGroup;
     private Table typesTable;
     private Combo searchText;
     private Button searchButton;
-    private Combo matchCombo;
-    private Spinner maxResultsSpinner;
     private SearchResultsControl itemList;
     private DatabaseNavigatorTree dataSourceTree;
 
+    private String nameMask;
+    private int maxResults;
+    private int matchTypeIndex;
     private Set<DBSObjectType> checkedTypes = new HashSet<DBSObjectType>();
     private Set<String> searchHistory = new LinkedHashSet<String>();
-    private Composite searchGroup;
+    private Set<String> savedTypeNames = new HashSet<String>();
 
     public SearchObjectsView()
     {
+        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+
+        nameMask = store.getString(PROP_MASK);
+        maxResults = store.getInt(PROP_MAX_RESULT);
+        matchTypeIndex = store.getInt(PROP_MATCH_INDEX);
+        for (int i = 0; ;i++) {
+            String history = store.getString(PROP_HISTORY + "." + i);
+            if (CommonUtils.isEmpty(history)) {
+                break;
+            }
+            searchHistory.add(history);
+        }
+        {
+            String type = store.getString(PROP_OBJECT_TYPE);
+            if (!CommonUtils.isEmpty(type)) {
+                StringTokenizer st = new StringTokenizer(type, "|");
+                while (st.hasMoreTokens()) {
+                    savedTypeNames.add(st.nextToken());
+                }
+            }
+        }
+
         DataSourceRegistry.getDefault().addDataSourceListener(this);
     }
 
@@ -65,6 +98,33 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
     public void dispose()
     {
         DataSourceRegistry.getDefault().removeDataSourceListener(this);
+
+        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+
+        store.setValue(PROP_MASK, nameMask);
+        store.setValue(PROP_MAX_RESULT, maxResults);
+        store.setValue(PROP_MATCH_INDEX, matchTypeIndex);
+        {
+            int historyIndex = 0;
+            for (String history : searchHistory) {
+                if (historyIndex >= 20) {
+                    break;
+                }
+                store.setValue(PROP_HISTORY + "." + historyIndex, history);
+                historyIndex++;
+            }
+        }
+        {
+            StringBuilder typesString = new StringBuilder();
+            for (DBSObjectType type : checkedTypes) {
+                if (typesString.length() > 0) {
+                    typesString.append("|");
+                }
+                typesString.append(type.getTypeClass().getName());
+            }
+            store.setValue(PROP_OBJECT_TYPE, typesString.toString());
+        }
+
         super.dispose();
     }
 
@@ -93,10 +153,16 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
             UIUtils.createControlLabel(searchGroup, "Object Name");
             searchText = new Combo(searchGroup, SWT.DROP_DOWN);
             searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            //UIUtils.createLabelText(searchGroup, "Object Name", "");
+            if (nameMask != null) {
+                searchText.setText(nameMask);
+            }
+            for (String history : searchHistory) {
+                searchText.add(history);
+            }
             searchText.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e)
                 {
+                    nameMask = searchText.getText();
                     checkSearchEnabled();
                 }
             });
@@ -128,15 +194,34 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                 Composite optionsGroup2 = UIUtils.createControlGroup(optionsGroup, "Options", 2, GridData.FILL_BOTH, 0);
 
                 UIUtils.createControlLabel(optionsGroup2, "Name match");
-                matchCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
+                final Combo matchCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
                 matchCombo.add("Starts with");
                 matchCombo.add("Contains");
                 matchCombo.add("Like");
                 matchCombo.select(0);
                 matchCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                if (matchTypeIndex >= 0) {
+                    matchCombo.select(matchTypeIndex);
+                }
+                matchCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        matchTypeIndex = matchCombo.getSelectionIndex();
+                    }
+                });
 
-                maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, "Max results", 100, 1, 10000);
+                if (maxResults <= 0) {
+                    maxResults = 100;
+                }
+                final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, "Max results", maxResults, 1, 10000);
                 maxResultsSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                maxResultsSpinner.addModifyListener(new ModifyListener() {
+                    public void modifyText(ModifyEvent e)
+                    {
+                        maxResults = maxResultsSpinner.getSelection();
+                    }
+                });
             }
 
             {
@@ -275,6 +360,10 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                 item.setData(objectType);
                 if (checkedTypes.contains(objectType)) {
                     item.setChecked(true);
+                } else if (savedTypeNames.contains(objectType.getTypeClass().getName())) {
+                    item.setChecked(true);
+                    checkedTypes.add(objectType);
+                    savedTypeNames.remove(objectType.getTypeClass().getName());
                 }
             }
         }
@@ -292,7 +381,7 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                 enabled = true;
             }
         }
-        if (CommonUtils.isEmpty(searchText.getText())) {
+        if (CommonUtils.isEmpty(nameMask)) {
             enabled = false;
         }
 
@@ -318,7 +407,7 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                 objectTypes.add((DBSObjectType) item.getData());
             }
         }
-        String objectNameMask = searchText.getText();
+        String objectNameMask = nameMask;
 
         // Save search query
         if (!searchHistory.contains(objectNameMask)) {
@@ -326,13 +415,11 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
             searchText.add(objectNameMask);
         }
 
-        int maxResults = maxResultsSpinner.getSelection();
-        int matchIndex = matchCombo.getSelectionIndex();
-        if (matchIndex == MATCH_INDEX_STARTS_WITH) {
+        if (matchTypeIndex == MATCH_INDEX_STARTS_WITH) {
             if (!objectNameMask.endsWith("%")) {
                 objectNameMask = objectNameMask + "%";
             }
-        } else if (matchIndex == MATCH_INDEX_CONTAINS) {
+        } else if (matchTypeIndex == MATCH_INDEX_CONTAINS) {
             if (!objectNameMask.startsWith("%")) {
                 objectNameMask = "%" + objectNameMask;
             }
