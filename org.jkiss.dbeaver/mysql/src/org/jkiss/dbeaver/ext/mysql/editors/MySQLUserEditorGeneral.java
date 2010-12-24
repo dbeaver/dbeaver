@@ -7,7 +7,10 @@ package org.jkiss.dbeaver.ext.mysql.editors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IPropertyListener;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.edit.DBOCommand;
+import org.jkiss.dbeaver.model.edit.DBOCommandListener;
 import org.jkiss.dbeaver.model.edit.DBOCommandReflector;
 import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
@@ -16,9 +19,11 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.ext.mysql.runtime.MySQLCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.mysql.runtime.UserPropertyHandler;
 import org.jkiss.dbeaver.model.edit.prop.ControlPropertyCommandListener;
+import org.jkiss.dbeaver.model.impl.edit.DBOCommandAdapter;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -34,6 +39,10 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
     private PageControl pageControl;
     private boolean isLoaded;
     private PrivilegeTableControl privTable;
+    private boolean newUser;
+    private Text userNameText;
+    private Text hostText;
+    private CommandListener commandlistener;
 
     public void createPartControl(Composite parent)
     {
@@ -43,17 +52,17 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         GridData gd = new GridData(GridData.FILL_VERTICAL);
         container.setLayoutData(gd);
 
-        boolean newUser = !getDatabaseObject().isPersisted();
+        newUser = !getDatabaseObject().isPersisted();
         {
             Composite loginGroup = UIUtils.createControlGroup(container, "Login", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 200);
 
-            Text userNameText = UIUtils.createLabelText(loginGroup, "User Name", getUser().getUserName());
+            userNameText = UIUtils.createLabelText(loginGroup, "User Name", getUser().getUserName());
             userNameText.setEditable(newUser);
             if (newUser) {
                 ControlPropertyCommandListener.create(this, userNameText, UserPropertyHandler.NAME);
             }
 
-            Text hostText = UIUtils.createLabelText(loginGroup, "Host", getUser().getHost());
+            hostText = UIUtils.createLabelText(loginGroup, "Host", getUser().getHost());
             hostText.setEditable(newUser);
             if (newUser) {
                 ControlPropertyCommandListener.create(this, hostText, UserPropertyHandler.HOST);
@@ -120,6 +129,18 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 
         }
         pageControl.createProgressPanel();
+
+        commandlistener = new CommandListener();
+        getObjectManager().addCommandListener(commandlistener);
+    }
+
+    @Override
+    public void dispose()
+    {
+        if (commandlistener != null) {
+            getObjectManager().removeCommandListener(commandlistener);
+        }
+        super.dispose();
     }
 
     public void activatePart()
@@ -172,4 +193,14 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 
     }
 
+    private class CommandListener extends DBOCommandAdapter {
+        public void onSave()
+        {
+            if (newUser && getObjectManager().getObject().isPersisted()) {
+                newUser = false;
+                userNameText.setEditable(false);
+                hostText.setEditable(false);
+            }
+        }
+    }
 }

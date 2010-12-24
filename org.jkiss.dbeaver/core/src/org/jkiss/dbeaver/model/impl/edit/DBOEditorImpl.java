@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.edit.DBOCommand;
+import org.jkiss.dbeaver.model.edit.DBOCommandListener;
 import org.jkiss.dbeaver.model.edit.DBOCommandReflector;
 import org.jkiss.dbeaver.model.edit.DBOEditor;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -60,6 +61,8 @@ public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOMa
     private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
     private final List<CommandInfo> undidCommands = new ArrayList<CommandInfo>();
     private List<CommandInfo> mergedCommands = null;
+
+    private final List<DBOCommandListener> listeners = new ArrayList<DBOCommandListener>();
 
     public boolean isDirty()
     {
@@ -134,6 +137,10 @@ public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOMa
             finally {
                 clearMergedCommands();
                 clearUndidCommands();
+
+                for (DBOCommandListener listener : getListeners()) {
+                    listener.onSave();
+                }
             }
         }
     }
@@ -141,11 +148,17 @@ public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOMa
     public void resetChanges()
     {
         synchronized (commands) {
-            while (!commands.isEmpty()) {
-                undoCommand();
+            try {
+                while (!commands.isEmpty()) {
+                    undoCommand();
+                }
+                clearUndidCommands();
+                clearMergedCommands();
+            } finally {
+                for (DBOCommandListener listener : getListeners()) {
+                    listener.onReset();
+                }
             }
-            clearUndidCommands();
-            clearMergedCommands();
         }
     }
 
@@ -196,6 +209,27 @@ public abstract class DBOEditorImpl<OBJECT_TYPE extends DBSObject> extends DBOMa
         synchronized (commands) {
             clearUndidCommands();
             clearMergedCommands();
+        }
+    }
+
+    public void addCommandListener(DBOCommandListener listener)
+    {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removeCommandListener(DBOCommandListener listener)
+    {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+    }
+
+    DBOCommandListener[] getListeners()
+    {
+        synchronized (listeners) {
+            return listeners.toArray(new DBOCommandListener[listeners.size()]);
         }
     }
 

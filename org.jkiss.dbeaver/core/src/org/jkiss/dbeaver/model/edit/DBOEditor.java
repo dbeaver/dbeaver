@@ -39,4 +39,8 @@ public interface DBOEditor<OBJECT_TYPE extends DBSObject> extends DBOManager<OBJ
 
     <COMMAND extends DBOCommand<OBJECT_TYPE>>
     void updateCommand(COMMAND command);
+
+    void addCommandListener(DBOCommandListener listener);
+
+    void removeCommandListener(DBOCommandListener listener);
 }
