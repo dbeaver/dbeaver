@@ -210,10 +210,10 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
 
             // Read constraints and their types
             StringBuilder query = new StringBuilder();
-            query.append("SELECT tc.CONSTRAINT_NAME,tc.TABLE_NAME,tc.CONSTRAINT_TYPE FROM ").append(MySQLConstants.META_TABLE_TABLE_CONSTRAINTS)
-                .append(" tc WHERE tc.TABLE_SCHEMA=?");
+            query.append("SELECT " + MySQLConstants.COL_CONSTRAINT_NAME + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_CONSTRAINT_TYPE +
+                " FROM " + MySQLConstants.META_TABLE_TABLE_CONSTRAINTS + " WHERE " + MySQLConstants.COL_TABLE_SCHEMA + "=?");
             if (forTable != null) {
-                query.append(" AND tc.TABLE_NAME=?");
+                query.append(" AND " + MySQLConstants.COL_TABLE_NAME + "=?");
             }
             JDBCPreparedStatement dbStat = context.prepareStatement(query.toString());
             try {

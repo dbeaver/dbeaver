@@ -92,6 +92,7 @@ public class MySQLTableColumn extends JDBCColumn implements DBSTableColumn
         return table.getDataSource();
     }
 
+    @Property(name = "Table", viewable = true, order = 9)
     public MySQLTable getTable()
     {
         return table;

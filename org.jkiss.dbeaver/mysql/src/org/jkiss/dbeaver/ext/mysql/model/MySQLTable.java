@@ -133,6 +133,12 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         return uniqueKeys;
     }
 
+    public MySQLConstraint getUniqueKey(DBRProgressMonitor monitor, String ukName)
+        throws DBException
+    {
+        return DBUtils.findObject(getUniqueKeys(monitor), ukName);
+    }
+
     public List<MySQLForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -146,6 +152,12 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
             foreignKeys = loadForeignKeys(monitor, false);
         }
         return foreignKeys;
+    }
+
+    public MySQLForeignKey getForeignKey(DBRProgressMonitor monitor, String fkName)
+        throws DBException
+    {
+        return DBUtils.findObject(getForeignKeys(monitor), fkName);
     }
 
     public List<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
