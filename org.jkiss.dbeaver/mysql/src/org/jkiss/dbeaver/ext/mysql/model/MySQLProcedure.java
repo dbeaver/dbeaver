@@ -75,7 +75,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return body;
     }
 
-    @Property(name = "Client Charset", order = 4)
+    //@Property(name = "Client Charset", order = 4)
     public String getCharset()
     {
         return charset;

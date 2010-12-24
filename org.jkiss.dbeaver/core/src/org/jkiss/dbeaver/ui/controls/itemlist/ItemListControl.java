@@ -7,24 +7,15 @@ package org.jkiss.dbeaver.ui.controls.itemlist;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.controls.ListContentProvider;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -37,8 +28,6 @@ import java.util.List;
 public class ItemListControl extends NodeListControl
 {
     static final Log log = LogFactory.getLog(ItemListControl.class);
-
-    private DBNNode node;
 
     public ItemListControl(
         Composite parent,
@@ -68,7 +57,7 @@ public class ItemListControl extends NodeListControl
 
         protected ItemLoadService(DBXTreeNode metaNode)
         {
-            super("Loading items", node);
+            super("Loading items", getRootNode());
             this.metaNode = metaNode;
         }
 
@@ -77,7 +66,7 @@ public class ItemListControl extends NodeListControl
         {
             try {
                 List<DBNNode> items = new ArrayList<DBNNode>();
-                List<? extends DBNNode> children = node.getChildren(getProgressMonitor());
+                List<? extends DBNNode> children = getRootNode().getChildren(getProgressMonitor());
                 if (CommonUtils.isEmpty(children)) {
                     return items;
                 }

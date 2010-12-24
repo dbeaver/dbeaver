@@ -137,6 +137,12 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
         return proceduresCache.getObjects(monitor);
     }
 
+    public MySQLProcedure getProcedure(DBRProgressMonitor monitor, String procName)
+        throws DBException
+    {
+        return proceduresCache.getObject(monitor, procName);
+    }
+
     public List<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {

@@ -71,6 +71,9 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
             null);
         try {
             while (dbResult.next()) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
                 String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
                 String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
                 String tableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_NAME);
@@ -116,6 +119,9 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
             procNameMask);
         try {
             while (dbResult.next()) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
                 String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PROCEDURE_CAT);
                 String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PROCEDURE_SCHEM);
                 String procName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PROCEDURE_NAME);

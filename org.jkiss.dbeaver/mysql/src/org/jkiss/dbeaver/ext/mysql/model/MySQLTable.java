@@ -57,7 +57,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
 
     private long rowCount;
     private long autoIncrement;
-    private String comment;
+    private String description;
 
     public MySQLTable(
         MySQLCatalog catalog,
@@ -178,13 +178,13 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
         return autoIncrement;
     }
 
-    @Property(name = "Comment", viewable = true, order = 100)
-    public String getComment(DBRProgressMonitor monitor) throws DBCException
+    @Property(name = "Description", viewable = true, order = 100)
+    public String getDescription(DBRProgressMonitor monitor) throws DBCException
     {
         if (!extraInfoLoaded) {
             loadAdditionalInfo(monitor);
         }
-        return comment;
+        return description;
     }
 
     public String getDDL(DBRProgressMonitor monitor)
@@ -248,7 +248,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     if (dbResult.next()) {
-                        // filer table comment (for INNODB it contains some system information)
+                        // filer table description (for INNODB it contains some system information)
                         String desc = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_COMMENT);
                         if (desc != null) {
                             if (desc.startsWith(INNODB_COMMENT)) {
@@ -261,7 +261,7 @@ public class MySQLTable extends JDBCTable<MySQLDataSource, MySQLCatalog>
                                     desc = "";
                                 }
                             }
-                            this.comment = desc;
+                            this.description = desc;
                         }
                         this.engine = getDataSource().getEngine(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE));
                         this.rowCount = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_TABLE_ROWS);

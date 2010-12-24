@@ -38,6 +38,9 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
 
     EntityNodeEditor(DBNNode node)
     {
+        if (node == null) {
+            throw new IllegalArgumentException("Node can't be null");
+        }
         this.node = node;
     }
 

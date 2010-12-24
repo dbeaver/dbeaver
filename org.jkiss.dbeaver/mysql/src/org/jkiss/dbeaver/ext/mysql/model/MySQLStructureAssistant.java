@@ -42,29 +42,36 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
     public DBSObjectType[] getSupportedObjectTypes()
     {
         return new DBSObjectType[] {
-            RelationalObjectType.TYPE_TABLE
+            RelationalObjectType.TYPE_TABLE,
+            RelationalObjectType.TYPE_CONSTRAINT,
+            RelationalObjectType.TYPE_INDEX,
+            RelationalObjectType.TYPE_PROCEDURE,
+            RelationalObjectType.TYPE_TABLE_COLUMN,
             };
     }
 
     @Override
     protected void findObjectsByMask(JDBCExecutionContext context, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, int maxResults, List<DBSObject> objects) throws DBException, SQLException
     {
+        MySQLCatalog catalog = parentObject instanceof MySQLCatalog ? (MySQLCatalog) parentObject : null;
         if (objectType == RelationalObjectType.TYPE_TABLE) {
-            findTablesByMask(context, parentObject, objectNameMask, maxResults, objects);
+            findTablesByMask(context, catalog, objectNameMask, maxResults, objects);
+        } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
+            findProceduresByMask(context, catalog, objectNameMask, maxResults, objects);
         }
     }
 
-    private void findTablesByMask(JDBCExecutionContext context, DBSObject parentObject, String tableNameMask, int maxResults, List<DBSObject> objects)
+    private void findTablesByMask(JDBCExecutionContext context, MySQLCatalog catalog, String tableNameMask, int maxResults, List<DBSObject> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = context.getProgressMonitor();
-        MySQLCatalog catalog = parentObject instanceof MySQLCatalog ? (MySQLCatalog) parentObject : null;
 
         // Load tables
         JDBCPreparedStatement dbStat = context.prepareStatement(
-            "SELECT * FROM " + MySQLConstants.META_TABLE_TABLES + " WHERE TABLE_NAME LIKE ? " +
-                (catalog == null ? "" : " AND TABLE_SCHEMA=?") +
-                " ORDER BY TABLE_NAME");
+            "SELECT " + MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME +
+            " FROM " + MySQLConstants.META_TABLE_TABLES + " WHERE " + MySQLConstants.COL_TABLE_NAME + " LIKE ? " +
+                (catalog == null ? "" : " AND " + MySQLConstants.COL_TABLE_SCHEMA + "=?") +
+                " ORDER BY " + MySQLConstants.COL_TABLE_NAME);
         try {
             dbStat.setString(1, tableNameMask.toLowerCase());
             if (catalog != null) {
@@ -74,8 +81,11 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
             try {
                 int tableNum = maxResults;
                 while (dbResult.next() && tableNum-- > 0) {
-                    String catalogName = JDBCUtils.safeGetString(dbResult, "TABLE_SCHEMA");
-                    String tableName = JDBCUtils.safeGetString(dbResult, "TABLE_NAME");
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
+                    String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_SCHEMA);
+                    String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
                     MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                     if (tableCatalog == null) {
                         log.debug("Table catalog '" + catalogName + "' not found");
@@ -83,10 +93,56 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     }
                     MySQLTable table = tableCatalog.getTable(monitor, tableName);
                     if (table == null) {
-                        log.debug("Table '" + catalogName + "' not found in catalog '" + tableCatalog.getName() + "'");
+                        log.debug("Table '" + tableName + "' not found in catalog '" + tableCatalog.getName() + "'");
                         continue;
                     }
                     objects.add(table);
+                }
+            }
+            finally {
+                dbResult.close();
+            }
+        } finally {
+            dbStat.close();
+        }
+    }
+
+    private void findProceduresByMask(JDBCExecutionContext context, MySQLCatalog catalog, String procNameMask, int maxResults, List<DBSObject> objects)
+        throws SQLException, DBException
+    {
+        DBRProgressMonitor monitor = context.getProgressMonitor();
+
+        // Load tables
+        JDBCPreparedStatement dbStat = context.prepareStatement(
+            "SELECT " + MySQLConstants.COL_ROUTINE_SCHEMA + "," + MySQLConstants.COL_ROUTINE_NAME +
+            " FROM " + MySQLConstants.META_TABLE_ROUTINES + " WHERE " + MySQLConstants.COL_ROUTINE_NAME + " LIKE ? " +
+                (catalog == null ? "" : " AND " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?") +
+                " ORDER BY " + MySQLConstants.COL_ROUTINE_NAME);
+        try {
+            dbStat.setString(1, procNameMask.toLowerCase());
+            if (catalog != null) {
+                dbStat.setString(2, catalog.getName());
+            }
+            JDBCResultSet dbResult = dbStat.executeQuery();
+            try {
+                int tableNum = maxResults;
+                while (dbResult.next() && tableNum-- > 0) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
+                    String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_SCHEMA);
+                    String procName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_NAME);
+                    MySQLCatalog procCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
+                    if (procCatalog == null) {
+                        log.debug("Procedure catalog '" + catalogName + "' not found");
+                        continue;
+                    }
+                    MySQLProcedure procedure = procCatalog.getProcedure(monitor, procName);
+                    if (procedure == null) {
+                        log.debug("Procedure '" + procName + "' not found in catalog '" + procCatalog.getName() + "'");
+                        continue;
+                    }
+                    objects.add(procedure);
                 }
             }
             finally {
