@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -44,10 +45,20 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
     private ProceduresCache proceduresCache = new ProceduresCache();
     private TriggerCache triggerCache = new TriggerCache();
     private boolean constraintsCached = false;
+    private boolean persisted;
 
-    public MySQLCatalog(MySQLDataSource dataSource, String catalogName)
+    public MySQLCatalog(MySQLDataSource dataSource, ResultSet dbResult)
     {
-        super(dataSource, catalogName);
+        super(dataSource, null);
+        if (dbResult != null) {
+            setName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SCHEMA_NAME));
+            defaultCharset = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_CHARACTER_SET_NAME);
+            defaultCollation = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_COLLATION_NAME);
+            sqlPath = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SQL_PATH);
+            persisted = true;
+        } else {
+            persisted = false;
+        }
     }
 
     TableCache getTableCache()
@@ -63,6 +74,17 @@ public class MySQLCatalog extends AbstractCatalog<MySQLDataSource>
     TriggerCache getTriggerCache()
     {
         return triggerCache;
+    }
+
+    public boolean isPersisted()
+    {
+        return persisted;
+    }
+
+    public void setPersisted(boolean persisted)
+    {
+        this.persisted = persisted;
+        getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, this));
     }
 
     public String getDescription()

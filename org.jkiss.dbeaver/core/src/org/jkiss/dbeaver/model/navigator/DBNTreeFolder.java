@@ -112,15 +112,6 @@ public class DBNTreeFolder extends DBNTreeNode implements DBNContainer
         return (Class<DBSObject>)aClass ;
     }
 
-    public Class getChildrenType()
-    {
-        if (getMeta().hasChildren() && getMeta().getChildren().size() == 1) {
-            DBXTreeNode childMeta = getMeta().getChildren().get(0);
-            return childMeta instanceof DBXTreeItem ? getChildrenType((DBXTreeItem) childMeta) : null;
-        }
-        return null;
-    }
-
     private Class getChildrenType(DBXTreeItem childMeta)
     {
         Object valueObject = getValueObject();

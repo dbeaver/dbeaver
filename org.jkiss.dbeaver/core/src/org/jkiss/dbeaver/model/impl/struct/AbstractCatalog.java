@@ -44,7 +44,7 @@ public abstract class AbstractCatalog<DATASOURCE extends DBPDataSource> implemen
         return catalogName;
     }
 
-    protected void setName(String catalogName)
+    public void setName(String catalogName)
     {
         this.catalogName = catalogName;
     }

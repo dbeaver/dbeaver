@@ -19,13 +19,13 @@ import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
@@ -134,21 +134,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSEntitySelector
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     while (dbResult.next()) {
-                        String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SCHEMA_NAME);
-                        if (!CommonUtils.isEmpty(catalogName)) {
-                            if (!getContainer().isShowSystemObjects() && catalogName.equalsIgnoreCase(MySQLConstants.INFO_SCHEMA_NAME)) {
-                                // Skip system catalog
-                                continue;
-                            }
-                            MySQLCatalog catalog = new MySQLCatalog(this, catalogName);
-                            catalog.setDefaultCharset(
-                                JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_CHARACTER_SET_NAME));
-                            catalog.setDefaultCollation(
-                                JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFAULT_COLLATION_NAME));
-                            catalog.setSqlPath(
-                                JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SQL_PATH));
-                            tmpCatalogs.add(catalog);
+                        MySQLCatalog catalog = new MySQLCatalog(this, dbResult);
+                        if (!getContainer().isShowSystemObjects() && catalog.getName().equalsIgnoreCase(MySQLConstants.INFO_SCHEMA_NAME)) {
+                            // Skip system catalog
+                            continue;
                         }
+                        tmpCatalogs.add(catalog);
                     }
                 } finally {
                     dbResult.close();

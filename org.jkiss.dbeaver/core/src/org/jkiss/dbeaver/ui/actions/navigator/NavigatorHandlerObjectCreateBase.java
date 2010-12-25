@@ -13,6 +13,7 @@ import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.edit.DBOCreator;
+import org.jkiss.dbeaver.model.edit.DBOEditor;
 import org.jkiss.dbeaver.model.edit.DBOManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -66,6 +67,9 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         DBOCreator objectCreator = (DBOCreator) objectManager;
         if (!objectCreator.createNewObject(workbenchWindow, (DBSObject) container.getValueObject(), sourceObject)) {
             // Object created by manager itself
+            if (objectManager instanceof DBOEditor) {
+                //((DBOEditor)objectManager).saveChanges(monitor);
+            }
             return true;
         }
 
