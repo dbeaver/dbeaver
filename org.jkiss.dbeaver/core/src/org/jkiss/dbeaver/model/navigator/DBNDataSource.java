@@ -30,7 +30,7 @@ public class DBNDataSource extends DBNTreeNode implements IAdaptable, IDataSourc
         this.getModel().addNode(this, true);
     }
 
-    protected void dispose()
+    protected void dispose(boolean reflect)
     {
         this.getModel().removeNode(this, true);
 /*
@@ -44,7 +44,7 @@ public class DBNDataSource extends DBNTreeNode implements IAdaptable, IDataSourc
         }
 */
         this.dataSource = null;
-        super.dispose();
+        super.dispose(reflect);
     }
 
     public DataSourceDescriptor getObject()

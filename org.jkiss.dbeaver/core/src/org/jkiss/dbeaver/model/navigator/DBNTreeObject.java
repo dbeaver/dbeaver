@@ -37,16 +37,16 @@ public class DBNTreeObject extends DBNTreeNode implements DBSObject
         }
     }
 
-    protected void dispose()
+    protected void dispose(boolean reflect)
     {
         if (image != null) {
             image.dispose();
             image = null;
         }
         if (this.getModel() != null) {
-            this.getModel().removeNode(this);
+            this.getModel().removeNode(this, reflect);
         }
-        super.dispose();
+        super.dispose(reflect);
     }
 
     public IEditorDescriptor getEditorDescriptor()

@@ -17,25 +17,25 @@ public class DBNTreeItem extends DBNTreeNode
     private DBXTreeItem meta;
     private DBSObject object;
 
-    DBNTreeItem(DBNNode parent, DBXTreeItem meta, DBSObject object)
+    DBNTreeItem(DBNNode parent, DBXTreeItem meta, DBSObject object, boolean reflect)
     {
         super(parent);
         this.meta = meta;
         this.object = object;
         if (this.getModel() != null) {
-            this.getModel().addNode(this, !object.isPersisted());
+            this.getModel().addNode(this, reflect);
         }
     }
 
-    protected void dispose()
+    protected void dispose(boolean reflect)
     {
         if (this.getModel() != null) {
             // Notify model
             // Reflect changes only if underlying object is not persisted
-            this.getModel().removeNode(this, !getObject().isPersisted());
+            this.getModel().removeNode(this, reflect);
         }
         this.object = null;
-        super.dispose();
+        super.dispose(reflect);
     }
 
     public DBXTreeItem getMeta()

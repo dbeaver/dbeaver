@@ -64,7 +64,7 @@ public class DBNModel implements DBPEventListener {
     {
         Platform.getAdapterManager().unregisterAdapters(nodesAdapter);
         this.registry.removeDataSourceListener(this);
-        this.root.dispose();
+        this.root.dispose(false);
         this.nodeMap.clear();
         if (!listeners.isEmpty()) {
             for (IDBNListener listener : listeners) {
@@ -318,7 +318,7 @@ public class DBNModel implements DBPEventListener {
 
                     if (enabled != null && !enabled) {
                         // Clear disabled node
-                        dbmNode.clearNode();
+                        dbmNode.clearNode(true);
                     }
                 }
                 break;

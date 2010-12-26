@@ -65,18 +65,12 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         }
 
         DBOCreator objectCreator = (DBOCreator) objectManager;
-        if (!objectCreator.createNewObject(workbenchWindow, (DBSObject) container.getValueObject(), sourceObject)) {
-            // Object created by manager itself
-            if (objectManager instanceof DBOEditor) {
-                //((DBOEditor)objectManager).saveChanges(monitor);
-            }
-            return true;
-        }
+        boolean openEditor = objectCreator.createNewObject(workbenchWindow, (DBSObject) container.getValueObject(), sourceObject);
 
         // Save object manager's content
         IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
         try {
-            ObjectSaver objectSaver = new ObjectSaver(container, objectCreator);
+            ObjectSaver objectSaver = new ObjectSaver(container, objectCreator, !openEditor);
             try {
                 workbenchWindow.run(true, true, objectSaver);
             } catch (InvocationTargetException e) {
@@ -85,15 +79,17 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             } catch (InterruptedException e) {
                 // do nothing
             }
-            DBNNode newChild = objectSaver.getNewChild();
-            EntityEditorInput editorInput = new EntityEditorInput(newChild, objectManager);
-            try {
-                workbenchWindow.getActivePage().openEditor(
-                    editorInput,
-                    EntityEditor.class.getName());
-            } catch (PartInitException e) {
-                log.error("Can't open editor for new object", e);
-                return false;
+            if (openEditor) {
+                DBNNode newChild = objectSaver.getNewChild();
+                EntityEditorInput editorInput = new EntityEditorInput(newChild, objectManager);
+                try {
+                    workbenchWindow.getActivePage().openEditor(
+                        editorInput,
+                        EntityEditor.class.getName());
+                } catch (PartInitException e) {
+                    log.error("Can't open editor for new object", e);
+                    return false;
+                }
             }
         }
         finally {
@@ -108,20 +104,27 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
     private static class ObjectSaver implements IRunnableWithProgress {
         private final DBNContainer container;
         private final DBOCreator<?> objectManager;
+        private final boolean saveObject;
         DBNNode newChild;
 
-        public ObjectSaver(DBNContainer container, DBOCreator<?> objectManager)
+        public ObjectSaver(DBNContainer container, DBOCreator<?> objectManager, boolean saveObject)
         {
             this.container = container;
             this.objectManager = objectManager;
+            this.saveObject = saveObject;
         }
 
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {
+                DefaultProgressMonitor progressMonitor = new DefaultProgressMonitor(monitor);
+                if (saveObject && objectManager instanceof DBOEditor) {
+                    ((DBOEditor)objectManager).saveChanges(progressMonitor);
+                }
+
                 DBSObject newObject = objectManager.getObject();
 
-                newChild = container.addChildItem(new DefaultProgressMonitor(monitor), newObject);
+                newChild = container.addChildItem(progressMonitor, newObject);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }

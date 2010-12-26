@@ -54,7 +54,7 @@ public class MySQLCatalogManager extends DBOEditorJDBC<MySQLCatalog> implements 
                     public void handleExecute(Throwable error)
                     {
                         if (error == null) {
-                            object.setPersisted(false);
+                            object.setPersisted(true);
                         }
                     }
                 }};

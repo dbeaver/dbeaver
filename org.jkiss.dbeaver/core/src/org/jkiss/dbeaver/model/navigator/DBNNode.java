@@ -46,7 +46,7 @@ public abstract class DBNNode implements IActionFilter, DBSWrapper
         return model == null;
     }
 
-    void dispose()
+    void dispose(boolean reflect)
     {
         this.model = null;
         this.parentNode = null;
@@ -116,7 +116,7 @@ public abstract class DBNNode implements IActionFilter, DBSWrapper
     
     public abstract List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)  throws DBException;
 
-    void clearNode()
+    void clearNode(boolean reflect)
     {
 
     }

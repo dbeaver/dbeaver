@@ -36,12 +36,12 @@ public class DBNTreeFolder extends DBNTreeNode implements DBNContainer
         }
     }
 
-    protected void dispose()
+    protected void dispose(boolean reflect)
     {
         if (this.getModel() != null) {
-            this.getModel().removeNode(this);
+            this.getModel().removeNode(this, reflect);
         }
-        super.dispose();
+        super.dispose(reflect);
     }
 
     public DBXTreeFolder getMeta()
@@ -134,7 +134,7 @@ public class DBNTreeFolder extends DBNTreeNode implements DBNContainer
         // Ensure that children are loaded
         getChildren(monitor);
         // Add new child item
-        DBNTreeItem childItem = new DBNTreeItem(this, childMeta, childObject);
+        DBNTreeItem childItem = new DBNTreeItem(this, childMeta, childObject, true);
         this.childNodes.add(childItem);
 
         return childItem;
@@ -146,7 +146,7 @@ public class DBNTreeFolder extends DBNTreeNode implements DBNContainer
             throw new DBException("Item '" + item.getNodeName() + "' do not belongs to node '" + getNodeName() + "' and can't be removed from it");
         }
         childNodes.remove(item);
-        item.dispose();
+        item.dispose(true);
     }
 
 }

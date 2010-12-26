@@ -35,13 +35,13 @@ public abstract class DBNTreeNode extends DBNNode {
         super(parentNode);
     }
 
-    void dispose()
+    void dispose(boolean reflect)
     {
         if (childNodes != null) {
-            clearChildren();
+            clearChildren(reflect);
             childNodes = null;
         }
-        super.dispose();
+        super.dispose(reflect);
     }
 
     public String getNodeName()
@@ -120,8 +120,8 @@ public abstract class DBNTreeNode extends DBNNode {
     }
 
     @Override
-    void clearNode() {
-        clearChildren();
+    void clearNode(boolean reflect) {
+        clearChildren(reflect);
     }
 
     public boolean isLazyNode()
@@ -134,11 +134,11 @@ public abstract class DBNTreeNode extends DBNNode {
         return true;
     }
 
-    protected void clearChildren()
+    protected void clearChildren(boolean reflect)
     {
         if (childNodes != null) {
             for (DBNNode child : childNodes) {
-                child.dispose();
+                child.dispose(reflect);
             }
             childNodes.clear();
             childNodes = null;
@@ -275,7 +275,7 @@ public abstract class DBNTreeNode extends DBNNode {
             }
             if (!added) {
                 // Simply add new item
-                DBNTreeItem treeItem = new DBNTreeItem(this, meta, object);
+                DBNTreeItem treeItem = new DBNTreeItem(this, meta, object, oldList != null);
                 toList.add(treeItem);
             }
         }
@@ -292,7 +292,7 @@ public abstract class DBNTreeNode extends DBNNode {
                 }
                 if (!found) {
                     // Remove old child object
-                    oldChild.dispose();
+                    oldChild.dispose(true);
                 }
             }
         }

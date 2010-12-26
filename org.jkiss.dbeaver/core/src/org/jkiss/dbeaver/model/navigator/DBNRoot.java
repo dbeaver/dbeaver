@@ -27,10 +27,10 @@ public class DBNRoot extends DBNNode implements DBNContainer
         super(model);
     }
 
-    void dispose()
+    void dispose(boolean reflect)
     {
         for (DBNDataSource dataSource : dataSources) {
-            dataSource.dispose();
+            dataSource.dispose(reflect);
         }
         dataSources.clear();
     }
@@ -121,7 +121,7 @@ public class DBNRoot extends DBNNode implements DBNContainer
             DBNDataSource dataSource = iter.next();
             if (dataSource.getObject() == descriptor) {
                 iter.remove();
-                dataSource.dispose();
+                dataSource.dispose(true);
                 break;
             }
         }
