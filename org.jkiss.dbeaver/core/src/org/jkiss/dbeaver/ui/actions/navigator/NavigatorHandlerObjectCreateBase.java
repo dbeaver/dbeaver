@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 
@@ -74,7 +75,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             try {
                 workbenchWindow.run(true, true, objectSaver);
             } catch (InvocationTargetException e) {
-                log.error("Can't create new object", e.getTargetException());
+                UIUtils.showErrorDialog(workbenchWindow.getShell(), "Can't create new object", null, e.getTargetException());
                 return false;
             } catch (InterruptedException e) {
                 // do nothing
