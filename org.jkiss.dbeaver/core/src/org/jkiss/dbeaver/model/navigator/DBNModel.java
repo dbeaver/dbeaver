@@ -318,7 +318,7 @@ public class DBNModel implements DBPEventListener {
 
                     if (enabled != null && !enabled) {
                         // Clear disabled node
-                        dbmNode.clearNode(true);
+                        dbmNode.clearNode(false);
                     }
                 }
                 break;

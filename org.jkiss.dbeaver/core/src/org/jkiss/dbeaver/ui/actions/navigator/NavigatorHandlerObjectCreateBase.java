@@ -74,7 +74,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             try {
                 workbenchWindow.run(true, true, objectSaver);
             } catch (InvocationTargetException e) {
-                log.error("Can't create new object", e);
+                log.error("Can't create new object", e.getTargetException());
                 return false;
             } catch (InterruptedException e) {
                 // do nothing
