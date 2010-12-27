@@ -45,12 +45,11 @@ public class DataSourceDescriptorManager extends DBOManagerImpl<DataSourceDescri
             }
             dataSource.setName(newName);
             registry.addDataSource(dataSource);
-            return CreateResult.SAVE;
         } else {
             ConnectionDialog dialog = new ConnectionDialog(workbenchWindow, new NewConnectionWizard(workbenchWindow));
             dialog.open();
-            return CreateResult.CANCEL;
         }
+        return CreateResult.CANCEL;
     }
 
     public void deleteObject(Map<String, Object> options)
