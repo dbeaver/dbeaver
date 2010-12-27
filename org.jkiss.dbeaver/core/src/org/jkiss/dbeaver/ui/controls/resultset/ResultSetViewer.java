@@ -126,6 +126,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private Color backgroundDeleted;
     private Color backgroundModified;
     private Color foregroundNull;
+    private Font boldFont;
 
     private ResultSetDataPumpJob dataPumpJob;
     //private static final String RESULT_SET_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset";
@@ -142,6 +143,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.backgroundDeleted = sharedColors.getColor(new RGB(0xFF, 0x63, 0x47));
         this.backgroundModified = sharedColors.getColor(new RGB(0xFF, 0xE4, 0xB5));
         this.foregroundNull = parent.getDisplay().getSystemColor(SWT.COLOR_GRAY);
+        this.boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
 
@@ -416,6 +418,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         statusLabel.dispose();
         themeManager.removePropertyChangeListener(ResultSetViewer.this);
+
+        UIUtils.dispose(this.boldFont);
     }
 
     private void applyThemeSettings()
@@ -2225,7 +2229,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
-    private class ColumnLabelProvider extends LabelProvider {
+    private class ColumnLabelProvider extends LabelProvider implements IFontProvider {
         @Override
         public Image getImage(Object element)
         {
@@ -2256,6 +2260,17 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     metaColumn.getMetaData().getTableName() + "." + metaColumn.getMetaData().getName();
 */
             }
+        }
+
+        public Font getFont(Object element)
+        {
+            int colNumber = ((Number)element).intValue();
+            if (mode == ResultSetMode.GRID) {
+                if (dataFilter.getFilterColumn(metaColumns[colNumber].getColumnName()) != null) {
+                    return boldFont;
+                }
+            }
+            return null;
         }
     }
 

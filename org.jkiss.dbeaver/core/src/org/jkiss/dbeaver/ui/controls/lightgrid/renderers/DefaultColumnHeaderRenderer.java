@@ -40,10 +40,11 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
 
         boolean drawSelected = ((isMouseDown() && isHover()));
 
-        gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-
         if (flat && isSelected()) {
             gc.setBackground(grid.getCellHeaderSelectionBackground());
+        } else {
+            gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+
         }
 
         gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width, getBounds().height);
