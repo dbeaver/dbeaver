@@ -29,7 +29,7 @@ public class MySQLUserManager extends DBOEditorJDBC<MySQLUser> implements DBOCre
         }
     }
 
-    public boolean createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, MySQLUser copyFrom)
+    public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, MySQLUser copyFrom)
     {
         MySQLUser newUser = new MySQLUser((MySQLDataSource) parent, null);
         if (copyFrom != null) {
@@ -44,7 +44,7 @@ public class MySQLUserManager extends DBOEditorJDBC<MySQLUser> implements DBOCre
         addCommand(new NewUserPropertyCommand(UserPropertyHandler.NAME, newUser.getUserName()), null);
         addCommand(new NewUserPropertyCommand(UserPropertyHandler.HOST, newUser.getHost()), null);
 
-        return true;
+        return CreateResult.OPEN_EDITOR;
     }
 
     public void deleteObject(Map<String, Object> options)

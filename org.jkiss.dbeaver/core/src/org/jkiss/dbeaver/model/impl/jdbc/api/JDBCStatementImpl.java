@@ -407,13 +407,17 @@ public abstract class JDBCStatementImpl implements JDBCStatement {
 
     public void close()
     {
-        // Check for warnings
+/*
+        // Do not check for warnings here
+        // Sometimes warnings are cached in connection and as a result we got a lot of spam in log
+        // for each closed statement on this connection (MySQL)
         try {
             JDBCUtils.reportWarnings(getOriginal().getWarnings());
             getOriginal().clearWarnings();
         } catch (Throwable e) {
             log.debug("Could not check for statement warnings", e);
         }
+*/
 
         // Handle close
         QMUtils.getDefaultHandler().handleStatementClose(this);

@@ -83,19 +83,15 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
         boldFont = UIUtils.makeBoldFont(parent.getFont());
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        SashForm sash = new SashForm(composite, SWT.VERTICAL | SWT.SMOOTH);
-        //sash.setSashWidth(10);
-        sash.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
+        SashForm sash = UIUtils.createDivider(composite, SWT.VERTICAL | SWT.SMOOTH);
 
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        sash.setLayoutData(gd);
+        sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         createSessionViewer(sash);
 
         sessionInfo = new Text(sash, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
         sessionInfo.setEditable(false);
-        gd = new GridData(GridData.FILL_BOTH);
-        sessionInfo.setLayoutData(gd);
+        sessionInfo.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         sash.setWeights(new int[] {70, 30});
 

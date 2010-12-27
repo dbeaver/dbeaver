@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -24,12 +25,14 @@ import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
+import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
+import org.jkiss.dbeaver.utils.ViewUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
 public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerObjectBase {
 
-    protected boolean createNewObject(IWorkbenchWindow workbenchWindow, DBNNode element, DBNTreeNode copyFrom)
+    protected boolean createNewObject(final IWorkbenchWindow workbenchWindow, DBNNode element, DBNTreeNode copyFrom)
     {
         DBNContainer container = null;
         if (element instanceof DBNContainer) {
@@ -66,12 +69,15 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         }
 
         DBOCreator objectCreator = (DBOCreator) objectManager;
-        boolean openEditor = objectCreator.createNewObject(workbenchWindow, (DBSObject) container.getValueObject(), sourceObject);
+        DBOCreator.CreateResult result = objectCreator.createNewObject(workbenchWindow, (DBSObject) container.getValueObject(), sourceObject);
+        if (result == DBOCreator.CreateResult.CANCEL) {
+            return false;
+        }
 
         // Save object manager's content
         IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
         try {
-            ObjectSaver objectSaver = new ObjectSaver(container, objectCreator, !openEditor);
+            ObjectSaver objectSaver = new ObjectSaver(container, objectCreator, result == DBOCreator.CreateResult.SAVE);
             try {
                 workbenchWindow.run(true, true, objectSaver);
             } catch (InvocationTargetException e) {
@@ -80,17 +86,30 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             } catch (InterruptedException e) {
                 // do nothing
             }
-            if (openEditor) {
-                DBNNode newChild = objectSaver.getNewChild();
-                EntityEditorInput editorInput = new EntityEditorInput(newChild, objectManager);
-                try {
-                    workbenchWindow.getActivePage().openEditor(
-                        editorInput,
-                        EntityEditor.class.getName());
-                } catch (PartInitException e) {
-                    log.error("Can't open editor for new object", e);
-                    return false;
+            final DBNNode newChild = objectSaver.getNewChild();
+            if (newChild != null) {
+                Display.getDefault().asyncExec(new Runnable() {
+                    public void run()
+                    {
+                        DatabaseNavigatorView view = ViewUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
+                        if (view != null) {
+                            view.showNode(newChild);
+                        }
+                    }
+                });
+                if (result == DBOCreator.CreateResult.OPEN_EDITOR) {
+                    EntityEditorInput editorInput = new EntityEditorInput(newChild, objectManager);
+                    try {
+                        workbenchWindow.getActivePage().openEditor(
+                            editorInput,
+                            EntityEditor.class.getName());
+                    } catch (PartInitException e) {
+                        UIUtils.showErrorDialog(workbenchWindow.getShell(), "Can't open editor for new object", null, e);
+                        return false;
+                    }
                 }
+            } else {
+                UIUtils.showErrorDialog(workbenchWindow.getShell(), "Navigator node not found", "Can't find node corresponding to new object");
             }
         }
         finally {

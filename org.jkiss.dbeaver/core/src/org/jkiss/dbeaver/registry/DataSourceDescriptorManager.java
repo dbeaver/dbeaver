@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class DataSourceDescriptorManager extends DBOManagerImpl<DataSourceDescriptor> implements DBOCreator<DataSourceDescriptor> {
 
-    public boolean createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, DataSourceDescriptor copyFrom)
+    public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, DataSourceDescriptor copyFrom)
     {
         if (copyFrom != null) {
             DataSourceDescriptor dataSource = new DataSourceDescriptor(
@@ -45,11 +45,12 @@ public class DataSourceDescriptorManager extends DBOManagerImpl<DataSourceDescri
             }
             dataSource.setName(newName);
             registry.addDataSource(dataSource);
+            return CreateResult.SAVE;
         } else {
             ConnectionDialog dialog = new ConnectionDialog(workbenchWindow, new NewConnectionWizard(workbenchWindow));
             dialog.open();
+            return CreateResult.CANCEL;
         }
-        return false;
     }
 
     public void deleteObject(Map<String, Object> options)

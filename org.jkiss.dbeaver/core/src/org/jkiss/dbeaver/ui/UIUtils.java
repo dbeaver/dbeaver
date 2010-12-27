@@ -16,6 +16,7 @@ import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
@@ -597,6 +598,15 @@ public class UIUtils {
             log.warn("Charset '" + curCharset + "' is not recognized");
         }
         return encodingCombo;
+    }
+
+    public static SashForm createDivider(Composite parent, int style)
+    {
+        SashForm sash = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
+        //sash.setSashWidth(10);
+        sash.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
+
+        return sash;
     }
 
     public static void showErrorDialog(

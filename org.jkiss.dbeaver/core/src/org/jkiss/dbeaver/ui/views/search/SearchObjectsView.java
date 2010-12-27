@@ -143,11 +143,11 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
         setPartName("Find database objects");
         setTitleImage(DBIcon.FIND.getImage());
 
-        //Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
-        SashForm composite = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
+        //Composite divider = UIUtils.createPlaceholder(parent, 1, 5);
+        SashForm divider = UIUtils.createDivider(parent, SWT.VERTICAL | SWT.SMOOTH);
 
         {
-            searchGroup = new Composite(composite, SWT.NONE);
+            searchGroup = new Composite(divider, SWT.NONE);
             searchGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             searchGroup.setLayout(new GridLayout(3, false));
             UIUtils.createControlLabel(searchGroup, "Object Name");
@@ -301,17 +301,8 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
             }
         }
 
-        //Sash sash = new Sash(composite, SWT.VERTICAL | SWT.SMOOTH);
-
-
         {
-/*
-            Group resultsGroup = UIUtils.createControlGroup(composite, "Results", 1, GridData.FILL_BOTH, 0);
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.verticalIndent = 5;
-            resultsGroup.setLayoutData(gd);
-*/
-            itemList = new SearchResultsControl(composite);
+            itemList = new SearchResultsControl(divider);
             itemList.setInfo("You have to set search criteria");
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 700;
@@ -321,10 +312,7 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
             //itemList.addFocusListener(new ItemsFocusListener());
         }
 
-        composite.setWeights(new int[] {30, 70});
-        //composite.setSashWidth(3);
-        //composite.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
-        composite.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
+        divider.setWeights(new int[]{30, 70});
     }
 
     public void afterCreate()

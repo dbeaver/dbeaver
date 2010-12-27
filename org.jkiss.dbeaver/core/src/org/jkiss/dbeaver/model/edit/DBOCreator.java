@@ -17,6 +17,12 @@ public interface DBOCreator<OBJECT_TYPE extends DBSObject> extends DBOManager<OB
     public static final long FEATURE_SAVE_IMMEDIATELY = 1;
     public static final long FEATURE_CREATE_FROM_PASTE = 2;
 
+    public static enum CreateResult {
+        OPEN_EDITOR,
+        SAVE,
+        CANCEL
+    }
+
     /**
      * Creates new object and sets it as manager's object.
      * New object shouldn't be persisted by this function - it just performs manager initialization.
@@ -28,7 +34,7 @@ public interface DBOCreator<OBJECT_TYPE extends DBSObject> extends DBOManager<OB
      * @param copyFrom template for new object (usually result of "paste" operation)
      * @return true to show object's editor. Otherwise object will be just saved
      */
-    boolean createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, OBJECT_TYPE copyFrom);
+    CreateResult createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, OBJECT_TYPE copyFrom);
 
     /**
      * Deletes specified object.

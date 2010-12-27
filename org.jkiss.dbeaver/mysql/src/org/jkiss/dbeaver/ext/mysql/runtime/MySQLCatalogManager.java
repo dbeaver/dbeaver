@@ -23,17 +23,18 @@ import java.util.Map;
  */
 public class MySQLCatalogManager extends DBOEditorJDBC<MySQLCatalog> implements DBOCreator<MySQLCatalog> {
 
-    public boolean createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, MySQLCatalog copyFrom)
+    public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, MySQLCatalog copyFrom)
     {
         String schemaName = EnterNameDialog.chooseName(workbenchWindow.getShell(), "Schema name");
-        if (!CommonUtils.isEmpty(schemaName)) {
-            MySQLCatalog newCatalog = new MySQLCatalog((MySQLDataSource) parent, null);
-            newCatalog.setName(schemaName);
-            setObject(newCatalog);
-            addCommand(new CommandCreateCatalog(), null);
+        if (CommonUtils.isEmpty(schemaName)) {
+            return CreateResult.CANCEL;
         }
+        MySQLCatalog newCatalog = new MySQLCatalog((MySQLDataSource) parent, null);
+        newCatalog.setName(schemaName);
+        setObject(newCatalog);
+        addCommand(new CommandCreateCatalog(), null);
 
-        return false;
+        return CreateResult.SAVE;
     }
 
     public void deleteObject(Map<String, Object> options)
