@@ -9,11 +9,11 @@ import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.IMemento;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 
-import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -144,7 +143,8 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
         setPartName("Find database objects");
         setTitleImage(DBIcon.FIND.getImage());
 
-        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        //Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        SashForm composite = new SashForm(parent, SWT.VERTICAL);
 
         {
             searchGroup = new Composite(composite, SWT.NONE);
@@ -181,17 +181,12 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                 }
             });
 
-            Composite optionsGroup = new Composite(searchGroup, SWT.NONE);
-            GridLayout layout = new GridLayout(3, true);
-            layout.marginHeight = 0;
-            layout.marginWidth = 0;
-            optionsGroup.setLayout(layout);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 3;
-            optionsGroup.setLayoutData(gd);
-
             {
-                Composite optionsGroup2 = UIUtils.createControlGroup(optionsGroup, "Options", 2, GridData.FILL_BOTH, 0);
+                //new Label(searchGroup, SWT.NONE);
+                Composite optionsGroup2 = UIUtils.createPlaceholder(searchGroup, 4, 5);
+                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.horizontalSpan = 3;
+                optionsGroup2.setLayoutData(gd);
 
                 UIUtils.createControlLabel(optionsGroup2, "Name match");
                 final Combo matchCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -224,11 +219,20 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                 });
             }
 
+            Composite optionsGroup = new Composite(searchGroup, SWT.NONE);
+            GridLayout layout = new GridLayout(2, true);
+            layout.marginHeight = 0;
+            layout.marginWidth = 0;
+            optionsGroup.setLayout(layout);
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.horizontalSpan = 3;
+            optionsGroup.setLayoutData(gd);
+
             {
                 Group sourceGroup = UIUtils.createControlGroup(optionsGroup, "Objects Source", 1, GridData.FILL_BOTH, 0);
                 dataSourceTree = new DatabaseNavigatorTree(sourceGroup, DBeaverCore.getInstance().getNavigatorModel().getRoot(), SWT.SINGLE);
                 gd = new GridData(GridData.FILL_BOTH);
-                gd.heightHint = 100;
+                //gd.heightHint = 100;
                 dataSourceTree.setLayoutData(gd);
 
                 dataSourceTree.getViewer().addFilter(new ViewerFilter() {
@@ -297,9 +301,17 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
             }
         }
 
+        //Sash sash = new Sash(composite, SWT.VERTICAL | SWT.SMOOTH);
+
+
         {
+/*
             Group resultsGroup = UIUtils.createControlGroup(composite, "Results", 1, GridData.FILL_BOTH, 0);
-            itemList = new SearchResultsControl(resultsGroup);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.verticalIndent = 5;
+            resultsGroup.setLayoutData(gd);
+*/
+            itemList = new SearchResultsControl(composite);
             itemList.setInfo("You have to set search criteria");
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 700;
@@ -308,6 +320,11 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
             getSite().setSelectionProvider(itemList.getSelectionProvider());
             //itemList.addFocusListener(new ItemsFocusListener());
         }
+
+        composite.setWeights(new int[] {30, 70});
+        //composite.setSashWidth(3);
+        //composite.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
+        composite.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
     }
 
     public void afterCreate()

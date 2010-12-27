@@ -15,10 +15,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
@@ -84,10 +81,11 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
 
     public void createPartControl(Composite parent) {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
-        pageControl = new PageControl(parent, SWT.NONE, this);
+        Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        SashForm sash = new SashForm(pageControl, SWT.VERTICAL | SWT.SMOOTH);
-        sash.setSashWidth(10);
+        SashForm sash = new SashForm(composite, SWT.VERTICAL | SWT.SMOOTH);
+        //sash.setSashWidth(10);
+        sash.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
 
         GridData gd = new GridData(GridData.FILL_BOTH);
         sash.setLayoutData(gd);
@@ -101,6 +99,8 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
 
         sash.setWeights(new int[] {70, 30});
 
+        pageControl = new PageControl(composite, SWT.NONE, this);
+        pageControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         pageControl.createProgressPanel();
 
         refreshSessions();

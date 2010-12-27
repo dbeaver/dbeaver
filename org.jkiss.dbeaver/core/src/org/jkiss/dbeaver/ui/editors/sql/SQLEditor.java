@@ -178,7 +178,8 @@ public class SQLEditor extends SQLEditorBase
         setRangeIndicator(new DefaultRangeIndicator());
 
         sashForm = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
-        sashForm.setSashWidth(10);
+        //sashForm.setSashWidth(10);
+        sashForm.setBackground(getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
 
         super.createPartControl(sashForm);
 

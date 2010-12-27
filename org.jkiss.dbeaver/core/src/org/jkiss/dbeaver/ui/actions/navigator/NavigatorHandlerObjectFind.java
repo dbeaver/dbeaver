@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -35,7 +36,8 @@ public class NavigatorHandlerObjectFind extends DataSourceHandler {
                 if (!DBeaverCore.getInstance().getGlobalPreferenceStore().getBoolean(VIEW_ACTIVATED)) {
                     activePage.detachView(viewReference);
                     Shell viewShell = searchView.getViewSite().getShell();
-                    viewShell.setBounds(200, 100, 700, 500);
+                    Rectangle windowBounds = activePage.getWorkbenchWindow().getShell().getBounds();
+                    viewShell.setBounds(windowBounds.x + 100, windowBounds.y + 100, 800, 650);
                     DBeaverCore.getInstance().getGlobalPreferenceStore().setValue(VIEW_ACTIVATED, true);
                 }
                 //activePage.setState();
