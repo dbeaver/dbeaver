@@ -99,7 +99,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     // columns
     private DBDColumnBinding[] metaColumns = new DBDColumnBinding[0];
-    private DBDDataFilter dataFilter;
+    private DBDDataFilter dataFilter = new DBDDataFilter();
 
     // Data
     private List<Object[]> origRows = new ArrayList<Object[]>();
