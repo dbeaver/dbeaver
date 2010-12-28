@@ -177,7 +177,7 @@ public class SQLEditor extends SQLEditorBase
     {
         setRangeIndicator(new DefaultRangeIndicator());
 
-        sashForm = UIUtils.createDivider(parent, SWT.VERTICAL | SWT.SMOOTH);
+        sashForm = UIUtils.createPartDivider(this, parent, SWT.VERTICAL | SWT.SMOOTH);
 
         super.createPartControl(sashForm);
 

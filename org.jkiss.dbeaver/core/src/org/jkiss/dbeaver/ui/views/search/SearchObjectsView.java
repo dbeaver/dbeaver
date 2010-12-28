@@ -144,7 +144,7 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
         setTitleImage(DBIcon.FIND.getImage());
 
         //Composite divider = UIUtils.createPlaceholder(parent, 1, 5);
-        SashForm divider = UIUtils.createDivider(parent, SWT.VERTICAL | SWT.SMOOTH);
+        SashForm divider = UIUtils.createPartDivider(this, parent, SWT.VERTICAL | SWT.SMOOTH);
 
         {
             searchGroup = new Composite(divider, SWT.NONE);

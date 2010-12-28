@@ -22,15 +22,15 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.services.IServiceLocator;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -600,11 +600,63 @@ public class UIUtils {
         return encodingCombo;
     }
 
-    public static SashForm createDivider(Composite parent, int style)
+    public static SashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style)
     {
-        SashForm sash = new SashForm(parent, SWT.VERTICAL | SWT.SMOOTH);
+        final SashForm sash = new SashForm(parent, style);
         //sash.setSashWidth(10);
-        sash.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
+        final IWorkbenchWindow workbenchWindow = workbenchPart.getSite().getWorkbenchWindow();
+        //sash.setBackground(sashActiveBackground);
+
+        final IPartListener partListener = new IPartListener() {
+            public void partBroughtToTop(IWorkbenchPart part) { }
+            public void partOpened(IWorkbenchPart part) { }
+            public void partClosed(IWorkbenchPart part) { }
+            public void partActivated(IWorkbenchPart part)
+            {
+                if (part == workbenchPart) {
+                    Color sashActiveBackground = workbenchWindow.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(
+                        IWorkbenchThemeConstants.ACTIVE_TAB_BG_END);
+                    if (sashActiveBackground == null) {
+                        sashActiveBackground = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
+                    }
+                    sash.setBackground(sashActiveBackground);
+                }
+            }
+            public void partDeactivated(IWorkbenchPart part) {
+                if (part == workbenchPart) {
+                    sash.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+                }
+            }
+        };
+
+        final IPageListener pageListener = workbenchWindow.getActivePage() != null ? null : new IPageListener() {
+            public void pageActivated(IWorkbenchPage page) { }
+            public void pageOpened(IWorkbenchPage page) {
+                page.addPartListener(partListener);
+            }
+            public void pageClosed(IWorkbenchPage page) {
+                page.removePartListener(partListener);
+            }
+        };
+        if (pageListener != null) {
+            // No active page yet, wait for it in listener
+            workbenchWindow.addPageListener(pageListener);
+        } else {
+            // Add listener to active page
+            workbenchWindow.getActivePage().addPartListener(partListener);
+        }
+
+        sash.addDisposeListener(new DisposeListener() {
+            public void widgetDisposed(DisposeEvent e)
+            {
+                if (pageListener != null) {
+                    workbenchWindow.removePageListener(pageListener);
+                }
+                if (workbenchWindow.getActivePage() != null) {
+                    workbenchWindow.getActivePage().removePartListener(partListener);
+                }
+            }
+        });
 
         return sash;
     }
@@ -662,4 +714,5 @@ public class UIUtils {
         }
         return button;
     }
+
 }
