@@ -111,11 +111,22 @@
                     label="MS SQL Server"
                     class="net.sourceforge.jtds.jdbc.Driver"
                     sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
-                    webURL="http://microsoft.com"
-                    description="MS SQL Server standard driver">
+                    webURL="http://jtds.sourceforge.net/"
+                    description="MS SQL Server JTDS driver">
                     <query label="GET_ACTIVE_DB">select db_name()</query>
                     <query label="SET_ACTIVE_DB">use ?</query>
                     <!--library path="drivers/sqljdbc4.jar"/-->
+                    <library path="drivers/jtds-1.2.5.jar"/>
+                </driver>
+                <driver
+                    id="sybase"
+                    label="Sybase"
+                    class="net.sourceforge.jtds.jdbc.Driver"
+                    sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
+                    webURL="http://jtds.sourceforge.net/"
+                    description="Sybase JTDS driver">
+                    <!--query label="GET_ACTIVE_DB">select db_name()</query>
+                    <query label="SET_ACTIVE_DB">use ?</query-->
                     <library path="drivers/jtds-1.2.5.jar"/>
                 </driver>
                 <driver
