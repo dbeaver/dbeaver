@@ -81,6 +81,10 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                     continue;
                 }
                 GenericCatalog tableCatalog = catalog != null ? catalog : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName);
+                if (tableCatalog == null && CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(dataSource.getCatalogs()) && dataSource.getCatalogs().size() == 1) {
+                    // there is only one catalog - let's use it (PostgreSQL)
+                    tableCatalog = dataSource.getCatalogs().get(0);
+                }
                 GenericSchema tableSchema = schema != null ?
                     schema :
                     CommonUtils.isEmpty(schemaName) ? null :
