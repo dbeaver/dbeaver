@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -196,7 +197,8 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             cache.nodes = new ArrayList<DBNNode>();
             try {
                 DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
-                List<DBSObjectType> objectTypes = Arrays.asList(structureAssistant.getSupportedObjectTypes());
+                List<DBSObjectType> objectTypes = new ArrayList<DBSObjectType>();//Arrays.asList(structureAssistant.getSupportedObjectTypes());
+                objectTypes.add(RelationalObjectType.TYPE_TABLE);
                 Collection<DBSObject> objects = structureAssistant.findObjectsByMask(monitor, null, objectTypes, word, 10);
                 if (!objects.isEmpty()) {
                     for (DBSObject object : objects) {
