@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="dbeaver" default="product" basedir=".">
+
+	<!-- Compiler settings. -->
+	<property file="build.properties"/>
+	<property name="javacFailOnError" value="false"/>
+	<property name="javacDebugInfo" value="on"/>
+	<property name="javacVerbose" value="false"/>
+	<property name="logExtension" value=".log"/>
+	<property name="compilerArg" value=""/>
+	<property name="compilation.prereq.log" value="${buildDirectory}/prereqErrors.log"/>
+	<property name="javacSource" value="1.6"/>
+	<property name="javacTarget" value="1.6"/>
+	<property name="plugins.folder" value="${buildDirectory}/plugins"/>
+	<property name="features.folder" value="${buildDirectory}/features"/>
+	<property name="drivers.folder" value="${buildDirectory}/drivers"/>
+
+	<target name="plugins">
+		<!--delete dir="${buildDirectory}"/-->
+		<mkdir dir="${buildDirectory}"/>
+		<mkdir dir="${features.folder}"/>
+		<mkdir dir="${plugins.folder}"/>
+		<mkdir dir="${drivers.folder}"/>
+
+		<antcall target="plugin.build">
+			<param name="plugin" value="core"/>
+		</antcall>
+		<antcall target="plugin.build">
+			<param name="plugin" value="generic"/>
+		</antcall>
+		<antcall target="plugin.build">
+			<param name="plugin" value="mysql"/>
+		</antcall>
+		<antcall target="plugin.build">
+			<param name="plugin" value="erd"/>
+		</antcall>
+		
+	</target>
+
+	<target name="plugin.build">
+		<antcall target="plugin.jar">
+			<param name="plugin.src.dir" value="../org.jkiss.dbeaver/${plugin}"/>
+			<param name="plugin.dest.dir" value="${buildDirectory}/plugins/org.jkiss.dbeaver.${plugin}"/>
+		</antcall>
+	</target>
+
+	<target name="plugin.jar" description="Build the plug-in">
+		<delete dir="${plugin.dest.dir}"/>
+		<mkdir dir="${plugin.dest.dir}"/>
+		<antcall target="plugin.compile">
+			<param name="plugin.src.dir" value="${plugin.src.dir}"/>
+			<param name="plugin.dest.dir" value="${plugin.dest.dir}"/>
+		</antcall>
+		<jar destfile="${plugins.folder}/org.jkiss.dbeaver.${plugin}_${version}.jar" filesetmanifest="merge">
+            		<fileset dir="${plugin.dest.dir}">
+			</fileset>
+		</jar>
+		<delete dir="${plugin.dest.dir}"/>
+	</target>
+
+	<target name="plugin.compile" description="Compile plugin sources">
+
+		<available file="${plugin.src.dir}/lib" type="dir" property="plugin-lib-exists" />
+
+		<path id="compile.classpath">
+			<fileset dir="${baseLocation}/plugins" includes="*.jar"/>
+			<fileset dir="../org.jkiss.dbeaver/core/lib" includes="*.jar" erroronmissingdir="false"/>
+			<fileset dir="${plugin.src.dir}/lib" includes="*.jar" erroronmissingdir="false"/>
+			<fileset dir="${plugins.folder}" includes="*.jar"/>
+		</path>
+		<!-- compile the source code -->
+		<javac destdir="${plugin.dest.dir}" debug="yes" includeAntRuntime="no" source="${javacSource}" target="${javacTarget}">
+			<compilerarg line="${compilerArg}" compiler="${build.compiler}"/>
+			<classpath refid="compile.classpath" />
+			<src path="${plugin.src.dir}/src/"/>
+		</javac>
+		<copy todir="${plugin.dest.dir}" failonerror="true" overwrite="true">
+			<fileset dir="${plugin.src.dir}">
+				<include name="plugin.xml"/>
+				<include name="META-INF/"/>
+				<include name="icons/"/>
+				<include name="product_lg.gif"/>
+				<include name="splash.bmp"/>
+				<include name="lib/"/>
+				<include name="docs/"/>
+				<include name="DBeaver.product"/>
+			</fileset>
+		</copy>
+		<copy todir="${buildDirectory}" failonerror="false" overwrite="true">
+			<fileset dir="${plugin.src.dir}" erroronmissingdir="false">
+				<include name="drivers/"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="gather.bin.parts">
+		<!--antcall target="apitools.generation">
+			<param name="target.folder" value="${plugin.temp.folder}"/>
+			<param name="projectLocation" value="${basedir}"/>
+			<param name="binary.folders" value="${build.result.folder}/@dot;D:\Devel\my\DBeaver\org.jkiss.dbeaver\core/lib/commons-logging-1.0.4.jar;D:\Devel\my\DBeaver\org.jkiss.dbeaver\core/lib/jkiss-utils-1.0.1.jar"/>
+			<param name="projectName" value="${bundleId}_${bundleVersion}"/>
+		</antcall-->
+	</target>
+
+
+	<target name="clean" description="Cleanup">
+	</target>
+	<target name="apitools.generation" if="generateAPIDescription">
+		<apitooling.apigeneration  projectName="${projectName}" project="${projectLocation}" binary="${binary.folders}" target="${target.folder}" extramanifests="${extraManifests}"		/>
+	</target>
+
+</project>

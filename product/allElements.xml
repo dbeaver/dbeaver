@@ -1,0 +1,52 @@
+<project name="allElements Delegator">
+	<property name="defaultAssemblyEnabled" value="true" />
+	
+ 	<!-- ===================================================================== 	-->
+ 	<!-- Run a given ${target} on all elements being built						-->
+ 	<!-- By default ${topLevelElementType} and ${topLevelElementId} should be	--> 
+ 	<!-- defined in the builder's build.properties file.  You can customize by	--> 
+ 	<!-- setting the type/id values directly here.								-->
+	<!-- You can add additional calls to ${genericTargets} to build more top 	-->
+	<!-- level elements.									   					-->
+	<!--																		-->
+	<!-- The top level must exist in the ${buildDirectory}, ${baseLocation} or	-->
+	<!-- ${pluginPath} locations.												-->
+ 	<!-- ===================================================================== 	-->
+ 	<target name="allElementsDelegator">
+ 		<ant antfile="${genericTargets}" target="${target}">
+	 		<property name="type" value="${topLevelElementType}" />
+	 		<property name="id" value="${topLevelElementId}" />
+ 		</ant>
+ 	</target>
+ 
+	<!-- ====================================================================== -->
+	<!--  The default assemble target, this will be called to assemble each		-->	 
+	<!--  config if a custom assemble target is not defined.					-->
+	<!-- The following properties will be defined:								-->
+	<!-- 		config : The configuration being assembled eg "win32.win32.x86"	-->
+	<!-- 		element: The element being assembled eg "org.eclipse.sdk"		-->
+	<!-- 		assembleScriptName: The assemble script to be called			-->
+	<!-- ====================================================================== -->
+	<target name="defaultAssemble">
+		<ant antfile="${assembleScriptName}" dir="${buildDirectory}" />
+	</target>	
+	
+ 	<!-- =====================================================================	-->
+ 	<!-- Custom targets to assemble the built elements for particular 			-->
+ 	<!-- configurations.  These generally call the generated assemble scripts 	-->
+ 	<!-- (named in  ${assembleScriptName}) but may also add pre and post		--> 
+ 	<!-- processing      														-->
+ 	<!-- Add one target for each root element and each configuration for which	--> 
+ 	<!-- custom processing is desired. Replace element.id with the id of the 	-->
+ 	<!-- top level element being built.  A property with a matching name must 	-->
+ 	<!-- be defined for this custom target to be called instead of the 			-->
+ 	<!-- defaultAssemble target above.											-->
+	<!--	Example:  name="assemble.org.eclipse.sdk"							-->
+	<!--	Example:  name="assemble.org.eclipse.sdk.win32.win32.x86"			-->
+ 	<!-- ====================================================================== -->
+	<property name="assemble.element.id[.config.spec]" value="true" />
+ 	<target name="assemble.element.id[.config.spec]">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}"/>
+ 	</target>
+	
+</project>

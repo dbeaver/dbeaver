@@ -1,0 +1,66 @@
+<project name="Build specific targets and properties" default="noDefault">
+
+	<!-- =====================================================================
+	    
+	    The Following Properties are available in all targets:
+		 - eclipse.base : the base folder everything will be collected into
+		 - eclipse.plugins : the plugins folder
+		 - eclipse.features: the features folder
+		 - archiveFullPath : the full path of the final archive once it is created
+		 
+		 ===================================================================== -->
+		 
+	<!-- =====================================================================  -->
+	<!-- Called after each invocation of the gather.bin.parts target on the     -->
+	<!-- individual plugins and features.                                       -->
+	<!-- Available properties are:                                              -->
+	<!--   projectLocation: location of the project being gathered              -->
+	<!--   projectName: symbolic name with version (org.eclipse.foo_1.0.0.v123) -->
+	<!--   target.folder: the destination, eclipse/plugins or eclipse/features  -->
+	<!--                                                                        -->
+	<!-- The generated pattern is that plugins/features are gathered into the   -->
+	<!-- folder ${target.folder}/${projectName}                                 -->
+	<!-- =====================================================================  -->
+	<target name="gather.bin.parts">
+	</target>
+	
+	<!-- ===================================================================== -->
+	<!-- Called after invoking the gather.bin.parts targets for all plugins    -->
+	<!-- and features. Results exist as folders and have not yet been jarred.  -->
+	<!-- ===================================================================== -->
+	<target name="post.gather.bin.parts">
+	</target>
+
+	<!-- ===================================================================== -->
+	<!-- Called just prior to signing a jar                                    -->
+	<!-- In addititon to the properties listed above:						   -->
+	<!--    - source : plugins or features directory                           -->
+	<!--    - elementName: element being signed without .jar                   -->
+	<!--                   (eg "org.eclipse.foo_1.0.0"                         -->
+	<!-- ===================================================================== -->
+	<target name="pre.jarSigning">
+	</target>
+
+	<!-- ===================================================================== -->
+	<!-- Called after all plugins and features have been jarred                -->
+	<!-- (and potentially signed)                                              -->
+	<!-- ===================================================================== -->
+	<target name="post.jarUp">
+	</target>
+
+	<!-- ===================================================================== -->
+	<!-- Called just before the archive file is built                          -->
+	<!-- In addititon to the properties listed above:						   -->
+	<!--    - rootFolder : the folder containing the root files                -->
+	<!-- ===================================================================== -->
+	<target name="pre.archive">
+	</target>
+	
+	<!-- ===================================================================== -->
+	<!-- Default target                                                        -->
+	<!-- ===================================================================== -->
+	<target name="noDefault">
+		<echo message="You must specify a target when invoking this file" />
+	</target>
+
+</project>
