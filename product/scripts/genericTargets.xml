@@ -1,0 +1,241 @@
+<!--
+    Copyright (c) 2003, 2010 IBM Corporation and others.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+   
+    Contributors:
+         IBM Corporation - initial API and implementation
+ -->
+<project name="Generic Build Targets" default="noDefault">
+
+<!-- Properties that must be passed to this script:
+	buildDirectory
+	id
+	type
+	ignoreTagInfo
+	recursiveGeneration
+	workingDirectory
+	configInfo
+-->
+
+<!-- ===================================================================== -->
+<!-- Setup default values -->
+<!--   configs : by default build a platform-independent configuration -->
+<!--   fetchTag : by default use the CVS tags as spec'd in directory.txt -->
+<!-- ===================================================================== -->
+<property name="configs" value="*,*,*"/>
+<property name="fetchTag" value=""/>
+<property name="customEESources" value="" />
+<property name="transformedRepoLocation" value="" />
+<property name="buildingOSGi" value="true"/>
+<property name="generateJnlp" value="false"/>
+<property name="signJars" value="false"/>
+<property name="generateFeatureVersionSuffix" value="false" />
+<property name="generateVersionsLists" value="true" />
+<property name="groupConfigurations" value="false"/>
+<property name="pluginPath" value=""/>
+<property name="filteredDependencyCheck" value="false"/>
+<property name="filterP2Base" value="false"/>
+
+<!-- ===================================================================== -->
+<!-- Fetch a single element (feature, plugin, fragment) -->
+<!-- ===================================================================== -->
+<target name="fetchElement" description="Checking out source from repository..." depends="init">
+	<mkdir dir="${buildDirectory}/features"/>
+	<mkdir dir="${buildDirectory}/plugins"/>
+	<eclipse.fetch
+		elements="${type}@${id}"
+		buildDirectory="${buildDirectory}"
+		directory="${buildDirectory}/directory.txt"
+		fetchTag="${fetchTag}"
+		configInfo="${configs}"
+		baseLocation="${baseLocation}"
+		pluginPath="${transformedRepoLocation}${path.separator}${pluginPath}"
+	/>
+
+	<!-- Run generated fetch script -->
+	<ant antfile="${buildDirectory}/fetch_${id}.xml">
+		<!-- ************  should not have to spec these  *************** -->
+		<property name="featureOnly" value="true"/>
+		<property name="featureAndPlugins" value="true"/>
+		<property name="featuresRecursively" value="true"/>
+	</ant>
+</target>
+
+<!-- ===================================================================== -->
+<!-- Clean previously built elements -->
+<!-- ===================================================================== -->
+<target name="cleanElement" description="Scrubbing features and plugins of old jars..." depends="init">
+<echo message="${elementPath}"/>
+	<ant antfile="build.xml" dir="${elementPath}" target="clean"/>
+</target>
+
+<!-- ===================================================================== -->
+<!-- Generate a build.xml file for an element -->
+<!-- ===================================================================== -->
+<target name="generateScript" description="Generating build scripts..." depends="init">
+	<eclipse.buildScript
+		elements="${type}@${id}"
+		buildDirectory="${buildDirectory}"
+		configInfo="${configs}"
+		baseLocation="${baseLocation}"
+		buildingOSGi="${buildingOSGi}"
+		outputUpdateJars="${outputUpdateJars}"
+		archivesFormat="${archivesFormat}"
+		product="${product}"
+		forceContextQualifier="${forceContextQualifier}"
+		generateJnlp="${generateJnlp}"
+		signJars="${signJars}"
+		generateFeatureVersionSuffix="${generateFeatureVersionSuffix}"
+		significantVersionDigits="${significantVersionDigits}"
+		generatedVersionLength="${generatedVersionLength}"
+		generateVersionsLists="${generateVersionsLists}"
+		generateSourceReferences="${generateSourceReferences}"
+		groupConfiguration="${groupConfigurations}"
+		pluginPath="${transformedRepoLocation}${path.separator}${pluginPath}"
+		filteredDependencyCheck="${filteredDependencyCheck}"
+		platformProperties="${platformProperties}"
+		filterP2Base="${filterP2Base}"
+		flattenDependencies="${flattenDependencies}"
+		parallelCompilation="${parallelCompilation}"
+		parallelThreadCount="${parallelThreadCount}"
+		parallelThreadsPerProcessor="${parallelThreadsPerProcessor}"
+		customEESources="${customEESources}"
+		contextRepository="${transformedRepoLocation},${p2.context.repos}"
+	/>
+</target>
+
+<!-- ===================================================================== -->
+<!-- Run build.xml for a single element-->
+<!-- ===================================================================== -->
+<target name="processElement" description="Processing build scripts..." depends="init">
+	<antcall target="processViaFeature" />
+	<antcall target="processFlat" />
+</target>
+
+<target name="processViaFeature" unless="flattenDependencies" description="Compile in order of feature containment">
+	<ant antfile="build.xml" dir="${elementPath}" target="build.jars">
+		<property name="target" value="build.jars"/>
+	</ant>
+</target>
+
+<target name="processFlat" if="flattenDependencies" description="Compile in flattened dependency order">
+	<ant antfile="compile.${id}.xml" dir="${buildDirectory}"/>
+</target>
+
+<!-- **********************
+1) the gather targets do more than just gather.  These are packaging targets.
+We need to continue ot separate the two concepts (gather and package) as
+the packaging is different if we wanted to create an update site packaging
+(for example).  The gathers are commented out for now as the new generated
+scripts do not seem to have them.
+
+2) do we really need the ws and os properties?  In all cases?  Do they have to be
+set here?
+-->
+
+<!-- ===================================================================== -->
+<!-- Gather items listed in bin.includes -->
+<!-- ===================================================================== -->
+<target name="gatherBinaries" description="Gathering binary distribution..." depends="init">
+	<!-- ant antfile="build.xml" dir="${elementPath}" target="gather.bin.parts"/ -->
+	<ant antfile="build.xml" dir="${elementPath}" target="zip.distribution">
+		<property name="os" value="${os}" />
+		<property name="ws" value="${ws}" />
+	</ant>
+</target>
+
+<!-- ===================================================================== -->
+<!-- Gather source for a build element -->
+<!-- ===================================================================== -->
+<target name="gatherSources" description="Gathering source distribution..." depends="init">
+	<!--suspect:  this call is required to create the *.src.zip inside each plugin-->
+	<ant antfile="build.xml" dir="${elementPath}" target="build.sources">
+		<property name="os" value="${os}" />
+		<property name="ws" value="${ws}" />
+	</ant>
+	<ant antfile="build.xml" dir="${elementPath}" target="zip.sources">
+		<property name="os" value="${os}" />
+		<property name="ws" value="${ws}" />
+	</ant>
+</target>
+
+<!-- ===================================================================== -->
+<!-- Gather log files for an element -->
+<!-- Suspect: We just unzip these right away -->
+<!-- ===================================================================== -->
+<target name="gatherLogs" description="Gathering build logs..." depends="init">
+	<ant antfile="build.xml" dir="${elementPath}" target="zip.logs" >
+		<property name="buildDirectory" value="${buildDirectory}" />
+	</ant>
+</target>
+
+<!-- ===================================================================== -->
+<!-- Default target                                                        -->
+<!-- ===================================================================== -->
+<target name="noDefault">
+	<echo message="This file must be called with explicit targets" />
+</target>
+
+<!-- ===================================================================== -->
+<!-- Assemble one build element -->
+<!-- ===================================================================== -->
+<target name="assembleElement" description="Assembling the build..." depends="init">
+	<ant antfile="assemble.${id}.all.xml" dir="${buildDirectory}"/>
+</target>
+
+<!-- ===================================================================== -->
+<!-- Package one build element -->
+<!-- ===================================================================== -->
+<target name="packageElement" description="Packaging the build..." depends="init">
+	<ant antfile="package.${id}.all.xml" dir="${buildDirectory}"/>
+</target>
+
+<!-- ===================================================================== -->
+<!-- Miscellaneous helper targets -->
+<!-- ===================================================================== -->
+<target name="init">
+	<condition property="elementPath" value="${buildDirectory}/plugins/${id}">
+		<equals arg1="${type}" arg2="fragment" />
+	</condition>
+	<property name="elementPath" value="${buildDirectory}/${type}s/${id}" />
+</target>
+
+<!-- ===================================================================== -->
+<!-- Invokes the p2 transformer to process all the repositories found in repoBaseLocation -->
+<!-- ===================================================================== -->
+<target name="transformRepos">
+	<p2.repo2runnable destination="${transformedRepoLocation}">
+		<source dir="${repoBaseLocation}/" includes="*"/>
+	</p2.repo2runnable>
+</target>
+
+<!-- Invoke the p2 director to perform an install  -->
+<target name="runDirector" >
+	<property name="p2.director.bundlepool" value="${p2.director.installPath}"/>
+	<property name="p2.director.dataArea" value="${p2.director.installPath}/p2"/>
+	<property name="p2.director.extraArgs" value="-profileProperties org.eclipse.update.install.features=true" />
+	<property name="p2.director.extraVMArgs" value="-Declipse.p2.MD5Check=false" />
+	<property name="p2.director.profile" value="profile" />
+	<property name="p2.director.version" value="" />
+	
+	<p2.director 
+		os="${os}" ws="${ws}" arch="${arch}" 
+		flavor="${p2.flavor}" 
+		roaming="true" 
+		profile="${p2.director.profile}"
+		extraArguments="${p2.director.extraArgs}"
+		metadataRepository="${p2.repo}" 
+		artifactRepository="${p2.repo}" 
+		destination="${p2.director.installPath}" 
+		bundlepool="${p2.director.bundlepool}"
+		agentLocation="${p2.director.dataArea}"
+		outputProperty="p2.director.java.output"
+		logFile="${p2.director.log}">
+		<iu id="${p2.director.iu}" version="${p2.director.version}" />
+	</p2.director>
+</target>
+	
+</project>

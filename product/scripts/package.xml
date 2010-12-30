@@ -1,0 +1,98 @@
+<!--
+     Copyright (c) 2003, 2007 IBM Corporation and others.
+     All rights reserved. This program and the accompanying materials
+     are made available under the terms of the Eclipse Public License v1.0
+     which accompanies this distribution, and is available at
+     http://www.eclipse.org/legal/epl-v10.html
+    
+     Contributors:
+         IBM Corporation - initial API and implementation
+ -->
+<project name="packager" default="main" basedir=".">
+	<target name="init">
+		<mkdir dir="${workingDirectory}"/>
+		<mkdir dir="${downloadDirectory}"/>
+		<mkdir dir="${tempDirectory}"/>
+	</target>
+
+	<target name="retrieveMapFiles" unless="skipMaps">
+		<available property="mapsFetched" file="${workingDirectory}/all.maps"/>
+		<ant antfile="${customTargets}" target="getMapFiles" />
+		<concat destfile="${workingDirectory}/all.maps">
+			<fileset dir="${downloadDirectory}" includes="**/*.map"/>
+		</concat>
+	</target>
+
+	<!-- take the content of all.maps, retrieve the files according to the filtering options (config, content), 
+	and generate a directory.txt for the rest of the process using config as a key, and containing the name of the zip and the directory -->
+	<target name="retrieveFiles" unless="skipFetch">
+		<eclipse.fetchFilesGenerator map="${workingDirectory}/all.maps"
+									workingDirectory="${workingDirectory}"
+									configInfo="${config}"
+									contentFilter="${contentFilter}"
+									componentFilter="${componentFilter}"/>
+		<ant antfile="fetch.xml" dir="${workingDirectory}" />
+	</target>
+
+	<!-- Process the directory.txt to create unzipper.xml, and run unzipper.xml-->
+	<target name="prepareResources" unless="skipUnzip">
+		<eclipse.unzipperBuilder 	workingDirectory="${workingDirectory}" 
+											configInfo="${config}"
+											packagePropertyFile="${packagingPropertyFile}"/>
+		<ant antfile="${workingDirectory}/unzipper.xml"/>
+	</target>
+
+	<!-- Generate an assemble script (assemble.xml) for the given features -->
+	<target name="generateAssembleScripts">
+		<echo message="${target}"/>
+		<eclipse.assembler featureList="${featureList}" 
+									workingDirectory="${workingDirectory}" 
+									configInfo="${config}" 
+									baseLocation="${target}" 
+									packagePropertyFile="${packagingPropertyFile}" 
+									deltaPack="${deltaPack}"
+									archivesFormat="${archivesFormat}"
+									filteredDependencyCheck="${filteredDependencyCheck}"
+									normalize="${normalizeWhilePackaging}"/>
+	</target>
+
+	<!-- Call the assemble.xml script -->
+	<target name="callAssembleScripts">
+		<ant antfile="package.all.xml" dir="${workingDirectory}"/>
+	</target>
+
+	<target name="main" description="Start the packager for a given config">
+		<property file="${packagingInfo}/packager.properties" />
+		<property name="customTargets" location="${packagingInfo}/customTargets.xml" />
+		<property name="packagingPropertyFile" location="${packagingInfo}/${packagingProperties}" />
+		
+		<condition property="skipMaps" value="true">
+			<isset property="prefilledTarget" />
+		</condition>
+		<condition property="skipFetch" value="true">
+			<isset property="prefilledTarget" />
+		</condition>
+		<condition property="skipUnzip" value="true">
+			<isset property="prefilledTarget" />
+		</condition>
+		
+		<!-- Compatibility -->
+		<property name="filteredDependencyCheck" value="false"/>
+		<condition property="skipMaps" value="true">
+			<isset property="localMaps"/>
+		</condition>
+		<condition property="target" value="${tempDirectory}/${featurePaths}">
+			<isset property="featurePaths"/>
+		</condition>
+		<property name="normalizeWhilePackaging" value="true"/>
+		
+		<!-- End of compatibility -->
+			
+		<antcall target="init" />
+		<antcall target="retrieveMapFiles"/>
+		<antcall target="retrieveFiles"/>
+		<antcall target="prepareResources"/>
+		<antcall target="generateAssembleScripts"/>
+		<antcall target="callAssembleScripts"/>
+	</target>
+</project>

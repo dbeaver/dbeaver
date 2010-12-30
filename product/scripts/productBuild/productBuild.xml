@@ -1,0 +1,73 @@
+<!--
+    Copyright (c) 2006, 2010 IBM Corporation and others.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+   
+    Contributors:
+         IBM Corporation - initial API and implementation
+ -->
+<project name="Build a Product" default="main">
+
+<!-- ===================================================================== -->
+<!-- Global properties.  See the build.properties for information on -->
+<!-- the properties which callers can control. -->
+<!-- ===================================================================== -->
+<property name="allElementsFile" value="${eclipse.pdebuild.scripts}/productBuild/allElements.xml"/>
+<import file="${eclipse.pdebuild.scripts}/build.xml"/>
+<property name="pluginPath" value=""/>
+<property name="pluginList" value=""/>
+<property name="featureList" value=""/>
+<property name="includeLaunchers" value="true"/>
+<property name="generatedBuildProperties" value=""/>
+<condition property="nestedInclusions" value="true">
+	<istrue value="${p2.gathering}" />
+</condition>
+
+<!-- ===================================================================== -->
+<!-- main entry point to setup, fetch, generate, build etc. Use -->
+<!-- the customTargets.xml to modify the build behaviour. -->
+<!-- ===================================================================== -->
+<target name="main" description="the main build target">	
+  	<antcall target="preBuild" />
+	<antcall target="processRepos"/>
+	<antcall target="generateFeature"> <!-- Generate the feature to drive the fetch -->
+		<param name="verify" value="false"/>
+	</antcall>
+ 	<antcall target="fetch" />
+	<antcall target="generateFeature"> <!-- We are calling generate feature a second time so that we can get the pack / unpack clause fixed -->
+		<param name="verify" value="true"/>
+	</antcall> 
+	<antcall target="generate" /> 
+	<antcall target="process" /> 
+	<antcall target="assemble" />
+	<antcall target="package" />
+	<antcall target="postBuild" />
+</target>
+
+<!-- ===================================================================== -->
+<!-- Generate a container feature based on the product file                -->
+<!-- The plugin or feature containing the .product file will need to exist -->
+<!-- already, use preSetup or postSetup to fetch it if necessary           -->
+<!-- ===================================================================== -->
+<target name="generateFeature">
+	<eclipse.generateFeature
+		featureId="org.eclipse.pde.build.container.feature"
+		buildDirectory="${buildDirectory}"
+		baseLocation="${baseLocation}"
+		productFile="${product}"
+		verify="${verify}"
+		pluginPath="${transformedRepoLocation}${path.separator}${pluginPath}"
+		configInfo="${configs}"
+		pluginList="${pluginList}"
+		featureList="${featureList}"
+		includeLaunchers="${includeLaunchers}"
+		buildPropertiesFile="${generatedBuildProperties}"
+		nestedInclusions="${nestedInclusions}"
+		filterP2Base="${filterP2Base}"
+	/>
+</target>
+
+
+</project>

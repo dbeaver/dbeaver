@@ -1,0 +1,142 @@
+<!--
+     Copyright (c) 2006, 2008 IBM Corporation and others.
+     All rights reserved. This program and the accompanying materials
+     are made available under the terms of the Eclipse Public License v1.0
+     which accompanies this distribution, and is available at
+     http://www.eclipse.org/legal/epl-v10.html
+    
+     Contributors:
+         IBM Corporation - initial API and implementation
+ -->
+<project name="Product Build allElements Delegator">
+	<property name="defaultAssemblyEnabled" value="true" />
+	<property name="archiveNamePrefix" value="${buildId}"/>
+	
+ 	<!-- ===================================================================== -->
+ 	<!-- Run a given ${target} on all elements being built                     -->
+ 	<!-- Add on <ant> task for each top level element being built.             -->
+ 	<!-- ===================================================================== -->
+ 	<target name="allElementsDelegator">
+ 		<ant antfile="${genericTargets}" target="${target}">
+	 		<property name="type" value="feature" />
+	 		<property name="id" value="org.eclipse.pde.build.container.feature" />
+ 		</ant>
+ 	</target>
+ 
+	<!-- ====================================================================== -->
+	<!--  The default assemble target, this will be called to assemble each		-->	 
+	<!--  config if a custom assemble target is not defined.					-->
+	<!-- The following properties will be defined:								-->
+	<!-- 		config : The configuration being assembled eg "win32.win32.x86"	-->
+	<!-- 		element: The element being assembled eg "org.eclipse.sdk"		-->
+	<!-- 		assembleScriptName: The assemble script to be called			-->
+	<!-- ====================================================================== -->
+	<target name="defaultAssemble">
+		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">			
+ 			<property name="archiveName" value="${archiveNamePrefix}-${config}.zip"/>
+		</ant>
+	</target>	
+	
+ 	<!-- ===================================================================== -->
+ 	<!-- Targets to assemble the built elements for particular configurations  -->
+ 	<!-- These generally call the generated assemble scripts (named in         -->
+ 	<!-- ${assembleScriptName}) but may also add pre and post processing       -->
+ 	<!-- Add one target for each root element and each configuration           -->
+ 	<!-- ===================================================================== -->
+ 	<target name="assemble.org.eclipse.pde.build.container.feature">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">
+			<property name="archiveName" value="${archiveNamePrefix}.zip"/>
+		</ant>
+ 	</target>
+	
+	<property name="assemble.org.eclipse.pde.build.container.feature.win32.win32.x86" value="true" />
+ 	<target name="assemble.org.eclipse.pde.build.container.feature.win32.win32.x86">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">			
+ 			<property name="archiveName" value="${archiveNamePrefix}-win32.win32.x86.zip"/>
+		</ant>
+ 	</target>
+	
+	<property name="assemble.org.eclipse.pde.build.container.feature.win32.win32.x86_64" value="true" />
+ 	<target name="assemble.org.eclipse.pde.build.container.feature.win32.win32.x86_64">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">			
+ 			<property name="archiveName" value="${archiveNamePrefix}-win32.win32.x86_64.zip"/>
+		</ant>
+ 	</target>
+	
+	<property name="assemble.org.eclipse.pde.build.container.feature.linux.gtk.ppc" value="true" />
+ 	<target name="assemble.org.eclipse.pde.build.container.feature.linux.gtk.ppc">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">			
+ 			<property name="archiveName" value="${archiveNamePrefix}-linux.gtk.ppc.zip"/>
+		</ant>
+ 	</target>
+	
+	<property name="assemble.org.eclipse.pde.build.container.feature.linux.gtk.x86" value="true" />
+ 	<target name="assemble.org.eclipse.pde.build.container.feature.linux.gtk.x86">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">			
+ 			<property name="archiveName" value="${archiveNamePrefix}-linux.gtk.x86.zip"/>
+		</ant>
+ 	</target>
+	
+	<property name="assemble.org.eclipse.pde.build.container.feature.linux.gtk.x86_64" value="true" />
+ 	<target name="assemble.org.eclipse.pde.build.container.feature.linux.gtk.x86_64">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">			
+ 			<property name="archiveName" value="${archiveNamePrefix}-linux.gtk.x86_64.zip"/>
+		</ant>
+ 	</target>
+	
+	<property name="assemble.org.eclipse.pde.build.container.feature.linux.motif.x86" value="true" />
+ 	<target name="assemble.org.eclipse.pde.build.container.feature.linux.motif.x86">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">			
+ 			<property name="archiveName" value="${archiveNamePrefix}-linux.motif.x86.zip"/>
+		</ant>
+ 	</target>
+	
+	<property name="assemble.org.eclipse.pde.build.container.feature.solaris.motif.sparc" value="true" />
+ 	<target name="assemble.org.eclipse.pde.build.container.feature.solaris.motif.sparc">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">			
+ 			<property name="archiveName" value="${archiveNamePrefix}-solaris.motif.sparc.zip"/>
+		</ant>
+ 	</target>
+ 		
+	<property name="assemble.org.eclipse.pde.build.container.feature.solaris.gtk.sparc" value="true" />
+ 	<target name="assemble.org.eclipse.pde.build.container.feature.solaris.gtk.sparc">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">			
+ 			<property name="archiveName" value="${archiveNamePrefix}-solaris.gtk.sparc.zip"/>
+		</ant>
+ 	</target>
+	
+	<property name="assemble.org.eclipse.pde.build.container.feature.aix.motif.ppc" value="true" />
+ 	<target name="assemble.org.eclipse.pde.build.container.feature.aix.motif.ppc">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">			
+ 			<property name="archiveName" value="${archiveNamePrefix}-aix.motif.ppc.zip"/>
+		</ant>
+ 	</target>
+	
+	<property name="assemble.org.eclipse.pde.build.container.feature.hpux.motif.PA_RISC" value="true" />
+ 	<target name="assemble.org.eclipse.pde.build.container.feature.hpux.motif.PA_RISC">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">			
+ 			<property name="archiveName" value="${archiveNamePrefix}-hpux.motif.PA_RISC.zip"/>
+		</ant>
+ 	</target>
+	
+	<property name="assemble.org.eclipse.pde.build.container.feature.macosx.carbon.ppc" value="true" />
+ 	<target name="assemble.org.eclipse.pde.build.container.feature.macosx.carbon.ppc">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">			
+ 			<property name="archiveName" value="${archiveNamePrefix}-macosx.carbon.ppc.zip"/>
+		</ant>
+ 	</target>
+	
+	<property name="assemble.org.eclipse.pde.build.container.feature.macosx.carbon.x86" value="true" />
+ 	<target name="assemble.org.eclipse.pde.build.container.feature.macosx.carbon.x86">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">			
+ 			<property name="archiveName" value="${archiveNamePrefix}-macosx.carbon.x86.zip"/>
+		</ant>
+ 	</target>
+	
+	<property name="assemble.org.eclipse.pde.build.container.feature.group.group.group" value="true" />
+ 	<target name="assemble.org.eclipse.pde.build.container.feature.group.group.group">
+ 		<ant antfile="${assembleScriptName}" dir="${buildDirectory}">			
+ 			<property name="archiveName" value="${archiveNamePrefix}-group.zip"/>
+		</ant>
+ 	</target>
+</project>

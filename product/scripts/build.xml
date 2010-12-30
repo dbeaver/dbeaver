@@ -1,0 +1,153 @@
+<!--
+     Copyright (c) 2003, 2009 IBM Corporation and others.
+     All rights reserved. This program and the accompanying materials
+     are made available under the terms of the Eclipse Public License v1.0
+     which accompanies this distribution, and is available at
+     http://www.eclipse.org/legal/epl-v10.html
+    
+     Contributors:
+         IBM Corporation - initial API and implementation
+ -->
+<project name="Build All Elements" default="main">
+
+<!-- ===================================================================== -->
+<!-- Global properties.  See the build.properties for information on -->
+<!-- the properties which callers can control. -->
+<!-- ===================================================================== -->
+<property name="builder" location="${user.dir}"/>
+<property name="builderDirectory" location="${builder}"/>
+<property name="buildProperties" location="${builder}/build.properties"/>
+<property file="${buildProperties}"/>
+<available property="customTargets" file="${builder}/customTargets.xml" value="${builder}/customTargets.xml"/>
+<property name="customTargets" location="${eclipse.pdebuild.templates}/headless-build/customTargets.xml"/>
+<property name="genericTargets" location="${eclipse.pdebuild.scripts}/genericTargets.xml"/>
+
+<!-- ===================================================================== -->
+<!-- main entry point to setup, fetch, generate, build etc. Use -->
+<!-- the customTargets.xml to modify the build behaviour. -->
+<!-- ===================================================================== -->
+
+<!-- ******* add in the descriptions for each of the top level targets to teh target decl -->
+<target name="main" description="the main build target">
+  	<antcall target="preBuild" />
+	<antcall target="processRepos"/>
+ 	<antcall target="fetch" />
+	<antcall target="generate" /> 
+	<antcall target="process" /> 
+	<antcall target="assemble" />
+	<antcall target="package" />
+	<antcall target="postBuild" />
+</target>
+
+<!-- ===================================================================== -->
+<!-- Steps to do before starting the build.  Typical setup includes -->
+<!-- fetching the map files and building the directory.  -->
+<!-- ===================================================================== -->
+<target name="preBuild">
+	<mkdir dir="${buildDirectory}" />
+	<ant antfile="${customTargets}" target="preSetup" /> 
+	<ant antfile="${customTargets}" target="getMapFiles" /> 
+	<concat destfile="${buildDirectory}/directory.txt" fixlastline="yes">
+		<fileset dir="${buildDirectory}" includes="maps/**/*.map"/>
+	</concat>
+	<ant antfile="${customTargets}" target="postSetup" />
+</target>
+
+<!-- ===================================================================== -->
+<!-- This will transform the content of the repositories listed such that they   -->
+<!-- are in a format against which PDE Build can succesfully build   -->
+<!-- ===================================================================== -->
+<target name="processRepos" if="repoBaseLocation">
+	<subant target="preProcessRepos" failonerror="false" inheritAll="true" >
+		<fileset file="${customTargets}" />
+	</subant>
+	<ant antfile="${customTargets}" target="allElements">
+		<property name="target" value="transformRepos" />
+	</ant>
+	<subant target="postProcessRepos" failonerror="false" inheritAll="true" >
+		<fileset file="${customTargets}" />
+	</subant>
+</target>
+
+<!-- ===================================================================== -->
+<!-- Fetch the elements identified in the customTargets -->
+<!-- ===================================================================== -->
+<target name="fetch" unless="skipFetch">
+	<ant antfile="${customTargets}" target="preFetch"/>
+	<!-- Generates and then execute the fetch scripts for each build element-->
+	<ant antfile="${customTargets}" target="allElements">
+		<property name="target" value="fetchElement" />
+	</ant>
+	
+	<ant antfile="${customTargets}" target="postFetch"/>
+</target>
+
+<!-- ===================================================================== -->
+<!-- Generate the build scripts for each element identified in the customTargets -->
+<!-- ===================================================================== -->
+<target name="generate">
+	<ant antfile="${customTargets}" target="preGenerate"/>
+	<!-- Generate the build.xml for each build element-->
+	<ant antfile="${customTargets}" target="allElements">
+		<property name="target" value="generateScript" />
+	</ant>
+	<ant antfile="${customTargets}" target="postGenerate"/>	
+</target>
+
+<!-- ===================================================================== -->
+<!-- Run the build scripts for each element identified in the customTargets -->
+<!-- ===================================================================== -->
+<target name="process">
+	<!-- Run custom tasks before processing, i.e. creating source build zip files -->
+	<ant antfile="${customTargets}" target="preProcess" />
+
+	<!-- Process all of the build elements-->
+	<ant antfile="${customTargets}" target="allElements">
+		<property name="target" value="processElement" />
+	</ant>
+
+	<!-- Run custom tasks after compiling, i.e. reporting compile errors -->
+	<ant antfile="${customTargets}" target="postProcess" />
+</target>
+
+<!-- ===================================================================== -->
+<!-- Assemble the build elements into final distributions -->
+<!-- ===================================================================== -->
+<target name="assemble">
+	<ant antfile="${customTargets}" target="preAssemble"/>
+	<ant antfile="${customTargets}" target="allElements">
+		<property name="target" value="assembleElement"/>
+	</ant>
+	<ant antfile="${customTargets}" target="postAssemble"/>	
+</target>
+
+<!-- ===================================================================== -->
+<!-- Package the build elements into final distributions -->
+<!-- ===================================================================== -->
+<target name="package" if="runPackager">
+	<ant antfile="${customTargets}" target="prePackage"/>
+	<ant antfile="${customTargets}" target="allElements">
+		<property name="target" value="packageElement"/>
+	</ant>
+	<ant antfile="${customTargets}" target="postPackage"/>	
+</target>
+
+<!-- ===================================================================== -->
+<!-- Do any steps required after the build (e.g., posting, testing, ...) -->
+<!-- ===================================================================== -->
+<target name="postBuild">
+	<ant antfile="${customTargets}" target="postBuild" />
+</target>
+
+<!-- ===================================================================== -->
+<!-- Clean the build elements.  This target is here as an entry -->
+<!-- point to the customTargets.  It is not called directly in the normal -->
+<!-- course of events. -->
+<!-- ===================================================================== -->
+<target name="clean">
+  <ant antfile="${customTargets}" target="allElements">
+     <property name="target" value="cleanElement"/>
+  </ant>
+</target>
+
+</project>
