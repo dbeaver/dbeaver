@@ -54,6 +54,12 @@
 	<!--    - rootFolder : the folder containing the root files                -->
 	<!-- ===================================================================== -->
 	<target name="pre.archive">
+		<echo message="Adding contributions to ${rootFolder}"/>
+		<copy todir="${rootFolder}">
+			<fileset dir="${buildDirectory}/../../contrib">
+				<include name="**"/>
+			</fileset>
+		</copy>
 	</target>
 	
 	<!-- ===================================================================== -->

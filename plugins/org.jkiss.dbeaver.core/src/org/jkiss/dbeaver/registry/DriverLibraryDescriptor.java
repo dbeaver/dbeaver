@@ -8,6 +8,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.osgi.service.datalocation.Location;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.io.File;
 import java.io.IOException;
@@ -116,6 +119,18 @@ public class DriverLibraryDescriptor
                 log.warn(ex);
             }
         }
+        // Try to load from contributions
+        if (url == null) {
+            if (!path.startsWith("/") && !path.startsWith("\\")) {
+                Location location = Platform.getInstallLocation();
+                try {
+                    url = location.getDataArea(path);
+                } catch (IOException e) {
+                    log.warn(e);
+                }
+            }
+        }
+        // Try to use direct path
         if (url == null) {
             File libraryFile = new File(path);
             if (!libraryFile.exists()) {
