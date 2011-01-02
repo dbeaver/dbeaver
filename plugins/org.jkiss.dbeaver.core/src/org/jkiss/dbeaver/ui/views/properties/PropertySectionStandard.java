@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2010, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
+
 package org.jkiss.dbeaver.ui.views.properties;
 
 import org.eclipse.jface.viewers.ISelection;

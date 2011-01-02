@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 import com.mysql.jdbc.ConnectionImpl;
 
 import java.sql.DriverManager;
@@ -26,8 +30,8 @@ public class MySQLErrorsTest {
             System.out.println(e.getMessage());
         }
         try {
-            System.out.println("SELECT * from таблица");
-            PreparedStatement stat = con.prepareStatement("SELECT * from таблица");
+            System.out.println("SELECT * from пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
+            PreparedStatement stat = con.prepareStatement("SELECT * from пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
             stat.executeQuery();
         } catch (SQLException e) {
             System.out.println(e.getMessage());

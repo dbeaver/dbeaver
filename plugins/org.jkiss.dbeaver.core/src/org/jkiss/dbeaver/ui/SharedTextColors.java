@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.text.source.ISharedTextColors;
