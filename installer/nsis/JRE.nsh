@@ -61,16 +61,17 @@ Function GetJRE
   ; 4) wishing you good luck
   GoodLuck:
     StrCpy $R0 "${JAVAEXE}"
-    ; MessageBox MB_ICONSTOP "Cannot find appropriate Java Runtime Environment."
-    ; Abort
+    MessageBox MB_ICONSTOP "Cannot find appropriate Java Runtime Environment."
+    Abort
  
+  JreCanceled:
+	Abort
+
   JreFound:
     Pop $2
     Pop $R1
     Exch $R0
 	
-  JreCanceled:
-	Abort
 FunctionEnd
  
 ; Pass the "javaw.exe" path by $R0

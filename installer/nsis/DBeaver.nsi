@@ -97,7 +97,9 @@ Section "-DBeaver Core" SecCore
   
   SetOutPath "$INSTDIR"
   
-  ;ADD YOUR OWN FILES HERE...
+  File "..\..\dist\dbeaver\.eclipseproduct"
+  File "..\..\dist\dbeaver\dbeaver.exe"
+  File /r "..\..\dist\dbeaver\configuration"
   
   ;Store installation folder
   WriteRegStr HKCU "Software\DBeaver" "" $INSTDIR
