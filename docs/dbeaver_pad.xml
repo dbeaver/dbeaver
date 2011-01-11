@@ -112,7 +112,7 @@
   <Web_Info>
     <Application_URLs>
       <Application_Info_URL>http://dbeaver.jkiss.org/</Application_Info_URL>
-      <Application_Screenshot_URL>http://dbeaver.jkiss.org/wp-content/uploads/2010/08/Screenshot_2.png</Application_Screenshot_URL>
+      <Application_Screenshot_URL>http://dbeaver.jkiss.org/product/Screenshot_Main.png</Application_Screenshot_URL>
       <Application_Icon_URL>http://dbeaver.jkiss.org/product/dbeaver.gif</Application_Icon_URL>
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
       <Application_Order_URL>http://dbeaver.jkiss.org/download/</Application_Order_URL>
