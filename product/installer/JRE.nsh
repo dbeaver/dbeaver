@@ -1,5 +1,4 @@
 !include LogicLib.nsh
-!include UAC.nsh
 
 ;  returns the full path of a valid java.exe
 ;  looks in:
@@ -89,30 +88,4 @@ Function CheckJREVersion
  
   CheckDone:
     Pop $R1
-FunctionEnd
- 
-; Attempt to give the UAC plug-in a user process and an admin process.
-; Attempt to give the UAC plug-in a user process and an admin process.
-Function ElevateToAdmin
-  UAC_Elevate:
-    UAC::RunElevated
-    StrCmp 1223 $0 UAC_ElevationAborted ; UAC dialog aborted by user?
-    StrCmp 0 $0 0 UAC_Err ; Error?
-    StrCmp 1 $1 0 UAC_Success ;Are we the real deal or just the wrapper?
-    Quit
- 
-  UAC_ElevationAborted:
-    # elevation was aborted, run as normal?
-    MessageBox MB_ICONSTOP "This installer requires admin access, aborting!"
-    Abort
- 
-  UAC_Err:
-    MessageBox MB_ICONSTOP "Unable to elevate, error $0"
-    Abort
- 
-  UAC_Success:
-    StrCmp 1 $3 +4 ;Admin?
-    StrCmp 3 $1 0 UAC_ElevationAborted ;Try again?
-    MessageBox MB_ICONSTOP "This installer requires admin access, try again"
-    goto UAC_Elevate 
 FunctionEnd

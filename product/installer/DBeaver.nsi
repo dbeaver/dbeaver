@@ -13,10 +13,10 @@
 
   ;Name and file
   Name "DBeaver"
-  Caption "DBeaver"
+  Caption "DBeaver Setup"
   BrandingText "Universal Database Manager"
-  Icon "..\..\plugins\org.jkiss.dbeaver.core\icons\logo\dbeaver.ico"
-  OutFile "dbeaver_setup.exe"
+  Icon "..\docs\dbeaver.ico"
+  OutFile "..\build\dbeaver_setup.exe"
 
   VIAddVersionKey "ProductName" "DBeaver"
   VIAddVersionKey "Comments" "Univarsal Database Manager"
@@ -28,7 +28,7 @@
   VIProductVersion "1.0.0.0"
 
 ; Definitions for Java 6.0
-  !define JRE_VERSION "7.0"
+  !define JRE_VERSION "6.0"
   !define JRE_URL "http://javadl.sun.com/webapps/download/AutoDL?BundleId=24936&/jre-6u10-windows-i586-p.exe"
  
 ; use javaw.exe to avoid dosbox.
@@ -42,7 +42,7 @@
   InstallDirRegKey HKCU "Software\DBeaver" ""
 
   ;Request application privileges for Windows Vista
-  RequestExecutionLevel user
+  RequestExecutionLevel admin
 
 ;--------------------------------
 ;Variables
@@ -53,12 +53,15 @@
 ;Interface Settings
 
   !define MUI_ABORTWARNING
+  !define MUI_ICON "..\docs\dbeaver.ico"
+  ;!define MUI_WELCOMEFINISHPAGE_BITMAP "..\docs\jkiss.bmp"
+  ;!define MUI_WELCOMEFINISHPAGE_BITMAP_NOSTRETCH
 
 ;--------------------------------
 ;Pages
 
   !insertmacro MUI_PAGE_WELCOME
-  !insertmacro MUI_PAGE_LICENSE "..\..\docs\license.txt"
+  !insertmacro MUI_PAGE_LICENSE "..\docs\license.txt"
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
   
@@ -73,7 +76,15 @@
   
   !insertmacro MUI_UNPAGE_CONFIRM
   !insertmacro MUI_UNPAGE_INSTFILES
+
+  !define MUI_FINISHPAGE_RUN
+  !define MUI_FINISHPAGE_RUN_TEXT "Launch DBeaver"
+  !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchDBeaver"
   !insertmacro MUI_PAGE_FINISH
+
+Function LaunchDBeaver
+  ExecShell "" "$SMPROGRAMS\$StartMenuFolder\DBeaver.lnk"
+FunctionEnd
 
 ;--------------------------------
 ;Languages
@@ -93,13 +104,19 @@
 
 Section "-DBeaver Core" SecCore
 
+  SetShellVarContext all
   Call GetJRE
   
   SetOutPath "$INSTDIR"
   
-  File "..\..\dist\dbeaver\.eclipseproduct"
-  File "..\..\dist\dbeaver\dbeaver.exe"
-  File /r "..\..\dist\dbeaver\configuration"
+  File "..\build\raw-win32.x86\.eclipseproduct"
+  File "..\build\raw-win32.x86\dbeaver.exe"
+  File /r "..\build\raw-win32.x86\configuration"
+  File /r  /x org.jkiss.*.jar "..\build\raw-win32.x86\plugins"
+  
+  SetOutPath "$INSTDIR\plugins"
+  
+  File "..\build\raw-win32.x86\plugins\org.jkiss.dbeaver.core_1.0.0.rc1.jar"
   
   ;Store installation folder
   WriteRegStr HKCU "Software\DBeaver" "" $INSTDIR
@@ -111,6 +128,7 @@ Section "-DBeaver Core" SecCore
     
     ;Create shortcuts
     CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
+	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\DBeaver.lnk" "$INSTDIR\dbeaver.exe"
     CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
   
   !insertmacro MUI_STARTMENU_WRITE_END
@@ -121,38 +139,47 @@ SectionGroup /e "Plugins"
 
 	Section "Generic JDBC" SecGeneric
 
-	  SetOutPath "$INSTDIR"
+	  SetOutPath "$INSTDIR\plugins"
 	  
-	  ;ADD YOUR OWN FILES HERE...
+	  File "..\build\raw-win32.x86\plugins\org.jkiss.dbeaver.ext.generic_1.0.0.jar"
 
 	SectionEnd
 
 	Section "MySQL Plugin" SecMySQL
 
-	  SetOutPath "$INSTDIR"
+	  SetOutPath "$INSTDIR\plugins"
 	  
-	  ;ADD YOUR OWN FILES HERE...
+	  File "..\build\raw-win32.x86\plugins\org.jkiss.dbeaver.ext.mysql_1.0.0.jar"
 
 	SectionEnd
 
 	Section "ER Diagrams" SecERD
 
-	  SetOutPath "$INSTDIR"
+	  SetOutPath "$INSTDIR\plugins"
 	  
-	  ;ADD YOUR OWN FILES HERE...
+	  File "..\build\raw-win32.x86\plugins\org.jkiss.dbeaver.ext.erd_1.0.0.jar"
 
 	SectionEnd
 
 SectionGroupEnd
+
+Section "Drivers" SecDrivers
+
+  SetOutPath "$INSTDIR"
+  
+  File /r "..\build\raw-win32.x86\drivers"
+
+SectionEnd
 
 ;--------------------------------
 ;Descriptions
 
   ;Language strings
   LangString DESC_SecCore ${LANG_ENGLISH} "DBeaver core executables and resources."
-  LangString DESC_SecGeneric ${LANG_ENGLISH} "Support of generic JDBC drivers. Includes drivers for Oracle, DB2, PostgreSQL, SQL Server and Sybase"
+  LangString DESC_SecGeneric ${LANG_ENGLISH} "Support of generic JDBC drivers."
   LangString DESC_SecMySQL ${LANG_ENGLISH} "Supports additional features for MySQL 5.x databases. Includes MySQL JDBC driver"
   LangString DESC_SecERD ${LANG_ENGLISH} "Provides support of ERD diagrams for schemas and individual tables."
+  LangString DESC_SecDrivers ${LANG_ENGLISH} "Includes JDBC drivers for Oracle, DB2, PostgreSQL, SQL Server and Sybase."
 
   ;Assign language strings to sections
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
@@ -160,6 +187,7 @@ SectionGroupEnd
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecGeneric} $(DESC_SecGeneric)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecMySQL} $(DESC_SecMySQL)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecERD} $(DESC_SecERD)
+	!insertmacro MUI_DESCRIPTION_TEXT ${SecDrivers} $(DESC_SecDrivers)
   !insertmacro MUI_FUNCTION_DESCRIPTION_END
  
 ;--------------------------------
@@ -167,17 +195,22 @@ SectionGroupEnd
 
 Section "Uninstall"
 
-  ;ADD YOUR OWN FILES HERE...
-
+  SetShellVarContext all
   Delete "$INSTDIR\Uninstall.exe"
 
+  Delete "$INSTDIR\.eclipseproduct"
+  Delete "$INSTDIR\dbeaver.exe"
+  RMDir /r "$INSTDIR\configuration"
+  RMDir /r "$INSTDIR\plugins"
+  RMDir /r "$INSTDIR\drivers"
   RMDir "$INSTDIR"
-  
+
   !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
-    
+
+  Delete "$SMPROGRAMS\$StartMenuFolder\DBeaver.lnk"
   Delete "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk"
   RMDir "$SMPROGRAMS\$StartMenuFolder"
-  
+
   DeleteRegKey /ifempty HKCU "Software\DBeaver"
 
 SectionEnd
