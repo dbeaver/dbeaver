@@ -5,12 +5,37 @@
   -->
 
 <plugin>
-   <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            allPopups="false"
-            locationURI="org.jkiss.dbeaver.import_config.menuContribution1">
-      </menuContribution>
+   <extension point="org.eclipse.ui.importWizards">
+      <category
+            id="org.jkiss.dbeaver.import_config.third-party"
+            name="3rd Party Configuration">
+      </category>
+      <wizard
+            category="org.jkiss.dbeaver.import_config.third-party"
+            class="org.jkiss.dbeaver.import_config.products.ImportConfigSquirrel"
+            id="org.jkiss.dbeaver.import_config.sqlsquirrel"
+            name="SQL Squirrel">
+         <description>
+            SQL Squirrel Client
+         </description>
+       </wizard>
+       <wizard
+             category="org.jkiss.dbeaver.import_config.third-party"
+             class="org.jkiss.dbeaver.import_config.products.ImportConfigDBvis"
+             id="org.jkiss.dbeaver.import_config.sqlsquirrel"
+             name="DBVisualizer">
+          <description>
+             DBVisualizer
+          </description>
+       </wizard>
+       <wizard
+             class="org.jkiss.dbeaver.import_config.content.ImportScripts"
+             id="org.jkiss.dbeaver.import_config.scripts"
+             name="SQL Scripts">
+          <description>
+             SQL Scripts
+          </description>
+       </wizard>
    </extension>
 
 
