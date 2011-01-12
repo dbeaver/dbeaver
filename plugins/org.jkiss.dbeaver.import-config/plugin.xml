@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  -->
+
+<plugin>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="org.jkiss.dbeaver.import_config.menuContribution1">
+      </menuContribution>
+   </extension>
+
+
+</plugin>

@@ -760,6 +760,11 @@
             <command commandId="org.eclipse.ui.file.save"/>
             <command commandId="org.eclipse.ui.file.refresh"/>
             <command commandId="org.eclipse.ui.file.close"/>
+            <separator name="import-export" visible="true"/>
+            <command commandId="org.eclipse.ui.file.import"/>
+            <!--command commandId="org.eclipse.ui.file.close"/-->
+            <separator name="exit" visible="true"/>
+            <command commandId="org.eclipse.ui.file.exit"/>
         </menuContribution>
 
         <!-- Window menu -->

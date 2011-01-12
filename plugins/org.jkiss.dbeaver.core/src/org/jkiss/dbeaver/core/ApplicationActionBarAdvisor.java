@@ -31,7 +31,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     // Actions - important to allocate these only in makeActions, and then use them
     // in the fill methods.  This ensures that the actions aren't recreated
     // when fillActionBars is called with FILL_PROXY.
-    private IWorkbenchAction exitAction;
     private IWorkbenchAction findAction;
     private IActionDelegate aboutAction;
     private IWorkbenchAction newWindowAction;
@@ -76,9 +75,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         // Registering also provides automatic disposal of the actions when
         // the window is closed.
 
-        exitAction = ActionFactory.QUIT.create(window);
-        register(exitAction);
-
         findAction = ActionFactory.FIND.create(window);
         register(findAction);
 
@@ -120,7 +116,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         fileMenu.add(viewPreferencesAction);
         fileMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         fileMenu.add(new Separator("end"));
-        fileMenu.add(exitAction);
 
         // Edit
         editMenu.add(new Separator("undoredo"));

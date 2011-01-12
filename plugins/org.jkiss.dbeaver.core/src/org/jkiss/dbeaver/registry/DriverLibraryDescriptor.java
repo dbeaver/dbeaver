@@ -10,7 +10,6 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.osgi.service.datalocation.Location;
-import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.io.File;
 import java.io.IOException;

@@ -109,6 +109,7 @@
       <plugin id="org.jkiss.dbeaver.ext.erd"/>
       <plugin id="org.jkiss.dbeaver.ext.generic"/>
       <plugin id="org.jkiss.dbeaver.ext.mysql"/>
+      <plugin id="org.jkiss.dbeaver.ext.import_config"/>
    </plugins>
 
 
