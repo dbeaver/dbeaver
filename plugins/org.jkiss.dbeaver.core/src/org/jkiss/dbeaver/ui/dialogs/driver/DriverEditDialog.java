@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
@@ -512,6 +513,14 @@ public class DriverEditDialog extends Dialog
             java.util.List<URL> libURLs = new ArrayList<URL>();
             for (String libFileName : fileNames) {
                 File libFile = new File(libFileName);
+                if (!libFile.exists()) {
+                    try {
+                        URL libURL = Platform.getInstallLocation().getDataArea(libFileName);
+                        libFile = new File(libURL.getFile());
+                    } catch (IOException e) {
+                        log.debug(e);
+                    }
+                }
                 if (libFile.exists() && !libFile.isDirectory()) {
                     libFiles.add(libFile);
                     try {
