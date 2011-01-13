@@ -114,7 +114,7 @@ public abstract class DBNNode implements IActionFilter, DBSWrapper
 
     public abstract boolean hasNavigableChildren();
     
-    public abstract List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)  throws DBException;
+    public abstract List<? extends DBNNode> getChildren(DBRProgressMonitor monitor) throws DBException;
 
     void clearNode(boolean reflect)
     {
@@ -126,9 +126,9 @@ public abstract class DBNNode implements IActionFilter, DBSWrapper
         return false;
     }
 
-    public void rename(DBRProgressMonitor monitor, String newName)
+    public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
-        throw new UnsupportedOperationException("Rename is not supported");
+        throw new DBException("Rename is not supported");
     }
 
     /**

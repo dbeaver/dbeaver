@@ -16,6 +16,7 @@ import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -24,7 +25,6 @@ import org.jkiss.dbeaver.model.navigator.IDBNListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -220,7 +220,11 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                         DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
                             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                             {
-                                node.rename(monitor, newName);
+                                try {
+                                    node.rename(monitor, newName);
+                                } catch (DBException e1) {
+                                    throw new InvocationTargetException(e1);
+                                }
 /*
 
                                 getDisplay().asyncExec(new Runnable() {

@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.core;
 
+import net.sf.jkiss.utils.SecurityUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
+import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -63,6 +65,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private IWorkspace workspace;
     private IWorkbench workbench;
     private IProject defaultProject;
+    private IProject activeProject;
     private IPath rootPath;
 
     private DataSourceRegistry dataSourceRegistry;
@@ -116,8 +119,22 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
         this.metaModel = new DBNModel(dataSourceRegistry);
         this.queryManager = new QMControllerImpl(dataSourceRegistry);
+
         // Make default project
-        this.defaultProject = this.workspace.getRoot().getProject(DEFAULT_PROJECT_NAME);
+        this.defaultProject = openOrCreateProject(DEFAULT_PROJECT_NAME);
+
+        // Init preferences
+        initDefaultPreferences();
+    }
+
+    public IProject getDefaultProject()
+    {
+        return defaultProject;
+    }
+
+    private IProject openOrCreateProject(String projectName)
+    {
+        final IProject project = this.workspace.getRoot().getProject(projectName);
 
         try {
             PlatformUI.getWorkbench().getProgressService().run(false, false, new IRunnableWithProgress() {
@@ -125,10 +142,10 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                     throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        if (!defaultProject.exists()) {
-                            defaultProject.create(monitor);
+                        if (!project.exists()) {
+                            project.create(monitor);
                         }
-                        defaultProject.open(monitor);
+                        project.open(monitor);
                     }
                     catch (CoreException ex) {
                         throw new InvocationTargetException(ex);
@@ -142,9 +159,14 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         catch (InterruptedException e) {
             // do nothing
         }
-
-        // Init preferences
-        initDefaultPreferences();
+        try {
+            if (project.getPersistentProperty(DBeaverConstants.PROJECT_PROP_ID) == null) {
+                project.setPersistentProperty(DBeaverConstants.PROJECT_PROP_ID, SecurityUtils.generateGUID(false));
+            }
+        } catch (CoreException e) {
+            log.error("Couldn't set project ID");
+        }
+        return project;
     }
 
     public synchronized void dispose()

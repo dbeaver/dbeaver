@@ -36,6 +36,7 @@ public enum DBIcon
     TREE_TRIGGER("trigger", "icons/tree/trigger.png"),
     TREE_USER("user", "icons/tree/user.png"),
 
+    PROJECT("project", "icons/project.png"),
     PROJECTS("projects", "icons/projects.png"),
 
     LOADING1("loading1", "icons/tree/load/loading1.gif"),
