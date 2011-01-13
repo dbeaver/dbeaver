@@ -13,7 +13,8 @@ import org.eclipse.ui.part.ViewPart;
 /**
  * ProjectNavigatorView
  */
-public class ProjectNavigatorView extends ViewPart {
+public class ProjectNavigatorView extends ViewPart // CommonNavigator
+{
 
     static final Log log = LogFactory.getLog(ProjectNavigatorView.class);
 

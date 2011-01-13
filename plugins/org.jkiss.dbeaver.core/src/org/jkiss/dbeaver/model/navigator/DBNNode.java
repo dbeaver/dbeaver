@@ -121,6 +121,16 @@ public abstract class DBNNode implements IActionFilter, DBSWrapper
 
     }
 
+    public boolean supportsRename()
+    {
+        return false;
+    }
+
+    public void rename(DBRProgressMonitor monitor, String newName)
+    {
+        throw new UnsupportedOperationException("Rename is not supported");
+    }
+
     /**
      * Refreshes node.
      * If refresh cannot be done in this level then refreshes parent node.

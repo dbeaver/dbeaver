@@ -35,6 +35,8 @@ public class DataSourceRegistry implements DBPRegistry
 
     static final Log log = LogFactory.getLog(DataSourceRegistry.class);
 
+    public static final String CONFIG_FILE_NAME = "data-sources.xml";
+
     private DBeaverCore core;
     private File workspaceRoot;
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<DataSourceProviderDescriptor>();
@@ -46,8 +48,6 @@ public class DataSourceRegistry implements DBPRegistry
 
     private StringEncrypter encrypter;
     private static final String PASSWORD_ENCRYPTION_KEY = "sdf@!#$verf^wv%6Fwe%$$#FFGwfsdefwfe135s$^H)dg";
-    public static final String CONFIG_FILE_NAME = "data-sources.xml";
-
 
     public DataSourceRegistry(DBeaverCore core)
     {

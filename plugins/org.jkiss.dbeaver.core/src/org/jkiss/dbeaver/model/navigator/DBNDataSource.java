@@ -115,4 +115,15 @@ public class DBNDataSource extends DBNTreeNode implements IAdaptable, IDataSourc
         return dataSource;
     }
 
+    public boolean supportsRename()
+    {
+        return true;
+    }
+
+    public void rename(DBRProgressMonitor monitor, String newName)
+    {
+        dataSource.setName(newName);
+        dataSource.getRegistry().updateDataSource(dataSource);
+    }
+
 }
