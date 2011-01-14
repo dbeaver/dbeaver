@@ -28,9 +28,11 @@ import org.jkiss.dbeaver.model.data.DBDContentStorageLocal;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -49,7 +51,7 @@ public class ContentEditorInput implements IPathEditorInput, IDatabaseEditorInpu
     private IFile contentFile;
     private boolean contentDetached = false;
 
-    private DBNNode treeNode;
+    private DBNDatabaseNode databaseNode;
 
     ContentEditorInput(
         DBDValueController valueController,
@@ -297,16 +299,16 @@ public class ContentEditorInput implements IPathEditorInput, IDatabaseEditorInpu
         return valueController.getDataSource();
     }
 
-    public DBNNode getTreeNode() {
-        if (treeNode == null) {
-            treeNode = DBeaverCore.getInstance().getNavigatorModel().findNode(valueController.getDataSource().getContainer());
+    public DBNDatabaseNode getTreeNode() {
+        if (databaseNode == null) {
+            databaseNode = DBeaverCore.getInstance().getNavigatorModel().findNode(valueController.getDataSource().getContainer());
         }
-        return treeNode;
+        return databaseNode;
     }
 
     public DBSObject getDatabaseObject() {
         DBNNode node = getTreeNode();
-        return node == null ? null : node.getObject();
+        return node instanceof DBSWrapper ? ((DBSWrapper)node).getObject() : null;
     }
 
     public String getDefaultPageId() {

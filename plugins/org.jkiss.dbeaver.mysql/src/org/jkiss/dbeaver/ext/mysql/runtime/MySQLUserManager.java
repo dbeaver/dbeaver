@@ -11,7 +11,6 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.edit.prop.DBOCommandProperty;
 import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectScriptCommand;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.DBOEditorJDBC;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;
 import java.util.Map;
@@ -29,7 +28,7 @@ public class MySQLUserManager extends DBOEditorJDBC<MySQLUser> implements DBOCre
         }
     }
 
-    public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, MySQLUser copyFrom)
+    public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, Object parent, MySQLUser copyFrom)
     {
         MySQLUser newUser = new MySQLUser((MySQLDataSource) parent, null);
         if (copyFrom != null) {

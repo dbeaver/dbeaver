@@ -15,8 +15,9 @@
   Name "DBeaver"
   Caption "DBeaver Setup"
   BrandingText "Universal Database Manager"
-  Icon "..\docs\dbeaver.ico"
-  OutFile "..\build\dbeaver_setup.exe"
+  Icon "..\..\docs\dbeaver.ico"
+  ;OutFile "dbeaver_setup.exe"
+  OutFile "..\@buildId@-setup.exe"
 
   VIAddVersionKey "ProductName" "DBeaver"
   VIAddVersionKey "Comments" "Univarsal Database Manager"
@@ -53,15 +54,15 @@
 ;Interface Settings
 
   !define MUI_ABORTWARNING
-  !define MUI_ICON "..\docs\dbeaver.ico"
-  ;!define MUI_WELCOMEFINISHPAGE_BITMAP "..\docs\jkiss.bmp"
+  !define MUI_ICON "..\..\docs\dbeaver.ico"
+  ;!define MUI_WELCOMEFINISHPAGE_BITMAP "..\..\docs\jkiss.bmp"
   ;!define MUI_WELCOMEFINISHPAGE_BITMAP_NOSTRETCH
 
 ;--------------------------------
 ;Pages
 
   !insertmacro MUI_PAGE_WELCOME
-  !insertmacro MUI_PAGE_LICENSE "..\docs\license.txt"
+  !insertmacro MUI_PAGE_LICENSE "..\..\docs\license.txt"
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
   
@@ -109,14 +110,14 @@ Section "-DBeaver Core" SecCore
   
   SetOutPath "$INSTDIR"
   
-  File "..\build\raw-win32.x86\.eclipseproduct"
-  File "..\build\raw-win32.x86\dbeaver.exe"
-  File /r "..\build\raw-win32.x86\configuration"
-  File /r  /x org.jkiss.*.jar "..\build\raw-win32.x86\plugins"
+  File "raw\win32.x86\dbeaver\.eclipseproduct"
+  File "raw\win32.x86\dbeaver\dbeaver.exe"
+  File /r "raw\win32.x86\dbeaver\configuration"
+  File /r  /x org.jkiss.*.jar "raw\win32.x86\dbeaver\plugins"
   
   SetOutPath "$INSTDIR\plugins"
   
-  File "..\build\raw-win32.x86\plugins\org.jkiss.dbeaver.core_1.0.0.rc1.jar"
+  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.core_1.0.0.rc1.jar"
   
   ;Store installation folder
   WriteRegStr HKCU "Software\DBeaver" "" $INSTDIR
@@ -141,7 +142,7 @@ SectionGroup /e "Plugins"
 
 	  SetOutPath "$INSTDIR\plugins"
 	  
-	  File "..\build\raw-win32.x86\plugins\org.jkiss.dbeaver.ext.generic_1.0.0.jar"
+	  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.ext.generic_1.0.0.jar"
 
 	SectionEnd
 
@@ -149,7 +150,7 @@ SectionGroup /e "Plugins"
 
 	  SetOutPath "$INSTDIR\plugins"
 	  
-	  File "..\build\raw-win32.x86\plugins\org.jkiss.dbeaver.ext.mysql_1.0.0.jar"
+	  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.ext.mysql_1.0.0.jar"
 
 	SectionEnd
 
@@ -157,7 +158,7 @@ SectionGroup /e "Plugins"
 
 	  SetOutPath "$INSTDIR\plugins"
 	  
-	  File "..\build\raw-win32.x86\plugins\org.jkiss.dbeaver.ext.erd_1.0.0.jar"
+	  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.ext.erd_1.0.0.jar"
 
 	SectionEnd
 
@@ -167,7 +168,7 @@ Section "Drivers" SecDrivers
 
   SetOutPath "$INSTDIR"
   
-  File /r "..\build\raw-win32.x86\drivers"
+  File /r "raw\win32.x86\dbeaver\drivers"
 
 SectionEnd
 

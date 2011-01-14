@@ -22,9 +22,9 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
-import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageStandard;
 
@@ -59,36 +59,36 @@ public class DefaultObjectEditor extends EditorPart implements IRefreshablePart
             gl = new GridLayout(3, false);
             infoGroup.setLayout(gl);
 
-            List<DBNTreeNode> nodeList = new ArrayList<DBNTreeNode>();
+            List<DBNDatabaseNode> nodeList = new ArrayList<DBNDatabaseNode>();
             for (DBNNode n = node; n != null; n = n.getParentNode()) {
-                if (n instanceof DBNTreeNode && !(n instanceof DBNTreeFolder)) {
-                    nodeList.add(0, (DBNTreeNode)n);
+                if (n instanceof DBNDatabaseNode && !(n instanceof DBNDatabaseFolder)) {
+                    nodeList.add(0, (DBNDatabaseNode)n);
                 }
             }
-            for (final DBNTreeNode treeNode : nodeList) {
+            for (final DBNDatabaseNode databaseNode : nodeList) {
                 Label objectIcon = new Label(infoGroup, SWT.NONE);
-                objectIcon.setImage(treeNode.getNodeIconDefault());
+                objectIcon.setImage(databaseNode.getNodeIconDefault());
 
                 Label objectLabel = new Label(infoGroup, SWT.NONE);
-                objectLabel.setText(treeNode.getMeta().getItemLabel() + ":");
+                objectLabel.setText(databaseNode.getMeta().getItemLabel() + ":");
 
                 Link objectLink = new Link(infoGroup, SWT.NONE);
                 //Text objectText = new Text(infoGroup, SWT.BORDER);
                 GridData gd = new GridData(GridData.FILL_HORIZONTAL);
                 objectLink.setLayoutData(gd);
 
-                if (treeNode == node) {
-                    objectLink.setText(treeNode.getNodeName());
+                if (databaseNode == node) {
+                    objectLink.setText(databaseNode.getNodeName());
                 } else {
-                    objectLink.setText("<A>" + treeNode.getNodeName() + "</A>");
+                    objectLink.setText("<A>" + databaseNode.getNodeName() + "</A>");
                     objectLink.addSelectionListener(new SelectionAdapter()
                     {
                         public void widgetSelected(SelectionEvent e)
                         {
-                            NavigatorHandlerObjectOpen.openEntityEditor(treeNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                            NavigatorHandlerObjectOpen.openEntityEditor(databaseNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                         }
                     });
-                    objectLink.setToolTipText("Open '" + treeNode.getNodeName() + "' viewer");
+                    objectLink.setToolTipText("Open '" + databaseNode.getNodeName() + "' viewer");
                 }
             }
         }

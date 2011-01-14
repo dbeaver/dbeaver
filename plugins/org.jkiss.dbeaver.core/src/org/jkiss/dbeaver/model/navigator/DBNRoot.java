@@ -4,12 +4,10 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -20,7 +18,7 @@ import java.util.List;
  */
 public class DBNRoot extends DBNNode implements DBNContainer
 {
-    private List<DBNDataSource> dataSources = new ArrayList<DBNDataSource>();
+    private List<DBNProject> projects = new ArrayList<DBNProject>();
 
     public DBNRoot(DBNModel model)
     {
@@ -29,15 +27,10 @@ public class DBNRoot extends DBNNode implements DBNContainer
 
     void dispose(boolean reflect)
     {
-        for (DBNDataSource dataSource : dataSources) {
-            dataSource.dispose(reflect);
+        for (DBNProject project : projects) {
+            project.dispose(reflect);
         }
-        dataSources.clear();
-    }
-
-    public DBSObject getObject()
-    {
-        return this;
+        projects.clear();
     }
 
     public Object getValueObject()
@@ -45,36 +38,36 @@ public class DBNRoot extends DBNNode implements DBNContainer
         return this;
     }
 
-    public Class<DataSourceDescriptor> getItemsClass()
+    public Class<IProject> getItemsClass()
     {
-        return DataSourceDescriptor.class;
+        return IProject.class;
     }
 
-    public DBNNode addChildItem(DBRProgressMonitor monitor, DBSObject childObject) throws DBException
+    public DBNNode addChildItem(DBRProgressMonitor monitor, Object childObject) throws DBException
     {
-        if (childObject instanceof DataSourceDescriptor) {
-            return addDataSource((DataSourceDescriptor)childObject);
+        if (childObject instanceof IProject) {
+            return addProject((IProject)childObject);
         }
-        throw new IllegalArgumentException("Only data source descriptors could be added to root node");
+        throw new IllegalArgumentException("Only projects could be added to root node");
     }
 
     public void removeChildItem(DBNNode item) throws DBException
     {
-        if (item instanceof DBNDataSource) {
-            removeDataSource(((DBNDataSource)item).getObject());
+        if (item instanceof DBNProject) {
+            removeProject((DBNProject)item);
         } else {
-            throw new IllegalArgumentException("Only data source descriptors could be removed from root node");
+            throw new IllegalArgumentException("Only projects could be removed from root node");
         }
     }
 
     public String getNodeName()
     {
-        return null;
+        return "#root";
     }
 
     public String getNodeDescription()
     {
-        return null;
+        return "Model root";
     }
 
     public Image getNodeIcon()
@@ -84,7 +77,7 @@ public class DBNRoot extends DBNNode implements DBNContainer
 
     public boolean hasChildren()
     {
-        return !dataSources.isEmpty();
+        return !projects.isEmpty();
     }
 
     @Override
@@ -95,7 +88,7 @@ public class DBNRoot extends DBNNode implements DBNContainer
 
     public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)
     {
-        return dataSources;
+        return projects;
     }
 
     public String getDefaultCommandId()
@@ -103,53 +96,33 @@ public class DBNRoot extends DBNNode implements DBNContainer
         return null;
     }
 
-    public boolean isLazyNode()
+    public DBNProject getProject(IProject project)
     {
-        return false;
+        for (DBNProject node : projects) {
+            if (node.getProject() == project) {
+                return node;
+            }
+        }
+        return null;
     }
 
-    DBNDataSource addDataSource(DataSourceDescriptor descriptor)
+    DBNProject addProject(IProject project)
     {
-        DBNDataSource newNode = new DBNDataSource(this, descriptor);
-        dataSources.add(newNode);
+        DBNProject newNode = new DBNProject(this, project);
+        projects.add(newNode);
         return newNode;
     }
 
-    void removeDataSource(DataSourceDescriptor descriptor)
+    void removeProject(DBNProject project)
     {
-        for (Iterator<DBNDataSource> iter = dataSources.iterator(); iter.hasNext(); ) {
-            DBNDataSource dataSource = iter.next();
-            if (dataSource.getObject() == descriptor) {
+        for (Iterator<DBNProject> iter = projects.iterator(); iter.hasNext(); ) {
+            DBNProject projectNode = iter.next();
+            if (projectNode.getProject() == project) {
                 iter.remove();
-                dataSource.dispose(true);
+                projectNode.dispose(true);
                 break;
             }
         }
-    }
-
-    public String getName()
-    {
-        return "#root";
-    }
-
-    public String getDescription()
-    {
-        return null;
-    }
-
-    public DBSObject getParentObject()
-    {
-        return null;
-    }
-
-    public DBPDataSource getDataSource()
-    {
-        return null;
-    }
-
-    public boolean isPersisted()
-    {
-        return true;
     }
 
 }

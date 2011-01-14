@@ -15,9 +15,9 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.edit.DBOEditorInline;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
-import org.jkiss.dbeaver.model.navigator.DBNTreeObject;
+import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
@@ -36,9 +36,9 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
             for (Iterator iter = structSelection.iterator(); iter.hasNext(); ) {
                 Object element = iter.next();
-                DBNNode node = null;
-                if (element instanceof DBNNode) {
-                    node = (DBNNode)element;
+                DBNDatabaseNode node = null;
+                if (element instanceof DBNDatabaseNode) {
+                    node = (DBNDatabaseNode)element;
                 } else {
                     DBSObject object = (DBSObject) Platform.getAdapterManager().getAdapter(element, DBSObject.class);
                     if (object != null) {
@@ -53,7 +53,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
         return null;
     }
 
-    public static void openEntityEditor(DBNNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
+    public static void openEntityEditor(DBNDatabaseNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
     {
         if (selectedNode.getObject() instanceof DBOEditorInline) {
             ((DBOEditorInline)selectedNode.getObject()).editObject(workbenchWindow);
@@ -67,14 +67,14 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
                     return;
                 }
             }
-            if (selectedNode instanceof DBNTreeFolder) {
-                FolderEditorInput folderInput = new FolderEditorInput((DBNTreeFolder)selectedNode);
+            if (selectedNode instanceof DBNDatabaseFolder) {
+                FolderEditorInput folderInput = new FolderEditorInput((DBNDatabaseFolder)selectedNode);
                 folderInput.setDefaultPageId(defaultPageId);
                 workbenchWindow.getActivePage().openEditor(
                     folderInput,
                     FolderEditor.class.getName());
-            } else if (selectedNode instanceof DBNTreeObject) {
-                DBNTreeObject objectNode = (DBNTreeObject) selectedNode;
+            } else if (selectedNode instanceof DBNDatabaseObject) {
+                DBNDatabaseObject objectNode = (DBNDatabaseObject) selectedNode;
                 ObjectEditorInput objectInput = new ObjectEditorInput(objectNode);
                 workbenchWindow.getActivePage().openEditor(
                     objectInput,

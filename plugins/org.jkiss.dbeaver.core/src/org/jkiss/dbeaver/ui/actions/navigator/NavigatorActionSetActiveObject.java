@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
@@ -26,16 +27,17 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
     public void run(IAction action)
     {
         if (selection instanceof IStructuredSelection) {
-            final DBNNode selectedNode = ViewUtils.getSelectedNode((IStructuredSelection) selection);
-            if (selectedNode != null) {
+            DBNNode selectedNode = ViewUtils.getSelectedNode((IStructuredSelection) selection);
+            if (selectedNode instanceof DBNDatabaseNode) {
+                final DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
                 final DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
-                    DBSEntitySelector.class, selectedNode.getObject());
+                    DBSEntitySelector.class, databaseNode.getObject());
                 DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
                         try {
-                            activeContainer.setActiveChild(monitor, selectedNode.getObject());
+                            activeContainer.setActiveChild(monitor, databaseNode.getObject());
                         }
                         catch (DBException e) {
                             throw new InvocationTargetException(e);

@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdapterManager;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
@@ -42,15 +43,21 @@ public class DBNModel implements DBPEventListener {
     private Map<DBSObject, Object> nodeMap = new HashMap<DBSObject, Object>();
     private DBNAdapterFactory nodesAdapter;
 
-    //private static Map<DataSourceRegistry, DBNModel> modelMap = new HashMap<DataSourceRegistry, DBNModel>();
-
     public DBNModel(DataSourceRegistry registry)
     {
         this.registry = registry;
         this.root = new DBNRoot(this);
-        for (DataSourceDescriptor dataSource : registry.getDataSources()) {
-            root.addDataSource(dataSource);
+
+        // Add all existing projects to root node
+        IProject[] projects = registry.getCore().getWorkspace().getRoot().getProjects();
+        for (IProject project : projects) {
+            root.addProject(project);
         }
+/*
+        for (DataSourceDescriptor dataSource : registry.getDataSources()) {
+            root.addProject(dataSource);
+        }
+*/
 
         this.registry.addDataSourceListener(this);
 
@@ -95,34 +102,34 @@ public class DBNModel implements DBPEventListener {
         return root;
     }
 
-    public DBNNode findNode(DBSObject object)
+    public DBNDatabaseNode findNode(DBSObject object)
     {
-        if (object instanceof DBNNode) {
-            return (DBNNode)object;
+        if (object instanceof DBNDatabaseNode) {
+            return (DBNDatabaseNode)object;
         } else {
             return this.getNodeByObject(object);
         }
     }
 
-    public DBNNode getNodeByObject(DBSObject object)
+    public DBNDatabaseNode getNodeByObject(DBSObject object)
     {
-        if (object instanceof DBNNode) {
-            return (DBNNode)object;
+        if (object instanceof DBNDatabaseNode) {
+            return (DBNDatabaseNode)object;
         }
         Object obj = nodeMap.get(object);
         if (obj == null) {
             return null;
-        } else if (obj instanceof DBNNode) {
-            return (DBNNode)obj;
+        } else if (obj instanceof DBNDatabaseNode) {
+            return (DBNDatabaseNode)obj;
         } else if (obj instanceof List) {
             @SuppressWarnings("unchecked")
-            List<DBNNode> nodeList = (List<DBNNode>) obj;
+            List<DBNDatabaseNode> nodeList = (List<DBNDatabaseNode>) obj;
             if (nodeList.isEmpty()) {
                 return null;
             }
             if (nodeList.size() > 1) {
-                for (DBNNode node : nodeList) {
-                    if (node instanceof DBNTreeItem && !((DBNTreeItem)node).getMeta().isVirtual()) {
+                for (DBNDatabaseNode node : nodeList) {
+                    if (node instanceof DBNDatabaseItem && !((DBNDatabaseItem)node).getMeta().isVirtual()) {
                         return node;
                     }
                 }
@@ -141,9 +148,9 @@ public class DBNModel implements DBPEventListener {
 */
     }
 
-    public DBNNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean load)
+    public DBNDatabaseNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean load)
     {
-        DBNNode node = getNodeByObject(object);
+        DBNDatabaseNode node = getNodeByObject(object);
         if (node != null || !load) {
             return node;
         }
@@ -160,10 +167,10 @@ public class DBNModel implements DBPEventListener {
                 return null;
             }
             try {
-                List<? extends DBNNode> children = node.getChildren(monitor);
-                for (DBNNode child : children) {
-                    if (child instanceof DBNTreeFolder) {
-                        Class<?> itemsClass = ((DBNTreeFolder) child).getItemsClass();
+                List<? extends DBNDatabaseNode> children = node.getChildren(monitor);
+                for (DBNDatabaseNode child : children) {
+                    if (child instanceof DBNDatabaseFolder) {
+                        Class<?> itemsClass = ((DBNDatabaseFolder) child).getItemsClass();
                         if (itemsClass != null && itemsClass.isAssignableFrom(nextItem.getClass())) {
                             child.getChildren(monitor);
                         }
@@ -177,12 +184,12 @@ public class DBNModel implements DBPEventListener {
         return getNodeByObject(object);
     }
 
-    void addNode(DBNNode node)
+    void addNode(DBNDatabaseNode node)
     {
         addNode(node, false);
     }
 
-    void addNode(DBNNode node, boolean reflect)
+    void addNode(DBNDatabaseNode node, boolean reflect)
     {
         Object obj = nodeMap.get(node.getObject());
         if (obj == null) {
@@ -205,12 +212,12 @@ public class DBNModel implements DBPEventListener {
         }
     }
 
-    void removeNode(DBNNode node)
+    void removeNode(DBNDatabaseNode node)
     {
         removeNode(node, false);
     }
 
-    void removeNode(DBNNode node, boolean reflect)
+    void removeNode(DBNDatabaseNode node, boolean reflect)
     {
         Object obj = nodeMap.get(node.getObject());
         boolean badNode = false;
@@ -288,12 +295,26 @@ public class DBNModel implements DBPEventListener {
         switch (event.getAction()) {
             case OBJECT_ADD:
                 if (event.getObject() instanceof DataSourceDescriptor) {
-                    root.addDataSource((DataSourceDescriptor)event.getObject());
+                    List<IProject> projects = ((DataSourceDescriptor) event.getObject()).getProjects();
+                    for (IProject project : projects) {
+                        DBNProject projectNode = root.getProject(project);
+                        if (projectNode != null) {
+                            projectNode.getDatabases().addDataSource((DataSourceDescriptor)event.getObject());
+                        }
+                    }
+                    //root.addProject((DataSourceDescriptor)event.getObject());
                 }
                 break;
             case OBJECT_REMOVE:
                 if (event.getObject() instanceof DataSourceDescriptor) {
-                    root.removeDataSource((DataSourceDescriptor)event.getObject());
+                    List<IProject> projects = ((DataSourceDescriptor) event.getObject()).getProjects();
+                    for (IProject project : projects) {
+                        DBNProject projectNode = root.getProject(project);
+                        if (projectNode != null) {
+                            projectNode.getDatabases().removeDataSource((DataSourceDescriptor)event.getObject());
+                        }
+                    }
+                    //root.removeProject((DataSourceDescriptor)event.getObject());
                 }
                 break;
             case OBJECT_UPDATE:

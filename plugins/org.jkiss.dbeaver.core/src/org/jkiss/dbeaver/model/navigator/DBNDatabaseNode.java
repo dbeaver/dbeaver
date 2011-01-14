@@ -8,10 +8,13 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.IActionFilter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
@@ -23,14 +26,15 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * DBNTreeNode
+ * DBNDatabaseNode
  */
-public abstract class DBNTreeNode extends DBNNode {
-    static final Log log = LogFactory.getLog(DBNTreeNode.class);
+public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, DBSWrapper {
+    static final Log log = LogFactory.getLog(DBNDatabaseNode.class);
 
-    protected List<DBNTreeNode> childNodes;
+    private boolean locked;
+    protected List<DBNDatabaseNode> childNodes;
 
-    protected DBNTreeNode(DBNNode parentNode)
+    protected DBNDatabaseNode(DBNNode parentNode)
     {
         super(parentNode);
     }
@@ -95,9 +99,9 @@ public abstract class DBNTreeNode extends DBNNode {
     public boolean hasChildren(DBRProgressMonitor monitor, DBXTreeNode childType)
         throws DBException
     {
-        List<DBNTreeNode> children = getChildren(monitor);
+        List<DBNDatabaseNode> children = getChildren(monitor);
         if (!CommonUtils.isEmpty(children)) {
-            for (DBNTreeNode child : children) {
+            for (DBNDatabaseNode child : children) {
                 if (child.getMeta() == childType) {
                     return true;
                 }
@@ -106,12 +110,12 @@ public abstract class DBNTreeNode extends DBNNode {
         return false;
     }
 
-    public List<DBNTreeNode> getChildren(DBRProgressMonitor monitor)
+    public List<DBNDatabaseNode> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         if (this.hasChildren() && childNodes == null) {
             if (this.initializeNode()) {
-                final List<DBNTreeNode> tmpList = new ArrayList<DBNTreeNode>();
+                final List<DBNDatabaseNode> tmpList = new ArrayList<DBNDatabaseNode>();
                 loadChildren(monitor, getMeta(), null, tmpList);
                 this.childNodes = tmpList;
             }
@@ -129,9 +133,64 @@ public abstract class DBNTreeNode extends DBNNode {
         return childNodes == null;
     }
 
+    public boolean isLocked()
+    {
+        return locked || super.isLocked();
+    }
+
     public boolean initializeNode()
     {
         return true;
+    }
+
+    /**
+     * Refreshes node.
+     * If refresh cannot be done in this level then refreshes parent node.
+     * Do not actually changes navigation tree. If some underlying object is refreshed it must fire DB model
+     * event which will cause actual tree nodes refresh. Underlying object could present multiple times in
+     * navigation model - each occurrence will be refreshed then.
+     * @param monitor progress monitor
+     * @return real refreshed node or null if nothing was refreshed
+     * @throws DBException on any internal exception
+     */
+    public DBNNode refreshNode(DBRProgressMonitor monitor) throws DBException
+    {
+        if (isLocked()) {
+            log.warn("Attempt to refresh locked node '" + getNodeName() + "'");
+            return null;
+        }
+        if (getObject() instanceof DBSEntity && ((DBSEntity)getObject()).refreshEntity(monitor)) {
+            refreshNodeContent(monitor);
+            return this;
+        } else {
+            return super.refreshNode(monitor);
+        }
+    }
+
+    private void refreshNodeContent(final DBRProgressMonitor monitor)
+        throws DBException
+    {
+        if (isDisposed()) {
+            return;
+        }
+        this.locked = true;
+        try {
+            this.getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.LOCK);
+
+            try {
+                this.reloadChildren(monitor);
+            } catch (DBException e) {
+                log.error(e);
+            }
+
+            this.getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
+        } finally {
+            this.locked = false;
+
+            // Unlock node
+            this.getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.UNLOCK);
+        }
+        //new RefreshJob("Refresh node " + getNodeName()).schedule();
     }
 
     protected void clearChildren(boolean reflect)
@@ -148,8 +207,8 @@ public abstract class DBNTreeNode extends DBNNode {
     private void loadChildren(
         DBRProgressMonitor monitor,
         final DBXTreeNode meta,
-        final List<DBNTreeNode> oldList,
-        final List<DBNTreeNode> toList)
+        final List<DBNDatabaseNode> oldList,
+        final List<DBNDatabaseNode> toList)
         throws DBException
     {
         if (!meta.hasChildren()) {
@@ -175,9 +234,9 @@ public abstract class DBNTreeNode extends DBNNode {
                 if (oldList == null) {
                     // Load new folders only if there are no old ones
                     toList.add(
-                        new DBNTreeFolder(this, (DBXTreeFolder) child));
+                        new DBNDatabaseFolder(this, (DBXTreeFolder) child));
                 } else {
-                    for (DBNTreeNode oldFolder : oldList) {
+                    for (DBNDatabaseNode oldFolder : oldList) {
                         if (oldFolder.getMeta() == child) {
                             oldFolder.reloadChildren(monitor);
                             toList.add(oldFolder);
@@ -189,9 +248,9 @@ public abstract class DBNTreeNode extends DBNNode {
                 if (oldList == null) {
                     // Load new objects only if there are no old ones
                     toList.add(
-                        new DBNTreeObject(this, (DBXTreeObject) child));
+                        new DBNDatabaseObject(this, (DBXTreeObject) child));
                 } else {
-                    for (DBNTreeNode oldObject : oldList) {
+                    for (DBNDatabaseNode oldObject : oldList) {
                         if (oldObject.getMeta() == child) {
                             oldObject.reloadChildren(monitor);
                             toList.add(oldObject);
@@ -218,8 +277,8 @@ public abstract class DBNTreeNode extends DBNNode {
     private boolean loadTreeItems(
         DBRProgressMonitor monitor,
         DBXTreeItem meta,
-        final List<DBNTreeNode> oldList,
-        final List<DBNTreeNode> toList)
+        final List<DBNDatabaseNode> oldList,
+        final List<DBNDatabaseNode> toList)
         throws DBException
     {
         // Read property using reflection
@@ -257,7 +316,7 @@ public abstract class DBNTreeNode extends DBNNode {
             boolean added = false;
             if (oldList != null) {
                 // Check that new object is a replacement of old one
-                for (DBNTreeNode oldChild : oldList) {
+                for (DBNDatabaseNode oldChild : oldList) {
                     if (equalObjects(oldChild.getObject(), object)) {
                         oldChild.reloadObject(monitor, object);
 
@@ -275,14 +334,14 @@ public abstract class DBNTreeNode extends DBNNode {
             }
             if (!added) {
                 // Simply add new item
-                DBNTreeItem treeItem = new DBNTreeItem(this, meta, object, oldList != null);
+                DBNDatabaseItem treeItem = new DBNDatabaseItem(this, meta, object, oldList != null);
                 toList.add(treeItem);
             }
         }
 
         if (oldList != null) {
             // Now remove all non-existing items
-            for (DBNTreeNode oldChild : oldList) {
+            for (DBNDatabaseNode oldChild : oldList) {
                 boolean found = false;
                 for (Object childItem : itemList) {
                     if (childItem instanceof DBSObject && equalObjects(oldChild.getObject(), (DBSObject) childItem)) {
@@ -306,9 +365,21 @@ public abstract class DBNTreeNode extends DBNNode {
             // Nothing to reload
             return;
         }
-        List<DBNTreeNode> newChildren = new ArrayList<DBNTreeNode>();
+        List<DBNDatabaseNode> newChildren = new ArrayList<DBNDatabaseNode>();
         loadChildren(monitor, getMeta(), childNodes, newChildren);
         childNodes = newChildren;
+    }
+
+    public boolean testAttribute(Object target, String name, String value) {
+        if (name.equals("targetType")) {
+            try {
+                Class<?> targetClass = Class.forName(value);
+                return targetClass.isAssignableFrom(getObject().getClass());
+            } catch (ClassNotFoundException e) {
+                log.warn("Unknown target type: " + value);
+            }
+        }
+        return false;
     }
 
     private static boolean equalObjects(DBSObject object1, DBSObject object2) {
@@ -322,7 +393,10 @@ public abstract class DBNTreeNode extends DBNNode {
         return true;
     }
 
+    public abstract Object getValueObject();
+
     public abstract DBXTreeNode getMeta();
 
     protected abstract void reloadObject(DBRProgressMonitor monitor, DBSObject object);
+
 }

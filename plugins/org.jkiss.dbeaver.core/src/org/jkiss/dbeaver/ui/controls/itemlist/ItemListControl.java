@@ -9,9 +9,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
-import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
@@ -57,7 +58,7 @@ public class ItemListControl extends NodeListControl
 
         protected ItemLoadService(DBXTreeNode metaNode)
         {
-            super("Loading items", getRootNode());
+            super("Loading items", getRootNode() instanceof DBSWrapper ? (DBSWrapper)getRootNode() : null);
             this.metaNode = metaNode;
         }
 
@@ -74,14 +75,14 @@ public class ItemListControl extends NodeListControl
                     if (getProgressMonitor().isCanceled()) {
                         break;
                     }
-                    if (item instanceof DBNTreeFolder) {
+                    if (item instanceof DBNDatabaseFolder) {
                         continue;
                     }
                     if (metaNode != null) {
-                        if (!(item instanceof DBNTreeNode)) {
+                        if (!(item instanceof DBNDatabaseNode)) {
                             continue;
                         }
-                        if (((DBNTreeNode)item).getMeta() != metaNode) {
+                        if (((DBNDatabaseNode)item).getMeta() != metaNode) {
                             continue;
                         }
                     }

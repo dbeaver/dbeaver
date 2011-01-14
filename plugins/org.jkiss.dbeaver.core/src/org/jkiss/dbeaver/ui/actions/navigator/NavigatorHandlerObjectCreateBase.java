@@ -17,8 +17,8 @@ import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.model.edit.DBOEditor;
 import org.jkiss.dbeaver.model.edit.DBOManager;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
@@ -32,7 +32,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerObjectBase {
 
-    protected boolean createNewObject(final IWorkbenchWindow workbenchWindow, DBNNode element, DBNTreeNode copyFrom)
+    protected boolean createNewObject(final IWorkbenchWindow workbenchWindow, DBNNode element, DBNDatabaseNode copyFrom)
     {
         DBNContainer container = null;
         if (element instanceof DBNContainer) {
@@ -43,8 +43,8 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 container = (DBNContainer) parentNode;
             }
         }
-        if (container == null || !(container.getValueObject() instanceof DBSObject)) {
-            log.error("Can't create child object for container " + container);
+        if (container == null) {
+            log.error("Can't create child object - no container found");
             return false;
         }
         Class childType = container.getItemsClass();
@@ -69,7 +69,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         }
 
         DBOCreator objectCreator = (DBOCreator) objectManager;
-        DBOCreator.CreateResult result = objectCreator.createNewObject(workbenchWindow, (DBSObject) container.getValueObject(), sourceObject);
+        DBOCreator.CreateResult result = objectCreator.createNewObject(workbenchWindow, container.getValueObject(), sourceObject);
         if (result == DBOCreator.CreateResult.CANCEL) {
             return false;
         }
@@ -98,14 +98,17 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                     }
                 });
                 if (result == DBOCreator.CreateResult.OPEN_EDITOR) {
-                    EntityEditorInput editorInput = new EntityEditorInput(newChild, objectManager);
-                    try {
-                        workbenchWindow.getActivePage().openEditor(
-                            editorInput,
-                            EntityEditor.class.getName());
-                    } catch (PartInitException e) {
-                        UIUtils.showErrorDialog(workbenchWindow.getShell(), "Can't open editor for new object", null, e);
-                        return false;
+                    // Can open editor only for database nodes
+                    if (newChild instanceof DBNDatabaseNode) {
+                        EntityEditorInput editorInput = new EntityEditorInput((DBNDatabaseNode)newChild, objectManager);
+                        try {
+                            workbenchWindow.getActivePage().openEditor(
+                                editorInput,
+                                EntityEditor.class.getName());
+                        } catch (PartInitException e) {
+                            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Can't open editor for new object", null, e);
+                            return false;
+                        }
                     }
                 }
             } else {

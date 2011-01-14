@@ -16,10 +16,12 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
@@ -38,7 +40,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
     private SQLSyntaxManager syntaxManager;
 
     private static class TableLookupCache {
-        List<DBNNode> nodes;
+        List<DBNDatabaseNode> nodes;
         boolean loading = true;
     }
 
@@ -148,7 +150,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                 return null;
             }
             // Check nodes (they may be disposed by refresh/delete/other node actions)
-            for (Iterator<DBNNode> i = tlc.nodes.iterator(); i.hasNext(); ) {
+            for (Iterator<DBNDatabaseNode> i = tlc.nodes.iterator(); i.hasNext(); ) {
                 if (i.next().isDisposed()) {
                     i.remove();
                 }
@@ -194,7 +196,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
-            cache.nodes = new ArrayList<DBNNode>();
+            cache.nodes = new ArrayList<DBNDatabaseNode>();
             try {
                 DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                 List<DBSObjectType> objectTypes = new ArrayList<DBSObjectType>();//Arrays.asList(structureAssistant.getSupportedObjectTypes());
@@ -202,7 +204,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                 Collection<DBSObject> objects = structureAssistant.findObjectsByMask(monitor, null, objectTypes, word, 10);
                 if (!objects.isEmpty()) {
                     for (DBSObject object : objects) {
-                        DBNNode node = navigatorModel.getNodeByObject(monitor, object, true);
+                        DBNDatabaseNode node = navigatorModel.getNodeByObject(monitor, object, true);
                         if (node != null) {
                             cache.nodes.add(node);
                         }

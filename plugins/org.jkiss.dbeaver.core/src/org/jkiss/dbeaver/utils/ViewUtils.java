@@ -28,12 +28,13 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
-import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
@@ -106,8 +107,8 @@ public class ViewUtils
             return null;
         }
         Object selectedObject = selection.getFirstElement();
-        if (selectedObject instanceof DBNNode) {
-            return ((DBNNode) selectedObject).getObject();
+        if (selectedObject instanceof DBSWrapper) {
+            return ((DBSWrapper) selectedObject).getObject();
         } else if (selectedObject instanceof DBSObject) {
             return (DBSObject) selectedObject;
         } else {
@@ -187,26 +188,28 @@ public class ViewUtils
                                     m.setDefaultItem(item);
                                 }
                                 if (ICommandIds.CMD_OBJECT_OPEN.equals(contribId)) {
-                                    EntityManagerDescriptor objectManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(node.getObject().getClass());
-                                    String actionName = objectManager == null ? "View" : "Edit";
-                                    if (multipleSelection) {
-                                        item.setText(actionName + " objects");
-                                    } else if (node instanceof DBNTreeNode) {
-                                        item.setText(actionName + " " + ((DBNTreeNode)node).getMeta().getLabel());
+                                    if (node instanceof DBNDatabaseNode) {
+                                        EntityManagerDescriptor objectManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(((DBNDatabaseNode)node).getObject().getClass());
+                                        String actionName = objectManager == null ? "View" : "Edit";
+                                        if (multipleSelection) {
+                                            item.setText(actionName + " objects");
+                                        } else if (node instanceof DBNDatabaseNode) {
+                                            item.setText(actionName + " " + ((DBNDatabaseNode)node).getMeta().getLabel());
+                                        }
                                     }
                                 } else if (ICommandIds.CMD_OBJECT_CREATE.equals(contribId)) {
                                     String objectName = "";
-                                    if (node instanceof DBNTreeFolder) {
-                                        objectName = ((DBNTreeFolder)node).getMeta().getChildren().get(0).getLabel();
-                                    } else if (node instanceof DBNTreeNode) {
-                                        objectName = ((DBNTreeNode)node).getMeta().getLabel();
+                                    if (node instanceof DBNDatabaseFolder) {
+                                        objectName = ((DBNDatabaseFolder)node).getMeta().getChildren().get(0).getLabel();
+                                    } else if (node instanceof DBNDatabaseNode) {
+                                        objectName = ((DBNDatabaseNode)node).getMeta().getLabel();
                                     }
                                     item.setText("Create new " + objectName);
                                 } else if (ICommandIds.CMD_OBJECT_DELETE.equals(contribId) || IWorkbenchCommandConstants.EDIT_DELETE.equals(contribId)) {
                                     if (multipleSelection) {
                                         item.setText("Delete objects");
-                                    } else if (node instanceof DBNTreeNode) {
-                                        item.setText("Delete " + ((DBNTreeNode)node).getMeta().getLabel());
+                                    } else if (node instanceof DBNDatabaseNode) {
+                                        item.setText("Delete " + ((DBNDatabaseNode)node).getMeta().getLabel());
                                     } else {
                                         item.setText("Delete '" + node.getNodeName() + "'");
                                     }
@@ -228,8 +231,8 @@ public class ViewUtils
                 }
                 final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
 
-                final DBNNode dbmNode = ViewUtils.getSelectedNode(navigatorModelView);
-                if (dbmNode == null || dbmNode.isLocked()) {
+                final DBNNode selectedNode = ViewUtils.getSelectedNode(navigatorModelView);
+                if (selectedNode == null || selectedNode.isLocked()) {
                     //manager.
                     return;
                 }
@@ -237,9 +240,9 @@ public class ViewUtils
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
                 // Add "Set active object" menu
-                if (dbmNode instanceof DBNTreeNode && !(dbmNode instanceof DBNTreeFolder) && dbmNode.getObject() != null) {
+                if (selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
                     final DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
-                        DBSEntitySelector.class, dbmNode.getObject());
+                        DBSEntitySelector.class, ((DBNDatabaseNode)selectedNode).getObject());
                     if (activeContainer != null && activeContainer.supportsActiveChildChange()) {
                         try {
                             // Extract active child with void monitor
@@ -252,10 +255,10 @@ public class ViewUtils
                             catch (DBException e) {
                                 throw new InvocationTargetException(e);
                             }
-                            if (activeChild != dbmNode.getObject() && activeChild != null) {
-                                DBNTreeNode treeNode = (DBNTreeNode)dbmNode;
-                                if (treeNode.getObject() != null && activeChild.getClass() == treeNode.getObject().getClass()) {
-                                    DBXTreeNode nodeMeta = treeNode.getMeta();
+                            if (activeChild != ((DBNDatabaseNode)selectedNode).getObject() && activeChild != null) {
+                                DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
+                                if (databaseNode.getObject() != null && activeChild.getClass() == databaseNode.getObject().getClass()) {
+                                    DBXTreeNode nodeMeta = databaseNode.getMeta();
                                     String text = "Set Active";
                                     if (nodeMeta instanceof DBXTreeItem) {
                                         DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
@@ -316,11 +319,11 @@ public class ViewUtils
                     StringBuilder buf = new StringBuilder();
                     for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {
                         Object nextSelected = i.next();
-                        if (!(nextSelected instanceof DBNNode)) {
+                        if (!(nextSelected instanceof DBNDatabaseNode)) {
                             continue;
                         }
                         nodes.add((DBNNode)nextSelected);
-                        DBSObject object = ((DBNNode)nextSelected).getObject();
+                        DBSObject object = ((DBNDatabaseNode)nextSelected).getObject();
                         if (object == null) {
                             continue;
                         }

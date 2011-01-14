@@ -21,9 +21,9 @@ import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNTreeFolder;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
@@ -243,12 +243,12 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                             return true;
                         }
                         if (element instanceof DBNNode) {
-                            if (element instanceof DBNTreeFolder) {
-                                DBNTreeFolder folder = (DBNTreeFolder)element;
+                            if (element instanceof DBNDatabaseFolder) {
+                                DBNDatabaseFolder folder = (DBNDatabaseFolder)element;
                                 Class<? extends DBSObject> folderItemsClass = folder.getItemsClass();
                                 return folderItemsClass != null && DBSEntityContainer.class.isAssignableFrom(folderItemsClass);
                             }
-                            if (element instanceof DBNDataSource || ((DBNNode)element).getObject() instanceof DBSEntityContainer) {
+                            if (element instanceof DBNDataSource || (element instanceof DBSWrapper && ((DBSWrapper)element).getObject() instanceof DBSEntityContainer)) {
                                 return true;
                             }
                         }
@@ -334,8 +334,8 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
     private DBPDataSource getSelectedDataSource()
     {
         DBNNode node = getSelectedNode();
-        if (node != null) {
-            DBSObject object = node.getObject();
+        if (node instanceof DBSWrapper) {
+            DBSObject object = ((DBSWrapper)node).getObject();
             if (object != null && object.getDataSource() != null) {
                 return object.getDataSource();
             }
@@ -397,8 +397,8 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
     {
         DBNNode selectedNode = getSelectedNode();
         DBSEntityContainer parentObject = null;
-        if (selectedNode.getObject() instanceof DBSEntityContainer) {
-            parentObject = (DBSEntityContainer) selectedNode.getObject();
+        if (selectedNode instanceof DBSWrapper && ((DBSWrapper)selectedNode).getObject() instanceof DBSEntityContainer) {
+            parentObject = (DBSEntityContainer) ((DBSWrapper)selectedNode).getObject();
         }
 
         DBPDataSource dataSource = getSelectedDataSource();

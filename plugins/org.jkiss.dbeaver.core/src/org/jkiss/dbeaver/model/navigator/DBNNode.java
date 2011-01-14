@@ -8,26 +8,22 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.IActionFilter;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
 
 import java.util.List;
 
 /**
  * DBNNode
  */
-public abstract class DBNNode implements IActionFilter, DBSWrapper
+public abstract class DBNNode
 {
     static final Log log = LogFactory.getLog(DBNNode.class);
 
     private DBNModel model;
     private DBNNode parentNode;
-    private boolean locked;
 
     protected DBNNode(DBNModel model)
     {
@@ -62,17 +58,15 @@ public abstract class DBNNode implements IActionFilter, DBSWrapper
         return parentNode;
     }
 
-    public final boolean isLocked()
+    public boolean isLocked()
     {
-        return locked || parentNode != null && parentNode.isLocked();
+        return getParentNode() != null && getParentNode().isLocked();
     }
 
     public boolean isManagable()
     {
         return false;
     }
-
-    public abstract Object getValueObject();
 
     public abstract String getNodeName();
 
@@ -98,7 +92,7 @@ public abstract class DBNNode implements IActionFilter, DBSWrapper
         StringBuilder pathName = new StringBuilder();
         pathName.append(getNodeName());
         for (DBNNode parent = getParentNode(); parent != null && !(parent instanceof DBNDataSource); parent = parent.getParentNode()) {
-            if (parent instanceof DBNTreeFolder) {
+            if (parent instanceof DBNDatabaseFolder) {
                 // skip folders
                 continue;
             }
@@ -143,69 +137,20 @@ public abstract class DBNNode implements IActionFilter, DBSWrapper
      */
     public DBNNode refreshNode(DBRProgressMonitor monitor) throws DBException
     {
-        if (isLocked()) {
-            log.warn("Attempt to refresh locked node '" + getNodeName() + "'");
-            return null;
-        }
-        if (getObject() instanceof DBSEntity && ((DBSEntity)getObject()).refreshEntity(monitor)) {
-            refreshNodeContent(monitor);
-            return this;
-        } else if (this.getParentNode() != null) {
+        if (this.getParentNode() != null) {
             return this.getParentNode().refreshNode(monitor);
         } else {
             return null;
         }
     }
-
-    private void refreshNodeContent(final DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (model == null) {
-            return;
-        }
-        this.locked = true;
-        try {
-            model.fireNodeUpdate(this, this, DBNEvent.NodeChange.LOCK);
-
-            if (DBNNode.this instanceof DBNTreeNode) {
-                try {
-                    ((DBNTreeNode)DBNNode.this).reloadChildren(monitor);
-                } catch (DBException e) {
-                    log.error(e);
-                }
-            }
-
-            model.fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
-        } finally {
-            this.locked = false;
-
-            // Unlock node
-            model.fireNodeUpdate(this, this, DBNEvent.NodeChange.UNLOCK);
-        }
-        //new RefreshJob("Refresh node " + getNodeName()).schedule();
-    }
-
+    
     public abstract String getDefaultCommandId();
-
-    public abstract boolean isLazyNode();
 
     public final boolean isChildOf(DBNNode node)
     {
         for (DBNNode parent = getParentNode(); parent != null; parent = parent.getParentNode()) {
             if (parent == node) {
                 return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean testAttribute(Object target, String name, String value) {
-        if (name.equals("targetType")) {
-            try {
-                Class<?> targetClass = Class.forName(value);
-                return targetClass.isAssignableFrom(getObject().getClass());
-            } catch (ClassNotFoundException e) {
-                log.warn("Unknown target type: " + value);
             }
         }
         return false;

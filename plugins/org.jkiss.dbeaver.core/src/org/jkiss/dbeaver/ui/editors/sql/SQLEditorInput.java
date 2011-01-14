@@ -11,7 +11,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
@@ -86,7 +86,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         return true;
     }
 
-    public DBNNode getTreeNode()
+    public DBNDatabaseNode getTreeNode()
     {
         return DBeaverCore.getInstance().getNavigatorModel().findNode(getDataSourceContainer());
     }

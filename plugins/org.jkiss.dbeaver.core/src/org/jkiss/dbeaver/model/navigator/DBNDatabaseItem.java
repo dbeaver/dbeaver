@@ -10,14 +10,14 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.ui.ICommandIds;
 
 /**
- * DBNTreeItem
+ * DBNDatabaseItem
  */
-public class DBNTreeItem extends DBNTreeNode
+public class DBNDatabaseItem extends DBNDatabaseNode
 {
     private DBXTreeItem meta;
     private DBSObject object;
 
-    DBNTreeItem(DBNNode parent, DBXTreeItem meta, DBSObject object, boolean reflect)
+    DBNDatabaseItem(DBNNode parent, DBXTreeItem meta, DBSObject object, boolean reflect)
     {
         super(parent);
         this.meta = meta;

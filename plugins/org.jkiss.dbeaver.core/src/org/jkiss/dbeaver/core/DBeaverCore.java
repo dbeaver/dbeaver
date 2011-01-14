@@ -109,6 +109,11 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.workspace = ResourcesPlugin.getWorkspace();
         this.rootPath = Platform.getLocation();
 
+        // Make default project
+        this.defaultProject = openOrCreateProject(DEFAULT_PROJECT_NAME);
+        this.activeProject = this.defaultProject;
+
+        // Init datasource registry
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
         this.dataSourceRegistry = new DataSourceRegistry(this);
         this.dataSourceRegistry.loadExtensions(extensionRegistry);
@@ -120,9 +125,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.metaModel = new DBNModel(dataSourceRegistry);
         this.queryManager = new QMControllerImpl(dataSourceRegistry);
 
-        // Make default project
-        this.defaultProject = openOrCreateProject(DEFAULT_PROJECT_NAME);
-
         // Init preferences
         initDefaultPreferences();
     }
@@ -130,6 +132,30 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public IProject getDefaultProject()
     {
         return defaultProject;
+    }
+
+    public IProject getActiveProject()
+    {
+        return activeProject;
+    }
+
+    public IProject getProject(String projectId)
+    {
+        IProject[] projects = this.workspace.getRoot().getProjects();
+        for (IProject project : projects) {
+            if (!project.isOpen()) {
+                continue;
+            }
+            try {
+                String id = project.getPersistentProperty(DBeaverConstants.PROJECT_PROP_ID);
+                if (id != null && id.equals(projectId)) {
+                    return project;
+                }
+            } catch (CoreException e) {
+                log.warn(e);
+            }
+        }
+        return null;
     }
 
     private IProject openOrCreateProject(String projectName)

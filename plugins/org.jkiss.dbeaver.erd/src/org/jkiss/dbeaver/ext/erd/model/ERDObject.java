@@ -12,7 +12,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -106,7 +106,7 @@ public abstract class ERDObject<OBJECT extends DBSObject> implements IPropertySo
             public void run(DBRProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException
             {
-                DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
+                DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
                     monitor,
                     object,
                     true

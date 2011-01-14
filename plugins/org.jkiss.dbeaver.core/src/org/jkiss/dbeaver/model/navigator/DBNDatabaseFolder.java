@@ -9,7 +9,9 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
@@ -21,13 +23,13 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 /**
- * DBNTreeFolder
+ * DBNDatabaseFolder
  */
-public class DBNTreeFolder extends DBNTreeNode implements DBNContainer
+public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, DBSFolder
 {
     private DBXTreeFolder meta;
 
-    DBNTreeFolder(DBNNode parent, DBXTreeFolder meta)
+    DBNDatabaseFolder(DBNNode parent, DBXTreeFolder meta)
     {
         super(parent);
         this.meta = meta;
@@ -61,7 +63,7 @@ public class DBNTreeFolder extends DBNTreeNode implements DBNContainer
 
     public Object getValueObject()
     {
-        return getParentNode() == null ? null : getParentNode().getValueObject();
+        return getParentNode() instanceof DBNDatabaseNode ? ((DBNDatabaseNode)getParentNode()).getValueObject() : null;
     }
 
     public String getName()
@@ -76,7 +78,7 @@ public class DBNTreeFolder extends DBNTreeNode implements DBNContainer
 
     public DBSObject getParentObject()
     {
-        return getParentNode() == null ? null : getParentNode().getObject();
+        return getParentNode() instanceof DBSWrapper ? ((DBSWrapper)getParentNode()).getObject() : null;
     }
 
     public DBPDataSource getDataSource()
@@ -124,17 +126,20 @@ public class DBNTreeFolder extends DBNTreeNode implements DBNContainer
         return BeanUtils.getCollectionType(propType);
     }
 
-    public DBNTreeItem addChildItem(DBRProgressMonitor monitor, DBSObject childObject) throws DBException
+    public DBNDatabaseItem addChildItem(DBRProgressMonitor monitor, Object childObject) throws DBException
     {
         List<DBXTreeNode> childMetas = getMeta().getChildren();
         if (childMetas.size() != 1 || !(childMetas.get(0) instanceof DBXTreeItem)) {
             throw new DBException("It's not allowed to add child items to node '" + getNodeName() + "'");
         }
+        if (!(childObject instanceof DBSObject)) {
+            throw new DBException("Only database structure objects could be added to database folder");
+        }
         DBXTreeItem childMeta = (DBXTreeItem)childMetas.get(0);
         // Ensure that children are loaded
         getChildren(monitor);
         // Add new child item
-        DBNTreeItem childItem = new DBNTreeItem(this, childMeta, childObject, true);
+        DBNDatabaseItem childItem = new DBNDatabaseItem(this, childMeta, (DBSObject)childObject, true);
         this.childNodes.add(childItem);
 
         return childItem;
@@ -142,7 +147,7 @@ public class DBNTreeFolder extends DBNTreeNode implements DBNContainer
 
     public void removeChildItem(DBNNode item) throws DBException
     {
-        if (!(item instanceof DBNTreeNode) || CommonUtils.isEmpty(childNodes) || !childNodes.contains(item)) {
+        if (!(item instanceof DBNDatabaseNode) || CommonUtils.isEmpty(childNodes) || !childNodes.contains(item)) {
             throw new DBException("Item '" + item.getNodeName() + "' do not belongs to node '" + getNodeName() + "' and can't be removed from it");
         }
         childNodes.remove(item);

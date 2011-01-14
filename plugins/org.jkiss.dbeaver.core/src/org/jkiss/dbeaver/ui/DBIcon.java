@@ -38,6 +38,7 @@ public enum DBIcon
 
     PROJECT("project", "icons/project.png"),
     PROJECTS("projects", "icons/projects.png"),
+    DATABASES("databases", "icons/databases.png"),
 
     LOADING1("loading1", "icons/tree/load/loading1.gif"),
     LOADING2("loading2", "icons/tree/load/loading2.gif"),

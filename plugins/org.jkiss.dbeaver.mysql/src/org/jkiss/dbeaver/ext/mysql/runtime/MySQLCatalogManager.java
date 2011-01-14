@@ -13,7 +13,6 @@ import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBOCommandImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.DBOEditorJDBC;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 
 import java.util.Map;
@@ -23,7 +22,7 @@ import java.util.Map;
  */
 public class MySQLCatalogManager extends DBOEditorJDBC<MySQLCatalog> implements DBOCreator<MySQLCatalog> {
 
-    public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, MySQLCatalog copyFrom)
+    public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, Object parent, MySQLCatalog copyFrom)
     {
         String schemaName = EnterNameDialog.chooseName(workbenchWindow.getShell(), "Schema name");
         if (CommonUtils.isEmpty(schemaName)) {

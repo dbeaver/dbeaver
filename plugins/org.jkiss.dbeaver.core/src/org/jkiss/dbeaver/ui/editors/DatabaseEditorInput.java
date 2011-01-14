@@ -8,13 +8,13 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DatabaseEditorInput
  */
-public abstract class DatabaseEditorInput<NODE extends DBNNode> implements IDatabaseEditorInput
+public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implements IDatabaseEditorInput
 {
     private NODE node;
     private String defaultPageId;
@@ -46,7 +46,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNNode> implements IData
 
     public String getToolTipText()
     {
-        return node.getObject().getDescription();
+        return node.getNodeDescription();
     }
 
     public Object getAdapter(Class adapter)

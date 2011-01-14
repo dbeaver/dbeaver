@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 
 /**
  * DatabaseEditorAdapterFactory
@@ -32,8 +33,8 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
             }
             if (adaptableObject instanceof IDatabaseEditor) {
                 DBNNode node = ((IDatabaseEditor) adaptableObject).getEditorInput().getTreeNode();
-                if (node != null) {
-                    DBSObject dbsObject = node.getObject();
+                if (node instanceof DBSWrapper) {
+                    DBSObject dbsObject = ((DBSWrapper)node).getObject();
                     if (dbsObject != null) {
                         DBPDataSource dataSource = dbsObject.getDataSource();
                         if (dataSource != null) {
@@ -46,8 +47,8 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
         } else if (DBPObject.class.isAssignableFrom(adapterType)) {
             if (adaptableObject instanceof IDatabaseEditor) {
                 DBNNode node = ((IDatabaseEditor) adaptableObject).getEditorInput().getTreeNode();
-                if (node != null) {
-                    DBSObject object = node.getObject();
+                if (node instanceof DBSWrapper) {
+                    DBSObject object = ((DBSWrapper)node).getObject();
                     if (object != null && adapterType.isAssignableFrom(object.getClass())) {
                         return object;
                     }

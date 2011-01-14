@@ -34,7 +34,7 @@ public interface DBOCreator<OBJECT_TYPE extends DBSObject> extends DBOManager<OB
      * @param copyFrom template for new object (usually result of "paste" operation)
      * @return true to show object's editor. Otherwise object will be just saved
      */
-    CreateResult createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, OBJECT_TYPE copyFrom);
+    CreateResult createNewObject(IWorkbenchWindow workbenchWindow, Object parent, OBJECT_TYPE copyFrom);
 
     /**
      * Deletes specified object.

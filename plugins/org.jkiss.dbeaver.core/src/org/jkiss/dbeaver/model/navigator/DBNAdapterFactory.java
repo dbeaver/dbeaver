@@ -11,11 +11,8 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.struct.DBSEntityQualified;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 
 import java.util.Hashtable;
@@ -47,8 +44,8 @@ public class DBNAdapterFactory implements IAdapterFactory
                 return ((DBNDataSource)adaptableObject).getDataSourceContainer();
             }
             DBSObject object = null;
-            if (adaptableObject instanceof DBNNode) {
-                object = ((DBNNode) adaptableObject).getObject();
+            if (adaptableObject instanceof DBSWrapper) {
+                object = ((DBSWrapper) adaptableObject).getObject();
             } else if (adaptableObject instanceof DBSObject) {
                 object = (DBSObject) adaptableObject;
             }
@@ -62,8 +59,8 @@ public class DBNAdapterFactory implements IAdapterFactory
             return dataSource == null ? null : dataSource.getContainer();
         } else if (DBPObject.class.isAssignableFrom(adapterType)) {
             DBPObject object = null;
-            if (adaptableObject instanceof DBNNode) {
-                object = ((DBNNode) adaptableObject).getObject();
+            if (adaptableObject instanceof DBSWrapper) {
+                object = ((DBSWrapper) adaptableObject).getObject();
             } else if (adaptableObject instanceof DBPObject) {
                 object = (DBPObject) adaptableObject;
             }
@@ -72,8 +69,8 @@ public class DBNAdapterFactory implements IAdapterFactory
             }
         } else if (adapterType == IPropertySource.class) {
             DBPObject dbObject = null;
-            if (adaptableObject instanceof DBNNode) {
-                dbObject = ((DBNNode) adaptableObject).getObject();
+            if (adaptableObject instanceof DBSWrapper) {
+                dbObject = ((DBSWrapper) adaptableObject).getObject();
             } else if (adaptableObject instanceof DBPObject) {
                 dbObject = (DBPObject) adaptableObject;
             }

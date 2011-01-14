@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.edit.DBOManager;
 import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
@@ -59,8 +59,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             structSelection = (IStructuredSelection)selection;
             for (Iterator iter = structSelection.iterator(); iter.hasNext(); ) {
                 Object element = iter.next();
-                if (element instanceof DBNTreeNode) {
-                    deleteObject(HandlerUtil.getActiveWorkbenchWindow(event), (DBNTreeNode)element);
+                if (element instanceof DBNDatabaseNode) {
+                    deleteObject(HandlerUtil.getActiveWorkbenchWindow(event), (DBNDatabaseNode)element);
                 }
                 if (deleteAll != null && !deleteAll) {
                     break;
@@ -70,7 +70,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         return null;
     }
 
-    private boolean deleteObject(IWorkbenchWindow workbenchWindow, DBNNode node)
+    private boolean deleteObject(IWorkbenchWindow workbenchWindow, DBNDatabaseNode node)
     {
         if (!(node.getParentNode() instanceof DBNContainer)) {
             log.error("Node '" + node + "' doesn't have a container");
@@ -187,8 +187,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         String messageKey = ConfirmationDialog.RES_CONFIRM_PREFIX + PrefConstants.CONFIRM_ENTITY_DELETE + "." + ConfirmationDialog.RES_KEY_MESSAGE;
 
         String nodeTypeName;
-        if (node instanceof DBNTreeNode) {
-            nodeTypeName = ((DBNTreeNode)node).getMeta().getLabel();
+        if (node instanceof DBNDatabaseNode) {
+            nodeTypeName = ((DBNDatabaseNode)node).getMeta().getLabel();
         } else {
             nodeTypeName = "?";
         }

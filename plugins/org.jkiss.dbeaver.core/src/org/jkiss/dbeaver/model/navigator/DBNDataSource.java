@@ -17,12 +17,12 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 /**
  * DBNDataSource
  */
-public class DBNDataSource extends DBNTreeNode implements IAdaptable, IDataSourceContainerProvider
+public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataSourceContainerProvider
 {
     private DataSourceDescriptor dataSource;
     private DBXTreeNode treeRoot;
 
-    public DBNDataSource(DBNRoot parentNode, DataSourceDescriptor dataSource)
+    public DBNDataSource(DBNNode parentNode, DataSourceDescriptor dataSource)
     {
         super(parentNode);
         this.dataSource = dataSource;

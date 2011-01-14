@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
@@ -45,8 +46,8 @@ public class ObjectPropertyTester extends PropertyTester
             if (node instanceof DBNContainer) {
                 // Try to detect child type
                 objectType = ((DBNContainer)node).getItemsClass();
-            } else if (node.isManagable()) {
-                objectType = node.getObject() == null ? null : node.getObject().getClass();
+            } else if (node.isManagable() && node instanceof DBSWrapper) {
+                objectType = ((DBSWrapper)node).getObject() == null ? null : ((DBSWrapper)node).getObject().getClass();
             }
             if (objectType == null || !hasExtendedManager(objectType)) {
                 return false;
@@ -60,8 +61,8 @@ public class ObjectPropertyTester extends PropertyTester
                 return false;
             }
             for (DBNNode nodeObject : cbNodes) {
-                if (nodeObject.isManagable()) {
-                    DBSObject pasteObject = nodeObject.getObject();
+                if (nodeObject.isManagable() && nodeObject instanceof DBSWrapper) {
+                    DBSObject pasteObject = ((DBSWrapper)nodeObject).getObject();
                     if (pasteObject == null || objectType != pasteObject.getClass()) {
                         return false;
                     }
@@ -71,11 +72,14 @@ public class ObjectPropertyTester extends PropertyTester
             }
             return true;
         } else if (property.equals(PROP_CAN_DELETE)) {
-            return
-                node.getParentNode() instanceof DBNContainer &&
-                node.getObject() != null &&
-                node.getObject().isPersisted() &&
-                hasExtendedManager(node.getObject().getClass());
+            if (node instanceof DBSWrapper) {
+                DBSObject object = ((DBSWrapper)node).getObject();
+                return
+                    node.getParentNode() instanceof DBNContainer &&
+                    object != null &&
+                    object.isPersisted() &&
+                    hasExtendedManager(object.getClass());
+            }
         }
         return false;
     }

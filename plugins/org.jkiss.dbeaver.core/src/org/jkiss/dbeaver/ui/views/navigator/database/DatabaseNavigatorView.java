@@ -18,110 +18,16 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
 import org.jkiss.dbeaver.utils.ViewUtils;
 
-public class DatabaseNavigatorView extends ViewPart implements INavigatorModelView
+public class DatabaseNavigatorView extends NavigatorViewBase
 {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseNavigator";
-
-    private DBNModel model;
-    private DatabaseNavigatorTree tree;
 
     public DatabaseNavigatorView()
     {
         super();
-        model = DBeaverCore.getInstance().getNavigatorModel();
     }
 
     public DBNNode getRootNode() {
-        return model.getRoot();
+        return getModel().getRoot().getProject(DBeaverCore.getInstance().getActiveProject());
     }
-
-    public TreeViewer getNavigatorViewer()
-    {
-        return tree.getViewer();
-    }
-
-    public IWorkbenchPart getWorkbenchPart()
-    {
-        return this;
-    }
-
-    /**
-     * This is a callback that will allow us to create the viewer and initialize
-     * it.
-     */
-    public void createPartControl(Composite parent)
-    {
-        // Create tree
-        tree = new DatabaseNavigatorTree(parent, model.getRoot(), SWT.MULTI);
-
-        tree.getViewer().addSelectionChangedListener(
-            new ISelectionChangedListener()
-            {
-                public void selectionChanged(SelectionChangedEvent event)
-                {
-                    IStructuredSelection structSel = (IStructuredSelection)event.getSelection();
-                    if (!structSel.isEmpty()) {
-                        Object object = structSel.getFirstElement();
-                        if (object instanceof DBNNode) {
-                            String desc = ((DBNNode)object).getObject().getDescription();
-                            if (CommonUtils.isEmpty(desc)) {
-                                desc = ((DBNNode)object).getNodeName();
-                            }
-                            getViewSite().getActionBars().getStatusLineManager().setMessage(desc);
-                        }
-                    }
-                }
-            }
-        );
-        tree.getViewer().addDoubleClickListener(new IDoubleClickListener() {
-            public void doubleClick(DoubleClickEvent event)
-            {
-                DBNNode dbmNode = getSelectedNode();
-                if (dbmNode == null) {
-                    return;
-                }
-                ViewUtils.runCommand(dbmNode.getDefaultCommandId(), DatabaseNavigatorView.this);
-            }
-
-        });
-
-        // Hook context menu
-        ViewUtils.addContextMenu(this);
-        // Add drag and drop support
-        ViewUtils.addDragAndDropSupport(this);
-
-        getViewSite().setSelectionProvider(tree.getViewer());
-    }
-
-    public void dispose()
-    {
-        model = null;
-    }
-
-    /**
-     * Passing the focus request to the viewer's control.
-     */
-    public void setFocus()
-    {
-        tree.getViewer().getControl().setFocus();
-    }
-
-    private DBNNode getSelectedNode()
-    {
-        return ViewUtils.getSelectedNode(this);
-    }
-
-    @Override
-    public Object getAdapter(Class adapter)
-    {
-        if (adapter == IPropertySheetPage.class) {
-            return new PropertyPageTabbed();
-        }
-        return super.getAdapter(adapter);
-    }
-
-    public void showNode(DBNNode node) {
-        tree.showNode(node);
-    }
-
 }

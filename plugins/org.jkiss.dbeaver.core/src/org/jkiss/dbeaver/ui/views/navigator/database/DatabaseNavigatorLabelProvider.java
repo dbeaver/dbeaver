@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -100,7 +101,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
             if (node.isLocked()) {
                 return lockedForeground;
             }
-            if (node.getObject() != null && !node.getObject().isPersisted()) {
+            if (node instanceof DBSWrapper && ((DBSWrapper)node).getObject() != null && !((DBSWrapper)node).getObject().isPersisted()) {
                 return transientForeground;
             }
         }
@@ -114,8 +115,8 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
 
     private boolean isDefaultElement(Object element)
     {
-        if (element instanceof DBNNode) {
-            DBSObject object = ((DBNNode) element).getObject();
+        if (element instanceof DBSWrapper) {
+            DBSObject object = ((DBSWrapper) element).getObject();
             DBSEntitySelector activeContainer = DBUtils.getParentAdapter(
                 DBSEntitySelector.class, object);
             if (activeContainer != null) {

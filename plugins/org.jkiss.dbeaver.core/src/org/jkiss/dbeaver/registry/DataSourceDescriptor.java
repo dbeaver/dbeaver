@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.registry;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -69,6 +70,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     private Date loginDate;
     private DBDDataFormatterProfile formatterProfile;
     private DataSourcePreferenceStore preferenceStore;
+    private List<IProject> projects = new ArrayList<IProject>();
 
     private DBPDataSource dataSource;
 
@@ -90,6 +92,8 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         this.connectionInfo = connectionInfo;
         this.createDate = new Date();
         this.preferenceStore = new DataSourcePreferenceStore(this);
+        // Always add default project to data source
+        this.projects.add(DBeaverCore.getInstance().getDefaultProject());
     }
 
     public void dispose()
@@ -180,6 +184,28 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     public void setSchemaFilter(String schemaFilter)
     {
         this.schemaFilter = schemaFilter;
+    }
+
+    public List<IProject> getProjects()
+    {
+        return projects;
+    }
+
+    public void addProject(IProject project)
+    {
+        if (!projects.contains(project)) {
+            projects.add(project);
+        }
+    }
+
+    public void removeProject(IProject project)
+    {
+        projects.remove(project);
+    }
+
+    public boolean hasProject(IProject project)
+    {
+        return projects.contains(project);
     }
 
     public DBSObject getParentObject()

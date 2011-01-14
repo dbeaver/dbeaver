@@ -8,8 +8,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.commands.AbstractHandler;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -20,10 +20,10 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
     static final Log log = LogFactory.getLog(NavigatorHandlerObjectBase.class);
 
-    public static DBNNode getNodeByObject(DBSObject object)
+    public static DBNDatabaseNode getNodeByObject(DBSObject object)
     {
         DBNModel model = DBeaverCore.getInstance().getNavigatorModel();
-        DBNNode node = model.findNode(object);
+        DBNDatabaseNode node = model.findNode(object);
         if (node == null) {
             NodeLoader nodeLoader = new NodeLoader(model, object);
             try {
@@ -41,7 +41,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
     private static class NodeLoader implements DBRRunnableWithProgress {
         private final DBNModel model;
         private final DBSObject object;
-        private DBNNode node;
+        private DBNDatabaseNode node;
 
         public NodeLoader(DBNModel model, DBSObject object)
         {

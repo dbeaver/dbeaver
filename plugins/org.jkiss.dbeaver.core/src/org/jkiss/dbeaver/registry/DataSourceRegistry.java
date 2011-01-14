@@ -11,6 +11,8 @@ import net.sf.jkiss.utils.xml.XMLBuilder;
 import net.sf.jkiss.utils.xml.XMLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.jobs.Job;
@@ -21,6 +23,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.StringEncrypter;
@@ -240,6 +243,22 @@ public class DataSourceRegistry implements DBPRegistry
     public List<DataSourceDescriptor> getDataSources()
     {
         List<DataSourceDescriptor> dsCopy = new ArrayList<DataSourceDescriptor>(dataSources);
+        Collections.sort(dsCopy, new Comparator<DataSourceDescriptor>() {
+            public int compare(DataSourceDescriptor o1, DataSourceDescriptor o2) {
+                return o1.getName().compareToIgnoreCase(o2.getName());
+            }
+        });
+        return dsCopy;
+    }
+
+    public List<DataSourceDescriptor> getDataSources(IProject project)
+    {
+        List<DataSourceDescriptor> dsCopy = new ArrayList<DataSourceDescriptor>();
+        for (DataSourceDescriptor ds : dataSources) {
+            if (ds.hasProject(project)) {
+                dsCopy.add(ds);
+            }
+        }
         Collections.sort(dsCopy, new Comparator<DataSourceDescriptor>() {
             public int compare(DataSourceDescriptor o1, DataSourceDescriptor o2) {
                 return o1.getName().compareToIgnoreCase(o2.getName());
@@ -529,6 +548,7 @@ public class DataSourceRegistry implements DBPRegistry
             xml.addAttribute("filter-schema", dataSource.getSchemaFilter());
         }
         {
+            // Connection info
             DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
             xml.startElement("connection");
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
@@ -563,7 +583,7 @@ public class DataSourceRegistry implements DBPRegistry
             xml.endElement();
         }
 
-        // Pereferences
+        // Preferences
         {
             // Save only properties who are differs from default values
             AbstractPreferenceStore prefStore = dataSource.getPreferenceStore();
@@ -577,6 +597,22 @@ public class DataSourceRegistry implements DBPRegistry
                 xml.addAttribute("name", propName);
                 xml.addAttribute("value", propValue);
                 xml.endElement();
+            }
+        }
+
+        // Projects
+        {
+            for (IProject project : dataSource.getProjects()) {
+                try {
+                    String projectId = project.getPersistentProperty(DBeaverConstants.PROJECT_PROP_ID);
+                    if (projectId != null) {
+                        xml.startElement("project");
+                        xml.addAttribute("id", projectId);
+                        xml.endElement();
+                    }
+                } catch (CoreException e) {
+                    log.warn(e);
+                }
             }
         }
 
@@ -741,6 +777,14 @@ public class DataSourceRegistry implements DBPRegistry
                     curDataSource.getPreferenceStore().getProperties().put(
                         atts.getValue("name"),
                         atts.getValue("value"));
+                }
+            } else if (localName.equals("project")) {
+                if (curDataSource != null) {
+                    String projectId = atts.getValue("id");
+                    IProject project = DBeaverCore.getInstance().getProject(projectId);
+                    if (project != null) {
+                        curDataSource.addProject(project);
+                    }
                 }
             } else if (localName.equals("description")) {
                 isDescription = true;

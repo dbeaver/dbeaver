@@ -11,44 +11,50 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.ICommandIds;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * DBNDataSource
+ * DBNProject
  */
 public class DBNProject extends DBNNode implements IAdaptable
 {
     private IProject project;
+    private List<DBNNode> children;
+    private DBNProjectDatabases databases;
 
-    public DBNProject(DBNRoot parentNode, IProject project)
+    public DBNProject(DBNNode parentNode, IProject project)
     {
         super(parentNode);
         this.project = project;
-        this.getModel().addNode(this, true);
+        this.databases = new DBNProjectDatabases(this, project);
+        this.children = new ArrayList<DBNNode>();
+        this.children.add(databases);
     }
 
     protected void dispose(boolean reflect)
     {
-        this.getModel().removeNode(this, true);
         this.project = null;
+        if (children != null) {
+            for (DBNNode child : children) {
+                child.dispose(reflect);
+            }
+            children = null;
+        }
+        this.databases = null;
         super.dispose(reflect);
     }
 
-    public DataSourceDescriptor getObject()
-    {
-        return null;
-    }
-
-    public Object getValueObject()
+    public IProject getProject()
     {
         return project;
+    }
+
+    public DBNProjectDatabases getDatabases()
+    {
+        return databases;
     }
 
     public String getNodeName()
@@ -87,28 +93,18 @@ public class DBNProject extends DBNNode implements IAdaptable
     @Override
     public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor) throws DBException
     {
-        return new ArrayList<DBNNode>();
+        return children;
     }
 
     public String getDefaultCommandId()
     {
-        return ICommandIds.CMD_OBJECT_OPEN;
-    }
-
-    public boolean isLazyNode()
-    {
-        return false;
-    }
-
-    public boolean isManagable()
-    {
-        return true;
+        return null;
     }
 
     public Object getAdapter(Class adapter) {
         if (adapter == DBNProject.class) {
             return this;
-        } else if (DBSDataSourceContainer.class.isAssignableFrom(adapter)) {
+        } else if (adapter == IProject.class) {
             return project;
         }
         return null;

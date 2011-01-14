@@ -12,19 +12,20 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.tree.DBXTreeObject;
 import org.jkiss.dbeaver.ui.ICommandIds;
 
 /**
- * DBNTreeItem
+ * DBNDatabaseObject
  */
-public class DBNTreeObject extends DBNTreeNode implements DBSObject
+public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
 {
     private DBXTreeObject meta;
     private IEditorDescriptor editorDescriptor;
     private Image image;
 
-    DBNTreeObject(DBNNode parent, DBXTreeObject meta)
+    DBNDatabaseObject(DBNNode parent, DBXTreeObject meta)
     {
         super(parent);
         this.meta = meta;
@@ -86,7 +87,7 @@ public class DBNTreeObject extends DBNTreeNode implements DBSObject
     {
         StringBuilder pathName = new StringBuilder();
         for (DBNNode parent = getParentNode(); parent != null; parent = parent.getParentNode()) {
-            if (parent instanceof DBNTreeFolder) {
+            if (parent instanceof DBNDatabaseFolder) {
                 // skip folders
                 continue;
             }
@@ -122,7 +123,7 @@ public class DBNTreeObject extends DBNTreeNode implements DBSObject
 
     public DBSObject getParentObject()
     {
-        return getParentNode() == null ? null : getParentNode().getObject();
+        return getParentNode() instanceof DBNDatabaseNode ? ((DBSWrapper)getParentNode()).getObject() : null;
     }
 
     public DBPDataSource getDataSource()

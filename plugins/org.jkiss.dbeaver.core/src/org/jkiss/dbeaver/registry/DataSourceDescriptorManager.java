@@ -7,9 +7,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.impl.edit.DBOCommandImpl;
 import org.jkiss.dbeaver.model.impl.edit.DBOManagerImpl;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
@@ -21,7 +19,7 @@ import java.util.Map;
  */
 public class DataSourceDescriptorManager extends DBOManagerImpl<DataSourceDescriptor> implements DBOCreator<DataSourceDescriptor> {
 
-    public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, DBSObject parent, DataSourceDescriptor copyFrom)
+    public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, Object parent, DataSourceDescriptor copyFrom)
     {
         if (copyFrom != null) {
             DataSourceDescriptor dataSource = new DataSourceDescriptor(

@@ -6,23 +6,23 @@ package org.jkiss.dbeaver.ui.editors.entity;
 
 import net.sf.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.edit.DBOManager;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNTreeNode;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 
 /**
  * EntityEditorInput
  */
-public class EntityEditorInput extends DatabaseEditorInput<DBNNode>
+public class EntityEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
 {
     private DBOManager<?> objectManager;
 
-    public EntityEditorInput(DBNNode dbmNode)
+    public EntityEditorInput(DBNDatabaseNode dbmNode)
     {
         super(dbmNode);
     }
 
-    public EntityEditorInput(DBNNode dbnNode, DBOManager<?> objectManager)
+    public EntityEditorInput(DBNDatabaseNode dbnNode, DBOManager<?> objectManager)
     {
         super(dbnNode);
         this.objectManager = objectManager;
@@ -38,8 +38,8 @@ public class EntityEditorInput extends DatabaseEditorInput<DBNNode>
         DBNNode node = getTreeNode();
         //setPageText(index, );
         StringBuilder toolTip = new StringBuilder();
-        if (node instanceof DBNTreeNode) {
-            toolTip.append(((DBNTreeNode)node).getMeta().getItemLabel()).append(" ");
+        if (node instanceof DBNDatabaseNode) {
+            toolTip.append(((DBNDatabaseNode)node).getMeta().getItemLabel()).append(" ");
         }
         toolTip.append(node.getNodeName());
         if (!CommonUtils.isEmpty(node.getNodeDescription())) {
