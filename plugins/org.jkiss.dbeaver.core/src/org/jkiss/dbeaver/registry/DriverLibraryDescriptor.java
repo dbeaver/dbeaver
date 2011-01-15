@@ -118,28 +118,24 @@ public class DriverLibraryDescriptor
                 log.warn(ex);
             }
         }
-        // Try to load from contributions
+        // Try to use direct path
         if (url == null) {
-            if (!path.startsWith("/") && !path.startsWith("\\")) {
+            File libraryFile = new File(path);
+            if (!libraryFile.exists()) {
+                // File not exists - try to use relative path
                 Location location = Platform.getInstallLocation();
                 try {
                     url = location.getDataArea(path);
                 } catch (IOException e) {
                     log.warn(e);
                 }
-            }
-        }
-        // Try to use direct path
-        if (url == null) {
-            File libraryFile = new File(path);
-            if (!libraryFile.exists()) {
-                return null;
-            }
-            try {
-                url = libraryFile.toURI().toURL();
-            }
-            catch (MalformedURLException ex) {
-                log.warn(ex);
+            } else {
+                try {
+                    url = libraryFile.toURI().toURL();
+                }
+                catch (MalformedURLException ex) {
+                    log.warn(ex);
+                }
             }
         }
         return url;
