@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -177,42 +178,43 @@ public class ViewUtils
                 boolean multipleSelection = selection.size() > 1;
                 if (node != null && !node.isLocked()) {
                     String defaultCommandId = node.getDefaultCommandId();
-                    if (defaultCommandId != null) {
-                        // Dirty hack
-                        // Get contribution item from menu item and check it's ID
-                        for (MenuItem item : m.getItems()) {
-                            Object itemData = item.getData();
-                            if (itemData instanceof IContributionItem) {
-                                String contribId = ((IContributionItem)itemData).getId();
-                                if (contribId != null && contribId.equals(defaultCommandId)) {
-                                    m.setDefaultItem(item);
-                                }
-                                if (ICommandIds.CMD_OBJECT_OPEN.equals(contribId)) {
-                                    if (node instanceof DBNDatabaseNode) {
-                                        EntityManagerDescriptor objectManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(((DBNDatabaseNode)node).getObject().getClass());
-                                        String actionName = objectManager == null ? "View" : "Edit";
-                                        if (multipleSelection) {
-                                            item.setText(actionName + " objects");
-                                        } else if (node instanceof DBNDatabaseNode) {
-                                            item.setText(actionName + " " + ((DBNDatabaseNode)node).getMeta().getLabel());
-                                        }
-                                    }
-                                } else if (ICommandIds.CMD_OBJECT_CREATE.equals(contribId)) {
-                                    String objectName = "";
-                                    if (node instanceof DBNDatabaseFolder) {
-                                        objectName = ((DBNDatabaseFolder)node).getMeta().getChildren().get(0).getLabel();
-                                    } else if (node instanceof DBNDatabaseNode) {
-                                        objectName = ((DBNDatabaseNode)node).getMeta().getLabel();
-                                    }
-                                    item.setText("Create new " + objectName);
-                                } else if (ICommandIds.CMD_OBJECT_DELETE.equals(contribId) || IWorkbenchCommandConstants.EDIT_DELETE.equals(contribId)) {
+
+                    // Dirty hack
+                    // Get contribution item from menu item and check it's ID
+                    for (MenuItem item : m.getItems()) {
+                        Object itemData = item.getData();
+                        if (itemData instanceof IContributionItem) {
+                            String contribId = ((IContributionItem)itemData).getId();
+                            if (contribId != null && defaultCommandId != null && contribId.equals(defaultCommandId)) {
+                                m.setDefaultItem(item);
+                            }
+                            if (ICommandIds.CMD_OBJECT_OPEN.equals(contribId)) {
+                                if (node instanceof DBNDatabaseNode) {
+                                    EntityManagerDescriptor objectManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(((DBNDatabaseNode)node).getObject().getClass());
+                                    String actionName = objectManager == null ? "View" : "Edit";
                                     if (multipleSelection) {
-                                        item.setText("Delete objects");
+                                        item.setText(actionName + " objects");
                                     } else if (node instanceof DBNDatabaseNode) {
-                                        item.setText("Delete " + ((DBNDatabaseNode)node).getMeta().getLabel());
-                                    } else {
-                                        item.setText("Delete '" + node.getNodeName() + "'");
+                                        item.setText(actionName + " " + ((DBNDatabaseNode)node).getMeta().getLabel());
                                     }
+                                }
+                            } else if (ICommandIds.CMD_OBJECT_CREATE.equals(contribId)) {
+                                String objectName = "";
+                                if (node instanceof DBNContainer) {
+                                    objectName = ((DBNContainer)node).getItemsLabel();
+                                } else if (node instanceof DBNDatabaseNode) {
+                                    objectName = ((DBNDatabaseNode)node).getMeta().getLabel();
+                                } else {
+                                    objectName = node.getNodeName();
+                                }
+                                item.setText("Create new " + objectName);
+                            } else if (ICommandIds.CMD_OBJECT_DELETE.equals(contribId) || IWorkbenchCommandConstants.EDIT_DELETE.equals(contribId)) {
+                                if (multipleSelection) {
+                                    item.setText("Delete objects");
+                                } else if (node instanceof DBNDatabaseNode) {
+                                    item.setText("Delete " + ((DBNDatabaseNode)node).getMeta().getLabel());
+                                } else {
+                                    item.setText("Delete '" + node.getNodeName() + "'");
                                 }
                             }
                         }

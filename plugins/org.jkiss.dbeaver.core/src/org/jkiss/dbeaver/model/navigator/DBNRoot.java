@@ -38,6 +38,11 @@ public class DBNRoot extends DBNNode implements DBNContainer
         return this;
     }
 
+    public String getItemsLabel()
+    {
+        return "Project";
+    }
+
     public Class<IProject> getItemsClass()
     {
         return IProject.class;

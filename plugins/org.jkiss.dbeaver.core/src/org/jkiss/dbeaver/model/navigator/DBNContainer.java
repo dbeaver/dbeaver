@@ -15,6 +15,8 @@ public interface DBNContainer //extends DBSFolder
 {
     Object getValueObject();
 
+    String getItemsLabel();
+
     Class<?> getItemsClass();
 
     DBNNode addChildItem(DBRProgressMonitor monitor, Object childObject) throws DBException;

@@ -47,6 +47,11 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer
         return project;
     }
 
+    public String getItemsLabel()
+    {
+        return "Connection";
+    }
+
     public Class<DataSourceDescriptor> getItemsClass()
     {
         return DataSourceDescriptor.class;

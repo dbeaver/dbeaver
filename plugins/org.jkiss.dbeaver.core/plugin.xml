@@ -830,8 +830,8 @@
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
         </menuContribution>
 
-        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.core.databaseNavigator">
-            <separator name="connection" visible="true"/>
+        <!-- All Context menus -->
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
             <command commandId="org.jkiss.dbeaver.core.connect">
                <visibleWhen>
                    <with variable="selection">
@@ -852,7 +852,6 @@
                     </with>
                 </visibleWhen>
             </command>
-            <separator name="tools" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.new.sql.editor">
                 <visibleWhen>
                     <with variable="selection">
@@ -863,10 +862,9 @@
                     </with>
                 </visibleWhen>
             </command>
-        </menuContribution>
 
-        <!-- All Context menus -->
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+            <separator name="tools" visible="true"/>
+
             <command commandId="org.jkiss.dbeaver.core.object.open">
                 <visibleWhen checkEnabled="true"/>
             </command>

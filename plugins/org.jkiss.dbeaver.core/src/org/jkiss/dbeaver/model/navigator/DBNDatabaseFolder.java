@@ -66,6 +66,15 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return getParentNode() instanceof DBNDatabaseNode ? ((DBNDatabaseNode)getParentNode()).getValueObject() : null;
     }
 
+    public String getItemsLabel()
+    {
+        if (CommonUtils.isEmpty(meta.getChildren())) {
+            return "?";
+        } else {
+            return meta.getChildren().get(0).getLabel();
+        }
+    }
+
     public String getName()
     {
         return meta.getLabel();

@@ -20,10 +20,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
@@ -229,8 +226,11 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
             optionsGroup.setLayoutData(gd);
 
             {
+                final DBeaverCore core = DBeaverCore.getInstance();
+
                 Group sourceGroup = UIUtils.createControlGroup(optionsGroup, "Objects Source", 1, GridData.FILL_BOTH, 0);
-                dataSourceTree = new DatabaseNavigatorTree(sourceGroup, DBeaverCore.getInstance().getNavigatorModel().getRoot(), SWT.SINGLE);
+                final DBNProject rootNode = core.getNavigatorModel().getRoot().getProject(core.getActiveProject());
+                dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode.getDatabases(), SWT.SINGLE);
                 gd = new GridData(GridData.FILL_BOTH);
                 //gd.heightHint = 100;
                 dataSourceTree.setLayoutData(gd);
@@ -248,7 +248,7 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                                 Class<? extends DBSObject> folderItemsClass = folder.getItemsClass();
                                 return folderItemsClass != null && DBSEntityContainer.class.isAssignableFrom(folderItemsClass);
                             }
-                            if (element instanceof DBNDataSource || (element instanceof DBSWrapper && ((DBSWrapper)element).getObject() instanceof DBSEntityContainer)) {
+                            if (element instanceof DBNProjectDatabases || element instanceof DBNDataSource || (element instanceof DBSWrapper && ((DBSWrapper)element).getObject() instanceof DBSEntityContainer)) {
                                 return true;
                             }
                         }
