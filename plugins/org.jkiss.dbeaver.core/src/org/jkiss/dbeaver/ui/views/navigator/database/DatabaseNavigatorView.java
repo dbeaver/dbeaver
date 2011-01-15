@@ -28,7 +28,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase
     }
 
     public DBNNode getRootNode() {
-        return getModel().getRoot().getProject(DBeaverCore.getInstance().getActiveProject());
+        return getModel().getRoot().getProject(DBeaverCore.getInstance().getActiveProject()).getDatabases();
     }
 
 }

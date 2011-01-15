@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -23,7 +25,7 @@ import java.util.Map;
  */
 public class DBNAdapterFactory implements IAdapterFactory
 {
-    private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBSEntityQualified.class, DBPObject.class, DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class, IPropertySource.class, IWorkbenchAdapter.class };
+    private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBSEntityQualified.class, DBPObject.class, DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class, IPropertySource.class, IProject.class, IResource.class, IWorkbenchAdapter.class };
 
     private Map<Object, IPropertySource> propertySourceCache = new Hashtable<Object, IPropertySource>();
 
@@ -66,6 +68,10 @@ public class DBNAdapterFactory implements IAdapterFactory
             }
             if (object != null && adapterType.isAssignableFrom(object.getClass())) {
                 return object;
+            }
+        } else if (IResource.class.isAssignableFrom(adapterType)) {
+            if (adaptableObject instanceof DBNResource) {
+                return ((DBNResource)adaptableObject).getResource();
             }
         } else if (adapterType == IPropertySource.class) {
             DBPObject dbObject = null;

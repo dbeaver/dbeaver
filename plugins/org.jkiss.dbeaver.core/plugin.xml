@@ -124,6 +124,9 @@
         <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="Link with editor" description="Link with editor" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.set.active" name="Set active object" description="Set active object" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
+        <command id="org.jkiss.dbeaver.core.project.create" name="Create Project" description="Create new project" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.project.delete" name="Delete Project" description="Delete existing project" categoryId="org.jkiss.dbeaver.core.navigator"/>
+
         <command id="org.jkiss.dbeaver.core.connect" name="Connect" description="Connect to database" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnect" name="Disconnect" description="Disconnect from database" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.invalidate" name="Invalidate" description="Invalidate database connection" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -178,6 +181,9 @@
         <image commandId="org.jkiss.dbeaver.core.commit" icon="icons/sql/commit.png"/>
         <image commandId="org.jkiss.dbeaver.core.rollback" icon="icons/sql/rollback.png"/>
         <image commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_config.png"/>
+
+        <image commandId="org.jkiss.dbeaver.core.project.create" icon="IMG_TOOL_NEW_WIZARD"/>
+        <image commandId="org.jkiss.dbeaver.core.project.delete" icon="IMG_ETOOL_DELETE"/>
 
         <image commandId="org.jkiss.dbeaver.core.new.sql.editor" icon="icons/sql/sql_script.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.open" icon="icons/tree/edit_item.png"/>
@@ -281,13 +287,25 @@
             </enabledWhen>
         </handler>
 
+        <handler commandId="org.jkiss.dbeaver.core.project.create" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectCreate"/>
+        <handler commandId="org.jkiss.dbeaver.core.project.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectDelete">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.eclipse.core.resources.IProject"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+
         <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerDriverManager"/>
         <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerNewConnection"/>
 
         <handler commandId="org.eclipse.ui.navigate.collapseAll" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCollapseAll">
             <enabledWhen>
                 <with variable="activePart">
-                    <instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -830,6 +848,21 @@
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
         </menuContribution>
 
+        <!-- Project Navigator menu & toolbar -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.projectNavigator">
+            <command commandId="org.jkiss.dbeaver.core.project.create"/>
+            <separator name="additions" visible="true"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectNavigator">
+            <command commandId="org.jkiss.dbeaver.core.project.create"/>
+            <separator name="additions" visible="true"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+        </menuContribution>
+
         <!-- All Context menus -->
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
             <command commandId="org.jkiss.dbeaver.core.connect">
@@ -861,6 +894,20 @@
                         </iterate>
                     </with>
                 </visibleWhen>
+            </command>
+
+            <command commandId="org.jkiss.dbeaver.core.project.create">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.eclipse.core.resources.IProject"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.project.delete">
+                <visibleWhen checkEnabled="true"/>
             </command>
 
             <separator name="tools" visible="true"/>

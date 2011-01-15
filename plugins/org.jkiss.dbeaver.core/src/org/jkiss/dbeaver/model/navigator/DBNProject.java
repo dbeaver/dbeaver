@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.graphics.Image;
@@ -19,7 +20,7 @@ import java.util.List;
 /**
  * DBNProject
  */
-public class DBNProject extends DBNNode implements IAdaptable
+public class DBNProject extends DBNNode implements IAdaptable, DBNResource
 {
     private IProject project;
     private List<DBNNode> children;
@@ -126,4 +127,8 @@ public class DBNProject extends DBNNode implements IAdaptable
         }
     }
 
+    public IResource getResource()
+    {
+        return project;
+    }
 }

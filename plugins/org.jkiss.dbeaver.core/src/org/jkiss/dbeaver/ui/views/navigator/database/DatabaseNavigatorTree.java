@@ -18,7 +18,10 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.IDBNListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -59,9 +62,9 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         this.viewer = new TreeViewer(this, treeStyle);
         this.viewer.getTree().setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
         this.viewer.setUseHashlookup(true);
-        if (rootNode instanceof DBNProject) {
-            this.viewer.setAutoExpandLevel(2);
-        }
+        //if (rootNode instanceof DBNProject) {
+        //    this.viewer.setAutoExpandLevel(2);
+        //}
         this.viewer.setLabelProvider(new DatabaseNavigatorLabelProvider(this.viewer));
         this.viewer.setContentProvider(new DatabaseNavigatorContentProvider(this.viewer));
         this.viewer.setInput(rootNode);
