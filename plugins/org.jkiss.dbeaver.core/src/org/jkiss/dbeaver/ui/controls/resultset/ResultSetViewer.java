@@ -558,8 +558,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 }
             }
         }
-        this.metaColumns = columns;
         if (update) {
+            this.metaColumns = columns;
             this.dataFilter = new DBDDataFilter();
         }
         return update;
