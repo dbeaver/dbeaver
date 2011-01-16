@@ -11,14 +11,14 @@
             name="3rd Party Configuration">
       </category>
       <wizard
-            category="org.jkiss.dbeaver.import_config.third-party"
+            category="ThirdParty"
             class="org.jkiss.dbeaver.import_config.products.ImportConfigSquirrel"
             id="org.jkiss.dbeaver.import_config.sqlsquirrel"
             name="SQL Squirrel">
          <description>
             SQL Squirrel Client
          </description>
-       </wizard>
+      </wizard>
        <wizard
              category="org.jkiss.dbeaver.import_config.third-party"
              class="org.jkiss.dbeaver.import_config.products.ImportConfigDBvis"
@@ -28,12 +28,18 @@
              DBVisualizer
           </description>
        </wizard>
+       <category
+             id="org.jkiss.dbeaver.ext.import_config.importWizards.sampleCategory"
+             name="Sample File Import">
+       </category>
        <wizard
-             class="org.jkiss.dbeaver.import_config.content.ImportScripts"
-             id="org.jkiss.dbeaver.import_config.scripts"
-             name="SQL Scripts">
+             category="org.jkiss.dbeaver.ext.import_config.importWizards.sampleCategory"
+             class="org.jkiss.dbeaver.ext.import_config.importWizards.ImportWizard"
+             icon="icons/sample.gif"
+             id="org.jkiss.dbeaver.ext.import_config.importWizards.ImportWizard"
+             name="Import File">
           <description>
-             SQL Scripts
+             Import a file from the local file system into the workspace.
           </description>
        </wizard>
    </extension>

@@ -81,7 +81,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         this.description = remarks;
         if (!CommonUtils.isEmpty(this.getTableType())) {
             this.isView = (this.getTableType().toUpperCase().indexOf("VIEW") != -1);
-            this.isSystem = (this.getTableType().toUpperCase().indexOf("SYSTEM") != -1);
+            this.isSystem =
+                (this.getTableType().toUpperCase().indexOf("SYSTEM") != -1) || // general rule
+                tableName.indexOf("RDB$") != -1;    // Firebird
         }
     }
 

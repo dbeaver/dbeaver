@@ -213,7 +213,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
                     this.schemas = tmpSchemas;
                 }
 
-                if (schemas == null) {
+                if (CommonUtils.isEmpty(schemas)) {
                     structureContainer = new DataSourceEntityContainer();
                     structureContainer.initCache();
                 }

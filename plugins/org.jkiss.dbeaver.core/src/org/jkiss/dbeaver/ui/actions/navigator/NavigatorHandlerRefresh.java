@@ -19,6 +19,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -44,7 +45,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         DBNNode rootNode = navigatorView.getRootNode();
-        if (rootNode != null && rootNode.getParentNode() != null) {
+        if (rootNode != null && rootNode.getParentNode() instanceof DBNDatabaseNode) {
             refreshObjects.add(rootNode);
         } else if (selection instanceof IStructuredSelection) {
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
