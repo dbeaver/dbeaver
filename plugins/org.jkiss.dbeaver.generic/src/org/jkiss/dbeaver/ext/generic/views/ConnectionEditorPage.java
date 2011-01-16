@@ -123,6 +123,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
             gd.grabExcessHorizontalSpace = true;
+            gd.widthHint = 355;
             urlText.setLayoutData(gd);
             urlText.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e)
@@ -161,6 +162,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
         dbText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
+        gd.widthHint = 270;
         //gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
         dbText.addModifyListener(textListener);
@@ -460,16 +462,16 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
                 }
             }
 */
-            hostText.setEnabled(availableProperties.contains(PROP_HOST));
-            portText.setEnabled(availableProperties.contains(PROP_PORT));
-            dbText.setEnabled(availableProperties.contains(PROP_DATABASE));
-            urlText.setEnabled(false);
+            hostText.setEditable(availableProperties.contains(PROP_HOST));
+            portText.setEditable(availableProperties.contains(PROP_PORT));
+            dbText.setEditable(availableProperties.contains(PROP_DATABASE));
+            urlText.setEditable(false);
         } else {
             isCustom = true;
-            hostText.setEnabled(false);
-            portText.setEnabled(false);
-            dbText.setEnabled(false);
-            urlText.setEnabled(true);
+            hostText.setEditable(false);
+            portText.setEditable(false);
+            dbText.setEditable(false);
+            urlText.setEditable(true);
         }
     }
 
