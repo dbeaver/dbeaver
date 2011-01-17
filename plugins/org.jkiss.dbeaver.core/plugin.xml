@@ -82,7 +82,7 @@
                 class="org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView"
                 allowMultiple="false"
                 icon="icons/database_navigator.png"
-                name="Database Navigator">
+                name="Databases">
         </view>
         <view
                 id="org.jkiss.dbeaver.core.projectNavigator"
@@ -90,7 +90,7 @@
                 class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView"
                 allowMultiple="false"
                 icon="icons/projects.png"
-                name="Project Navigator">
+                name="Projects">
         </view>
         <view
                 id="org.jkiss.dbeaver.core.projectExplorer"
