@@ -4,28 +4,29 @@
 
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
-import net.sf.jkiss.utils.CommonUtils;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.views.properties.IPropertySheetPage;
+import org.eclipse.ui.IMemento;
+import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNProjectDatabases;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.views.properties.PropertyPageTabbed;
-import org.jkiss.dbeaver.utils.ViewUtils;
 
 public class DatabaseNavigatorView extends NavigatorViewBase
 {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseNavigator";
+
+    private static final String PROP_WEIGHT_TOP = "sash-top";
+    private static final String PROP_WEIGHT_BOTTOM = "sash-bottom";
+
+    private int[] weights = new int[] {70, 30};
+    private SashForm sashForm;
 
     public DatabaseNavigatorView()
     {
@@ -42,9 +43,21 @@ public class DatabaseNavigatorView extends NavigatorViewBase
     }
 
     @Override
+    public void init(IViewSite site, IMemento memento) throws PartInitException
+    {
+        super.init(site, memento);
+
+        Integer weightTop = memento.getInteger(PROP_WEIGHT_TOP);
+        Integer weightBottom = memento.getInteger(PROP_WEIGHT_BOTTOM);
+        if (weightTop != null && weightBottom != null) {
+            weights = new int[] {weightTop, weightBottom};
+        }
+    }
+
+    @Override
     public void createPartControl(Composite parent)
     {
-        SashForm sashForm = UIUtils.createPartDivider(this, parent, SWT.VERTICAL | SWT.SMOOTH);
+        sashForm = UIUtils.createPartDivider(this, parent, SWT.VERTICAL | SWT.SMOOTH);
         super.createPartControl(sashForm);
 
         DatabaseNavigatorTree projectNavigator = createNavigatorTree(sashForm, getActiveProjectNode());
@@ -55,5 +68,16 @@ public class DatabaseNavigatorView extends NavigatorViewBase
                 return !(element instanceof DBNProjectDatabases);
             }
         });
+
+        sashForm.setWeights(weights);
+    }
+
+    @Override
+    public void saveState(IMemento memento)
+    {
+        int[] weights = sashForm.getWeights();
+        memento.putInteger(PROP_WEIGHT_TOP, weights[0]);
+        memento.putInteger(PROP_WEIGHT_BOTTOM, weights[1]);
+        super.saveState(memento);
     }
 }
