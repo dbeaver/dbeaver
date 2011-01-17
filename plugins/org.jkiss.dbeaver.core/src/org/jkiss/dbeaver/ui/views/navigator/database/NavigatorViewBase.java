@@ -34,8 +34,6 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         return model;
     }
 
-    public abstract DBNNode getRootNode();
-
     public TreeViewer getNavigatorViewer()
     {
         return tree.getViewer();

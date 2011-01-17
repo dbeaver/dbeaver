@@ -26,7 +26,6 @@ public class ProjectNavigatorView extends NavigatorViewBase // CommonNavigator
     public ProjectNavigatorView() {
     }
 
-    @Override
     public DBNNode getRootNode()
     {
         return getModel().getRoot();

@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.model.navigator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.runtime.IAdapterManager;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
@@ -33,7 +35,7 @@ import java.util.Map;
  * It will work but some actions will not work well
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
-public class DBNModel implements DBPEventListener {
+public class DBNModel implements DBPEventListener, IResourceChangeListener {
     static final Log log = LogFactory.getLog(DBNModel.class);
 
     private DataSourceRegistry registry;
@@ -48,8 +50,10 @@ public class DBNModel implements DBPEventListener {
         this.registry = registry;
         this.root = new DBNRoot(this);
 
+        DBeaverCore core = registry.getCore();
+
         // Add all existing projects to root node
-        IProject[] projects = registry.getCore().getWorkspace().getRoot().getProjects();
+        IProject[] projects = core.getWorkspace().getRoot().getProjects();
         for (IProject project : projects) {
             root.addProject(project);
         }
@@ -60,6 +64,7 @@ public class DBNModel implements DBPEventListener {
 */
 
         this.registry.addDataSourceListener(this);
+        core.getWorkspace().addResourceChangeListener(this);
 
         nodesAdapter = new DBNAdapterFactory();
         IAdapterManager mgr = Platform.getAdapterManager();
@@ -70,6 +75,7 @@ public class DBNModel implements DBPEventListener {
     public void dispose()
     {
         Platform.getAdapterManager().unregisterAdapters(nodesAdapter);
+        DBeaverCore.getInstance().getWorkspace().removeResourceChangeListener(this);
         this.registry.removeDataSourceListener(this);
         this.root.dispose(false);
         this.nodeMap.clear();
@@ -347,4 +353,11 @@ public class DBNModel implements DBPEventListener {
         }
     }
 
+    public void resourceChanged(IResourceChangeEvent event)
+    {
+        if (!(event.getResource() instanceof IProject)) {
+            return;
+        }
+        IProject project = (IProject)event.getResource();
+    }
 }
