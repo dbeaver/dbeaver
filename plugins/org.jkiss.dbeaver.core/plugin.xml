@@ -90,7 +90,15 @@
                 class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView"
                 allowMultiple="false"
                 icon="icons/projects.png"
-                name="Projects">
+                name="Project Navigator">
+        </view>
+        <view
+                id="org.jkiss.dbeaver.core.projectExplorer"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView"
+                allowMultiple="false"
+                icon="icons/scripts.png"
+                name="Project Explorer">
         </view>
         <view
                 id="org.jkiss.dbeaver.core.queryManager"

@@ -22,11 +22,13 @@ public class DatabaseNavigatorView extends NavigatorViewBase
 {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseNavigator";
 
+/*
     private static final String PROP_WEIGHT_TOP = "sash-top";
     private static final String PROP_WEIGHT_BOTTOM = "sash-bottom";
 
     private int[] weights = new int[] {70, 30};
     private SashForm sashForm;
+*/
 
     public DatabaseNavigatorView()
     {
@@ -42,6 +44,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase
         return getActiveProjectNode().getDatabases();
     }
 
+/*
     @Override
     public void init(IViewSite site, IMemento memento) throws PartInitException
     {
@@ -80,4 +83,5 @@ public class DatabaseNavigatorView extends NavigatorViewBase
         memento.putInteger(PROP_WEIGHT_BOTTOM, weights[1]);
         super.saveState(memento);
     }
+*/
 }

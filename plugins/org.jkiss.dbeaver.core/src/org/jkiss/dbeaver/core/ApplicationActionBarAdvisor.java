@@ -16,6 +16,7 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.jkiss.dbeaver.ui.actions.common.AboutBoxAction;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
+import org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView;
 import org.jkiss.dbeaver.ui.views.qm.QueryManagerView;
 import org.jkiss.dbeaver.utils.ViewUtils;
@@ -145,6 +146,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         windowMenu.add(new Separator());
         windowMenu.add(new ToggleViewAction("databases", DatabaseNavigatorView.VIEW_ID)); //$NON-NLS-1$
         windowMenu.add(new ToggleViewAction("projects", ProjectNavigatorView.VIEW_ID)); //$NON-NLS-1$
+        windowMenu.add(new ToggleViewAction("explorer", ProjectExplorerView.VIEW_ID)); //$NON-NLS-1$
         windowMenu.add(new Separator());
         windowMenu.add(new ToggleViewAction("properties", IPageLayout.ID_PROP_SHEET)); //$NON-NLS-1$
         windowMenu.add(new ToggleViewAction("qm", QueryManagerView.VIEW_ID)); //$NON-NLS-1$
