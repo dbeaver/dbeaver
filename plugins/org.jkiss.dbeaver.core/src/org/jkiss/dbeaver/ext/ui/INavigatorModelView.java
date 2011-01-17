@@ -17,6 +17,4 @@ public interface INavigatorModelView
     
     Viewer getNavigatorViewer();
 
-    IWorkbenchPart getWorkbenchPart();
-
 }

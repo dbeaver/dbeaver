@@ -8,7 +8,6 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -37,11 +36,6 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     public TreeViewer getNavigatorViewer()
     {
         return tree.getViewer();
-    }
-
-    public IWorkbenchPart getWorkbenchPart()
-    {
-        return this;
     }
 
     /**

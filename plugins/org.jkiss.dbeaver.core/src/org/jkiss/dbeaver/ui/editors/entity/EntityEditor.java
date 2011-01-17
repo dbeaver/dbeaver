@@ -523,10 +523,6 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         return null;
     }
 
-    public IWorkbenchPart getWorkbenchPart() {
-        return this;
-    }
-
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySheetPage.class) {

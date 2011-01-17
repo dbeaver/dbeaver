@@ -9,7 +9,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -44,11 +43,6 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
     public Viewer getNavigatorViewer()
     {
         return itemControl.getNavigatorViewer();
-    }
-
-    public IWorkbenchPart getWorkbenchPart()
-    {
-        return this;
     }
 
     public void refreshDatabaseContent(DBNEvent event) {
