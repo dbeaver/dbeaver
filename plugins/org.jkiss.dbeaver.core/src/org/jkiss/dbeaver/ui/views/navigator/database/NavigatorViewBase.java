@@ -50,10 +50,17 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
      */
     public void createPartControl(Composite parent)
     {
-        // Create tree
-        tree = new DatabaseNavigatorTree(parent, getRootNode(), SWT.MULTI);
+        this.tree = createNavigatorTree(parent, getRootNode());
 
-        tree.getViewer().addSelectionChangedListener(
+        getViewSite().setSelectionProvider(tree.getViewer());
+    }
+
+    protected DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode)
+    {
+        // Create tree
+        DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(parent, rootNode, SWT.MULTI);
+
+        navigatorTree.getViewer().addSelectionChangedListener(
             new ISelectionChangedListener()
             {
                 public void selectionChanged(SelectionChangedEvent event)
@@ -72,7 +79,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 }
             }
         );
-        tree.getViewer().addDoubleClickListener(new IDoubleClickListener() {
+        navigatorTree.getViewer().addDoubleClickListener(new IDoubleClickListener() {
             public void doubleClick(DoubleClickEvent event)
             {
                 DBNNode dbmNode = getSelectedNode();
@@ -85,11 +92,11 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         });
 
         // Hook context menu
-        ViewUtils.addContextMenu(this);
+        ViewUtils.addContextMenu(this, navigatorTree.getViewer());
         // Add drag and drop support
-        ViewUtils.addDragAndDropSupport(this);
+        ViewUtils.addDragAndDropSupport(navigatorTree.getViewer());
 
-        getViewSite().setSelectionProvider(tree.getViewer());
+        return navigatorTree;
     }
 
     public void dispose()
@@ -107,7 +114,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
 
     private DBNNode getSelectedNode()
     {
-        return ViewUtils.getSelectedNode(this);
+        return ViewUtils.getSelectedNode(this.tree.getViewer());
     }
 
     @Override

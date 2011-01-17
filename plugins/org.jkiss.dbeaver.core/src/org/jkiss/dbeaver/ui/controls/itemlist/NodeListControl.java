@@ -37,13 +37,13 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         super(parent, style, workbenchPart, new ListContentProvider());
         this.node = node;
 
-        ViewUtils.addContextMenu(this);
+        ViewUtils.addContextMenu(workbenchPart, getItemsViewer());
 
         setDoubleClickHandler(new IDoubleClickListener() {
             public void doubleClick(DoubleClickEvent event)
             {
                 // Run default node action
-                DBNNode dbmNode = ViewUtils.getSelectedNode(NodeListControl.this);
+                DBNNode dbmNode = ViewUtils.getSelectedNode(getItemsViewer());
                 if (dbmNode == null) {
                     return;
                 }

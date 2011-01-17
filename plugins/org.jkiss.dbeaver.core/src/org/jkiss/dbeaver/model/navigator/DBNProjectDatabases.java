@@ -40,6 +40,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer
             dataSource.dispose(reflect);
         }
         dataSources.clear();
+        super.dispose(reflect);
     }
 
     public Object getValueObject()

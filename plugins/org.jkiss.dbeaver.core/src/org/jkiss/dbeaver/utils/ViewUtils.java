@@ -81,9 +81,8 @@ public class ViewUtils
         return null;
     }
 
-    public static DBNNode getSelectedNode(INavigatorModelView navigatorModelView)
+    public static DBNNode getSelectedNode(Viewer viewer)
     {
-        Viewer viewer = navigatorModelView.getNavigatorViewer();
         if (viewer == null) {
             return null;
         }
@@ -155,15 +154,15 @@ public class ViewUtils
             false));
     }
 
-    public static void addContextMenu(final INavigatorModelView navigatorModelView)
+    public static void addContextMenu(final IWorkbenchPart workbenchPart, final Viewer viewer)
     {
-        if (navigatorModelView.getWorkbenchPart() == null) {
+        if (workbenchPart == null) {
             // No menu for such views (e.g. control embedded in some dialog)
             return;
         }
 
         MenuManager menuMgr = new MenuManager();
-        Menu menu = menuMgr.createContextMenu(navigatorModelView.getNavigatorViewer().getControl());
+        Menu menu = menuMgr.createContextMenu(viewer.getControl());
         menu.addMenuListener(new MenuListener()
         {
             public void menuHidden(MenuEvent e)
@@ -173,7 +172,7 @@ public class ViewUtils
             public void menuShown(MenuEvent e)
             {
                 Menu m = (Menu)e.widget;
-                IStructuredSelection selection = (IStructuredSelection) navigatorModelView.getNavigatorViewer().getSelection();
+                IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
                 DBNNode node = ViewUtils.getSelectedNode(selection);
                 boolean multipleSelection = selection.size() > 1;
                 if (node != null && !node.isLocked()) {
@@ -227,13 +226,9 @@ public class ViewUtils
             public void menuAboutToShow(final IMenuManager manager)
             {
                 // Fill context menu
-                Viewer viewer = navigatorModelView.getNavigatorViewer();
-                if (viewer == null) {
-                    return;
-                }
                 final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
 
-                final DBNNode selectedNode = ViewUtils.getSelectedNode(navigatorModelView);
+                final DBNNode selectedNode = ViewUtils.getSelectedNode(viewer);
                 if (selectedNode == null || selectedNode.isLocked()) {
                     //manager.
                     return;
@@ -266,7 +261,7 @@ public class ViewUtils
                                         DBXTreeItem itemMeta = (DBXTreeItem)nodeMeta;
                                         text += " " + itemMeta.getLabel();
                                     }
-                                    IAction action = makeAction(new NavigatorActionSetActiveObject(), navigatorModelView.getWorkbenchPart(), selection, text, null, null);
+                                    IAction action = makeAction(new NavigatorActionSetActiveObject(), workbenchPart, selection, text, null, null);
 
                                     manager.add(action);
                                 }
@@ -285,34 +280,32 @@ public class ViewUtils
                     if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {
                         //propertyDialogAction.selectionChanged(selection);
                         //manager.add(propertyDialogAction);
-                        manager.add(makeCommandContribution(navigatorModelView.getWorkbenchPart().getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES));
+                        manager.add(makeCommandContribution(workbenchPart.getSite(), IWorkbenchCommandConstants.FILE_PROPERTIES));
                     }
                 }
 
                 // Add refresh button
-                manager.add(makeCommandContribution(navigatorModelView.getWorkbenchPart().getSite(), IWorkbenchCommandConstants.FILE_REFRESH));
+                manager.add(makeCommandContribution(workbenchPart.getSite(), IWorkbenchCommandConstants.FILE_REFRESH));
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
-        if (navigatorModelView.getNavigatorViewer() != null) {
-            navigatorModelView.getNavigatorViewer().getControl().setMenu(menu);
-            navigatorModelView.getWorkbenchPart().getSite().registerContextMenu(menuMgr, navigatorModelView.getNavigatorViewer());
-        }
+        viewer.getControl().setMenu(menu);
+        workbenchPart.getSite().registerContextMenu(menuMgr, viewer);
     }
 
-    public static void addDragAndDropSupport(final INavigatorModelView navigatorModelView)
+    public static void addDragAndDropSupport(final Viewer viewer)
     {
         Transfer[] types = new Transfer[] {TextTransfer.getInstance(), TreeNodeTransfer.getInstance()};
         int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
-        final DragSource source = new DragSource(navigatorModelView.getNavigatorViewer().getControl(), operations);
+        final DragSource source = new DragSource(viewer.getControl(), operations);
         source.setTransfer(types);
         source.addDragListener (new DragSourceListener() {
 
             private IStructuredSelection selection;
 
             public void dragStart(DragSourceEvent event) {
-                selection = (IStructuredSelection) navigatorModelView.getNavigatorViewer().getSelection();
+                selection = (IStructuredSelection) viewer.getSelection();
             }
             public void dragSetData (DragSourceEvent event) {
                 if (!selection.isEmpty()) {
@@ -351,7 +344,7 @@ public class ViewUtils
             }
         });
 
-        DropTarget dropTarget = new DropTarget(navigatorModelView.getNavigatorViewer().getControl(), DND.DROP_COPY);
+        DropTarget dropTarget = new DropTarget(viewer.getControl(), DND.DROP_COPY);
         dropTarget.setTransfer(new Transfer[] {TreeNodeTransfer.getInstance()});
         dropTarget.addDropListener(new DropTargetListener() {
             public void dragEnter(DropTargetEvent event)

@@ -25,14 +25,21 @@ public class DBNProject extends DBNNode implements IAdaptable, DBNResource
     private IProject project;
     private List<DBNNode> children;
     private DBNProjectDatabases databases;
+    private DBNProjectScripts scripts;
+    private DBNProjectBookmarks bookmarks;
 
     public DBNProject(DBNNode parentNode, IProject project)
     {
         super(parentNode);
         this.project = project;
         this.databases = new DBNProjectDatabases(this, project);
+        this.scripts = new DBNProjectScripts(this, project);
+        this.bookmarks = new DBNProjectBookmarks(this, project);
+
         this.children = new ArrayList<DBNNode>();
         this.children.add(databases);
+        this.children.add(scripts);
+        this.children.add(bookmarks);
     }
 
     protected void dispose(boolean reflect)
@@ -45,6 +52,8 @@ public class DBNProject extends DBNNode implements IAdaptable, DBNResource
             children = null;
         }
         this.databases = null;
+        this.scripts = null;
+        this.bookmarks = null;
         super.dispose(reflect);
     }
 
