@@ -5,14 +5,16 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.ICommandIds;
 
 import java.util.ArrayList;
@@ -84,6 +86,7 @@ public class DBNResource extends DBNNode
     {
         if (children == null) {
             if (resource instanceof IContainer) {
+                final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
                 List<DBNNode> result = new ArrayList<DBNNode>();
                 try {
                     IResource[] members = ((IContainer) resource).members();
@@ -92,18 +95,22 @@ public class DBNResource extends DBNNode
                             // Skip not accessible hidden and phantom resources
                             continue;
                         }
-                        if (resource instanceof IProject && member.getName().startsWith(".")) {
-                            // Skip all root resources which name starts with dot (system resources)
+                        final String resourceType = member.getPersistentProperty(DBPResourceHandler.PROP_RESOURCE_TYPE);
+                        if (resourceType == null) {
+                            continue;
+                        }
+                        final DBPResourceHandler resourceHandler = projectRegistry.getResourceHandler(resourceType);
+                        if (resourceHandler == null) {
                             continue;
                         }
 
-                        DBNResource newChild = new DBNResource(this, member);
+                        DBNNode newChild = resourceHandler.makeNavigatorNode(this, member);
                         result.add(newChild);
                     }
                 } catch (CoreException e) {
                     throw new DBException(e);
                 }
-                addCustomChildren(result);
+                filterChildren(result);
                 this.children = result;
             }
         }
@@ -136,7 +143,7 @@ public class DBNResource extends DBNNode
         return resource;
     }
 
-    protected void addCustomChildren(List<DBNNode> list)
+    protected void filterChildren(List<DBNNode> list)
     {
 
     }

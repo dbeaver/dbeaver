@@ -33,7 +33,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         final IFolder scriptsFolder = ScriptsHandlerImpl.getScriptsFolder(project);
         IFile tempFile;
         for (int i = 1; ; i++) {
-            tempFile = scriptsFolder.getFile("Script " + i);
+            tempFile = scriptsFolder.getFile("Script " + i + ".sql");
             if (tempFile.exists()) {
                 continue;
             }

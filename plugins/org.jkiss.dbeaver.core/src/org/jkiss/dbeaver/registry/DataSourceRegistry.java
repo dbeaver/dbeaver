@@ -59,15 +59,16 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             log.error(e);
         }
 
-        File dsFile = configFile.getFullPath().toFile();
-        if (!dsFile.exists()) {
-            // If this is first project then try to read file from DBeaver beta
-            if (DBeaverCore.getInstance().getLiveProjects().size() == 1) {
-                dsFile = new File(new File(System.getProperty("user.home")), ".dbeaver-beta/" + CONFIG_FILE_NAME);
-            }
-        }
+        File dsFile = configFile.getLocation().toFile();
         if (dsFile.exists()) {
             loadDataSources(dsFile);
+        }
+        if (dataSources.isEmpty() && DBeaverCore.getInstance().getLiveProjects().size() == 1) {
+            // If this is first project then try to read file from DBeaver beta
+            dsFile = new File(new File(System.getProperty("user.home")), ".dbeaver-beta/" + CONFIG_FILE_NAME);
+            if (dsFile.exists()) {
+                loadDataSources(dsFile);
+            }
         }
         saveDataSources();
     }

@@ -11,8 +11,11 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -20,14 +23,14 @@ import java.util.List;
  */
 public class DBNProject extends DBNResource implements IAdaptable
 {
-    private DBNProjectDatabases databases;
+    //private DBNProjectDatabases databases;
     //private DBNProjectScripts scripts;
     //private DBNProjectBookmarks bookmarks;
 
     public DBNProject(DBNNode parentNode, IProject project)
     {
         super(parentNode, project);
-        this.databases = new DBNProjectDatabases(this, project);
+        //this.databases = new DBNProjectDatabases(this, project);
         //this.scripts = new DBNProjectScripts(this, project);
         //this.bookmarks = new DBNProjectBookmarks(this, project);
 
@@ -39,7 +42,7 @@ public class DBNProject extends DBNResource implements IAdaptable
 
     protected void dispose(boolean reflect)
     {
-        this.databases = null;
+        //this.databases = null;
         super.dispose(reflect);
     }
 
@@ -50,7 +53,16 @@ public class DBNProject extends DBNResource implements IAdaptable
 
     public DBNProjectDatabases getDatabases()
     {
-        return databases;
+        try {
+            for (DBNNode db : getChildren(VoidProgressMonitor.INSTANCE)) {
+                if (db instanceof DBNProjectDatabases) {
+                    return (DBNProjectDatabases) db;
+                }
+            }
+        } catch (DBException e) {
+            throw new IllegalStateException("Can't read project contents", e);
+        }
+        throw new IllegalStateException("No databases resource in project");
     }
 
     public String getNodeDescription()
@@ -70,9 +82,20 @@ public class DBNProject extends DBNResource implements IAdaptable
     }
 
     @Override
-    protected void addCustomChildren(List<DBNNode> list)
+    protected void filterChildren(List<DBNNode> list)
     {
-        list.add(0, databases);
+        Collections.sort(list, new Comparator<DBNNode>() {
+            public int compare(DBNNode o1, DBNNode o2)
+            {
+                if (o1 instanceof DBNProjectDatabases) {
+                    return -1;
+                } else if (o2 instanceof DBNProjectDatabases) {
+                    return 1;
+                } else {
+                    return o1.getNodeName().compareTo(o2.getNodeName());
+                }
+            }
+        });
     }
 
     public String getDefaultCommandId()
