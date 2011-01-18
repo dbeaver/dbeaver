@@ -71,7 +71,12 @@ public class DBNAdapterFactory implements IAdapterFactory
             }
         } else if (IResource.class.isAssignableFrom(adapterType)) {
             if (adaptableObject instanceof DBNResource) {
-                return ((DBNResource)adaptableObject).getResource();
+                IResource resource = ((DBNResource) adaptableObject).getResource();
+                if (adapterType.isAssignableFrom(resource.getClass())) {
+                    return resource;
+                } else {
+                    return null;
+                }
             }
         } else if (adapterType == IPropertySource.class) {
             DBPObject dbObject = null;

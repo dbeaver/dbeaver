@@ -120,6 +120,17 @@ public class DBNResource extends DBNNode
         return true;
     }
 
+    @Override
+    public DBNNode refreshNode(DBRProgressMonitor monitor) throws DBException
+    {
+        try {
+            resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
+        } catch (CoreException e) {
+            throw new DBException(e);
+        }
+        return this;
+    }
+
     public IResource getResource()
     {
         return resource;
