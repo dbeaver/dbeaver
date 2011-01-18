@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 
 import java.util.ArrayList;
@@ -147,10 +148,6 @@ public class ProjectRegistry
         // Set project ID
         if (project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID) == null) {
             project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID, SecurityUtils.generateGUID(false));
-        }
-        // Set resource type
-        if (!DBPResourceHandler.RES_TYPE_PROJECT.equals(project.getPersistentProperty(DBPResourceHandler.PROP_RESOURCE_TYPE))) {
-            project.setPersistentProperty(DBPResourceHandler.PROP_RESOURCE_TYPE, DBPResourceHandler.RES_TYPE_PROJECT);
         }
         // Init all resource handlers
         for (DBPResourceHandler handler : resourceHandlerList) {

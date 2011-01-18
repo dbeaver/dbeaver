@@ -449,19 +449,25 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
         if (connectionCombo == null || connectionCombo.isDisposed()) {
             return;
         }
-        SQLEditor editor = getEditor();
-        if (editor == null) {
+        if (activeEditorPart == null) {
             return;
         }
-        DBSDataSourceContainer curDataSource = editor.getDataSourceContainer();
-        List<? extends DBSDataSourceContainer> dataSources = activeEditorPart.getDataSourceContainer().getRegistry().getDataSources();
+        DBSDataSourceContainer curDataSource = activeEditorPart.getDataSourceContainer();
+
+        List<? extends DBSDataSourceContainer> dataSources;
+        if (curDataSource != null) {
+            dataSources = curDataSource.getRegistry().getDataSources();
+        } else {
+            final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+            dataSources = projectRegistry.getDataSourceRegistry(projectRegistry.getActiveProject()).getDataSources();
+        }
         int curIndex = connectionCombo.getSelectionIndex();
         if (curIndex == 0) {
             if (curDataSource == null) {
                 // Nothing changed
                 return;
             }
-            editor.setDataSourceContainer(null);
+            activeEditorPart.setDataSourceContainer(null);
         } else if (curIndex > dataSources.size()) {
             log.warn("Connection combo index out of bounds (" + curIndex + ")");
             return;
@@ -471,7 +477,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
             if (selectedDataSource == curDataSource) {
                 return;
             } else {
-                editor.setDataSourceContainer(selectedDataSource);
+                activeEditorPart.setDataSourceContainer(selectedDataSource);
             }
         }
         updateControls();
