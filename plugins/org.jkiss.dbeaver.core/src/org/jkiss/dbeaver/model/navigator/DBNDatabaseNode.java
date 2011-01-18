@@ -114,7 +114,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         throws DBException
     {
         if (this.hasChildren() && childNodes == null) {
-            if (this.initializeNode()) {
+            if (this.initializeNode(null)) {
                 final List<DBNDatabaseNode> tmpList = new ArrayList<DBNDatabaseNode>();
                 loadChildren(monitor, getMeta(), null, tmpList);
                 this.childNodes = tmpList;
@@ -138,7 +138,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return locked || super.isLocked();
     }
 
-    public boolean initializeNode()
+    public boolean initializeNode(Runnable onFinish)
     {
         return true;
     }

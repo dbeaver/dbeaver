@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.registry.tree.*;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -26,7 +27,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider";
 
-    private DataSourceRegistry registry;
+    private DataSourceProviderRegistry registry;
     private String id;
     private String implClassName;
     private String name;
@@ -38,7 +39,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private List<DriverDescriptor> drivers = new ArrayList<DriverDescriptor>();
     private List<DataSourceViewDescriptor> views = new ArrayList<DataSourceViewDescriptor>();
 
-    public DataSourceProviderDescriptor(DataSourceRegistry registry, IConfigurationElement config)
+    public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
     {
         super(config.getContributor());
         this.registry = registry;
@@ -98,7 +99,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         }
     }
 
-    public DataSourceRegistry getRegistry()
+    public DataSourceProviderRegistry getRegistry()
     {
         return registry;
     }
@@ -145,7 +146,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             }
             // Initialize it
             try {
-                this.instance.init(this.registry.getCore());
+                this.instance.init(DBeaverCore.getInstance());
             }
             catch (Throwable ex) {
                 this.instance = null;

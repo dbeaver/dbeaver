@@ -42,8 +42,8 @@ public class NavigatorHandlerProjectDelete extends NavigatorHandlerObjectBase {
 
     private void deleteProject(IWorkbenchWindow workbenchWindow, final IProject project)
     {
-        if (project == DBeaverCore.getInstance().getDefaultProject()) {
-            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Delete project", "Default project cannot be deleted");
+        if (project == DBeaverCore.getInstance().getProjectRegistry().getActiveProject()) {
+            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Delete project", "Active project cannot be deleted");
             return;
         }
         DBeaverCore.getInstance().runAndWait(new DBRRunnableWithProgress() {

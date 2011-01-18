@@ -51,6 +51,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private Object driverInstance;
     private DriverClassLoader classLoader;
 
+    private List<DataSourceDescriptor> usedBy = new ArrayList<DataSourceDescriptor>();
+
     DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, String id)
     {
         super(providerDescriptor.getContributor());
@@ -130,6 +132,24 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         if (icon != null) {
             icon.dispose();
         }
+        if (!usedBy.isEmpty()) {
+            log.error("Driver '" + getName() + "' still used by " + usedBy.size() + " data sources");
+        }
+    }
+
+    void addUser(DataSourceDescriptor dataSourceDescriptor)
+    {
+        usedBy.add(dataSourceDescriptor);
+    }
+
+    void removeUser(DataSourceDescriptor dataSourceDescriptor)
+    {
+        usedBy.remove(dataSourceDescriptor);
+    }
+
+    public List<DataSourceDescriptor> getUsedBy()
+    {
+        return usedBy;
     }
 
     public DataSourceProviderDescriptor getProviderDescriptor()

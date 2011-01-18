@@ -4,8 +4,7 @@
 
 package org.jkiss.dbeaver.core;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.graphics.Point;
@@ -20,6 +19,7 @@ import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.part.EditorInputTransfer;
+import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 {
-    static final Log log = LogFactory.getLog(ApplicationWorkbenchWindowAdvisor.class);
+    //static final Log log = LogFactory.getLog(ApplicationWorkbenchWindowAdvisor.class);
 
     public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
     {
@@ -99,12 +99,14 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
     public void postWindowOpen() {
         super.postWindowOpen();
 
-        if (DBeaverCore.getInstance().getDataSourceRegistry().getDataSources().isEmpty()) {
+        final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        final IProject activeProject = projectRegistry.getActiveProject();
+        if (projectRegistry.getDataSourceRegistry(activeProject).getDataSources().isEmpty()) {
             // Open New Connection wizard
             Display.getCurrent().asyncExec(new Runnable() {
                 public void run() {
                     IWorkbenchWindow window = getWindowConfigurer().getWindow();
-                    ConnectionDialog dialog = new ConnectionDialog(window, new NewConnectionWizard(window));
+                    ConnectionDialog dialog = new ConnectionDialog(window, new NewConnectionWizard(activeProject, window));
                     dialog.open();
                 }
             });

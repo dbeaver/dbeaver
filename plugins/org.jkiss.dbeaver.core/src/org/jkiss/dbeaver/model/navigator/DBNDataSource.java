@@ -92,10 +92,10 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
         dataSource = (DataSourceDescriptor) object;
     }
 
-    public boolean initializeNode()
+    public boolean initializeNode(Runnable onFinish)
     {
         if (!dataSource.isConnected()) {
-            DataSourceConnectHandler.execute(dataSource);
+            DataSourceConnectHandler.execute(dataSource, onFinish);
             //dataSource.connect(monitor);
         }
         return dataSource.isConnected();

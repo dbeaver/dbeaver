@@ -12,7 +12,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 
 import java.util.ArrayList;
@@ -38,12 +38,12 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         this.site = site;
         this.providers = providers;
         if (this.providers == null) {
-            this.providers = DataSourceRegistry.getDefault().getDataSourceProviders();
+            this.providers = DataSourceProviderRegistry.getDefault().getDataSourceProviders();
         }
 
         this.setContentProvider(new ViewContentProvider());
         this.setLabelProvider(new ViewLabelProvider());
-        this.setInput(DataSourceRegistry.getDefault());
+        this.setInput(DataSourceProviderRegistry.getDefault());
         this.expandAll();
         this.addSelectionChangedListener(this);
         this.addDoubleClickListener(this);
@@ -79,7 +79,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
 
         public Object[] getChildren(Object parent)
         {
-            if (parent instanceof DataSourceRegistry) {
+            if (parent instanceof DataSourceProviderRegistry) {
                 List<Object> children = new ArrayList<Object>();
                 for (DataSourceProviderDescriptor provider : providers) {
                     List<DriverDescriptor> drivers = provider.getEnabledDrivers();
@@ -101,7 +101,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
 
         public boolean hasChildren(Object parent)
         {
-            if (parent instanceof DataSourceRegistry) {
+            if (parent instanceof DataSourceProviderRegistry) {
                 return !providers.isEmpty();
             } else if (parent instanceof DataSourceProviderDescriptor) {
                 return !((DataSourceProviderDescriptor) parent).getEnabledDrivers().isEmpty();

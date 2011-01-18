@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -22,6 +23,7 @@ import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 
@@ -75,13 +77,17 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                 return false;
             }
             // Disconnect all connections
-            if (DBeaverCore.getInstance() != null) {
+            final DBeaverCore core = DBeaverCore.getInstance();
+            if (core != null) {
                 // Try to close all connections
-                if (!DBeaverCore.getInstance().getDataSourceRegistry().closeConnections()) {
-                    return false;
+                for (IProject project : core.getWorkspace().getRoot().getProjects()) {
+                    final DataSourceRegistry dataSourceRegistry = core.getProjectRegistry().getDataSourceRegistry(project);
+                    if (!dataSourceRegistry.closeConnections()) {
+                        return false;
+                    }
                 }
                 // Wait for all datasource jobs to finish
-                DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+                core.runAndWait2(new DBRRunnableWithProgress() {
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
@@ -144,6 +150,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
             }
         }
 
+/*
         IFolder tempFolder = null;
         try {
             tempFolder = DBeaverCore.getInstance().getAutosaveFolder(VoidProgressMonitor.INSTANCE);
@@ -166,6 +173,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                 log.warn("Error deleting autosave files", ex);
             }
         }
+*/
         return true;
     }
 

@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.IOUtils;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -53,7 +54,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
@@ -108,6 +108,7 @@ public class SQLEditor extends SQLEditorBase
     private static Image imgDataGrid;
     private static Image imgExplainPlan;
     private static Image imgLog;
+    private IProject project;
 
     static {
         imgDataGrid = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage();
@@ -119,13 +120,13 @@ public class SQLEditor extends SQLEditorBase
     {
         super();
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-        DataSourceRegistry.getDefault().addDataSourceListener(this);
         dataContainer = new DataContainer();
     }
 
     public DBPDataSource getDataSource()
     {
-        return getDataSourceContainer().getDataSource();
+        final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        return dataSourceContainer == null ? null : dataSourceContainer.getDataSource();
     }
 
     public DBSDataSourceContainer getDataSourceContainer()
@@ -166,7 +167,7 @@ public class SQLEditor extends SQLEditorBase
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
             if (!dataSourceContainer.isConnected()) {
-                DataSourceConnectHandler.execute(dataSourceContainer);
+                DataSourceConnectHandler.execute(dataSourceContainer, null);
             }
         }
         setPartName(getEditorInput().getName());
@@ -277,6 +278,10 @@ public class SQLEditor extends SQLEditorBase
             throw new PartInitException("Invalid Input: Must be SQLEditorInput");
         }
         super.init(site, editorInput);
+
+        this.project = getEditorInput().getFile().getProject();
+
+        DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(this.project).addDataSourceListener(this);
     }
 
     public void resourceChanged(final IResourceChangeEvent event)
@@ -681,7 +686,10 @@ public class SQLEditor extends SQLEditorBase
     {
         closeSession();
 
-        DataSourceRegistry.getDefault().removeDataSourceListener(this);
+        DBeaverCore.getInstance().getProjectRegistry()
+            .getDataSourceRegistry(project)
+            .removeDataSourceListener(this);
+
         if (planView != null) {
             planView.dispose();
             planView = null;

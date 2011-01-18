@@ -26,12 +26,12 @@ public class DataSourceConnectHandler extends DataSourceHandler
     {
         final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getDataSourceContainer(event, false, false);
         if (dataSourceContainer != null) {
-            execute(dataSourceContainer);
+            execute(dataSourceContainer, null);
         }
         return null;
     }
 
-    public static void execute(DBSDataSourceContainer dataSourceContainer) {
+    public static void execute(DBSDataSourceContainer dataSourceContainer, final Runnable onFinish) {
         if (dataSourceContainer instanceof DataSourceDescriptor && !dataSourceContainer.isConnected()) {
             final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor)dataSourceContainer;
             if (!CommonUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
@@ -62,6 +62,9 @@ public class DataSourceConnectHandler extends DataSourceHandler
                             dataSourceDescriptor.getConnectionInfo().setUserPassword(oldPassword);
                         }
                     }
+                    if (onFinish != null) {
+                        onFinish.run();
+                    }
                 }
             });
             connectJob.schedule();
@@ -79,7 +82,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
                 if (result == IDialogConstants.OK_ID) {
                     if (dataSourceContainer.isSavePassword()) {
                         // Update connection properties
-                        dataSourceContainer.getDriver().getProviderDescriptor().getRegistry().updateDataSource(dataSourceContainer);
+                        dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
                     }
                     authResult[0] = true;
                 } else {

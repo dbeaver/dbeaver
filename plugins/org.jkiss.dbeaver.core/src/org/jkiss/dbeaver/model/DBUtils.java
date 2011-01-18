@@ -19,7 +19,7 @@ import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 
 import java.lang.reflect.InvocationTargetException;
@@ -254,7 +254,7 @@ public final class DBUtils {
     public static DBDValueHandler getColumnValueHandler(DBCExecutionContext context, DBSTypedObject column)
     {
         DBDValueHandler typeHandler = null;
-        DataTypeProviderDescriptor typeProvider = DataSourceRegistry.getDefault().getDataTypeProvider(context.getDataSource(), column);
+        DataTypeProviderDescriptor typeProvider = DataSourceProviderRegistry.getDefault().getDataTypeProvider(context.getDataSource(), column);
         if (typeProvider != null) {
             typeHandler = typeProvider.getInstance().getHandler(context, column);
         }

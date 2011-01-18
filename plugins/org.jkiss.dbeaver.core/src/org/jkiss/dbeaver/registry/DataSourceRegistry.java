@@ -11,19 +11,17 @@ import net.sf.jkiss.utils.xml.XMLBuilder;
 import net.sf.jkiss.utils.xml.XMLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.StringEncrypter;
@@ -33,29 +31,26 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-public class DataSourceRegistry implements DBPRegistry
+public class DataSourceRegistry implements DBPDataSourceRegistry
 {
-
     static final Log log = LogFactory.getLog(DataSourceRegistry.class);
 
     public static final String CONFIG_FILE_NAME = "data-sources.xml";
 
-    private DBeaverCore core;
-    private File workspaceRoot;
-    private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<DataSourceProviderDescriptor>();
+    private static final String PASSWORD_ENCRYPTION_KEY = "sdf@!#$verf^wv%6Fwe%$$#FFGwfsdefwfe135s$^H)dg";
 
-    private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();
+    private final IProject project;
+    private final IFile configFile;
 
     private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<DBPEventListener>();
 
     private StringEncrypter encrypter;
-    private static final String PASSWORD_ENCRYPTION_KEY = "sdf@!#$verf^wv%6Fwe%$$#FFGwfsdefwfe135s$^H)dg";
 
-    public DataSourceRegistry(DBeaverCore core)
+    public DataSourceRegistry(IProject project)
     {
-        this.core = core;
-        this.workspaceRoot = core.getRootPath().toFile();
+        this.project = project;
+        this.configFile = project.getFile(CONFIG_FILE_NAME);
         try {
             this.encrypter = new StringEncrypter(StringEncrypter.SCHEME_DES, PASSWORD_ENCRYPTION_KEY);
         }
@@ -63,44 +58,18 @@ public class DataSourceRegistry implements DBPRegistry
             // never be here
             log.error(e);
         }
-    }
 
-    public void loadExtensions(IExtensionRegistry registry)
-    {
-        // Load datasource providers from external plugins
-        {
-            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID);
-            for (IConfigurationElement ext : extElements) {
-                DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, ext);
-                dataSourceProviders.add(provider);
-            }
-            Collections.sort(dataSourceProviders, new Comparator<DataSourceProviderDescriptor>() {
-                public int compare(DataSourceProviderDescriptor o1, DataSourceProviderDescriptor o2)
-                {
-                    if (o1.isDriversManagable() && !o2.isDriversManagable()) {
-                        return 1;
-                    }
-                    if (o2.isDriversManagable() && !o1.isDriversManagable()) {
-                        return -1;
-                    }
-                    return o1.getName().compareToIgnoreCase(o2.getName());
-                }
-            });
-        }
-
-        // Load data type providers from external plugins
-        {
-            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataTypeProviderDescriptor.EXTENSION_ID);
-            for (IConfigurationElement ext : extElements) {
-                DataTypeProviderDescriptor provider = new DataTypeProviderDescriptor(this, ext);
-                dataTypeProviders.add(provider);
+        File dsFile = configFile.getFullPath().toFile();
+        if (!dsFile.exists()) {
+            // If this is first project then try to read file from DBeaver beta
+            if (DBeaverCore.getInstance().getLiveProjects().size() == 1) {
+                dsFile = new File(new File(System.getProperty("user.home")), ".dbeaver-beta/" + CONFIG_FILE_NAME);
             }
         }
-
-        // Load drivers
-        loadDrivers();
-        // Load datasources
-        loadDataSources();
+        if (dsFile.exists()) {
+            loadDataSources(dsFile);
+        }
+        saveDataSources();
     }
 
     public void dispose()
@@ -120,13 +89,6 @@ public class DataSourceRegistry implements DBPRegistry
             dataSourceDescriptor.dispose();
         }
         this.dataSources.clear();
-
-        for (DataSourceProviderDescriptor providerDescriptor : this.dataSourceProviders) {
-            providerDescriptor.dispose();
-        }
-        this.dataSourceProviders.clear();
-
-        this.dataSourceProviders.clear();
     }
 
     public synchronized boolean closeConnections()
@@ -152,59 +114,6 @@ public class DataSourceRegistry implements DBPRegistry
         }
 
         return true;
-    }
-
-    public DBeaverCore getCore()
-    {
-        return core;
-    }
-
-    public DataSourceProviderDescriptor getDataSourceProvider(String id)
-    {
-        for (DataSourceProviderDescriptor provider : dataSourceProviders) {
-            if (provider.getId().equals(id)) {
-                return provider;
-            }
-        }
-        return null;
-    }
-
-    public List<DataSourceProviderDescriptor> getDataSourceProviders()
-    {
-        return dataSourceProviders;
-    }
-
-    ////////////////////////////////////////////////////
-    // DataType providers
-
-    public List<DataTypeProviderDescriptor> getDataTypeProviders()
-    {
-        return dataTypeProviders;
-    }
-
-    public DataTypeProviderDescriptor getDataTypeProvider(DBPDataSource dataSource, DBSTypedObject type)
-    {
-        DBPDriver driver = dataSource.getContainer().getDriver();
-        if (!(driver instanceof DriverDescriptor)) {
-            log.warn("Bad datasource specified (driver is not recognized by registry) - " + dataSource);
-            return null;
-        }
-        DataSourceProviderDescriptor dsProvider = ((DriverDescriptor) driver).getProviderDescriptor();
-
-        // First try to find type provider for specific datasource type
-        for (DataTypeProviderDescriptor dtProvider : dataTypeProviders) {
-            if (!dtProvider.isDefault() && dtProvider.supportsDataSource(dsProvider) && dtProvider.supportsType(type)) {
-                return dtProvider;
-            }
-        }
-
-        // Find in default providers
-        for (DataTypeProviderDescriptor dtProvider : dataTypeProviders) {
-            if (dtProvider.isDefault() && dtProvider.supportsType(type)) {
-                return dtProvider;
-            }
-        }
-        return null;
     }
 
     ////////////////////////////////////////////////////
@@ -244,23 +153,8 @@ public class DataSourceRegistry implements DBPRegistry
     {
         List<DataSourceDescriptor> dsCopy = new ArrayList<DataSourceDescriptor>(dataSources);
         Collections.sort(dsCopy, new Comparator<DataSourceDescriptor>() {
-            public int compare(DataSourceDescriptor o1, DataSourceDescriptor o2) {
-                return o1.getName().compareToIgnoreCase(o2.getName());
-            }
-        });
-        return dsCopy;
-    }
-
-    public List<DataSourceDescriptor> getDataSources(IProject project)
-    {
-        List<DataSourceDescriptor> dsCopy = new ArrayList<DataSourceDescriptor>();
-        for (DataSourceDescriptor ds : dataSources) {
-            if (ds.getProject() == project) {
-                dsCopy.add(ds);
-            }
-        }
-        Collections.sort(dsCopy, new Comparator<DataSourceDescriptor>() {
-            public int compare(DataSourceDescriptor o1, DataSourceDescriptor o2) {
+            public int compare(DataSourceDescriptor o1, DataSourceDescriptor o2)
+            {
                 return o1.getName().compareToIgnoreCase(o2.getName());
             }
         });
@@ -361,130 +255,31 @@ public class DataSourceRegistry implements DBPRegistry
 */
     }
 
-    public static DataSourceRegistry getDefault()
+    private void loadDataSources(File fromFile)
     {
-        return DBeaverCore.getInstance().getDataSourceRegistry();
-    }
-
-    private void loadDrivers()
-    {
-        File driversConfig = new File(workspaceRoot, "drivers.xml");
-        if (driversConfig.exists()) {
+        if (!fromFile.exists()) {
+            return;
+        }
+        try {
+            InputStream is = new FileInputStream(fromFile);
             try {
-                InputStream is = new FileInputStream(driversConfig);
                 try {
-                    try {
-                        loadDrivers(is);
-                    } catch (DBException ex) {
-                        log.warn("Can't load drivers config from " + driversConfig.getPath(), ex);
-                    }
-                    finally {
-                        is.close();
-                    }
+                    loadDataSources(is);
+                } catch (DBException ex) {
+                    log.warn("Can't load datasource config from " + fromFile.getAbsolutePath(), ex);
                 }
-                catch (IOException ex) {
-                    log.warn("IO error", ex);
+                finally {
+                    is.close();
                 }
-            } catch (FileNotFoundException ex) {
-                log.warn("Can't open config file " + driversConfig.getPath(), ex);
-            }
-        }
-    }
-
-    private void loadDrivers(InputStream is)
-        throws DBException, IOException
-    {
-        SAXReader parser = new SAXReader(is);
-        try {
-            parser.parse(new DriversParser());
-        }
-        catch (XMLException ex) {
-            throw new DBException("Datasource config parse error", ex);
-        }
-    }
-
-    public void saveDrivers()
-    {
-        File driversConfig = new File(workspaceRoot, "drivers.xml");
-        try {
-            OutputStream os = new FileOutputStream(driversConfig);
-            try {
-                XMLBuilder xml = new XMLBuilder(os, "utf-8");
-                xml.setButify(true);
-                xml.startElement("drivers");
-                for (DataSourceProviderDescriptor provider : this.dataSourceProviders) {
-                    xml.startElement("provider");
-                    xml.addAttribute("id", provider.getId());
-                    for (DriverDescriptor driver : provider.getDrivers()) {
-                        if (driver.isModified()) {
-                            saveDriver(xml, driver);
-                        }
-                    }
-                    xml.endElement();
-                }
-                xml.endElement();
-                xml.flush();
-                os.close();
             }
             catch (IOException ex) {
                 log.warn("IO error", ex);
             }
-        } catch (FileNotFoundException ex) {
-            log.warn("Can't open config file " + driversConfig.getPath(), ex);
-        }
-    }
-
-    private void saveDriver(XMLBuilder xml, DriverDescriptor driver)
-        throws IOException
-    {
-        xml.startElement("driver");
-        xml.addAttribute("id", driver.getId());
-        if (driver.isDisabled()) {
-            xml.addAttribute("disabled", true);
-        }
-        xml.addAttribute("custom", driver.isCustom());
-        xml.addAttribute("name", driver.getName());
-        xml.addAttribute("class", driver.getDriverClassName());
-        xml.addAttribute("url", driver.getSampleURL());
-        if (driver.getDefaultPort() != null) {
-            xml.addAttribute("port", driver.getDefaultPort().toString());
-        }
-        xml.addAttribute("description", CommonUtils.getString(driver.getDescription()));
-        for (DriverLibraryDescriptor lib : driver.getLibraries()) {
-            if (lib.isCustom() || lib.isDisabled()) {
-                xml.startElement("library");
-                xml.addAttribute("path", lib.getPath());
-                if (lib.isDisabled()) {
-                    xml.addAttribute("disabled", true);
-                }
-                xml.endElement();
+            finally {
+                ContentUtils.close(is);
             }
-        }
-        xml.endElement();
-    }
-
-    private void loadDataSources()
-    {
-        File projectConfig = new File(workspaceRoot, CONFIG_FILE_NAME);
-        if (projectConfig.exists()) {
-            try {
-                InputStream is = new FileInputStream(projectConfig);
-                try {
-                    try {
-                        loadDataSources(is);
-                    } catch (DBException ex) {
-                        log.warn("Can't load datasource config from " + projectConfig.getPath(), ex);
-                    }
-                    finally {
-                        is.close();
-                    }
-                }
-                catch (IOException ex) {
-                    log.warn("IO error", ex);
-                }
-            } catch (FileNotFoundException ex) {
-                log.warn("Can't open config file " + projectConfig.getPath(), ex);
-            }
+        } catch (IOException e) {
+            log.warn("Can't load config file " + fromFile.getAbsolutePath(), e);
         }
     }
 
@@ -502,7 +297,7 @@ public class DataSourceRegistry implements DBPRegistry
 
     private void saveDataSources()
     {
-        File projectConfig = new File(workspaceRoot, CONFIG_FILE_NAME);
+        File projectConfig = configFile.getLocation().toFile();
         try {
             OutputStream os = new FileOutputStream(projectConfig);
             try {
@@ -517,10 +312,15 @@ public class DataSourceRegistry implements DBPRegistry
                 os.close();
             }
             catch (IOException ex) {
-                log.warn("IO error", ex);
+                log.warn("IO error while saving datasources", ex);
             }
         } catch (FileNotFoundException ex) {
-            log.warn("Can't open config file " + projectConfig.getPath(), ex);
+            log.error("Can't open config file " + projectConfig.getPath(), ex);
+        }
+        try {
+            configFile.refreshLocal(IFile.DEPTH_ZERO, VoidProgressMonitor.INSTANCE.getNestedMonitor());
+        } catch (CoreException e) {
+            log.error("Can't refresh datasources configuration");
         }
     }
 
@@ -548,15 +348,6 @@ public class DataSourceRegistry implements DBPRegistry
             xml.addAttribute("filter-schema", dataSource.getSchemaFilter());
         }
 
-        IProject project = dataSource.getProject();
-        try {
-            String projectId = project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID);
-            if (projectId != null) {
-                xml.addAttribute("project", projectId);
-            }
-        } catch (CoreException e) {
-            log.warn(e);
-        }
         {
             // Connection info
             DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
@@ -614,79 +405,9 @@ public class DataSourceRegistry implements DBPRegistry
         xml.endElement();
     }
 
-    private class DriversParser implements SAXListener
+    public IProject getProject()
     {
-        DataSourceProviderDescriptor curProvider;
-        DriverDescriptor curDriver;
-
-        private DriversParser()
-        {
-        }
-
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
-            throws XMLException
-        {
-            if (localName.equals("provider")) {
-                curProvider = null;
-                curDriver = null;
-                String idAttr = atts.getValue("id");
-                if (CommonUtils.isEmpty(idAttr)) {
-                    log.warn("No id for driver provider");
-                    return;
-                }
-                curProvider = getDataSourceProvider(idAttr);
-                if (curProvider == null) {
-                    log.warn("Provider '" + idAttr + "' not found");
-                }
-            } else if (localName.equals("driver")) {
-                curDriver = null;
-                if (curProvider == null) {
-                    log.warn("Driver outside of datasource provider");
-                    return;
-                }
-                String idAttr = atts.getValue("id");
-                curDriver = curProvider.getDriver(idAttr);
-                if (curDriver == null) {
-                    curDriver = new DriverDescriptor(curProvider, idAttr);
-                    curProvider.addDriver(curDriver);
-                }
-                curDriver.setName(atts.getValue("name"));
-                curDriver.setDescription(atts.getValue("description"));
-                curDriver.setDriverClassName(atts.getValue("class"));
-                curDriver.setSampleURL(atts.getValue("url"));
-                String portStr = atts.getValue("port");
-                if (portStr != null) {
-                    try {
-                        curDriver.setDriverDefaultPort(new Integer(portStr));
-                    }
-                    catch (NumberFormatException e) {
-                        log.warn("Bad driver '" + curDriver.getName() + "' port specified: " + portStr);
-                    }
-                }
-                curDriver.setModified(true);
-                String disabledAttr = atts.getValue("disabled");
-                if ("true".equals(disabledAttr)) {
-                    curDriver.setDisabled(true);
-                }
-            } else if (localName.equals("library")) {
-                if (curDriver == null) {
-                    log.warn("Library outside of driver");
-                    return;
-                }
-                String path = atts.getValue("path");
-                DriverLibraryDescriptor lib = curDriver.getLibrary(path);
-                String disabledAttr = atts.getValue("disabled");
-                if (lib != null && "true".equals(disabledAttr)) {
-                    lib.setDisabled(true);
-                } else if (lib == null) {
-                    curDriver.addLibrary(path);
-                }
-            }
-        }
-
-        public void saxText(SAXReader reader, String data) {}
-
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {}
+        return project;
     }
 
     private class DataSourcesParser implements SAXListener
@@ -703,7 +424,7 @@ public class DataSourceRegistry implements DBPRegistry
         {
             isDescription = false;
             if (localName.equals("data-source")) {
-                DataSourceProviderDescriptor provider = getDataSourceProvider(atts.getValue("provider"));
+                DataSourceProviderDescriptor provider = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProvider(atts.getValue("provider"));
                 if (provider == null) {
                     log.warn("Can't find datasource provider " + atts.getValue("provider"));
                     curDataSource = null;
@@ -721,6 +442,7 @@ public class DataSourceRegistry implements DBPRegistry
                     id = atts.getValue("name");
                 }
                 curDataSource = new DataSourceDescriptor(
+                    DataSourceRegistry.this,
                     id,
                     driver,
                     new DBPConnectionInfo());
@@ -741,12 +463,6 @@ public class DataSourceRegistry implements DBPRegistry
                 curDataSource.setShowSystemObjects("true".equals(atts.getValue("show-system-objects")));
                 curDataSource.setCatalogFilter(atts.getValue("filter-catalog"));
                 curDataSource.setSchemaFilter(atts.getValue("filter-schema"));
-
-                String projectId = atts.getValue("project");
-                IProject project = DBeaverCore.getInstance().getProject(projectId);
-                if (project != null) {
-                    curDataSource.setProject(project);
-                }
 
                 dataSources.add(curDataSource);
             } else if (localName.equals("connection")) {

@@ -30,7 +30,7 @@ public class DataSourcePreferenceStore extends AbstractPreferenceStore
     public void save()
         throws IOException
     {
-        DBeaverCore.getInstance().getDataSourceRegistry().flushConfig();
+        dataSourceDescriptor.getRegistry().flushConfig();
     }
 
 }

@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNRoot;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 
 import java.util.List;
@@ -105,7 +106,8 @@ public class SelectDataSourceDialog extends Dialog {
 
     public static DataSourceDescriptor selectDataSource(Shell parentShell)
     {
-        List<DataSourceDescriptor> datasources = DBeaverCore.getInstance().getDataSourceRegistry().getDataSources();
+        final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        List<DataSourceDescriptor> datasources = projectRegistry.getDataSourceRegistry(projectRegistry.getActiveProject()).getDataSources();
         if (datasources.isEmpty()) {
             MessageBox messageBox = new MessageBox(parentShell, SWT.ICON_INFORMATION | SWT.OK);
             messageBox.setMessage("Create new datasource first.");

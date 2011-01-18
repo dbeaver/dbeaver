@@ -4,19 +4,9 @@
 
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IMemento;
-import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.navigator.DBNProjectDatabases;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 public class DatabaseNavigatorView extends NavigatorViewBase
 {
@@ -37,7 +27,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase
 
     private DBNProject getActiveProjectNode()
     {
-        return getModel().getRoot().getProject(DBeaverCore.getInstance().getActiveProject());
+        return getModel().getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
     }
 
     public DBNNode getRootNode() {

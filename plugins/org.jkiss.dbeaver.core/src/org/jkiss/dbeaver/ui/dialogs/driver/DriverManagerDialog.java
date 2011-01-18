@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
@@ -55,7 +55,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
 
     protected Control createDialogArea(Composite parent)
     {
-        List<DataSourceProviderDescriptor> provders = DataSourceRegistry.getDefault().getDataSourceProviders();
+        List<DataSourceProviderDescriptor> provders = DataSourceProviderRegistry.getDefault().getDataSourceProviders();
         {
             DataSourceProviderDescriptor manProvider = null;
             for (DataSourceProviderDescriptor provider : provders) {
@@ -218,12 +218,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
 
     private void deleteDriver()
     {
-        List<DataSourceDescriptor> usedDS = new ArrayList<DataSourceDescriptor>();
-        for (DataSourceDescriptor ds : DataSourceRegistry.getDefault().getDataSources()) {
-            if (ds.getDriver() == selectedDriver) {
-                usedDS.add(ds);
-            }
-        }
+        List<DataSourceDescriptor> usedDS = selectedDriver.getUsedBy();
         if (!usedDS.isEmpty()) {
             StringBuilder message = new StringBuilder("Your can't delete driver '" + selectedDriver.getName() +"' because it's used by next data source(s):");
             for (DataSourceDescriptor ds : usedDS) {

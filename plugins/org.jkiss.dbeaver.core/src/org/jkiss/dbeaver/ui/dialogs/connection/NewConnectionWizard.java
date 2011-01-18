@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
@@ -28,7 +29,7 @@ import java.util.Map;
 public class NewConnectionWizard extends ConnectionWizard
 {
     private IWorkbenchWindow window;
-    private DataSourceRegistry registry;
+    private DataSourceProviderRegistry registry;
     private List<DataSourceProviderDescriptor> availableProvides = new ArrayList<DataSourceProviderDescriptor>();
     private ConnectionPageDriver pageDrivers;
     private Map<DataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<DataSourceProviderDescriptor, ConnectionPageSettings>();
@@ -38,15 +39,15 @@ public class NewConnectionWizard extends ConnectionWizard
      * Constructor for SampleNewWizard.
      * @param window
      */
-    public NewConnectionWizard(IWorkbenchWindow window)
+    public NewConnectionWizard(IProject project, IWorkbenchWindow window)
     {
-        super();
+        super(project);
         setWindowTitle("Create new connection");
         this.window = window;
-        this.registry = DataSourceRegistry.getDefault();
+        this.registry = DataSourceProviderRegistry.getDefault();
     }
 
-    DataSourceRegistry getRegistry()
+    DataSourceProviderRegistry getRegistry()
     {
         return this.registry;
     }
@@ -146,11 +147,12 @@ public class NewConnectionWizard extends ConnectionWizard
     {
         super.performFinish();
         DataSourceDescriptor dataSource = new DataSourceDescriptor(
+            dataSourceRegistry,
             DataSourceDescriptor.generateNewId(pageDrivers.getSelectedDriver()),
             pageDrivers.getSelectedDriver(),
             getPageSettings().getConnectionInfo());
         pageFinal.saveSettings(dataSource);
-        registry.addDataSource(dataSource);
+        dataSourceRegistry.addDataSource(dataSource);
         return true;
     }
 

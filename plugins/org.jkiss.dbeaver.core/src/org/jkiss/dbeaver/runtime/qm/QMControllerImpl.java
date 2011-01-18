@@ -10,7 +10,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
 
@@ -31,9 +31,9 @@ public class QMControllerImpl implements QMController {
     private QMExecutionHandler defaultHandler;
     private QMMCollector metaHandler;
     private List<QMExecutionHandler> handlers = new ArrayList<QMExecutionHandler>();
-    private DataSourceRegistry dataSourceRegistry;
+    private DataSourceProviderRegistry dataSourceRegistry;
 
-    public QMControllerImpl(DataSourceRegistry dataSourceRegistry) {
+    public QMControllerImpl(DataSourceProviderRegistry dataSourceRegistry) {
         this.dataSourceRegistry = dataSourceRegistry;
 
         defaultHandler = (QMExecutionHandler) Proxy.newProxyInstance(
@@ -94,7 +94,7 @@ public class QMControllerImpl implements QMController {
         return metaHandler.getPastEvents();
     }
 
-    DataSourceRegistry getDataSourceRegistry() {
+    DataSourceProviderRegistry getDataSourceRegistry() {
         return dataSourceRegistry;
     }
 

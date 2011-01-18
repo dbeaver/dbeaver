@@ -21,7 +21,9 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.eclipse.ui.texteditor.*;
+import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.eclipse.ui.texteditor.RetargetTextEditorAction;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -34,8 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -54,7 +55,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
 {
     static final Log log = LogFactory.getLog(SQLEditorContributor.class);
 
-    private IEditorPart activeEditorPart;
+    private SQLEditor activeEditorPart;
 
     private Text resultSetSize;
     private Combo connectionCombo;
@@ -70,7 +71,6 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
         super();
 
         createActions();
-        DataSourceRegistry.getDefault().addDataSourceListener(this);
     }
 
     private void createActions()
@@ -99,41 +99,46 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
             databaseCombo.dispose();
         }
 
-        DataSourceRegistry.getDefault().removeDataSourceListener(this);
+        if (activeEditorPart != null) {
+            activeEditorPart.getDataSourceContainer().getRegistry().removeDataSourceListener(this);
+            activeEditorPart = null;
+        }
         super.dispose();
     }
 
     SQLEditor getEditor()
     {
-        if (activeEditorPart instanceof SQLEditor) {
-            return ((SQLEditor) activeEditorPart);
-        }
-        return null;
+        return activeEditorPart;
     }
 
     public void setActiveEditor(IEditorPart targetEditor)
     {
         super.setActiveEditor(targetEditor);
         // Update previous statuses
-        if (activeEditorPart instanceof SQLEditor) {
-            ((SQLEditor)activeEditorPart).getDataSourceContainer().getPreferenceStore().removePropertyChangeListener(this);
+        if (activeEditorPart != null) {
+            final DBSDataSourceContainer dataSourceContainer = activeEditorPart.getDataSourceContainer();
+            if (dataSourceContainer != null) {
+                activeEditorPart.getDataSourceContainer().getPreferenceStore().removePropertyChangeListener(this);
+                activeEditorPart.getDataSourceContainer().getRegistry().removeDataSourceListener(this);
+            }
         }
-        activeEditorPart = targetEditor;
+        activeEditorPart = (SQLEditor)targetEditor;
+
+        if (activeEditorPart != null) {
+            // Update editor actions
+            contentAssistProposal.setAction(getAction(activeEditorPart, SQLEditor.ACTION_CONTENT_ASSIST_PROPOSAL)); //$NON-NLS-1$
+            contentAssistTip.setAction(getAction(activeEditorPart, SQLEditor.ACTION_CONTENT_ASSIST_TIP)); //$NON-NLS-1$
+            contentFormatProposal.setAction(getAction(activeEditorPart, SQLEditor.ACTION_CONTENT_FORMAT_PROPOSAL)); //$NON-NLS-1$
+
+            final DBSDataSourceContainer dataSourceContainer = activeEditorPart.getDataSourceContainer();
+            if (dataSourceContainer != null) {
+                dataSourceContainer.getPreferenceStore().addPropertyChangeListener(this);
+                dataSourceContainer.getRegistry().addDataSourceListener(this);
+            }
+        }
 
         // Update controls and actions
         updateControls();
-
-        ITextEditor editor = (activeEditorPart instanceof ITextEditor) ? (ITextEditor)activeEditorPart : null;
-
-
-        // Update editor actions
-        contentAssistProposal.setAction(getAction(editor, SQLEditor.ACTION_CONTENT_ASSIST_PROPOSAL)); //$NON-NLS-1$
-        contentAssistTip.setAction(getAction(editor, SQLEditor.ACTION_CONTENT_ASSIST_TIP)); //$NON-NLS-1$
-        contentFormatProposal.setAction(getAction(editor, SQLEditor.ACTION_CONTENT_FORMAT_PROPOSAL)); //$NON-NLS-1$
-
-        if (activeEditorPart instanceof SQLEditor) {
-            ((SQLEditor)activeEditorPart).getDataSourceContainer().getPreferenceStore().addPropertyChangeListener(this);
-        }
     }
 
     public void init(IActionBars bars)
@@ -180,7 +185,9 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                 resultSetSize.setToolTipText("Maximum result-set size");
                 if (editor != null) {
                     DBSDataSourceContainer curDataSource = editor.getDataSourceContainer();
-                    resultSetSize.setText("" + curDataSource.getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS));
+                    if (curDataSource != null) {
+                        resultSetSize.setText("" + curDataSource.getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS));
+                    }
                 }
                 //resultSetSize.setDigits(7);
                 resultSetSize.setLayoutData(gd);
@@ -268,10 +275,18 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
 
     private void fillDataSourceList(SQLEditor editor) {
         connectionCombo.removeAll();
+
         connectionCombo.add("<None>");
-        List<DataSourceDescriptor> dataSources = DataSourceRegistry.getDefault().getDataSources();
+        final DBSDataSourceContainer dataSourceContainer = activeEditorPart == null ? null : activeEditorPart.getDataSourceContainer();
+        List<? extends DBSDataSourceContainer> dataSources;
+        if (dataSourceContainer != null) {
+            dataSources = dataSourceContainer.getRegistry().getDataSources();
+        } else {
+            final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+            dataSources = projectRegistry.getDataSourceRegistry(projectRegistry.getActiveProject()).getDataSources();
+        }
         for (int i = 0; i < dataSources.size(); i++) {
-            DataSourceDescriptor ds = dataSources.get(i);
+            DBSDataSourceContainer ds = dataSources.get(i);
             connectionCombo.add(ds.getName(), i + 1);
             if (editor != null && editor.getDataSourceContainer() == ds) {
                 connectionCombo.select(i + 1);
@@ -318,8 +333,10 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                 resultSetSize.setEnabled(false);
             } else {
                 DBSDataSourceContainer curDataSource = editor.getDataSourceContainer();
-                resultSetSize.setEnabled(true);
-                resultSetSize.setText("" + curDataSource.getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS));
+                if (curDataSource != null) {
+                    resultSetSize.setEnabled(true);
+                    resultSetSize.setText("" + curDataSource.getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS));
+                }
             }
         }
 
@@ -437,7 +454,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
             return;
         }
         DBSDataSourceContainer curDataSource = editor.getDataSourceContainer();
-        List<DataSourceDescriptor> dataSources = DataSourceRegistry.getDefault().getDataSources();
+        List<? extends DBSDataSourceContainer> dataSources = activeEditorPart.getDataSourceContainer().getRegistry().getDataSources();
         int curIndex = connectionCombo.getSelectionIndex();
         if (curIndex == 0) {
             if (curDataSource == null) {
@@ -450,7 +467,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
             return;
         } else {
             // Change data source
-            DataSourceDescriptor selectedDataSource = dataSources.get(curIndex - 1);
+            DBSDataSourceContainer selectedDataSource = dataSources.get(curIndex - 1);
             if (selectedDataSource == curDataSource) {
                 return;
             } else {

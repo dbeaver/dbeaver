@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.registry;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -55,6 +54,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 {
     static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
 
+    private DataSourceRegistry registry;
     private DriverDescriptor driver;
     private DBPConnectionInfo connectionInfo;
 
@@ -70,7 +70,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     private Date loginDate;
     private DBDDataFormatterProfile formatterProfile;
     private DataSourcePreferenceStore preferenceStore;
-    private IProject project;
 
     private DBPDataSource dataSource;
 
@@ -83,17 +82,19 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
 
     public DataSourceDescriptor(
+        DataSourceRegistry registry,
         String id,
         DriverDescriptor driver,
         DBPConnectionInfo connectionInfo)
     {
+        this.registry = registry;
         this.id = id;
         this.driver = driver;
         this.connectionInfo = connectionInfo;
         this.createDate = new Date();
         this.preferenceStore = new DataSourcePreferenceStore(this);
-        // Always add default project to data source
-        this.project = DBeaverCore.getInstance().getDefaultProject();
+
+        this.driver.addUser(this);
     }
 
     public void dispose()
@@ -107,6 +108,10 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         if (iconError != null) {
             iconError.dispose();
             iconError = null;
+        }
+        if (driver != null) {
+            driver.removeUser(this);
+            driver = null;
         }
     }
 
@@ -186,16 +191,6 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         this.schemaFilter = schemaFilter;
     }
 
-    public IProject getProject()
-    {
-        return project;
-    }
-
-    public void setProject(IProject project)
-    {
-        this.project = project;
-    }
-
     public DBSObject getParentObject()
     {
         return null;
@@ -260,7 +255,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
 
     public DataSourceRegistry getRegistry()
     {
-        return driver.getProviderDescriptor().getRegistry();
+        return registry;
     }
 
     public boolean isConnected()
@@ -461,7 +456,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     }
 
     public void fireEvent(DBPEvent event) {
-        DataSourceRegistry.getDefault().fireDataSourceEvent(event);
+        registry.fireDataSourceEvent(event);
     }
 
     public DBDDataFormatterProfile getDataFormatterProfile()

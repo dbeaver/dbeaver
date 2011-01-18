@@ -9,7 +9,7 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.ui.DBeaverExtensions;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 
@@ -31,7 +31,7 @@ public class EditConnectionWizard extends ConnectionWizard
      */
     public EditConnectionWizard(DataSourceDescriptor dataSource)
     {
-        super();
+        super(dataSource.getRegistry().getProject());
         this.dataSource = dataSource;
         this.oldData = new DBPConnectionInfo(this.dataSource.getConnectionInfo());
         setWindowTitle("Edit connection");
@@ -82,7 +82,7 @@ public class EditConnectionWizard extends ConnectionWizard
         super.performFinish();
         dataSource.setUpdateDate(new Date());
         pageFinal.saveSettings(dataSource);
-        DataSourceRegistry.getDefault().updateDataSource(dataSource);
+        dataSource.getRegistry().updateDataSource(dataSource);
         return true;
     }
 

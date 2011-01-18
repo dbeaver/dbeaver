@@ -72,7 +72,7 @@ public class DBeaverApplication implements IApplication
             userHome = ".";
         }
         File userHomeDir = new File(userHome);
-        File workspaceDir = new File(userHomeDir, ".dbeaver-beta");
+        File workspaceDir = new File(userHomeDir, ".dbeaver");
         return workspaceDir;
     }
 

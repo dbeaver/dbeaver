@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.runtime;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -15,12 +16,14 @@ public class VoidProgressMonitor implements DBRProgressMonitor {
 
     public static final VoidProgressMonitor INSTANCE = new VoidProgressMonitor();
 
+    private static final IProgressMonitor NESTED_INSTANCE = new NullProgressMonitor();
+
     private VoidProgressMonitor() {
     }
 
     public IProgressMonitor getNestedMonitor()
     {
-        return null;
+        return NESTED_INSTANCE;
     }
 
     public void beginTask(String name, int totalWork)

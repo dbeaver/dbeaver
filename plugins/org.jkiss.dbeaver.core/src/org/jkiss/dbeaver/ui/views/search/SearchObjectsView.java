@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-public class SearchObjectsView extends ViewPart implements DBPEventListener {
+public class SearchObjectsView extends ViewPart {
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.findObjects";
 
@@ -86,15 +86,11 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                 }
             }
         }
-
-        DataSourceRegistry.getDefault().addDataSourceListener(this);
     }
 
     @Override
     public void dispose()
     {
-        DataSourceRegistry.getDefault().removeDataSourceListener(this);
-
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
 
         store.setValue(PROP_MASK, nameMask);
@@ -229,7 +225,7 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                 final DBeaverCore core = DBeaverCore.getInstance();
 
                 Group sourceGroup = UIUtils.createControlGroup(optionsGroup, "Objects Source", 1, GridData.FILL_BOTH, 0);
-                final DBNProject rootNode = core.getNavigatorModel().getRoot().getProject(core.getActiveProject());
+                final DBNProject rootNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
                 dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode.getDatabases(), SWT.SINGLE);
                 gd = new GridData(GridData.FILL_BOTH);
                 //gd.heightHint = 100;
@@ -265,10 +261,19 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
                                 Object object = iter.next();
                                 if (object instanceof DBNDataSource) {
                                     DBNDataSource dsNode = (DBNDataSource)object;
-                                    dsNode.initializeNode();
+                                    dsNode.initializeNode(new Runnable() {
+                                        public void run()
+                                        {
+                                            Display.getDefault().asyncExec(new Runnable() {
+                                                public void run()
+                                                {
+                                                    fillObjectTypes();
+                                                }
+                                            });
+                                        }
+                                    });
                                 }
                             }
-                            fillObjectTypes();
                         }
                     }
                 );
@@ -446,16 +451,6 @@ public class SearchObjectsView extends ViewPart implements DBPEventListener {
         if (searchText != null && !searchText.isDisposed()) {
             searchText.setFocus();
         }
-    }
-
-    public void handleDataSourceEvent(DBPEvent event)
-    {
-        Display.getDefault().asyncExec(new Runnable() {
-            public void run()
-            {
-                fillObjectTypes();
-            }
-        });
     }
 
     private class SearchResultsControl extends NodeListControl {

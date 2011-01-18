@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ui.views.navigator.project;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.widgets.Composite;
@@ -20,7 +18,7 @@ import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
 public class ProjectExplorerView extends NavigatorViewBase
 {
 
-    static final Log log = LogFactory.getLog(ProjectExplorerView.class);
+    //static final Log log = LogFactory.getLog(ProjectExplorerView.class);
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectExplorer";
 
@@ -29,7 +27,7 @@ public class ProjectExplorerView extends NavigatorViewBase
 
     public DBNNode getRootNode()
     {
-        return getModel().getRoot().getProject(DBeaverCore.getInstance().getActiveProject());
+        return getModel().getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
     }
 
     @Override

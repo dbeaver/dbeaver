@@ -95,4 +95,6 @@ public interface DBSDataSourceContainer extends DBSEntity
      * @return preference store
      */
     IPreferenceStore getPreferenceStore();
+
+    DBPDataSourceRegistry getRegistry();
 }

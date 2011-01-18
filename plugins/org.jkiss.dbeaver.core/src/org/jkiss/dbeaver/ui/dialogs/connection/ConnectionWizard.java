@@ -4,16 +4,19 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -26,8 +29,14 @@ import java.lang.reflect.InvocationTargetException;
 
 public abstract class ConnectionWizard extends Wizard implements INewWizard
 {
-    protected ConnectionWizard() {
+
+    protected final IProject project;
+    protected final DataSourceRegistry dataSourceRegistry;
+
+    protected ConnectionWizard(IProject project) {
         setNeedsProgressMonitor(true);
+        this.project = project;
+        this.dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
     }
 
     public DataSourceDescriptor getDataSourceDescriptor()
@@ -67,7 +76,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                 catch (DBException ex) {
                     throw new InvocationTargetException(ex);
                 }
-                DataSourceDescriptor container = new DataSourceDescriptor("test", driver, connectionInfo);
+                DataSourceDescriptor container = new DataSourceDescriptor(dataSourceRegistry, "test", driver, connectionInfo);
                 try {
                     monitor.worked(1);
                     DBPDataSource dataSource = provider.openDataSource(monitor, container);

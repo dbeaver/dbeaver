@@ -13,13 +13,9 @@ import org.eclipse.core.runtime.IAdapterManager;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,26 +31,22 @@ import java.util.Map;
  * It will work but some actions will not work well
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
-public class DBNModel implements DBPEventListener, IResourceChangeListener {
+public class DBNModel implements IResourceChangeListener {
     static final Log log = LogFactory.getLog(DBNModel.class);
 
-    private DataSourceRegistry registry;
     private DBNRoot root;
     private final List<IDBNListener> listeners = new ArrayList<IDBNListener>();
     private transient IDBNListener[] listenersCopy = null;
     private Map<DBSObject, Object> nodeMap = new HashMap<DBSObject, Object>();
     private DBNAdapterFactory nodesAdapter;
 
-    public DBNModel(DataSourceRegistry registry)
+    public DBNModel()
     {
-        this.registry = registry;
         this.root = new DBNRoot(this);
 
-        DBeaverCore core = registry.getCore();
-
         // Add all existing projects to root node
-        IProject[] projects = core.getWorkspace().getRoot().getProjects();
-        for (IProject project : projects) {
+        final DBeaverCore core = DBeaverCore.getInstance();
+        for (IProject project : core.getLiveProjects()) {
             root.addProject(project);
         }
 /*
@@ -63,7 +55,6 @@ public class DBNModel implements DBPEventListener, IResourceChangeListener {
         }
 */
 
-        this.registry.addDataSourceListener(this);
         core.getWorkspace().addResourceChangeListener(this);
 
         nodesAdapter = new DBNAdapterFactory();
@@ -76,7 +67,6 @@ public class DBNModel implements DBPEventListener, IResourceChangeListener {
     {
         Platform.getAdapterManager().unregisterAdapters(nodesAdapter);
         DBeaverCore.getInstance().getWorkspace().removeResourceChangeListener(this);
-        this.registry.removeDataSourceListener(this);
         this.root.dispose(false);
         this.nodeMap.clear();
         if (!listeners.isEmpty()) {
@@ -86,16 +76,6 @@ public class DBNModel implements DBPEventListener, IResourceChangeListener {
         }
         this.listeners.clear();
         this.listenersCopy = null;
-    }
-
-    public DBeaverCore getApplication()
-    {
-        return registry.getCore();
-    }
-
-    public DataSourceRegistry getRegistry()
-    {
-        return registry;
     }
 
     public DBNAdapterFactory getNodesAdapter()
@@ -293,59 +273,6 @@ public class DBNModel implements DBPEventListener, IResourceChangeListener {
         }
         for (IDBNListener listener :  listenersCopy) {
             listener.nodeChanged(event);
-        }
-    }
-
-    public void handleDataSourceEvent(DBPEvent event)
-    {
-        switch (event.getAction()) {
-            case OBJECT_ADD:
-                if (event.getObject() instanceof DataSourceDescriptor) {
-                    IProject project = ((DataSourceDescriptor) event.getObject()).getProject();
-                    DBNProject projectNode = root.getProject(project);
-                    if (projectNode != null) {
-                        projectNode.getDatabases().addDataSource((DataSourceDescriptor)event.getObject());
-                    }
-                    //root.addProject((DataSourceDescriptor)event.getObject());
-                }
-                break;
-            case OBJECT_REMOVE:
-                if (event.getObject() instanceof DataSourceDescriptor) {
-                    IProject project = ((DataSourceDescriptor) event.getObject()).getProject();
-                    DBNProject projectNode = root.getProject(project);
-                    if (projectNode != null) {
-                        projectNode.getDatabases().removeDataSource((DataSourceDescriptor)event.getObject());
-                    }
-                    //root.removeProject((DataSourceDescriptor)event.getObject());
-                }
-                break;
-            case OBJECT_UPDATE:
-            {
-                DBNNode dbmNode = getNodeByObject(event.getObject());
-                if (dbmNode != null) {
-                    DBNEvent.NodeChange nodeChange;
-                    Boolean enabled = event.getEnabled();
-                    if (enabled != null) {
-                        if (enabled) {
-                            nodeChange = DBNEvent.NodeChange.LOAD;
-                        } else {
-                            nodeChange = DBNEvent.NodeChange.UNLOAD;
-                        }
-                    } else {
-                        nodeChange = DBNEvent.NodeChange.REFRESH;
-                    }
-                    fireNodeUpdate(
-                        this,
-                        dbmNode, 
-                        nodeChange);
-
-                    if (enabled != null && !enabled) {
-                        // Clear disabled node
-                        dbmNode.clearNode(false);
-                    }
-                }
-                break;
-            }
         }
     }
 

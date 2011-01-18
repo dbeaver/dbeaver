@@ -13,6 +13,5 @@ public interface DBPApplication
 {
     DBNModel getNavigatorModel();
 
-    DBPRegistry getDataSourceRegistry();
 
 }

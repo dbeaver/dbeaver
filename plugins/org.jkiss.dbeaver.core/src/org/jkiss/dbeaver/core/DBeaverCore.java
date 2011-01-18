@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.core;
 
-import net.sf.jkiss.utils.SecurityUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
@@ -43,6 +42,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * DBeaverCore
@@ -51,8 +52,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     static final Log log = LogFactory.getLog(DBeaverCore.class);
 
-    private static final String DEFAULT_PROJECT_NAME = "default";
-    private static final String AUTOSAVE_DIR = ".autosave";
+    //private static final String AUTOSAVE_DIR = ".autosave";
     private static final String LOB_DIR = ".lob";
 
     private static DBeaverCore instance;
@@ -61,16 +61,15 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     //private DBeaverProgressProvider progressProvider;
     private IWorkspace workspace;
     private IWorkbench workbench;
-    private IProject defaultProject;
-    private IProject activeProject;
     private IPath rootPath;
+    private IProject tempProject;
 
-    private DataSourceRegistry dataSourceRegistry;
+    private DataSourceProviderRegistry dataSourceProviderRegistry;
     private EntityEditorsRegistry editorsRegistry;
     private DataExportersRegistry dataExportersRegistry;
     private DataFormatterRegistry dataFormatterRegistry;
 
-    private DBNModel metaModel;
+    private DBNModel navigatorModel;
     private QMControllerImpl queryManager;
     private SharedTextColors sharedTextColors;
     private ProjectRegistry projectRegistry;
@@ -107,39 +106,57 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.workspace = ResourcesPlugin.getWorkspace();
         this.rootPath = Platform.getLocation();
 
-        // Make default project
-        this.defaultProject = openOrCreateProject(DEFAULT_PROJECT_NAME);
-        this.activeProject = this.defaultProject;
-
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
 
-        // Init project registry
-        this.projectRegistry = new ProjectRegistry();
-        this.projectRegistry.loadExtensions(extensionRegistry);
-
         // Init datasource registry
-        this.dataSourceRegistry = new DataSourceRegistry(this);
-        this.dataSourceRegistry.loadExtensions(extensionRegistry);
+        this.dataSourceProviderRegistry = new DataSourceProviderRegistry();
+        this.dataSourceProviderRegistry.loadExtensions(extensionRegistry);
         
         this.editorsRegistry = new EntityEditorsRegistry(extensionRegistry);
         this.dataExportersRegistry = new DataExportersRegistry(extensionRegistry);
         this.dataFormatterRegistry = new DataFormatterRegistry(extensionRegistry);
 
-        this.metaModel = new DBNModel(dataSourceRegistry);
-        this.queryManager = new QMControllerImpl(dataSourceRegistry);
+        this.queryManager = new QMControllerImpl(dataSourceProviderRegistry);
+
+        // Init project registry
+        this.projectRegistry = new ProjectRegistry();
+        this.projectRegistry.loadExtensions(extensionRegistry);
+
+        try {
+            PlatformUI.getWorkbench().getProgressService().run(false, false, new IRunnableWithProgress() {
+                public void run(IProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        // Temp project
+                        tempProject = workspace.getRoot().getProject("temp");
+                        if (!tempProject.exists()) {
+                            tempProject.create(monitor);
+                        }
+                        tempProject.open(monitor);
+                        tempProject.setHidden(true);
+
+                        // Projects registry
+                        projectRegistry.loadProjects(workspace, monitor);
+                    }
+                    catch (CoreException ex) {
+                        throw new InvocationTargetException(ex);
+                    }
+                }
+            });
+        }
+        catch (InvocationTargetException e) {
+            log.error(e.getTargetException());
+        }
+        catch (InterruptedException e) {
+            // do nothing
+        }
 
         // Init preferences
         initDefaultPreferences();
-    }
 
-    public IProject getDefaultProject()
-    {
-        return defaultProject;
-    }
-
-    public IProject getActiveProject()
-    {
-        return activeProject;
+        // Navigator model
+        this.navigatorModel = new DBNModel();
     }
 
     public IProject getProject(String projectId)
@@ -161,6 +178,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return null;
     }
 
+/*
     private IProject openOrCreateProject(String projectName)
     {
         final IProject project = this.workspace.getRoot().getProject(projectName);
@@ -197,14 +215,16 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         }
         return project;
     }
+*/
 
     public synchronized void dispose()
     {
         IProgressMonitor monitor = new NullProgressMonitor();
-        if (defaultProject != null) {
+        for (IProject project : workspace.getRoot().getProjects()) {
             try {
-                //defaultProject.
-                defaultProject.close(monitor);
+                if (project.isOpen()) {
+                    project.close(monitor);
+                }
             }
             catch (CoreException ex) {
                 log.error("Can't close default project", ex);
@@ -221,12 +241,12 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         if (queryManager != null) {
             queryManager.dispose();
         }
-        if (metaModel != null) {
-            metaModel.dispose();
+        if (navigatorModel != null) {
+            navigatorModel.dispose();
         }
         this.dataExportersRegistry.dispose();
         this.dataFormatterRegistry.dispose();
-        this.dataSourceRegistry.dispose();
+        this.dataSourceProviderRegistry.dispose();
         this.projectRegistry.dispose();
 
         // Unregister properties adapter
@@ -271,7 +291,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     public DBNModel getNavigatorModel()
     {
-        return metaModel;
+        return navigatorModel;
     }
 
     public QMController getQueryManager()
@@ -279,9 +299,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return queryManager;
     }
 
-    public DataSourceRegistry getDataSourceRegistry()
+    public DataSourceProviderRegistry getDataSourceProviderRegistry()
     {
-        return this.dataSourceRegistry;
+        return this.dataSourceProviderRegistry;
     }
 
     public EntityEditorsRegistry getEditorsRegistry()
@@ -297,6 +317,11 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public DataFormatterRegistry getDataFormatterRegistry()
     {
         return dataFormatterRegistry;
+    }
+
+    public ProjectRegistry getProjectRegistry()
+    {
+        return projectRegistry;
     }
 
     public IWorkbench getWorkbench()
@@ -388,11 +413,13 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         }
     }
 
+/*
     public IFolder getAutosaveFolder(DBRProgressMonitor monitor)
         throws IOException
     {
         return getTempFolder(monitor, AUTOSAVE_DIR);
     }
+*/
 
     public IFolder getLobFolder(DBRProgressMonitor monitor)
         throws IOException
@@ -403,8 +430,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private IFolder getTempFolder(DBRProgressMonitor monitor, String name)
         throws IOException
     {
-        IPath tempPath = defaultProject.getProjectRelativePath().append(name);
-        IFolder tempFolder = defaultProject.getFolder(tempPath);
+        IPath tempPath = tempProject.getProjectRelativePath().append(name);
+        IFolder tempFolder = tempProject.getFolder(tempPath);
         if (!tempFolder.exists()) {
             try {
                 tempFolder.create(true, true, monitor.getNestedMonitor());
@@ -505,4 +532,14 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
             return Display.getDefault();
     }
 
+    public List<IProject> getLiveProjects()
+    {
+        List<IProject> result = new ArrayList<IProject>();
+        for (IProject project : workspace.getRoot().getProjects()) {
+            if (project.exists() && !project.isHidden()) {
+                result.add(project);
+            }
+        }
+        return result;
+    }
 }

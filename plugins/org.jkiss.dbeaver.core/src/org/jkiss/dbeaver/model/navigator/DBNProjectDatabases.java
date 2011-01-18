@@ -8,8 +8,11 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.util.ArrayList;
@@ -19,16 +22,20 @@ import java.util.List;
 /**
  * DBNProjectDatabases
  */
-public class DBNProjectDatabases extends DBNNode implements DBNContainer
+public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEventListener
 {
     private IProject project;
     private List<DBNDataSource> dataSources = new ArrayList<DBNDataSource>();
+    private DataSourceRegistry dataSourceRegistry;
 
     public DBNProjectDatabases(DBNNode parentNode, IProject project)
     {
         super(parentNode);
         this.project = project;
-        List<DataSourceDescriptor> projectDataSources = DBeaverCore.getInstance().getDataSourceRegistry().getDataSources(project);
+        dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
+        dataSourceRegistry.addDataSourceListener(this);
+
+        List<DataSourceDescriptor> projectDataSources = dataSourceRegistry.getDataSources();
         for (DataSourceDescriptor ds : projectDataSources) {
             addDataSource(ds);
         }
@@ -40,6 +47,10 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer
             dataSource.dispose(reflect);
         }
         dataSources.clear();
+        if (dataSourceRegistry != null) {
+            dataSourceRegistry.removeDataSourceListener(this);
+            dataSourceRegistry = null;
+        }
         super.dispose(reflect);
     }
 
@@ -125,6 +136,49 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer
             if (dataSource.getObject() == descriptor) {
                 iter.remove();
                 dataSource.dispose(true);
+                break;
+            }
+        }
+    }
+
+    public void handleDataSourceEvent(DBPEvent event)
+    {
+        switch (event.getAction()) {
+            case OBJECT_ADD:
+                if (event.getObject() instanceof DataSourceDescriptor) {
+                    addDataSource((DataSourceDescriptor) event.getObject());
+                }
+                break;
+            case OBJECT_REMOVE:
+                if (event.getObject() instanceof DataSourceDescriptor) {
+                    removeDataSource((DataSourceDescriptor) event.getObject());
+                }
+                break;
+            case OBJECT_UPDATE:
+            {
+                DBNNode dbmNode = getModel().getNodeByObject(event.getObject());
+                if (dbmNode != null) {
+                    DBNEvent.NodeChange nodeChange;
+                    Boolean enabled = event.getEnabled();
+                    if (enabled != null) {
+                        if (enabled) {
+                            nodeChange = DBNEvent.NodeChange.LOAD;
+                        } else {
+                            nodeChange = DBNEvent.NodeChange.UNLOAD;
+                        }
+                    } else {
+                        nodeChange = DBNEvent.NodeChange.REFRESH;
+                    }
+                    getModel().fireNodeUpdate(
+                        this,
+                        dbmNode,
+                        nodeChange);
+
+                    if (enabled != null && !enabled) {
+                        // Clear disabled node
+                        dbmNode.clearNode(false);
+                    }
+                }
                 break;
             }
         }

@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.impl.edit.DBOManagerImpl;
@@ -22,7 +23,9 @@ public class DataSourceDescriptorManager extends DBOManagerImpl<DataSourceDescri
     public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, Object parent, DataSourceDescriptor copyFrom)
     {
         if (copyFrom != null) {
+            DataSourceRegistry registry = copyFrom.getRegistry();
             DataSourceDescriptor dataSource = new DataSourceDescriptor(
+                registry,
                 DataSourceDescriptor.generateNewId(copyFrom.getDriver()),
                 copyFrom.getDriver(),
                 new DBPConnectionInfo(copyFrom.getConnectionInfo()));
@@ -33,7 +36,6 @@ public class DataSourceDescriptorManager extends DBOManagerImpl<DataSourceDescri
             dataSource.setShowSystemObjects(copyFrom.isShowSystemObjects());
             // Generate new name
             String origName = copyFrom.getName();
-            DataSourceRegistry registry = copyFrom.getRegistry();
             String newName;
             for (int i = 0; ; i++) {
                 newName = origName + " " + (i + 1);
@@ -44,7 +46,7 @@ public class DataSourceDescriptorManager extends DBOManagerImpl<DataSourceDescri
             dataSource.setName(newName);
             registry.addDataSource(dataSource);
         } else {
-            ConnectionDialog dialog = new ConnectionDialog(workbenchWindow, new NewConnectionWizard(workbenchWindow));
+            ConnectionDialog dialog = new ConnectionDialog(workbenchWindow, new NewConnectionWizard(DBeaverCore.getInstance().getProjectRegistry().getActiveProject(), workbenchWindow));
             dialog.open();
         }
         return CreateResult.CANCEL;
@@ -55,7 +57,7 @@ public class DataSourceDescriptorManager extends DBOManagerImpl<DataSourceDescri
         if (getObject().isConnected()) {
             DataSourceDisconnectHandler.execute(getObject());
         }
-        DataSourceRegistry.getDefault().removeDataSource(getObject());
+        getObject().getRegistry().removeDataSource(getObject());
     }
 
 }

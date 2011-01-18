@@ -4,22 +4,20 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.handlers;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.*;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,21 +29,18 @@ public class OpenSQLEditorHandler extends DataSourceHandler {
     {
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false, false);
         if (dataSourceContainer != null) {
-            IFile tempFile;
+            IFile scriptFile;
             try {
-                tempFile = DBeaverCore.getInstance().makeTempFile(
-                    VoidProgressMonitor.INSTANCE,
-                    DBeaverCore.getInstance().getAutosaveFolder(VoidProgressMonitor.INSTANCE),
-                    CommonUtils.escapeIdentifier(dataSourceContainer.getName()),
-                    "sql");
+                scriptFile = ScriptsHandlerImpl.createNewScript(dataSourceContainer.getRegistry().getProject());
             }
-            catch (IOException e) {
+            catch (CoreException e) {
                 log.error(e);
                 return null;
             }
+
             IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
             SQLEditorInput sqlInput = new SQLEditorInput(
-                tempFile,
+                scriptFile,
                 dataSourceContainer,
                 getNewScriptName(workbenchWindow.getWorkbench()));
             try {

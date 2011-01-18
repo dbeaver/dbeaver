@@ -33,8 +33,8 @@ public class SQLEditorPropertyTester extends PropertyTester
         }
         SQLEditor editor = (SQLEditor)receiver;
         if (property.equals(PROP_CAN_EXECUTE)) {
-            return editor.getDataSourceContainer().isConnected();
-        } if (property.equals(PROP_CAN_EXPLAIN)) {
+            return editor.getDataSourceContainer() != null && editor.getDataSourceContainer().isConnected();
+        } else if (property.equals(PROP_CAN_EXPLAIN)) {
             return DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
         }
         return false;
