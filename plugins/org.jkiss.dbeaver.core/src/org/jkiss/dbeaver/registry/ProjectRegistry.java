@@ -9,6 +9,7 @@ import net.sf.jkiss.utils.SecurityUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -131,8 +132,9 @@ public class ProjectRegistry
         final IProject project = workspace.getRoot().getProject("General");
         project.create(monitor);
         project.open(monitor);
-        project.getDescription().setComment("General project");
-        project.setDescription(project.getDescription(), monitor);
+        final IProjectDescription description = workspace.newProjectDescription(project.getName());
+        description.setComment("General project");
+        project.setDescription(description, monitor);
         project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID, SecurityUtils.generateGUID(false));
         project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ACTIVE, "true");
 
