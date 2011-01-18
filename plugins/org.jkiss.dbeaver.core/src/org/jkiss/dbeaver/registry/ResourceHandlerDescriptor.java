@@ -7,11 +7,7 @@ package org.jkiss.dbeaver.registry;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.model.project.DBPProjectHandler;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * ResourceHandlerDescriptor
@@ -28,12 +24,14 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
 
     private Class<DBPResourceHandler> handlerClass;
     private DBPResourceHandler handler;
+    private String resourceType;
 
-    public ResourceHandlerDescriptor(IConfigurationElement config)
+    ResourceHandlerDescriptor(IConfigurationElement config)
     {
         super(config.getContributor());
 
         this.id = config.getAttribute("id");
+        this.resourceType = config.getAttribute("type");
         this.className = config.getAttribute("class");
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
@@ -67,6 +65,11 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
     public Image getIcon()
     {
         return icon;
+    }
+
+    public String getResourceType()
+    {
+        return resourceType;
     }
 
     public synchronized Class<DBPResourceHandler> getHandlerClass()

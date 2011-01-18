@@ -12,8 +12,5 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  */
 public interface DBPProject extends DBPNamedObject {
 
-    public QualifiedName PROP_PROJECT_ID = new QualifiedName("org.jkiss.dbeaver", "project-id");
-    public QualifiedName PROP_RESOURCE_TYPE = new QualifiedName("org.jkiss.dbeaver", "resource-type");
-
 
 }

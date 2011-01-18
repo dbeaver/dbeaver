@@ -19,7 +19,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.project.DBPProject;
+import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -604,7 +604,7 @@ public class DataSourceRegistry implements DBPRegistry
         {
             for (IProject project : dataSource.getProjects()) {
                 try {
-                    String projectId = project.getPersistentProperty(DBPProject.PROP_PROJECT_ID);
+                    String projectId = project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID);
                     if (projectId != null) {
                         xml.startElement("project");
                         xml.addAttribute("id", projectId);

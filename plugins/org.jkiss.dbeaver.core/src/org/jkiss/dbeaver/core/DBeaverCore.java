@@ -23,7 +23,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.project.DBPProject;
+import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -150,7 +150,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                 continue;
             }
             try {
-                String id = project.getPersistentProperty(DBPProject.PROP_PROJECT_ID);
+                String id = project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID);
                 if (id != null && id.equals(projectId)) {
                     return project;
                 }
@@ -189,8 +189,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
             // do nothing
         }
         try {
-            if (project.getPersistentProperty(DBPProject.PROP_PROJECT_ID) == null) {
-                project.setPersistentProperty(DBPProject.PROP_PROJECT_ID, SecurityUtils.generateGUID(false));
+            if (project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID) == null) {
+                project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID, SecurityUtils.generateGUID(false));
             }
         } catch (CoreException e) {
             log.error("Couldn't set project ID");

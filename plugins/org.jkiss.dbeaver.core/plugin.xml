@@ -11,6 +11,7 @@
     <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataExportProvider" name="Data Export Provider" schema="schema/org.jkiss.dbeaver.dataExportProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataFormatter" name="Data Formatters" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resourceHandler" name="Resource Handlers" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
@@ -1471,6 +1472,17 @@
                 <property id="rowsInStatement" label="Data rows per statement" type="numeric" description="Number of data rows per single insert statement" defaultValue="10" required="true"/>
             </propertyGroup>
         </export>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resourceHandler">
+        <handler
+                id="org.jkiss.dbeaver.core.resource.handler.project"
+                type="project"
+                class="org.jkiss.dbeaver.ui.export.impl.DataExporterCSV"
+                description="Project handler"
+                icon="icons/project.png"
+                label="Core Project Handler">
+        </handler>
     </extension>
 
 </plugin>
