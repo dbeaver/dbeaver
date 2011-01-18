@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.graphics.Image;
@@ -14,52 +13,39 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * DBNProject
  */
-public class DBNProject extends DBNNode implements IAdaptable, DBNResource
+public class DBNProject extends DBNResource implements IAdaptable
 {
-    private IProject project;
-    private List<DBNNode> children;
     private DBNProjectDatabases databases;
-    private DBNProjectScripts scripts;
-    private DBNProjectBookmarks bookmarks;
+    //private DBNProjectScripts scripts;
+    //private DBNProjectBookmarks bookmarks;
 
     public DBNProject(DBNNode parentNode, IProject project)
     {
-        super(parentNode);
-        this.project = project;
+        super(parentNode, project);
         this.databases = new DBNProjectDatabases(this, project);
-        this.scripts = new DBNProjectScripts(this, project);
-        this.bookmarks = new DBNProjectBookmarks(this, project);
+        //this.scripts = new DBNProjectScripts(this, project);
+        //this.bookmarks = new DBNProjectBookmarks(this, project);
 
-        this.children = new ArrayList<DBNNode>();
-        this.children.add(databases);
-        this.children.add(scripts);
-        this.children.add(bookmarks);
+        //this.children = new ArrayList<DBNNode>();
+        //this.children.add(databases);
+        //this.children.add(scripts);
+        //this.children.add(bookmarks);
     }
 
     protected void dispose(boolean reflect)
     {
-        this.project = null;
-        if (children != null) {
-            for (DBNNode child : children) {
-                child.dispose(reflect);
-            }
-            children = null;
-        }
         this.databases = null;
-        this.scripts = null;
-        this.bookmarks = null;
         super.dispose(reflect);
     }
 
     public IProject getProject()
     {
-        return project;
+        return (IProject)getResource();
     }
 
     public DBNProjectDatabases getDatabases()
@@ -67,15 +53,10 @@ public class DBNProject extends DBNNode implements IAdaptable, DBNResource
         return databases;
     }
 
-    public String getNodeName()
-    {
-        return project.getName();
-    }
-
     public String getNodeDescription()
     {
         try {
-            return project.getDescription().getComment();
+            return getProject().getDescription().getComment();
         } catch (CoreException e) {
             log.error(e);
             return null;
@@ -89,21 +70,9 @@ public class DBNProject extends DBNNode implements IAdaptable, DBNResource
     }
 
     @Override
-    public boolean hasChildren()
+    protected void addCustomChildren(List<DBNNode> list)
     {
-        return true;
-    }
-
-    @Override
-    public boolean hasNavigableChildren()
-    {
-        return true;
-    }
-
-    @Override
-    public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor) throws DBException
-    {
-        return children;
+        list.add(0, databases);
     }
 
     public String getDefaultCommandId()
@@ -115,7 +84,7 @@ public class DBNProject extends DBNNode implements IAdaptable, DBNResource
         if (adapter == DBNProject.class) {
             return this;
         } else if (adapter == IProject.class) {
-            return project;
+            return getProject();
         }
         return null;
     }
@@ -128,16 +97,12 @@ public class DBNProject extends DBNNode implements IAdaptable, DBNResource
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
         try {
-            final IProjectDescription description = project.getDescription();
+            final IProjectDescription description = getProject().getDescription();
             description.setName(newName);
-            project.move(description, true, monitor.getNestedMonitor());
+            getProject().move(description, true, monitor.getNestedMonitor());
         } catch (CoreException e) {
             throw new DBException(e);
         }
     }
 
-    public IResource getResource()
-    {
-        return project;
-    }
 }

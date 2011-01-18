@@ -55,8 +55,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     static final Log log = LogFactory.getLog(DBeaverCore.class);
 
     private static final String DEFAULT_PROJECT_NAME = "default";
-    private static final String AUTOSAVE_DIR = "autosave";
-    private static final String LOB_DIR = "lob";
+    private static final String AUTOSAVE_DIR = ".autosave";
+    private static final String LOB_DIR = ".lob";
 
     private static DBeaverCore instance;
     private DBeaverActivator plugin;
@@ -387,16 +387,16 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public IFolder getAutosaveFolder(DBRProgressMonitor monitor)
         throws IOException
     {
-        return getLocalFolder(monitor, AUTOSAVE_DIR);
+        return getTempFolder(monitor, AUTOSAVE_DIR);
     }
 
     public IFolder getLobFolder(DBRProgressMonitor monitor)
         throws IOException
     {
-        return getLocalFolder(monitor, LOB_DIR);
+        return getTempFolder(monitor, LOB_DIR);
     }
 
-    private IFolder getLocalFolder(DBRProgressMonitor monitor, String name)
+    private IFolder getTempFolder(DBRProgressMonitor monitor, String name)
         throws IOException
     {
         IPath tempPath = defaultProject.getProjectRelativePath().append(name);
@@ -404,6 +404,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         if (!tempFolder.exists()) {
             try {
                 tempFolder.create(true, true, monitor.getNestedMonitor());
+                tempFolder.setHidden(true);
             }
             catch (CoreException ex) {
                 throw new IOException("Could not create temp directory '" + tempFolder.toString() + "'", ex);
