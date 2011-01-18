@@ -23,20 +23,17 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.project.DBPProject;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.registry.DataExportersRegistry;
-import org.jkiss.dbeaver.registry.DataFormatterRegistry;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
-import org.jkiss.dbeaver.ui.DBeaverConstants;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -76,6 +73,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private DBNModel metaModel;
     private QMControllerImpl queryManager;
     private SharedTextColors sharedTextColors;
+    private ProjectRegistry projectRegistry;
 
     public static DBeaverCore getInstance()
     {
@@ -113,8 +111,13 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.defaultProject = openOrCreateProject(DEFAULT_PROJECT_NAME);
         this.activeProject = this.defaultProject;
 
-        // Init datasource registry
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
+
+        // Init project registry
+        this.projectRegistry = new ProjectRegistry();
+        this.projectRegistry.loadExtensions(extensionRegistry);
+
+        // Init datasource registry
         this.dataSourceRegistry = new DataSourceRegistry(this);
         this.dataSourceRegistry.loadExtensions(extensionRegistry);
         
@@ -147,7 +150,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                 continue;
             }
             try {
-                String id = project.getPersistentProperty(DBeaverConstants.PROJECT_PROP_ID);
+                String id = project.getPersistentProperty(DBPProject.PROP_PROJECT_ID);
                 if (id != null && id.equals(projectId)) {
                     return project;
                 }
@@ -186,8 +189,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
             // do nothing
         }
         try {
-            if (project.getPersistentProperty(DBeaverConstants.PROJECT_PROP_ID) == null) {
-                project.setPersistentProperty(DBeaverConstants.PROJECT_PROP_ID, SecurityUtils.generateGUID(false));
+            if (project.getPersistentProperty(DBPProject.PROP_PROJECT_ID) == null) {
+                project.setPersistentProperty(DBPProject.PROP_PROJECT_ID, SecurityUtils.generateGUID(false));
             }
         } catch (CoreException e) {
             log.error("Couldn't set project ID");
@@ -224,6 +227,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.dataExportersRegistry.dispose();
         this.dataFormatterRegistry.dispose();
         this.dataSourceRegistry.dispose();
+        this.projectRegistry.dispose();
 
         // Unregister properties adapter
         Platform.getAdapterManager().unregisterAdapters(editorsAdapter);
