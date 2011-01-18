@@ -255,7 +255,7 @@ public class DataSourceRegistry implements DBPRegistry
     {
         List<DataSourceDescriptor> dsCopy = new ArrayList<DataSourceDescriptor>();
         for (DataSourceDescriptor ds : dataSources) {
-            if (ds.hasProject(project)) {
+            if (ds.getProject() == project) {
                 dsCopy.add(ds);
             }
         }
@@ -547,6 +547,16 @@ public class DataSourceRegistry implements DBPRegistry
         if (!CommonUtils.isEmpty(dataSource.getSchemaFilter())) {
             xml.addAttribute("filter-schema", dataSource.getSchemaFilter());
         }
+
+        IProject project = dataSource.getProject();
+        try {
+            String projectId = project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID);
+            if (projectId != null) {
+                xml.addAttribute("project", projectId);
+            }
+        } catch (CoreException e) {
+            log.warn(e);
+        }
         {
             // Connection info
             DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
@@ -597,22 +607,6 @@ public class DataSourceRegistry implements DBPRegistry
                 xml.addAttribute("name", propName);
                 xml.addAttribute("value", propValue);
                 xml.endElement();
-            }
-        }
-
-        // Projects
-        {
-            for (IProject project : dataSource.getProjects()) {
-                try {
-                    String projectId = project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID);
-                    if (projectId != null) {
-                        xml.startElement("project");
-                        xml.addAttribute("id", projectId);
-                        xml.endElement();
-                    }
-                } catch (CoreException e) {
-                    log.warn(e);
-                }
             }
         }
 
@@ -747,6 +741,13 @@ public class DataSourceRegistry implements DBPRegistry
                 curDataSource.setShowSystemObjects("true".equals(atts.getValue("show-system-objects")));
                 curDataSource.setCatalogFilter(atts.getValue("filter-catalog"));
                 curDataSource.setSchemaFilter(atts.getValue("filter-schema"));
+
+                String projectId = atts.getValue("project");
+                IProject project = DBeaverCore.getInstance().getProject(projectId);
+                if (project != null) {
+                    curDataSource.setProject(project);
+                }
+
                 dataSources.add(curDataSource);
             } else if (localName.equals("connection")) {
                 if (curDataSource != null) {
@@ -777,14 +778,6 @@ public class DataSourceRegistry implements DBPRegistry
                     curDataSource.getPreferenceStore().getProperties().put(
                         atts.getValue("name"),
                         atts.getValue("value"));
-                }
-            } else if (localName.equals("project")) {
-                if (curDataSource != null) {
-                    String projectId = atts.getValue("id");
-                    IProject project = DBeaverCore.getInstance().getProject(projectId);
-                    if (project != null) {
-                        curDataSource.addProject(project);
-                    }
                 }
             } else if (localName.equals("description")) {
                 isDescription = true;

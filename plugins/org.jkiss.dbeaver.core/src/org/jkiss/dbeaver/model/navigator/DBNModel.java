@@ -301,24 +301,20 @@ public class DBNModel implements DBPEventListener, IResourceChangeListener {
         switch (event.getAction()) {
             case OBJECT_ADD:
                 if (event.getObject() instanceof DataSourceDescriptor) {
-                    List<IProject> projects = ((DataSourceDescriptor) event.getObject()).getProjects();
-                    for (IProject project : projects) {
-                        DBNProject projectNode = root.getProject(project);
-                        if (projectNode != null) {
-                            projectNode.getDatabases().addDataSource((DataSourceDescriptor)event.getObject());
-                        }
+                    IProject project = ((DataSourceDescriptor) event.getObject()).getProject();
+                    DBNProject projectNode = root.getProject(project);
+                    if (projectNode != null) {
+                        projectNode.getDatabases().addDataSource((DataSourceDescriptor)event.getObject());
                     }
                     //root.addProject((DataSourceDescriptor)event.getObject());
                 }
                 break;
             case OBJECT_REMOVE:
                 if (event.getObject() instanceof DataSourceDescriptor) {
-                    List<IProject> projects = ((DataSourceDescriptor) event.getObject()).getProjects();
-                    for (IProject project : projects) {
-                        DBNProject projectNode = root.getProject(project);
-                        if (projectNode != null) {
-                            projectNode.getDatabases().removeDataSource((DataSourceDescriptor)event.getObject());
-                        }
+                    IProject project = ((DataSourceDescriptor) event.getObject()).getProject();
+                    DBNProject projectNode = root.getProject(project);
+                    if (projectNode != null) {
+                        projectNode.getDatabases().removeDataSource((DataSourceDescriptor)event.getObject());
                     }
                     //root.removeProject((DataSourceDescriptor)event.getObject());
                 }

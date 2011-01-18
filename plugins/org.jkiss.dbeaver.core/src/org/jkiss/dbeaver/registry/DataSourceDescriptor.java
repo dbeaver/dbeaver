@@ -70,7 +70,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     private Date loginDate;
     private DBDDataFormatterProfile formatterProfile;
     private DataSourcePreferenceStore preferenceStore;
-    private List<IProject> projects = new ArrayList<IProject>();
+    private IProject project;
 
     private DBPDataSource dataSource;
 
@@ -93,7 +93,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         this.createDate = new Date();
         this.preferenceStore = new DataSourcePreferenceStore(this);
         // Always add default project to data source
-        this.projects.add(DBeaverCore.getInstance().getDefaultProject());
+        this.project = DBeaverCore.getInstance().getDefaultProject();
     }
 
     public void dispose()
@@ -186,26 +186,14 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
         this.schemaFilter = schemaFilter;
     }
 
-    public List<IProject> getProjects()
+    public IProject getProject()
     {
-        return projects;
+        return project;
     }
 
-    public void addProject(IProject project)
+    public void setProject(IProject project)
     {
-        if (!projects.contains(project)) {
-            projects.add(project);
-        }
-    }
-
-    public void removeProject(IProject project)
-    {
-        projects.remove(project);
-    }
-
-    public boolean hasProject(IProject project)
-    {
-        return projects.contains(project);
+        this.project = project;
     }
 
     public DBSObject getParentObject()
