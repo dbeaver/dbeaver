@@ -1475,14 +1475,10 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
-        <handler
-                id="org.jkiss.dbeaver.core.resource.handler.project"
-                type="project"
-                class="org.jkiss.dbeaver.ui.export.impl.DataExporterCSV"
-                description="Project handler"
-                icon="icons/project.png"
-                label="Core Project Handler">
-        </handler>
+        <handler type="project" class="org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl"/>
+        <handler type="databases" class="org.jkiss.dbeaver.model.impl.project.DatabasesHandlerImpl"/>
+        <handler type="scripts" class="org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl"/>
+        <handler type="bookmarks" class="org.jkiss.dbeaver.model.impl.project.BookmarksHandlerImpl"/>
     </extension>
 
 </plugin>
