@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -61,9 +62,9 @@ public class DBNResource extends DBNNode
     {
         String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
         switch (resource.getType()) {
-            case IResource.FOLDER: imageKey = ISharedImages.IMG_OBJ_FOLDER;
-            case IResource.FILE: imageKey = ISharedImages.IMG_OBJ_FILE;
-            case IResource.PROJECT: imageKey = ISharedImages.IMG_OBJ_PROJECT;
+            case IResource.FOLDER: imageKey = ISharedImages.IMG_OBJ_FOLDER; break;
+            case IResource.FILE: imageKey = ISharedImages.IMG_OBJ_FILE; break;
+            case IResource.PROJECT: imageKey = ISharedImages.IMG_OBJ_PROJECT; break;
         }
         return PlatformUI.getWorkbench().getSharedImages().getImage(imageKey);
         //return DBIcon.PROJECT.getImage();
@@ -95,12 +96,18 @@ public class DBNResource extends DBNNode
                             // Skip not accessible hidden and phantom resources
                             continue;
                         }
+                        DBPResourceHandler resourceHandler = null;
                         final String resourceType = member.getPersistentProperty(DBPResourceHandler.PROP_RESOURCE_TYPE);
-                        if (resourceType == null) {
-                            continue;
+                        if (resourceType != null) {
+                            resourceHandler = projectRegistry.getResourceHandler(resourceType);
                         }
-                        final DBPResourceHandler resourceHandler = projectRegistry.getResourceHandler(resourceType);
                         if (resourceHandler == null) {
+                            if (!CommonUtils.isEmpty(member.getFileExtension())) {
+                                resourceHandler = projectRegistry.getResourceHandlerByExtension(member.getFileExtension());
+                            }
+                        }
+                        if (resourceHandler == null) {
+                            log.debug("Skip resource '" + member.getName() + "'");
                             continue;
                         }
 

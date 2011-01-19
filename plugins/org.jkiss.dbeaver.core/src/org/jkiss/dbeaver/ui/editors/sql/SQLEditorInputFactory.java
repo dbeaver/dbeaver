@@ -23,7 +23,7 @@ public class SQLEditorInputFactory implements IElementFactory
     private static final String ID_FACTORY = "org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory"; //$NON-NLS-1$
 
     private static final String TAG_PATH = "path"; //$NON-NLS-1$
-    private static final String TAG_NAME = "name"; //$NON-NLS-1$
+    //private static final String TAG_NAME = "name"; //$NON-NLS-1$
     private static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$
 
     public SQLEditorInputFactory()
@@ -53,11 +53,13 @@ public class SQLEditorInputFactory implements IElementFactory
                     }
                 }
             }
+/*
             String scriptName = memento.getString(TAG_NAME);
             if (scriptName == null) {
                 scriptName = "";
             }
-            return new SQLEditorInput(file, dataSource, scriptName);
+*/
+            return new SQLEditorInput(file, dataSource);
         }
         return null;
     }
@@ -71,7 +73,7 @@ public class SQLEditorInputFactory implements IElementFactory
     {
         IFile file = input.getFile();
         memento.putString(TAG_PATH, file.getFullPath().toString());
-        memento.putString(TAG_NAME, input.getScriptName());
+        //memento.putString(TAG_NAME, input.getScriptName());
         if (input.getDataSourceContainer() != null) {
             memento.putString(TAG_DATA_SOURCE, input.getDataSourceContainer().getId());
         }

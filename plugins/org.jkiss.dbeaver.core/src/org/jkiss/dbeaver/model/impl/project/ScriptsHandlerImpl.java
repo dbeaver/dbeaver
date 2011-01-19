@@ -21,7 +21,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
 
     private static final String SCRIPTS_DIR = "Scripts";
 
-    public static final String RES_TYPE_SCRIPTS = "scripts";
+    public static final String RES_TYPE_SCRIPTS = "scripts"; //$NON-NLS-1$
 
     public static IFolder getScriptsFolder(IProject project)
     {

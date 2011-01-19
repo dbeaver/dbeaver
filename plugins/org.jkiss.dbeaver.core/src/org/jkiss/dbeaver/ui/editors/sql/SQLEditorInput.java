@@ -25,11 +25,11 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     private DBSDataSourceContainer dataSourceContainer;
     private String scriptName;
 
-    public SQLEditorInput(IFile file, DBSDataSourceContainer dataSourceContainer, String scriptName)
+    public SQLEditorInput(IFile file, DBSDataSourceContainer dataSourceContainer)
     {
         super(file);
         this.dataSourceContainer = dataSourceContainer;
-        this.scriptName = scriptName;
+        this.scriptName = file.getName();
     }
 
     public IProject getProject()

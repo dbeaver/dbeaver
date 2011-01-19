@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.registry;
 
+import com.sun.xml.internal.bind.v2.util.QNameMap;
 import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.SecurityUtils;
 import org.apache.commons.logging.Log;
@@ -32,6 +33,7 @@ public class ProjectRegistry
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<ResourceHandlerDescriptor>();
     private final List<DBPResourceHandler> resourceHandlerList = new ArrayList<DBPResourceHandler>();
     private final Map<String, DBPResourceHandler> resourceHandlerMap = new HashMap<String, DBPResourceHandler>();
+    private Map<String, DBPResourceHandler> extensionsMap = new HashMap<String, DBPResourceHandler>();
 
     private final Map<IProject, DataSourceRegistry> projectDatabases = new HashMap<IProject, DataSourceRegistry>();
     private IProject activeProject;
@@ -57,6 +59,9 @@ public class ProjectRegistry
                 }
                 resourceHandlerMap.put(descriptor.getResourceType(), handler);
                 resourceHandlerList.add(handler);
+                for (String ext : descriptor.getFileExtensions()) {
+                    extensionsMap.put(ext, handler);
+                }
             } catch (Exception e) {
                 log.error("Can't instantiate resource handler " + descriptor.getResourceType(), e);
             }
@@ -115,6 +120,11 @@ public class ProjectRegistry
     public DBPResourceHandler getResourceHandler(String resourceType)
     {
         return resourceHandlerMap.get(resourceType);
+    }
+
+    public DBPResourceHandler getResourceHandlerByExtension(String extension)
+    {
+        return extensionsMap.get(extension);
     }
 
     public DataSourceRegistry getDataSourceRegistry(IProject project)

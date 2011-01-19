@@ -4,8 +4,12 @@
 
 package org.jkiss.dbeaver.registry;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * ResourceHandlerDescriptor
@@ -16,6 +20,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
 
     private String className;
     private String resourceType;
+    private List<String> fileExtensions;
 
     private Class<DBPResourceHandler> handlerClass;
     private DBPResourceHandler handler;
@@ -26,6 +31,12 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
 
         this.resourceType = config.getAttribute("type");
         this.className = config.getAttribute("class");
+        String extensionsString = config.getAttribute("extensions");
+        if (!CommonUtils.isEmpty(extensionsString)) {
+            this.fileExtensions = CommonUtils.splitString(extensionsString, ',');
+        } else {
+            this.fileExtensions = Collections.emptyList();
+        }
     }
 
     void dispose()
@@ -37,6 +48,11 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
     public String getResourceType()
     {
         return resourceType;
+    }
+
+    public List<String> getFileExtensions()
+    {
+        return fileExtensions;
     }
 
     public synchronized Class<DBPResourceHandler> getHandlerClass()

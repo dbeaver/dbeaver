@@ -17,7 +17,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
     private static final String BOOKMARKS_DIR = "Bookmarks";
 
-    public static final String RES_TYPE_BOOKMARKS = "bookmarks";
+    public static final String RES_TYPE_BOOKMARKS = "bookmarks"; //$NON-NLS-1$
 
     public static IFolder getBookmarksFolder(IProject project)
     {
