@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -29,6 +30,11 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         super(file);
         this.dataSourceContainer = dataSourceContainer;
         this.scriptName = scriptName;
+    }
+
+    public IProject getProject()
+    {
+        return getFile().getProject();
     }
 
     public DBSDataSourceContainer getDataSourceContainer()

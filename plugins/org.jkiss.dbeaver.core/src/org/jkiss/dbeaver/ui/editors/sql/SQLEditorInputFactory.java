@@ -7,15 +7,12 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
@@ -27,7 +24,6 @@ public class SQLEditorInputFactory implements IElementFactory
 
     private static final String TAG_PATH = "path"; //$NON-NLS-1$
     private static final String TAG_NAME = "name"; //$NON-NLS-1$
-    private static final String TAG_PROJECT = "project"; //$NON-NLS-1$
     private static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$
 
     public SQLEditorInputFactory()
@@ -47,19 +43,13 @@ public class SQLEditorInputFactory implements IElementFactory
         IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(fileName));
         if (file != null) {
             DataSourceDescriptor dataSource = null;
-            String projectId = memento.getString(TAG_PROJECT);
-            if (projectId != null) {
-                final IProject project = DBeaverCore.getInstance().getProject(projectId);
-                if (project != null) {
-                    DataSourceRegistry registry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
-                    if (registry != null) {
-                        String dataSourceId = memento.getString(TAG_DATA_SOURCE);
-                        if (dataSourceId != null) {
-                            dataSource = registry.getDataSource(dataSourceId);
-                            if (dataSource == null) {
-                                log.warn("Can't find datasource '" + dataSourceId + "' for file '" + fileName + "'");
-                            }
-                        }
+            DataSourceRegistry registry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(file.getProject());
+            if (registry != null) {
+                String dataSourceId = memento.getString(TAG_DATA_SOURCE);
+                if (dataSourceId != null) {
+                    dataSource = registry.getDataSource(dataSourceId);
+                    if (dataSource == null) {
+                        log.warn("Can't find datasource '" + dataSourceId + "' for file '" + fileName + "'");
                     }
                 }
             }
@@ -84,11 +74,7 @@ public class SQLEditorInputFactory implements IElementFactory
         memento.putString(TAG_NAME, input.getScriptName());
         if (input.getDataSourceContainer() != null) {
             memento.putString(TAG_DATA_SOURCE, input.getDataSourceContainer().getId());
-            try {
-                memento.putString(TAG_PROJECT, input.getDataSourceContainer().getRegistry().getProject().getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID));
-            } catch (CoreException e) {
-                log.warn(e);
-            }
         }
     }
+
 }

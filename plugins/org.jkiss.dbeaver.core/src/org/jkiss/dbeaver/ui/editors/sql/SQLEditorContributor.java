@@ -277,19 +277,20 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
         connectionCombo.removeAll();
 
         connectionCombo.add("<None>");
-        final DBSDataSourceContainer dataSourceContainer = activeEditorPart == null ? null : activeEditorPart.getDataSourceContainer();
-        List<? extends DBSDataSourceContainer> dataSources;
-        if (dataSourceContainer != null) {
-            dataSources = dataSourceContainer.getRegistry().getDataSources();
-        } else {
-            final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-            dataSources = projectRegistry.getDataSourceRegistry(projectRegistry.getActiveProject()).getDataSources();
-        }
-        for (int i = 0; i < dataSources.size(); i++) {
-            DBSDataSourceContainer ds = dataSources.get(i);
-            connectionCombo.add(ds.getName(), i + 1);
-            if (editor != null && editor.getDataSourceContainer() == ds) {
-                connectionCombo.select(i + 1);
+        if (activeEditorPart != null) {
+            final DBSDataSourceContainer dataSourceContainer = activeEditorPart.getDataSourceContainer();
+            List<? extends DBSDataSourceContainer> dataSources;
+            if (dataSourceContainer != null) {
+                dataSources = dataSourceContainer.getRegistry().getDataSources();
+            } else {
+                dataSources = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(activeEditorPart.getEditorInput().getProject()).getDataSources();
+            }
+            for (int i = 0; i < dataSources.size(); i++) {
+                DBSDataSourceContainer ds = dataSources.get(i);
+                connectionCombo.add(ds.getName(), i + 1);
+                if (editor != null && editor.getDataSourceContainer() == ds) {
+                    connectionCombo.select(i + 1);
+                }
             }
         }
     }
@@ -458,8 +459,8 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
         if (curDataSource != null) {
             dataSources = curDataSource.getRegistry().getDataSources();
         } else {
-            final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-            dataSources = projectRegistry.getDataSourceRegistry(projectRegistry.getActiveProject()).getDataSources();
+            dataSources = DBeaverCore.getInstance().getProjectRegistry()
+                .getDataSourceRegistry(activeEditorPart.getEditorInput().getProject()).getDataSources();
         }
         int curIndex = connectionCombo.getSelectionIndex();
         if (curIndex == 0) {
