@@ -29,7 +29,8 @@ public class DBNResource extends DBNNode
 {
     private IResource resource;
     private DBPResourceHandler handler;
-    protected List<DBNNode> children;
+    private List<DBNNode> children;
+    private Image resourceImage;
 
     public DBNResource(DBNNode parentNode, IResource resource, DBPResourceHandler handler)
     {
@@ -63,6 +64,9 @@ public class DBNResource extends DBNNode
     @Override
     public Image getNodeIcon()
     {
+        if (resourceImage != null) {
+            return resourceImage;
+        }
         String imageKey = ISharedImages.IMG_OBJ_ELEMENT;
         switch (resource.getType()) {
             case IResource.FOLDER: imageKey = ISharedImages.IMG_OBJ_FOLDER; break;
@@ -156,6 +160,11 @@ public class DBNResource extends DBNNode
     protected void filterChildren(List<DBNNode> list)
     {
 
+    }
+
+    public void setResourceImage(Image resourceImage)
+    {
+        this.resourceImage = resourceImage;
     }
 
     public void openResource(IWorkbenchWindow window) throws DBException, CoreException

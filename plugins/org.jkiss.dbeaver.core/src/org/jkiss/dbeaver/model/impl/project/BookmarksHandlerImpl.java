@@ -6,9 +6,13 @@ package org.jkiss.dbeaver.model.impl.project;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * Bookmarks handler
@@ -24,24 +28,6 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         return project.getFolder(BOOKMARKS_DIR);
     }
 
-/*
-    public static IFile createNewScript(IProject project) throws CoreException
-    {
-        final IFolder scriptsFolder = BookmarksHandlerImpl.getBookmarksFolder(project);
-        IFile tempFile;
-        for (int i = 1; ; i++) {
-            tempFile = scriptsFolder.getFile("Script " + i + ".sql");
-            if (tempFile.exists()) {
-                continue;
-            }
-            tempFile.create(new ByteArrayInputStream(new byte[]{}), true, VoidProgressMonitor.INSTANCE.getNestedMonitor());
-            break;
-        }
-        tempFile.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_BOOKMARKS);
-        return tempFile;
-    }
-
-*/
     @Override
     public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
     {
@@ -51,5 +37,18 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         }
         bookmarksFolder.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_BOOKMARKS);
     }
+
+    @Override
+    public DBNResource makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
+    {
+        DBNResource node = super.makeNavigatorNode(parentNode, resource);
+        if (resource instanceof IFolder) {
+            node.setResourceImage(DBIcon.BOOKMARK_FOLDER.getImage());
+        } else {
+            node.setResourceImage(DBIcon.BOOKMARK.getImage());
+        }
+        return node;
+    }
+
 
 }

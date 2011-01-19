@@ -4646,6 +4646,22 @@ public class LightGrid extends Canvas {
             Point ttSize = sizingGC.textExtent(toolTip);
             GridColumn itemColumn = getColumn(column);
             if (ttSize.x > itemColumn.getWidth() || ttSize.y > getItemHeight()) {
+                int gridHeight = getBounds().height;
+                if (ttSize.y > gridHeight) {
+                    // Too big tooltip - larger than entire grid
+                    // Lets chop it
+                    StringBuilder newToolTip = new StringBuilder();
+                    StringTokenizer st = new StringTokenizer(toolTip, "'\n");
+                    int maxLineNumbers = gridHeight / getItemHeight(), lineNumber = 0;
+                    while (st.hasMoreTokens()) {
+                        newToolTip.append(st.nextToken()).append('\n');
+                        lineNumber++;
+                        if (lineNumber >= maxLineNumbers) {
+                            break;
+                        }
+                    }
+                    toolTip = newToolTip.toString();
+                }
                 return toolTip;
             } else {
                 return null;

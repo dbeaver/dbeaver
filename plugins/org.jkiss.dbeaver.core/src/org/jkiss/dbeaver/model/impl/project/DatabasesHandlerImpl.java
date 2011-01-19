@@ -39,7 +39,7 @@ public class DatabasesHandlerImpl extends AbstractResourceHandler {
 
     public DBNProjectDatabases makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
     {
-        return new DBNProjectDatabases(parentNode, resource.getProject());
+        return new DBNProjectDatabases(parentNode, resource.getProject(), this);
     }
 
 }

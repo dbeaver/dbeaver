@@ -24,7 +24,7 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
         // Just do nothing
     }
 
-    public DBNNode makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
+    public DBNResource makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
     {
         return new DBNResource(parentNode, resource, this);
     }

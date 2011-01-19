@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.registry;
 
-import com.sun.xml.internal.bind.v2.util.QNameMap;
 import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.SecurityUtils;
 import org.apache.commons.logging.Log;
@@ -18,7 +17,6 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 
 import java.util.ArrayList;
@@ -88,10 +86,6 @@ public class ProjectRegistry
                 if (project.exists() && !project.isHidden()) {
                     monitor.subTask("Initialize project " + project.getName());
                     openOrCreateProject(project, monitor);
-
-                    monitor.subTask("Initialize project " + project.getName() + " datasources");
-                    DataSourceRegistry dataSourceRegistry = new DataSourceRegistry(project);
-                    projectDatabases.put(project, dataSourceRegistry);
 
                     if (activeProject == null || "true".equals(project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ACTIVE))) {
                         activeProject = project;
@@ -169,6 +163,10 @@ public class ProjectRegistry
                 log.warn("Can't initialize project using resource handler", e);
             }
         }
+
+        // Init DS registry
+        DataSourceRegistry dataSourceRegistry = new DataSourceRegistry(project);
+        projectDatabases.put(project, dataSourceRegistry);
 
         return project;
     }

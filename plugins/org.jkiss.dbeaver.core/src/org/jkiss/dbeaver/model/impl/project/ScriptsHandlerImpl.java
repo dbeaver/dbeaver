@@ -12,7 +12,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 
@@ -59,11 +62,27 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
+    public DBNResource makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
+    {
+        DBNResource node = super.makeNavigatorNode(parentNode, resource);
+        if (resource instanceof IFolder) {
+            node.setResourceImage(DBIcon.SCRIPTS.getImage());
+        } else {
+            node.setResourceImage(DBIcon.SQL_SCRIPT.getImage());
+        }
+        return node;
+    }
+
+    @Override
     public void openResource(IResource resource, IWorkbenchWindow window) throws CoreException, DBException
     {
-        SQLEditorInput sqlInput = new SQLEditorInput((IFile)resource);
-        window.getActivePage().openEditor(
-            sqlInput,
-            SQLEditor.class.getName());
+        if (resource instanceof IFile) {
+            SQLEditorInput sqlInput = new SQLEditorInput((IFile)resource);
+            window.getActivePage().openEditor(
+                sqlInput,
+                SQLEditor.class.getName());
+        } else {
+            throw new DBException("Cannot open folder");
+        }
     }
 }

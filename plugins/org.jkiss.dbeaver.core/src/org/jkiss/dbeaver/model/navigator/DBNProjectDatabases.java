@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -22,15 +23,15 @@ import java.util.List;
 /**
  * DBNProjectDatabases
  */
-public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEventListener
+public class DBNProjectDatabases extends DBNResource implements DBNContainer, DBPEventListener
 {
     private IProject project;
     private List<DBNDataSource> dataSources = new ArrayList<DBNDataSource>();
     private DataSourceRegistry dataSourceRegistry;
 
-    public DBNProjectDatabases(DBNNode parentNode, IProject project)
+    public DBNProjectDatabases(DBNNode parentNode, IProject project, DBPResourceHandler handler)
     {
-        super(parentNode);
+        super(parentNode, project, handler);
         this.project = project;
         dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
         dataSourceRegistry.addDataSourceListener(this);
@@ -41,7 +42,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         }
     }
 
-    void dispose(boolean reflect)
+    protected void dispose(boolean reflect)
     {
         for (DBNDataSource dataSource : dataSources) {
             dataSource.dispose(reflect);

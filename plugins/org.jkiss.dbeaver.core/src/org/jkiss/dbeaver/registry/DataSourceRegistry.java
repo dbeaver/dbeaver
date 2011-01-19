@@ -45,19 +45,20 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<DBPEventListener>();
 
-    private StringEncrypter encrypter;
+    private static StringEncrypter encrypter;
+
+    static {
+        try {
+            encrypter = new StringEncrypter(PASSWORD_ENCRYPTION_KEY);
+        } catch (StringEncrypter.EncryptionException e) {
+            log.error(e);
+        }
+    }
 
     public DataSourceRegistry(IProject project)
     {
         this.project = project;
         this.configFile = project.getFile(CONFIG_FILE_NAME);
-        try {
-            this.encrypter = new StringEncrypter(StringEncrypter.SCHEME_DES, PASSWORD_ENCRYPTION_KEY);
-        }
-        catch (StringEncrypter.EncryptionException e) {
-            // never be here
-            log.error(e);
-        }
 
         File dsFile = configFile.getLocation().toFile();
         if (dsFile.exists()) {
@@ -70,7 +71,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 loadDataSources(dsFile);
             }
         }
-        saveDataSources();
+        //saveDataSources();
     }
 
     public void dispose()
@@ -479,7 +480,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             encPassword = encrypter.decrypt(encPassword);
                         }
                         catch (Throwable e) {
-                            // coould not decrypt - use as is
+                            // could not decrypt - use as is
+                            encPassword = null;
                         }
                     }
                     curDataSource.getConnectionInfo().setUserPassword(encPassword);
