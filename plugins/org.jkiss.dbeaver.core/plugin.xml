@@ -446,17 +446,12 @@
 
         <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectCreateCopy">
             <activeWhen>
-                <and>
-                    <with variable="activePartId">
-                        <equals value="org.jkiss.dbeaver.core.databaseNavigator"/>
-                    </with>
-                    <with variable="selection">
-                        <count value="+"/>
-                        <iterate operator="and">
-                            <test property="org.jkiss.dbeaver.core.object.canPaste"/>
-                        </iterate>
-                    </with>
-                </and>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <test property="org.jkiss.dbeaver.core.object.canPaste"/>
+                    </iterate>
+                </with>
             </activeWhen>
         </handler>
 

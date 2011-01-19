@@ -11,6 +11,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.List;
 /**
  * DBNNode
  */
-public abstract class DBNNode
+public abstract class DBNNode implements DBPNamedObject
 {
     static final Log log = LogFactory.getLog(DBNNode.class);
 
@@ -66,6 +67,11 @@ public abstract class DBNNode
     public boolean isManagable()
     {
         return false;
+    }
+
+    public String getName()
+    {
+        return getNodeName();
     }
 
     public abstract String getNodeName();

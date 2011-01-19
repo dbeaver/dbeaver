@@ -4,7 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -25,15 +25,13 @@ import java.util.List;
  */
 public class DBNProjectDatabases extends DBNResource implements DBNContainer, DBPEventListener
 {
-    private IProject project;
     private List<DBNDataSource> dataSources = new ArrayList<DBNDataSource>();
     private DataSourceRegistry dataSourceRegistry;
 
-    public DBNProjectDatabases(DBNNode parentNode, IProject project, DBPResourceHandler handler)
+    public DBNProjectDatabases(DBNNode parentNode, IResource resource, DBPResourceHandler handler)
     {
-        super(parentNode, project, handler);
-        this.project = project;
-        dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
+        super(parentNode, resource, handler);
+        dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(resource.getProject());
         dataSourceRegistry.addDataSourceListener(this);
 
         List<DataSourceDescriptor> projectDataSources = dataSourceRegistry.getDataSources();
@@ -57,7 +55,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
 
     public Object getValueObject()
     {
-        return project;
+        return getResource();
     }
 
     public String getItemsLabel()
@@ -94,7 +92,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
 
     public String getNodeDescription()
     {
-        return project.getName() + " databases";
+        return getResource().getProject().getName() + " databases";
     }
 
     public Image getNodeIcon()

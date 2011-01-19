@@ -71,7 +71,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 loadDataSources(dsFile);
             }
         }
-        //saveDataSources();
+        if (!dsFile.exists()) {
+            // Generate empty config file
+            saveDataSources();
+        }
     }
 
     public void dispose()
