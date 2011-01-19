@@ -415,7 +415,10 @@
             <enabledWhen>
                 <with variable="selection">
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+                        <or>
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNResource"/>
+                        </or>
                     </iterate>
                 </with>
             </enabledWhen>

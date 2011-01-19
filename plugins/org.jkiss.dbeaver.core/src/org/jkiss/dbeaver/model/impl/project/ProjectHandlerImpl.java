@@ -30,7 +30,7 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
 
     public DBNNode makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
     {
-        return new DBNProject(parentNode, (IProject)resource);
+        return new DBNProject(parentNode, (IProject)resource, this);
     }
 
 }

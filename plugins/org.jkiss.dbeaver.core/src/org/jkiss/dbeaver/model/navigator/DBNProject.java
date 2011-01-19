@@ -10,6 +10,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -27,9 +28,9 @@ public class DBNProject extends DBNResource implements IAdaptable
     //private DBNProjectScripts scripts;
     //private DBNProjectBookmarks bookmarks;
 
-    public DBNProject(DBNNode parentNode, IProject project)
+    public DBNProject(DBNNode parentNode, IProject project, DBPResourceHandler handler)
     {
-        super(parentNode, project);
+        super(parentNode, project, handler);
         //this.databases = new DBNProjectDatabases(this, project);
         //this.scripts = new DBNProjectScripts(this, project);
         //this.bookmarks = new DBNProjectBookmarks(this, project);

@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -25,7 +26,12 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
 
     public DBNNode makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
     {
-        return new DBNResource(parentNode, resource);
+        return new DBNResource(parentNode, resource, this);
+    }
+
+    public void openResource(IResource resource, IWorkbenchWindow window) throws CoreException, DBException
+    {
+        throw new DBException("Resource open is not implemented");
     }
 
 }

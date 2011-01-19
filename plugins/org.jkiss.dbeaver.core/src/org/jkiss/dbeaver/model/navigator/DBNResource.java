@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -27,12 +28,14 @@ import java.util.List;
 public class DBNResource extends DBNNode
 {
     private IResource resource;
+    private DBPResourceHandler handler;
     protected List<DBNNode> children;
 
-    public DBNResource(DBNNode parentNode, IResource resource)
+    public DBNResource(DBNNode parentNode, IResource resource, DBPResourceHandler handler)
     {
         super(parentNode);
         this.resource = resource;
+        this.handler = handler;
     }
 
     protected void dispose(boolean reflect)
@@ -155,4 +158,10 @@ public class DBNResource extends DBNNode
 
     }
 
+    public void openResource(IWorkbenchWindow window) throws DBException, CoreException
+    {
+        if (handler != null) {
+            handler.openResource(resource, window);
+        }
+    }
 }

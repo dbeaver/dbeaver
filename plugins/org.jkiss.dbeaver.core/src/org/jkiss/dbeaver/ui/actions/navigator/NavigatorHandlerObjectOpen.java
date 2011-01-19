@@ -15,10 +15,12 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.edit.DBOEditorInline;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseObject;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.editors.folder.FolderEditor;
@@ -37,7 +39,10 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
             for (Iterator iter = structSelection.iterator(); iter.hasNext(); ) {
                 Object element = iter.next();
                 DBNDatabaseNode node = null;
-                if (element instanceof DBNDatabaseNode) {
+                if (element instanceof DBNResource) {
+                    openResource((DBNResource)element, HandlerUtil.getActiveWorkbenchWindow(event));
+                    continue;
+                } else if (element instanceof DBNDatabaseNode) {
                     node = (DBNDatabaseNode)element;
                 } else {
                     DBSObject object = (DBSObject) Platform.getAdapterManager().getAdapter(element, DBSObject.class);
@@ -51,6 +56,15 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
             }
         }
         return null;
+    }
+
+    private void openResource(DBNResource resourceNode, IWorkbenchWindow window)
+    {
+        try {
+            resourceNode.openResource(window);
+        } catch (Exception e) {
+            UIUtils.showErrorDialog(window.getShell(), "Open resource", "Can't open resource", e);
+        }
     }
 
     public static void openEntityEditor(DBNDatabaseNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
@@ -88,7 +102,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
                     EntityEditor.class.getName());
             }
         } catch (Exception ex) {
-            log.error("Can't open editor", ex);
+            UIUtils.showErrorDialog(workbenchWindow.getShell(), "Open entity", "Can't open entity", ex);
         }
         finally {
             // Reactivate navigator

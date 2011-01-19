@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.ArrayList;
@@ -113,7 +115,10 @@ public class DBNRoot extends DBNNode implements DBNContainer
 
     DBNProject addProject(IProject project)
     {
-        DBNProject newNode = new DBNProject(this, project);
+        DBNProject newNode = new DBNProject(
+            this,
+            project,
+            DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(ProjectHandlerImpl.RES_TYPE_PROJECT));
         projects.add(newNode);
         return newNode;
     }

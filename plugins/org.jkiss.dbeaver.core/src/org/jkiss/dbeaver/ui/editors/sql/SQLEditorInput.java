@@ -4,8 +4,12 @@
 
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -22,14 +26,39 @@ import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
  */
 public class SQLEditorInput extends ProjectFileEditorInput implements IPersistableElement, IAutoSaveEditorInput, IDatabaseEditorInput
 {
+    public static final QualifiedName PROP_DATA_SOURCE_ID = new QualifiedName("org.jkiss.dbeaver", "sql-editor-data-source-id");
+
+    static final Log log = LogFactory.getLog(SQLEditorInput.class);
+
     private DBSDataSourceContainer dataSourceContainer;
     private String scriptName;
 
     public SQLEditorInput(IFile file, DBSDataSourceContainer dataSourceContainer)
     {
         super(file);
-        this.dataSourceContainer = dataSourceContainer;
+        if (dataSourceContainer != null) {
+            this.setDataSourceContainer(dataSourceContainer);
+        }
         this.scriptName = file.getName();
+    }
+
+    public SQLEditorInput(IFile file)
+    {
+        super(file);
+        this.scriptName = file.getName();
+        try {
+            String dataSourceId = getFile().getPersistentProperty(PROP_DATA_SOURCE_ID);
+            if (dataSourceId != null) {
+                DBSDataSourceContainer container = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(file.getProject()).getDataSource(dataSourceId);
+                if (container == null) {
+                    log.warn("Data source '" + dataSourceId + "' not found in project '" + file.getProject().getName() + "'");
+                } else {
+                    setDataSourceContainer(container);
+                }
+            }
+        } catch (CoreException e) {
+            log.error(e);
+        }
     }
 
     public IProject getProject()
@@ -45,6 +74,11 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     public void setDataSourceContainer(DBSDataSourceContainer container)
     {
         dataSourceContainer = container;
+        try {
+            getFile().setPersistentProperty(PROP_DATA_SOURCE_ID, dataSourceContainer.getId());
+        } catch (CoreException e) {
+            log.error(e);
+        }
     }
 
     public String getScriptName()

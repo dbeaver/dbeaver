@@ -41,8 +41,7 @@ public class OpenSQLEditorHandler extends DataSourceHandler {
             IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
             SQLEditorInput sqlInput = new SQLEditorInput(
                 scriptFile,
-                dataSourceContainer/*,
-                getNewScriptName(workbenchWindow.getWorkbench())*/);
+                dataSourceContainer);
             try {
                 workbenchWindow.getActivePage().openEditor(
                     sqlInput,

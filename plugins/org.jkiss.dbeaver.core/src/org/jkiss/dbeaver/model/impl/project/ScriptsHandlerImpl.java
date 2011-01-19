@@ -7,10 +7,14 @@ package org.jkiss.dbeaver.model.impl.project;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 
 import java.io.ByteArrayInputStream;
 
@@ -54,4 +58,12 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         scriptsFolder.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_SCRIPTS);
     }
 
+    @Override
+    public void openResource(IResource resource, IWorkbenchWindow window) throws CoreException, DBException
+    {
+        SQLEditorInput sqlInput = new SQLEditorInput((IFile)resource);
+        window.getActivePage().openEditor(
+            sqlInput,
+            SQLEditor.class.getName());
+    }
 }
