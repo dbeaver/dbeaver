@@ -88,10 +88,11 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
 
     public String getName()
     {
-        if (dataSourceContainer == null) {
-            return "<None> - " + scriptName;
+        String dsName = "<None>";
+        if (dataSourceContainer != null) {
+            dsName = dataSourceContainer.getName();
         }
-        return dataSourceContainer.getName() + " - " + scriptName;
+        return scriptName + " (" + dsName + ")";
     }
 
     public String getToolTipText()

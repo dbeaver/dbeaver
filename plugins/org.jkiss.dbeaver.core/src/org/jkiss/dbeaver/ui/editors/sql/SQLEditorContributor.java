@@ -277,6 +277,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
         connectionCombo.removeAll();
 
         connectionCombo.add("<None>");
+        boolean dsFound = false;
         if (activeEditorPart != null) {
             final DBSDataSourceContainer dataSourceContainer = activeEditorPart.getDataSourceContainer();
             List<? extends DBSDataSourceContainer> dataSources;
@@ -290,8 +291,12 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                 connectionCombo.add(ds.getName(), i + 1);
                 if (editor != null && editor.getDataSourceContainer() == ds) {
                     connectionCombo.select(i + 1);
+                    dsFound = true;
                 }
             }
+        }
+        if (!dsFound) {
+            connectionCombo.select(0);
         }
     }
 
@@ -378,12 +383,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                 connectionCombo.setEnabled(false);
             } else {
                 connectionCombo.setEnabled(true);
-                DBSDataSourceContainer curDataSource = editor.getDataSourceContainer();
-                if (curDataSource == null) {
-                    connectionCombo.select(0);
-                } else {
-                    fillDataSourceList(editor);
-                }
+                fillDataSourceList(editor);
             }
         }
     }
