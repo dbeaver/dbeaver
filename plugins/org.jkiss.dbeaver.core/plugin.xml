@@ -46,6 +46,13 @@
                 type="org.jkiss.dbeaver.model.navigator.DBNNode">
         </propertyTester>
         <propertyTester
+                class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
+                id="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
+                namespace="org.jkiss.dbeaver.core.resource"
+                properties="canOpen,canDelete,canCreateFolder"
+                type="org.eclipse.core.resources.IResource">
+        </propertyTester>
+        <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.database.editor"
@@ -417,7 +424,9 @@
                     <iterate operator="and">
                         <or>
                             <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
-                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNResource"/>
+                            <adapt type="org.eclipse.core.resources.IResource">
+                                <test property="org.jkiss.dbeaver.core.resource.canOpen"/>
+                            </adapt>
                         </or>
                     </iterate>
                 </with>

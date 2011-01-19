@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -109,6 +110,26 @@ public class ProjectRegistry
     public List<ResourceHandlerDescriptor> getHandlerDescriptors()
     {
         return handlerDescriptors;
+    }
+
+    public DBPResourceHandler getResourceHandler(IResource resource)
+    {
+        DBPResourceHandler handler = null;
+        String resourceType = null;
+        try {
+            resourceType = resource.getPersistentProperty(DBPResourceHandler.PROP_RESOURCE_TYPE);
+        } catch (CoreException e) {
+            log.warn(e);
+        }
+        if (resourceType != null) {
+            handler = getResourceHandler(resourceType);
+        }
+        if (handler == null) {
+            if (!CommonUtils.isEmpty(resource.getFileExtension())) {
+                handler = getResourceHandlerByExtension(resource.getFileExtension());
+            }
+        }
+        return handler;
     }
 
     public DBPResourceHandler getResourceHandler(String resourceType)

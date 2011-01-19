@@ -19,6 +19,11 @@ import org.jkiss.dbeaver.model.project.DBPResourceHandler;
  */
 public abstract class AbstractResourceHandler implements DBPResourceHandler {
 
+    public int getFeatures(IResource resource)
+    {
+        return 0;
+    }
+
     public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
     {
         // Just do nothing

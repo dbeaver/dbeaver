@@ -22,6 +22,11 @@ public interface DBPResourceHandler {
     public static final QualifiedName PROP_PROJECT_ACTIVE = new QualifiedName("org.jkiss.dbeaver", "project-active");
     public static final QualifiedName PROP_RESOURCE_TYPE = new QualifiedName("org.jkiss.dbeaver", "resource-type");
 
+    public static final int FEATURE_OPEN = 1;
+    public static final int FEATURE_DELETE = 2;
+
+    int getFeatures(IResource resource);
+
     void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException;
 
     DBNNode makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException;

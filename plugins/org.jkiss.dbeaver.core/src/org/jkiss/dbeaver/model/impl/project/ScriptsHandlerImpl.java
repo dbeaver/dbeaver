@@ -52,6 +52,16 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
+    public int getFeatures(IResource resource)
+    {
+        if (resource instanceof IFolder) {
+            return 0;
+        } else {
+            return FEATURE_OPEN | FEATURE_DELETE;
+        }
+    }
+
+    @Override
     public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
     {
         final IFolder scriptsFolder = getScriptsFolder(project);

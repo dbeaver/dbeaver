@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -14,11 +15,13 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.edit.DBOEditorInline;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseObject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
@@ -40,7 +43,10 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
                 Object element = iter.next();
                 DBNDatabaseNode node = null;
                 if (element instanceof DBNResource) {
-                    openResource((DBNResource)element, HandlerUtil.getActiveWorkbenchWindow(event));
+                    openResource(((DBNResource)element).getResource(), HandlerUtil.getActiveWorkbenchWindow(event));
+                    continue;
+                } else if (element instanceof IResource) {
+                    openResource((IResource)element, HandlerUtil.getActiveWorkbenchWindow(event));
                     continue;
                 } else if (element instanceof DBNDatabaseNode) {
                     node = (DBNDatabaseNode)element;
@@ -58,10 +64,13 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase {
         return null;
     }
 
-    private void openResource(DBNResource resourceNode, IWorkbenchWindow window)
+    private void openResource(IResource resource, IWorkbenchWindow window)
     {
         try {
-            resourceNode.openResource(window);
+            DBPResourceHandler handler = DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(resource);
+            if (handler != null) {
+                handler.openResource(resource, window);
+            }
         } catch (Exception e) {
             UIUtils.showErrorDialog(window.getShell(), "Open resource", "Can't open resource", e);
         }

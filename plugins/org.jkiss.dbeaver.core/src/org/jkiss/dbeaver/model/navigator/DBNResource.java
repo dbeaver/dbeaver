@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -103,16 +102,7 @@ public class DBNResource extends DBNNode
                             // Skip not accessible hidden and phantom resources
                             continue;
                         }
-                        DBPResourceHandler resourceHandler = null;
-                        final String resourceType = member.getPersistentProperty(DBPResourceHandler.PROP_RESOURCE_TYPE);
-                        if (resourceType != null) {
-                            resourceHandler = projectRegistry.getResourceHandler(resourceType);
-                        }
-                        if (resourceHandler == null) {
-                            if (!CommonUtils.isEmpty(member.getFileExtension())) {
-                                resourceHandler = projectRegistry.getResourceHandlerByExtension(member.getFileExtension());
-                            }
-                        }
+                        DBPResourceHandler resourceHandler = projectRegistry.getResourceHandler(member);
                         if (resourceHandler == null) {
                             log.debug("Skip resource '" + member.getName() + "'");
                             continue;
@@ -167,10 +157,4 @@ public class DBNResource extends DBNNode
         this.resourceImage = resourceImage;
     }
 
-    public void openResource(IWorkbenchWindow window) throws DBException, CoreException
-    {
-        if (handler != null) {
-            handler.openResource(resource, window);
-        }
-    }
 }
