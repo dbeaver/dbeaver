@@ -29,6 +29,11 @@ public class DatabasesHandlerImpl extends AbstractResourceHandler {
     private static final String CONFIG_EMPTY = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
         "<data-sources></data-sources>";
 
+    public String getTypeName(IResource resource)
+    {
+        return "databases";
+    }
+
     public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
     {
         final IFile configFile = project.getFile(CONFIG_FILE);

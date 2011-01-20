@@ -192,27 +192,23 @@ public class ViewUtils
                                     String actionName = objectManager == null ? "View" : "Edit";
                                     if (multipleSelection) {
                                         item.setText(actionName + " objects");
-                                    } else if (node instanceof DBNDatabaseNode) {
-                                        item.setText(actionName + " " + ((DBNDatabaseNode)node).getMeta().getLabel());
+                                    } else {
+                                        item.setText(actionName + " " + node.getNodeType());
                                     }
                                 }
                             } else if (ICommandIds.CMD_OBJECT_CREATE.equals(contribId)) {
                                 String objectName = "";
                                 if (node instanceof DBNContainer) {
                                     objectName = ((DBNContainer)node).getItemsLabel();
-                                } else if (node instanceof DBNDatabaseNode) {
-                                    objectName = ((DBNDatabaseNode)node).getMeta().getLabel();
                                 } else {
-                                    objectName = node.getNodeName();
+                                    objectName = node.getNodeType();
                                 }
                                 item.setText("Create new " + objectName);
                             } else if (ICommandIds.CMD_OBJECT_DELETE.equals(contribId) || IWorkbenchCommandConstants.EDIT_DELETE.equals(contribId)) {
                                 if (multipleSelection) {
                                     item.setText("Delete objects");
-                                } else if (node instanceof DBNDatabaseNode) {
-                                    item.setText("Delete " + ((DBNDatabaseNode)node).getMeta().getLabel());
                                 } else {
-                                    item.setText("Delete '" + node.getNodeName() + "'");
+                                    item.setText("Delete " + node.getNodeType());
                                 }
                             }
                         }

@@ -79,7 +79,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                 DBNNode parentNode = treeNode.getParentNode();
                 if (parentNode instanceof DBNDatabaseFolder) {
                     try {
-                        ((DBNDatabaseFolder)parentNode).removeChildItem((DBNDatabaseItem)treeNode);
+                        ((DBNDatabaseFolder)parentNode).removeChildItem(treeNode);
                     } catch (DBException e) {
                         log.error(e);
                     }
@@ -240,9 +240,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
         if (mainAdded) {
             DBNNode node = getEditorInput().getTreeNode();
             setPageText(0, "Properties");
-            if (node instanceof DBNDatabaseNode) {
-                setPageToolTip(0, ((DBNDatabaseNode)node).getMeta().getLabel() + " Properties");
-            }
+            setPageToolTip(0, node.getNodeType() + " Properties");
             setPageImage(0, node.getNodeIconDefault());
         }
 /*
@@ -458,9 +456,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
             setPageText(index, node.getNodeName());
             setPageImage(index, node.getNodeIconDefault());
             DBNNode editorNode = getEditorInput().getTreeNode();
-            if (editorNode instanceof DBNDatabaseNode) {
-                setPageToolTip(index, ((DBNDatabaseNode)editorNode).getMeta().getLabel() + " " + node.getNodeName());
-            }
+            setPageToolTip(index, editorNode.getNodeType() + " " + node.getNodeName());
             editorMap.put("node." + node.getNodeName(), nodeEditor);
         } catch (PartInitException ex) {
             log.error("Error adding nested editor", ex);

@@ -20,6 +20,11 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
 
     public static final String RES_TYPE_PROJECT = "project";
 
+    public String getTypeName(IResource resource)
+    {
+        return "project";
+    }
+
     @Override
     public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
     {

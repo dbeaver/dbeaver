@@ -48,6 +48,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         super.dispose(reflect);
     }
 
+    @Override
+    public String getNodeType()
+    {
+        return getMeta().getLabel();
+    }
+
     public String getNodeName()
     {
         String objectName = getObject().getName();

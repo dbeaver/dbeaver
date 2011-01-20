@@ -83,23 +83,6 @@ public class DBNProject extends DBNResource implements IAdaptable
         return DBIcon.PROJECT.getImage();
     }
 
-    @Override
-    protected void filterChildren(List<DBNNode> list)
-    {
-        Collections.sort(list, new Comparator<DBNNode>() {
-            public int compare(DBNNode o1, DBNNode o2)
-            {
-                if (o1 instanceof DBNProjectDatabases) {
-                    return -1;
-                } else if (o2 instanceof DBNProjectDatabases) {
-                    return 1;
-                } else {
-                    return o1.getNodeName().compareTo(o2.getNodeName());
-                }
-            }
-        });
-    }
-
     public String getDefaultCommandId()
     {
         return null;

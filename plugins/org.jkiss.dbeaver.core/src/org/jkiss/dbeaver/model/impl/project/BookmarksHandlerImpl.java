@@ -29,6 +29,28 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
+    public int getFeatures(IResource resource)
+    {
+        if (resource instanceof IFolder) {
+            if (resource.getParent() instanceof IFolder) {
+                return FEATURE_DELETE;
+            }
+            return 0;
+        } else {
+            return FEATURE_OPEN | FEATURE_DELETE;
+        }
+    }
+
+    public String getTypeName(IResource resource)
+    {
+        if (resource instanceof IFolder) {
+            return "bookmark folder";
+        } else {
+            return "bookmark";
+        }
+    }
+
+    @Override
     public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
     {
         final IFolder bookmarksFolder = getBookmarksFolder(project);

@@ -39,4 +39,9 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
         throw new DBException("Resource open is not implemented");
     }
 
+    public String getTypeName(IResource resource)
+    {
+        return "resource";
+    }
+
 }

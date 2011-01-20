@@ -74,6 +74,8 @@ public abstract class DBNNode implements DBPNamedObject
         return getNodeName();
     }
 
+    public abstract String getNodeType();
+
     public abstract String getNodeName();
 
     public abstract String getNodeDescription();

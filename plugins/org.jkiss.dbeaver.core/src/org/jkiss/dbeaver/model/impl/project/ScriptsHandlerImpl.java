@@ -55,9 +55,21 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     public int getFeatures(IResource resource)
     {
         if (resource instanceof IFolder) {
+            if (resource.getParent() instanceof IFolder) {
+                return FEATURE_DELETE;
+            }
             return 0;
         } else {
             return FEATURE_OPEN | FEATURE_DELETE;
+        }
+    }
+
+    public String getTypeName(IResource resource)
+    {
+        if (resource instanceof IFolder) {
+            return "script folder";
+        } else {
+            return "script";
         }
     }
 
@@ -76,7 +88,9 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     {
         DBNResource node = super.makeNavigatorNode(parentNode, resource);
         if (resource instanceof IFolder) {
-            node.setResourceImage(DBIcon.SCRIPTS.getImage());
+            if (resource.getParent() instanceof IProject) {
+                node.setResourceImage(DBIcon.SCRIPTS.getImage());
+            }
         } else {
             node.setResourceImage(DBIcon.SQL_SCRIPT.getImage());
         }

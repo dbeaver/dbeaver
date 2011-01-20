@@ -5,12 +5,12 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -20,6 +20,8 @@ import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.ICommandIds;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -54,6 +56,12 @@ public class DBNResource extends DBNNode
     public int getFeatures()
     {
         return handler.getFeatures(resource);
+    }
+
+    @Override
+    public String getNodeType()
+    {
+        return handler.getTypeName(resource);
     }
 
     public String getNodeName()
@@ -113,6 +121,7 @@ public class DBNResource extends DBNNode
                     throw new DBException(e);
                 }
                 filterChildren(result);
+                sortChildren(result);
                 this.children = result;
             }
         }
@@ -138,13 +147,17 @@ public class DBNResource extends DBNNode
             // Skip not accessible hidden and phantom resources
             return null;
         }
-        DBPResourceHandler resourceHandler = DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(resource);
-        if (resourceHandler == null) {
-            log.debug("Skip resource '" + resource.getName() + "'");
-            return null;
-        }
-
         try {
+            if (resource instanceof IFolder && resource.getParent() instanceof IFolder) {
+                // Sub folder
+                return handler.makeNavigatorNode(this, resource);
+            }
+            DBPResourceHandler resourceHandler = DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(resource);
+            if (resourceHandler == null) {
+                log.debug("Skip resource '" + resource.getName() + "'");
+                return null;
+            }
+
             return resourceHandler.makeNavigatorNode(this, resource);
         } catch (Exception e) {
             log.error("Error creating navigator node for resource '" + resource.getName() + "'", e);
@@ -183,6 +196,31 @@ public class DBNResource extends DBNNode
 
     }
 
+    protected void sortChildren(List<DBNNode> list)
+    {
+        Collections.sort(list, new Comparator<DBNNode>() {
+            public int compare(DBNNode o1, DBNNode o2)
+            {
+                if (o1 instanceof DBNProjectDatabases) {
+                    return -1;
+                } else if (o2 instanceof DBNProjectDatabases) {
+                    return 1;
+                } else {
+                    if (o1 instanceof DBNResource && o2 instanceof DBNResource) {
+                        IResource res1 = ((DBNResource)o1).getResource();
+                        IResource res2 = ((DBNResource)o2).getResource();
+                        if (res1 instanceof IFolder && !(res2 instanceof IFolder)) {
+                            return -1;
+                        } else if (res2 instanceof IFolder && !(res1 instanceof IFolder)) {
+                            return 1;
+                        }
+                    }
+                    return o1.getNodeName().compareTo(o2.getNodeName());
+                }
+            }
+        });
+    }
+
     public void setResourceImage(Image resourceImage)
     {
         this.resourceImage = resourceImage;
@@ -209,7 +247,7 @@ public class DBNResource extends DBNNode
                         getModel().fireNodeEvent(new DBNEvent(childDelta, DBNEvent.Action.ADD, newChild));
                     }
                 } else {
-                    log.warn("Can't find resource '" + childDelta.getResource().getName() + "' in navigator model");
+                    //log.warn("Can't find resource '" + childDelta.getResource().getName() + "' in navigator model");
                 }
             } else {
                 if (childDelta.getKind() == IResourceDelta.REMOVED) {

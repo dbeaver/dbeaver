@@ -22,8 +22,10 @@ public interface DBPResourceHandler {
     public static final QualifiedName PROP_PROJECT_ACTIVE = new QualifiedName("org.jkiss.dbeaver", "project-active");
     public static final QualifiedName PROP_RESOURCE_TYPE = new QualifiedName("org.jkiss.dbeaver", "resource-type");
 
-    public static final int FEATURE_OPEN = 1;
-    public static final int FEATURE_DELETE = 2;
+    public static final int FEATURE_OPEN            = 1;
+    public static final int FEATURE_DELETE          = 2;
+    public static final int FEATURE_CREATE_FOLDER   = 4;
+    public static final int FEATURE_COPY            = 8;
 
     int getFeatures(IResource resource);
 
@@ -33,4 +35,5 @@ public interface DBPResourceHandler {
 
     void openResource(IResource resource, IWorkbenchWindow window) throws CoreException, DBException;
 
+    String getTypeName(IResource resource);
 }

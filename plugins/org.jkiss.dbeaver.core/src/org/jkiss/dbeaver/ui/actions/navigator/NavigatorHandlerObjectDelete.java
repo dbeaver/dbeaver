@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -22,11 +21,11 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.edit.DBOCommand;
+import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.model.edit.DBOEditor;
 import org.jkiss.dbeaver.model.edit.DBOManager;
-import org.jkiss.dbeaver.model.edit.DBOCreator;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -219,14 +218,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         String titleKey = ConfirmationDialog.RES_CONFIRM_PREFIX + PrefConstants.CONFIRM_ENTITY_DELETE + "." + ConfirmationDialog.RES_KEY_TITLE;
         String messageKey = ConfirmationDialog.RES_CONFIRM_PREFIX + PrefConstants.CONFIRM_ENTITY_DELETE + "." + ConfirmationDialog.RES_KEY_MESSAGE;
 
-        String nodeTypeName;
-        if (node instanceof DBNDatabaseNode) {
-            nodeTypeName = ((DBNDatabaseNode)node).getMeta().getLabel();
-        } else if (node instanceof DBNResource) {
-            nodeTypeName = "resource"; 
-        } else {
-            nodeTypeName = "object";
-        }
+        String nodeTypeName = node.getNodeType();
 
         MessageDialog dialog = new MessageDialog(
             workbenchWindow.getShell(),

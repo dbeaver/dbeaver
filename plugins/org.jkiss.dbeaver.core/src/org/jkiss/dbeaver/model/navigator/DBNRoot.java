@@ -35,6 +35,12 @@ public class DBNRoot extends DBNNode implements DBNContainer
         projects.clear();
     }
 
+    @Override
+    public String getNodeType()
+    {
+        return "Root";
+    }
+
     public Object getValueObject()
     {
         return this;
