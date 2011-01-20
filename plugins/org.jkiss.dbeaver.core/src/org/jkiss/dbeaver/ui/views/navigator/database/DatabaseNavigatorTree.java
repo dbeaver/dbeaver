@@ -154,12 +154,14 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
     private class TreeSelectionAdapter implements MouseListener {
 
         private volatile TreeItem curSelection;
-        private volatile Job renameJob;
+        private volatile RenameJob renameJob = new RenameJob();
+
+        private volatile boolean doubleClick = false;
 
         public synchronized void mouseDoubleClick(MouseEvent e)
         {
             curSelection = null;
-            renameJob = null;
+            renameJob.canceled = true;
         }
 
         public void mouseDown(MouseEvent e)
@@ -169,7 +171,6 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         public void mouseUp(MouseEvent e)
         {
             if ((e.stateMask & SWT.BUTTON1) == 0) {
-                curSelection = null;
                 return;
             }
             changeSelection(e);
@@ -187,33 +188,37 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                 curSelection = null;
                 return;
             }
-            if (curSelection != null && curSelection == newSelection && renameJob == null) {
-                // Might be a rename
-                // Wait for 1 sec
-                renameJob = new AbstractJob("Rename " + newSelection) {
-                    @Override
-                    protected IStatus run(DBRProgressMonitor monitor)
-                    {
-                        try {
-                            if (renameJob != null && curSelection != null && curSelection == newSelection) {
-                                getDisplay().asyncExec(new Runnable() {
-                                    public void run()
-                                    {
-                                        renameItem(curSelection);
-                                    }
-                                });
-                            }
-                        } finally {
-                            renameJob = null;
-                        }
-                        return Status.OK_STATUS;
-                    }
-                };
+            if (curSelection != null && curSelection == newSelection) {
                 renameJob.schedule(1000);
             }
             curSelection = newSelection;
         }
 
+        private class RenameJob extends AbstractJob {
+            private volatile boolean canceled = false;
+            public RenameJob()
+            {
+                super("Rename ");
+            }
+
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor)
+            {
+                try {
+                    if (curSelection != null && !canceled) {
+                        getDisplay().asyncExec(new Runnable() {
+                            public void run()
+                            {
+                                renameItem(curSelection);
+                            }
+                        });
+                    }
+                } finally {
+                    canceled = false;
+                }
+                return Status.OK_STATUS;
+            }
+        }
     }
 
     private void renameItem(final TreeItem item)
