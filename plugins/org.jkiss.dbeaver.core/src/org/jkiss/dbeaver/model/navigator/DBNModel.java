@@ -6,9 +6,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IAdapterManager;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
@@ -278,9 +276,30 @@ public class DBNModel implements IResourceChangeListener {
 
     public void resourceChanged(IResourceChangeEvent event)
     {
-        if (!(event.getResource() instanceof IProject)) {
-            return;
+        if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
+            IResourceDelta delta = event.getDelta();
+            IResource resource = delta.getResource();
+            for (IResourceDelta childDelta : delta.getAffectedChildren()) {
+                if (childDelta.getResource() instanceof IProject) {
+                    DBNProject project = getRoot().getProject((IProject) childDelta.getResource());
+                    if (project == null) {
+                        if (delta.getKind() == IResourceDelta.ADDED) {
+                            // New project
+                        } else {
+                            // Project not found - report an error
+                            log.error("Project '" + childDelta.getResource().getName() + "' not found in navigator");
+                        }
+                    } else {
+                        if (delta.getKind() == IResourceDelta.REMOVED) {
+                            // Project deleted
+                        } else {
+                            // Some resource changed within the project
+                            // Let it handle this event itself
+                            project.handleResourceChange(childDelta);
+                        }
+                    }
+                }
+            }
         }
-        IProject project = (IProject)event.getResource();
     }
 }

@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
@@ -98,18 +99,10 @@ public class DBNResource extends DBNNode
                 try {
                     IResource[] members = ((IContainer) resource).members();
                     for (IResource member : members) {
-                        if (!member.isAccessible() || member.isHidden() || member.isPhantom()) {
-                            // Skip not accessible hidden and phantom resources
-                            continue;
+                        DBNNode newChild = makeNode(member);
+                        if (newChild != null) {
+                            result.add(newChild);
                         }
-                        DBPResourceHandler resourceHandler = projectRegistry.getResourceHandler(member);
-                        if (resourceHandler == null) {
-                            log.debug("Skip resource '" + member.getName() + "'");
-                            continue;
-                        }
-
-                        DBNNode newChild = resourceHandler.makeNavigatorNode(this, member);
-                        result.add(newChild);
                     }
                 } catch (CoreException e) {
                     throw new DBException(e);
@@ -119,6 +112,39 @@ public class DBNResource extends DBNNode
             }
         }
         return children;
+    }
+
+    DBNResource getChild(IResource resource)
+    {
+        if (children == null) {
+            return null;
+        }
+        for (DBNNode child : children) {
+            if (child instanceof DBNResource && ((DBNResource)child).getResource().equals(resource)) {
+                return (DBNResource) child;
+            }
+        }
+        return null;
+    }
+
+    private DBNNode makeNode(IResource resource)
+    {
+        if (!resource.isAccessible() || resource.isHidden() || resource.isPhantom()) {
+            // Skip not accessible hidden and phantom resources
+            return null;
+        }
+        DBPResourceHandler resourceHandler = DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(resource);
+        if (resourceHandler == null) {
+            log.debug("Skip resource '" + resource.getName() + "'");
+            return null;
+        }
+
+        try {
+            return resourceHandler.makeNavigatorNode(this, resource);
+        } catch (Exception e) {
+            log.error("Error creating navigator node for resource '" + resource.getName() + "'", e);
+            return null;
+        }
     }
 
     public String getDefaultCommandId()
@@ -155,6 +181,42 @@ public class DBNResource extends DBNNode
     public void setResourceImage(Image resourceImage)
     {
         this.resourceImage = resourceImage;
+    }
+
+    public void handleResourceChange(IResourceDelta delta)
+    {
+        if (delta.getKind() == IResourceDelta.CHANGED) {
+            // Update this node in navigator
+            getModel().fireNodeEvent(new DBNEvent(delta, DBNEvent.Action.UPDATE, this));
+        }
+        if (children == null) {
+            // Child nodes are not yet read so nothing to change here - just return
+            return;
+        }
+        for (IResourceDelta childDelta : delta.getAffectedChildren()) {
+            DBNResource childResource = getChild(childDelta.getResource());
+            if (childResource == null) {
+                if (childDelta.getKind() == IResourceDelta.ADDED) {
+                    // New child
+                    DBNNode newChild = makeNode(childDelta.getResource());
+                    if (newChild != null) {
+                        children.add(newChild);
+                        getModel().fireNodeEvent(new DBNEvent(childDelta, DBNEvent.Action.ADD, newChild));
+                    }
+                } else {
+                    log.warn("Can't find resource '" + childDelta.getResource().getName() + "' in navigator model");
+                }
+            } else {
+                if (childDelta.getKind() == IResourceDelta.REMOVED) {
+                    // Node deleted
+                    children.remove(childResource);
+                    getModel().fireNodeEvent(new DBNEvent(childDelta, DBNEvent.Action.REMOVE, childResource));
+                } else {
+                    // Node changed - handle it recursive
+                    childResource.handleResourceChange(childDelta);
+                }
+            }
+        }
     }
 
 }
