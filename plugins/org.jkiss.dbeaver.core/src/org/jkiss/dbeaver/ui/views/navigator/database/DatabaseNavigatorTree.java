@@ -14,6 +14,8 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
@@ -82,7 +84,8 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         treeEditor.grabHorizontal = false;
         treeEditor.minimumWidth = 50;
 
-        treeControl.addSelectionListener(new TreeSelectionAdapter());
+        //treeControl.addSelectionListener(new TreeSelectionAdapter());
+        treeControl.addMouseListener(new TreeSelectionAdapter());
     }
 
     public TreeViewer getViewer()
@@ -148,25 +151,39 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         viewer.setSelection(new StructuredSelection(node));
     }
 
-    private class TreeSelectionAdapter implements SelectionListener {
+    private class TreeSelectionAdapter implements MouseListener {
 
         private volatile TreeItem curSelection;
-        private Job renameJob;
+        private volatile Job renameJob;
 
-        public void widgetSelected(SelectionEvent e) {
-            changeSelection((TreeItem) e.item);
-        }
-
-        public void widgetDefaultSelected(SelectionEvent e)
+        public synchronized void mouseDoubleClick(MouseEvent e)
         {
-            // Ignore double clicks
             curSelection = null;
+            renameJob = null;
         }
 
-        public void changeSelection(final TreeItem newSelection) {
-            disposeOldEditor();
+        public void mouseDown(MouseEvent e)
+        {
+        }
 
-            if (newSelection == null || !(newSelection.getData() instanceof DBNNode) || !((DBNNode)newSelection.getData()).supportsRename()) {
+        public void mouseUp(MouseEvent e)
+        {
+            if ((e.stateMask & SWT.BUTTON1) == 0) {
+                curSelection = null;
+                return;
+            }
+            changeSelection(e);
+        }
+
+        public void changeSelection(MouseEvent e) {
+            disposeOldEditor();
+            final TreeItem newSelection = viewer.getTree().getItem(new Point(e.x, e.y));
+            if (newSelection == null) {
+                //curSelection = null;
+                return;
+            }
+
+            if (!(newSelection.getData() instanceof DBNNode) || !((DBNNode)newSelection.getData()).supportsRename()) {
                 curSelection = null;
                 return;
             }
@@ -177,15 +194,18 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                     @Override
                     protected IStatus run(DBRProgressMonitor monitor)
                     {
-                        if (curSelection == newSelection) {
-                            getDisplay().asyncExec(new Runnable() {
-                                public void run()
-                                {
-                                    renameItem(curSelection);
-                                }
-                            });
+                        try {
+                            if (renameJob != null && curSelection != null && curSelection == newSelection) {
+                                getDisplay().asyncExec(new Runnable() {
+                                    public void run()
+                                    {
+                                        renameItem(curSelection);
+                                    }
+                                });
+                            }
+                        } finally {
+                            renameJob = null;
                         }
-                        renameJob = null;
                         return Status.OK_STATUS;
                     }
                 };
@@ -193,6 +213,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
             }
             curSelection = newSelection;
         }
+
     }
 
     private void renameItem(final TreeItem item)
@@ -200,8 +221,10 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         // Clean up any previous editor control
         disposeOldEditor();
 
+        final DBNNode node = (DBNNode) item.getData();
+
         Text text = new Text(viewer.getTree(), SWT.BORDER);
-        text.setText(item.getText(0));
+        text.setText(node.getNodeName());
         text.selectAll();
         text.setFocus();
         text.addFocusListener(new FocusAdapter() {
@@ -218,7 +241,6 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                 if (e.keyCode == SWT.CR) {
                     Text text = (Text) treeEditor.getEditor();
                     final String newName = text.getText();
-                    final DBNNode node = (DBNNode) item.getData();
                     try {
                         DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
                             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
@@ -228,15 +250,6 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                                 } catch (DBException e1) {
                                     throw new InvocationTargetException(e1);
                                 }
-/*
-
-                                getDisplay().asyncExec(new Runnable() {
-                                    public void run()
-                                    {
-                                        treeEditor.getItem().setText(0, newName);
-                                    }
-                                });
-*/
                             }
                         });
                     } catch (InvocationTargetException e1) {
@@ -252,7 +265,11 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                 }
             }
         });
-        treeEditor.minimumWidth = Math.max(item.getBounds(0).width, 50);
+        final Rectangle itemBounds = item.getBounds(0);
+        final Rectangle treeBounds = viewer.getTree().getBounds();
+        treeEditor.minimumWidth = Math.max(itemBounds.width, 50);
+        treeEditor.minimumWidth = Math.min(treeEditor.minimumWidth, treeBounds.width - (itemBounds.x - treeBounds.x) - item.getImageBounds(0).width - 4);
+
         treeEditor.setEditor(text, item, 0);
     }
 

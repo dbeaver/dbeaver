@@ -39,13 +39,13 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         if (dataSourceContainer != null) {
             this.setDataSourceContainer(dataSourceContainer);
         }
-        this.scriptName = file.getName();
+        this.scriptName = file.getFullPath().removeFileExtension().lastSegment();
     }
 
     public SQLEditorInput(IFile file)
     {
         super(file);
-        this.scriptName = file.getName();
+        this.scriptName = file.getFullPath().removeFileExtension().lastSegment();
         try {
             String dataSourceId = getFile().getPersistentProperty(PROP_DATA_SOURCE_ID);
             if (dataSourceId != null) {
@@ -79,11 +79,6 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         } catch (CoreException e) {
             log.error(e);
         }
-    }
-
-    public String getScriptName()
-    {
-        return scriptName;
     }
 
     public String getName()

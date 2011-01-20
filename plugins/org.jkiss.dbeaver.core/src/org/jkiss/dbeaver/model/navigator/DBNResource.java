@@ -4,10 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
@@ -67,7 +64,10 @@ public class DBNResource extends DBNNode
 
     public String getNodeName()
     {
-        return resource.getName();
+        if (resource instanceof IFile) {
+            return resource.getFullPath().removeFileExtension().lastSegment();
+        }
+        return resource.getFullPath().lastSegment();
     }
 
     public String getNodeDescription()
@@ -187,9 +187,28 @@ public class DBNResource extends DBNNode
         return this;
     }
 
+    @Override
+    public boolean supportsRename()
+    {
+        return (getFeatures() & DBPResourceHandler.FEATURE_RENAME) != 0;
+    }
+
+    @Override
+    public void rename(DBRProgressMonitor monitor, String newName) throws DBException
+    {
+        try {
+            if (resource instanceof IFile) {
+                newName += "." + resource.getFileExtension();
+            }
+            resource.move(resource.getParent().getFullPath().append(newName), true, monitor.getNestedMonitor());
+        } catch (CoreException e) {
+            throw new DBException(e);
+        }
+    }
+
     public boolean supportsDrop(DBNNode otherNode)
     {
-        if (!(resource instanceof IFolder) || (getFeatures() & DBPResourceHandler.FEATURE_DROP) == 0) {
+        if (!(resource instanceof IFolder) || (getFeatures() & DBPResourceHandler.FEATURE_MOVE_INTO) == 0) {
             return false;
         }
         if (otherNode == null) {
