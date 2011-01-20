@@ -56,9 +56,9 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     {
         if (resource instanceof IFolder) {
             if (resource.getParent() instanceof IFolder) {
-                return FEATURE_DELETE;
+                return FEATURE_DELETE | FEATURE_DROP;
             }
-            return 0;
+            return FEATURE_DROP;
         } else {
             return FEATURE_OPEN | FEATURE_DELETE;
         }

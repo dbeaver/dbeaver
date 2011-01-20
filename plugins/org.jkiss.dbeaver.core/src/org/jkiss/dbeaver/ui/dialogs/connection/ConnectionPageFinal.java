@@ -9,7 +9,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -110,6 +109,7 @@ class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
             Group securityGroup = UIUtils.createControlGroup(group, "Security", 1, GridData.FILL_HORIZONTAL, 0);
             gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
+            gd.widthHint = 400;
             securityGroup.setLayoutData(gd);
          
             savePasswordCheck = UIUtils.createCheckbox(securityGroup, "Save password locally", dataSourceDescriptor != null && dataSourceDescriptor.isSavePassword());

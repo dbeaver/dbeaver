@@ -133,6 +133,16 @@ public abstract class DBNNode implements DBPNamedObject
         throw new DBException("Rename is not supported");
     }
 
+    public boolean supportsDrop(DBNNode otherNode)
+    {
+        return false;
+    }
+
+    public void dropNode(DBNNode otherNode) throws DBException
+    {
+        throw new DBException("Drop is not supported");
+    }
+
     /**
      * Refreshes node.
      * If refresh cannot be done in this level then refreshes parent node.

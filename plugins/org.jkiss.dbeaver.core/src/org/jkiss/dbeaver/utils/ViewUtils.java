@@ -15,8 +15,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerService;
@@ -45,6 +44,7 @@ import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -302,6 +302,7 @@ public class ViewUtils
             public void dragStart(DragSourceEvent event) {
                 selection = (IStructuredSelection) viewer.getSelection();
             }
+
             public void dragSetData (DragSourceEvent event) {
                 if (!selection.isEmpty()) {
                     List<DBNNode> nodes = new ArrayList<DBNNode>();
@@ -309,18 +310,24 @@ public class ViewUtils
                     StringBuilder buf = new StringBuilder();
                     for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {
                         Object nextSelected = i.next();
-                        if (!(nextSelected instanceof DBNDatabaseNode)) {
+                        if (!(nextSelected instanceof DBNNode)) {
                             continue;
                         }
                         nodes.add((DBNNode)nextSelected);
-                        DBSObject object = ((DBNDatabaseNode)nextSelected).getObject();
-                        if (object == null) {
-                            continue;
+                        String nodeName;
+                        if (nextSelected instanceof DBNDatabaseNode) {
+                            DBSObject object = ((DBNDatabaseNode)nextSelected).getObject();
+                            if (object == null) {
+                                continue;
+                            }
+                            nodeName = object instanceof DBSEntityQualified ? ((DBSEntityQualified)object).getFullQualifiedName() : object.getName();
+                        } else {
+                            nodeName = ((DBNNode)nextSelected).getNodeName();
                         }
                         if (buf.length() > 0) {
                             buf.append(lineSeparator);
                         }
-                        buf.append(object instanceof DBSEntityQualified ? ((DBSEntityQualified)object).getFullQualifiedName() : object.getName());
+                        buf.append(nodeName);
                     }
                     if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
                         event.data = buf.toString();
@@ -339,42 +346,86 @@ public class ViewUtils
             }
         });
 
-        DropTarget dropTarget = new DropTarget(viewer.getControl(), DND.DROP_COPY);
+        DropTarget dropTarget = new DropTarget(viewer.getControl(), DND.DROP_MOVE);
         dropTarget.setTransfer(new Transfer[] {TreeNodeTransfer.getInstance()});
         dropTarget.addDropListener(new DropTargetListener() {
             public void dragEnter(DropTargetEvent event)
             {
-                event.detail = DND.DROP_COPY;
-                event.feedback = DND.FEEDBACK_NONE;
+                handleDragEvent(event);
             }
 
             public void dragLeave(DropTargetEvent event)
             {
-                event.detail = DND.DROP_COPY;
-                event.feedback = DND.FEEDBACK_NONE;
+                handleDragEvent(event);
             }
 
             public void dragOperationChanged(DropTargetEvent event)
             {
-                event.detail = DND.DROP_COPY;
-                event.feedback = DND.FEEDBACK_NONE;
+                handleDragEvent(event);
             }
 
             public void dragOver(DropTargetEvent event)
             {
-                event.detail = DND.DROP_COPY;
-                event.feedback = DND.FEEDBACK_NONE;
+                handleDragEvent(event);
             }
 
             public void drop(DropTargetEvent event)
             {
-                int x = 0;
+                handleDragEvent(event);
+                if (event.detail == DND.DROP_MOVE) {
+                    moveNodes(event);
+                }
             }
 
             public void dropAccept(DropTargetEvent event)
             {
-                event.detail = DND.DROP_COPY;
+                handleDragEvent(event);
+            }
+
+            private void handleDragEvent(DropTargetEvent event)
+            {
+                event.detail = isDropSupported(event) ? DND.DROP_MOVE : DND.DROP_NONE;
                 event.feedback = DND.FEEDBACK_NONE;
+            }
+
+            private boolean isDropSupported(DropTargetEvent event)
+            {
+                if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType) && event.item instanceof TreeItem) {
+                    TreeItem treeItem = (TreeItem)event.item;
+                    Object curObject = treeItem.getData();
+                    if (curObject instanceof DBNNode) {
+                        Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
+                        if (!CommonUtils.isEmpty(nodesToDrop)) {
+                            for (DBNNode node : nodesToDrop) {
+                                if (!((DBNNode)curObject).supportsDrop(node)) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        } else {
+                            return ((DBNNode)curObject).supportsDrop(null);
+                        }
+                    }
+                }
+                return false;
+            }
+
+            private void moveNodes(DropTargetEvent event)
+            {
+                if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType) && event.item instanceof TreeItem) {
+                    TreeItem treeItem = (TreeItem)event.item;
+                    Object curObject = treeItem.getData();
+                    if (curObject instanceof DBNNode) {
+                        Collection<DBNNode> nodesToDrop = TreeNodeTransfer.getInstance().getObject();
+                        for (DBNNode node : nodesToDrop) {
+                            try {
+                                ((DBNNode)curObject).dropNode(node);
+                            } catch (DBException e) {
+                                log.error("Can't drop node", e);
+                            }
+                        }
+                    }
+                }
             }
         });
     }

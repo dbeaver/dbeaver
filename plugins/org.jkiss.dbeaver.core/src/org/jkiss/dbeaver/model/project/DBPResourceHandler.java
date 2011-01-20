@@ -26,6 +26,7 @@ public interface DBPResourceHandler {
     public static final int FEATURE_DELETE          = 2;
     public static final int FEATURE_CREATE_FOLDER   = 4;
     public static final int FEATURE_COPY            = 8;
+    public static final int FEATURE_DROP            = 16;
 
     int getFeatures(IResource resource);
 

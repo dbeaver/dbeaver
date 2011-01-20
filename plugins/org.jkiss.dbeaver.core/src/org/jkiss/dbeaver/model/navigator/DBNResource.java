@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.ICommandIds;
 
 import java.util.ArrayList;
@@ -186,6 +187,37 @@ public class DBNResource extends DBNNode
         return this;
     }
 
+    public boolean supportsDrop(DBNNode otherNode)
+    {
+        if (!(resource instanceof IFolder) || (getFeatures() & DBPResourceHandler.FEATURE_DROP) == 0) {
+            return false;
+        }
+        if (otherNode == null) {
+            // Potentially any other node could be dropped in the folder
+            return true;
+        }
+
+        // Drop supported only if both nodes are resource with the same handler and DROP feature is supported
+        return otherNode instanceof DBNResource
+            && otherNode.getParentNode() != this
+            && !this.isChildOf(otherNode)
+            && ((DBNResource)otherNode).handler == this.handler;
+    }
+
+    public void dropNode(DBNNode otherNode) throws DBException
+    {
+        DBNResource resourceNode = (DBNResource)otherNode;
+        try {
+            IResource otherResource = resourceNode.getResource();
+            otherResource.move(
+                resource.getFullPath().append(otherResource.getName()),
+                true,
+                VoidProgressMonitor.INSTANCE.getNestedMonitor());
+        } catch (CoreException e) {
+            throw new DBException(e);
+        }
+    }
+
     public IResource getResource()
     {
         return resource;
@@ -226,7 +258,7 @@ public class DBNResource extends DBNNode
         this.resourceImage = resourceImage;
     }
 
-    public void handleResourceChange(IResourceDelta delta)
+    void handleResourceChange(IResourceDelta delta)
     {
         if (delta.getKind() == IResourceDelta.CHANGED) {
             // Update this node in navigator

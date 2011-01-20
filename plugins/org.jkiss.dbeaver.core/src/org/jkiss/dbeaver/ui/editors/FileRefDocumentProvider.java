@@ -41,6 +41,16 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
 
     private static final int DEFAULT_BUFFER_SIZE = 10000;
 
+    public FileRefDocumentProvider()
+    {
+
+    }
+
+    protected IEditorInput createNewEditorInput(IFile newFile)
+    {
+        return new ProjectFileEditorInput(newFile);
+    }
+
     private static IStorage getStorageFromInput(Object element)
     {
         if (element instanceof IAdaptable) {
@@ -395,7 +405,7 @@ public class FileRefDocumentProvider extends AbstractDocumentProvider {
     {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         IFile newFile = workspace.getRoot().getFile(path);
-        fireElementMoved(fileEditorInput, new ProjectFileEditorInput(newFile));
+        fireElementMoved(fileEditorInput, createNewEditorInput(newFile));
     }
 
     /**
