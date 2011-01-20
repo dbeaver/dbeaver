@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -28,6 +30,7 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
@@ -61,6 +64,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
                 Object element = iter.next();
                 if (element instanceof DBNDatabaseNode) {
                     deleteObject(HandlerUtil.getActiveWorkbenchWindow(event), (DBNDatabaseNode)element);
+                } else if (element instanceof DBNResource) {
+                    deleteResource(HandlerUtil.getActiveWorkbenchWindow(event), (DBNResource)element);
                 }
                 if (deleteAll != null && !deleteAll) {
                     break;
@@ -68,6 +73,33 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
             }
         }
         return null;
+    }
+
+    private boolean deleteResource(IWorkbenchWindow workbenchWindow, final DBNResource resource)
+    {
+        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, resource, false);
+        if (confirmResult == ConfirmResult.NO) {
+            return false;
+        }
+
+        try {
+            workbenchWindow.run(true, true, new IRunnableWithProgress() {
+                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
+                        try {
+                            resource.getResource().delete(true, monitor);
+                        } catch (CoreException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                });
+        } catch (InvocationTargetException e) {
+            log.error(e.getTargetException());
+            return false;
+        } catch (InterruptedException e) {
+            return false;
+        }
+        return true;
     }
 
     private boolean deleteObject(IWorkbenchWindow workbenchWindow, DBNDatabaseNode node)
@@ -99,7 +131,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
 
         objectCreator.setObject(node.getObject());
 
-        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, objectManager);
+        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, objectManager instanceof DBOEditor);
         if (confirmResult == ConfirmResult.NO) {
             return false;
         }
@@ -177,7 +209,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         NO,
         DETAILS,
     }
-    private ConfirmResult confirmObjectDelete(final IWorkbenchWindow workbenchWindow, final DBNNode node, final DBOManager<?> objectManager)
+
+    private ConfirmResult confirmObjectDelete(final IWorkbenchWindow workbenchWindow, final DBNNode node, final boolean viewScript)
     {
         if (deleteAll != null) {
             return deleteAll ? ConfirmResult.YES : ConfirmResult.NO;
@@ -189,8 +222,10 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         String nodeTypeName;
         if (node instanceof DBNDatabaseNode) {
             nodeTypeName = ((DBNDatabaseNode)node).getMeta().getLabel();
+        } else if (node instanceof DBNResource) {
+            nodeTypeName = "resource"; 
         } else {
-            nodeTypeName = "?";
+            nodeTypeName = "object";
         }
 
         MessageDialog dialog = new MessageDialog(
@@ -209,7 +244,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
                     createButton(parent, IDialogConstants.YES_TO_ALL_ID, IDialogConstants.YES_TO_ALL_LABEL, false);
                     createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
                 }
-                if (objectManager instanceof DBOEditor) {
+                if (viewScript) {
                     createButton(parent, IDialogConstants.DETAILS_ID, "View Script", false);
                 }
             }

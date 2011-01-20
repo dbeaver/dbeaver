@@ -11,6 +11,8 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
@@ -79,6 +81,10 @@ public class ObjectPropertyTester extends PropertyTester
                     object != null &&
                     object.isPersisted() &&
                     hasExtendedManager(object.getClass());
+            } else if (node instanceof DBNResource) {
+                if ((((DBNResource)node).getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {
+                    return true;
+                }
             }
         }
         return false;

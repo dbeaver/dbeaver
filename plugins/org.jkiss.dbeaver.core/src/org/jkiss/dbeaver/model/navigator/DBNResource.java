@@ -51,6 +51,11 @@ public class DBNResource extends DBNNode
         super.dispose(reflect);
     }
 
+    public int getFeatures()
+    {
+        return handler.getFeatures(resource);
+    }
+
     public String getNodeName()
     {
         return resource.getName();
