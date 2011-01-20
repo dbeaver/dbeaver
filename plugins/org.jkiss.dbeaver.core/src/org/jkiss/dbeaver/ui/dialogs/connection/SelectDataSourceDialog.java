@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNRoot;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
@@ -49,9 +50,10 @@ public class SelectDataSourceDialog extends Dialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        DBNRoot rootNode = DBeaverCore.getInstance().getNavigatorModel().getRoot();
+        DBeaverCore core = DBeaverCore.getInstance();
+        DBNProject rootNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
 
-        ItemListControl dsList = new ItemListControl(group, SWT.BORDER, null, rootNode);
+        ItemListControl dsList = new ItemListControl(group, SWT.BORDER, null, rootNode.getDatabases());
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.minimumWidth = 300;

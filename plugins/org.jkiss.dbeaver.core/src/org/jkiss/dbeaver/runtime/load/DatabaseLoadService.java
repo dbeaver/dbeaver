@@ -26,7 +26,7 @@ public abstract class DatabaseLoadService<RESULT> extends AbstractLoadService<RE
     }
 
     protected DatabaseLoadService(String serviceName, DBSWrapper wrapper) {
-        this(serviceName, wrapper.getObject() == null ? null : wrapper.getObject().getDataSource());
+        this(serviceName, wrapper == null || wrapper.getObject() == null ? null : wrapper.getObject().getDataSource());
     }
 
     public Object getFamily() {
