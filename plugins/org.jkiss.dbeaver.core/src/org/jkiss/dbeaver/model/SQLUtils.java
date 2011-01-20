@@ -86,4 +86,12 @@ public final class SQLUtils {
     {
         return string.replaceAll("'", "\\'");
     }
+
+    public static String truncateString(String query, int maxLength)
+    {
+        if (query.length() > maxLength) {
+            return query.substring(0, maxLength);
+        }
+        return query;
+    }
 }
