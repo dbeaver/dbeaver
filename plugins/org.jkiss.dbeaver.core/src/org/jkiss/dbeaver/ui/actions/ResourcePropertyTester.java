@@ -44,6 +44,8 @@ public class ResourcePropertyTester extends PropertyTester
             return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_OPEN) != 0;
         } else if (property.equals(PROP_CAN_DELETE)) {
             return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_DELETE) != 0;
+        } else if (property.equals(PROP_CAN_CREATE_FOLDER)) {
+            return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0;
         }
         return false;
     }

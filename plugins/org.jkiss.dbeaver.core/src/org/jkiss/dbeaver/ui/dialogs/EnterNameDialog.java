@@ -18,13 +18,15 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class EnterNameDialog extends Dialog {
 
     private String propertyName;
+    private String propertyValue;
     private Text propNameText;
     private String result;
 
-    public EnterNameDialog(Shell parentShell, String propertyName)
+    public EnterNameDialog(Shell parentShell, String propertyName, String propertyValue)
     {
         super(parentShell);
         this.propertyName = propertyName;
+        this.propertyValue = propertyValue;
     }
 
     public String getResult()
@@ -45,6 +47,10 @@ public class EnterNameDialog extends Dialog {
         propGroup.setLayoutData(gd);
 
         propNameText = UIUtils.createLabelText(propGroup, propertyName, "");
+        if (propertyValue != null) {
+            propNameText.setText(propertyValue);
+            propNameText.selectAll();
+        }
 
         return parent;
     }
@@ -66,7 +72,12 @@ public class EnterNameDialog extends Dialog {
 
     public static String chooseName(Shell parentShell, String propertyName)
     {
-        EnterNameDialog dialog = new EnterNameDialog(parentShell, propertyName);
+        return chooseName(parentShell, propertyName, null);
+    }
+
+    public static String chooseName(Shell parentShell, String propertyName, String propertyValue)
+    {
+        EnterNameDialog dialog = new EnterNameDialog(parentShell, propertyName, propertyValue);
         return dialog.chooseName();
     }
 }

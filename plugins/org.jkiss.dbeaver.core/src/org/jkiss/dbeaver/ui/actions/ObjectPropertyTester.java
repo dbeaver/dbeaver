@@ -32,6 +32,7 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String PROP_CAN_CREATE = "canCreate";
     public static final String PROP_CAN_PASTE = "canPaste";
     public static final String PROP_CAN_DELETE = "canDelete";
+    public static final String PROP_CAN_RENAME = "canRename";
 
     public ObjectPropertyTester() {
         super();
@@ -86,6 +87,8 @@ public class ObjectPropertyTester extends PropertyTester
                     return true;
                 }
             }
+        } else if (property.equals(PROP_CAN_RENAME)) {
+            return node.supportsRename();
         }
         return false;
     }

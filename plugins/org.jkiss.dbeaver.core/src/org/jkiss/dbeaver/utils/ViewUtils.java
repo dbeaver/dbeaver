@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.utils;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.commands.Command;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
@@ -17,6 +18,7 @@ import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.menus.CommandContributionItem;
@@ -447,9 +449,16 @@ public class ViewUtils
     public static void runCommand(String commandId, IWorkbenchPart part)
     {
         if (commandId != null) {
-            IHandlerService handlerService = (IHandlerService) part.getSite().getService(IHandlerService.class);
             try {
-                handlerService.executeCommand(commandId, null);
+                //Command cmd = new Command();
+                ICommandService commandService = (ICommandService)part.getSite().getService(ICommandService.class);
+                if (commandService != null) {
+                    Command command = commandService.getCommand(commandId);
+                    if (command != null && command.isEnabled()) {
+                        IHandlerService handlerService = (IHandlerService) part.getSite().getService(IHandlerService.class);
+                        handlerService.executeCommand(commandId, null);
+                    }
+                }
             } catch (Exception e) {
                 log.error("Could not execute command '" + commandId + "'", e);
             }

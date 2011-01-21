@@ -42,7 +42,7 @@
                 class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 namespace="org.jkiss.dbeaver.core.object"
-                properties="canCreate,canPaste,canDelete"
+                properties="canCreate,canPaste,canDelete,canRename"
                 type="org.jkiss.dbeaver.model.navigator.DBNNode">
         </propertyTester>
         <propertyTester
@@ -142,6 +142,7 @@
 
         <command id="org.jkiss.dbeaver.core.project.create" name="Create Project" description="Create new project" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.project.delete" name="Delete Project" description="Delete existing project" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.resource.create.folder" name="Create New Folder" description="Create new folder" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
         <command id="org.jkiss.dbeaver.core.connect" name="Connect" description="Connect to database" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnect" name="Disconnect" description="Disconnect from database" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -200,6 +201,7 @@
 
         <image commandId="org.jkiss.dbeaver.core.project.create" icon="IMG_TOOL_NEW_WIZARD"/>
         <image commandId="org.jkiss.dbeaver.core.project.delete" icon="IMG_ETOOL_DELETE"/>
+        <image commandId="org.jkiss.dbeaver.core.resource.create.folder" icon="IMG_TOOL_NEW_WIZARD"/>
 
         <image commandId="org.jkiss.dbeaver.core.new.sql.editor" icon="icons/sql/sql_script.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.open" icon="icons/tree/edit_item.png"/>
@@ -310,6 +312,18 @@
                     <count value="+"/>
                     <iterate operator="and">
                         <adapt type="org.eclipse.core.resources.IProject"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.resource.create.folder" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCreateFolder">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.eclipse.core.resources.IResource">
+                            <test property="org.jkiss.dbeaver.core.resource.canCreateFolder"/>
+                        </adapt>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -475,6 +489,17 @@
                     <count value="+"/>
                     <iterate operator="and">
                         <test property="org.jkiss.dbeaver.core.object.canDelete"/>
+                    </iterate>
+                </with>
+            </activeWhen>
+        </handler>
+
+        <handler commandId="org.eclipse.ui.edit.rename" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectRename">
+            <activeWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <test property="org.jkiss.dbeaver.core.object.canRename"/>
                     </iterate>
                 </with>
             </activeWhen>
@@ -795,6 +820,7 @@
             <command commandId="org.eclipse.ui.file.refresh"/>
             <command commandId="org.eclipse.ui.file.close"/>
             <separator name="import-export" visible="true"/>
+            <command commandId="org.eclipse.ui.edit.rename"/>
             <command commandId="org.eclipse.ui.file.import"/>
             <!--command commandId="org.eclipse.ui.file.close"/-->
             <separator name="exit" visible="true"/>
@@ -925,6 +951,9 @@
             <command commandId="org.jkiss.dbeaver.core.project.delete">
                 <visibleWhen checkEnabled="true"/>
             </command>
+            <command commandId="org.jkiss.dbeaver.core.resource.create.folder">
+                <visibleWhen checkEnabled="true"/>
+            </command>
 
             <separator name="tools" visible="true"/>
 
@@ -948,6 +977,9 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="Copy full qualified name">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.eclipse.ui.edit.rename">
                 <visibleWhen checkEnabled="true"/>
             </command>
 

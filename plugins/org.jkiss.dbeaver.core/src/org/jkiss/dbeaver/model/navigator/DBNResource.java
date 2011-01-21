@@ -281,6 +281,22 @@ public class DBNResource extends DBNNode
         this.resourceImage = resourceImage;
     }
 
+    public void createNewFolder(String folderName)
+        throws DBException
+    {
+        if (resource instanceof IFolder) {
+            IFolder newFolder = ((IFolder) resource).getFolder(folderName);
+            if (newFolder.exists()) {
+                throw new DBException("Folder '" + folderName + "' already exists in '" + resource.getFullPath().toString() + "'");
+            }
+            try {
+                newFolder.create(true, true, VoidProgressMonitor.INSTANCE.getNestedMonitor());
+            } catch (CoreException e) {
+                throw new DBException(e);
+            }
+        }
+    }
+
     void handleResourceChange(IResourceDelta delta)
     {
         if (delta.getKind() == IResourceDelta.CHANGED) {
