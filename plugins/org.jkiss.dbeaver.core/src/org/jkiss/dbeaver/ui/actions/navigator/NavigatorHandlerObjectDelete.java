@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -74,9 +76,9 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
         return null;
     }
 
-    private boolean deleteResource(IWorkbenchWindow workbenchWindow, final DBNResource resource)
+    private boolean deleteResource(IWorkbenchWindow workbenchWindow, final DBNResource resourceNode)
     {
-        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, resource, false);
+        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, resourceNode, false);
         if (confirmResult == ConfirmResult.NO) {
             return false;
         }
@@ -86,7 +88,12 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
                     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
                         try {
-                            resource.getResource().delete(true, monitor);
+                            IResource resource = resourceNode.getResource();
+                            resource.delete(true, monitor);
+                            if (resource instanceof IProject) {
+                                // Manually remove this project from registry
+                                DBeaverCore.getInstance().getProjectRegistry().removeProject((IProject) resource);
+                            }
                         } catch (CoreException e) {
                             throw new InvocationTargetException(e);
                         }

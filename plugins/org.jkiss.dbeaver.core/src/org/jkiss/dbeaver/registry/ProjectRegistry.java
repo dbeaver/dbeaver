@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ProjectRegistry implements IResourceChangeListener {
+public class ProjectRegistry {
     static final Log log = LogFactory.getLog(ProjectRegistry.class);
 
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<ResourceHandlerDescriptor>();
@@ -104,7 +104,7 @@ public class ProjectRegistry implements IResourceChangeListener {
         }
 
         this.workspace = workspace;
-        workspace.addResourceChangeListener(this);
+        //workspace.addResourceChangeListener(this);
     }
 
     public void dispose()
@@ -115,7 +115,7 @@ public class ProjectRegistry implements IResourceChangeListener {
         this.handlerDescriptors.clear();
 
         if (workspace != null) {
-            workspace.removeResourceChangeListener(this);
+            //workspace.removeResourceChangeListener(this);
             workspace = null;
         }
     }
@@ -205,6 +205,12 @@ public class ProjectRegistry implements IResourceChangeListener {
         return project;
     }
 
+    /**
+     * We do not use resource listener in project registry because project should be added/removedhere
+     * only after all other event handlers were finished and project was actually created/deleted.
+     * Otherwise set of workspace synchronize problems occur
+     * @param project project
+     */
     public void addProject(IProject project)
     {
         try {
@@ -214,6 +220,19 @@ public class ProjectRegistry implements IResourceChangeListener {
         }
     }
 
+    public void removeProject(IProject project)
+    {
+        // Remove project from registry
+        DataSourceRegistry dataSourceRegistry = projectDatabases.get(project);
+        if (dataSourceRegistry == null) {
+            log.warn("Project '" + project.getName() + "' not found in the registry");
+        } else {
+            dataSourceRegistry.dispose();
+            projectDatabases.remove(project);
+        }
+    }
+
+/*
     public void resourceChanged(IResourceChangeEvent event)
     {
         IResourceDelta delta = event.getDelta();
@@ -224,6 +243,7 @@ public class ProjectRegistry implements IResourceChangeListener {
             if (projectDelta.getResource() instanceof IProject) {
                 IProject project = (IProject)projectDelta.getResource();
                 if (projectDelta.getKind() == IResourceDelta.ADDED) {
+*/
 /*
                     // Add new project in registry
                     if (projectDatabases.get(project) != null) {
@@ -235,7 +255,8 @@ public class ProjectRegistry implements IResourceChangeListener {
                             log.error(e);
                         }
                     }
-*/
+*//*
+
                 } else if (projectDelta.getKind() == IResourceDelta.REMOVED) {
                     // Remove project from registry
                     DataSourceRegistry dataSourceRegistry = projectDatabases.get(project);
@@ -249,5 +270,6 @@ public class ProjectRegistry implements IResourceChangeListener {
             }
         }
     }
+*/
 
 }
