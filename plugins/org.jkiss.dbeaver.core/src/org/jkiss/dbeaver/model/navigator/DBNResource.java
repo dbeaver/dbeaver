@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.graphics.Image;
@@ -198,7 +199,10 @@ public class DBNResource extends DBNNode
     {
         try {
             if (resource instanceof IFile) {
-                newName += "." + resource.getFileExtension();
+                String ext = resource.getFileExtension();
+                if (!CommonUtils.isEmpty(ext)) {
+                    newName += "." + ext;
+                }
             }
             resource.move(resource.getParent().getFullPath().append(newName), true, monitor.getNestedMonitor());
         } catch (CoreException e) {
@@ -295,6 +299,7 @@ public class DBNResource extends DBNNode
                     DBNNode newChild = makeNode(childDelta.getResource());
                     if (newChild != null) {
                         children.add(newChild);
+                        sortChildren(children);
                         getModel().fireNodeEvent(new DBNEvent(childDelta, DBNEvent.Action.ADD, newChild));
                     }
                 } else {

@@ -187,14 +187,15 @@ public class ViewUtils
                                 m.setDefaultItem(item);
                             }
                             if (ICommandIds.CMD_OBJECT_OPEN.equals(contribId)) {
+                                String actionName = "Open";
                                 if (node instanceof DBNDatabaseNode) {
                                     EntityManagerDescriptor objectManager = DBeaverCore.getInstance().getEditorsRegistry().getEntityManager(((DBNDatabaseNode)node).getObject().getClass());
-                                    String actionName = objectManager == null ? "View" : "Edit";
-                                    if (multipleSelection) {
-                                        item.setText(actionName + " objects");
-                                    } else {
-                                        item.setText(actionName + " " + node.getNodeType());
-                                    }
+                                    actionName = objectManager == null ? "View" : "Edit";
+                                }
+                                if (multipleSelection) {
+                                    item.setText(actionName + " objects");
+                                } else {
+                                    item.setText(actionName + " " + node.getNodeType());
                                 }
                             } else if (ICommandIds.CMD_OBJECT_CREATE.equals(contribId)) {
                                 String objectName = "";
