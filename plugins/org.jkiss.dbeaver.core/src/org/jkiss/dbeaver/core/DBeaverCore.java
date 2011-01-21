@@ -128,13 +128,17 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                     throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        // Temp project
-                        tempProject = workspace.getRoot().getProject("temp");
-                        if (!tempProject.exists()) {
-                            tempProject.create(monitor);
+                        try {
+// Temp project
+                            tempProject = workspace.getRoot().getProject("temp");
+                            if (!tempProject.exists()) {
+                                tempProject.create(monitor);
+                            }
+                            tempProject.open(monitor);
+                            tempProject.setHidden(true);
+                        } catch (CoreException e) {
+                            log.error("Cannot create temp project", e);
                         }
-                        tempProject.open(monitor);
-                        tempProject.setHidden(true);
 
                         // Projects registry
                         projectRegistry.loadProjects(workspace, monitor);

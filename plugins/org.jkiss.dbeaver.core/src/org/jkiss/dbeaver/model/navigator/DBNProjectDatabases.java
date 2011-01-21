@@ -55,7 +55,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
 
     public Object getValueObject()
     {
-        return getResource();
+        return dataSourceRegistry;
     }
 
     public String getItemsLabel()

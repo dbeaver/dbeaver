@@ -82,7 +82,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                 // Try to close all connections
                 for (IProject project : core.getWorkspace().getRoot().getProjects()) {
                     final DataSourceRegistry dataSourceRegistry = core.getProjectRegistry().getDataSourceRegistry(project);
-                    if (!dataSourceRegistry.closeConnections()) {
+                    if (dataSourceRegistry != null && !dataSourceRegistry.closeConnections()) {
                         return false;
                     }
                 }

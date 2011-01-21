@@ -281,21 +281,26 @@ public class DBNModel implements IResourceChangeListener {
             IResource resource = delta.getResource();
             for (IResourceDelta childDelta : delta.getAffectedChildren()) {
                 if (childDelta.getResource() instanceof IProject) {
-                    DBNProject project = getRoot().getProject((IProject) childDelta.getResource());
-                    if (project == null) {
-                        if (delta.getKind() == IResourceDelta.ADDED) {
-                            // New project
+                    IProject project = (IProject) childDelta.getResource();
+                    DBNProject projectNode = getRoot().getProject(project);
+                    if (projectNode == null) {
+                        if (childDelta.getKind() == IResourceDelta.ADDED) {
+                            // New projectNode
+                            projectNode = getRoot().addProject(project);
+                            fireNodeEvent(new DBNEvent(event, DBNEvent.Action.ADD, projectNode));
                         } else {
                             // Project not found - report an error
                             log.error("Project '" + childDelta.getResource().getName() + "' not found in navigator");
                         }
                     } else {
-                        if (delta.getKind() == IResourceDelta.REMOVED) {
+                        if (childDelta.getKind() == IResourceDelta.REMOVED) {
                             // Project deleted
+                            fireNodeEvent(new DBNEvent(event, DBNEvent.Action.REMOVE, projectNode));
+                            getRoot().removeProject(project);
                         } else {
-                            // Some resource changed within the project
+                            // Some resource changed within the projectNode
                             // Let it handle this event itself
-                            project.handleResourceChange(childDelta);
+                            projectNode.handleResourceChange(childDelta);
                         }
                     }
                 }

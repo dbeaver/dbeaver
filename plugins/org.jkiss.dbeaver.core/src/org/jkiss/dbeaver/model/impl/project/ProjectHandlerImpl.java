@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
@@ -23,6 +24,15 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
     public String getTypeName(IResource resource)
     {
         return "project";
+    }
+
+    @Override
+    public int getFeatures(IResource resource)
+    {
+        if (resource != DBeaverCore.getInstance().getProjectRegistry().getActiveProject()) {
+            return FEATURE_DELETE | FEATURE_RENAME;
+        }
+        return FEATURE_RENAME;
     }
 
     @Override

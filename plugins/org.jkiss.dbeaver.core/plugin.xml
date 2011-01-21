@@ -141,7 +141,7 @@
         <command id="org.jkiss.dbeaver.core.navigator.set.active" name="Set active object" description="Set active object" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
         <command id="org.jkiss.dbeaver.core.project.create" name="Create Project" description="Create new project" categoryId="org.jkiss.dbeaver.core.navigator"/>
-        <command id="org.jkiss.dbeaver.core.project.delete" name="Delete Project" description="Delete existing project" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.project.refresh" name="Refresh Projects" description="Refresh entire workspace" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.resource.create.folder" name="Create New Folder" description="Create new folder" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
         <command id="org.jkiss.dbeaver.core.connect" name="Connect" description="Connect to database" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -200,7 +200,7 @@
         <image commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_config.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.project.create" icon="IMG_TOOL_NEW_WIZARD"/>
-        <image commandId="org.jkiss.dbeaver.core.project.delete" icon="IMG_ETOOL_DELETE"/>
+        <image commandId="org.jkiss.dbeaver.core.project.refresh" icon="icons/refresh.png"/>
         <image commandId="org.jkiss.dbeaver.core.resource.create.folder" icon="IMG_TOOL_NEW_WIZARD"/>
 
         <image commandId="org.jkiss.dbeaver.core.new.sql.editor" icon="icons/sql/sql_script.png"/>
@@ -306,16 +306,7 @@
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.project.create" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectCreate"/>
-        <handler commandId="org.jkiss.dbeaver.core.project.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectDelete">
-            <enabledWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <adapt type="org.eclipse.core.resources.IProject"/>
-                    </iterate>
-                </with>
-            </enabledWhen>
-        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.project.refresh" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectRefresh"/>
         <handler commandId="org.jkiss.dbeaver.core.resource.create.folder" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCreateFolder">
             <enabledWhen>
                 <with variable="selection">
@@ -893,6 +884,7 @@
         <!-- Project Navigator menu & toolbar -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.projectNavigator">
             <command commandId="org.jkiss.dbeaver.core.project.create"/>
+            <command commandId="org.jkiss.dbeaver.core.project.refresh"/>
             <separator name="additions" visible="true"/>
             <command commandId="org.eclipse.ui.navigate.collapseAll"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
@@ -900,6 +892,7 @@
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectNavigator">
             <command commandId="org.jkiss.dbeaver.core.project.create"/>
+            <command commandId="org.jkiss.dbeaver.core.project.refresh"/>
             <separator name="additions" visible="true"/>
             <command commandId="org.eclipse.ui.navigate.collapseAll"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
@@ -947,9 +940,6 @@
                         </iterate>
                     </with>
                 </visibleWhen>
-            </command>
-            <command commandId="org.jkiss.dbeaver.core.project.delete">
-                <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.core.resource.create.folder">
                 <visibleWhen checkEnabled="true"/>

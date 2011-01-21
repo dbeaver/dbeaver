@@ -67,7 +67,7 @@ public class DBNRoot extends DBNNode implements DBNContainer
     public void removeChildItem(DBNNode item) throws DBException
     {
         if (item instanceof DBNProject) {
-            removeProject((DBNProject)item);
+            removeProject(((DBNProject)item).getProject());
         } else {
             throw new IllegalArgumentException("Only projects could be removed from root node");
         }
@@ -129,7 +129,7 @@ public class DBNRoot extends DBNNode implements DBNContainer
         return newNode;
     }
 
-    void removeProject(DBNProject project)
+    void removeProject(IProject project)
     {
         for (Iterator<DBNProject> iter = projects.iterator(); iter.hasNext(); ) {
             DBNProject projectNode = iter.next();

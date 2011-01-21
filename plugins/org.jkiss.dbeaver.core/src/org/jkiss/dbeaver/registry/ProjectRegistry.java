@@ -8,10 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import net.sf.jkiss.utils.SecurityUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -19,14 +16,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ProjectRegistry
-{
+public class ProjectRegistry implements IResourceChangeListener {
     static final Log log = LogFactory.getLog(ProjectRegistry.class);
 
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<ResourceHandlerDescriptor>();
@@ -36,6 +33,7 @@ public class ProjectRegistry
 
     private final Map<IProject, DataSourceRegistry> projectDatabases = new HashMap<IProject, DataSourceRegistry>();
     private IProject activeProject;
+    private IWorkspace workspace;
 
     public ProjectRegistry()
     {
@@ -86,17 +84,27 @@ public class ProjectRegistry
             for (IProject project : projects) {
                 if (project.exists() && !project.isHidden()) {
                     monitor.subTask("Initialize project " + project.getName());
-                    openOrCreateProject(project, monitor);
+                    try {
+                        initializeProject(project, monitor);
 
-                    if (activeProject == null || "true".equals(project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ACTIVE))) {
-                        activeProject = project;
+                        if (activeProject == null || "true".equals(project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ACTIVE))) {
+                            activeProject = project;
+                        }
+                    } catch (CoreException e) {
+                        log.error("Can't open project '" + project.getName() + "'", e);
                     }
                 }
                 monitor.worked(1);
             }
+            if (activeProject != null) {
+                activeProject.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ACTIVE, "true");
+            }
         } finally {
             monitor.done();
         }
+
+        this.workspace = workspace;
+        workspace.addResourceChangeListener(this);
     }
 
     public void dispose()
@@ -105,6 +113,11 @@ public class ProjectRegistry
             handlerDescriptor.dispose();
         }
         this.handlerDescriptors.clear();
+
+        if (workspace != null) {
+            workspace.removeResourceChangeListener(this);
+            workspace = null;
+        }
     }
 
     public List<ResourceHandlerDescriptor> getHandlerDescriptors()
@@ -119,7 +132,7 @@ public class ProjectRegistry
         try {
             resourceType = resource.getPersistentProperty(DBPResourceHandler.PROP_RESOURCE_TYPE);
         } catch (CoreException e) {
-            log.warn(e);
+            log.debug(e);
         }
         if (resourceType != null) {
             handler = getResourceHandler(resourceType);
@@ -166,7 +179,7 @@ public class ProjectRegistry
         return project;
     }
 
-    private IProject openOrCreateProject(final IProject project, IProgressMonitor monitor) throws CoreException
+    private IProject initializeProject(final IProject project, IProgressMonitor monitor) throws CoreException
     {
         // Open project
         if (!project.isOpen()) {
@@ -190,6 +203,51 @@ public class ProjectRegistry
         projectDatabases.put(project, dataSourceRegistry);
 
         return project;
+    }
+
+    public void addProject(IProject project)
+    {
+        try {
+            initializeProject(project, VoidProgressMonitor.INSTANCE.getNestedMonitor());
+        } catch (CoreException e) {
+            log.error("Can't add project to registry", e);
+        }
+    }
+
+    public void resourceChanged(IResourceChangeEvent event)
+    {
+        IResourceDelta delta = event.getDelta();
+        if (delta == null) {
+            return;
+        }
+        for (IResourceDelta projectDelta : delta.getAffectedChildren()) {
+            if (projectDelta.getResource() instanceof IProject) {
+                IProject project = (IProject)projectDelta.getResource();
+                if (projectDelta.getKind() == IResourceDelta.ADDED) {
+/*
+                    // Add new project in registry
+                    if (projectDatabases.get(project) != null) {
+                        log.warn("Project '" + project.getName() + "' is already in the registry");
+                    } else {
+                        try {
+                            initializeProject(project, VoidProgressMonitor.INSTANCE.getNestedMonitor());
+                        } catch (CoreException e) {
+                            log.error(e);
+                        }
+                    }
+*/
+                } else if (projectDelta.getKind() == IResourceDelta.REMOVED) {
+                    // Remove project from registry
+                    DataSourceRegistry dataSourceRegistry = projectDatabases.get(project);
+                    if (dataSourceRegistry == null) {
+                        log.warn("Project '" + project.getName() + "' not found in the registry");
+                    } else {
+                        dataSourceRegistry.dispose();
+                        projectDatabases.remove(project);
+                    }
+                }
+            }
+        }
     }
 
 }

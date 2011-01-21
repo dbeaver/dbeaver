@@ -23,7 +23,7 @@ public class DataSourceDescriptorManager extends DBOManagerImpl<DataSourceDescri
     public CreateResult createNewObject(IWorkbenchWindow workbenchWindow, Object parent, DataSourceDescriptor copyFrom)
     {
         if (copyFrom != null) {
-            DataSourceRegistry registry = copyFrom.getRegistry();
+            DataSourceRegistry registry = parent instanceof DataSourceRegistry ? (DataSourceRegistry)parent : copyFrom.getRegistry();
             DataSourceDescriptor dataSource = new DataSourceDescriptor(
                 registry,
                 DataSourceDescriptor.generateNewId(copyFrom.getDriver()),

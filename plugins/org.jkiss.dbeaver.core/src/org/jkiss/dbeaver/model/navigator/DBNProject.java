@@ -6,7 +6,6 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.graphics.Image;
@@ -15,10 +14,6 @@ import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
-
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * DBNProject
@@ -72,7 +67,7 @@ public class DBNProject extends DBNResource implements IAdaptable
         try {
             return getProject().getDescription().getComment();
         } catch (CoreException e) {
-            log.error(e);
+            log.debug(e);
             return null;
         }
     }
