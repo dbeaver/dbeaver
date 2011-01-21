@@ -4,11 +4,11 @@
 
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -246,22 +246,25 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                 if (e.keyCode == SWT.CR) {
                     Text text = (Text) treeEditor.getEditor();
                     final String newName = text.getText();
-                    try {
-                        DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
-                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                            {
-                                try {
-                                    node.rename(monitor, newName);
-                                } catch (DBException e1) {
-                                    throw new InvocationTargetException(e1);
+                    if (!CommonUtils.isEmpty(newName) && !newName.equals(node.getNodeName())) {
+                        try {
+                            DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
+                                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                                {
+                                    try {
+                                        node.rename(monitor, newName);
+                                    } catch (DBException e1) {
+                                        throw new InvocationTargetException(e1);
+                                    }
                                 }
-                            }
-                        });
-                    } catch (InvocationTargetException e1) {
-                        UIUtils.showErrorDialog(getShell(), "Rename '" + node.getNodeName() + "'", null, e1.getTargetException());
-                    } catch (InterruptedException e1) {
-                        // do nothing
+                            });
+                        } catch (InvocationTargetException e1) {
+                            UIUtils.showErrorDialog(getShell(), "Rename '" + node.getNodeName() + "'", null, e1.getTargetException());
+                        } catch (InterruptedException e1) {
+                            // do nothing
+                        }
                     }
+
                     disposeOldEditor();
                     viewer.getTree().setFocus();
                 } else if (e.keyCode == SWT.ESC) {

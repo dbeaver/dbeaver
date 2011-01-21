@@ -29,7 +29,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                 DBNNode node = (DBNNode)element;
                 Shell activeShell = HandlerUtil.getActiveShell(event);
                 String newName = EnterNameDialog.chooseName(activeShell, "Rename " + node.getNodeType(), node.getNodeName());
-                if (!CommonUtils.isEmpty(newName)) {
+                if (!CommonUtils.isEmpty(newName) && !newName.equals(node.getNodeName())) {
                     try {
                         node.rename(VoidProgressMonitor.INSTANCE, newName);
                     } catch (DBException e) {

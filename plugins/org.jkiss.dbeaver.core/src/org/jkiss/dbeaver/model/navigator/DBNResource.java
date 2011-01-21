@@ -204,7 +204,9 @@ public class DBNResource extends DBNNode
                     newName += "." + ext;
                 }
             }
-            resource.move(resource.getParent().getFullPath().append(newName), true, monitor.getNestedMonitor());
+            if (!newName.equals(resource.getName())) {
+                resource.move(resource.getParent().getFullPath().append(newName), true, monitor.getNestedMonitor());
+            }
         } catch (CoreException e) {
             throw new DBException(e);
         }
