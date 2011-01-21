@@ -4,8 +4,10 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.graphics.Image;
@@ -14,6 +16,9 @@ import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * DBNProject
@@ -108,4 +113,25 @@ public class DBNProject extends DBNResource implements IAdaptable
         }
     }
 
+    public DBNResource findResource(IResource resource)
+    {
+        List<IResource> path = new ArrayList<IResource>();
+        for (IResource parent = resource; !(parent instanceof IProject); parent = parent.getParent()) {
+            path.add(0, parent);
+        }
+
+        DBNResource resNode = this;
+        for (IResource res : path) {
+            try {
+                resNode.getChildren(VoidProgressMonitor.INSTANCE);
+            } catch (DBException e) {
+                log.error(e);
+            }
+            resNode = resNode.getChild(res);
+            if (resNode == null) {
+                return null;
+            }
+        }
+        return resNode;
+    }
 }
