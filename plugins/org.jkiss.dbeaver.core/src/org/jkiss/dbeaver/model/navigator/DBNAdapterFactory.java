@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
@@ -25,7 +27,7 @@ import java.util.Map;
  */
 public class DBNAdapterFactory implements IAdapterFactory
 {
-    private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBSEntityQualified.class, DBPObject.class, DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class, IPropertySource.class, IProject.class, IResource.class, IWorkbenchAdapter.class };
+    private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBSEntityQualified.class, DBPObject.class, DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class, IPropertySource.class, IProject.class, IFolder.class, IFile.class, IResource.class, IWorkbenchAdapter.class };
 
     private Map<Object, IPropertySource> propertySourceCache = new Hashtable<Object, IPropertySource>();
 

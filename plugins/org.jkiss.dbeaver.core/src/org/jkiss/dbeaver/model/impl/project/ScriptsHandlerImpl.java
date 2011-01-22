@@ -35,9 +35,9 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         return project.getFolder(SCRIPTS_DIR);
     }
 
-    public static IFile createNewScript(IProject project) throws CoreException
+    public static IFile createNewScript(IProject project, IFolder folder) throws CoreException
     {
-        final IFolder scriptsFolder = ScriptsHandlerImpl.getScriptsFolder(project);
+        final IFolder scriptsFolder = folder != null ? folder : ScriptsHandlerImpl.getScriptsFolder(project);
         IFile tempFile;
         for (int i = 1; ; i++) {
             tempFile = scriptsFolder.getFile("Script " + i + ".sql");

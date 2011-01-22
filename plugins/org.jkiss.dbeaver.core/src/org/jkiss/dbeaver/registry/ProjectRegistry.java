@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.dbeaver.ui.actions.ResourcePropertyTester;
 
 import java.util.ArrayList;
@@ -161,6 +162,10 @@ public class ProjectRegistry implements IResourceChangeListener {
             if (!CommonUtils.isEmpty(resource.getFileExtension())) {
                 handler = getResourceHandlerByExtension(resource.getFileExtension());
             }
+        }
+        if (handler == null && resource instanceof IFolder) {
+            // For folders try to get parent's handler
+            return getResourceHandler(resource.getParent());
         }
         return handler;
     }
@@ -313,12 +318,12 @@ public class ProjectRegistry implements IResourceChangeListener {
                     if (project == activeProject) {
                         activeProject = null;
                     }
-                    ResourcePropertyTester.firePropertyChange(ResourcePropertyTester.PROP_HAS_MULTI_PROJECTS);
+                    GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_MULTI_PROJECTS);
                 } else if (projectDelta.getKind() == IResourceDelta.ADDED) {
                     if (project.isOpen() && activeProjectId.equals(getProjectId(project))) {
                         this.activeProject = project;
                     }
-                    ResourcePropertyTester.firePropertyChange(ResourcePropertyTester.PROP_HAS_MULTI_PROJECTS);
+                    GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_MULTI_PROJECTS);
                 }
             }
         }

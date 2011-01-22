@@ -9,11 +9,19 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.*;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
@@ -27,29 +35,44 @@ public class OpenSQLEditorHandler extends DataSourceHandler {
 
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+        final ISelection selection = HandlerUtil.getCurrentSelection(event);
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false, false);
-        if (dataSourceContainer != null) {
-            IFile scriptFile;
-            try {
-                scriptFile = ScriptsHandlerImpl.createNewScript(dataSourceContainer.getRegistry().getProject());
-            }
-            catch (CoreException e) {
-                log.error(e);
-                return null;
-            }
-
-            IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
-            SQLEditorInput sqlInput = new SQLEditorInput(
-                scriptFile,
-                dataSourceContainer);
-            try {
-                workbenchWindow.getActivePage().openEditor(
-                    sqlInput,
-                    SQLEditor.class.getName());
-            } catch (Exception ex) {
-                log.error("Could not  open SQL editor", ex);
+        final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : projectRegistry.getActiveProject();
+        if (dataSourceContainer == null) {
+            final DataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
+            if (dataSourceRegistry.getDataSources().size() == 1) {
+                dataSourceContainer = dataSourceRegistry.getDataSources().get(0);
             }
         }
+        IFolder scriptFolder = null;
+        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+            final Object element = ((IStructuredSelection) selection).getFirstElement();
+            if (element instanceof DBNResource && ((DBNResource)element).getResource() instanceof IFolder) {
+                scriptFolder = (IFolder) ((DBNResource)element).getResource();
+            }
+        }
+        IFile scriptFile;
+        try {
+            scriptFile = ScriptsHandlerImpl.createNewScript(project, scriptFolder);
+        }
+        catch (CoreException e) {
+            log.error(e);
+            return null;
+        }
+
+        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+        SQLEditorInput sqlInput = new SQLEditorInput(
+            scriptFile,
+            dataSourceContainer);
+        try {
+            workbenchWindow.getActivePage().openEditor(
+                sqlInput,
+                SQLEditor.class.getName());
+        } catch (Exception ex) {
+            log.error("Could not  open SQL editor", ex);
+        }
+
         return null;
     }
 

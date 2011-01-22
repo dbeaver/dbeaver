@@ -32,6 +32,13 @@
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
+                class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
+                id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
+                namespace="org.jkiss.dbeaver.core.global"
+                properties="hasMultipleProjects"
+                type="java.lang.Object">
+        </propertyTester>
+        <propertyTester
                 class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
                 namespace="org.jkiss.dbeaver.core.datasource"
@@ -49,7 +56,7 @@
                 class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
                 namespace="org.jkiss.dbeaver.core.resource"
-                properties="canOpen,canDelete,canCreateFolder,canSetActive,hasMultipleProjects"
+                properties="canOpen,canDelete,canCreateFolder,canSetActive"
                 type="org.eclipse.core.resources.IResource">
         </propertyTester>
         <propertyTester
@@ -311,9 +318,11 @@
         <handler commandId="org.jkiss.dbeaver.core.project.create" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectCreate"/>
         <handler commandId="org.jkiss.dbeaver.core.project.refresh" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectRefresh"/>
         <handler commandId="org.jkiss.dbeaver.core.project.select" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectSelect">
-            <!--activeWhen>
-                    <test property="org.jkiss.dbeaver.core.resource.hasMultipleProjects"/>
-            </activeWhen-->
+            <enabledWhen>
+                <with variable="selection">
+                    <test property="org.jkiss.dbeaver.core.global.hasMultipleProjects"/>
+                </with>
+            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.project.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectSetActive">
             <enabledWhen>
@@ -494,8 +503,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.object.find" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectFind">
-        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.object.find" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectFind"/>
 
         <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectDelete">
             <activeWhen>
@@ -519,11 +527,7 @@
             </activeWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.new.sql.editor" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLEditorHandler">
-            <enabledWhen>
-                <reference definitionId="org.jkiss.dbeaver.core.ui.active.db.object"/>
-            </enabledWhen>
-        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.new.sql.editor" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLEditorHandler"/>
 
         <!-- SQL editor handlers -->
         
@@ -981,7 +985,16 @@
             <command commandId="org.jkiss.dbeaver.core.resource.create.folder">
                 <visibleWhen checkEnabled="true"/>
             </command>
-
+            <command commandId="org.jkiss.dbeaver.core.new.sql.editor" label="Create SQL script">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.eclipse.core.resources.IFolder"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
             <separator name="tools" visible="true"/>
 
             <command commandId="org.jkiss.dbeaver.core.object.open">

@@ -28,7 +28,6 @@ public class ResourcePropertyTester extends PropertyTester
     public static final String PROP_CAN_CREATE_FOLDER = "canCreateFolder";
     public static final String PROP_CAN_SET_ACTIVE = "canSetActive";
     public static final String PROP_CAN_DELETE = "canDelete";
-    public static final String PROP_HAS_MULTI_PROJECTS = "hasMultipleProjects";
 
     public ResourcePropertyTester() {
         super();
@@ -53,8 +52,6 @@ public class ResourcePropertyTester extends PropertyTester
             return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0;
         } else if (property.equals(PROP_CAN_SET_ACTIVE)) {
             return resource instanceof IProject && resource != projectRegistry.getActiveProject();
-        } else if (property.equals(PROP_HAS_MULTI_PROJECTS)) {
-            return DBeaverCore.getInstance().getLiveProjects().size() > 1;
         }
         return false;
     }
