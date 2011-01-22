@@ -39,8 +39,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private static final String PASSWORD_ENCRYPTION_KEY = "sdf@!#$verf^wv%6Fwe%$$#FFGwfsdefwfe135s$^H)dg";
 
-    private final IProject project;
-    private final IFile configFile;
+    private final String projectId;
 
     private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<DBPEventListener>();
@@ -57,8 +56,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public DataSourceRegistry(IProject project)
     {
-        this.project = project;
-        this.configFile = project.getFile(CONFIG_FILE_NAME);
+        this.projectId = ProjectRegistry.getProjectId(project);
+        IFile configFile = project.getFile(CONFIG_FILE_NAME);
 
         File dsFile = configFile.getLocation().toFile();
         if (dsFile.exists()) {
@@ -302,6 +301,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private void saveDataSources()
     {
+        IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
         File projectConfig = configFile.getLocation().toFile();
         try {
             OutputStream os = new FileOutputStream(projectConfig);
@@ -412,7 +412,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public IProject getProject()
     {
-        return project;
+        return DBeaverCore.getInstance().getProject(projectId);
     }
 
     private class DataSourcesParser implements SAXListener

@@ -11,9 +11,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * DBNRoot
@@ -126,6 +124,12 @@ public class DBNRoot extends DBNNode implements DBNContainer
             project,
             DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(ProjectHandlerImpl.RES_TYPE_PROJECT));
         projects.add(newNode);
+        Collections.sort(projects, new Comparator<DBNProject>() {
+            public int compare(DBNProject o1, DBNProject o2)
+            {
+                return o1.getNodeName().compareTo(o2.getNodeName());
+            }
+        });
         return newNode;
     }
 

@@ -31,7 +31,7 @@ public class EditConnectionWizard extends ConnectionWizard
      */
     public EditConnectionWizard(DataSourceDescriptor dataSource)
     {
-        super(dataSource.getRegistry().getProject());
+        super(dataSource.getRegistry());
         this.dataSource = dataSource;
         this.oldData = new DBPConnectionInfo(this.dataSource.getConnectionInfo());
         setWindowTitle("Edit connection");

@@ -19,7 +19,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 public interface DBPResourceHandler {
 
     public static final QualifiedName PROP_PROJECT_ID = new QualifiedName("org.jkiss.dbeaver", "project-id");
-    public static final QualifiedName PROP_PROJECT_ACTIVE = new QualifiedName("org.jkiss.dbeaver", "project-active");
+    //public static final QualifiedName PROP_PROJECT_ACTIVE = new QualifiedName("org.jkiss.dbeaver", "project-active");
     public static final QualifiedName PROP_RESOURCE_TYPE = new QualifiedName("org.jkiss.dbeaver", "resource-type");
 
     public static final int FEATURE_OPEN            = 1;

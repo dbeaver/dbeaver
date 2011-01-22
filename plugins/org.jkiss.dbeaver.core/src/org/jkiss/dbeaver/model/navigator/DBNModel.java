@@ -8,7 +8,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IAdapterManager;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.ui.IEditorInput;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -278,7 +280,7 @@ public class DBNModel implements IResourceChangeListener {
     {
         if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
             IResourceDelta delta = event.getDelta();
-            IResource resource = delta.getResource();
+            //IResource resource = delta.getResource();
             for (IResourceDelta childDelta : delta.getAffectedChildren()) {
                 if (childDelta.getResource() instanceof IProject) {
                     IProject project = (IProject) childDelta.getResource();

@@ -46,7 +46,14 @@ public class DataSourceDescriptorManager extends DBOManagerImpl<DataSourceDescri
             dataSource.setName(newName);
             registry.addDataSource(dataSource);
         } else {
-            ConnectionDialog dialog = new ConnectionDialog(workbenchWindow, new NewConnectionWizard(DBeaverCore.getInstance().getProjectRegistry().getActiveProject(), workbenchWindow));
+            DataSourceRegistry registry;
+            if (parent instanceof DataSourceRegistry) {
+                registry = (DataSourceRegistry)parent;
+            } else {
+                registry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
+            }
+            ConnectionDialog dialog = new ConnectionDialog(workbenchWindow,
+                new NewConnectionWizard(registry));
             dialog.open();
         }
         return CreateResult.CANCEL;

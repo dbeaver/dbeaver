@@ -108,8 +108,7 @@ public class SelectDataSourceDialog extends Dialog {
 
     public static DataSourceDescriptor selectDataSource(Shell parentShell)
     {
-        final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-        List<DataSourceDescriptor> datasources = projectRegistry.getDataSourceRegistry(projectRegistry.getActiveProject()).getDataSources();
+        List<DataSourceDescriptor> datasources = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry().getDataSources();
         if (datasources.isEmpty()) {
             MessageBox messageBox = new MessageBox(parentShell, SWT.ICON_INFORMATION | SWT.OK);
             messageBox.setMessage("Create new datasource first.");

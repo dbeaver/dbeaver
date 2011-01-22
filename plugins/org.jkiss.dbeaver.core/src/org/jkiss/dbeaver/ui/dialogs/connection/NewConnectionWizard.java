@@ -4,11 +4,9 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.DBeaverExtensions;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -28,8 +26,6 @@ import java.util.Map;
 
 public class NewConnectionWizard extends ConnectionWizard
 {
-    private IWorkbenchWindow window;
-    private DataSourceProviderRegistry registry;
     private List<DataSourceProviderDescriptor> availableProvides = new ArrayList<DataSourceProviderDescriptor>();
     private ConnectionPageDriver pageDrivers;
     private Map<DataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<DataSourceProviderDescriptor, ConnectionPageSettings>();
@@ -37,19 +33,11 @@ public class NewConnectionWizard extends ConnectionWizard
 
     /**
      * Constructor for SampleNewWizard.
-     * @param window
      */
-    public NewConnectionWizard(IProject project, IWorkbenchWindow window)
+    public NewConnectionWizard(DataSourceRegistry registry)
     {
-        super(project);
+        super(registry);
         setWindowTitle("Create new connection");
-        this.window = window;
-        this.registry = DataSourceProviderRegistry.getDefault();
-    }
-
-    DataSourceProviderRegistry getRegistry()
-    {
-        return this.registry;
     }
 
     List<DataSourceProviderDescriptor> getAvailableProvides()
@@ -99,9 +87,9 @@ public class NewConnectionWizard extends ConnectionWizard
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
-                    List<DataSourceProviderDescriptor> providers = registry.getDataSourceProviders();
+                    List<DataSourceProviderDescriptor> providers = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProviders();
                     monitor.beginTask("Load data sources", providers.size());
-                    for (DataSourceProviderDescriptor provider : registry.getDataSourceProviders()) {
+                    for (DataSourceProviderDescriptor provider : providers) {
                         monitor.subTask(provider.getName());
                         DataSourceViewDescriptor view = provider.getView(DBeaverExtensions.NEW_CONNECTION_POINT);
                         if (view == null) {

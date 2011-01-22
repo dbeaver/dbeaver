@@ -4,12 +4,10 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
@@ -30,13 +28,12 @@ import java.lang.reflect.InvocationTargetException;
 public abstract class ConnectionWizard extends Wizard implements INewWizard
 {
 
-    protected final IProject project;
+    //protected final IProject project;
     protected final DataSourceRegistry dataSourceRegistry;
 
-    protected ConnectionWizard(IProject project) {
+    protected ConnectionWizard(DataSourceRegistry dataSourceRegistry) {
         setNeedsProgressMonitor(true);
-        this.project = project;
-        this.dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
+        this.dataSourceRegistry = dataSourceRegistry;
     }
 
     public DataSourceDescriptor getDataSourceDescriptor()

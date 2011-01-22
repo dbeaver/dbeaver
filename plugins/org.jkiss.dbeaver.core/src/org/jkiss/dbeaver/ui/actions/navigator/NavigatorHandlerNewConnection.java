@@ -18,7 +18,9 @@ public class NavigatorHandlerNewConnection extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
         IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-        ConnectionDialog dialog = new ConnectionDialog(window, new NewConnectionWizard(DBeaverCore.getInstance().getProjectRegistry().getActiveProject(), window));
+        ConnectionDialog dialog = new ConnectionDialog(
+            window,
+            new NewConnectionWizard(DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry()));
         dialog.open();
 
         return null;

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.navigator.IDBNListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -171,6 +172,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         public void mouseUp(MouseEvent e)
         {
             if ((e.stateMask & SWT.BUTTON1) == 0) {
+                curSelection = null;
                 return;
             }
             changeSelection(e);
@@ -194,18 +196,17 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
             curSelection = newSelection;
         }
 
-        private class RenameJob extends AbstractJob {
+        private class RenameJob extends AbstractUIJob {
             private volatile boolean canceled = false;
             public RenameJob()
             {
                 super("Rename ");
             }
 
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor)
+            protected IStatus runInUIThread(DBRProgressMonitor monitor)
             {
                 try {
-                    if (curSelection != null && !canceled) {
+                    if (!viewer.getTree().isDisposed() && viewer.getTree().isFocusControl() && curSelection != null && !canceled) {
                         getDisplay().asyncExec(new Runnable() {
                             public void run()
                             {
@@ -218,6 +219,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                 }
                 return Status.OK_STATUS;
             }
+
         }
     }
 
@@ -259,7 +261,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                                 }
                             });
                         } catch (InvocationTargetException e1) {
-                            UIUtils.showErrorDialog(getShell(), "Rename '" + node.getNodeName() + "'", null, e1.getTargetException());
+                            UIUtils.showErrorDialog(getShell(), "Rename failed", null, e1.getTargetException());
                         } catch (InterruptedException e1) {
                             // do nothing
                         }

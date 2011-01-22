@@ -123,7 +123,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     {
         final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         IProgressMonitor nullMonitor = new NullProgressMonitor();
-        final List<File> openFiles = new ArrayList<File>();
+        //final List<File> openFiles = new ArrayList<File>();
         for (IWorkbenchPage workbenchPage : workbenchWindow.getPages()) {
             for (IEditorReference editorRef : workbenchPage.getEditorReferences()) {
                 try {
@@ -136,10 +136,12 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                         }
                     }
 
+/*
                     if (editorInput instanceof ProjectFileEditorInput) {
                         ProjectFileEditorInput sei = (ProjectFileEditorInput)editorInput;
                         openFiles.add(sei.getPath().toFile());
                     }
+*/
                 } catch (CoreException ex) {
                     log.error("Can't obtain editor storage", ex);
                 }
