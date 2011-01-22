@@ -5,13 +5,20 @@
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.action.ControlContribution;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IActionBars;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 
-public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProjectListener
-{
+public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProjectListener {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseNavigator";
 
 /*
@@ -33,7 +40,8 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
         return getModel().getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
     }
 
-    public DBNNode getRootNode() {
+    public DBNNode getRootNode()
+    {
         return getActiveProjectNode().getDatabases();
     }
 
@@ -44,7 +52,29 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
         super.dispose();
     }
 
-    /*
+    @Override
+    public void createPartControl(Composite parent)
+    {
+        super.createPartControl(parent);
+
+/*
+        IActionBars actionBars = getViewSite().getActionBars();
+        IToolBarManager toolBarManager = actionBars.getToolBarManager();
+        // Add combo to change active project
+        IContributionItem projectSelectorItem = new ControlContribution("activeProject") {
+            protected Control createControl(Composite parent)
+            {
+                Combo projectCombo = new Combo(parent, SWT.READ_ONLY | SWT.DROP_DOWN);
+                projectCombo.add("sdfsdf");
+                return projectCombo;
+            }
+        };
+        toolBarManager.add(projectSelectorItem);
+        toolBarManager.update(true);
+        actionBars.updateActionBars();
+*/
+    }
+/*
     @Override
     public void init(IViewSite site, IMemento memento) throws PartInitException
     {
