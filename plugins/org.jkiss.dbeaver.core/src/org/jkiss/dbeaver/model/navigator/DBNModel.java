@@ -6,11 +6,12 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.*;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.IAdapterManager;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.ui.IEditorInput;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -47,7 +48,7 @@ public class DBNModel implements IResourceChangeListener {
         // Add all existing projects to root node
         final DBeaverCore core = DBeaverCore.getInstance();
         for (IProject project : core.getLiveProjects()) {
-            root.addProject(project);
+            root.addProject(project, false);
         }
 /*
         for (DataSourceDescriptor dataSource : registry.getDataSources()) {
@@ -288,8 +289,7 @@ public class DBNModel implements IResourceChangeListener {
                     if (projectNode == null) {
                         if (childDelta.getKind() == IResourceDelta.ADDED) {
                             // New projectNode
-                            projectNode = getRoot().addProject(project);
-                            fireNodeEvent(new DBNEvent(event, DBNEvent.Action.ADD, projectNode));
+                            getRoot().addProject(project, true);
                         } else {
                             // Project not found - report an error
                             log.error("Project '" + childDelta.getResource().getName() + "' not found in navigator");
@@ -297,7 +297,6 @@ public class DBNModel implements IResourceChangeListener {
                     } else {
                         if (childDelta.getKind() == IResourceDelta.REMOVED) {
                             // Project deleted
-                            fireNodeEvent(new DBNEvent(event, DBNEvent.Action.REMOVE, projectNode));
                             getRoot().removeProject(project);
                         } else {
                             // Some resource changed within the projectNode

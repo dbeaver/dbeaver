@@ -60,7 +60,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
     public DBNNode addChildItem(DBRProgressMonitor monitor, Object childObject) throws DBException
     {
         if (childObject instanceof IProject) {
-            return addProject((IProject)childObject);
+            return addProject((IProject)childObject, true);
         }
         throw new IllegalArgumentException("Only projects could be added to root node");
     }
@@ -120,20 +120,22 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         return null;
     }
 
-    DBNProject addProject(IProject project)
+    DBNProject addProject(IProject project, boolean reflect)
     {
-        DBNProject newNode = new DBNProject(
+        DBNProject projectNode = new DBNProject(
             this,
             project,
             DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(ProjectHandlerImpl.RES_TYPE_PROJECT));
-        projects.add(newNode);
+        projects.add(projectNode);
         Collections.sort(projects, new Comparator<DBNProject>() {
             public int compare(DBNProject o1, DBNProject o2)
             {
                 return o1.getNodeName().compareTo(o2.getNodeName());
             }
         });
-        return newNode;
+        getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, projectNode));
+
+        return projectNode;
     }
 
     void removeProject(IProject project)
@@ -142,6 +144,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
             DBNProject projectNode = iter.next();
             if (projectNode.getProject() == project) {
                 iter.remove();
+                getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, projectNode));
                 projectNode.dispose(true);
                 break;
             }

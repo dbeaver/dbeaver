@@ -89,11 +89,11 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase {
                     {
                         try {
                             IResource resource = resourceNode.getResource();
-                            resource.delete(true, monitor);
                             if (resource instanceof IProject) {
                                 // Manually remove this project from registry
                                 DBeaverCore.getInstance().getProjectRegistry().removeProject((IProject) resource);
                             }
+                            resource.delete(true, monitor);
                         } catch (CoreException e) {
                             throw new InvocationTargetException(e);
                         }

@@ -79,9 +79,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     public void dispose()
     {
         synchronized (dataSourceListeners) {
+/*
             if (!this.dataSourceListeners.isEmpty()) {
                 log.warn("Some data source listeners are still registered: " + dataSourceListeners);
             }
+*/
             this.dataSourceListeners.clear();
         }
 

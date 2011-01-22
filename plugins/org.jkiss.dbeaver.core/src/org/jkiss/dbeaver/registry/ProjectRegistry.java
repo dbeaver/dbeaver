@@ -313,7 +313,7 @@ public class ProjectRegistry implements IResourceChangeListener {
                         activeProject = null;
                     }
                 } else if (projectDelta.getKind() == IResourceDelta.ADDED) {
-                    if (activeProjectId.equals(getProjectId(project))) {
+                    if (project.isOpen() && activeProjectId.equals(getProjectId(project))) {
                         this.activeProject = project;
                     }
                 }
