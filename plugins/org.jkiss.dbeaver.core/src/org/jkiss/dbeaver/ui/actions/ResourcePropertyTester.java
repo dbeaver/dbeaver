@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IEvaluationService;
@@ -13,6 +14,7 @@ import org.jkiss.dbeaver.model.edit.DBOCreator;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.registry.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.EntityManagerDescriptor;
+import org.jkiss.dbeaver.registry.ProjectRegistry;
 
 /**
  * ObjectPropertyTester
@@ -24,6 +26,7 @@ public class ResourcePropertyTester extends PropertyTester
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.resource";
     public static final String PROP_CAN_OPEN = "canOpen";
     public static final String PROP_CAN_CREATE_FOLDER = "canCreateFolder";
+    public static final String PROP_CAN_SET_ACTIVE = "canSetActive";
     public static final String PROP_CAN_DELETE = "canDelete";
 
     public ResourcePropertyTester() {
@@ -35,7 +38,8 @@ public class ResourcePropertyTester extends PropertyTester
             return false;
         }
         IResource resource = (IResource)receiver;
-        DBPResourceHandler handler = DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(resource);
+        final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        DBPResourceHandler handler = projectRegistry.getResourceHandler(resource);
         if (handler == null) {
             return false;
         }
@@ -46,6 +50,8 @@ public class ResourcePropertyTester extends PropertyTester
             return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_DELETE) != 0;
         } else if (property.equals(PROP_CAN_CREATE_FOLDER)) {
             return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0;
+        } else if (property.equals(PROP_CAN_SET_ACTIVE)) {
+            return resource instanceof IProject && resource != projectRegistry.getActiveProject();
         }
         return false;
     }

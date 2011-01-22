@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.IDBNListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -150,6 +149,11 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
     public void showNode(DBNNode node) {
         viewer.reveal(node);
         viewer.setSelection(new StructuredSelection(node));
+    }
+
+    public void reloadTree(DBNNode rootNode)
+    {
+        this.viewer.setInput(rootNode);
     }
 
     private class TreeSelectionAdapter implements MouseListener {

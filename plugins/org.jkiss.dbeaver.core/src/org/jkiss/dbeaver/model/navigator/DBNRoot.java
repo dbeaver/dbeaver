@@ -9,6 +9,7 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl;
+import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.*;
@@ -16,13 +17,14 @@ import java.util.*;
 /**
  * DBNRoot
  */
-public class DBNRoot extends DBNNode implements DBNContainer
+public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
 {
     private List<DBNProject> projects = new ArrayList<DBNProject>();
 
     public DBNRoot(DBNModel model)
     {
         super(model);
+        DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
     }
 
     void dispose(boolean reflect)
@@ -31,6 +33,7 @@ public class DBNRoot extends DBNNode implements DBNContainer
             project.dispose(reflect);
         }
         projects.clear();
+        DBeaverCore.getInstance().getProjectRegistry().removeProjectListener(this);
     }
 
     @Override
@@ -145,4 +148,15 @@ public class DBNRoot extends DBNNode implements DBNContainer
         }
     }
 
+    public void handleActiveProjectChange(IProject oldValue, IProject newValue)
+    {
+        DBNProject projectNode = getProject(newValue);
+        DBNProject oldProjectNode = getProject(oldValue);
+        if (projectNode != null) {
+            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, projectNode));
+        }
+        if (oldProjectNode != null) {
+            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, oldProjectNode));
+        }
+    }
 }

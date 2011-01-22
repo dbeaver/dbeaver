@@ -49,7 +49,7 @@
                 class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
                 namespace="org.jkiss.dbeaver.core.resource"
-                properties="canOpen,canDelete,canCreateFolder"
+                properties="canOpen,canDelete,canCreateFolder,canSetActive"
                 type="org.eclipse.core.resources.IResource">
         </propertyTester>
         <propertyTester
@@ -142,6 +142,7 @@
 
         <command id="org.jkiss.dbeaver.core.project.create" name="Create Project" description="Create new project" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.project.refresh" name="Refresh Projects" description="Refresh entire workspace" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.project.active" name="Set Active Project" description="Set active project" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.resource.create.folder" name="Create New Folder" description="Create new folder" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
         <command id="org.jkiss.dbeaver.core.connect" name="Connect" description="Connect to database" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -201,6 +202,7 @@
 
         <image commandId="org.jkiss.dbeaver.core.project.create" icon="IMG_TOOL_NEW_WIZARD"/>
         <image commandId="org.jkiss.dbeaver.core.project.refresh" icon="icons/refresh.png"/>
+        <!--image commandId="org.jkiss.dbeaver.core.project.active" icon="icons/refresh.png"/-->
         <image commandId="org.jkiss.dbeaver.core.resource.create.folder" icon="IMG_TOOL_NEW_WIZARD"/>
 
         <image commandId="org.jkiss.dbeaver.core.new.sql.editor" icon="icons/sql/sql_script.png"/>
@@ -307,6 +309,18 @@
 
         <handler commandId="org.jkiss.dbeaver.core.project.create" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectCreate"/>
         <handler commandId="org.jkiss.dbeaver.core.project.refresh" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectRefresh"/>
+        <handler commandId="org.jkiss.dbeaver.core.project.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectSetActive">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.eclipse.core.resources.IResource">
+                            <test property="org.jkiss.dbeaver.core.resource.canSetActive"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.resource.create.folder" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCreateFolder">
             <enabledWhen>
                 <with variable="selection">
@@ -948,6 +962,9 @@
                         </iterate>
                     </with>
                 </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.project.active">
+                <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.jkiss.dbeaver.core.resource.create.folder">
                 <visibleWhen checkEnabled="true"/>

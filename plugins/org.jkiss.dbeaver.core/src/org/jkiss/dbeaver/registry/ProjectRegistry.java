@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
@@ -35,6 +36,8 @@ public class ProjectRegistry implements IResourceChangeListener {
     private String activeProjectId;
     private IProject activeProject;
     private IWorkspace workspace;
+
+    private final List<DBPProjectListener> projectListeners = new ArrayList<DBPProjectListener>();
 
     public ProjectRegistry()
     {
@@ -120,6 +123,25 @@ public class ProjectRegistry implements IResourceChangeListener {
             workspace.removeResourceChangeListener(this);
             workspace = null;
         }
+
+        if (!projectListeners.isEmpty()) {
+            log.warn("Some project listeners are still register: " + projectListeners);
+            projectListeners.clear();
+        }
+    }
+
+    public void addProjectListener(DBPProjectListener listener)
+    {
+        synchronized (projectListeners) {
+            projectListeners.add(listener);
+        }
+    }
+
+    public void removeProjectListener(DBPProjectListener listener)
+    {
+        synchronized (projectListeners) {
+            projectListeners.remove(listener);
+        }
     }
 
     public DBPResourceHandler getResourceHandler(IResource resource)
@@ -192,9 +214,16 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     public void setActiveProject(IProject project)
     {
+        IProject oldValue = this.activeProject;
         this.activeProject = project;
         this.activeProjectId = getProjectId(project);
         DBeaverCore.getInstance().getGlobalPreferenceStore().setValue("project.active", activeProjectId);
+
+        synchronized (projectListeners) {
+            for (DBPProjectListener listener : projectListeners) {
+                listener.handleActiveProjectChange(oldValue, activeProject);
+            }
+        }
     }
 
     private IProject createGeneralProject(IWorkspace workspace, IProgressMonitor monitor) throws CoreException
@@ -220,6 +249,9 @@ public class ProjectRegistry implements IResourceChangeListener {
         String projectId = project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID);
         if (projectId == null) {
             project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID, projectId = SecurityUtils.generateGUID(false));
+        }
+        if (projectId.equals(activeProjectId)) {
+            activeProject = project;
         }
         // Init all resource handlers
         for (DBPResourceHandler handler : resourceHandlerList) {

@@ -4,11 +4,13 @@
 
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
+import org.eclipse.core.resources.IProject;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.project.DBPProjectListener;
 
-public class DatabaseNavigatorView extends NavigatorViewBase
+public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProjectListener
 {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseNavigator";
 
@@ -23,6 +25,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase
     public DatabaseNavigatorView()
     {
         super();
+        DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
     }
 
     private DBNProject getActiveProjectNode()
@@ -34,7 +37,14 @@ public class DatabaseNavigatorView extends NavigatorViewBase
         return getActiveProjectNode().getDatabases();
     }
 
-/*
+    @Override
+    public void dispose()
+    {
+        DBeaverCore.getInstance().getProjectRegistry().removeProjectListener(this);
+        super.dispose();
+    }
+
+    /*
     @Override
     public void init(IViewSite site, IMemento memento) throws PartInitException
     {
@@ -74,4 +84,9 @@ public class DatabaseNavigatorView extends NavigatorViewBase
         super.saveState(memento);
     }
 */
+
+    public void handleActiveProjectChange(IProject oldValue, IProject newValue)
+    {
+        getNavigatorTree().reloadTree(getRootNode());
+    }
 }
