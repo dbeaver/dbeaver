@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.actions.ResourcePropertyTester;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -312,10 +313,12 @@ public class ProjectRegistry implements IResourceChangeListener {
                     if (project == activeProject) {
                         activeProject = null;
                     }
+                    ResourcePropertyTester.firePropertyChange(ResourcePropertyTester.PROP_HAS_MULTI_PROJECTS);
                 } else if (projectDelta.getKind() == IResourceDelta.ADDED) {
                     if (project.isOpen() && activeProjectId.equals(getProjectId(project))) {
                         this.activeProject = project;
                     }
+                    ResourcePropertyTester.firePropertyChange(ResourcePropertyTester.PROP_HAS_MULTI_PROJECTS);
                 }
             }
         }

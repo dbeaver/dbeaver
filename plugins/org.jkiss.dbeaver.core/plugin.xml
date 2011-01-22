@@ -49,7 +49,7 @@
                 class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
                 namespace="org.jkiss.dbeaver.core.resource"
-                properties="canOpen,canDelete,canCreateFolder,canSetActive"
+                properties="canOpen,canDelete,canCreateFolder,canSetActive,hasMultipleProjects"
                 type="org.eclipse.core.resources.IResource">
         </propertyTester>
         <propertyTester
@@ -310,7 +310,11 @@
 
         <handler commandId="org.jkiss.dbeaver.core.project.create" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectCreate"/>
         <handler commandId="org.jkiss.dbeaver.core.project.refresh" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectRefresh"/>
-        <handler commandId="org.jkiss.dbeaver.core.project.select" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectSelect"/>
+        <handler commandId="org.jkiss.dbeaver.core.project.select" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectSelect">
+            <!--activeWhen>
+                    <test property="org.jkiss.dbeaver.core.resource.hasMultipleProjects"/>
+            </activeWhen-->
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.project.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerProjectSetActive">
             <enabledWhen>
                 <with variable="selection">
