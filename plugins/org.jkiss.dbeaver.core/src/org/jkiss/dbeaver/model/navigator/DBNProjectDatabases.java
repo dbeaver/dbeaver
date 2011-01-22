@@ -87,17 +87,17 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
 
     public String getNodeName()
     {
-        return "Databases";
+        return "Connections";
     }
 
     public String getNodeDescription()
     {
-        return getResource().getProject().getName() + " databases";
+        return getResource().getProject().getName() + " connections";
     }
 
     public Image getNodeIcon()
     {
-        return DBIcon.DATABASES.getImage();
+        return DBIcon.CONNECTIONS.getImage();
     }
 
     public boolean hasChildren()

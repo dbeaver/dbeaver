@@ -89,8 +89,8 @@
                 category="org.jkiss.dbeaver.core.category"
                 class="org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView"
                 allowMultiple="false"
-                icon="icons/database_navigator.png"
-                name="Databases">
+                icon="icons/databases.png"
+                name="Database Navigator">
         </view>
         <view
                 id="org.jkiss.dbeaver.core.projectNavigator"

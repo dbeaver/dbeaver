@@ -38,6 +38,7 @@ public enum DBIcon
 
     PROJECT("project", "icons/project.png"),
     PROJECTS("projects", "icons/projects.png"),
+    CONNECTIONS("connections", "icons/connections.png"),
     DATABASES("databases", "icons/databases.png"),
     SCRIPTS("scripts", "icons/scripts.png"),
     BOOKMARK_FOLDER("bookmark_folder", "icons/bookmark_folder.png"),
