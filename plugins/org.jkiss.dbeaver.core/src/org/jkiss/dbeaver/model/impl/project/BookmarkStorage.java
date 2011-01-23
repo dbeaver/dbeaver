@@ -10,6 +10,7 @@ import net.sf.jkiss.utils.xml.XMLException;
 import net.sf.jkiss.utils.xml.XMLUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
@@ -46,6 +47,7 @@ public class BookmarkStorage {
             try {
                 final Document document = XMLUtils.parseDocument(contents);
                 final Element root = document.getDocumentElement();
+                this.title = root.getAttribute("title");
                 this.description = root.getAttribute("description");
                 this.dataSourceId = root.getAttribute("data-source");
                 if (dataSourceId == null) {
@@ -136,7 +138,7 @@ public class BookmarkStorage {
             ImageLoader loader = new ImageLoader();
             loader.data = new ImageData[] {image.getImageData()};
             ByteArrayOutputStream imageBuffer = new ByteArrayOutputStream(5000);
-            loader.save(imageBuffer, image.type);
+            loader.save(imageBuffer, SWT.IMAGE_PNG);
             xml.addText(Base64.encode(imageBuffer.toByteArray()));
 
             xml.endElement();

@@ -192,9 +192,12 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             title = node.getNodeName();
         }
 
-        final IFile file = folder.getFile(title + "." + BOOKMARK_EXT);
-        if (file.exists()) {
-            throw new DBException("Bookmark '" + title + "' already exists in folder '" + folder.getFullPath().toString() + "'");
+        String fileName = CommonUtils.escapeIdentifier(title);
+        IFile file = folder.getFile(fileName + "." + BOOKMARK_EXT);
+        int index = 1;
+        while (file.exists()) {
+            file = folder.getFile(fileName + "-" + index + "." + BOOKMARK_EXT);
+            index++;
         }
 
         List<String> nodePath = new ArrayList<String>();
