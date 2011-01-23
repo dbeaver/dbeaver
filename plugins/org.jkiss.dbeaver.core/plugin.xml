@@ -56,7 +56,7 @@
                 class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
                 namespace="org.jkiss.dbeaver.core.resource"
-                properties="canOpen,canDelete,canCreateFolder,canSetActive"
+                properties="canOpen,canDelete,canCreateFolder,canSetActive,canCreateScript"
                 type="org.eclipse.core.resources.IResource">
         </propertyTester>
         <propertyTester
@@ -1005,7 +1005,9 @@
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">
-                            <adapt type="org.eclipse.core.resources.IFolder"/>
+                            <adapt type="org.eclipse.core.resources.IFolder">
+                                <test property="org.jkiss.dbeaver.core.resource.canCreateScript"/>
+                            </adapt>
                         </iterate>
                     </with>
                 </visibleWhen>

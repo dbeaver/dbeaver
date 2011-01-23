@@ -50,9 +50,9 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     {
         if (resource instanceof IFolder) {
             if (resource.getParent() instanceof IFolder) {
-                return FEATURE_DELETE | FEATURE_RENAME;
+                return FEATURE_DELETE | FEATURE_RENAME | FEATURE_CREATE_FOLDER | FEATURE_MOVE_INTO;
             }
-            return 0;
+            return FEATURE_CREATE_FOLDER | FEATURE_MOVE_INTO;
         } else {
             return FEATURE_OPEN | FEATURE_DELETE | FEATURE_RENAME;
         }
