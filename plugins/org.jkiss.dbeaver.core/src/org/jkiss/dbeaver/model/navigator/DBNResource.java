@@ -224,6 +224,7 @@ public class DBNResource extends DBNNode
 
         // Drop supported only if both nodes are resource with the same handler and DROP feature is supported
         return otherNode instanceof DBNResource
+            && otherNode != this
             && otherNode.getParentNode() != this
             && !this.isChildOf(otherNode)
             && ((DBNResource)otherNode).handler == this.handler;

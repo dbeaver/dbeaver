@@ -83,11 +83,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         if (resource instanceof IFile) {
             return new DBNBookmark(parentNode, resource, this);
         } else {
-            DBNResource node = super.makeNavigatorNode(parentNode, resource);
-            if (resource.getParent() instanceof IProject) {
-                node.setResourceImage(DBIcon.BOOKMARK_FOLDER.getImage());
-            }
-            return node;
+            return new DBNBookmarkFolder(parentNode, resource, this);
         }
     }
 
@@ -207,7 +203,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
         BookmarkStorage storage = new BookmarkStorage(
             title,
-            node.getNodeDescription(),
+            node.getNodeType() + " " + node.getNodeName(),
             node.getNodeIconDefault(),
             node.getObject().getDataSource().getContainer().getId(),
             nodePath);
