@@ -97,6 +97,10 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
         if (!dataSource.isConnected()) {
             DataSourceConnectHandler.execute(dataSource, onFinish);
             //dataSource.connect(monitor);
+        } else {
+            if (onFinish != null) {
+                onFinish.run();
+            }
         }
         return dataSource.isConnected();
     }

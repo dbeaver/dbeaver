@@ -146,6 +146,7 @@
         <command id="org.jkiss.dbeaver.core.new.connection" name="New Connection" description="New Connection Wizard" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="Link with editor" description="Link with editor" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.set.active" name="Set active object" description="Set active object" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.navigator.bookmark.add" name="Add Bookmark" description="Add Bookmark" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
         <command id="org.jkiss.dbeaver.core.project.create" name="Create Project" description="Create new project" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.project.refresh" name="Refresh Projects" description="Refresh entire workspace" categoryId="org.jkiss.dbeaver.core.navigator"/>
@@ -200,6 +201,7 @@
         <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="icons/driver_manager.png"/>
         <image commandId="org.jkiss.dbeaver.core.new.connection" icon="icons/database_connect.png"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.linkeditor" icon="icons/link_to_editor.png"/>
+        <image commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" icon="icons/bookmark.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.connect" icon="icons/sql/connect.png"/>
         <image commandId="org.jkiss.dbeaver.core.invalidate" icon="icons/sql/reconnect.png"/>
@@ -366,6 +368,16 @@
                         <adapt type="org.jkiss.dbeaver.ext.IDatabaseEditor"/>
                         <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                     </or>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerAddBookmark">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNDatabaseNode"/>
+                    </iterate>
                 </with>
             </enabledWhen>
         </handler>
@@ -820,16 +832,19 @@
 
     <extension point="org.eclipse.ui.menus">
         <!-- Edit menu -->
-        <menuContribution allPopups="false" locationURI="menu:edit?before=undoredo">
+        <menuContribution allPopups="false" locationURI="menu:edit">
+            <separator name="undoredo" visible="true"/>
             <command commandId="org.eclipse.ui.edit.undo"/>
             <command commandId="org.eclipse.ui.edit.redo"/>
-        </menuContribution>
-        <menuContribution allPopups="false" locationURI="menu:edit?before=additions">
             <command commandId="org.eclipse.ui.edit.cut"/>
             <command commandId="org.eclipse.ui.edit.copy"/>
             <command commandId="org.jkiss.dbeaver.core.edit.copy.special"/>
             <command commandId="org.eclipse.ui.edit.paste"/>
             <command commandId="org.eclipse.ui.edit.delete"/>
+            <separator name="find.ext" visible="true"/>
+            <command commandId="org.eclipse.ui.edit.findReplace"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.add"/>
+            <separator name="additions" visible="true"/>
         </menuContribution>
 
         <!-- File menu-->
@@ -1183,6 +1198,7 @@
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
         <key commandId="org.jkiss.dbeaver.core.object.find" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+H"/>
+        <key commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+D"/>
 
         <!-- SQL Editor -->
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>
@@ -1561,7 +1577,7 @@
         <handler type="project" class="org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl"/>
         <handler type="databases" class="org.jkiss.dbeaver.model.impl.project.DatabasesHandlerImpl"/>
         <handler type="scripts" extensions="sql" class="org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl"/>
-        <handler type="bookmarks" class="org.jkiss.dbeaver.model.impl.project.BookmarksHandlerImpl"/>
+        <handler type="bookmarks" extensions="bm" class="org.jkiss.dbeaver.model.impl.project.BookmarksHandlerImpl"/>
     </extension>
 
 </plugin>

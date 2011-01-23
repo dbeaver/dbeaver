@@ -53,6 +53,11 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
         super.dispose(reflect);
     }
 
+    public DataSourceRegistry getDataSourceRegistry()
+    {
+        return dataSourceRegistry;
+    }
+
     public Object getValueObject()
     {
         return dataSourceRegistry;
