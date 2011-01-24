@@ -64,9 +64,9 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         this.viewer = new TreeViewer(this, treeStyle);
         this.viewer.getTree().setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
         this.viewer.setUseHashlookup(true);
-        //if (rootNode instanceof DBNProject) {
-        //    this.viewer.setAutoExpandLevel(2);
-        //}
+        if (rootNode.getParentNode() == null) {
+            this.viewer.setAutoExpandLevel(2);
+        }
         this.viewer.setLabelProvider(new DatabaseNavigatorLabelProvider(this.viewer));
         this.viewer.setContentProvider(new DatabaseNavigatorContentProvider(this.viewer));
         this.viewer.setInput(rootNode);
