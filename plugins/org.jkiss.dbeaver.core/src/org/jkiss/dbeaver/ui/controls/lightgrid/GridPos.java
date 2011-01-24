@@ -18,6 +18,11 @@ public class GridPos
         this.row = row;
     }
 
+    public boolean isValid()
+    {
+        return col >= 0 && row >= 0;
+    }
+
     public boolean equals(Object object)
     {
         return object instanceof GridPos && equalsTo((GridPos) object);

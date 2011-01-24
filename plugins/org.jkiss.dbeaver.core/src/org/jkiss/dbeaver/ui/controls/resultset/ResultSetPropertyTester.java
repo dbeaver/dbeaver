@@ -21,6 +21,11 @@ public class ResultSetPropertyTester extends PropertyTester
     static final Log log = LogFactory.getLog(ResultSetPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.resultset";
+    public static final String PROP_HAS_DATA = "hasData";
+    public static final String PROP_CAN_COPY = "canCopy";
+    //public static final String PROP_CAN_COPY_SPECIAL = "canCopySpecial";
+    public static final String PROP_CAN_PASTE = "canPaste";
+    public static final String PROP_CAN_CUT = "canCut";
     public static final String PROP_CAN_MOVE = "canMove";
     public static final String PROP_EDITABLE = "editable";
     public static final String PROP_CHANGED = "changed";
@@ -32,7 +37,14 @@ public class ResultSetPropertyTester extends PropertyTester
         }
         ResultSetViewer rsv = (ResultSetViewer)spreadsheet.getController();
 
-        if (PROP_CAN_MOVE.equals(property)) {
+        if (PROP_HAS_DATA.equals(property)) {
+            return rsv.getRowsCount() > 0;
+        } else if (PROP_CAN_COPY.equals(property)) {
+            final GridPos currentPosition = rsv.getCurrentPosition();
+            return currentPosition != null && currentPosition.isValid();
+        } else if (PROP_CAN_PASTE.equals(property) || PROP_CAN_CUT.equals(property)) {
+            return false;
+        } else if (PROP_CAN_MOVE.equals(property)) {
             int currentRow = rsv.getCurrentRow();
             if ("back".equals(expectedValue)) {
                 return currentRow > 0;

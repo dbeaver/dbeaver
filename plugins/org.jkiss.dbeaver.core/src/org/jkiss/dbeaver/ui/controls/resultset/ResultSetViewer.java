@@ -823,26 +823,28 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
-        // Export and other utility methods
-        manager.add(new Separator());
-        manager.add(new Action("Order/Filter ... ", DBIcon.FILTER.getImageDescriptor()) {
-            @Override
-            public void run()
-            {
-                new ResultSetFilterDialog(ResultSetViewer.this).open();
-            }
-        });
-        manager.add(new Action("Export Resultset ... ", DBIcon.EXPORT.getImageDescriptor()) {
-            @Override
-            public void run()
-            {
-                DataExportWizard wizard = new DataExportWizard(
-                    Collections.singletonList(getDataContainer()));
-                wizard.init(site.getWorkbenchWindow().getWorkbench(), getSelection());
-                ActiveWizardDialog dialog = new ActiveWizardDialog(site.getShell(), wizard);
-                dialog.open();
-            }
-        });
+        if (!CommonUtils.isEmpty(metaColumns)) {
+            // Export and other utility methods
+            manager.add(new Separator());
+            manager.add(new Action("Order/Filter ... ", DBIcon.FILTER.getImageDescriptor()) {
+                @Override
+                public void run()
+                {
+                    new ResultSetFilterDialog(ResultSetViewer.this).open();
+                }
+            });
+            manager.add(new Action("Export Resultset ... ", DBIcon.EXPORT.getImageDescriptor()) {
+                @Override
+                public void run()
+                {
+                    DataExportWizard wizard = new DataExportWizard(
+                        Collections.singletonList(getDataContainer()));
+                    wizard.init(site.getWorkbenchWindow().getWorkbench(), getSelection());
+                    ActiveWizardDialog dialog = new ActiveWizardDialog(site.getShell(), wizard);
+                    dialog.open();
+                }
+            });
+        }
     }
 
     boolean supportsDataFilter()

@@ -508,7 +508,7 @@ public class Spreadsheet extends Composite implements Listener {
                 prevCol = firstCol;
             }
             if (pos.col > prevCol) {
-                for (int i = 0; i < pos.col - prevCol; i++) {
+                for (int i = prevCol; i < pos.col; i++) {
                     if (colsSelected.contains(i)) {
                         tdt.append('\t');
                     }
@@ -572,7 +572,7 @@ public class Spreadsheet extends Composite implements Listener {
                 manager.add(copyAction);
                 manager.add(copySpecialAction);
                 manager.add(selectAllAction);
-                manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+                //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
                 // Let controlles to provide it's own menu items
                 spreadsheetController.fillContextMenu(grid.getFocusCell(), manager);
