@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.utils;
+package org.jkiss.dbeaver.registry.encode;
 
 import net.sf.jkiss.utils.Base64;
 
@@ -12,25 +12,19 @@ import java.util.Arrays;
 /**
  * Encryption util
  */
-public class StringEncrypter {
+public class SimpleStringEncrypter implements PasswordEncrypter {
 
     //public static final String SCHEME_DES = "DES";
+    private static final byte[] PASSWORD_ENCRYPTION_KEY = "sdf@!#$verf^wv%6Fwe%$$#FFGwfsdefwfe135s$^H)dg".getBytes();
 
     private static final String CHARSET = "UTF8";
 
-    private String encryptionKey;
+    //private String encryptionKey;
     //private DESKeySpec keySpec;
     //private Cipher cipher;
 
-    public StringEncrypter(String encryptionKey) throws EncryptionException
+    public SimpleStringEncrypter()
     {
-        this.encryptionKey = encryptionKey;
-        if (encryptionKey == null) {
-            throw new IllegalArgumentException("encryption key was null");
-        }
-        if (encryptionKey.trim().length() < 24) {
-            throw new IllegalArgumentException("encryption key was less than 24 characters");
-        }
 /*
         try {
             byte[] keyAsBytes = encryptionKey.getBytes(CHARSET);
@@ -81,13 +75,11 @@ public class StringEncrypter {
 
     private void xorStringByKey(byte[] plainBytes) throws UnsupportedEncodingException
     {
-        byte[] keyBytes = encryptionKey.getBytes(CHARSET);
-
         int keyOffset = 0;
         for (int i = 0; i < plainBytes.length; i++) {
-            byte keyChar = keyBytes[keyOffset];
+            byte keyChar = PASSWORD_ENCRYPTION_KEY[keyOffset];
             keyOffset++;
-            if (keyOffset >= keyBytes.length) {
+            if (keyOffset >= PASSWORD_ENCRYPTION_KEY.length) {
                 keyOffset = 0;
             }
             plainBytes[i] ^= keyChar;
@@ -128,18 +120,5 @@ public class StringEncrypter {
         return new SecretKeySpec(keySpec.getKey(), "DES");
     }
 */
-
-    @SuppressWarnings("serial")
-    public static class EncryptionException extends Exception {
-        public EncryptionException(Throwable t)
-        {
-            super(t);
-        }
-
-        public EncryptionException(String message)
-        {
-            super(message);
-        }
-    }
 
 }

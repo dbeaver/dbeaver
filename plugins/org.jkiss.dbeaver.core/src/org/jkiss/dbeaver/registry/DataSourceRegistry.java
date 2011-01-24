@@ -21,10 +21,14 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.encode.EncryptionException;
+import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
+import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
+import org.jkiss.dbeaver.registry.encode.SimpleStringEncrypter;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.StringEncrypter;
 import org.xml.sax.Attributes;
 
 import java.io.*;
@@ -37,22 +41,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public static final String CONFIG_FILE_NAME = "data-sources.xml";
 
-    private static final String PASSWORD_ENCRYPTION_KEY = "sdf@!#$verf^wv%6Fwe%$$#FFGwfsdefwfe135s$^H)dg";
-
     private final String projectId;
 
     private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<DBPEventListener>();
-
-    private static StringEncrypter encrypter;
-
-    static {
-        try {
-            encrypter = new StringEncrypter(PASSWORD_ENCRYPTION_KEY);
-        } catch (StringEncrypter.EncryptionException e) {
-            log.error(e);
-        }
-    }
 
     public DataSourceRegistry(IProject project)
     {
@@ -61,13 +53,18 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
         File dsFile = configFile.getLocation().toFile();
         if (dsFile.exists()) {
-            loadDataSources(dsFile);
+            loadDataSources(dsFile, new SimpleStringEncrypter());
         }
         if (dataSources.isEmpty() && DBeaverCore.getInstance().getLiveProjects().size() == 1) {
             // If this is first project then try to read file from DBeaver beta
-            dsFile = new File(new File(System.getProperty("user.home")), ".dbeaver-beta/" + CONFIG_FILE_NAME);
+            dsFile = new File(RuntimeUtils.getBetaDir(), CONFIG_FILE_NAME);
             if (dsFile.exists()) {
-                loadDataSources(dsFile);
+                try {
+                    loadDataSources(dsFile, new SecuredPasswordEncrypter());
+                    saveDataSources();
+                } catch (EncryptionException e) {
+                    log.warn("Encryption error", e);
+                }
             }
         }
         //if (!dsFile.exists()) {
@@ -261,7 +258,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 */
     }
 
-    private void loadDataSources(File fromFile)
+    private void loadDataSources(File fromFile, PasswordEncrypter encrypter)
     {
         if (!fromFile.exists()) {
             return;
@@ -270,7 +267,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             InputStream is = new FileInputStream(fromFile);
             try {
                 try {
-                    loadDataSources(is);
+                    loadDataSources(is, encrypter);
                 } catch (DBException ex) {
                     log.warn("Can't load datasource config from " + fromFile.getAbsolutePath(), ex);
                 }
@@ -289,12 +286,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    private void loadDataSources(InputStream is)
+    private void loadDataSources(InputStream is, PasswordEncrypter encrypter)
         throws DBException, IOException
     {
         SAXReader parser = new SAXReader(is);
         try {
-            parser.parse(new DataSourcesParser());
+            parser.parse(new DataSourcesParser(encrypter));
         }
         catch (XMLException ex) {
             throw new DBException("Datasource config parse error", ex);
@@ -303,6 +300,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private void saveDataSources()
     {
+        PasswordEncrypter encrypter = new SimpleStringEncrypter();
         IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
         File projectConfig = configFile.getLocation().toFile();
         try {
@@ -312,7 +310,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.setButify(true);
                 xml.startElement("data-sources");
                 for (DataSourceDescriptor dataSource : dataSources) {
-                    saveDataSource(xml, dataSource);
+                    saveDataSource(xml, dataSource, encrypter);
                 }
                 xml.endElement();
                 xml.flush();
@@ -331,7 +329,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    private void saveDataSource(XMLBuilder xml, DataSourceDescriptor dataSource)
+    private void saveDataSource(XMLBuilder xml, DataSourceDescriptor dataSource, PasswordEncrypter encrypter)
         throws IOException
     {
         xml.startElement("data-source");
@@ -374,7 +372,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     try {
                         encPassword = encrypter.encrypt(encPassword);
                     }
-                    catch (StringEncrypter.EncryptionException e) {
+                    catch (EncryptionException e) {
                         log.error("Could not encrypt password. Save it as is", e);
                     }
                 }
@@ -420,10 +418,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private class DataSourcesParser implements SAXListener
     {
         DataSourceDescriptor curDataSource;
+        PasswordEncrypter encrypter;
         boolean isDescription = false;
 
-        private DataSourcesParser()
+        private DataSourcesParser(PasswordEncrypter encrypter)
         {
+            this.encrypter = encrypter;
         }
 
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)

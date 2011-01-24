@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
@@ -116,4 +117,10 @@ public class RuntimeUtils
         }
         store.setDefault(name, value.toString());
     }
+
+    public static File getBetaDir()
+    {
+        return new File(new File(System.getProperty("user.home")), ".dbeaver-beta/");
+    }
+
 }

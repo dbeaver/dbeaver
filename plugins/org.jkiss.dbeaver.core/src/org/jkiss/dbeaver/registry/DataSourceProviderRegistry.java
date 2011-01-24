@@ -18,6 +18,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.xml.sax.Attributes;
 
 import java.io.*;
@@ -70,7 +71,16 @@ public class DataSourceProviderRegistry
         }
 
         // Load drivers
-        loadDrivers();
+        File driversConfig = new File(DBeaverCore.getInstance().getRootPath().toFile(), "drivers.xml");
+        if (!driversConfig.exists()) {
+            driversConfig = new File(RuntimeUtils.getBetaDir(), "drivers.xml");
+            if (driversConfig.exists()) {
+                loadDrivers(driversConfig);
+                saveDrivers();
+            }
+        } else {
+            loadDrivers(driversConfig);
+        }
     }
 
     public void dispose()
@@ -136,9 +146,8 @@ public class DataSourceProviderRegistry
         return DBeaverCore.getInstance().getDataSourceProviderRegistry();
     }
 
-    private void loadDrivers()
+    private void loadDrivers(File driversConfig)
     {
-        File driversConfig = new File(DBeaverCore.getInstance().getRootPath().toFile(), "drivers.xml");
         if (driversConfig.exists()) {
             try {
                 InputStream is = new FileInputStream(driversConfig);
