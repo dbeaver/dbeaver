@@ -30,7 +30,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.swt.widgets.List;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -41,7 +40,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.qm.QMConstants;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
@@ -54,7 +52,9 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 
 /**
  * QueryLogViewer
@@ -594,7 +594,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
                 manager.add(copyAllAction);
                 manager.add(selectAllAction);
                 manager.add(clearLogAction);
-                //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+                manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
             }
         });
         menuMgr.setRemoveAllWhenShown(true);

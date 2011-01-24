@@ -572,7 +572,7 @@ public class Spreadsheet extends Composite implements Listener {
                 manager.add(copyAction);
                 manager.add(copySpecialAction);
                 manager.add(selectAllAction);
-                //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+                manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
                 // Let controlles to provide it's own menu items
                 spreadsheetController.fillContextMenu(grid.getFocusCell(), manager);

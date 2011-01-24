@@ -146,7 +146,7 @@ public class PlanNodesTree extends ObjectListControl<DBCPlanNode> {
 
                 manager.add(copyAction);
 
-                //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+                manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
