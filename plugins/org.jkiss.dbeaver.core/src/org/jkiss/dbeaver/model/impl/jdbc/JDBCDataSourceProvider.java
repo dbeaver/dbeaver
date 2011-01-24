@@ -8,12 +8,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.DBPPropertyGroup;
 import org.jkiss.dbeaver.registry.PropertyGroupDescriptor;
 
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
-import java.sql.SQLException;
 import java.util.Properties;
 
 /**
@@ -56,8 +54,8 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
         DriverPropertyInfo[] propDescs;
         try {
             propDescs = driver.getPropertyInfo(connectionInfo.getUrl(), driverProps);
-        } catch (SQLException e) {
-            log.debug("Could not obtain driver's properties", e);
+        } catch (Throwable e) {
+            log.debug("Cannot obtain driver's properties", e);
             return null;
         }
         if (propDescs == null) {

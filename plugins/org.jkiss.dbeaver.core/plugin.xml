@@ -112,7 +112,7 @@
                 category="org.jkiss.dbeaver.core.category"
                 class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView"
                 allowMultiple="false"
-                icon="icons/scripts.png"
+                icon="icons/project.png"
                 name="Project Explorer">
         </view>
         <view
@@ -358,6 +358,13 @@
             <enabledWhen>
                 <with variable="activePart">
                     <instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.navigate.expandAll" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerExpandAll">
+            <enabledWhen>
+                <with variable="activePart">
+                    <instanceof value="org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -948,6 +955,7 @@
         <!-- Project explorer menu & toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectExplorer">
             <command commandId="org.eclipse.ui.navigate.collapseAll"/>
+            <command commandId="org.eclipse.ui.navigate.expandAll"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
         </menuContribution>
 

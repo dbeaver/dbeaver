@@ -63,7 +63,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
 
     private void updateTitle()
     {
-        setPartName("Project Explorer - " + getRootNode().getNodeName());
+        setPartName("Project - " + getRootNode().getNodeName());
     }
 
 }

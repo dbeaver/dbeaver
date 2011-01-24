@@ -9,6 +9,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -21,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IEmbeddedPart;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -43,6 +46,8 @@ class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
     private Text catFilterText;
     private Text schemaFilterText;
 
+    private boolean connectionNameChanged = false;
+
     ConnectionPageFinal(ConnectionWizard wizard)
     {
         super("newConnectionFinal");
@@ -62,13 +67,22 @@ class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
         if (testButton != null) {
             ConnectionPageSettings settings = wizard.getPageSettings();
             testButton.setEnabled(settings != null && settings.isPageComplete());
-            if (settings != null && connectionNameText != null && CommonUtils.isEmpty(connectionNameText.getText())) {
+            if (settings != null && connectionNameText != null && (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged)) {
                 DBPConnectionInfo connectionInfo = settings.getConnectionInfo();
-                if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                    connectionNameText.setText(connectionInfo.getDatabaseName());
-                } else if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                    connectionNameText.setText(connectionInfo.getHostName());
+                String newName = connectionInfo.getDatabaseName();
+                if (CommonUtils.isEmpty(newName)) {
+                    newName = connectionInfo.getHostName();
                 }
+                if (CommonUtils.isEmpty(newName)) {
+                    newName = connectionInfo.getUrl();
+                }
+                if (CommonUtils.isEmpty(newName)) {
+                    newName = "New Connection";
+                }
+                newName = settings.getDriver().getName() + " - " + newName;
+                newName = SQLUtils.truncateString(newName, 50);
+                connectionNameText.setText(newName);
+                connectionNameChanged = false;
             }
         }
         if (dataSourceDescriptor != null) {
@@ -103,7 +117,15 @@ class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
         //gd.verticalAlignment = GridData.VERTICAL_ALIGN_CENTER;
         //group.setLayoutData(gd);
 
-        connectionNameText = UIUtils.createLabelText(group, "Connection name", dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName());
+        String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName();
+        connectionNameText = UIUtils.createLabelText(group, "Connection name", CommonUtils.toString(connectionName));
+        connectionNameText.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e)
+            {
+                connectionNameChanged = true;
+                ConnectionPageFinal.this.getContainer().updateButtons();
+            }
+        });
 
         {
             Group securityGroup = UIUtils.createControlGroup(group, "Security", 1, GridData.FILL_HORIZONTAL, 0);
