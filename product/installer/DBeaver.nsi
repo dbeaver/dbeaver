@@ -105,11 +105,16 @@ FunctionEnd
 
 Section "-DBeaver Core" SecCore
 
+  ; Install JRE on demand
   SetShellVarContext all
   Call GetJRE
   
+  ; If there is previous version of DBeaver - remove it's configuration
+  RMDir /r $INSTDIR\configuration
+
   SetOutPath "$INSTDIR"
   
+  ; Copy files
   File "raw\win32.x86\dbeaver\.eclipseproduct"
   File "raw\win32.x86\dbeaver\dbeaver.exe"
   File /r "raw\win32.x86\dbeaver\configuration"
@@ -160,6 +165,10 @@ SectionGroup /e "Plugins"
 	  
 	  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.ext.erd_1.0.0.jar"
 
+	SectionEnd
+	
+	Section "-Import 3rd Party Configurations" Sec3RD
+		File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.ext.import_config_1.0.0.jar"
 	SectionEnd
 
 SectionGroupEnd
