@@ -45,6 +45,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 return !(element instanceof DBNProjectDatabases);
             }
         });
+        updateTitle();
     }
 
     @Override
@@ -57,6 +58,12 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     public void handleActiveProjectChange(IProject oldValue, IProject newValue)
     {
         getNavigatorTree().reloadTree(getRootNode());
+        updateTitle();
+    }
+
+    private void updateTitle()
+    {
+        setPartName("Project Explorer - " + getRootNode().getNodeName());
     }
 
 }
