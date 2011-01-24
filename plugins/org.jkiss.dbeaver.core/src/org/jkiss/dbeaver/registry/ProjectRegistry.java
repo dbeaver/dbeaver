@@ -163,7 +163,7 @@ public class ProjectRegistry implements IResourceChangeListener {
                 handler = getResourceHandlerByExtension(resource.getFileExtension());
             }
         }
-        if (handler == null && resource instanceof IFolder) {
+        if (handler == null && resource instanceof IFolder && !(resource.getParent() instanceof IProject)) {
             // For folders try to get parent's handler
             return getResourceHandler(resource.getParent());
         }
