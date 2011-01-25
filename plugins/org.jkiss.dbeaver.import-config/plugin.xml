@@ -28,20 +28,6 @@
              DBVisualizer
           </description>
        </wizard>
-       <category
-             id="org.jkiss.dbeaver.ext.import_config.importWizards.sampleCategory"
-             name="Sample File Import">
-       </category>
-       <wizard
-             category="org.jkiss.dbeaver.ext.import_config.importWizards.sampleCategory"
-             class="org.jkiss.dbeaver.ext.import_config.importWizards.ImportWizard"
-             icon="icons/sample.gif"
-             id="org.jkiss.dbeaver.ext.import_config.importWizards.ImportWizard"
-             name="Import File">
-          <description>
-             Import a file from the local file system into the workspace.
-          </description>
-       </wizard>
    </extension>
 
 

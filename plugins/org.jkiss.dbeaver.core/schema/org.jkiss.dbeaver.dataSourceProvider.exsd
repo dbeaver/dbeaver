@@ -327,6 +327,7 @@
             <element ref="library" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="query" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="parameter"/>
          </sequence>
          <attribute name="label" type="string" use="required">
             <annotation>
@@ -573,6 +574,25 @@ View must implement interface(s) depending on targetID.
    <element name="query">
       <complexType>
          <attribute name="label" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="parameter">
+      <complexType>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="value" type="string" use="required">
             <annotation>
                <documentation>
                   
