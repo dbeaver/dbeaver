@@ -2,11 +2,11 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.export.impl;
+package org.jkiss.dbeaver.ui.export.data.impl;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.export.IDataExporter;
-import org.jkiss.dbeaver.ui.export.IDataExporterSite;
+import org.jkiss.dbeaver.ui.export.data.IDataExporter;
+import org.jkiss.dbeaver.ui.export.data.IDataExporterSite;
 
 /**
  * Abstract Exporter

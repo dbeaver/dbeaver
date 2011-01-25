@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.export.wizard;
+package org.jkiss.dbeaver.ui.export.data.wizard;
 
 import net.sf.jkiss.utils.Base64;
 import net.sf.jkiss.utils.IOUtils;
@@ -20,8 +20,8 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.ui.export.IDataExporter;
-import org.jkiss.dbeaver.ui.export.IDataExporterSite;
+import org.jkiss.dbeaver.ui.export.data.IDataExporter;
+import org.jkiss.dbeaver.ui.export.data.IDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;

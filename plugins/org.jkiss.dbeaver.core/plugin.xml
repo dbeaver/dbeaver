@@ -306,7 +306,7 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.export.data" class="org.jkiss.dbeaver.ui.export.handlers.DataExportHandler">
+        <handler commandId="org.jkiss.dbeaver.core.export.data" class="org.jkiss.dbeaver.ui.export.data.handlers.DataExportHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -1596,7 +1596,7 @@
     <extension point="org.jkiss.dbeaver.dataExportProvider">
         <export
                 id="org.jkiss.dbeaver.core.dataExport.csv"
-                class="org.jkiss.dbeaver.ui.export.impl.DataExporterCSV"
+                class="org.jkiss.dbeaver.ui.export.data.impl.DataExporterCSV"
                 description="Export to CSV file(s)"
                 extension="csv"
                 icon="icons/misc/csv.png"
@@ -1609,7 +1609,7 @@
         </export>
         <export
                 id="org.jkiss.dbeaver.core.dataExport.sql"
-                class="org.jkiss.dbeaver.ui.export.impl.DataExporterSQL"
+                class="org.jkiss.dbeaver.ui.export.data.impl.DataExporterSQL"
                 description="Export to SQL INSERT statements"
                 extension="sql"
                 icon="icons/misc/sql.png"
@@ -1627,6 +1627,18 @@
         <handler type="databases" class="org.jkiss.dbeaver.model.impl.project.DatabasesHandlerImpl"/>
         <handler type="scripts" extensions="sql" class="org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl"/>
         <handler type="bookmarks" extensions="bm" class="org.jkiss.dbeaver.model.impl.project.BookmarksHandlerImpl"/>
+    </extension>
+    <extension
+          point="org.eclipse.ui.exportWizards">
+       <category
+             id="org.jkiss.dbeaver.core.export.project"
+             name="Project">
+       </category>
+       <wizard
+             class="org.jkiss.dbeaver.core.ExportWizard1"
+             id="org.jkiss.dbeaver.core.wizard.export.project"
+             name="Project">
+       </wizard>
     </extension>
 
 </plugin>

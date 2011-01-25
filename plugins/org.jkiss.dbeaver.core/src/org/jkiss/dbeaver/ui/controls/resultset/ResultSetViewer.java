@@ -60,7 +60,7 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.ViewTextDialog;
-import org.jkiss.dbeaver.ui.export.wizard.DataExportWizard;
+import org.jkiss.dbeaver.ui.export.data.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ViewUtils;
 

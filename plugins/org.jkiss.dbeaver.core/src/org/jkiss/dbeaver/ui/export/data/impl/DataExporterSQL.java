@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.export.impl;
+package org.jkiss.dbeaver.ui.export.data.impl;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -12,7 +12,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.ui.export.IDataExporterSite;
+import org.jkiss.dbeaver.ui.export.data.IDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.File;

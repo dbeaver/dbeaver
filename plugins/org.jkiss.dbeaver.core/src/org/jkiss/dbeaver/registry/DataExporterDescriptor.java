@@ -7,7 +7,7 @@ package org.jkiss.dbeaver.registry;
 import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.ui.export.IDataExporter;
+import org.jkiss.dbeaver.ui.export.data.IDataExporter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -115,7 +115,7 @@ public class DataExporterDescriptor extends AbstractDescriptor
     {
         Class clazz = getExporterClass();
         if (clazz == null) {
-            return null;
+            throw new InstantiationException("Cannot find exporter class " + className);
         }
         return (IDataExporter)clazz.newInstance();
     }

@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.export.wizard;
+package org.jkiss.dbeaver.ui.export.data.wizard;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;

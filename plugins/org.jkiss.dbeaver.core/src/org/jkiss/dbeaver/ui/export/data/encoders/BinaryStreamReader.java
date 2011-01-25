@@ -2,7 +2,7 @@
  * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.ui.export.encoders;
+package org.jkiss.dbeaver.ui.export.data.encoders;
 
 import java.io.IOException;
 import java.io.InputStream;
