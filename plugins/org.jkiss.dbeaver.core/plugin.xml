@@ -892,6 +892,7 @@
             <separator name="import-export" visible="true"/>
             <command commandId="org.eclipse.ui.edit.rename"/>
             <command commandId="org.eclipse.ui.file.import"/>
+            <command commandId="org.eclipse.ui.file.export"/>
             <!--command commandId="org.eclipse.ui.file.close"/-->
             <separator name="exit" visible="true"/>
             <command commandId="org.eclipse.ui.file.exit"/>
@@ -1628,17 +1629,33 @@
         <handler type="scripts" extensions="sql" class="org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl"/>
         <handler type="bookmarks" extensions="bm" class="org.jkiss.dbeaver.model.impl.project.BookmarksHandlerImpl"/>
     </extension>
-    <extension
-          point="org.eclipse.ui.exportWizards">
-       <category
-             id="org.jkiss.dbeaver.core.export.project"
-             name="Project">
-       </category>
-       <wizard
-             class="org.jkiss.dbeaver.core.ExportWizard1"
+
+    <extension point="org.eclipse.ui.exportWizards">
+        <category id="org.jkiss.dbeaver.core.export.project" name="Project"/>
+        <wizard
+             category="org.jkiss.dbeaver.core.export.project"
+             class="org.jkiss.dbeaver.ui.export.project.ProjectExportWizard"
+             icon="icons/project.png"
              id="org.jkiss.dbeaver.core.wizard.export.project"
              name="Project">
-       </wizard>
+           <description>
+               DBeaver Project
+           </description>
+        </wizard>
+    </extension>
+
+    <extension point="org.eclipse.ui.importWizards">
+        <category id="org.jkiss.dbeaver.core.import.project" name="Project"/>
+        <wizard
+            category="org.jkiss.dbeaver.core.import.project"
+            class="org.jkiss.dbeaver.ui.export.project.ProjectImportWizard"
+            icon="icons/project.png"
+            id="org.jkiss.dbeaver.core.wizard.import.project"
+            name="Project">
+            <description>
+                DBeaver Project
+            </description>
+        </wizard>
     </extension>
 
 </plugin>
