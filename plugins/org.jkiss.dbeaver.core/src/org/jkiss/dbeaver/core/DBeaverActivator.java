@@ -85,7 +85,7 @@ public class DBeaverActivator extends AbstractUIPlugin
             File debugLogFile = new File(rootPath, "debug.log");
             if (debugLogFile.exists()) {
                 if (!debugLogFile.delete()) {
-                    System.err.println("Could not delete ");
+                    System.err.println("Could not delete debug log file");
                 }
             }
             try {

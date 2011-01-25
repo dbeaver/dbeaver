@@ -7,7 +7,6 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
-import org.eclipse.ui.IPlaceholderFolderLayout;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView;

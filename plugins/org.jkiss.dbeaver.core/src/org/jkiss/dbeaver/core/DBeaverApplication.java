@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.ui.DBeaverConstants;
 
 import java.io.File;
 import java.net.URL;
@@ -32,8 +33,8 @@ public class DBeaverApplication implements IApplication
 {
 
     /* (non-Javadoc)
-      * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
-      */
+    * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
+    */
     public Object start(IApplicationContext context)
     {
         Display display = PlatformUI.createDisplay();
@@ -46,6 +47,15 @@ public class DBeaverApplication implements IApplication
             // Error may occur if -data parameter was specified at startup
             e.printStackTrace();
         }
+/*
+        try {
+            if (instanceLoc.isLocked()) {
+                System.out.println("LOCKED!");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+*/
 
         try {
             int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
@@ -72,7 +82,7 @@ public class DBeaverApplication implements IApplication
             userHome = ".";
         }
         File userHomeDir = new File(userHome);
-        File workspaceDir = new File(userHomeDir, ".dbeaver");
+        File workspaceDir = new File(userHomeDir, DBeaverConstants.DBEAVER_DEFAULT_DIR);
         return workspaceDir;
     }
 

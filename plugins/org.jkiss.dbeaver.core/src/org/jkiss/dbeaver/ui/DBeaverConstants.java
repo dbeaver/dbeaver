@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.core.runtime.QualifiedName;
-
 /**
  * DBeaverConstants
  */
@@ -14,4 +12,5 @@ public class DBeaverConstants
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core";
 
+    public static final String DBEAVER_DEFAULT_DIR = ".dbeaver";
 }
