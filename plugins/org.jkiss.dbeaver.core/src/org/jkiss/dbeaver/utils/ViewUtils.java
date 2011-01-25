@@ -195,7 +195,7 @@ public class ViewUtils
                                     actionName = objectManager == null ? "View" : "Edit";
                                 }
                                 if (multipleSelection) {
-                                    item.setText(actionName + " objects");
+                                    item.setText(actionName + " Objects");
                                 } else {
                                     item.setText(actionName + " " + node.getNodeType());
                                 }
@@ -206,10 +206,10 @@ public class ViewUtils
                                 } else {
                                     objectName = node.getNodeType();
                                 }
-                                item.setText("Create new " + objectName);
+                                item.setText("Create New " + objectName);
                             } else if (ICommandIds.CMD_OBJECT_DELETE.equals(contribId) || IWorkbenchCommandConstants.EDIT_DELETE.equals(contribId)) {
                                 if (multipleSelection) {
-                                    item.setText("Delete objects");
+                                    item.setText("Delete Objects");
                                 } else {
                                     item.setText("Delete " + node.getNodeType());
                                 }

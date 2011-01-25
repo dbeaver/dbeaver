@@ -12,6 +12,7 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
@@ -63,6 +64,7 @@ public class DBNResource extends DBNNode
         return handler.getTypeName(resource);
     }
 
+    @Property(name = "Name", viewable = true, order = 1)
     public String getNodeName()
     {
         if (resource instanceof IFile) {
