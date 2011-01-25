@@ -60,7 +60,7 @@
 			</fileset>
 		</copy>
 
-		<exec executable="${nsisDirectory}\makensis.exe" dir="${buildDirectory}/installer">
+		<exec executable="${nsisDirectory}\makensis" dir="${buildDirectory}/installer">
 			<arg value="DBeaver.nsi"/>
 		</exec>
 

@@ -122,7 +122,7 @@ Section "-DBeaver Core" SecCore
   
   SetOutPath "$INSTDIR\plugins"
   
-  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.core_1.0.0.rc1.jar"
+  File "raw\win32.x86\dbeaver\plugins\org.jkiss.dbeaver.core_1.0.0.*.jar"
   
   ;Store installation folder
   WriteRegStr HKCU "Software\DBeaver" "" $INSTDIR
