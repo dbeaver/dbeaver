@@ -124,7 +124,7 @@
             <drivers managable="false">
                 <driver
                     id="mysql5"
-                    label="MySQL 5.x"
+                    label="MySQL"
                     icon="icons/mysql_icon.png"
                     class="com.mysql.jdbc.Driver"
                     sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"

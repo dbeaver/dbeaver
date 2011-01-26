@@ -69,18 +69,21 @@ class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
             testButton.setEnabled(settings != null && settings.isPageComplete());
             if (settings != null && connectionNameText != null && (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged)) {
                 DBPConnectionInfo connectionInfo = settings.getConnectionInfo();
-                String newName = connectionInfo.getDatabaseName();
+                String newName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName();
                 if (CommonUtils.isEmpty(newName)) {
-                    newName = connectionInfo.getHostName();
+                    newName = connectionInfo.getDatabaseName();
+                    if (CommonUtils.isEmpty(newName)) {
+                        newName = connectionInfo.getHostName();
+                    }
+                    if (CommonUtils.isEmpty(newName)) {
+                        newName = connectionInfo.getUrl();
+                    }
+                    if (CommonUtils.isEmpty(newName)) {
+                        newName = "New Connection";
+                    }
+                    newName = settings.getDriver().getName() + " - " + newName;
+                    newName = SQLUtils.truncateString(newName, 50);
                 }
-                if (CommonUtils.isEmpty(newName)) {
-                    newName = connectionInfo.getUrl();
-                }
-                if (CommonUtils.isEmpty(newName)) {
-                    newName = "New Connection";
-                }
-                newName = settings.getDriver().getName() + " - " + newName;
-                newName = SQLUtils.truncateString(newName, 50);
                 connectionNameText.setText(newName);
                 connectionNameChanged = false;
             }
