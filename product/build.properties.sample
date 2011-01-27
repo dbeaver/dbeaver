@@ -1,6 +1,8 @@
+productName=DBeaver
+productVersion=1.0.0
 product=/org.jkiss.dbeaver.core/DBeaver.product
 baseLocation=D:/Java/eclipse-3.6-dp
-buildDirectory=D:/Devel/my/DBeaver/product/build
+buildDirectory=build
 archivePrefix=dbeaver
 topLevelElementType = plugin
 topLevelElementId = org.jkiss.dbeaver.core
@@ -8,6 +10,7 @@ topLevelElementId = org.jkiss.dbeaver.core
 buildType=B
 buildId=dbeaver-rc1
 
+nsisDirectory=c:/program files/nsis
 
 ###############################################################################
 # Copyright (c) 2003, 2009 IBM Corporation and others.
