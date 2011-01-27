@@ -5,6 +5,7 @@
 	<property name="equinoxLauncherPluginVersion" value="1.1.0.v20100507"/>
 
 	<target name="clean">
+        <delete dir="${distDirectory}" />
 		<delete dir="${buildDirectory}" />
 	</target>
 
@@ -15,8 +16,10 @@
 		<copy todir="${buildDirectory}/plugins">
 			<fileset dir="../plugins">
 				<include name="**" />
+                <exclude name="**/.svn" />
 			</fileset>
 		</copy>
+        <mkdir dir="${distDirectory}" />
 	</target>
 
 
@@ -60,7 +63,7 @@
 			</fileset>
 		</copy>
 
-		<exec executable="${nsisDirectory}\makensis" dir="${buildDirectory}/installer">
+		<exec executable="${nsisDirectory}/makensis" dir="${buildDirectory}/installer">
 			<arg value="DBeaver.nsi"/>
 		</exec>
 
@@ -75,14 +78,14 @@
 		<taskdef resource="ant_deb_task.properties" classpathref="ant-deb.classpath"/>
 
 		<property name="packageName" value="${archivePrefix}"/>
-		<property name="debDirectory" value="${buildDirectory}/deb"/>
+		<property name="debDirectory" value="build/deb"/>
 
 		<echo message="Build ${productName} deb package"/>
 		
 		<delete dir="${debDirectory}" />
 		<mkdir dir="${debDirectory}" />
 		<unzip 
-			src="${buildDirectory}/${buildType}.${buildId}/${buildId}-linux.gtk.x86.zip"
+			src="build/${buildType}.${buildId}/${buildId}-linux.gtk.x86.zip"
 			dest="${debDirectory}"
 			overwrite="true"
 			/>
@@ -96,22 +99,22 @@
             icon="/usr/share/${packageName}/icon.xpm"
             categories="Development;Java"/>
 
-	<deb 
+        <deb 
             package="${packageName}"
-            todir="build"
+            version="${productVersion}"
+            todir="${distDirectory}"
             section="devel"
             depends="sun-java6-jre | openjdk-6-jre"
             homepage="http://dbeaver.jkiss.org"
             suggests="dbeaver"
-	>
-			<version upstream="${productVersion}"/>
+            architecture="x86">
 			<maintainer name="Serge Rieder" email="serge@jkiss.org"/>
 			<description synopsis="DBeaver">Universal Database Manager</description>
 			<tarfileset file="${debDirectory}/dbeaver/dbeaver" prefix="usr/share/${packageName}" filemode="755"/>
 			<tarfileset dir="${debDirectory}/dbeaver" prefix="usr/share/${packageName}" includes="**">
 				<exclude name="dbeaver"/>
 			</tarfileset>
-                        <tarfileset file="${debDirectory}/dbeaver.desktop" prefix="usr/share/applications"/>
+            <tarfileset file="${debDirectory}/dbeaver.desktop" prefix="usr/share/applications"/>
         </deb>
 
 	</target>

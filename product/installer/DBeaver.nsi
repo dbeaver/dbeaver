@@ -17,7 +17,7 @@
   BrandingText "Universal Database Manager"
   Icon "..\..\docs\dbeaver.ico"
   ;OutFile "dbeaver_setup.exe"
-  OutFile "..\@buildId@-setup.exe"
+  OutFile "..\..\dist\@archivePrefix@-@productVersion@-setup.exe"
 
   VIAddVersionKey "ProductName" "DBeaver"
   VIAddVersionKey "Comments" "Univarsal Database Manager"
