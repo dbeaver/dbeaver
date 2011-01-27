@@ -67,4 +67,33 @@
 		<delete dir="${buildDirectory}/installer" />
 	</target>
 
+	<target name="deb">
+		<path id="ant-deb.classpath">
+			<fileset dir="lib" includes="*.jar"/>
+		</path>
+		<taskdef name="deb" classname="com.googlecode.ant_deb_task.Deb" classpathref="ant-deb.classpath"/>
+
+		<mkdir dir="${buildDirectory}/deb" />
+		<unzip 
+			src="${buildDirectory}/${buildType}.${buildId}/${buildId}-linux.gtk.x86.zip"
+			dest="${buildDirectory}/deb"
+			overwrite="true"
+			/>
+
+		<deb 
+            package="dbeaver"
+            todir="build"
+            section="devel"
+            depends="sun-java6-jre | openjdk-6-jre"
+			homepage="http://dbeaver.jkiss.org">
+			<version upstream="1.0.0"/>
+			<maintainer name="Serge Rieder" email="serge@jkiss.org"/>
+			<description synopsis="DBEaver">Universal Database Manager</description>
+			<tarfileset dir="build/deb" prefix="usr/share/java">
+				<include name="dbeaver/**"/>
+			</tarfileset>
+        </deb>
+
+	</target>
+
 </project>

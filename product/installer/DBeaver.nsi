@@ -81,7 +81,17 @@
   !define MUI_FINISHPAGE_RUN
   !define MUI_FINISHPAGE_RUN_TEXT "Launch DBeaver"
   !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchDBeaver"
+  
+  !define MUI_FINISHPAGE_SHOWREADME ""
+  !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+  !define MUI_FINISHPAGE_SHOWREADME_TEXT "Create Desktop Shortcut"
+  !define MUI_FINISHPAGE_SHOWREADME_FUNCTION FinishPageAction
+
   !insertmacro MUI_PAGE_FINISH
+
+Function FinishPageAction
+	CreateShortCut "$DESKTOP\DBeaver.lnk" "$INSTDIR\dbeaver.exe" ""
+FunctionEnd
 
 Function LaunchDBeaver
   ExecShell "" "$SMPROGRAMS\$StartMenuFolder\DBeaver.lnk"
@@ -219,6 +229,7 @@ Section "Uninstall"
 
   Delete "$SMPROGRAMS\$StartMenuFolder\DBeaver.lnk"
   Delete "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk"
+  Delete "$DESKTOP\DBeaver.lnk"
   RMDir "$SMPROGRAMS\$StartMenuFolder"
 
   DeleteRegKey /ifempty HKCU "Software\DBeaver"
