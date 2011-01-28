@@ -48,7 +48,7 @@
 	<!--This target defines the run-order of the targets-->
 	<target name="build" depends="init, pde-build" />
 
-	<target name="installer">
+	<target name="dist-win">
 		<mkdir dir="${buildDirectory}/installer" />
 		<mkdir dir="${buildDirectory}/installer/raw" />
 		<unzip 
@@ -70,7 +70,7 @@
 		<delete dir="${buildDirectory}/installer" />
 	</target>
 
-	<target name="deb">
+	<target name="dist-deb">
 		<path id="ant-deb.classpath">
 			<fileset dir="lib" includes="*.jar"/>
 		</path>
@@ -119,4 +119,12 @@
 
 	</target>
 
+	<target name="dist-macos">
+
+    </target>
+
+	<target name="all" depends="clean,build,dist-win,dist-deb,dist-macos">
+
+    </target>
+	
 </project>
