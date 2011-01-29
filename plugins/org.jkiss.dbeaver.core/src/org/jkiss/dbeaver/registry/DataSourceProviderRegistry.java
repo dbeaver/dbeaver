@@ -90,7 +90,6 @@ public class DataSourceProviderRegistry
         }
         this.dataSourceProviders.clear();
 
-        this.dataSourceProviders.clear();
     }
 
     public DataSourceProviderDescriptor getDataSourceProvider(String id)

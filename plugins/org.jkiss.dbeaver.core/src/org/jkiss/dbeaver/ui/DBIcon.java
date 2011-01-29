@@ -133,6 +133,7 @@ public enum DBIcon
     OVER_SUCCESS("over_success", "/icons/over/success_ovr.png"),
     OVER_FAILED("over_failed", "/icons/over/failed_ovr.png"),
     OVER_ERROR("over_failed", "/icons/over/error_ovr.png"),
+    OVER_CONDITION("over_condition", "/icons/over/conditional_ovr.png"),
 
     ABOUT("about", "/icons/about_circle.png");
 

@@ -8,12 +8,15 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPDriverCustomQuery;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -37,6 +40,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private String sampleURL, origSampleURL;
     private String webURL, origWebURL;
     private Image icon;
+    private Image iconError;
     private boolean supportsDriverProperties;
     private boolean custom;
     private boolean modified;
@@ -51,7 +55,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private Object driverInstance;
     private DriverClassLoader classLoader;
 
-    private List<DataSourceDescriptor> usedBy = new ArrayList<DataSourceDescriptor>();
+    private transient List<DataSourceDescriptor> usedBy = new ArrayList<DataSourceDescriptor>();
+
+    private transient boolean isFailed = false;
 
     DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, String id)
     {
@@ -59,7 +65,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.providerDescriptor = providerDescriptor;
         this.id = id;
         this.custom = true;
-        this.icon = DBIcon.GEN_DATABASE.getImage();
+        this.icon = new Image(null, providerDescriptor.getIcon(), SWT.IMAGE_COPY);
+        makeIconExtensions();
     }
 
     DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, IConfigurationElement config)
@@ -95,8 +102,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             this.icon = iconToImage(iconName);
         }
         if (this.icon == null) {
-            this.icon = DBIcon.GEN_DATABASE.getImage();
+            this.icon = new Image(null, providerDescriptor.getIcon(), SWT.IMAGE_COPY);
         }
+        makeIconExtensions();
 
         IConfigurationElement[] propElements = config.getChildren(PropertyGroupDescriptor.PROPERTY_GROUP_TAG);
         for (IConfigurationElement prop : propElements) {
@@ -127,10 +135,29 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             providerDescriptor.getContributorBundle().getBundleContext().getClass().getClassLoader());
     }
 
+    private void makeIconExtensions()
+    {
+        if (isCustom()) {
+            Image oldIcon = this.icon;
+            OverlayImageDescriptor customDescriptor = new OverlayImageDescriptor(this.icon.getImageData());
+            customDescriptor.setBottomLeft(new ImageDescriptor[]{DBIcon.OVER_CONDITION.getImageDescriptor()});
+            this.icon = new Image(this.icon.getDevice(), customDescriptor.getImageData());
+            oldIcon.dispose();
+        }
+        OverlayImageDescriptor failedDescriptor = new OverlayImageDescriptor(this.icon.getImageData());
+        failedDescriptor.setBottomRight(new ImageDescriptor[] {DBIcon.OVER_ERROR.getImageDescriptor()} );
+        iconError = new Image(this.icon.getDevice(), failedDescriptor.getImageData());
+    }
+
     public void dispose()
     {
         if (icon != null) {
             icon.dispose();
+            icon = null;
+        }
+        if (iconError != null) {
+            iconError.dispose();
+            iconError = null;
         }
         if (!usedBy.isEmpty()) {
             log.error("Driver '" + getName() + "' still used by " + usedBy.size() + " data sources");
@@ -168,11 +195,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return id;
     }
 
-    public void setId(String id)
-    {
-        this.id = id;
-    }
-
     public String getName()
     {
         return name;
@@ -195,7 +217,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public Image getIcon()
     {
-        return icon;
+        if (!isLoaded && (isFailed || (isCustom() && libraries.isEmpty()))) {
+            return iconError;
+        } else {
+            return icon;
+        }
     }
 
     public boolean isCustom()
@@ -403,29 +429,35 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
 
         try {
-            if (!isManagable()) {
-                // Use plugin's classloader to load driver
-                driverClass = super.getObjectClass(driverClassName);
-            } else {
-                if (this.isInternalDriver()) {
-                    // Use system classloader
-                    driverClass = Class.forName(driverClassName);
+            try {
+                if (!isManagable()) {
+                    // Use plugin's classloader to load driver
+                    driverClass = super.getObjectClass(driverClassName);
                 } else {
-                    // Load driver classes into core module using plugin class loader
-                    driverClass = Class.forName(driverClassName, true, classLoader);
+                    if (this.isInternalDriver()) {
+                        // Use system classloader
+                        driverClass = Class.forName(driverClassName);
+                    } else {
+                        // Load driver classes into core module using plugin class loader
+                        driverClass = Class.forName(driverClassName, true, classLoader);
+                    }
                 }
             }
-        }
-        catch (ClassNotFoundException ex) {
-            throw new DBException("Can't load driver class '" + driverClassName + "'", ex);
-        }
+            catch (ClassNotFoundException ex) {
+                throw new DBException("Can't load driver class '" + driverClassName + "'", ex);
+            }
 
-        // Create driver instance
-        if (!this.isInternalDriver()) {
-            driverInstance = createDriverInstance();
-        }
+            // Create driver instance
+            if (!this.isInternalDriver()) {
+                driverInstance = createDriverInstance();
+            }
 
-        isLoaded = true;
+            isLoaded = true;
+            isFailed = false;
+        } catch (DBException e) {
+            isFailed = true;
+            throw e;
+        }
     }
 
     private void loadLibraries()

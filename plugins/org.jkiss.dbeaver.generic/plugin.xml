@@ -12,13 +12,13 @@
             file="contexts.xml">
         </contexts>
     </extension>
-    <extension
-        point="org.jkiss.dbeaver.dataSourceProvider">
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
               class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider"
               description="Generic JDBC connector"
               id="generic"
-              label="Generic">
+              label="Generic"
+              icon="icons/database.png">
             <tree path="generic" label="Generic data source">
                 <items label="Catalog" path="catalog" property="catalogs" iconId="#catalog" optional="true">
                     <items label="Schema" path="schema" property="schemas" iconId="#schema" optional="true">
@@ -153,11 +153,11 @@
                     targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
                     label="Generic JDBC Connection Settings"
                     class="org.jkiss.dbeaver.ext.generic.views.ConnectionEditorPage"
-                    icon="icons/database.gif">
+                    icon="icons/database.png">
                 </view>
                 <view
                       class="org.jkiss.dbeaver.ext.generic.views.ConnectionEditorPage"
-                      icon="icons/database.gif"
+                      icon="icons/database.png"
                       id="org.jkiss.dbeaver.ext.generic.dataSourceEditorView"
                       label="Generic JDBC Connection Settings"
                       targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">

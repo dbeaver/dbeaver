@@ -13,15 +13,13 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
 
@@ -142,6 +140,17 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
                 }
             });
         }
+        {
+            final Composite legend = UIUtils.createPlaceholder(group, 2, 5);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+
+            UIUtils.createImageLabel(legend, DBIcon.OVER_CONDITION.getImage());
+            UIUtils.createTextLabel(legend, "- User defined driver");
+
+            UIUtils.createImageLabel(legend, DBIcon.OVER_ERROR.getImage());
+            UIUtils.createTextLabel(legend, "- Unavailable driver");
+        }
         return group;
     }
 
@@ -213,6 +222,7 @@ public class DriverManagerDialog extends Dialog implements ISelectionChangedList
             if (dialog.open() == IDialogConstants.OK_ID) {
                 // Do nothing
             }
+            treeControl.refresh();
         }
     }
 

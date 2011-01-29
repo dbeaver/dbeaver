@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ext.ui.IEmbeddedPart;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
@@ -15,9 +16,10 @@ import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
 /**
  * Driver selection page
  */
-class ConnectionPageDriver extends WizardPage implements ISelectionChangedListener, IDoubleClickListener {
+class ConnectionPageDriver extends WizardPage implements ISelectionChangedListener, IDoubleClickListener, IEmbeddedPart {
     private NewConnectionWizard wizard;
     private DriverDescriptor selectedDriver;
+    private DriverTreeControl driverTreeControl;
 
     ConnectionPageDriver(NewConnectionWizard wizard)
     {
@@ -29,9 +31,9 @@ class ConnectionPageDriver extends WizardPage implements ISelectionChangedListen
 
     public void createControl(Composite parent)
     {
-        DriverTreeControl treeControl = new DriverTreeControl(parent);
-        treeControl.initDrivers(this, wizard.getAvailableProvides());
-        setControl(treeControl.getControl());
+        driverTreeControl = new DriverTreeControl(parent);
+        driverTreeControl.initDrivers(this, wizard.getAvailableProvides());
+        setControl(driverTreeControl.getControl());
     }
 
     public DriverDescriptor getSelectedDriver()
@@ -74,4 +76,15 @@ class ConnectionPageDriver extends WizardPage implements ISelectionChangedListen
         }
     }
 
+    public void activatePart()
+    {
+        if (driverTreeControl != null) {
+            driverTreeControl.refresh();
+        }
+    }
+
+    public void deactivatePart()
+    {
+
+    }
 }

@@ -368,6 +368,22 @@ public class UIUtils {
         return textLabel;
     }
 
+    public static Label createTextLabel(Composite parent, String label)
+    {
+        Label textLabel = new Label(parent, SWT.NONE);
+        textLabel.setText(label);
+
+        return textLabel;
+    }
+
+    public static Label createImageLabel(Composite parent, Image image)
+    {
+        Label imageLabel = new Label(parent, SWT.NONE);
+        imageLabel.setImage(image);
+
+        return imageLabel;
+    }
+
     public static Text createLabelText(Composite parent, String label, String value)
     {
         return createLabelText(parent, label, value, SWT.BORDER);
