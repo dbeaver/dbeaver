@@ -174,8 +174,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     public void removeDataSource(DataSourceDescriptor dataSource)
     {
         this.dataSources.remove(dataSource);
-        this.saveDataSources();
-        this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
+        try {
+            this.saveDataSources();
+            this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
+        } finally {
+            dataSource.dispose();
+        }
     }
 
     public void updateDataSource(DataSourceDescriptor dataSource)

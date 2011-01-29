@@ -137,6 +137,15 @@
                     webURL="http://sun.com"
                     description="ODBC bridge driver">
                 </driver>
+                <driver
+                    id="derby"
+                    label="Derby Embedded"
+                    class="org.apache.derby.jdbc.EmbeddedDriver"
+                    sampleURL="jdbc:derby:{database}"
+                    webURL="http://db.apache.org/"
+                    description="Derby (Java DB) embedded driver">
+                    <parameter name="shutdown-url-param" value=";shutdown=true"/>
+                </driver>
             </drivers>
             <views>
                 <view

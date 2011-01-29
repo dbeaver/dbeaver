@@ -21,6 +21,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
+import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +39,8 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     public static final String QUERY_SET_ACTIVE_DB = "SET_ACTIVE_DB";
 
     public static final String PARAM_META_CASE = "meta-case";
+    // URL parameter for DB shutdown. Added to support Derby DB shutdown process
+    public static final String PARAM_SHUTDOWN_URL_PARAM = "shutdown-url-param";
 
     private List<String> tableTypes;
     private List<GenericCatalog> catalogs;
@@ -85,6 +89,23 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
             }
         } else {
             this.metaCase = MetaCase.NONE;
+        }
+    }
+
+    @Override
+    public void close(DBRProgressMonitor monitor)
+    {
+        super.close(monitor);
+        String paramShutdown = getContainer().getDriver().getParameter(PARAM_SHUTDOWN_URL_PARAM);
+        if (!CommonUtils.isEmpty(paramShutdown)) {
+            try {
+                final Driver driver = getDriverInstance();
+                if (driver != null) {
+                    driver.connect(getContainer().getConnectionInfo().getUrl() + paramShutdown, null);
+                }
+            } catch (Exception e) {
+                log.debug(e);
+            }
         }
     }
 

@@ -70,7 +70,7 @@ public abstract class JDBCDataSource
         throws DBException
     {
         // It MUST be a JDBC driver
-        Driver driverInstance = Driver.class.cast(container.getDriver().getDriverInstance());
+        Driver driverInstance = getDriverInstance();
 
         // Set properties
         Properties driverProps = new Properties();
@@ -111,6 +111,12 @@ public abstract class JDBCDataSource
         catch (SQLException ex) {
             throw new DBException(ex);
         }
+    }
+
+    protected Driver getDriverInstance()
+        throws DBException
+    {
+        return Driver.class.cast(container.getDriver().getDriverInstance());
     }
 
     /**
