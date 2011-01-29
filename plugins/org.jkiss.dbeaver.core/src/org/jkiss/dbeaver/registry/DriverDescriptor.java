@@ -39,7 +39,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private Integer driverDefaultPort, origDefaultPort;
     private String sampleURL, origSampleURL;
     private String webURL, origWebURL;
-    private Image icon;
+    private Image iconPlain;
+    private Image iconNormal;
     private Image iconError;
     private boolean supportsDriverProperties;
     private boolean custom;
@@ -65,7 +66,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.providerDescriptor = providerDescriptor;
         this.id = id;
         this.custom = true;
-        this.icon = new Image(null, providerDescriptor.getIcon(), SWT.IMAGE_COPY);
+        this.iconPlain = new Image(null, providerDescriptor.getIcon(), SWT.IMAGE_COPY);
         makeIconExtensions();
     }
 
@@ -99,10 +100,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         String iconName = config.getAttribute("icon");
         if (!CommonUtils.isEmpty(iconName)) {
-            this.icon = iconToImage(iconName);
+            this.iconPlain = iconToImage(iconName);
         }
-        if (this.icon == null) {
-            this.icon = new Image(null, providerDescriptor.getIcon(), SWT.IMAGE_COPY);
+        if (this.iconPlain == null) {
+            this.iconPlain = new Image(null, providerDescriptor.getIcon(), SWT.IMAGE_COPY);
         }
         makeIconExtensions();
 
@@ -138,22 +139,26 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private void makeIconExtensions()
     {
         if (isCustom()) {
-            Image oldIcon = this.icon;
-            OverlayImageDescriptor customDescriptor = new OverlayImageDescriptor(this.icon.getImageData());
+            OverlayImageDescriptor customDescriptor = new OverlayImageDescriptor(this.iconPlain.getImageData());
             customDescriptor.setBottomLeft(new ImageDescriptor[]{DBIcon.OVER_CONDITION.getImageDescriptor()});
-            this.icon = new Image(this.icon.getDevice(), customDescriptor.getImageData());
-            oldIcon.dispose();
+            this.iconNormal = new Image(this.iconPlain.getDevice(), customDescriptor.getImageData());
+        } else {
+            this.iconNormal = new Image(this.iconPlain.getDevice(), iconPlain, SWT.IMAGE_COPY);
         }
-        OverlayImageDescriptor failedDescriptor = new OverlayImageDescriptor(this.icon.getImageData());
+        OverlayImageDescriptor failedDescriptor = new OverlayImageDescriptor(this.iconNormal.getImageData());
         failedDescriptor.setBottomRight(new ImageDescriptor[] {DBIcon.OVER_ERROR.getImageDescriptor()} );
-        iconError = new Image(this.icon.getDevice(), failedDescriptor.getImageData());
+        this.iconError = new Image(this.iconNormal.getDevice(), failedDescriptor.getImageData());
     }
 
     public void dispose()
     {
-        if (icon != null) {
-            icon.dispose();
-            icon = null;
+        if (iconPlain != null) {
+            iconPlain.dispose();
+            iconPlain = null;
+        }
+        if (iconNormal != null) {
+            iconNormal.dispose();
+            iconNormal = null;
         }
         if (iconError != null) {
             iconError.dispose();
@@ -215,12 +220,25 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.description = description;
     }
 
+    /**
+     * Plain icon (without any overlays).
+     * @return plain icon
+     */
+    public Image getPlainIcon()
+    {
+        return iconPlain;
+    }
+
+    /**
+     * Driver icon, includes overlays for driver conditions (custom, invalid, etc)..
+     * @return icon
+     */
     public Image getIcon()
     {
-        if (!isLoaded && (isFailed || (isCustom() && libraries.isEmpty()))) {
+        if (!isLoaded && (isFailed || (isManagable() && !isInternalDriver() && libraries.isEmpty()))) {
             return iconError;
         } else {
-            return icon;
+            return iconNormal;
         }
     }
 

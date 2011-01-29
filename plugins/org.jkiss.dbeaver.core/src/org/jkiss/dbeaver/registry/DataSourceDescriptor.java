@@ -490,7 +490,7 @@ public class DataSourceDescriptor implements DBSDataSourceContainer, IObjectImag
     public Image getObjectImage()
     {
         if (iconNormal == null) {
-            iconNormal = driver.getIcon();
+            iconNormal = driver.getPlainIcon();
 
             // Create overlay image for connected icon
             {

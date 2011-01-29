@@ -93,6 +93,7 @@ public class DriverEditDialog extends Dialog
             driver = provider.createDriver();
         } else {
             getShell().setText("Edit Driver '" + driver.getName() + "'");
+            getShell().setImage(driver.getPlainIcon());
         }
 
         boolean isReadOnly = !provider.isDriversManagable();
