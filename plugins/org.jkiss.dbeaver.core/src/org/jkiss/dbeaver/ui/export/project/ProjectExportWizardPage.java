@@ -35,6 +35,8 @@ public class ProjectExportWizardPage extends WizardPage {
 
     private Text directoryText;
     private Table projectsTable;
+    private Button exportDriverCheck;
+    private Text fileNameText;
 
     protected ProjectExportWizardPage(String pageName)
     {
@@ -88,7 +90,7 @@ public class ProjectExportWizardPage extends WizardPage {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                getContainer().updateButtons();
+                updateState();
             }
         });
 
@@ -102,8 +104,15 @@ public class ProjectExportWizardPage extends WizardPage {
             }
         }
 
+        final Composite fileNameGroup = UIUtils.createPlaceholder(placeholder, 2);
+        fileNameGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        fileNameText = UIUtils.createLabelText(fileNameGroup, "Output file", "");
+        fileNameText.setEditable(false);
+        fileNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
         // Output folder
-        Group generalSettings = UIUtils.createControlGroup(placeholder, "Output", 3, GridData.FILL_HORIZONTAL, 0);
+        Composite generalSettings = UIUtils.createPlaceholder(placeholder, 3);
+        generalSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         {
             UIUtils.createControlLabel(generalSettings, "Directory");
             directoryText = new Text(generalSettings, SWT.BORDER);
@@ -112,7 +121,7 @@ public class ProjectExportWizardPage extends WizardPage {
             directoryText.addModifyListener(new ModifyListener() {
                 public void modifyText(ModifyEvent e)
                 {
-                    getContainer().updateButtons();
+                    updateState();
                 }
             });
 
@@ -120,7 +129,8 @@ public class ProjectExportWizardPage extends WizardPage {
             openFolder.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER));
             openFolder.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(SelectionEvent e)
+                {
                     DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
                     dialog.setMessage("Choose directory to place exported files");
                     dialog.setText("Export directory");
@@ -135,8 +145,21 @@ public class ProjectExportWizardPage extends WizardPage {
                 }
             });
         }
+        exportDriverCheck = UIUtils.createCheckbox(placeholder, "Export driver libraries", false);
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.horizontalSpan = 3;
+        exportDriverCheck.setLayoutData(gd);
 
         setControl(placeholder);
+
+        updateState();
+    }
+
+    private void updateState()
+    {
+        final String archiveFileName = ((ProjectExportWizard) getWizard()).getArchiveFileName(getProjectsToExport());
+        fileNameText.setText(archiveFileName);
+        getContainer().updateButtons();
     }
 
     public List<IProject> getProjectsToExport()
@@ -153,5 +176,10 @@ public class ProjectExportWizardPage extends WizardPage {
     public File getOutputFolder()
     {
         return new File(directoryText.getText());
+    }
+
+    public boolean isExportDrivers()
+    {
+        return exportDriverCheck.getSelection();
     }
 }

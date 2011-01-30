@@ -111,7 +111,7 @@ public class DBNResource extends DBNNode
     {
         if (children == null) {
             if (resource instanceof IContainer) {
-                final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+                //final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
                 List<DBNNode> result = new ArrayList<DBNNode>();
                 try {
                     IResource[] members = ((IContainer) resource).members();
@@ -147,10 +147,6 @@ public class DBNResource extends DBNNode
 
     private DBNNode makeNode(IResource resource)
     {
-        if (!resource.isAccessible() || resource.isHidden() || resource.isPhantom()) {
-            // Skip not accessible hidden and phantom resources
-            return null;
-        }
         try {
             if (resource instanceof IFolder && resource.getParent() instanceof IFolder) {
                 // Sub folder

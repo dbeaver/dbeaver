@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.registry;
 
 import net.sf.jkiss.utils.CommonUtils;
+import net.sf.jkiss.utils.xml.XMLBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -18,6 +19,7 @@ import org.jkiss.dbeaver.model.DBPDriverCustomQuery;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -533,5 +535,35 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         return origLibraries;
     }
+
+    public void serialize(XMLBuilder xml, boolean export)
+        throws IOException
+    {
+        xml.startElement("driver");
+        xml.addAttribute("id", this.getId());
+        if (this.isDisabled()) {
+            xml.addAttribute("disabled", true);
+        }
+        xml.addAttribute("custom", this.isCustom());
+        xml.addAttribute("name", this.getName());
+        xml.addAttribute("class", this.getDriverClassName());
+        xml.addAttribute("url", this.getSampleURL());
+        if (this.getDefaultPort() != null) {
+            xml.addAttribute("port", this.getDefaultPort().toString());
+        }
+        xml.addAttribute("description", CommonUtils.getString(this.getDescription()));
+        for (DriverLibraryDescriptor lib : this.getLibraries()) {
+            if ((export && !lib.isDisabled()) || lib.isCustom() || lib.isDisabled()) {
+                xml.startElement("library");
+                xml.addAttribute("path", lib.getPath());
+                if (lib.isDisabled()) {
+                    xml.addAttribute("disabled", true);
+                }
+                xml.endElement();
+            }
+        }
+        xml.endElement();
+    }
+
 }
 

@@ -195,7 +195,7 @@ public class DataSourceProviderRegistry
                     xml.addAttribute("id", provider.getId());
                     for (DriverDescriptor driver : provider.getDrivers()) {
                         if (driver.isModified()) {
-                            saveDriver(xml, driver);
+                            driver.serialize(xml, false);
                         }
                     }
                     xml.endElement();
@@ -210,35 +210,6 @@ public class DataSourceProviderRegistry
         } catch (FileNotFoundException ex) {
             log.warn("Can't open config file " + driversConfig.getPath(), ex);
         }
-    }
-
-    private void saveDriver(XMLBuilder xml, DriverDescriptor driver)
-        throws IOException
-    {
-        xml.startElement("driver");
-        xml.addAttribute("id", driver.getId());
-        if (driver.isDisabled()) {
-            xml.addAttribute("disabled", true);
-        }
-        xml.addAttribute("custom", driver.isCustom());
-        xml.addAttribute("name", driver.getName());
-        xml.addAttribute("class", driver.getDriverClassName());
-        xml.addAttribute("url", driver.getSampleURL());
-        if (driver.getDefaultPort() != null) {
-            xml.addAttribute("port", driver.getDefaultPort().toString());
-        }
-        xml.addAttribute("description", CommonUtils.getString(driver.getDescription()));
-        for (DriverLibraryDescriptor lib : driver.getLibraries()) {
-            if (lib.isCustom() || lib.isDisabled()) {
-                xml.startElement("library");
-                xml.addAttribute("path", lib.getPath());
-                if (lib.isDisabled()) {
-                    xml.addAttribute("disabled", true);
-                }
-                xml.endElement();
-            }
-        }
-        xml.endElement();
     }
 
     private class DriversParser implements SAXListener

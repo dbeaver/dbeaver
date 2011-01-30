@@ -156,6 +156,10 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     public DBPResourceHandler getResourceHandler(IResource resource)
     {
+        if (resource == null || !resource.isAccessible() || resource.isHidden() || resource.isPhantom()) {
+            // Skip not accessible hidden and phantom resources
+            return null;
+        }
         DBPResourceHandler handler = null;
         String resourceType = null;
         try {

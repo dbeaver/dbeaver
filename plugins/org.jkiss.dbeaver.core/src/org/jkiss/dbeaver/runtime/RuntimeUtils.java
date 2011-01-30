@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * RuntimeUtils
@@ -132,4 +134,11 @@ public class RuntimeUtils
         return new File(getUserHomeDir(), ".dbeaver-beta/");
     }
 
+    public static String getCurrentTimeStamp()
+    {
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        final int month = c.get(Calendar.MONTH) + 1;
+        return "" + c.get(Calendar.YEAR) + (month < 10 ? "0" + month : month) + c.get(Calendar.DAY_OF_MONTH) + c.get(Calendar.HOUR_OF_DAY) + c.get(Calendar.MINUTE);
+    }
 }
