@@ -116,11 +116,19 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     public void dispose()
     {
+        // Dispose all DS registries
+        for (DataSourceRegistry dataSourceRegistry : this.projectDatabases.values()) {
+            dataSourceRegistry.dispose();
+        }
+        this.projectDatabases.clear();
+
+        // Dispose resource handlers
         for (ResourceHandlerDescriptor handlerDescriptor : this.handlerDescriptors) {
             handlerDescriptor.dispose();
         }
         this.handlerDescriptors.clear();
 
+        // Remove listeners
         if (workspace != null) {
             workspace.removeResourceChangeListener(this);
             workspace = null;

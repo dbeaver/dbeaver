@@ -250,8 +250,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         }
         this.dataExportersRegistry.dispose();
         this.dataFormatterRegistry.dispose();
-        this.dataSourceProviderRegistry.dispose();
         this.projectRegistry.dispose();
+        this.dataSourceProviderRegistry.dispose();
 
         // Unregister properties adapter
         Platform.getAdapterManager().unregisterAdapters(editorsAdapter);
