@@ -16,6 +16,8 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -93,7 +95,14 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                 }
                 return children.toArray();
             } else if (parent instanceof DataSourceProviderDescriptor) {
-                return ((DataSourceProviderDescriptor) parent).getEnabledDrivers().toArray();
+                final List<DriverDescriptor> drivers = ((DataSourceProviderDescriptor) parent).getEnabledDrivers();
+                Collections.sort(drivers, new Comparator<DriverDescriptor>() {
+                    public int compare(DriverDescriptor o1, DriverDescriptor o2)
+                    {
+                        return o1.getName().compareTo(o2.getName());
+                    }
+                });
+                return drivers.toArray();
             } else {
                 return new Object[0];
             }

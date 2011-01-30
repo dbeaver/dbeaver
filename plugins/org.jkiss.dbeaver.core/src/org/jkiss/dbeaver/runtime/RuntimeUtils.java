@@ -118,9 +118,18 @@ public class RuntimeUtils
         store.setDefault(name, value.toString());
     }
 
+    public static File getUserHomeDir()
+    {
+        String userHome = System.getProperty("user.home");
+        if (userHome == null) {
+            userHome = ".";
+        }
+        return new File(userHome);
+    }
+
     public static File getBetaDir()
     {
-        return new File(new File(System.getProperty("user.home")), ".dbeaver-beta/");
+        return new File(getUserHomeDir(), ".dbeaver-beta/");
     }
 
 }

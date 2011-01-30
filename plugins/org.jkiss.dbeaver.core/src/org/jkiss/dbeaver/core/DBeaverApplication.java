@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBeaverConstants;
 
 import java.io.File;
@@ -77,13 +78,8 @@ public class DBeaverApplication implements IApplication
     }
 
     private File getDefaultWorkspaceLocation() {
-        String userHome = System.getProperty("user.home");
-        if (userHome == null) {
-            userHome = ".";
-        }
-        File userHomeDir = new File(userHome);
-        File workspaceDir = new File(userHomeDir, DBeaverConstants.DBEAVER_DEFAULT_DIR);
-        return workspaceDir;
+        File userHomeDir = RuntimeUtils.getUserHomeDir();
+        return new File(userHomeDir, DBeaverConstants.DBEAVER_DEFAULT_DIR);
     }
 
     /* (non-Javadoc)
