@@ -60,10 +60,11 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         return exportProjects(
             mainPage.getProjectsToExport(),
             mainPage.getOutputFolder(),
+            mainPage.getArchiveFileName(),
             mainPage.isExportDrivers());
 	}
 
-    public boolean exportProjects(final List<IProject> projects, final File outputFolder, final boolean exportDrivers)
+    public boolean exportProjects(final List<IProject> projects, final File outputFolder, final String fileName, final boolean exportDrivers)
     {
         DBRRunnableWithProgress op = new DBRRunnableWithProgress()
         {
@@ -77,7 +78,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                 }
 
                 try {
-                    String archiveName = getArchiveFileName(projects);
+                    String archiveName = fileName + ExportConstants.ARCHIVE_FILE_EXT;
                     File archiveFile = new File(outputFolder, archiveName);
                     FileOutputStream exportStream = new FileOutputStream(archiveFile);
 
@@ -231,17 +232,6 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             return false;
         }
         return true;
-    }
-
-    String getArchiveFileName(List<IProject> projects)
-    {
-        String archiveName = "projects";
-        if (projects.size() == 1) {
-            archiveName = projects.get(0).getName();
-        }
-        archiveName += "-" + RuntimeUtils.getCurrentTimeStamp();
-        archiveName += ExportConstants.ARCHIVE_FILE_EXT;
-        return archiveName;
     }
 
     private int getChildCount(ExportData exportData, IResource resource) throws CoreException

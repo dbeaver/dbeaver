@@ -134,6 +134,14 @@ public class RuntimeUtils
         return new File(getUserHomeDir(), ".dbeaver-beta/");
     }
 
+    public static String getCurrentDate()
+    {
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        final int month = c.get(Calendar.MONTH) + 1;
+        return "" + c.get(Calendar.YEAR) + (month < 10 ? "0" + month : month) + c.get(Calendar.DAY_OF_MONTH);
+    }
+
     public static String getCurrentTimeStamp()
     {
         Calendar c = Calendar.getInstance();

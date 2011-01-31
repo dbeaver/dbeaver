@@ -8,6 +8,7 @@ import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
@@ -37,12 +38,12 @@ public class ProjectExportWizardPage extends WizardPage {
     private Table projectsTable;
     private Button exportDriverCheck;
     private Text fileNameText;
+    private boolean fileNameEdited = false;
 
     protected ProjectExportWizardPage(String pageName)
     {
         super(pageName);
         setTitle("Export project(s)");
-        setDescription("Configure project export settings.");
     }
 
     @Override
@@ -52,13 +53,16 @@ public class ProjectExportWizardPage extends WizardPage {
             return false;
         }
         if (CommonUtils.isEmpty(directoryText.getText())) {
+            setMessage("Output directory is not specified.", IMessageProvider.ERROR);
             return false;
         }
         for (TableItem item : projectsTable.getItems()) {
             if (item.getChecked()) {
+                setMessage("Configure project export settings.", IMessageProvider.NONE);
                 return true;
             }
         }
+        setMessage("Choose a project(s) to export.", IMessageProvider.ERROR);
         return false;
     }
 
@@ -79,7 +83,7 @@ public class ProjectExportWizardPage extends WizardPage {
             projectList.add(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
         }
 
-        Composite placeholder = UIUtils.createPlaceholder(parent, SWT.NONE);
+        Composite placeholder = UIUtils.createPlaceholder(parent, 1);
         placeholder.setLayout(new GridLayout(1, false));
 
         // Project list
@@ -107,8 +111,15 @@ public class ProjectExportWizardPage extends WizardPage {
         final Composite fileNameGroup = UIUtils.createPlaceholder(placeholder, 2);
         fileNameGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         fileNameText = UIUtils.createLabelText(fileNameGroup, "Output file", "");
-        fileNameText.setEditable(false);
         fileNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        fileNameText.addModifyListener(new ModifyListener() {
+            public void modifyText(ModifyEvent e)
+            {
+                if (!CommonUtils.equalObjects(fileNameText.getText(), getArchiveFileName(getProjectsToExport()))) {
+                    fileNameEdited = true;
+                }
+            }
+        });
 
         // Output folder
         Composite generalSettings = UIUtils.createPlaceholder(placeholder, 3);
@@ -157,8 +168,10 @@ public class ProjectExportWizardPage extends WizardPage {
 
     private void updateState()
     {
-        final String archiveFileName = ((ProjectExportWizard) getWizard()).getArchiveFileName(getProjectsToExport());
-        fileNameText.setText(archiveFileName);
+        if (!fileNameEdited) {
+            final String archiveFileName = getArchiveFileName(getProjectsToExport());
+            fileNameText.setText(archiveFileName);
+        }
         getContainer().updateButtons();
     }
 
@@ -182,4 +195,21 @@ public class ProjectExportWizardPage extends WizardPage {
     {
         return exportDriverCheck.getSelection();
     }
+
+    public String getArchiveFileName()
+    {
+        return fileNameText.getText();
+    }
+
+    static String getArchiveFileName(List<IProject> projects)
+    {
+        String archiveName = "All";
+        if (projects.size() == 1) {
+            archiveName = projects.get(0).getName();
+        }
+        archiveName += "-" + RuntimeUtils.getCurrentDate();
+        //archiveName += ExportConstants.ARCHIVE_FILE_EXT;
+        return archiveName;
+    }
+
 }
