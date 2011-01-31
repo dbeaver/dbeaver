@@ -97,7 +97,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         }
         return
             "Connection: " + dataSourceContainer.getName() + "\n" +
-            "Type: " + dataSourceContainer.getDriver().getName() + "\n" +
+            "Type: " + (dataSourceContainer.getDriver() == null ? "Unknown" : dataSourceContainer.getDriver().getName()) + "\n" +
             "URL: " + dataSourceContainer.getConnectionInfo().getUrl();
     }
 

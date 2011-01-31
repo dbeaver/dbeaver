@@ -667,14 +667,18 @@ public class SQLEditor extends SQLEditorBase
 
     private void onDataSourceChange()
     {
-        if (getDataSource() == null) {
-            resultsView.setStatus("Not connected to database");
-        } else {
-            resultsView.setStatus("Connected to '" + getDataSource().getContainer().getName() + "'");
+        if (resultsView != null) {
+            if (getDataSource() == null) {
+                resultsView.setStatus("Not connected to database");
+            } else {
+                resultsView.setStatus("Connected to '" + getDataSource().getContainer().getName() + "'");
+            }
         }
-        //resultsView.refresh();
-        // Refresh plan view
-        planView.refresh();
+        if (planView != null) {
+            //resultsView.refresh();
+            // Refresh plan view
+            planView.refresh();
+        }
 
         // Update command states
         SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
