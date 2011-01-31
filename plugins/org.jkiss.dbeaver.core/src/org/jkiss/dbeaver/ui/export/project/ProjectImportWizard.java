@@ -11,20 +11,19 @@ import org.eclipse.ui.IWorkbench;
 
 public class ProjectImportWizard extends Wizard implements IImportWizard {
 
-    private ProjectImportWizardPage mainPage;
-
     public ProjectImportWizard() {
 	}
 
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-        setWindowTitle("Project Import Wizard"); //NON-NLS-1
+        setWindowTitle("Project Import Wizard");
         setNeedsProgressMonitor(true);
-        mainPage = new ProjectImportWizardPage("Import project"); //NON-NLS-1
     }
 
     public void addPages() {
         super.addPages();
-        addPage(mainPage);
+        ProjectImportData data = new ProjectImportData();
+        addPage(new ProjectImportWizardPageFile(data));
+        //addPage(new ProjectImportWizardPageFinal(data));
     }
 
 	@Override
