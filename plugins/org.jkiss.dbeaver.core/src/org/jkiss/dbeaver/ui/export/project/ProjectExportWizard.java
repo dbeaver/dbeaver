@@ -57,168 +57,18 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
 	@Override
 	public boolean performFinish() {
-        return exportProjects(
-            mainPage.getProjectsToExport(),
-            mainPage.getOutputFolder(),
-            mainPage.getArchiveFileName(),
-            mainPage.isExportDrivers());
-	}
-
-    public boolean exportProjects(final List<IProject> projects, final File outputFolder, final String fileName, final boolean exportDrivers)
-    {
-        DBRRunnableWithProgress op = new DBRRunnableWithProgress()
-        {
-            public void run(DBRProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException
-            {
-                if (!outputFolder.exists()) {
-                    if (!outputFolder.mkdirs()) {
-                        throw new InvocationTargetException(new IOException("Cannot create directory '" + outputFolder.getAbsolutePath() + "'"));
-                    }
-                }
-
-                try {
-                    String archiveName = fileName + ExportConstants.ARCHIVE_FILE_EXT;
-                    File archiveFile = new File(outputFolder, archiveName);
-                    FileOutputStream exportStream = new FileOutputStream(archiveFile);
-
-                    try {
-                        ByteArrayOutputStream metaBuffer = new ByteArrayOutputStream(10000);
-                        ZipOutputStream archiveStream = new ZipOutputStream(exportStream);
-                        ExportData exportData;
-                        {
-                            // Start meta
-                            XMLBuilder meta = new XMLBuilder(metaBuffer, ContentUtils.DEFAULT_FILE_CHARSET);
-                            meta.startElement(ExportConstants.TAG_ARCHIVE);
-                            meta.addAttribute(ExportConstants.ATTR_VERSION, ExportConstants.ARCHIVE_VERSION_CURRENT);
-
-                            exportData = new ExportData(DBeaverCore.getInstance().getProjectRegistry(), meta, archiveStream);
-                        }
-
-                        Map<IProject, Integer> resCountMap = new HashMap<IProject, Integer>();
-                        monitor.beginTask("Collect projects info", projects.size());
-                        for (IProject project : projects) {
-                            // Add used drivers to export data
-                            final DataSourceRegistry dataSourceRegistry = exportData.projectRegistry.getDataSourceRegistry(project);
-                            if (dataSourceRegistry != null) {
-                                for (DataSourceDescriptor dataSourceDescriptor : dataSourceRegistry.getDataSources()) {
-                                    exportData.usedDrivers.add(dataSourceDescriptor.getDriver());
-                                }
-                            }
-
-                            resCountMap.put(project, getChildCount(exportData, project));
-                            monitor.worked(1);
-                        }
-                        monitor.done();
-
-                        {
-                            // Export drivers meta
-                            monitor.beginTask("Export drivers information", 1);
-                            exportData.meta.startElement(ExportConstants.TAG_DRIVERS);
-                            for (DriverDescriptor driver : exportData.usedDrivers) {
-                                driver.serialize(exportData.meta, true);
-                            }
-                            exportData.meta.endElement();
-                            monitor.done();
-                        }
-
-                        {
-                            // Export projects
-                            exportData.meta.startElement(ExportConstants.TAG_PROJECTS);
-                            for (IProject project : projects) {
-                                monitor.beginTask("Export project '" + project.getName() + "'", resCountMap.get(project));
-                                try {
-                                    exportProject(monitor, exportData, project);
-                                } finally {
-                                    monitor.done();
-                                }
-                            }
-                            exportData.meta.endElement();
-                        }
-
-                        if (exportDrivers) {
-                            // Export driver libraries
-                            Set<File> libFiles = new HashSet<File>();
-                            Map<String, File> libPathMap = new HashMap<String, File>();
-                            for (DriverDescriptor driver : exportData.usedDrivers) {
-                                for (DriverLibraryDescriptor libraryDescriptor : driver.getLibraries()) {
-                                    final File libraryFile = libraryDescriptor.getLibraryFile();
-                                    if (!libraryDescriptor.isDisabled() && libraryFile.exists()) {
-                                        libFiles.add(libraryFile);
-                                        libPathMap.put(libraryDescriptor.getPath(), libraryFile);
-                                    }
-                                }
-                            }
-
-                            if (!libFiles.isEmpty()) {
-                                monitor.beginTask("Export driver libraries", libFiles.size());
-
-                                final ZipEntry driversFolder = new ZipEntry(ExportConstants.DIR_DRIVERS + "/");
-                                driversFolder.setComment("Database driver libraries");
-                                exportData.archiveStream.putNextEntry(driversFolder);
-                                exportData.archiveStream.closeEntry();
-
-                                exportData.meta.startElement(ExportConstants.TAG_LIBRARIES);
-                                Set<String> libFileNames = new HashSet<String>();
-                                for (String libPath : libPathMap.keySet()) {
-                                    final File libFile = libPathMap.get(libPath);
-                                    // Check for file name duplications
-                                    final String libFileName = libFile.getName();
-                                    if (libFileNames.contains(libFileName)) {
-                                        log.warn("Duplicate driver library file name: " + libFileName);
-                                        continue;
-                                    }
-                                    libFileNames.add(libFileName);
-
-                                    monitor.subTask(libFileName);
-
-                                    exportData.meta.startElement(ExportConstants.TAG_LIBRARY);
-                                    exportData.meta.addAttribute(ExportConstants.ATTR_PATH, libPath);
-                                    exportData.meta.addAttribute(ExportConstants.ATTR_FILE, "drivers/" + libFileName);
-                                    exportData.meta.endElement();
-
-                                    final ZipEntry driverFile = new ZipEntry(ExportConstants.DIR_DRIVERS + "/" + libFileName);
-                                    driverFile.setComment("Driver library");
-                                    exportData.archiveStream.putNextEntry(driverFile);
-                                    InputStream is = new FileInputStream(libFile);
-                                    try {
-                                        IOUtils.copyStream(is, exportData.archiveStream, COPY_BUFFER_SIZE);
-                                    } finally {
-                                        ContentUtils.close(is);
-                                    }
-
-                                    exportData.archiveStream.closeEntry();
-
-                                    monitor.worked(1);
-                                }
-                                exportData.meta.endElement();
-
-                                monitor.done();
-                            }
-                        }
-
-                        // Add meta to archive
-                        {
-                            exportData.meta.endElement();
-                            exportData.meta.flush();
-                            archiveStream.putNextEntry(new ZipEntry(ExportConstants.META_FILENAME));
-                            archiveStream.write(metaBuffer.toByteArray());
-                            archiveStream.closeEntry();
-                        }
-
-                        // Finish archive creation
-                        archiveStream.finish();
-                    } finally {
-                        ContentUtils.close(exportStream);
-                    }
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
-                }
-            }
-        };
-
+        final ProjectExportData exportData = mainPage.getExportData();
         try {
-            RuntimeUtils.run(getContainer(), true, true, op);
+            RuntimeUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        exportProjects(monitor, exportData);
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
         }
         catch (InterruptedException ex) {
             return false;
@@ -232,9 +82,152 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             return false;
         }
         return true;
-    }
+	}
 
-    private int getChildCount(ExportData exportData, IResource resource) throws CoreException
+    public void exportProjects(DBRProgressMonitor monitor, final ProjectExportData exportData)
+        throws IOException, CoreException, InterruptedException
+    {
+        if (!exportData.getOutputFolder().exists()) {
+            if (!exportData.getOutputFolder().mkdirs()) {
+                throw new IOException("Cannot create directory '" + exportData.getOutputFolder().getAbsolutePath() + "'");
+            }
+        }
+
+        String archiveName = exportData.getArchiveFileName() + ExportConstants.ARCHIVE_FILE_EXT;
+        File archiveFile = new File(exportData.getOutputFolder(), archiveName);
+        FileOutputStream exportStream = new FileOutputStream(archiveFile);
+
+        try {
+            ByteArrayOutputStream metaBuffer = new ByteArrayOutputStream(10000);
+            ZipOutputStream archiveStream = new ZipOutputStream(exportStream);
+            {
+                // Start meta
+                XMLBuilder meta = new XMLBuilder(metaBuffer, ContentUtils.DEFAULT_FILE_CHARSET);
+                meta.startElement(ExportConstants.TAG_ARCHIVE);
+                meta.addAttribute(ExportConstants.ATTR_VERSION, ExportConstants.ARCHIVE_VERSION_CURRENT);
+
+                exportData.initExport(DBeaverCore.getInstance().getProjectRegistry(), meta, archiveStream);
+            }
+
+            Map<IProject, Integer> resCountMap = new HashMap<IProject, Integer>();
+            monitor.beginTask("Collect projects info", exportData.getProjectsToExport().size());
+            for (IProject project : exportData.getProjectsToExport()) {
+                // Add used drivers to export data
+                final DataSourceRegistry dataSourceRegistry = exportData.projectRegistry.getDataSourceRegistry(project);
+                if (dataSourceRegistry != null) {
+                    for (DataSourceDescriptor dataSourceDescriptor : dataSourceRegistry.getDataSources()) {
+                        exportData.usedDrivers.add(dataSourceDescriptor.getDriver());
+                    }
+                }
+
+                resCountMap.put(project, getChildCount(exportData, project));
+                monitor.worked(1);
+            }
+            monitor.done();
+
+            {
+                // Export drivers meta
+                monitor.beginTask("Export drivers information", 1);
+                exportData.meta.startElement(DataSourceConstants.TAG_DRIVERS);
+                for (DriverDescriptor driver : exportData.usedDrivers) {
+                    driver.serialize(exportData.meta, true);
+                }
+                exportData.meta.endElement();
+                monitor.done();
+            }
+
+            {
+                // Export projects
+                exportData.meta.startElement(ExportConstants.TAG_PROJECTS);
+                for (IProject project : exportData.getProjectsToExport()) {
+                    monitor.beginTask("Export project '" + project.getName() + "'", resCountMap.get(project));
+                    try {
+                        exportProject(monitor, exportData, project);
+                    } finally {
+                        monitor.done();
+                    }
+                }
+                exportData.meta.endElement();
+            }
+
+            if (exportData.isExportDrivers()) {
+                // Export driver libraries
+                Set<File> libFiles = new HashSet<File>();
+                Map<String, File> libPathMap = new HashMap<String, File>();
+                for (DriverDescriptor driver : exportData.usedDrivers) {
+                    for (DriverLibraryDescriptor libraryDescriptor : driver.getLibraries()) {
+                        final File libraryFile = libraryDescriptor.getLibraryFile();
+                        if (!libraryDescriptor.isDisabled() && libraryFile.exists()) {
+                            libFiles.add(libraryFile);
+                            libPathMap.put(libraryDescriptor.getPath(), libraryFile);
+                        }
+                    }
+                }
+
+                if (!libFiles.isEmpty()) {
+                    monitor.beginTask("Export driver libraries", libFiles.size());
+
+                    final ZipEntry driversFolder = new ZipEntry(ExportConstants.DIR_DRIVERS + "/");
+                    driversFolder.setComment("Database driver libraries");
+                    exportData.archiveStream.putNextEntry(driversFolder);
+                    exportData.archiveStream.closeEntry();
+
+                    exportData.meta.startElement(DataSourceConstants.TAG_LIBRARIES);
+                    Set<String> libFileNames = new HashSet<String>();
+                    for (String libPath : libPathMap.keySet()) {
+                        final File libFile = libPathMap.get(libPath);
+                        // Check for file name duplications
+                        final String libFileName = libFile.getName();
+                        if (libFileNames.contains(libFileName)) {
+                            log.warn("Duplicate driver library file name: " + libFileName);
+                            continue;
+                        }
+                        libFileNames.add(libFileName);
+
+                        monitor.subTask(libFileName);
+
+                        exportData.meta.startElement(DataSourceConstants.TAG_LIBRARY);
+                        exportData.meta.addAttribute(ExportConstants.ATTR_PATH, libPath);
+                        exportData.meta.addAttribute(ExportConstants.ATTR_FILE, "drivers/" + libFileName);
+                        exportData.meta.endElement();
+
+                        final ZipEntry driverFile = new ZipEntry(ExportConstants.DIR_DRIVERS + "/" + libFileName);
+                        driverFile.setComment("Driver library");
+                        exportData.archiveStream.putNextEntry(driverFile);
+                        InputStream is = new FileInputStream(libFile);
+                        try {
+                            IOUtils.copyStream(is, exportData.archiveStream, COPY_BUFFER_SIZE);
+                        } finally {
+                            ContentUtils.close(is);
+                        }
+
+                        exportData.archiveStream.closeEntry();
+
+                        monitor.worked(1);
+                    }
+                    exportData.meta.endElement();
+
+                    monitor.done();
+                }
+            }
+
+            // Add meta to archive
+            {
+                exportData.meta.endElement();
+                exportData.meta.flush();
+                archiveStream.putNextEntry(new ZipEntry(ExportConstants.META_FILENAME));
+                archiveStream.write(metaBuffer.toByteArray());
+                archiveStream.closeEntry();
+            }
+
+            // Finish archive creation
+            archiveStream.finish();
+        } finally {
+            ContentUtils.close(exportStream);
+        }
+}
+
+    private int getChildCount(ProjectExportData exportData, IResource resource) throws CoreException
     {
         if (exportData.projectRegistry.getResourceHandler(resource) == null) {
             return 0;
@@ -248,7 +241,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         return childCount;
     }
 
-    private void exportProject(DBRProgressMonitor monitor, ExportData exportData, IProject project) throws InterruptedException, CoreException, IOException
+    private void exportProject(DBRProgressMonitor monitor, ProjectExportData exportData, IProject project) throws InterruptedException, CoreException, IOException
     {
         monitor.subTask(project.getName());
 
@@ -273,7 +266,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         monitor.worked(1);
     }
 
-    private void exportResourceTree(DBRProgressMonitor monitor, ExportData exportData, String parentPath, IResource resource) throws CoreException, IOException
+    private void exportResourceTree(DBRProgressMonitor monitor, ProjectExportData exportData, String parentPath, IResource resource) throws CoreException, IOException
     {
         DBPResourceHandler resourceHandler = exportData.projectRegistry.getResourceHandler(resource);
         if (resourceHandler == null) {
@@ -329,20 +322,6 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             xml.addAttribute(ExportConstants.ATTR_NAME, attrName.getLocalName());
             xml.addAttribute(ExportConstants.ATTR_VALUE, (String) propEntry.getValue());
             xml.endElement();
-        }
-    }
-
-    private static class ExportData {
-        ProjectRegistry projectRegistry;
-        XMLBuilder meta;
-        ZipOutputStream archiveStream;
-        Set<DriverDescriptor> usedDrivers = new HashSet<DriverDescriptor>();
-
-        private ExportData(ProjectRegistry projectRegistry, XMLBuilder meta, ZipOutputStream archiveStream)
-        {
-            this.projectRegistry = projectRegistry;
-            this.meta = meta;
-            this.archiveStream = archiveStream;
         }
     }
 

@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.xml.sax.Attributes;
 
 import java.io.*;
@@ -71,9 +72,9 @@ public class DataSourceProviderRegistry
         }
 
         // Load drivers
-        File driversConfig = new File(DBeaverCore.getInstance().getRootPath().toFile(), "drivers.xml");
+        File driversConfig = new File(DBeaverCore.getInstance().getRootPath().toFile(), DataSourceConstants.DRIVERS_FILE_NAME);
         if (!driversConfig.exists()) {
-            driversConfig = new File(RuntimeUtils.getBetaDir(), "drivers.xml");
+            driversConfig = new File(RuntimeUtils.getBetaDir(), DataSourceConstants.DRIVERS_FILE_NAME);
             if (driversConfig.exists()) {
                 loadDrivers(driversConfig);
                 saveDrivers();
@@ -183,16 +184,16 @@ public class DataSourceProviderRegistry
 
     public void saveDrivers()
     {
-        File driversConfig = new File(DBeaverCore.getInstance().getRootPath().toFile(), "drivers.xml");
+        File driversConfig = new File(DBeaverCore.getInstance().getRootPath().toFile(), DataSourceConstants.DRIVERS_FILE_NAME);
         try {
             OutputStream os = new FileOutputStream(driversConfig);
             try {
-                XMLBuilder xml = new XMLBuilder(os, "utf-8");
+                XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET);
                 xml.setButify(true);
-                xml.startElement("drivers");
+                xml.startElement(DataSourceConstants.TAG_DRIVERS);
                 for (DataSourceProviderDescriptor provider : this.dataSourceProviders) {
-                    xml.startElement("provider");
-                    xml.addAttribute("id", provider.getId());
+                    xml.startElement(DataSourceConstants.TAG_PROVIDER);
+                    xml.addAttribute(DataSourceConstants.ATTR_ID, provider.getId());
                     for (DriverDescriptor driver : provider.getDrivers()) {
                         if (driver.isModified()) {
                             driver.serialize(xml, false);
@@ -224,10 +225,10 @@ public class DataSourceProviderRegistry
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
             throws XMLException
         {
-            if (localName.equals("provider")) {
+            if (localName.equals(DataSourceConstants.TAG_PROVIDER)) {
                 curProvider = null;
                 curDriver = null;
-                String idAttr = atts.getValue("id");
+                String idAttr = atts.getValue(DataSourceConstants.ATTR_ID);
                 if (CommonUtils.isEmpty(idAttr)) {
                     log.warn("No id for driver provider");
                     return;
@@ -236,23 +237,23 @@ public class DataSourceProviderRegistry
                 if (curProvider == null) {
                     log.warn("Provider '" + idAttr + "' not found");
                 }
-            } else if (localName.equals("driver")) {
+            } else if (localName.equals(DataSourceConstants.TAG_DRIVER)) {
                 curDriver = null;
                 if (curProvider == null) {
                     log.warn("Driver outside of datasource provider");
                     return;
                 }
-                String idAttr = atts.getValue("id");
+                String idAttr = atts.getValue(DataSourceConstants.ATTR_ID);
                 curDriver = curProvider.getDriver(idAttr);
                 if (curDriver == null) {
                     curDriver = new DriverDescriptor(curProvider, idAttr);
                     curProvider.addDriver(curDriver);
                 }
-                curDriver.setName(atts.getValue("name"));
-                curDriver.setDescription(atts.getValue("description"));
-                curDriver.setDriverClassName(atts.getValue("class"));
-                curDriver.setSampleURL(atts.getValue("url"));
-                String portStr = atts.getValue("port");
+                curDriver.setName(atts.getValue(DataSourceConstants.ATTR_NAME));
+                curDriver.setDescription(atts.getValue(DataSourceConstants.ATTR_DESCRIPTION));
+                curDriver.setDriverClassName(atts.getValue(DataSourceConstants.ATTR_CLASS));
+                curDriver.setSampleURL(atts.getValue(DataSourceConstants.ATTR_URL));
+                String portStr = atts.getValue(DataSourceConstants.ATTR_PORT);
                 if (portStr != null) {
                     try {
                         curDriver.setDriverDefaultPort(new Integer(portStr));
@@ -262,18 +263,18 @@ public class DataSourceProviderRegistry
                     }
                 }
                 curDriver.setModified(true);
-                String disabledAttr = atts.getValue("disabled");
+                String disabledAttr = atts.getValue(DataSourceConstants.ATTR_DISABLED);
                 if ("true".equals(disabledAttr)) {
                     curDriver.setDisabled(true);
                 }
-            } else if (localName.equals("library")) {
+            } else if (localName.equals(DataSourceConstants.TAG_LIBRARY)) {
                 if (curDriver == null) {
                     log.warn("Library outside of driver");
                     return;
                 }
-                String path = atts.getValue("path");
+                String path = atts.getValue(DataSourceConstants.ATTR_PATH);
                 DriverLibraryDescriptor lib = curDriver.getLibrary(path);
-                String disabledAttr = atts.getValue("disabled");
+                String disabledAttr = atts.getValue(DataSourceConstants.ATTR_DISABLED);
                 if (lib != null && "true".equals(disabledAttr)) {
                     lib.setDisabled(true);
                 } else if (lib == null) {

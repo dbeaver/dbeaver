@@ -76,10 +76,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         super(providerDescriptor.getContributor());
         this.providerDescriptor = providerDescriptor;
-        this.id = CommonUtils.getString(config.getAttribute("id"));
+        this.id = CommonUtils.getString(config.getAttribute(DataSourceConstants.ATTR_ID));
         this.origName = this.name = CommonUtils.getString(config.getAttribute("label"));
-        this.origDescription = this.description = config.getAttribute("description");
-        this.origClassName = this.driverClassName = config.getAttribute("class");
+        this.origDescription = this.description = config.getAttribute(DataSourceConstants.ATTR_DESCRIPTION);
+        this.origClassName = this.driverClassName = config.getAttribute(DataSourceConstants.ATTR_CLASS);
         if (config.getAttribute("defaultPort") != null) {
             try {
                 this.origDefaultPort = this.driverDefaultPort = new Integer(config.getAttribute("defaultPort"));
@@ -94,7 +94,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.custom = false;
         this.isLoaded = false;
 
-        IConfigurationElement[] libElements = config.getChildren("library");
+        IConfigurationElement[] libElements = config.getChildren(DataSourceConstants.TAG_LIBRARY);
         for (IConfigurationElement lib : libElements) {
             this.libraries.add(new DriverLibraryDescriptor(this, lib));
         }
@@ -121,7 +121,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         IConfigurationElement[] paramElements = config.getChildren("parameter");
         for (IConfigurationElement param : paramElements) {
-            String paramName = param.getAttribute("name");
+            String paramName = param.getAttribute(DataSourceConstants.ATTR_NAME);
             String paramValue = param.getAttribute("value");
             if (CommonUtils.isEmpty(paramValue)) {
                 paramValue = param.getValue();
@@ -539,25 +539,28 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public void serialize(XMLBuilder xml, boolean export)
         throws IOException
     {
-        xml.startElement("driver");
-        xml.addAttribute("id", this.getId());
+        xml.startElement(DataSourceConstants.TAG_DRIVER);
+        if (export) {
+            xml.addAttribute(DataSourceConstants.ATTR_PROVIDER, providerDescriptor.getId());
+        }
+        xml.addAttribute(DataSourceConstants.ATTR_ID, this.getId());
         if (this.isDisabled()) {
-            xml.addAttribute("disabled", true);
+            xml.addAttribute(DataSourceConstants.ATTR_DISABLED, true);
         }
-        xml.addAttribute("custom", this.isCustom());
-        xml.addAttribute("name", this.getName());
-        xml.addAttribute("class", this.getDriverClassName());
-        xml.addAttribute("url", this.getSampleURL());
+        xml.addAttribute(DataSourceConstants.ATTR_CUSTOM, this.isCustom());
+        xml.addAttribute(DataSourceConstants.ATTR_NAME, this.getName());
+        xml.addAttribute(DataSourceConstants.ATTR_CLASS, this.getDriverClassName());
+        xml.addAttribute(DataSourceConstants.ATTR_URL, this.getSampleURL());
         if (this.getDefaultPort() != null) {
-            xml.addAttribute("port", this.getDefaultPort().toString());
+            xml.addAttribute(DataSourceConstants.ATTR_PORT, this.getDefaultPort().toString());
         }
-        xml.addAttribute("description", CommonUtils.getString(this.getDescription()));
+        xml.addAttribute(DataSourceConstants.ATTR_DESCRIPTION, CommonUtils.getString(this.getDescription()));
         for (DriverLibraryDescriptor lib : this.getLibraries()) {
             if ((export && !lib.isDisabled()) || lib.isCustom() || lib.isDisabled()) {
-                xml.startElement("library");
-                xml.addAttribute("path", lib.getPath());
+                xml.startElement(DataSourceConstants.TAG_LIBRARY);
+                xml.addAttribute(DataSourceConstants.ATTR_PATH, lib.getPath());
                 if (lib.isDisabled()) {
-                    xml.addAttribute("disabled", true);
+                    xml.addAttribute(DataSourceConstants.ATTR_DISABLED, true);
                 }
                 xml.endElement();
             }

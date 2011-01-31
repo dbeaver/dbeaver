@@ -1632,9 +1632,9 @@
     </extension>
 
     <extension point="org.eclipse.ui.exportWizards">
-        <category id="org.jkiss.dbeaver.core.export.project" name="Project"/>
+        <category id="org.jkiss.dbeaver.core.export.resources" name="Resources"/>
         <wizard
-             category="org.jkiss.dbeaver.core.export.project"
+             category="org.jkiss.dbeaver.core.export.resources"
              class="org.jkiss.dbeaver.ui.export.project.ProjectExportWizard"
              icon="icons/project.png"
              id="org.jkiss.dbeaver.core.wizard.export.project"
@@ -1646,9 +1646,9 @@
     </extension>
 
     <extension point="org.eclipse.ui.importWizards">
-        <category id="org.jkiss.dbeaver.core.import.project" name="Project"/>
+        <category id="org.jkiss.dbeaver.core.import.resources" name="Resources"/>
         <wizard
-            category="org.jkiss.dbeaver.core.import.project"
+            category="org.jkiss.dbeaver.core.import.resources"
             class="org.jkiss.dbeaver.ui.export.project.ProjectImportWizard"
             icon="icons/project.png"
             id="org.jkiss.dbeaver.core.wizard.import.project"

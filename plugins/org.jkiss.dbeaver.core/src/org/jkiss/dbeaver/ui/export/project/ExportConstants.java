@@ -21,9 +21,6 @@ public class ExportConstants {
     public static final String TAG_PROJECT = "project"; //NON-NLS-1
     public static final String TAG_RESOURCE = "resource"; //NON-NLS-1
     public static final String TAG_ATTRIBUTE = "attribute"; //NON-NLS-1
-    public static final String TAG_DRIVERS = "drivers"; //NON-NLS-1
-    public static final String TAG_LIBRARIES = "libraries"; //NON-NLS-1
-    public static final String TAG_LIBRARY = "library"; //NON-NLS-1
 
     public static final String ATTR_VERSION = "version"; //NON-NLS-1
     public static final String ATTR_QUALIFIER = "qualifier"; //NON-NLS-1

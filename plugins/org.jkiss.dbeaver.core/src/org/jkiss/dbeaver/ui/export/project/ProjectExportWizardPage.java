@@ -175,7 +175,16 @@ public class ProjectExportWizardPage extends WizardPage {
         getContainer().updateButtons();
     }
 
-    public List<IProject> getProjectsToExport()
+    ProjectExportData getExportData()
+    {
+        return new ProjectExportData(
+            getProjectsToExport(),
+            new File(directoryText.getText()),
+            exportDriverCheck.getSelection(),
+            fileNameText.getText());
+    }
+
+    private List<IProject> getProjectsToExport()
     {
         List<IProject> result = new ArrayList<IProject>();
         for (TableItem item : projectsTable.getItems()) {
@@ -184,21 +193,6 @@ public class ProjectExportWizardPage extends WizardPage {
             }
         }
         return result;
-    }
-
-    public File getOutputFolder()
-    {
-        return new File(directoryText.getText());
-    }
-
-    public boolean isExportDrivers()
-    {
-        return exportDriverCheck.getSelection();
-    }
-
-    public String getArchiveFileName()
-    {
-        return fileNameText.getText();
     }
 
     static String getArchiveFileName(List<IProject> projects)
