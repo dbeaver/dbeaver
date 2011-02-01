@@ -111,6 +111,14 @@ public class BookmarkStorage {
         return image;
     }
 
+    public void setImage(Image image)
+    {
+        if (this.image != null) {
+            this.image.dispose();
+        }
+        this.image = new Image(null, image, SWT.IMAGE_COPY);
+    }
+
     public String getDataSourceId()
     {
         return dataSourceId;

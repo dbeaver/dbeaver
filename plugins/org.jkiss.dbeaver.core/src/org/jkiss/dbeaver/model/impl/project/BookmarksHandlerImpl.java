@@ -88,7 +88,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
-    public void openResource(IResource resource, final IWorkbenchWindow window) throws CoreException, DBException
+    public void openResource(final IResource resource, final IWorkbenchWindow window) throws CoreException, DBException
     {
         if (!(resource instanceof IFile)) {
             return;
@@ -98,30 +98,35 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             throw new DBException("Can't find project node for '" + resource.getProject().getName() + "'");
         }
         final BookmarkStorage storage = new BookmarkStorage((IFile) resource, false);
-        final DataSourceDescriptor dataSourceContainer = projectNode.getDatabases().getDataSourceRegistry().getDataSource(storage.getDataSourceId());
-        if (dataSourceContainer == null) {
-            throw new DBException("Can't find datasource '" + storage.getDataSourceId() + "'");
-        }
-        //if (!dataSourceContainer.isConnected()) {
-        //    dataSourceContainer.connect();
-        //}
-        final DBNDataSource dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSourceContainer);
-        dsNode.initializeNode(new Runnable() {
-            public void run()
-            {
-                if (dsNode.getDataSourceContainer().isConnected()) {
-                    Display.getDefault().syncExec(new Runnable() {
-                        public void run()
-                        {
-                            openNodeByPath(dsNode, storage, window);
-                        }
-                    });
-                }
+        try {
+            final DataSourceDescriptor dataSourceContainer = projectNode.getDatabases().getDataSourceRegistry().getDataSource(storage.getDataSourceId());
+            if (dataSourceContainer == null) {
+                throw new DBException("Can't find datasource '" + storage.getDataSourceId() + "'");
             }
-        });
+            //if (!dataSourceContainer.isConnected()) {
+            //    dataSourceContainer.connect();
+            //}
+            final DBNDataSource dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSourceContainer);
+            dsNode.initializeNode(new Runnable() {
+                public void run()
+                {
+                    if (dsNode.getDataSourceContainer().isConnected()) {
+                        Display.getDefault().syncExec(new Runnable() {
+                            public void run()
+                            {
+                                openNodeByPath(dsNode, (IFile) resource, storage, window);
+                            }
+                        });
+                    }
+                }
+            });
+        }
+        finally {
+            storage.dispose();
+        }
     }
 
-    private void openNodeByPath(final DBNDataSource dsNode, final BookmarkStorage storage, final IWorkbenchWindow window)
+    private void openNodeByPath(final DBNDataSource dsNode, final IFile file, final BookmarkStorage storage, final IWorkbenchWindow window)
     {
         try {
             DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
@@ -147,6 +152,11 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                             currentNode = nextChild;
                         }
                         if (currentNode instanceof DBNDatabaseNode) {
+                            // Update bookmark image
+                            storage.setImage(currentNode.getNodeIconDefault());
+                            file.setContents(storage.serialize(), true, false, monitor.getNestedMonitor());
+
+                            // Open entity editor
                             final DBNDatabaseNode databaseNode = (DBNDatabaseNode)currentNode;
                             Display.getDefault().syncExec(new Runnable() {
                                 public void run()
@@ -159,7 +169,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                         } else {
                             throw new DBException("Can't find database node by path");
                         }
-                    } catch (DBException e) {
+                    } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }
                 }
@@ -184,9 +194,6 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         if (folder == null) {
             throw new DBException("Can't detect folder for bookmark");
         }
-        if (CommonUtils.isEmpty(title)) {
-            title = node.getNodeName();
-        }
 
         String fileName = CommonUtils.escapeIdentifier(title);
         IFile file = folder.getFile(fileName + "." + BOOKMARK_EXT);
@@ -194,6 +201,16 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         while (file.exists()) {
             file = folder.getFile(fileName + "-" + index + "." + BOOKMARK_EXT);
             index++;
+        }
+
+        updateBookmark(node, title, file);
+    }
+
+    private static void updateBookmark(DBNDatabaseNode node, String title, IFile file)
+        throws DBException
+    {
+        if (CommonUtils.isEmpty(title)) {
+            title = node.getNodeName();
         }
 
         List<String> nodePath = new ArrayList<String>();
