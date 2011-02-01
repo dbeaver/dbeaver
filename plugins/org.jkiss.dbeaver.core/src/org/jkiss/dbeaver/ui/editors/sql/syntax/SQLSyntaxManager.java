@@ -378,7 +378,9 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
         "SELECT",
         "WHERE",
         "SET",
-        "ON"
+        "ON",
+        "AND",
+        "OR"
     };
 
     private static final String[] DEFAULT_KEYWORDS = {

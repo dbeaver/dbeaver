@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -45,6 +46,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     private static List<DBSObjectType> TABLE_OBJECT_TYPES = new ArrayList<DBSObjectType>();
     static {
         TABLE_OBJECT_TYPES.add(RelationalObjectType.TYPE_TABLE);
+    }
+
+    private static enum QueryType {
+        TABLE,
+        COLUMN
     }
 
     private SQLEditor editor;
@@ -80,20 +86,29 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         final List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         final String wordPart = wordDetector.getWordPart();
 
-        final boolean isTableQuery =
+        final boolean isStructureQuery =
             wordDetector.getPrevKeyWord() != null &&
-            (CommonUtils.isEmpty(wordDetector.getPrevWords()) || (wordDetector.getPrevDelimiter() != null && wordDetector.getPrevDelimiter().indexOf(',') != -1)) &&
-            editor.getSyntaxManager().isTableQueryWord(wordDetector.getPrevKeyWord());
-        if (isTableQuery || wordDetector.containsSeparator(wordPart)) {
+            (CommonUtils.isEmpty(wordDetector.getPrevWords()) || (wordDetector.getPrevDelimiter() != null && wordDetector.getPrevDelimiter().indexOf(',') != -1));
+        QueryType queryType = null;
+        if (isStructureQuery) {
+            if (editor.getSyntaxManager().isTableQueryWord(wordDetector.getPrevKeyWord())) {
+                queryType = QueryType.TABLE;
+
+            } else if (editor.getSyntaxManager().isColumnQueryWord(wordDetector.getPrevKeyWord()) && SQLUtils.isEmptyTrimmed(wordDetector.getPrevDelimiter())) {
+                queryType = QueryType.COLUMN;
+            }
+        }
+        if (queryType != null || wordDetector.containsSeparator(wordPart)) {
             // It's a table query
             // Use database information (only we are connected, of course)
             if (editor.getDataSourceContainer().isConnected()) {
                 try {
+                    final QueryType qt = queryType;
                     DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
                         public void run(DBRProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException
                         {
-                            makeStructureProposals(monitor, proposals, wordPart, isTableQuery);
+                            makeStructureProposals(monitor, proposals, wordPart, qt);
                         }
                     });
                 } catch (InvocationTargetException e) {
@@ -125,22 +140,31 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         DBRProgressMonitor monitor,
         List<ICompletionProposal> proposals,
         String wordPart,
-        boolean tableQuery)
+        QueryType queryType)
     {
         DBSDataSourceContainer dsContainer = editor.getDataSourceContainer();
         DBPDataSource dataSource = dsContainer.isConnected() ? dsContainer.getDataSource() : null;
-        if (tableQuery) {
+        if (queryType != null) {
             // Try to determine which object is queried (if wordPart is not empty)
             // or get list of root database objects
             if (wordPart.length() == 0) {
                 // Get root objects
-                if (dataSource instanceof DBSEntityContainer) {
-                    makeProposalsFromChildren(monitor, (DBSEntityContainer) dataSource, null, proposals);
+                DBSObject rootObject = null;
+                if (queryType == QueryType.COLUMN && dataSource instanceof DBSEntityContainer) {
+                    // Try to detect current table
+                    rootObject = getTableFromAlias(monitor, (DBSEntityContainer)dataSource, null);
+                } else if (dataSource instanceof DBSEntityContainer) {
+                    rootObject = (DBSEntityContainer) dataSource;
+                }
+                if (rootObject != null) {
+                    makeProposalsFromChildren(monitor, rootObject, null, proposals);
                 }
             } else {
                 // Get root object or objects from active database (if any)
                 makeStructureProposals(monitor, dataSource, proposals);
             }
+        //} else if (queryType == QueryType.COLUMN) {
+
         } else {
             // Get list of subobjects (filetred by wordPart)
             makeStructureProposals(monitor, dataSource, proposals);
@@ -226,6 +250,17 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             activeQuery = editor.extractQueryAtPos(documentOffset).getQuery() + " ";
         }
         activeQuery = activeQuery.toUpperCase();
+        if (token == null) {
+
+        }
+
+        // Hooray, we got the match.
+        List<String> nameList = new ArrayList<String>();
+
+        if (token == null) {
+            token = "";
+        }
+
         token = token.toUpperCase();
         SQLQueryInfo queryInfo = new SQLQueryInfo(activeQuery);
         List<SQLQueryInfo.TableRef> refList = queryInfo.getTableRefs();
@@ -238,12 +273,17 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
         quote = "\\" + quote;
         String tableNamePattern = "((" + quote + "([.[^" + quote + "]]+)" + quote + ")|([\\w]+))";
-        String structNamePattern =
-            tableNamePattern +
-            "(\\s*\\.\\s*" + tableNamePattern + ")?" +
-            "\\s+((AS)\\s)?" + token + "[\\s,]+";
+        String structNamePattern;
+        if (CommonUtils.isEmpty(token)) {
+            structNamePattern = "from\\s*" + tableNamePattern + "\\s*where";
+        } else {
+            structNamePattern = tableNamePattern +
+                "(\\s*\\.\\s*" + tableNamePattern + ")?" +
+                "\\s+((AS)\\s)?" + token + "[\\s,]+";
+        }
+
         try {
-            aliasPattern = Pattern.compile(structNamePattern);
+            aliasPattern = Pattern.compile(structNamePattern, Pattern.CASE_INSENSITIVE);
         } catch (PatternSyntaxException e) {
             // Bad pattern - seems to be a bad token
             return null;
@@ -257,8 +297,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         if (groupCount < 4) {
             return null;
         }
-        // Hooray, we got the match.
-        List<String> nameList = new ArrayList<String>();
+
         String startName = matcher.group(3);
         if (startName == null) {
             startName = matcher.group(4);
@@ -267,12 +306,18 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         }
         nameList.add(startName);
-        String nextName = matcher.group(8);
-        if (nextName == null) {
-            nextName = matcher.group(9);
+        if (groupCount >= 8) {
+            String nextName = matcher.group(8);
+            if (nextName == null && groupCount >= 9) {
+                nextName = matcher.group(9);
+            }
+            if (nextName != null) {
+                nameList.add(nextName);
+            }
         }
-        if (nextName != null) {
-            nameList.add(nextName);
+
+        if (nameList.isEmpty()) {
+            return null;
         }
         try {
             DBSObject childObject = DBUtils.findNestedObject(monitor, sc, nameList);
@@ -280,7 +325,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 // No such object found - may be it's start of table name
                 DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                 if (structureAssistant != null) {
-                    Collection<DBSObject> tables = structureAssistant.findObjectsByMask(monitor, sc, TABLE_OBJECT_TYPES, startName, 2);
+                    Collection<DBSObject> tables = structureAssistant.findObjectsByMask(monitor, sc, TABLE_OBJECT_TYPES, nameList.get(0), 2);
                     if (!tables.isEmpty()) {
                         return tables.iterator().next();
                     }
