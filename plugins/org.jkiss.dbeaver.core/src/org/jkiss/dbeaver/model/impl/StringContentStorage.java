@@ -74,6 +74,6 @@ public class StringContentStorage implements DBDContentStorage {
             log.warn("Actual content length (" + count + ") is less than declared: " + contentLength);
             data = Arrays.copyOf(data, count);
         }
-        return new StringContentStorage(new String(data));
+        return new StringContentStorage(String.valueOf(data));
     }
 }

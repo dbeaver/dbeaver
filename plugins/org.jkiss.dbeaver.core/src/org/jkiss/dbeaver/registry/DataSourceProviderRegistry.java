@@ -256,7 +256,7 @@ public class DataSourceProviderRegistry
                 String portStr = atts.getValue(DataSourceConstants.ATTR_PORT);
                 if (portStr != null) {
                     try {
-                        curDriver.setDriverDefaultPort(new Integer(portStr));
+                        curDriver.setDriverDefaultPort(Integer.valueOf(portStr));
                     }
                     catch (NumberFormatException e) {
                         log.warn("Bad driver '" + curDriver.getName() + "' port specified: " + portStr);

@@ -143,7 +143,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         }
         double ival = DOUBLE_DEFAULT_DEFAULT;
         try {
-            ival = new Double(value);
+            ival = Double.parseDouble(value);
         } catch (NumberFormatException e) {
             // do nothing
         }
@@ -170,7 +170,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         }
         float ival = FLOAT_DEFAULT_DEFAULT;
         try {
-            ival = new Float(value);
+            ival = Float.parseFloat(value);
         } catch (NumberFormatException e) {
             // do nothing
         }

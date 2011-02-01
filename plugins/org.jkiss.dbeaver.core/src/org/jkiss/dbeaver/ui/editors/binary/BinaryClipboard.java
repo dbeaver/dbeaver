@@ -359,9 +359,9 @@ public class BinaryClipboard {
                 myFilesReferencesCounter.remove(lastPaste);
                 return total;
             }
-            Integer value = myFilesReferencesCounter.put(lastPaste, new Integer(1));
+            Integer value = myFilesReferencesCounter.put(lastPaste, Integer.valueOf(1));
             if (value != null)
-                myFilesReferencesCounter.put(lastPaste, new Integer(value.intValue() + 1));
+                myFilesReferencesCounter.put(lastPaste, Integer.valueOf(value.intValue() + 1));
         }
 
         return total;

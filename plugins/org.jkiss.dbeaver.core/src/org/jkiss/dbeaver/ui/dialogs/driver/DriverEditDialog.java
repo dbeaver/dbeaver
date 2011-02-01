@@ -429,7 +429,7 @@ public class DriverEditDialog extends Dialog
         Integer portNumber = null;
         if (!CommonUtils.isEmpty(driverPortText.getText())) {
             try {
-                portNumber = new Integer(driverPortText.getText());
+                portNumber = Integer.valueOf(driverPortText.getText());
             }
             catch (NumberFormatException e) {
                 UIUtils.showErrorDialog(getShell(), "Invalid parameters", "Bad driver port specified");

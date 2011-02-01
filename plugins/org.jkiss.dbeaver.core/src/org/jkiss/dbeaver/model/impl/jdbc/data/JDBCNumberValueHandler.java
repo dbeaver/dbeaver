@@ -222,30 +222,25 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         try {
             switch (type.getValueType()) {
             case java.sql.Types.BIGINT:
-                return new Long(text);
+                return Long.valueOf(text);
             case java.sql.Types.DECIMAL:
-                return new Double(text);
             case java.sql.Types.DOUBLE:
-                // Handle Java error
-                if (text.equals(BAD_DOUBLE_VALUE)) {
-                    return Double.MIN_VALUE;
-                }
-                return new Double(text);
-            case java.sql.Types.FLOAT:
-                return new Float(text);
-            case java.sql.Types.INTEGER:
-                return new Integer(text);
             case java.sql.Types.REAL:
-                return new Double(text);
+                // Handle Java error
+                return toDouble(text);
+            case java.sql.Types.FLOAT:
+                return Float.valueOf(text);
+            case java.sql.Types.INTEGER:
+                return Integer.valueOf(text);
             case java.sql.Types.SMALLINT:
-                return new Short(text);
+                return Short.valueOf(text);
             case java.sql.Types.TINYINT:
-                return new Byte(text);
+                return Byte.valueOf(text);
             default:
                 if (type.getScale() > 0) {
-                    return new Double(text);
+                    return toDouble(text);
                 } else {
-                    return new Long(text);
+                    return Long.valueOf(text);
                 }
             }
         }
@@ -253,5 +248,13 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             log.error("Bad numeric value '" + text + "' - " + e.getMessage());
             return null;
         }
+    }
+
+    private static Number toDouble(String text)
+    {
+        if (text.equals(BAD_DOUBLE_VALUE)) {
+            return Double.MIN_VALUE;
+        }
+        return Double.valueOf(text);
     }
 }

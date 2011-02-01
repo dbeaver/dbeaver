@@ -82,7 +82,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.origClassName = this.driverClassName = config.getAttribute(DataSourceConstants.ATTR_CLASS);
         if (config.getAttribute("defaultPort") != null) {
             try {
-                this.origDefaultPort = this.driverDefaultPort = new Integer(config.getAttribute("defaultPort"));
+                this.origDefaultPort = this.driverDefaultPort = Integer.valueOf(config.getAttribute("defaultPort"));
             }
             catch (NumberFormatException ex) {
                 log.warn("Bad default port for driver '" + name + "' specified: " + ex.getMessage());

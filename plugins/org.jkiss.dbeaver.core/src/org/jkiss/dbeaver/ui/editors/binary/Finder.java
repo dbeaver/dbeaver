@@ -197,7 +197,7 @@ public class Finder {
         int length = currentPartFoundIsUnicode ? myLiteralByteLength : myByteFindSequence.length;
         setNewStart(resultPosition + (myDirectionForward ? 1 : length - 1));
 
-        return new Number[]{new Long(resultPosition), new Integer(length)};
+        return new Number[]{Long.valueOf(resultPosition), Integer.valueOf(length)};
     }
 
 

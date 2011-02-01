@@ -441,8 +441,8 @@ public class BinaryContent {
                 rangesModified.add((long)changesAdded);
 //		} else if (myChanges != null && changesPosition >= myChangesPosition && myChangesInserted &&
                 //		positionSoFar - changesPosition > 0) {
-                //	rangesModified.add(new Long(changesPosition));
-                //rangesModified.add(new Long(positionSoFar - changesPosition));
+                //	rangesModified.add(Long.valueOf(changesPosition));
+                //rangesModified.add(Long.valueOf(positionSoFar - changesPosition));
             }
         }
     }
