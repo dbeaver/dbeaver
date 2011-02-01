@@ -1151,7 +1151,7 @@
                 <command commandId="org.eclipse.ui.file.save" icon="icons/sql/save_to_database.png" label="Save Changes">
                     <visibleWhen>
                         <with variable="activeEditor">
-                            <instanceof value="org.eclipse.ui.IEditorPart"/>
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
                         </with>
                     </visibleWhen>
                 </command>
@@ -1172,14 +1172,14 @@
                 <command commandId="org.eclipse.ui.edit.undo">
                     <visibleWhen>
                         <with variable="activeEditor">
-                            <instanceof value="org.eclipse.ui.IEditorPart"/>
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
                         </with>
                     </visibleWhen>
                 </command>
                 <command commandId="org.eclipse.ui.edit.redo">
                     <visibleWhen>
                         <with variable="activeEditor">
-                            <instanceof value="org.eclipse.ui.IEditorPart"/>
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
                         </with>
                     </visibleWhen>
                 </command>

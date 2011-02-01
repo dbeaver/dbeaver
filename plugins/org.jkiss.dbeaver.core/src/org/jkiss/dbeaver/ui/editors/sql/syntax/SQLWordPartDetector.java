@@ -25,17 +25,16 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
     /**
      * Method SQLWordPartDetector.
      *
-     * @param viewer         is a text viewer
+     * @param document text document
      * @param syntaxManager syntax manager
      * @param documentOffset into the SQL document
      */
-    public SQLWordPartDetector(ITextViewer viewer, SQLSyntaxManager syntaxManager, int documentOffset)
+    public SQLWordPartDetector(IDocument document, SQLSyntaxManager syntaxManager, int documentOffset)
     {
         super(syntaxManager.getCatalogSeparator());
         docOffset = documentOffset - 1;
-        int topIndex = viewer.getTopIndexStartOffset();
+        int topIndex = 0;//viewer.getTopIndexStartOffset();
         try {
-            IDocument document = viewer.getDocument();
             while (docOffset >= topIndex && isWordPart(document.getChar(docOffset))) {
                 docOffset--;
             }

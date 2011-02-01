@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -82,7 +83,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         this.documentOffset = documentOffset;
         this.activeQuery = null;
 
-        wordDetector = new SQLWordPartDetector(viewer, editor.getSyntaxManager(), documentOffset);
+        wordDetector = new SQLWordPartDetector(viewer.getDocument(), editor.getSyntaxManager(), documentOffset);
         final List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         final String wordPart = wordDetector.getWordPart();
 
@@ -133,6 +134,18 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         }
 
+        // Remove duplications
+        for (int i = 0; i < proposals.size(); i++) {
+            ICompletionProposal proposal = proposals.get(i);
+            for (int j = i + 1; j < proposals.size(); ) {
+                ICompletionProposal proposal2 = proposals.get(j);
+                if (proposal.getDisplayString().equals(proposal2.getDisplayString())) {
+                    proposals.remove(j);
+                } else {
+                    j++;
+                }
+            }
+        }
         return proposals.toArray(new ICompletionProposal[proposals.size()]);
     }
 
@@ -390,9 +403,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     {
         String objectName = object.getName();
         String displayString = objectName;
-        if (object instanceof DBSEntityQualified) {
-            displayString = ((DBSEntityQualified)object).getFullQualifiedName();
-        }
+        //if (object instanceof DBSEntityQualified) {
+        //    displayString = ((DBSEntityQualified)object).getFullQualifiedName();
+        //}
 
         StringBuilder info = new StringBuilder();
         PropertyCollector collector = new PropertyCollector(object, false);
@@ -415,7 +428,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 childName,
                 info.toString());
 */
-        return createCompletionProposal(objectName, displayString, info.toString(), node == null ? null : node.getNodeIconDefault());
+        return createCompletionProposal(objectName, objectName, info.toString(), node == null ? null : node.getNodeIconDefault());
     }
 
     /*
@@ -440,17 +453,16 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
         // Escape replace string if required
         replaceString = DBUtils.getQuotedIdentifier(editor.getDataSource(), replaceString);
-        return new CompletionProposal(
+        return new SQLCompletionProposal(
+            editor.getSyntaxManager(),
+            objectName,
             replaceString, //replacementString
             assistPos, //replacementOffset the offset of the text to be replaced
             assistLength, //replacementLength the length of the text to be replaced
             replaceString.length(), //cursorPosition the position of the cursor following the insert
                                 // relative to replacementOffset
             image, //image to display
-            objectName, //displayString the string to be displayed for the proposal
-            new ContextInformation(image, objectName, objectName),
-            //contntentInformation the context information associated with this
-            // proposal
+            new ContextInformation(image, objectName, objectName), //the context information associated with this proposal
             objectInfo);
     }
 
