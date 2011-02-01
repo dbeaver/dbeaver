@@ -67,10 +67,18 @@ public class NumberViewDialog extends ValueViewDialog {
         } else {
             // Numbers
             textEdit = new Text(dialogGroup, style);
-            textEdit.addVerifyListener(
-                getValueController().getColumnMetaData().getScale() <= 0 ?
-                    UIUtils.INTEGER_VERIFY_LISTENER :
-                    UIUtils.NUMBER_VERIFY_LISTENER);
+            switch (getValueController().getColumnMetaData().getValueType()) {
+            case java.sql.Types.BIGINT:
+            case java.sql.Types.INTEGER:
+            case java.sql.Types.SMALLINT:
+            case java.sql.Types.TINYINT:
+            case java.sql.Types.BIT:
+                textEdit.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
+                break;
+            default:
+                textEdit.addVerifyListener(UIUtils.NUMBER_VERIFY_LISTENER);
+                break;
+            }
 
             if (value != null) {
                 // Use simple toString() because we don't want formatted values.

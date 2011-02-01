@@ -65,7 +65,7 @@ public class UIUtils {
         {
             for (int i = 0; i < e.text.length(); i++) {
                 char ch = e.text.charAt(i);
-                if (!Character.isDigit(ch) && ch != '.' && ch != '-') {
+                if (!Character.isDigit(ch) && ch != '.' && ch != '-' && ch != 'e' && ch != 'E') {
                     e.doit = false;
                     return;
                 }

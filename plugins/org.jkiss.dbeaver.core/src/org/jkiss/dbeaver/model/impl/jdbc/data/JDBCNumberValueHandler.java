@@ -33,6 +33,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     private static final String TYPE_NAME_NUMBER = "number";
     private static final int MAX_NUMBER_LENGTH = 100;
 
+    private static final String BAD_DOUBLE_VALUE = "2.2250738585072012e-308";
+
     private DBDDataFormatter formatter;
 
     public JDBCNumberValueHandler(DBDDataFormatterProfile formatterProfile)
@@ -155,10 +157,18 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 editor.setTextLimit(MAX_NUMBER_LENGTH);
                 editor.selectAll();
                 editor.setFocus();
-                editor.addVerifyListener(
-                    controller.getColumnMetaData().getScale() == 0 ?
-                        UIUtils.INTEGER_VERIFY_LISTENER :
-                        UIUtils.NUMBER_VERIFY_LISTENER);
+                switch (controller.getColumnMetaData().getValueType()) {
+                case java.sql.Types.BIGINT:
+                case java.sql.Types.INTEGER:
+                case java.sql.Types.SMALLINT:
+                case java.sql.Types.TINYINT:
+                case java.sql.Types.BIT:
+                    editor.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
+                    break;
+                default:
+                    editor.addVerifyListener(UIUtils.NUMBER_VERIFY_LISTENER);
+                    break;
+                }
 
                 initInlineControl(controller, editor, new ValueExtractor<Text>() {
                     public Object getValueFromControl(Text control)
@@ -216,6 +226,10 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             case java.sql.Types.DECIMAL:
                 return new Double(text);
             case java.sql.Types.DOUBLE:
+                // Handle Java error
+                if (text.equals(BAD_DOUBLE_VALUE)) {
+                    return Double.MIN_VALUE;
+                }
                 return new Double(text);
             case java.sql.Types.FLOAT:
                 return new Float(text);

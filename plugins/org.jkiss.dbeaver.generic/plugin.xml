@@ -144,6 +144,7 @@
                     sampleURL="jdbc:derby:{database}"
                     webURL="http://db.apache.org/"
                     description="Derby (Java DB) embedded driver">
+                    <parameter name="meta-case" value="upper"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                 </driver>
             </drivers>
