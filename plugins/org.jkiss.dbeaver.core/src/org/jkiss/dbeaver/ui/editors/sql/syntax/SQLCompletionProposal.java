@@ -39,17 +39,30 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     /** The additional info of this proposal. */
     private String additionalProposalInfo;
 
-    public SQLCompletionProposal(SQLSyntaxManager syntaxManager, String displayString, String replacementString, int replacementOffset, int replacementLength, int cursorPosition, Image image, IContextInformation contextInformation, String additionalProposalInfo)
+    public SQLCompletionProposal(SQLSyntaxManager syntaxManager, String displayString, String replacementString, SQLWordPartDetector wordDetector, int cursorPosition, Image image, IContextInformation contextInformation, String additionalProposalInfo)
     {
         this.syntaxManager = syntaxManager;
         this.displayString = displayString;
         this.replacementString = replacementString;
-        this.replacementOffset = replacementOffset;
-        this.replacementLength = replacementLength;
         this.cursorPosition = cursorPosition;
         this.image = image;
         this.contextInformation = contextInformation;
         this.additionalProposalInfo = additionalProposalInfo;
+
+        setPosition(wordDetector);
+    }
+
+    private void setPosition(SQLWordPartDetector wordDetector)
+    {
+        String wordPart = wordDetector.getWordPart();
+        int divPos = wordPart.lastIndexOf(syntaxManager.getCatalogSeparator());
+        if (divPos == -1) {
+            replacementOffset = wordDetector.getOffset();
+            replacementLength = wordPart.length();
+        } else {
+            replacementOffset = wordDetector.getOffset() + divPos + 1;
+            replacementLength = wordPart.length() - divPos - 1;
+        }
     }
 
     public void apply(IDocument document) {
@@ -107,7 +120,17 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
 
     public boolean validate(IDocument document, int offset, DocumentEvent event)
     {
-        final String wordPart = new SQLWordPartDetector(document, syntaxManager, offset).getWordPart();
-        return !CommonUtils.isEmpty(wordPart) && replacementString.startsWith(wordPart);
+        final SQLWordPartDetector wordDetector = new SQLWordPartDetector(document, syntaxManager, offset);
+        String wordPart = wordDetector.getWordPart();
+        int divPos = wordPart.lastIndexOf(syntaxManager.getCatalogSeparator());
+        if (divPos != -1) {
+            wordPart = wordPart.substring(divPos + 1);
+        }
+        if (!CommonUtils.isEmpty(wordPart) && replacementString.startsWith(wordPart)) {
+            setPosition(wordDetector);
+            return true;
+        } else {
+            return false;
+        }
     }
 }

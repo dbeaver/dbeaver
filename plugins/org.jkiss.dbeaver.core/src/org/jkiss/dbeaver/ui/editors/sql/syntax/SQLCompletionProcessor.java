@@ -440,25 +440,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         String objectInfo,
         Image image)
     {
-        String wordPart = wordDetector.getWordPart();
-        int divPos = wordPart.lastIndexOf('.');
-        int assistPos;
-        int assistLength;
-        if (divPos == -1) {
-            assistPos = wordDetector.getOffset();
-            assistLength = wordPart.length();
-        } else {
-            assistPos = wordDetector.getOffset() + divPos + 1;
-            assistLength = wordPart.length() - divPos - 1;
-        }
         // Escape replace string if required
         replaceString = DBUtils.getQuotedIdentifier(editor.getDataSource(), replaceString);
         return new SQLCompletionProposal(
             editor.getSyntaxManager(),
             objectName,
-            replaceString, //replacementString
-            assistPos, //replacementOffset the offset of the text to be replaced
-            assistLength, //replacementLength the length of the text to be replaced
+            replaceString, // replacementString
+            wordDetector, // wordDetector
             replaceString.length(), //cursorPosition the position of the cursor following the insert
                                 // relative to replacementOffset
             image, //image to display
