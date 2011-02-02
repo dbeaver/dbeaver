@@ -161,6 +161,7 @@ public class QMMCollector extends DefaultExecutionHandler {
         }
         // Fire transactional mode change
         DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
+        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
     }
 
     @Override
@@ -173,6 +174,7 @@ public class QMMCollector extends DefaultExecutionHandler {
                 fireMetaEvent(oldTxn, QMMetaEvent.Action.END);
             }
         }
+        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
     }
 
     @Override
@@ -185,6 +187,7 @@ public class QMMCollector extends DefaultExecutionHandler {
                 fireMetaEvent(oldTxn, QMMetaEvent.Action.END);
             }
         }
+        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
     }
 
     @Override
@@ -221,6 +224,7 @@ public class QMMCollector extends DefaultExecutionHandler {
                 fireMetaEvent(exec, QMMetaEvent.Action.BEGIN);
             }
         }
+        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
     }
 
     @Override

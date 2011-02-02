@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -19,6 +20,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -43,7 +45,16 @@ public class DataSourceTransactionModeHandler extends DataSourceHandler
                     DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.UTIL, "Change '" + dataSourceContainer.getName() + "' transactional mode");
                     try {
                         DBCTransactionManager txnManager = context.getTransactionManager();
-                        txnManager.setAutoCommit(!txnManager.isAutoCommit());
+                        // Change auto-commit mode
+                        boolean newAutoCommit = !txnManager.isAutoCommit();
+                        txnManager.setAutoCommit(newAutoCommit);
+
+                        // Update data source settings
+                        IPreferenceStore preferenceStore = dataSourceContainer.getPreferenceStore();
+                        preferenceStore.setValue(PrefConstants.DEFAULT_AUTO_COMMIT, newAutoCommit);
+                        dataSourceContainer.getRegistry().flushConfig();
+
+                        // Update command image
                     }
                     catch (DBCException e) {
                         throw new InvocationTargetException(e);

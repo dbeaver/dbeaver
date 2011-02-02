@@ -28,4 +28,5 @@ public interface DBPDataSourceRegistry {
 
     boolean removeDataSourceListener(DBPEventListener listener);
 
+    void flushConfig();
 }

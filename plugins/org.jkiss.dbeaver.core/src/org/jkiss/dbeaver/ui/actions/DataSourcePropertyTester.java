@@ -9,12 +9,18 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IEvaluationService;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMStatementExecuteInfo;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionSavepointInfo;
 
 /**
  * DatabaseEditorPropertyTester
@@ -26,6 +32,7 @@ public class DataSourcePropertyTester extends PropertyTester
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.datasource";
     public static final String PROP_CONNECTED = "connected";
     public static final String PROP_TRANSACTIONAL = "transactional";
+    public static final String PROP_TRANSACTION_ACTIVE = "transactionActive";
 
     public DataSourcePropertyTester() {
         super();
@@ -36,9 +43,9 @@ public class DataSourcePropertyTester extends PropertyTester
             return false;
         }
         DBSDataSourceContainer dataSourceContainer = (DBSDataSourceContainer)receiver;
-        if (property.equals(PROP_CONNECTED)) {
+        if (PROP_CONNECTED.equals(property)) {
             return dataSourceContainer.isConnected() == Boolean.valueOf(String.valueOf(expectedValue));
-        } if (property.equals(PROP_TRANSACTIONAL)) {
+        } else if (PROP_TRANSACTIONAL.equals(property)) {
             if (!dataSourceContainer.isConnected()) {
                 return Boolean.FALSE.equals(expectedValue);
             }
@@ -57,7 +64,22 @@ public class DataSourcePropertyTester extends PropertyTester
             finally {
                 context.close();
             }
-
+        } else if (PROP_TRANSACTION_ACTIVE.equals(property)) {
+            if (dataSourceContainer.isConnected()) {
+                DBPDataSource dataSource = dataSourceContainer.getDataSource();
+                QMMSessionInfo session = DBeaverCore.getInstance().getQueryManager().getMetaCollector().getSession(dataSource);
+                QMMTransactionInfo transaction = session.getTransaction();
+                if (transaction != null) {
+                    QMMTransactionSavepointInfo savepoint = transaction.getCurrentSavepoint();
+                    if (savepoint != null) {
+                        QMMStatementExecuteInfo execute = savepoint.getLastExecute();
+                        if (execute != null) {
+                            return Boolean.TRUE.equals(expectedValue);
+                        }
+                    }
+                }
+            }
+            return Boolean.FALSE.equals(expectedValue);
         }
         return false;
     }
