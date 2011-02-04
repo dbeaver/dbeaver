@@ -10,6 +10,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.NullScrollBar;
@@ -32,6 +33,8 @@ import java.util.List;
  * @author chris.gross@us.ibm.com
  */
 public class LightGrid extends Canvas {
+
+    public static final int MAX_TOOLTIP_LENGTH = 1000;
 
     public static final int Event_ChangeSort = 1000;
 
@@ -4630,7 +4633,9 @@ public class LightGrid extends Canvas {
     public String getCellText(int column, int row)
     {
         if (contentLabelProvider != null) {
-            return contentLabelProvider.getText(new GridPos(column,  row));
+            return SQLUtils.truncateString(
+                contentLabelProvider.getText(new GridPos(column, row)),
+                MAX_TOOLTIP_LENGTH);
         }
         return null;
     }
@@ -4638,7 +4643,7 @@ public class LightGrid extends Canvas {
     public String getCellToolTip(int column, int row)
     {
         if (contentLabelProvider != null) {
-            String toolTip = contentLabelProvider.getText(new GridPos(column, row));
+            String toolTip = getCellText(column, row);
             if (toolTip == null) {
                 return null;
             }
@@ -4648,7 +4653,7 @@ public class LightGrid extends Canvas {
             if (ttSize.x > itemColumn.getWidth() || ttSize.y > getItemHeight()) {
                 int gridHeight = getBounds().height;
                 if (ttSize.y > gridHeight) {
-                    // Too big tooltip - larger than entire grid
+                    // Too big tool tip - larger than entire grid
                     // Lets chop it
                     StringBuilder newToolTip = new StringBuilder();
                     StringTokenizer st = new StringTokenizer(toolTip, "'\n");

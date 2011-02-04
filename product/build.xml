@@ -107,7 +107,7 @@
             depends="sun-java6-jre | openjdk-6-jre"
             homepage="http://dbeaver.jkiss.org"
             suggests="dbeaver"
-            architecture="x86">
+            architecture="i386">
 			<maintainer name="Serge Rieder" email="serge@jkiss.org"/>
 			<description synopsis="DBeaver">Universal Database Manager</description>
 			<tarfileset file="${debDirectory}/dbeaver/dbeaver" prefix="usr/share/${packageName}" filemode="755"/>

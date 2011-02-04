@@ -135,10 +135,10 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     {
         if (value instanceof DBDContent) {
             String result = value.toString();
-            if (result != null) {
-                return result;
-            } else {
+            if (result == null) {
                 return super.getValueDisplayString(column, null);
+            } else {
+                return result;
             }
         }
         return super.getValueDisplayString(column, value);
