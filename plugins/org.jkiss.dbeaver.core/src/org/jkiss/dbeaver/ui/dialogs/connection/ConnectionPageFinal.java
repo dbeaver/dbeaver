@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IEmbeddedPart;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -82,7 +81,7 @@ class ConnectionPageFinal extends WizardPage implements IEmbeddedPart
                         newName = "New Connection";
                     }
                     newName = settings.getDriver().getName() + " - " + newName;
-                    newName = SQLUtils.truncateString(newName, 50);
+                    newName = CommonUtils.truncateString(newName, 50);
                 }
                 connectionNameText.setText(newName);
                 connectionNameChanged = false;

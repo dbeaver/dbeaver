@@ -4,13 +4,13 @@
 
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.NullScrollBar;
@@ -4633,7 +4633,7 @@ public class LightGrid extends Canvas {
     public String getCellText(int column, int row)
     {
         if (contentLabelProvider != null) {
-            return SQLUtils.truncateString(
+            return CommonUtils.truncateString(
                 contentLabelProvider.getText(new GridPos(column, row)),
                 MAX_TOOLTIP_LENGTH);
         }

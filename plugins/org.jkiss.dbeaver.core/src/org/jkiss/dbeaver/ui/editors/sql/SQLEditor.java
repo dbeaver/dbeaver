@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
-import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -893,7 +892,7 @@ public class SQLEditor extends SQLEditorBase
         public String getName()
         {
             return curJob == null ? null :
-                curJob.getLastQuery() == null ? null : SQLUtils.truncateString(curJob.getLastQuery().getQuery(), 200);
+                curJob.getLastQuery() == null ? null : CommonUtils.truncateString(curJob.getLastQuery().getQuery(), 200);
         }
     }
 

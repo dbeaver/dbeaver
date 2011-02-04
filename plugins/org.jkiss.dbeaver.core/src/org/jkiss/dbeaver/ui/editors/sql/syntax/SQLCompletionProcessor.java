@@ -16,7 +16,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,7 +29,6 @@ import org.jkiss.dbeaver.ui.views.properties.PropertyCollector;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -95,7 +93,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             if (editor.getSyntaxManager().isTableQueryWord(wordDetector.getPrevKeyWord())) {
                 queryType = QueryType.TABLE;
 
-            } else if (editor.getSyntaxManager().isColumnQueryWord(wordDetector.getPrevKeyWord()) && SQLUtils.isEmptyTrimmed(wordDetector.getPrevDelimiter())) {
+            } else if (editor.getSyntaxManager().isColumnQueryWord(wordDetector.getPrevKeyWord()) && CommonUtils.isEmptyTrimmed(wordDetector.getPrevDelimiter())) {
                 queryType = QueryType.COLUMN;
             }
         }
