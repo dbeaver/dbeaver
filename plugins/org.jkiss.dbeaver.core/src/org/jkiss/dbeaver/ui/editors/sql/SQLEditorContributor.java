@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntitySelector;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
@@ -114,6 +111,10 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
     public void setActiveEditor(IEditorPart targetEditor)
     {
         super.setActiveEditor(targetEditor);
+
+        if (activeEditorPart == targetEditor) {
+            return;
+        }
         // Update previous statuses
         if (activeEditorPart != null) {
             final DBSDataSourceContainer dataSourceContainer = activeEditorPart.getDataSourceContainer();
@@ -407,31 +408,38 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                         dataSource instanceof DBSEntitySelector &&
                         ((DBSEntitySelector)dataSource).supportsActiveChildChange())
                     {
+                        DBSEntityContainer entityContainer = (DBSEntityContainer) dataSource;
                         final CurrentDatabasesInfo databasesInfo = new CurrentDatabasesInfo();
-
                         try {
-                            databasesInfo.list = ((DBSEntityContainer) dataSource).getChildren(
-                                monitor);
-                            databasesInfo.active = ((DBSEntitySelector)dataSource).getActiveChild(monitor);
+                            Class<? extends DBSEntity> childType = entityContainer.getChildType(monitor);
+                            if (childType == null || !DBSEntityContainer.class.isAssignableFrom(childType)) {
+                                isEnabled = false;
+                            } else {
+                                isEnabled = true;
+                                databasesInfo.list = entityContainer.getChildren(monitor);
+                                databasesInfo.active = ((DBSEntitySelector)dataSource).getActiveChild(monitor);
+                            }
                         }
                         catch (DBException e) {
                             log.error(e);
                         }
-
-                        isEnabled = true;
-                        if (databasesInfo.list != null && !databasesInfo.list.isEmpty()) {
-                            for (DBSObject database : databasesInfo.list) {
-                                databaseCombo.add(database.getName());
-                                databaseCombo.setData(database.getName(), database);
+                        if (isEnabled) {
+                            if (databasesInfo.list != null && !databasesInfo.list.isEmpty()) {
+                                for (DBSObject database : databasesInfo.list) {
+                                    if (database instanceof DBSEntityContainer) {
+                                        databaseCombo.add(database.getName());
+                                        databaseCombo.setData(database.getName(), database);
+                                    }
+                                }
                             }
-                        }
-                        if (databasesInfo.active != null) {
-                            int dbCount = databaseCombo.getItemCount();
-                            for (int i = 0; i < dbCount; i++) {
-                                String dbName = databaseCombo.getItem(i);
-                                if (dbName.equals(databasesInfo.active.getName())) {
-                                    databaseCombo.select(i);
-                                    break;
+                            if (databasesInfo.active != null) {
+                                int dbCount = databaseCombo.getItemCount();
+                                for (int i = 0; i < dbCount; i++) {
+                                    String dbName = databaseCombo.getItem(i);
+                                    if (dbName.equals(databasesInfo.active.getName())) {
+                                        databaseCombo.select(i);
+                                        break;
+                                    }
                                 }
                             }
                         }
