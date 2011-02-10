@@ -205,7 +205,9 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                 if (!objects.isEmpty()) {
                     for (DBSObject object : objects) {
                         DBNDatabaseNode node = navigatorModel.getNodeByObject(monitor, object, true);
-                        if (node != null) {
+                        if (node == null) {
+                            log.debug("Couldn't find navigator node for object '" + object.getName());
+                        } else {
                             cache.nodes.add(node);
                         }
                     }

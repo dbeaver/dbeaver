@@ -95,11 +95,10 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                 } else if (tableCatalog != null) {
                     table = tableCatalog.getTable(monitor, tableName);
                 } else {
-                    log.debug("Couldn't find table '" + tableName + "' in '" + catalogName + "/" + schemaName + "'");
-                    continue;
+                    table = dataSource.getTable(monitor, tableName);
                 }
                 if (table == null) {
-                    log.debug("Couldn't find table '" + tableName + "'");
+                    log.debug("Couldn't find table '" + tableName + "' in '" + catalogName + "/" + schemaName + "'");
                 } else {
                     objects.add(table);
                 }

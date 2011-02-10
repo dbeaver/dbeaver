@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.Driver;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -143,6 +142,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         throws DBException
     {
         return structureContainer == null ? null : structureContainer.getTables(monitor);
+    }
+
+    public GenericTable getTable(DBRProgressMonitor monitor, String name)
+        throws DBException
+    {
+        return DBUtils.findObject(getTables(monitor), name);
     }
 
     public List<GenericIndex> getIndexes(DBRProgressMonitor monitor)
@@ -431,6 +436,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         }
         synchronized (this) {
             activeChildRead = true;
+            if (CommonUtils.isEmpty(catalogs) && CommonUtils.isEmpty(schemas)) {
+                // Nor catalogs or schemas (looks like this DS have only tables) - no active child
+                return null;
+            }
             String activeDbName;
             JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Check active catalog");
             try {
