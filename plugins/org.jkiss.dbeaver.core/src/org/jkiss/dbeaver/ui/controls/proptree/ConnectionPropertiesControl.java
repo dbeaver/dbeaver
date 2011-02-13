@@ -41,7 +41,7 @@ public class ConnectionPropertiesControl extends EditablePropertiesControl {
         customProperties = null;
 
         loadDriverProperties(driver, connectionInfo);
-        loadCustomProperties(driver);
+        loadCustomProperties(driver, connectionInfo.getProperties());
 
         super.loadProperties(getAllPropertyGroups(driver, true), connectionProps);
     }
@@ -128,7 +128,7 @@ public class ConnectionPropertiesControl extends EditablePropertiesControl {
         }
     }
 
-    private void loadCustomProperties(DBPDriver driver)
+    private void loadCustomProperties(DBPDriver driver, Map<String, String> properties)
     {
         // Custom properties are properties which are came not from driver and not from
         Set<String> customNames = new TreeSet<String>();
@@ -143,7 +143,7 @@ public class ConnectionPropertiesControl extends EditablePropertiesControl {
         }
 
         // Find prop values which are not from driver
-        for (Object propName : getProperties().keySet()) {
+        for (Object propName : properties.keySet()) {
             if (!propNames.contains(propName.toString())) {
                 customNames.add(propName.toString());
             }

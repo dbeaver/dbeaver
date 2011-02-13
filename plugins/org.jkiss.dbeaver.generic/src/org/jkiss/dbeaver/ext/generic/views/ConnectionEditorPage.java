@@ -237,46 +237,6 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
     private ConnectionPropertiesControl createPropertiesTab(Composite parent)
     {
         propsControl = new ConnectionPropertiesControl(parent, SWT.NONE);
-/*
-        Composite propsGroup = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(1, false);
-        gl.marginHeight = 10;
-        gl.marginWidth = 10;
-        propsGroup.setLayout(gl);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        propsGroup.setLayoutData(gd);
-
-        propsTree = new TreeViewer(propsGroup, SWT.BORDER);
-        propsTree.setContentProvider(new PropsContentProvider());
-        //propsTree.setLabelProvider(new PropsLabelProvider());
-        gd = new GridData(GridData.FILL_BOTH);
-        gd.grabExcessHorizontalSpace = true;
-        gd.grabExcessVerticalSpace = true;
-        gd.minimumHeight = 120;
-        propsTree.getTree().setLayoutData(gd);
-        propsTree.getTree().setHeaderVisible(true);
-
-        ColumnViewerToolTipSupport.enableFor(propsTree, ToolTip.NO_RECREATE);
-
-        TreeViewerColumn column = new TreeViewerColumn(propsTree, SWT.NONE);
-        column.getColumn().setWidth(200);
-        column.getColumn().setMoveable(true);
-        column.getColumn().setText("Name");
-        column.setLabelProvider(new PropsLabelProvider());
-
-        column = new TreeViewerColumn(propsTree, SWT.NONE);
-        column.getColumn().setWidth(120);
-        column.getColumn().setMoveable(true);
-        column.getColumn().setText("Value");
-        column.setLabelProvider(new ColumnLabelProvider()
-        {
-            public String getText(Object obj)
-            {
-                return "";
-            }
-        });
-*/
-
         return propsControl;
     }
 
