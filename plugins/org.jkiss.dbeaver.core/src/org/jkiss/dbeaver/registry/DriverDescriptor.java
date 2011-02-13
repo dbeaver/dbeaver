@@ -15,7 +15,6 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDriver;
-import org.jkiss.dbeaver.model.DBPDriverCustomQuery;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 
@@ -50,7 +49,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean disabled;
     private List<DriverLibraryDescriptor> libraries = new ArrayList<DriverLibraryDescriptor>(), origLibraries;
     private List<PropertyGroupDescriptor> propertyGroups = new ArrayList<PropertyGroupDescriptor>();
-    private List<DriverCustomQueryDescriptor> customQueries = new ArrayList<DriverCustomQueryDescriptor>();
     private Map<String, String> parameters = new HashMap<String, String>();
 
     private Class driverClass;
@@ -112,11 +110,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         IConfigurationElement[] propElements = config.getChildren(PropertyGroupDescriptor.PROPERTY_GROUP_TAG);
         for (IConfigurationElement prop : propElements) {
             propertyGroups.add(new PropertyGroupDescriptor(prop));
-        }
-
-        IConfigurationElement[] queryElements = config.getChildren("query");
-        for (IConfigurationElement query : queryElements) {
-            customQueries.add(new DriverCustomQueryDescriptor(query));
         }
 
         IConfigurationElement[] paramElements = config.getChildren("parameter");
@@ -400,32 +393,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    public List<PropertyGroupDescriptor> getPropertyGroups()
+    public List<PropertyGroupDescriptor> getConnectionPropertyGroups()
     {
         return propertyGroups;
     }
 
-    public List<? extends DBPDriverCustomQuery> getCustomQueries()
-    {
-        return customQueries;
-    }
-
-    public String getCustomQuery(String name)
-    {
-        for (DBPDriverCustomQuery query : customQueries) {
-            if (query.getName().equals(name)) {
-                return query.getValue();
-            }
-        }
-        return null;
-    }
-
-    public Map<String, String> getParameters()
+    public Map<String, String> getDriverParameters()
     {
         return parameters;
     }
 
-    public String getParameter(String name)
+    public String getDriverParameter(String name)
     {
         return parameters.get(name);
     }

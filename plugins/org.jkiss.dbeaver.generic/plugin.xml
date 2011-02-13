@@ -92,8 +92,8 @@
                     webURL="http://oracle.com"
                     description="Oracle thin driver">
                     <library path="drivers/ojdbc6.jar"/>
-                    <query label="GET_ACTIVE_DB">select sys_context( 'userenv', 'current_schema' ) from dual</query>
-                    <query label="SET_ACTIVE_DB">alter session set current_schema=?</query>
+                    <parameter name="query-get-active-db">select sys_context( 'userenv', 'current_schema' ) from dual</parameter>
+                    <parameter name="query-set-active-db">alter session set current_schema=?</parameter>
                     <parameter name="meta-case" value="upper"/>
                 </driver>
                 <driver
@@ -113,8 +113,8 @@
                     sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
                     webURL="http://jtds.sourceforge.net/"
                     description="MS SQL Server JTDS driver">
-                    <query label="GET_ACTIVE_DB">select db_name()</query>
-                    <query label="SET_ACTIVE_DB">use ?</query>
+                    <parameter name="query-get-active-db">select db_name()</parameter>
+                    <parameter name="query-set-active-db">use ?</parameter>
                     <!--library path="drivers/sqljdbc4.jar"/-->
                     <library path="drivers/jtds-1.2.5.jar"/>
                 </driver>
@@ -125,8 +125,8 @@
                     sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
                     webURL="http://jtds.sourceforge.net/"
                     description="Sybase JTDS driver">
-                    <!--query label="GET_ACTIVE_DB">select db_name()</query>
-                    <query label="SET_ACTIVE_DB">use ?</query-->
+                    <!--parameter name="query-get-active-db">select db_name()</query>
+                    <parameter name="query-set-active-db">use ?</query-->
                     <library path="drivers/jtds-1.2.5.jar"/>
                 </driver>
                 <driver

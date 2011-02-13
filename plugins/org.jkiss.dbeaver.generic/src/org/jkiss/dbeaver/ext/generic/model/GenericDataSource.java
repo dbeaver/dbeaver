@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -34,13 +35,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
 {
     static final Log log = LogFactory.getLog(GenericDataSource.class);
 
-    public static final String QUERY_GET_ACTIVE_DB = "GET_ACTIVE_DB";
-    public static final String QUERY_SET_ACTIVE_DB = "SET_ACTIVE_DB";
-
-    public static final String PARAM_META_CASE = "meta-case";
-    // URL parameter for DB shutdown. Added to support Derby DB shutdown process
-    public static final String PARAM_SHUTDOWN_URL_PARAM = "shutdown-url-param";
-
     private List<String> tableTypes;
     private List<GenericCatalog> catalogs;
     private List<GenericSchema> schemas;
@@ -51,43 +45,24 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
 
     private String queryGetActiveDB;
     private String querySetActiveDB;
-    private MetaCase metaCase;
-
-    private static enum MetaCase implements MetaDataNameConverter {
-        NONE {
-            public String convert(String name)
-            {
-                return name;
-            }},
-        UPPER{
-            public String convert(String name)
-            {
-                return name.toUpperCase();
-            }},
-        LOWER{
-            public String convert(String name)
-            {
-                return name.toLowerCase();
-            }}
-    }
-
+    private GenericConstants.MetaCase metaCase;
 
     public GenericDataSource(DBSDataSourceContainer container)
         throws DBException
     {
         super(container);
-        this.queryGetActiveDB = container.getDriver().getCustomQuery(QUERY_GET_ACTIVE_DB);
-        this.querySetActiveDB = container.getDriver().getCustomQuery(QUERY_SET_ACTIVE_DB);
-        String metaCaseName = container.getDriver().getParameter(PARAM_META_CASE);
+        this.queryGetActiveDB = container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB);
+        this.querySetActiveDB = container.getDriver().getDriverParameter(GenericConstants.PARAM_QUERY_SET_ACTIVE_DB);
+        String metaCaseName = container.getDriver().getDriverParameter(GenericConstants.PARAM_META_CASE);
         if (!CommonUtils.isEmpty(metaCaseName)) {
             try {
-                this.metaCase = MetaCase.valueOf(metaCaseName.toUpperCase());
+                this.metaCase = GenericConstants.MetaCase.valueOf(metaCaseName.toUpperCase());
             } catch (IllegalArgumentException e) {
                 log.warn(e);
-                this.metaCase = MetaCase.NONE;
+                this.metaCase = GenericConstants.MetaCase.NONE;
             }
         } else {
-            this.metaCase = MetaCase.NONE;
+            this.metaCase = GenericConstants.MetaCase.NONE;
         }
     }
 
@@ -95,7 +70,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
     public void close(DBRProgressMonitor monitor)
     {
         super.close(monitor);
-        String paramShutdown = getContainer().getDriver().getParameter(PARAM_SHUTDOWN_URL_PARAM);
+        String paramShutdown = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SHUTDOWN_URL_PARAM);
         if (!CommonUtils.isEmpty(paramShutdown)) {
             try {
                 final Driver driver = getDriverInstance();

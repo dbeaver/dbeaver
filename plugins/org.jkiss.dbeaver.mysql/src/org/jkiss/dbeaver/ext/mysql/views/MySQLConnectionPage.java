@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.ui.controls.proptree.DriverPropertiesControl;
+import org.jkiss.dbeaver.ui.controls.proptree.ConnectionPropertiesControl;
 
 /**
  * MySQLConnectionPage
@@ -37,7 +37,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
     private Text dbText;
     private Text usernameText;
     private Text passwordText;
-    private DriverPropertiesControl driverProps;
+    private ConnectionPropertiesControl connectionProps;
     private Button testButton;
     private Image logoImage;
 
@@ -71,8 +71,8 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         final TabItem propsTab = new TabItem(optionsFolder, SWT.NONE);
         propsTab.setText("Advanced");
         propsTab.setToolTipText("Advanced/custom driver properties");
-        driverProps = new DriverPropertiesControl(optionsFolder, SWT.NONE);
-        propsTab.setControl(driverProps);
+        connectionProps = new ConnectionPropertiesControl(optionsFolder, SWT.NONE);
+        propsTab.setControl(connectionProps);
 
         optionsFolder.addSelectionListener(
             new SelectionListener()
@@ -233,7 +233,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         }
 
         // Set props model
-        if (driverProps != null) {
+        if (connectionProps != null) {
             refreshDriverProperties();
         }
     }
@@ -243,7 +243,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
         DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
         saveSettings(tmpConnectionInfo);
         tmpConnectionInfo.setProperties(site.getConnectionInfo().getProperties());
-        driverProps.loadProperties(site.getDriver(), tmpConnectionInfo/*.getUrl(), site.getConnectionInfo().getProperties()*/);
+        connectionProps.loadProperties(site.getDriver(), tmpConnectionInfo/*.getUrl(), site.getConnectionInfo().getProperties()*/);
     }
 
     public void saveSettings()
@@ -269,7 +269,7 @@ public class MySQLConnectionPage extends DialogPage implements IDataSourceConnec
             if (passwordText != null) {
                 connectionInfo.setUserPassword(passwordText.getText());
             }
-            connectionInfo.setProperties(driverProps.getProperties());
+            connectionInfo.setProperties(connectionProps.getProperties());
             connectionInfo.setUrl(
                 "jdbc:mysql://" + connectionInfo.getHostName() +
                     ":" + connectionInfo.getHostPort() +

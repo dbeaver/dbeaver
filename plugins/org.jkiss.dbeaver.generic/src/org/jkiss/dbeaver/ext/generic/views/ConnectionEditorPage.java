@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
-import org.jkiss.dbeaver.ui.controls.proptree.DriverPropertiesControl;
+import org.jkiss.dbeaver.ui.controls.proptree.ConnectionPropertiesControl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -56,7 +56,7 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
     private Set<String> requiredProperties = new HashSet<String>();
 
     private boolean driverPropsLoaded;
-    private DriverPropertiesControl propsControl;
+    private ConnectionPropertiesControl propsControl;
 
     public void createControl(Composite composite)
     {
@@ -234,9 +234,9 @@ public class ConnectionEditorPage extends DialogPage implements IDataSourceConne
         return addrGroup;
     }
 
-    private DriverPropertiesControl createPropertiesTab(Composite parent)
+    private ConnectionPropertiesControl createPropertiesTab(Composite parent)
     {
-        propsControl = new DriverPropertiesControl(parent, SWT.NONE);
+        propsControl = new ConnectionPropertiesControl(parent, SWT.NONE);
 /*
         Composite propsGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);

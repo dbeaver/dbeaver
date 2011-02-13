@@ -20,16 +20,16 @@ import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import java.util.*;
 
 /**
- * Driver properties control
+ * Connection properties control
  */
-public class DriverPropertiesControl extends EditablePropertiesControl {
+public class ConnectionPropertiesControl extends EditablePropertiesControl {
 
-    static final Log log = LogFactory.getLog(DriverPropertiesControl.class);
+    static final Log log = LogFactory.getLog(ConnectionPropertiesControl.class);
 
     private DBPPropertyGroup driverProvidedProperties;
     private DBPPropertyGroup customProperties;
 
-    public DriverPropertiesControl(Composite parent, int style)
+    public ConnectionPropertiesControl(Composite parent, int style)
     {
         super(parent, style);
     }
@@ -109,7 +109,7 @@ public class DriverPropertiesControl extends EditablePropertiesControl {
 
     private List<DBPPropertyGroup> getAllPropertyGroups(DBPDriver driver, boolean includeCustom) {
         List<DBPPropertyGroup> groups = new ArrayList<DBPPropertyGroup>();
-        groups.addAll(driver.getPropertyGroups());
+        groups.addAll(driver.getConnectionPropertyGroups());
         if (driverProvidedProperties != null) {
             groups.add(driverProvidedProperties);
         }

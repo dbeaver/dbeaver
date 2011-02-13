@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * DBPDriver
@@ -32,13 +33,11 @@ public interface DBPDriver extends DBPObject
 
     boolean supportsDriverProperties();
 
-    List<? extends DBPPropertyGroup> getPropertyGroups();
+    List<? extends DBPPropertyGroup> getConnectionPropertyGroups();
 
-    List<? extends DBPDriverCustomQuery> getCustomQueries();
+    Map<String, String> getDriverParameters();
 
-    String getCustomQuery(String name);
-
-    String getParameter(String name);
+    String getDriverParameter(String name);
 
     void loadDriver()
         throws DBException;

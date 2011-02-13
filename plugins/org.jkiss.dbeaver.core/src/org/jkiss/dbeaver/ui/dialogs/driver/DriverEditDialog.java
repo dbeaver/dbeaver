@@ -23,8 +23,10 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.List;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPProperty;
+import org.jkiss.dbeaver.model.DBPPropertyGroup;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
@@ -35,10 +37,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -376,15 +375,18 @@ public class DriverEditDialog extends Dialog
         paramsGroup.setLayout(new GridLayout(1, false));
 
         final HashMap<String, String> propertyValues = new HashMap<String, String>();
-        PropertyGroupDescriptor paramsPropertyGroup = new PropertyGroupDescriptor("Parameters", "Advanced driver parameters");
-        paramsPropertyGroup.addProperty(new PropertyDescriptor(paramsPropertyGroup, "sdfg", "Param1", "Param2", DBPProperty.PropertyType.STRING, false, "fsdg", new String[] {"sd", "fsdg"}));
-
-        PropertyGroupDescriptor paramsPropertyGroup2 = new PropertyGroupDescriptor("Parameters", "Advanced driver parameters");
-        paramsPropertyGroup2.addProperty(new PropertyDescriptor(paramsPropertyGroup2, "sdfg", "Param1", "Param2", DBPProperty.PropertyType.STRING, false, "fsdg", null));
+        java.util.List<? extends DBPPropertyGroup> driverProperties = null;
+        try {
+            driverProperties = driver.getDataSourceProvider().getDriverProperties(driver);
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(getShell(), "Invalid parameters", "Bad driver port specified");
+        }
 
         EditablePropertiesControl paramsEditor = new EditablePropertiesControl(paramsGroup, SWT.NONE);
-        paramsEditor.loadProperties(Arrays.asList(paramsPropertyGroup, paramsPropertyGroup2), propertyValues);
         paramsEditor.setMarginVisible(false);
+        if (driverProperties != null) {
+            paramsEditor.loadProperties(driverProperties, propertyValues);
+        }
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
         paramsTab.setText("Advanced");

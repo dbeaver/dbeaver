@@ -100,7 +100,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         if (queryType != null || wordDetector.containsSeparator(wordPart)) {
             // It's a table query
             // Use database information (only we are connected, of course)
-            if (editor.getDataSourceContainer().isConnected()) {
+            if (editor.getDataSourceContainer() != null && editor.getDataSourceContainer().isConnected()) {
                 try {
                     final QueryType qt = queryType;
                     DBeaverCore.getInstance().runAndWait2(new DBRRunnableWithProgress() {
