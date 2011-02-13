@@ -19,14 +19,15 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
+import org.jkiss.dbeaver.model.DBPProperty;
+import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +36,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -150,209 +153,243 @@ public class DriverEditDialog extends Dialog
             });
         }
         if (!isReadOnly) {
-            Composite libsGroup = new Composite(group, SWT.BORDER);
-            libsGroup.setLayout(new GridLayout(2, false));
-            gd = new GridData(GridData.FILL_BOTH);
-            libsGroup.setLayoutData(gd);
+            TabFolder tabFolder = new TabFolder(group, SWT.TOP);
+            tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+            tabFolder.setLayout(new FillLayout());
 
-            Label libsLabel = UIUtils.createControlLabel(libsGroup, "Additional Driver Libraries");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            libsLabel.setLayoutData(gd);
+            createLibrariesTab(tabFolder);
+            createParametersTab(tabFolder);
 
-            //ListViewer list = new ListViewer(libsGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
-            {
-                Composite libsListGroup = new Composite(libsGroup, SWT.TOP);
-                gd = new GridData(GridData.FILL_BOTH);
-                gd.heightHint = 200;
-                libsListGroup.setLayoutData(gd);
-                GridLayout layout = new GridLayout(1, false);
-                layout.marginHeight = 0;
-                layout.marginWidth = 0;
-                libsListGroup.setLayout(layout);
-                //gd = new GridData(GridData.FILL_HORIZONTAL);
-
-                // Additional libraries list
-                libList = new ListViewer(libsListGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
-                //libsTable.setLinesVisible (true);
-                //libsTable.setHeaderVisible (true);
-                libList.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
-                libList.getControl().addListener(SWT.Selection, new Listener()
-                {
-                    public void handleEvent(Event event)
-                    {
-                        changeLibSelection();
-                    }
-                });
-
-                for (DriverLibraryDescriptor lib : driver.getLibraries()) {
-                    if (lib.isDisabled()) {
-                        continue;
-                    }
-                    libList.getList().add(lib.getLibraryFile().getPath());
-                }
-                
-                // Find driver class
-
-                Composite findClassGroup = new Composite(libsListGroup, SWT.TOP);
-                findClassGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                layout = new GridLayout(3, false);
-                layout.marginHeight = 0;
-                layout.marginWidth = 0;
-                findClassGroup.setLayout(layout);
-
-                UIUtils.createControlLabel(findClassGroup, "Driver class");
-                classListCombo = new Combo(findClassGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
-                classListCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                classListCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        int selIndex = classListCombo.getSelectionIndex();
-                        if (selIndex >= 0) {
-                            driverClassText.setText(classListCombo.getItem(selIndex));
-                        }
-                    }
-                });
-                findClassButton = new Button(findClassGroup, SWT.PUSH);
-                findClassButton.setText("Find Class");
-                findClassButton.addListener(SWT.Selection, new Listener()
-                {
-                    public void handleEvent(Event event)
-                    {
-                        try {
-                            ClassFindJob classFinder = new ClassFindJob(libList.getList().getItems());
-                            new ProgressMonitorDialog(getShell()).run(true, true, classFinder);
-
-                            if (classListCombo != null && !classListCombo.isDisposed()) {
-                                java.util.List<String> clasNames = classFinder.getDriverClassNames();
-                                classListCombo.setItems(clasNames.toArray(new String[clasNames.size()]));
-                                classListCombo.setListVisible(true);
-                            }
-
-                        } catch (InvocationTargetException e) {
-                            log.error(e.getTargetException());
-                        } catch (InterruptedException e) {
-                            log.error(e);
-                        }
-                    }
-                });
-            }
-
-            Composite libsControlGroup = new Composite(libsGroup, SWT.TOP);
-            libsControlGroup.setLayout(new GridLayout(1, true));
-            libsControlGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-
-            Button newButton = new Button(libsControlGroup, SWT.PUSH);
-            newButton.setText("Add &File");
-            newButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            newButton.addListener(SWT.Selection, new Listener()
-            {
-                public void handleEvent(Event event)
-                {
-                    FileDialog fd = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
-                    fd.setText("Open driver library");
-                    fd.setFilterPath(curFolder);
-                    String[] filterExt = {"*.jar", "*.*"};
-                    fd.setFilterExtensions(filterExt);
-                    String selected = fd.open();
-                    if (selected != null) {
-                        curFolder = fd.getFilterPath();
-                        String[] fileNames = fd.getFileNames();
-                        if (!CommonUtils.isEmpty(fileNames)) {
-                            File folderFile = new File(curFolder);
-                            for (String fileName : fileNames) {
-                                libList.getList().add(new File(folderFile, fileName).getPath());
-                            }
-                            changeLibContent();
-                        }
-                    }
-                }
-            });
-
-            Button newDirButton = new Button(libsControlGroup, SWT.PUSH);
-            newDirButton.setText("Add Fol&der");
-            newDirButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            newDirButton.addListener(SWT.Selection, new Listener()
-            {
-                public void handleEvent(Event event)
-                {
-                    DirectoryDialog fd = new DirectoryDialog(getShell(), SWT.MULTI);
-                    fd.setText("Open driver directory");
-                    fd.setFilterPath(curFolder);
-                    String selected = fd.open();
-                    if (selected != null) {
-                        curFolder = fd.getFilterPath();
-                        libList.getList().add(selected);
-                        changeLibContent();
-                    }
-                }
-            });
-
-            deleteButton = new Button(libsControlGroup, SWT.PUSH);
-            deleteButton.setText("D&elete");
-            deleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            deleteButton.addListener(SWT.Selection, new Listener()
-            {
-                public void handleEvent(Event event)
-                {
-                    libList.getList().remove(libList.getList().getSelectionIndices());
-                    changeLibContent();
-                }
-            });
-            deleteButton.setEnabled(false);
-
-            upButton = new Button(libsControlGroup, SWT.PUSH);
-            upButton.setText("&Up");
-            upButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            upButton.setEnabled(false);
-            upButton.addListener(SWT.Selection, new Listener()
-            {
-                public void handleEvent(Event event)
-                {
-                    int selIndex = libList.getList().getSelectionIndex();
-                    String selItem = libList.getList().getItem(selIndex);
-                    String prevItem = libList.getList().getItem(selIndex - 1);
-                    libList.getList().setItem(selIndex, prevItem);
-                    libList.getList().setItem(selIndex - 1, selItem);
-                    libList.getList().setSelection(selIndex - 1);
-                    changeLibSelection();
-                }
-            });
-
-            downButton = new Button(libsControlGroup, SWT.PUSH);
-            downButton.setText("Do&wn");
-            downButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            downButton.setEnabled(false);
-            downButton.addListener(SWT.Selection, new Listener()
-            {
-                public void handleEvent(Event event)
-                {
-                    int selIndex = libList.getList().getSelectionIndex();
-                    String selItem = libList.getList().getItem(selIndex);
-                    String nextItem = libList.getList().getItem(selIndex + 1);
-                    libList.getList().setItem(selIndex, nextItem);
-                    libList.getList().setItem(selIndex + 1, selItem);
-                    libList.getList().setSelection(selIndex + 1);
-                    changeLibSelection();
-                }
-            });
-
-            Button cpButton = new Button(libsControlGroup, SWT.PUSH);
-            cpButton.setText("&Classpath");
-            cpButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            cpButton.addListener(SWT.Selection, new Listener()
-            {
-                public void handleEvent(Event event)
-                {
-                    ViewClasspathDialog cpDialog = new ViewClasspathDialog(getShell());
-                    cpDialog.open();
-                }
-            });
-
-            changeLibContent();
+            tabFolder.setSelection(0);
         }
 
         return group;
+    }
+
+    private void createLibrariesTab(TabFolder group)
+    {
+        GridData gd;
+        Composite libsGroup = new Composite(group, SWT.NONE);
+        libsGroup.setLayout(new GridLayout(2, false));
+
+        //ListViewer list = new ListViewer(libsGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+        {
+            Composite libsListGroup = new Composite(libsGroup, SWT.NONE);
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 200;
+            libsListGroup.setLayoutData(gd);
+            GridLayout layout = new GridLayout(1, false);
+            layout.marginHeight = 0;
+            layout.marginWidth = 0;
+            libsListGroup.setLayout(layout);
+            //gd = new GridData(GridData.FILL_HORIZONTAL);
+
+            // Additional libraries list
+            libList = new ListViewer(libsListGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+            //libsTable.setLinesVisible (true);
+            //libsTable.setHeaderVisible (true);
+            libList.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+            libList.getControl().addListener(SWT.Selection, new Listener()
+            {
+                public void handleEvent(Event event)
+                {
+                    changeLibSelection();
+                }
+            });
+
+            for (DriverLibraryDescriptor lib : driver.getLibraries()) {
+                if (lib.isDisabled()) {
+                    continue;
+                }
+                libList.getList().add(lib.getLibraryFile().getPath());
+            }
+
+            // Find driver class
+
+            Composite findClassGroup = new Composite(libsListGroup, SWT.TOP);
+            findClassGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            layout = new GridLayout(3, false);
+            layout.marginHeight = 0;
+            layout.marginWidth = 0;
+            findClassGroup.setLayout(layout);
+
+            UIUtils.createControlLabel(findClassGroup, "Driver class");
+            classListCombo = new Combo(findClassGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+            classListCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            classListCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    int selIndex = classListCombo.getSelectionIndex();
+                    if (selIndex >= 0) {
+                        driverClassText.setText(classListCombo.getItem(selIndex));
+                    }
+                }
+            });
+            findClassButton = new Button(findClassGroup, SWT.PUSH);
+            findClassButton.setText("Find Class");
+            findClassButton.addListener(SWT.Selection, new Listener()
+            {
+                public void handleEvent(Event event)
+                {
+                    try {
+                        ClassFindJob classFinder = new ClassFindJob(libList.getList().getItems());
+                        new ProgressMonitorDialog(getShell()).run(true, true, classFinder);
+
+                        if (classListCombo != null && !classListCombo.isDisposed()) {
+                            java.util.List<String> clasNames = classFinder.getDriverClassNames();
+                            classListCombo.setItems(clasNames.toArray(new String[clasNames.size()]));
+                            classListCombo.setListVisible(true);
+                        }
+
+                    } catch (InvocationTargetException e) {
+                        log.error(e.getTargetException());
+                    } catch (InterruptedException e) {
+                        log.error(e);
+                    }
+                }
+            });
+        }
+
+        Composite libsControlGroup = new Composite(libsGroup, SWT.TOP);
+        libsControlGroup.setLayout(new GridLayout(1, true));
+        libsControlGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+
+        Button newButton = new Button(libsControlGroup, SWT.PUSH);
+        newButton.setText("Add &File");
+        newButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        newButton.addListener(SWT.Selection, new Listener()
+        {
+            public void handleEvent(Event event)
+            {
+                FileDialog fd = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
+                fd.setText("Open driver library");
+                fd.setFilterPath(curFolder);
+                String[] filterExt = {"*.jar", "*.*"};
+                fd.setFilterExtensions(filterExt);
+                String selected = fd.open();
+                if (selected != null) {
+                    curFolder = fd.getFilterPath();
+                    String[] fileNames = fd.getFileNames();
+                    if (!CommonUtils.isEmpty(fileNames)) {
+                        File folderFile = new File(curFolder);
+                        for (String fileName : fileNames) {
+                            libList.getList().add(new File(folderFile, fileName).getPath());
+                        }
+                        changeLibContent();
+                    }
+                }
+            }
+        });
+
+        Button newDirButton = new Button(libsControlGroup, SWT.PUSH);
+        newDirButton.setText("Add Fol&der");
+        newDirButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        newDirButton.addListener(SWT.Selection, new Listener()
+        {
+            public void handleEvent(Event event)
+            {
+                DirectoryDialog fd = new DirectoryDialog(getShell(), SWT.MULTI);
+                fd.setText("Open driver directory");
+                fd.setFilterPath(curFolder);
+                String selected = fd.open();
+                if (selected != null) {
+                    curFolder = fd.getFilterPath();
+                    libList.getList().add(selected);
+                    changeLibContent();
+                }
+            }
+        });
+
+        deleteButton = new Button(libsControlGroup, SWT.PUSH);
+        deleteButton.setText("D&elete");
+        deleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        deleteButton.addListener(SWT.Selection, new Listener()
+        {
+            public void handleEvent(Event event)
+            {
+                libList.getList().remove(libList.getList().getSelectionIndices());
+                changeLibContent();
+            }
+        });
+        deleteButton.setEnabled(false);
+
+        upButton = new Button(libsControlGroup, SWT.PUSH);
+        upButton.setText("&Up");
+        upButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        upButton.setEnabled(false);
+        upButton.addListener(SWT.Selection, new Listener()
+        {
+            public void handleEvent(Event event)
+            {
+                int selIndex = libList.getList().getSelectionIndex();
+                String selItem = libList.getList().getItem(selIndex);
+                String prevItem = libList.getList().getItem(selIndex - 1);
+                libList.getList().setItem(selIndex, prevItem);
+                libList.getList().setItem(selIndex - 1, selItem);
+                libList.getList().setSelection(selIndex - 1);
+                changeLibSelection();
+            }
+        });
+
+        downButton = new Button(libsControlGroup, SWT.PUSH);
+        downButton.setText("Do&wn");
+        downButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        downButton.setEnabled(false);
+        downButton.addListener(SWT.Selection, new Listener()
+        {
+            public void handleEvent(Event event)
+            {
+                int selIndex = libList.getList().getSelectionIndex();
+                String selItem = libList.getList().getItem(selIndex);
+                String nextItem = libList.getList().getItem(selIndex + 1);
+                libList.getList().setItem(selIndex, nextItem);
+                libList.getList().setItem(selIndex + 1, selItem);
+                libList.getList().setSelection(selIndex + 1);
+                changeLibSelection();
+            }
+        });
+
+        Button cpButton = new Button(libsControlGroup, SWT.PUSH);
+        cpButton.setText("&Classpath");
+        cpButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        cpButton.addListener(SWT.Selection, new Listener()
+        {
+            public void handleEvent(Event event)
+            {
+                ViewClasspathDialog cpDialog = new ViewClasspathDialog(getShell());
+                cpDialog.open();
+            }
+        });
+
+        changeLibContent();
+
+        TabItem libsTab = new TabItem(group, SWT.NONE);
+        libsTab.setText("Driver Libraries");
+        libsTab.setToolTipText("Additional Driver Libraries");
+        libsTab.setControl(libsGroup);
+    }
+
+
+    private void createParametersTab(TabFolder group)
+    {
+        Composite paramsGroup = new Composite(group, SWT.NONE);
+        paramsGroup.setLayout(new GridLayout(1, false));
+
+        final HashMap<String, String> propertyValues = new HashMap<String, String>();
+        PropertyGroupDescriptor paramsPropertyGroup = new PropertyGroupDescriptor("Parameters", "Advanced driver parameters");
+        paramsPropertyGroup.addProperty(new PropertyDescriptor(paramsPropertyGroup, "sdfg", "Param1", "Param2", DBPProperty.PropertyType.STRING, false, "fsdg", new String[] {"sd", "fsdg"}));
+
+        PropertyGroupDescriptor paramsPropertyGroup2 = new PropertyGroupDescriptor("Parameters", "Advanced driver parameters");
+        paramsPropertyGroup2.addProperty(new PropertyDescriptor(paramsPropertyGroup2, "sdfg", "Param1", "Param2", DBPProperty.PropertyType.STRING, false, "fsdg", null));
+
+        EditablePropertiesControl paramsEditor = new EditablePropertiesControl(paramsGroup, SWT.NONE);
+        paramsEditor.loadProperties(Arrays.asList(paramsPropertyGroup, paramsPropertyGroup2), propertyValues);
+        paramsEditor.setMarginVisible(false);
+
+        TabItem paramsTab = new TabItem(group, SWT.NONE);
+        paramsTab.setText("Advanced");
+        paramsTab.setToolTipText("Advanced driver parameters");
+        paramsTab.setControl(paramsGroup);
     }
 
     @Override
