@@ -36,6 +36,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private DBPDataSourceProvider instance;
     private DBXTreeNode treeDescriptor;
     private boolean driversManagable;
+    private List<PropertyGroupDescriptor> driverPropertyGroups = new ArrayList<PropertyGroupDescriptor>();
     private List<DriverDescriptor> drivers = new ArrayList<DriverDescriptor>();
     private List<DataSourceViewDescriptor> views = new ArrayList<DataSourceViewDescriptor>();
 
@@ -60,6 +61,17 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         IConfigurationElement[] trees = config.getChildren("tree");
         if (!CommonUtils.isEmpty(trees)) {
             this.treeDescriptor = this.loadTreeInfo(trees[0]);
+        }
+
+        // Load driver properties
+        IConfigurationElement[] driverPropsGroup = config.getChildren("driver-properties");
+        if (!CommonUtils.isEmpty(driverPropsGroup)) {
+            for (IConfigurationElement propsElement : driverPropsGroup) {
+                IConfigurationElement[] propElements = propsElement.getChildren(PropertyGroupDescriptor.PROPERTY_GROUP_TAG);
+                for (IConfigurationElement prop : propElements) {
+                    driverPropertyGroups.add(new PropertyGroupDescriptor(prop));
+                }
+            }
         }
 
         // Load supplied drivers
@@ -168,6 +180,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     public boolean isDriversManagable()
     {
         return driversManagable;
+    }
+
+    public List<PropertyGroupDescriptor> getDriverPropertyGroups()
+    {
+        return driverPropertyGroups;
     }
 
     public List<DriverDescriptor> getDrivers()

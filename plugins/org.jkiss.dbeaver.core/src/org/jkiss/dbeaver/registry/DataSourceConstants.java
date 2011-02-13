@@ -16,11 +16,13 @@ public class DataSourceConstants {
     public static final String TAG_PROVIDER = "provider";
     public static final String TAG_LIBRARIES = "libraries";
     public static final String TAG_LIBRARY = "library";
+    public static final String TAG_PARAMETER = "parameter";
 
     public static final String ATTR_ID = "id";
     public static final String ATTR_DISABLED = "disabled";
     public static final String ATTR_CUSTOM = "custom";
     public static final String ATTR_NAME = "name";
+    public static final String ATTR_VALUE = "value";
     public static final String ATTR_CLASS = "class";
     public static final String ATTR_URL = "url";
     public static final String ATTR_PORT = "port";

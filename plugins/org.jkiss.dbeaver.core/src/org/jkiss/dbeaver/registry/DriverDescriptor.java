@@ -49,7 +49,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean disabled;
     private List<DriverLibraryDescriptor> libraries = new ArrayList<DriverLibraryDescriptor>(), origLibraries;
     private List<PropertyGroupDescriptor> propertyGroups = new ArrayList<PropertyGroupDescriptor>();
-    private Map<String, String> parameters = new HashMap<String, String>();
+    private Map<String, String> defaultParameters = new HashMap<String, String>();
+    private Map<String, String> customParameters = new HashMap<String, String>();
 
     private Class driverClass;
     private boolean isLoaded;
@@ -107,11 +108,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
         makeIconExtensions();
 
+        // Connection property groups
         IConfigurationElement[] propElements = config.getChildren(PropertyGroupDescriptor.PROPERTY_GROUP_TAG);
         for (IConfigurationElement prop : propElements) {
             propertyGroups.add(new PropertyGroupDescriptor(prop));
         }
 
+        // Driver parameters
         IConfigurationElement[] paramElements = config.getChildren("parameter");
         for (IConfigurationElement param : paramElements) {
             String paramName = param.getAttribute(DataSourceConstants.ATTR_NAME);
@@ -120,7 +123,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 paramValue = param.getValue();
             }
             if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
-                parameters.put(paramName, paramValue);
+                defaultParameters.put(paramName, paramValue);
+                customParameters.put(paramName, paramValue);
             }
         }
 
@@ -257,7 +261,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return disabled;
     }
 
-    public void setDisabled(boolean disabled)
+    void setDisabled(boolean disabled)
     {
         this.disabled = disabled;
     }
@@ -398,14 +402,24 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return propertyGroups;
     }
 
+    public Map<String, String> getDefaultDriverParameters()
+    {
+        return defaultParameters;
+    }
+
     public Map<String, String> getDriverParameters()
     {
-        return parameters;
+        return customParameters;
     }
 
     public String getDriverParameter(String name)
     {
-        return parameters.get(name);
+        return customParameters.get(name);
+    }
+
+    public void setDriverParameter(String name, String value)
+    {
+        customParameters.put(name, value);
     }
 
     public void loadDriver()
@@ -533,6 +547,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             xml.addAttribute(DataSourceConstants.ATTR_PORT, this.getDefaultPort().toString());
         }
         xml.addAttribute(DataSourceConstants.ATTR_DESCRIPTION, CommonUtils.getString(this.getDescription()));
+
+        // Libraries
         for (DriverLibraryDescriptor lib : this.getLibraries()) {
             if ((export && !lib.isDisabled()) || lib.isCustom() || lib.isDisabled()) {
                 xml.startElement(DataSourceConstants.TAG_LIBRARY);
@@ -543,6 +559,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 xml.endElement();
             }
         }
+
+        // Parameters
+        for (Map.Entry<String, String> paramEntry : customParameters.entrySet()) {
+            if (!CommonUtils.equalObjects(paramEntry.getValue(), defaultParameters.get(paramEntry.getKey()))) {
+                xml.startElement(DataSourceConstants.TAG_PARAMETER);
+                xml.addAttribute(DataSourceConstants.ATTR_NAME, paramEntry.getKey());
+                xml.addAttribute(DataSourceConstants.ATTR_VALUE, paramEntry.getValue());
+                xml.endElement();
+            }
+        }
+
         xml.endElement();
     }
 

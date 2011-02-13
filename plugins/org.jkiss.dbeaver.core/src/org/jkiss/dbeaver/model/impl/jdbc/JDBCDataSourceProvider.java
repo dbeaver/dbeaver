@@ -12,7 +12,6 @@ import org.jkiss.dbeaver.registry.PropertyGroupDescriptor;
 
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -30,11 +29,6 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
     public void init(DBPApplication application)
     {
 
-    }
-
-    public List<? extends DBPPropertyGroup> getDriverProperties(DBPDriver driver) throws DBException
-    {
-        return null;
     }
 
     public DBPPropertyGroup getConnectionProperties(

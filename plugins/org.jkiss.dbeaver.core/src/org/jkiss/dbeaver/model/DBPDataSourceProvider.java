@@ -31,16 +31,6 @@ public interface DBPDataSourceProvider
     long getFeatures();
 
     /**
-     * Supported driver properties
-     * @param driver driver
-     * @return property groups for specified driver
-     * @throws DBException on any error
-     */
-    List<? extends DBPPropertyGroup> getDriverProperties(
-        DBPDriver driver)
-        throws DBException;
-
-    /**
      * Supported connection properties.
      * @param driver driver
      * @param connectionInfo connection information

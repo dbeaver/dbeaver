@@ -23,11 +23,11 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.swt.widgets.List;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPProperty;
 import org.jkiss.dbeaver.model.DBPPropertyGroup;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
 
@@ -37,7 +37,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -62,6 +64,7 @@ public class DriverEditDialog extends Dialog
     private Text driverClassText;
     private Text driverURLText;
     private Text driverPortText;
+    private EditablePropertiesControl parametersEditor;
 
     public DriverEditDialog(Shell shell, DriverDescriptor driver)
     {
@@ -374,19 +377,9 @@ public class DriverEditDialog extends Dialog
         Composite paramsGroup = new Composite(group, SWT.NONE);
         paramsGroup.setLayout(new GridLayout(1, false));
 
-        final HashMap<String, String> propertyValues = new HashMap<String, String>();
-        java.util.List<? extends DBPPropertyGroup> driverProperties = null;
-        try {
-            driverProperties = driver.getDataSourceProvider().getDriverProperties(driver);
-        } catch (DBException e) {
-            UIUtils.showErrorDialog(getShell(), "Invalid parameters", "Bad driver port specified");
-        }
-
-        EditablePropertiesControl paramsEditor = new EditablePropertiesControl(paramsGroup, SWT.NONE);
-        paramsEditor.setMarginVisible(false);
-        if (driverProperties != null) {
-            paramsEditor.loadProperties(driverProperties, propertyValues);
-        }
+        parametersEditor = new EditablePropertiesControl(paramsGroup, SWT.NONE);
+        parametersEditor.setMarginVisible(false);
+        parametersEditor.loadProperties(driver.getProviderDescriptor().getDriverPropertyGroups(), driver.getDriverParameters(), driver.getDefaultDriverParameters());
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
         paramsTab.setText("Advanced");
@@ -445,6 +438,7 @@ public class DriverEditDialog extends Dialog
             }
             libList.getList().add(lib.getLibraryFile().getPath());
         }
+        parametersEditor.loadProperties(driver.getProviderDescriptor().getDriverPropertyGroups(), driver.getDriverParameters(), driver.getDefaultDriverParameters());
     }
 
     @Override
@@ -514,6 +508,12 @@ public class DriverEditDialog extends Dialog
             }
         }
 
+        // Set parameters
+        for (Map.Entry<String,String> propEntry : parametersEditor.getProperties().entrySet()) {
+            driver.setDriverParameter(propEntry.getKey(), propEntry.getValue());
+        }
+
+        // Finish
         if (provider.getDriver(driver.getId()) == null) {
             provider.addDriver(driver);
         }

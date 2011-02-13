@@ -280,6 +280,16 @@ public class DataSourceProviderRegistry
                 } else if (lib == null) {
                     curDriver.addLibrary(path);
                 }
+            } else if (localName.equals(DataSourceConstants.TAG_PARAMETER)) {
+                if (curDriver == null) {
+                    log.warn("Parameter outside of driver");
+                    return;
+                }
+                final String paramName = atts.getValue(DataSourceConstants.ATTR_NAME);
+                final String paramValue = atts.getValue(DataSourceConstants.ATTR_VALUE);
+                if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
+                    curDriver.setDriverParameter(paramName, paramValue);
+                }
             }
         }
 
