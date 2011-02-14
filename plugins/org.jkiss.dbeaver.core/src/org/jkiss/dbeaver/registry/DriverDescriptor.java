@@ -48,7 +48,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean modified;
     private boolean disabled;
     private List<DriverLibraryDescriptor> libraries = new ArrayList<DriverLibraryDescriptor>(), origLibraries;
-    private List<PropertyGroupDescriptor> propertyGroups = new ArrayList<PropertyGroupDescriptor>();
+    private List<PropertyGroupDescriptor> connectionPropertyGroups = new ArrayList<PropertyGroupDescriptor>();
+    private Map<String, String> connectionProperties = new HashMap<String, String>();
     private Map<String, String> defaultParameters = new HashMap<String, String>();
     private Map<String, String> customParameters = new HashMap<String, String>();
 
@@ -111,8 +112,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         // Connection property groups
         IConfigurationElement[] propElements = config.getChildren(PropertyGroupDescriptor.PROPERTY_GROUP_TAG);
         for (IConfigurationElement prop : propElements) {
-            propertyGroups.add(new PropertyGroupDescriptor(prop));
+            connectionPropertyGroups.add(new PropertyGroupDescriptor(prop));
         }
+
+        // Connection default properties
+        //connectionProperties
 
         // Driver parameters
         IConfigurationElement[] paramElements = config.getChildren("parameter");
@@ -399,7 +403,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public List<PropertyGroupDescriptor> getConnectionPropertyGroups()
     {
-        return propertyGroups;
+        return connectionPropertyGroups;
     }
 
     public Map<String, String> getDefaultDriverParameters()
