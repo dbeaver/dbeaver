@@ -290,6 +290,16 @@ public class DataSourceProviderRegistry
                 if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
                     curDriver.setDriverParameter(paramName, paramValue);
                 }
+            } else if (localName.equals(DataSourceConstants.TAG_PROPERTY)) {
+                if (curDriver == null) {
+                    log.warn("Property outside of driver");
+                    return;
+                }
+                final String paramName = atts.getValue(DataSourceConstants.ATTR_NAME);
+                final String paramValue = atts.getValue(DataSourceConstants.ATTR_VALUE);
+                if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
+                    curDriver.setConnectionProperty(paramName, paramValue);
+                }
             }
         }
 

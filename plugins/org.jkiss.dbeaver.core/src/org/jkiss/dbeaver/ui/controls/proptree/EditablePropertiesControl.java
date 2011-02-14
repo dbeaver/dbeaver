@@ -34,6 +34,7 @@ import java.util.List;
  */
 public class EditablePropertiesControl extends Composite {
 
+    private boolean expandSingleRoot = true;
     private TreeViewer propsTree;
     private TreeEditor treeEditor;
 
@@ -80,7 +81,7 @@ public class EditablePropertiesControl extends Composite {
         }
 
         Object root;
-        if (propertyGroups.size() == 1) {
+        if (propertyGroups.size() == 1 && expandSingleRoot) {
             root = propertyGroups.get(0);
         } else {
             root = propertyGroups;
@@ -473,6 +474,11 @@ public class EditablePropertiesControl extends Composite {
             layout.marginHeight = 0;
             layout.marginWidth = 0;
         }
+    }
+
+    public void setExpandSingleRoot(boolean expandSingleRoot)
+    {
+        this.expandSingleRoot = expandSingleRoot;
     }
 
     public boolean isDirty()

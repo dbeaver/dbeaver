@@ -35,6 +35,10 @@ public interface DBPDriver extends DBPObject
 
     List<? extends DBPPropertyGroup> getConnectionPropertyGroups();
 
+    Map<String, String> getDefaultConnectionProperties();
+
+    Map<String, String> getConnectionProperties();
+
     Map<String, String> getDriverParameters();
 
     String getDriverParameter(String name);

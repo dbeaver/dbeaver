@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.proptree.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.controls.proptree.EditablePropertiesControl;
 
 import java.io.File;
@@ -65,6 +66,7 @@ public class DriverEditDialog extends Dialog
     private Text driverURLText;
     private Text driverPortText;
     private EditablePropertiesControl parametersEditor;
+    private ConnectionPropertiesControl connectionPropertiesEditor;
 
     public DriverEditDialog(Shell shell, DriverDescriptor driver)
     {
@@ -160,6 +162,7 @@ public class DriverEditDialog extends Dialog
             tabFolder.setLayout(new FillLayout());
 
             createLibrariesTab(tabFolder);
+            createConnectionPropertiesTab(tabFolder);
             createParametersTab(tabFolder);
 
             tabFolder.setSelection(0);
@@ -387,6 +390,21 @@ public class DriverEditDialog extends Dialog
         paramsTab.setControl(paramsGroup);
     }
 
+    private void createConnectionPropertiesTab(TabFolder group)
+    {
+        Composite paramsGroup = new Composite(group, SWT.NONE);
+        paramsGroup.setLayout(new GridLayout(1, false));
+
+        connectionPropertiesEditor = new ConnectionPropertiesControl(paramsGroup, SWT.NONE);
+        connectionPropertiesEditor.setMarginVisible(false);
+        connectionPropertiesEditor.loadProperties(driver, driver.getConnectionProperties());
+
+        TabItem paramsTab = new TabItem(group, SWT.NONE);
+        paramsTab.setText("Connection properties");
+        paramsTab.setToolTipText("Default connection properties");
+        paramsTab.setControl(paramsGroup);
+    }
+
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         if (provider.isDriversManagable()) {
@@ -439,6 +457,7 @@ public class DriverEditDialog extends Dialog
             libList.getList().add(lib.getLibraryFile().getPath());
         }
         parametersEditor.loadProperties(driver.getProviderDescriptor().getDriverPropertyGroups(), driver.getDriverParameters(), driver.getDefaultDriverParameters());
+        connectionPropertiesEditor.loadProperties(driver, driver.getConnectionProperties());
     }
 
     @Override
@@ -508,10 +527,8 @@ public class DriverEditDialog extends Dialog
             }
         }
 
-        // Set parameters
-        for (Map.Entry<String,String> propEntry : parametersEditor.getProperties().entrySet()) {
-            driver.setDriverParameter(propEntry.getKey(), propEntry.getValue());
-        }
+        driver.setDriverParameters(parametersEditor.getProperties());
+        driver.setConnectionProperties(connectionPropertiesEditor.getProperties());
 
         // Finish
         if (provider.getDriver(driver.getId()) == null) {

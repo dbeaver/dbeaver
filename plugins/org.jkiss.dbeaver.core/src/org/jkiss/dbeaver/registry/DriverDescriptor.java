@@ -49,9 +49,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean disabled;
     private List<DriverLibraryDescriptor> libraries = new ArrayList<DriverLibraryDescriptor>(), origLibraries;
     private List<PropertyGroupDescriptor> connectionPropertyGroups = new ArrayList<PropertyGroupDescriptor>();
-    private Map<String, String> connectionProperties = new HashMap<String, String>();
+
     private Map<String, String> defaultParameters = new HashMap<String, String>();
     private Map<String, String> customParameters = new HashMap<String, String>();
+
+    private Map<String, String> defaultConnectionProperties = new HashMap<String, String>();
+    private Map<String, String> customConnectionProperties = new HashMap<String, String>();
 
     private Class driverClass;
     private boolean isLoaded;
@@ -109,26 +112,46 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
         makeIconExtensions();
 
-        // Connection property groups
-        IConfigurationElement[] propElements = config.getChildren(PropertyGroupDescriptor.PROPERTY_GROUP_TAG);
-        for (IConfigurationElement prop : propElements) {
-            connectionPropertyGroups.add(new PropertyGroupDescriptor(prop));
+        {
+            // Connection property groups
+            IConfigurationElement[] propElements = config.getChildren(PropertyGroupDescriptor.PROPERTY_GROUP_TAG);
+            for (IConfigurationElement prop : propElements) {
+                connectionPropertyGroups.add(new PropertyGroupDescriptor(prop));
+            }
         }
 
         // Connection default properties
         //connectionProperties
 
-        // Driver parameters
-        IConfigurationElement[] paramElements = config.getChildren("parameter");
-        for (IConfigurationElement param : paramElements) {
-            String paramName = param.getAttribute(DataSourceConstants.ATTR_NAME);
-            String paramValue = param.getAttribute("value");
-            if (CommonUtils.isEmpty(paramValue)) {
-                paramValue = param.getValue();
+        {
+            // Driver parameters
+            IConfigurationElement[] paramElements = config.getChildren(DataSourceConstants.TAG_PARAMETER);
+            for (IConfigurationElement param : paramElements) {
+                String paramName = param.getAttribute(DataSourceConstants.ATTR_NAME);
+                String paramValue = param.getAttribute(DataSourceConstants.ATTR_VALUE);
+                if (CommonUtils.isEmpty(paramValue)) {
+                    paramValue = param.getValue();
+                }
+                if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
+                    defaultParameters.put(paramName, paramValue);
+                    customParameters.put(paramName, paramValue);
+                }
             }
-            if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
-                defaultParameters.put(paramName, paramValue);
-                customParameters.put(paramName, paramValue);
+        }
+
+        {
+            // Connection properties
+            IConfigurationElement[] propElements = config.getChildren(DataSourceConstants.TAG_PROPERTY);
+            for (IConfigurationElement param : propElements) {
+                String paramName = param.getAttribute(DataSourceConstants.ATTR_NAME);
+                String paramValue = param.getAttribute(DataSourceConstants.ATTR_VALUE);
+                if (CommonUtils.isEmpty(paramValue)) {
+                    paramValue = param.getValue();
+                }
+                if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
+                    defaultConnectionProperties.put(paramName, paramValue);
+                    customConnectionProperties.put(paramName, paramValue);
+                }
             }
         }
 
@@ -406,6 +429,27 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return connectionPropertyGroups;
     }
 
+    public Map<String, String> getDefaultConnectionProperties()
+    {
+        return defaultConnectionProperties;
+    }
+
+    public Map<String, String> getConnectionProperties()
+    {
+        return customConnectionProperties;
+    }
+
+    public void setConnectionProperty(String name, String value)
+    {
+        customConnectionProperties.put(name, value);
+    }
+
+    public void setConnectionProperties(Map<String, String> parameters)
+    {
+        customConnectionProperties.clear();
+        customConnectionProperties.putAll(parameters);
+    }
+
     public Map<String, String> getDefaultDriverParameters()
     {
         return defaultParameters;
@@ -424,6 +468,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public void setDriverParameter(String name, String value)
     {
         customParameters.put(name, value);
+    }
+
+    public void setDriverParameters(Map<String, String> parameters)
+    {
+        customParameters.clear();
+        customParameters.putAll(parameters);
     }
 
     public void loadDriver()
@@ -570,6 +620,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 xml.startElement(DataSourceConstants.TAG_PARAMETER);
                 xml.addAttribute(DataSourceConstants.ATTR_NAME, paramEntry.getKey());
                 xml.addAttribute(DataSourceConstants.ATTR_VALUE, paramEntry.getValue());
+                xml.endElement();
+            }
+        }
+
+        // Properties
+        for (Map.Entry<String, String> propEntry : customConnectionProperties.entrySet()) {
+            if (!CommonUtils.equalObjects(propEntry.getValue(), defaultConnectionProperties.get(propEntry.getKey()))) {
+                xml.startElement(DataSourceConstants.TAG_PROPERTY);
+                xml.addAttribute(DataSourceConstants.ATTR_NAME, propEntry.getKey());
+                xml.addAttribute(DataSourceConstants.ATTR_VALUE, propEntry.getValue());
                 xml.endElement();
             }
         }

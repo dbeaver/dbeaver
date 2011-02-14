@@ -32,6 +32,7 @@ public class ConnectionPropertiesControl extends EditablePropertiesControl {
     public ConnectionPropertiesControl(Composite parent, int style)
     {
         super(parent, style);
+        setExpandSingleRoot(false);
     }
 
     public void loadProperties(DBPDriver driver, DBPConnectionInfo connectionInfo)
@@ -44,6 +45,16 @@ public class ConnectionPropertiesControl extends EditablePropertiesControl {
         loadCustomProperties(driver, connectionInfo.getProperties());
 
         super.loadProperties(getAllPropertyGroups(driver, true), connectionProps);
+    }
+
+    public void loadProperties(DBPDriver driver, Map<String, String> properties)
+    {
+        driverProvidedProperties = null;
+        customProperties = null;
+
+        loadCustomProperties(driver, properties);
+
+        super.loadProperties(getAllPropertyGroups(driver, true), properties);
     }
 
     protected boolean isCustomProperty(DBPProperty property)
@@ -172,7 +183,7 @@ public class ConnectionPropertiesControl extends EditablePropertiesControl {
 
         public String getDescription()
         {
-            return "User Properties";
+            return "User defined properties";
         }
 
         public List<? extends DBPProperty> getProperties()
