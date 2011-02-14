@@ -100,7 +100,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
         } else if (getCatalog() != null) {
             ownerName = getCatalog().getName();
         }
-        if (getCatalog() != null && getDataSource().getCatalogs().size() > 1) {
+        if (getSchema() != null && getCatalog() != null && getDataSource().getCatalogs().size() > 1) {
             // Use catalog name only if there are multiple catalogs
             catalogName = getCatalog().getName();
         }
