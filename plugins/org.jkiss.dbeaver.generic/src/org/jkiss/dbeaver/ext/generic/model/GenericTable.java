@@ -94,10 +94,17 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericEntityCont
 
     public String getFullQualifiedName()
     {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-            getCatalog() == null ? null : getCatalog().getName(),
-            getSchema() == null ? null : getSchema().getName(),
-            getName());
+        String ownerName = null, catalogName = null;
+        if (getSchema() != null) {
+            ownerName = getSchema().getName();
+        } else if (getCatalog() != null) {
+            ownerName = getCatalog().getName();
+        }
+        if (getCatalog() != null && getDataSource().getCatalogs().size() > 1) {
+            // Use catalog name only if there are multiple catalogs
+            catalogName = getCatalog().getName();
+        }
+        return DBUtils.getFullQualifiedName(getDataSource(), catalogName, ownerName, getName());
     }
 
     public boolean isView()

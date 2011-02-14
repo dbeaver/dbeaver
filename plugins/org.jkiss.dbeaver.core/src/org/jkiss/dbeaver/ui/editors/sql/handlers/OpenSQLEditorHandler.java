@@ -46,7 +46,7 @@ public class OpenSQLEditorHandler extends DataSourceHandler {
             }
         }
         IFolder scriptFolder = null;
-        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+        if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
             final Object element = ((IStructuredSelection) selection).getFirstElement();
             if (element instanceof DBNResource && ((DBNResource)element).getResource() instanceof IFolder) {
                 scriptFolder = (IFolder) ((DBNResource)element).getResource();
