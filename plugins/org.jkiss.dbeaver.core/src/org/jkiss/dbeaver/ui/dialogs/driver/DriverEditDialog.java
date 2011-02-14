@@ -385,7 +385,7 @@ public class DriverEditDialog extends Dialog
         parametersEditor.loadProperties(driver.getProviderDescriptor().getDriverPropertyGroups(), driver.getDriverParameters(), driver.getDefaultDriverParameters());
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
-        paramsTab.setText("Advanced");
+        paramsTab.setText("Advanced parameters");
         paramsTab.setToolTipText("Advanced driver parameters");
         paramsTab.setControl(paramsGroup);
     }

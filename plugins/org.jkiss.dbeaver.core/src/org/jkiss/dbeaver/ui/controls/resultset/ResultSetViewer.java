@@ -769,14 +769,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             columnIndex,
             inline ? inlinePlaceholder : null);
         try {
-            boolean result = metaColumn.getValueHandler().editValue(valueController);
-            if (!result) {
-                UIUtils.showErrorDialog(site.getShell(), "Edit", "Edit of '" + valueController.getColumnId() + "' is not supported");
-            }
-            return result;
+            return metaColumn.getValueHandler().editValue(valueController);
         }
         catch (Exception e) {
-            log.error(e);
+            UIUtils.showErrorDialog(site.getShell(), "Cannot edit value", null, e);
             return false;
         }
     }

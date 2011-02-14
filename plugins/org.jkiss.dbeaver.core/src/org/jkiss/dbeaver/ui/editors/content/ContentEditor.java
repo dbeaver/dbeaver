@@ -54,7 +54,7 @@ public class ContentEditor extends MultiPageDatabaseEditor<ContentEditorInput> i
             if (e instanceof InvocationTargetException) {
                 e = ((InvocationTargetException)e).getTargetException();
             }
-            log.error("Could not init LOB data", e);
+            UIUtils.showErrorDialog(valueController.getValueSite().getShell(), "Cannot open content editor", null, e);
             return false;
         }
         try {

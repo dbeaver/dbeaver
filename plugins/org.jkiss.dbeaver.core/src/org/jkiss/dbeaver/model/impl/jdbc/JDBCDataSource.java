@@ -28,6 +28,7 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -73,22 +74,33 @@ public abstract class JDBCDataSource
         Driver driverInstance = getDriverInstance();
 
         // Set properties
-        Properties driverProps = new Properties();
+        Properties connectProps = new Properties();
 
-        Properties internalProps = getInternalConnectionProperties();
-        if (internalProps != null) {
-            driverProps.putAll(internalProps);
+        {
+            // Use properties defined by datasource itself
+            Properties internalProps = getInternalConnectionProperties();
+            if (internalProps != null) {
+                connectProps.putAll(internalProps);
+            }
+        }
+
+        {
+            // Use driver properties
+            final Map<String, String> driverProperties = container.getDriver().getConnectionProperties();
+            if (driverProperties != null) {
+                connectProps.putAll(driverProperties);
+            }
         }
 
         DBPConnectionInfo connectionInfo = container.getConnectionInfo();
         if (connectionInfo.getProperties() != null) {
-            driverProps.putAll(connectionInfo.getProperties());
+            connectProps.putAll(connectionInfo.getProperties());
         }
         if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-            driverProps.put(DBConstants.PROPERTY_USER, connectionInfo.getUserName());
+            connectProps.put(DBConstants.PROPERTY_USER, connectionInfo.getUserName());
         }
         if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-            driverProps.put(DBConstants.PROPERTY_PASSWORD, connectionInfo.getUserPassword());
+            connectProps.put(DBConstants.PROPERTY_PASSWORD, connectionInfo.getUserPassword());
         }
 
         // Obtain connection
@@ -98,9 +110,9 @@ public abstract class JDBCDataSource
             }
             Connection connection;
             if (driverInstance == null) {
-                connection = DriverManager.getConnection(connectionInfo.getUrl(), driverProps);
+                connection = DriverManager.getConnection(connectionInfo.getUrl(), connectProps);
             } else {
-                connection = driverInstance.connect(connectionInfo.getUrl(), driverProps);
+                connection = driverInstance.connect(connectionInfo.getUrl(), connectProps);
             }
             if (connection == null) {
                 throw new DBException("Null connection returned");

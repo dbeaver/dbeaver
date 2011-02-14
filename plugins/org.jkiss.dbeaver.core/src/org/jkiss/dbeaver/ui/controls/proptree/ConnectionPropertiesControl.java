@@ -37,12 +37,14 @@ public class ConnectionPropertiesControl extends EditablePropertiesControl {
 
     public void loadProperties(DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
-        Map<String, String> connectionProps = connectionInfo.getProperties();
+        Map<String, String> connectionProps = new HashMap<String, String>();
+        connectionProps.putAll(driver.getConnectionProperties());
+        connectionProps.putAll(connectionInfo.getProperties());
         driverProvidedProperties = null;
         customProperties = null;
 
         loadDriverProperties(driver, connectionInfo);
-        loadCustomProperties(driver, connectionInfo.getProperties());
+        loadCustomProperties(driver, connectionProps);
 
         super.loadProperties(getAllPropertyGroups(driver, true), connectionProps);
     }
