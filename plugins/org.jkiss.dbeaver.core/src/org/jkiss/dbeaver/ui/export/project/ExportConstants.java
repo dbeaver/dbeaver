@@ -34,4 +34,5 @@ public class ExportConstants {
     public static final int ARCHIVE_VERSION_1 = 1;
     public static final int ARCHIVE_VERSION_CURRENT = ARCHIVE_VERSION_1;
 
+    public static final String TAG_LIBRARIES = "libraries";
 }

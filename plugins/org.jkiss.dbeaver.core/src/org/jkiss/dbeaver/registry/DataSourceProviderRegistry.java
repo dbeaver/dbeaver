@@ -175,7 +175,7 @@ public class DataSourceProviderRegistry
     {
         SAXReader parser = new SAXReader(is);
         try {
-            parser.parse(new DriversParser());
+            parser.parse(new DriverDescriptor.DriversParser());
         }
         catch (XMLException ex) {
             throw new DBException("Datasource config parse error", ex);
@@ -213,98 +213,4 @@ public class DataSourceProviderRegistry
         }
     }
 
-    private class DriversParser implements SAXListener
-    {
-        DataSourceProviderDescriptor curProvider;
-        DriverDescriptor curDriver;
-
-        private DriversParser()
-        {
-        }
-
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
-            throws XMLException
-        {
-            if (localName.equals(DataSourceConstants.TAG_PROVIDER)) {
-                curProvider = null;
-                curDriver = null;
-                String idAttr = atts.getValue(DataSourceConstants.ATTR_ID);
-                if (CommonUtils.isEmpty(idAttr)) {
-                    log.warn("No id for driver provider");
-                    return;
-                }
-                curProvider = getDataSourceProvider(idAttr);
-                if (curProvider == null) {
-                    log.warn("Provider '" + idAttr + "' not found");
-                }
-            } else if (localName.equals(DataSourceConstants.TAG_DRIVER)) {
-                curDriver = null;
-                if (curProvider == null) {
-                    log.warn("Driver outside of datasource provider");
-                    return;
-                }
-                String idAttr = atts.getValue(DataSourceConstants.ATTR_ID);
-                curDriver = curProvider.getDriver(idAttr);
-                if (curDriver == null) {
-                    curDriver = new DriverDescriptor(curProvider, idAttr);
-                    curProvider.addDriver(curDriver);
-                }
-                curDriver.setName(atts.getValue(DataSourceConstants.ATTR_NAME));
-                curDriver.setDescription(atts.getValue(DataSourceConstants.ATTR_DESCRIPTION));
-                curDriver.setDriverClassName(atts.getValue(DataSourceConstants.ATTR_CLASS));
-                curDriver.setSampleURL(atts.getValue(DataSourceConstants.ATTR_URL));
-                String portStr = atts.getValue(DataSourceConstants.ATTR_PORT);
-                if (portStr != null) {
-                    try {
-                        curDriver.setDriverDefaultPort(Integer.valueOf(portStr));
-                    }
-                    catch (NumberFormatException e) {
-                        log.warn("Bad driver '" + curDriver.getName() + "' port specified: " + portStr);
-                    }
-                }
-                curDriver.setModified(true);
-                String disabledAttr = atts.getValue(DataSourceConstants.ATTR_DISABLED);
-                if ("true".equals(disabledAttr)) {
-                    curDriver.setDisabled(true);
-                }
-            } else if (localName.equals(DataSourceConstants.TAG_LIBRARY)) {
-                if (curDriver == null) {
-                    log.warn("Library outside of driver");
-                    return;
-                }
-                String path = atts.getValue(DataSourceConstants.ATTR_PATH);
-                DriverLibraryDescriptor lib = curDriver.getLibrary(path);
-                String disabledAttr = atts.getValue(DataSourceConstants.ATTR_DISABLED);
-                if (lib != null && "true".equals(disabledAttr)) {
-                    lib.setDisabled(true);
-                } else if (lib == null) {
-                    curDriver.addLibrary(path);
-                }
-            } else if (localName.equals(DataSourceConstants.TAG_PARAMETER)) {
-                if (curDriver == null) {
-                    log.warn("Parameter outside of driver");
-                    return;
-                }
-                final String paramName = atts.getValue(DataSourceConstants.ATTR_NAME);
-                final String paramValue = atts.getValue(DataSourceConstants.ATTR_VALUE);
-                if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
-                    curDriver.setDriverParameter(paramName, paramValue);
-                }
-            } else if (localName.equals(DataSourceConstants.TAG_PROPERTY)) {
-                if (curDriver == null) {
-                    log.warn("Property outside of driver");
-                    return;
-                }
-                final String paramName = atts.getValue(DataSourceConstants.ATTR_NAME);
-                final String paramValue = atts.getValue(DataSourceConstants.ATTR_VALUE);
-                if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
-                    curDriver.setConnectionProperty(paramName, paramValue);
-                }
-            }
-        }
-
-        public void saxText(SAXReader reader, String data) {}
-
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {}
-    }
 }

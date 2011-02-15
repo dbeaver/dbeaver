@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceConstants;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.w3c.dom.Document;
@@ -22,6 +23,10 @@ import org.w3c.dom.Element;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -79,16 +84,32 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             if (metaEntry == null) {
                 throw new DBException("Cannot find meta file");
             }
+            final Map<String, String> libMap = new HashMap<String, String>();
             InputStream metaStream = zipFile.getInputStream(metaEntry);
             try {
                 final Document metaDocument = XMLUtils.parseDocument(metaStream);
 
-                // Collect drivers to import
-                final Element driversElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), DataSourceConstants.TAG_DRIVERS);
-                if (driversElement != null) {
-                    final Element[] driverList = XMLUtils.getChildElementList(driversElement, DataSourceConstants.TAG_DRIVER);
-                    for (Element driverElement : driverList) {
-                        importDriver(driverElement);
+                {
+                    // Read libraries map
+                    final Element libsElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), ExportConstants.TAG_LIBRARIES);
+                    if (libsElement != null) {
+                        final Element[] libList = XMLUtils.getChildElementList(libsElement, DataSourceConstants.TAG_LIBRARY);
+                        for (Element libElement : libList) {
+                            libMap.put(
+                                libElement.getAttribute(ExportConstants.ATTR_PATH),
+                                libElement.getAttribute(ExportConstants.ATTR_FILE));
+                        }
+                    }
+                }
+
+                {
+                    // Collect drivers to import
+                    final Element driversElement = XMLUtils.getChildElement(metaDocument.getDocumentElement(), DataSourceConstants.TAG_DRIVERS);
+                    if (driversElement != null) {
+                        final Element[] driverList = XMLUtils.getChildElementList(driversElement, DataSourceConstants.TAG_DRIVER);
+                        for (Element driverElement : driverList) {
+                            importDriver(driverElement, libMap);
+                        }
                     }
                 }
 
@@ -103,9 +124,23 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         }
     }
 
-    private void importDriver(Element driverElement)
+    private DriverDescriptor importDriver(Element driverElement, Map<String, String> libMap)
     {
-        //driverElement.getAttribute(ExportConstants.ATTR_ID);
+        String providerId = driverElement.getAttribute(DataSourceConstants.ATTR_PROVIDER);
+        String driverId = driverElement.getAttribute(DataSourceConstants.ATTR_ID);
+        boolean isCustom = "true".equals(driverElement.getAttribute(DataSourceConstants.ATTR_CUSTOM));
+        String driverName = driverElement.getAttribute(DataSourceConstants.ATTR_NAME);
+        String driverClass = driverElement.getAttribute(DataSourceConstants.ATTR_CLASS);
+        String driverURL = driverElement.getAttribute(DataSourceConstants.ATTR_URL);
+        String driverDescription = driverElement.getAttribute(DataSourceConstants.ATTR_DESCRIPTION);
+
+        List<String> libraryList = new ArrayList<String>();
+        final Element[] libList = XMLUtils.getChildElementList(driverElement, DataSourceConstants.TAG_LIBRARY);
+        for (Element libElement : libList) {
+            libraryList.add(libElement.getAttribute(DataSourceConstants.ATTR_PATH));
+        }
+
+        return null;
     }
 
 }

@@ -172,7 +172,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                     exportData.archiveStream.putNextEntry(driversFolder);
                     exportData.archiveStream.closeEntry();
 
-                    exportData.meta.startElement(DataSourceConstants.TAG_LIBRARIES);
+                    exportData.meta.startElement(ExportConstants.TAG_LIBRARIES);
                     Set<String> libFileNames = new HashSet<String>();
                     for (String libPath : libPathMap.keySet()) {
                         final File libFile = libPathMap.get(libPath);

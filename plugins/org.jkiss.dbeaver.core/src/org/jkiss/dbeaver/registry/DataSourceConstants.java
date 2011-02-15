@@ -14,8 +14,6 @@ public class DataSourceConstants {
     public static final String TAG_DRIVERS = "drivers";
     public static final String TAG_DRIVER = "driver";
     public static final String TAG_PROVIDER = "provider";
-    public static final String TAG_LIBRARIES = "libraries";
-    public static final String TAG_LIBRARY = "library";
     public static final String TAG_PARAMETER = "parameter";
     public static final String TAG_PROPERTY = "property";
 
@@ -30,4 +28,5 @@ public class DataSourceConstants {
     public static final String ATTR_DESCRIPTION = "description";
     public static final String ATTR_PATH = "path";
     public static final String ATTR_PROVIDER = "provider";
+    public static final String TAG_LIBRARY = "library";
 }
