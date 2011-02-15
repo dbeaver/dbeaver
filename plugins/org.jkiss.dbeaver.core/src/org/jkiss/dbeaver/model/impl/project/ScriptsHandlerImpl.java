@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.model.impl.project;
 
+import net.sf.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -14,6 +15,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -35,16 +37,32 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         return project.getFolder(SCRIPTS_DIR);
     }
 
-    public static IFile createNewScript(IProject project, IFolder folder) throws CoreException
+    public static IFile createNewScript(IProject project, IFolder folder, DBSDataSourceContainer dataSourceContainer) throws CoreException
     {
-        final IFolder scriptsFolder = folder != null ? folder : ScriptsHandlerImpl.getScriptsFolder(project);
+        final IProgressMonitor progressMonitor = VoidProgressMonitor.INSTANCE.getNestedMonitor();
+
+        // Get folder
+        IFolder scriptsFolder = folder;
+        if (scriptsFolder == null) {
+            scriptsFolder = ScriptsHandlerImpl.getScriptsFolder(project);
+            if (dataSourceContainer != null) {
+                IFolder dbFolder = scriptsFolder.getFolder(CommonUtils.escapeFileName(dataSourceContainer.getName()));
+                if (dbFolder != null) {
+                    if (!dbFolder.exists()) {
+                        dbFolder.create(true, true, progressMonitor);
+                    }
+                    scriptsFolder = dbFolder;
+                }
+            }
+        }
+        // Make new script file
         IFile tempFile;
         for (int i = 1; ; i++) {
             tempFile = scriptsFolder.getFile("Script " + i + ".sql");
             if (tempFile.exists()) {
                 continue;
             }
-            tempFile.create(new ByteArrayInputStream(new byte[]{}), true, VoidProgressMonitor.INSTANCE.getNestedMonitor());
+            tempFile.create(new ByteArrayInputStream(new byte[]{}), true, progressMonitor);
             break;
         }
         tempFile.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_SCRIPTS);

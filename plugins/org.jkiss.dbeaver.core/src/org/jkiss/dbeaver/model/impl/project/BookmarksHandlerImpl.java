@@ -195,7 +195,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             throw new DBException("Can't detect folder for bookmark");
         }
 
-        String fileName = CommonUtils.escapeIdentifier(title);
+        String fileName = CommonUtils.escapeFileName(title);
         IFile file = folder.getFile(fileName + "." + BOOKMARK_EXT);
         int index = 1;
         while (file.exists()) {

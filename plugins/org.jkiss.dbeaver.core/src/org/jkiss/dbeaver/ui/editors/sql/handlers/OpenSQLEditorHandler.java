@@ -54,7 +54,7 @@ public class OpenSQLEditorHandler extends DataSourceHandler {
         }
         IFile scriptFile;
         try {
-            scriptFile = ScriptsHandlerImpl.createNewScript(project, scriptFolder);
+            scriptFile = ScriptsHandlerImpl.createNewScript(project, scriptFolder, dataSourceContainer);
         }
         catch (CoreException e) {
             log.error(e);
