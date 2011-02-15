@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.exec.jdbc;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -16,6 +17,7 @@ import java.sql.SQLException;
 public interface JDBCExecutionContext extends DBCExecutionContext, Connection {
 
     JDBCStatement prepareStatement(
+        DBCStatementType type,
         String query,
         boolean scrollable,
         boolean updatable,

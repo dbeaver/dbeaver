@@ -58,7 +58,7 @@ public interface DBPDataSourceInfo
     String getIdentifierQuoteString();
 
     /**
-     * Retrieves a comma-separated list of all of this database's SQL keywords
+     * Retrieves a list of all of this database's SQL keywords
      * that are NOT also SQL92 keywords.
      *
      * @return the list of this database's keywords that are not also
@@ -67,7 +67,7 @@ public interface DBPDataSourceInfo
     List<String> getSQLKeywords();
 
     /**
-     * Retrieves a comma-separated list of math functions available with
+     * Retrieves a list of math functions available with
      * this database.  These are the Open /Open CLI math function names used in
      * the function escape clause.
      *
@@ -76,7 +76,7 @@ public interface DBPDataSourceInfo
     List<String> getNumericFunctions();
 
     /**
-     * Retrieves a comma-separated list of string functions available with
+     * Retrieves a list of string functions available with
      * this database.  These are the  Open Group CLI string function names used
      * in the function escape clause.
      *
@@ -85,7 +85,7 @@ public interface DBPDataSourceInfo
     List<String> getStringFunctions();
 
     /**
-     * Retrieves a comma-separated list of system functions available with
+     * Retrieves a list of system functions available with
      * this database.  These are the  Open Group CLI system function names used
      * in the function escape clause.
      *
@@ -94,12 +94,18 @@ public interface DBPDataSourceInfo
     List<String> getSystemFunctions();
 
     /**
-     * Retrieves a comma-separated list of the time and date functions available
+     * Retrieves a list of the time and date functions available
      * with this database.
      *
      * @return the list of time and date functions supported by this database
      */
     List<String> getTimeDateFunctions();
+
+    /**
+     * Retrieves a list of execute keywords. If database doesn't support implicit execute returns empty list or null.
+     * @return the list of execute keywords.
+     */
+    List<String> getExecuteKeywords();
 
     /**
      * Retrieves the string that can be used to escape wildcard characters.

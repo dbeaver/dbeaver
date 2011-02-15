@@ -10,14 +10,12 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.SQLUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -64,6 +62,11 @@ public class GenericDataSource extends JDBCDataSource implements DBPDataSource, 
         } else {
             this.metaCase = GenericConstants.MetaCase.NONE;
         }
+    }
+
+    protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
+    {
+        return new GenericDataSourceInfo(metaData);
     }
 
     @Override

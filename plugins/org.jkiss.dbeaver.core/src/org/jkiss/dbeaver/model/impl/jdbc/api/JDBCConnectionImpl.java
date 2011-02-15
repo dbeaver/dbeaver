@@ -10,10 +10,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSavepoint;
-import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
@@ -21,7 +18,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.sql.*;
 import java.util.Map;
@@ -117,6 +113,7 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
     }
 
     public JDBCStatement prepareStatement(
+        DBCStatementType type,
         String sqlQuery,
         boolean scrollable,
         boolean updatable,
@@ -124,7 +121,17 @@ public class JDBCConnectionImpl implements JDBCExecutionContext, DBRBlockingObje
         throws DBCException
     {
         try {
-            if (returnGeneratedKeys) {
+            if (type == DBCStatementType.EXEC) {
+                try {
+                    return prepareCall(
+                        sqlQuery,
+                        scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
+                        updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+                }
+                catch (AbstractMethodError e) {
+                    return prepareCall(sqlQuery);
+                }
+            } else if (returnGeneratedKeys) {
                 try {
                     return prepareStatement(
                         sqlQuery,

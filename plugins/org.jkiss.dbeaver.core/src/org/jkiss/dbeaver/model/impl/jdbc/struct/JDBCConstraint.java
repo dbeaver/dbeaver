@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -98,7 +99,7 @@ public abstract class JDBCConstraint<DATASOURCE extends DBPDataSource, TABLE ext
                 query.append(" ").append(conditions.get(i));
             }
         }
-        DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, false);
+        DBCStatement dbStat = context.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false);
         try {
             int paramPos = 0;
             if (keyPattern instanceof CharSequence) {

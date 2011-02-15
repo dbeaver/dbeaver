@@ -399,7 +399,7 @@ public final class DBUtils {
         return columns;
     }
 
-    public static DBCStatement prepareSelectQuery(
+    public static DBCStatement prepareStatement(
         DBCExecutionContext context,
         String query,
         long offset,
@@ -424,7 +424,7 @@ public final class DBUtils {
             query = fetchAllTransformer.transformQueryString(query);
         }
 
-        DBCStatement dbStat = context.prepareStatement(query, false, false, false);
+        DBCStatement dbStat = prepareStatement(context, query);
 
         if (hasLimits) {
             if (limitTransformer == null) {
@@ -437,6 +437,43 @@ public final class DBUtils {
         }
 
         return dbStat;
+    }
+
+    public static DBCStatement prepareStatement(
+        DBCExecutionContext context,
+        String query) throws DBCException
+    {
+        DBCStatementType statementType = DBCStatementType.QUERY;
+        {
+            // Check for EXEC query
+            final List<String> executeKeywords = context.getDataSource().getInfo().getExecuteKeywords();
+            if (!CommonUtils.isEmpty(executeKeywords)) {
+                int startPos = 0, endPos = -1;
+                for (int i = 0; i < query.length(); i++) {
+                    if (Character.isLetterOrDigit(query.charAt(i))) {
+                        startPos = i;
+                        break;
+                    }
+                }
+                for (int i = startPos; i < query.length(); i++) {
+                    if (Character.isWhitespace(query.charAt(i))) {
+                        endPos = i;
+                        break;
+                    }
+                }
+                if (endPos != -1) {
+                    final String queryStart = query.substring(startPos, endPos);
+                    for (String keyword : executeKeywords) {
+                        if (keyword.equalsIgnoreCase(queryStart)) {
+                            statementType = DBCStatementType.EXEC;
+                            //query = query.substring(endPos + 1);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return context.prepareStatement(statementType, query, false, false, false);
     }
 
     private static class RefColumnFinder implements DBRRunnableWithProgress {

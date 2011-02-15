@@ -61,6 +61,7 @@ public interface DBCExecutionContext {
      * Prepares statements
      */
     DBCStatement prepareStatement(
+        DBCStatementType type,
         String query,
         boolean scrollable,
         boolean updatable,

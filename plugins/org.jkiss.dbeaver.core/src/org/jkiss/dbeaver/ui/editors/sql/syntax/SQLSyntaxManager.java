@@ -5,9 +5,6 @@
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.*;
@@ -16,7 +13,6 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -34,7 +30,7 @@ import java.util.*;
  */
 public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChangeListener
 {
-    static final Log log = LogFactory.getLog(SQLSyntaxManager.class);
+    //static final Log log = LogFactory.getLog(SQLSyntaxManager.class);
 
     public enum KeywordType {
         KEYWORD,
@@ -51,7 +47,6 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
     public static final String CONFIG_COLOR_TEXT = "org.jkiss.dbeaver.sql.editor.color.text.foreground";
     public static final String CONFIG_COLOR_BACKGROUND = "org.jkiss.dbeaver.sql.editor.color.text.background";
 
-    private IWorkbenchPart owner;
     private IThemeManager themeManager;
 
     private TreeMap<String, KeywordType> allKeywords = new TreeMap<String, KeywordType>();
@@ -208,11 +203,18 @@ public class SQLSyntaxManager extends RuleBasedScanner implements IPropertyChang
         if (dataSourceInfo != null) {
             // Keywords
             List<String> sqlKeywords = dataSourceInfo.getSQLKeywords();
-            if (sqlKeywords != null) {
-                for (String keyword : dataSourceInfo.getSQLKeywords()) {
+            if (!CommonUtils.isEmpty(sqlKeywords)) {
+                for (String keyword : sqlKeywords) {
                     reservedWords.add(keyword.toUpperCase());
                 }
             }
+            final List<String> executeKeywords = dataSourceInfo.getExecuteKeywords();
+            if (!CommonUtils.isEmpty(executeKeywords)) {
+                for (String keyword : executeKeywords) {
+                    reservedWords.add(keyword.toUpperCase());
+                }
+            }
+
             // Functions
             Set<String> allFunctions = new HashSet<String>();
             if (dataSourceInfo.getNumericFunctions() != null) {

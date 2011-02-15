@@ -41,7 +41,6 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private boolean isCatalogAtStart;
     private DBCStateType sqlStateType;
     private boolean supportsTransactions;
-    private boolean supportsSavepoints;
     private List<DBPTransactionIsolation> supportedIsolations;
 
     private List<DBSDataType> dataTypeList;
@@ -264,6 +263,11 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         return timeDateFunctions;
     }
 
+    public List<String> getExecuteKeywords()
+    {
+        return null;
+    }
+
     public String getSearchStringEscape()
     {
         return searchStringEscape;
@@ -304,14 +308,9 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         return supportsTransactions;
     }
 
-    public void setSupportsSavepoints(boolean supportsSavepoints)
-    {
-        this.supportsSavepoints = supportsSavepoints;
-    }
-
     public boolean supportsSavepoints()
     {
-        return supportsSavepoints;
+        return false;
     }
 
     public List<DBPTransactionIsolation> getSupportedTransactionIsolations()

@@ -11,10 +11,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -105,7 +102,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
 
         monitor.subTask("Fetch table data");
-        DBCStatement dbStat = DBUtils.prepareSelectQuery(context, query.toString(), firstRow, maxRows);
+        DBCStatement dbStat = DBUtils.prepareStatement(context, query.toString(), firstRow, maxRows);
         try {
             dbStat.setDataContainer(this);
             if (!dbStat.executeStatement()) {
@@ -163,7 +160,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         String query = "SELECT COUNT(*) FROM " + getFullQualifiedName();
         monitor.subTask("Fetch table row count");
-        JDBCStatement dbStat = jdbcContext.prepareStatement(query, false, false, false);
+        JDBCStatement dbStat = jdbcContext.prepareStatement(DBCStatementType.QUERY, query, false, false, false);
         try {
             dbStat.setDataContainer(this);
             if (!dbStat.executeStatement()) {
@@ -225,7 +222,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         query.append(")");
 
         // Execute
-        DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, keysReceiver != null);
+        DBCStatement dbStat = context.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
         try {
             dbStat.setDataContainer(this);
 
@@ -281,7 +278,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
 
         // Execute
-        DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, keysReceiver != null);
+        DBCStatement dbStat = context.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
         try {
             dbStat.setDataContainer(this);
 
@@ -325,7 +322,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
 
         // Execute
-        DBCStatement dbStat = context.prepareStatement(query.toString(), false, false, false);
+        DBCStatement dbStat = context.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false);
         try {
             dbStat.setDataContainer(this);
 

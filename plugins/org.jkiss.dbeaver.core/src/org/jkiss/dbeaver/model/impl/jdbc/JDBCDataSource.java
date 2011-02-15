@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -204,14 +205,18 @@ public abstract class JDBCDataSource
     {
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Read database meta data");
         try {
-            dataSourceInfo = new JDBCDataSourceInfo(
-                context.getMetaData());
+            dataSourceInfo = makeInfo(context.getMetaData());
         } catch (SQLException ex) {
             throw new DBException("Error getting JDBC meta data", ex);
         }
         finally {
             context.close();
         }
+    }
+
+    protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
+    {
+        return new JDBCDataSourceInfo(metaData);
     }
 
     public void close(DBRProgressMonitor monitor)
