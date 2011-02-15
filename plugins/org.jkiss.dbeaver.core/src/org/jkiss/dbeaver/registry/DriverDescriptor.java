@@ -11,8 +11,11 @@ import net.sf.jkiss.utils.xml.XMLBuilder;
 import net.sf.jkiss.utils.xml.XMLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
@@ -23,7 +26,9 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.xml.sax.Attributes;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -541,7 +546,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             if (library.isDisabled()) {
                 continue;
             }
-            URL url = library.getLibraryURL();
+            URL url = getLibraryURL(library.getPath());
             if (url != null) {
                 libraryURLs.add(url);
             }
@@ -585,6 +590,45 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public List<DriverLibraryDescriptor> getOrigLibraries()
     {
         return origLibraries;
+    }
+
+    public URL getLibraryURL(String path)
+    {
+        URL url = getProviderDescriptor().getContributorBundle().getEntry(path);
+        if (url != null) {
+            try {
+                url = FileLocator.toFileURL(url);
+            }
+            catch (IOException ex) {
+                log.warn(ex);
+            }
+        }
+        // Try to use direct path
+        if (url == null) {
+            File libraryFile = new File(path);
+            if (!libraryFile.exists()) {
+                // File not exists - try to use relative path
+                Location location = Platform.getInstallLocation();
+                try {
+                    url = location.getDataArea(path);
+                    File platformFile = new File(url.getFile());
+                    if (!platformFile.exists()) {
+                        // Relative file do not exists - use plain one
+                        url = libraryFile.toURI().toURL();
+                    }
+                } catch (IOException e) {
+                    log.warn(e);
+                }
+            } else {
+                try {
+                    url = libraryFile.toURI().toURL();
+                }
+                catch (MalformedURLException ex) {
+                    log.warn(ex);
+                }
+            }
+        }
+        return url;
     }
 
     public void serialize(XMLBuilder xml, boolean export)

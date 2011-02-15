@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.registry;
 
 import net.sf.jkiss.utils.CommonUtils;
+import net.sf.jkiss.utils.SecurityUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -215,14 +216,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
     public DriverDescriptor createDriver()
     {
-        String newId;
-        for (int i = 1;; i++) {
-            newId = "driver" + i;
-            if (getDriver(newId) == null) {
-                break;
-            }
-        }
-        return new DriverDescriptor(this, newId);
+        return new DriverDescriptor(this, SecurityUtils.generateGUID(false));
     }
 
     public void addDriver(DriverDescriptor driver)

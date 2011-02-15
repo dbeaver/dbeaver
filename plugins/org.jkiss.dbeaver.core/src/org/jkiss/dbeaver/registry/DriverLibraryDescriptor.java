@@ -88,57 +88,8 @@ public class DriverLibraryDescriptor
 
     public File getLibraryFile()
     {
-        URL url = driver.getProviderDescriptor().getContributorBundle().getEntry(path);
-        if (url != null) {
-            try {
-                url = FileLocator.toFileURL(url);
-            }
-            catch (IOException ex) {
-                log.warn(ex);
-            }
-        }
-        if (url != null) {
-            try {
-                return new File(url.toURI());
-            } catch (URISyntaxException ex) {
-                log.warn(ex);
-            }
-        }
-        return new File(path);
+        return new File(driver.getLibraryURL(path).getFile());
     }
 
-    public URL getLibraryURL()
-    {
-        URL url = driver.getProviderDescriptor().getContributorBundle().getEntry(path);
-        if (url != null) {
-            try {
-                url = FileLocator.toFileURL(url);
-            }
-            catch (IOException ex) {
-                log.warn(ex);
-            }
-        }
-        // Try to use direct path
-        if (url == null) {
-            File libraryFile = new File(path);
-            if (!libraryFile.exists()) {
-                // File not exists - try to use relative path
-                Location location = Platform.getInstallLocation();
-                try {
-                    url = location.getDataArea(path);
-                } catch (IOException e) {
-                    log.warn(e);
-                }
-            } else {
-                try {
-                    url = libraryFile.toURI().toURL();
-                }
-                catch (MalformedURLException ex) {
-                    log.warn(ex);
-                }
-            }
-        }
-        return url;
-    }
 
 }
