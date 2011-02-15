@@ -45,11 +45,6 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         this.procedureType = procedureType;
     }
 
-    public DBSProcedureType getProcedureType()
-    {
-        return procedureType;
-    }
-
     @Property(name = "Catalog", viewable = true, order = 3)
     public GenericCatalog getCatalog()
     {
@@ -60,6 +55,18 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     public GenericSchema getSchema()
     {
         return getContainer().getSchema();
+    }
+
+    @Property(name = "Package", viewable = true, order = 5)
+    private GenericPackage getPackage()
+    {
+        return getContainer() instanceof GenericPackage ? (GenericPackage) getContainer() : null;
+    }
+
+    @Property(name = "Type", viewable = true, order = 6)
+    public DBSProcedureType getProcedureType()
+    {
+        return procedureType;
     }
 
     public List<GenericProcedureColumn> getColumns(DBRProgressMonitor monitor)
@@ -137,11 +144,6 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
             this.columns = new ArrayList<GenericProcedureColumn>();
         }
         this.columns.add(column);
-    }
-
-    private GenericPackage getPackage()
-    {
-        return getContainer() instanceof GenericPackage ? (GenericPackage) getContainer() : null;
     }
 
     public String getFullQualifiedName()
