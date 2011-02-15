@@ -21,6 +21,7 @@ class GenericDataSourceInfo extends JDBCDataSourceInfo {
         EXEC_KEYWORDS.add("EXEC");
         EXEC_KEYWORDS.add("EXECUTE");
         EXEC_KEYWORDS.add("CALL");
+        EXEC_KEYWORDS.add("BEGIN");
     }
 
     public GenericDataSourceInfo(JDBCDatabaseMetaData metaData)

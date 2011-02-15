@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 
 import java.lang.reflect.InvocationTargetException;
+import java.sql.CallableStatement;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -444,36 +446,40 @@ public final class DBUtils {
         String query) throws DBCException
     {
         DBCStatementType statementType = DBCStatementType.QUERY;
-        {
+
+        // Check for output parameters
+        String outParamName = SQLUtils.getQueryOutputParameter(context, query);
+        if (outParamName != null) {
+            statementType = DBCStatementType.EXEC;
+        }
+/*
             // Check for EXEC query
             final List<String> executeKeywords = context.getDataSource().getInfo().getExecuteKeywords();
             if (!CommonUtils.isEmpty(executeKeywords)) {
-                int startPos = 0, endPos = -1;
-                for (int i = 0; i < query.length(); i++) {
-                    if (Character.isLetterOrDigit(query.charAt(i))) {
-                        startPos = i;
+                final String queryStart = SQLUtils.getFirstKeyword(query);
+                for (String keyword : executeKeywords) {
+                    if (keyword.equalsIgnoreCase(queryStart)) {
+                        statementType = DBCStatementType.EXEC;
                         break;
-                    }
-                }
-                for (int i = startPos; i < query.length(); i++) {
-                    if (Character.isWhitespace(query.charAt(i))) {
-                        endPos = i;
-                        break;
-                    }
-                }
-                if (endPos != -1) {
-                    final String queryStart = query.substring(startPos, endPos);
-                    for (String keyword : executeKeywords) {
-                        if (keyword.equalsIgnoreCase(queryStart)) {
-                            statementType = DBCStatementType.EXEC;
-                            //query = query.substring(endPos + 1);
-                            break;
-                        }
                     }
                 }
             }
+*/
+        final DBCStatement statement = context.prepareStatement(statementType, query, false, false, false);
+        if (outParamName != null) {
+            if (statement instanceof CallableStatement) {
+                try {
+                    if (outParamName.equals("?")) {
+                        ((CallableStatement)statement).registerOutParameter(1, java.sql.Types.OTHER);
+                    } else {
+                        ((CallableStatement)statement).registerOutParameter(outParamName, java.sql.Types.OTHER);
+                    }
+                } catch (SQLException e) {
+                    throw new DBCException(e);
+                }
+            }
         }
-        return context.prepareStatement(statementType, query, false, false, false);
+        return statement;
     }
 
     private static class RefColumnFinder implements DBRRunnableWithProgress {

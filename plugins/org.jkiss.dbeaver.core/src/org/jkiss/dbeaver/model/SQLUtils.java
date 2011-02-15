@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.model;
 import net.sf.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -23,6 +25,8 @@ public final class SQLUtils {
     public static final String TOKEN_TRANSFORM_END = "/*]DB*/";
 
     public static final Pattern PATTERN_XFORM = Pattern.compile(Pattern.quote(TOKEN_TRANSFORM_START) + "[^" + Pattern.quote(TOKEN_TRANSFORM_END) + "]*" + Pattern.quote(TOKEN_TRANSFORM_END));
+
+    public static final Pattern PATTERN_OUT_PARAM = Pattern.compile("((\\?)|(:[a-z0-9]+))\\s*:=");
 
     public static String stripTransformations(String query)
     {
@@ -87,4 +91,33 @@ public final class SQLUtils {
         return string.replaceAll("'", "\\'");
     }
 
+    public static String getFirstKeyword(String query)
+    {
+        int startPos = 0, endPos = -1;
+        for (int i = 0; i < query.length(); i++) {
+            if (Character.isLetterOrDigit(query.charAt(i))) {
+                startPos = i;
+                break;
+            }
+        }
+        for (int i = startPos; i < query.length(); i++) {
+            if (Character.isWhitespace(query.charAt(i))) {
+                endPos = i;
+                break;
+            }
+        }
+        if (endPos == -1) {
+            return query;
+        }
+        return query.substring(startPos, endPos);
+    }
+
+    public static String getQueryOutputParameter(DBCExecutionContext context, String query)
+    {
+        final Matcher matcher = PATTERN_OUT_PARAM.matcher(query);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
 }

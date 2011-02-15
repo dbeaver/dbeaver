@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -128,6 +129,12 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             // Cannot be sure that all jdbc drivers support reading of all catalog columns
             //tableCache.cacheChildren(monitor, null);
         }
+    }
+
+    public Collection<GenericPackage> getPackages(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return procedureCache.getPackages(monitor);
     }
 
     public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
@@ -369,12 +376,20 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
     /**
      * Procedures cache implementation
      */
-    class ProceduresCache extends JDBCStructCache<GenericProcedure, GenericProcedureColumn> {
+    class ProceduresCache extends JDBCObjectCache<GenericProcedure> {
+
+        private Map<String, GenericPackage> packageMap;
 
         ProceduresCache()
         {
-            super(getDataSource(), JDBCConstants.PROCEDURE_NAME);
+            super(getDataSource());
             setListOrderComparator(DBUtils.<GenericProcedure>nameComparator());
+        }
+
+        public void clearCache()
+        {
+            super.clearCache();
+            this.packageMap = null;
         }
 
         protected JDBCPreparedStatement prepareObjectsStatement(JDBCExecutionContext context)
@@ -389,7 +404,9 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
         protected GenericProcedure fetchObject(JDBCExecutionContext context, ResultSet dbResult)
             throws SQLException, DBException
         {
+            String procedureCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.PROCEDURE_CAT);
             String procedureName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PROCEDURE_NAME);
+            String specificName = JDBCUtils.safeGetString(dbResult, JDBCConstants.SPECIFIC_NAME);
             int procTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PROCEDURE_TYPE);
             String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
             DBSProcedureType procedureType;
@@ -399,70 +416,42 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                 case DatabaseMetaData.procedureResultUnknown: procedureType = DBSProcedureType.PROCEDURE; break;
                 default: procedureType = DBSProcedureType.UNKNOWN; break;
             }
-            return new GenericProcedure(
-                GenericEntityContainer.this,
+            // Check for packages. Oracle (and may be some other databases) uses catalog name as storage for package name
+            String packageName = null;
+            GenericPackage procedurePackage = null;
+            if (!CommonUtils.isEmpty(procedureCatalog) && CommonUtils.isEmpty(getDataSource().getCatalogs())) {
+                // Catalog name specified while there are no catalogs in data source
+                packageName = procedureCatalog;
+            }
+
+            if (!CommonUtils.isEmpty(packageName)) {
+                if (packageMap == null) {
+                    packageMap = new TreeMap<String, GenericPackage>();
+                }
+                procedurePackage = packageMap.get(packageName);
+                if (procedurePackage == null) {
+                    procedurePackage = new GenericPackage(GenericEntityContainer.this, packageName, true);
+                    packageMap.put(packageName, procedurePackage);
+                }
+            }
+
+            final GenericProcedure procedure = new GenericProcedure(
+                procedurePackage != null ? procedurePackage : GenericEntityContainer.this,
                 procedureName,
-                remarks, procedureType
-            );
-        }
-
-        protected boolean isChildrenCached(GenericProcedure parent)
-        {
-            return parent.isColumnsCached();
-        }
-
-        protected void cacheChildren(GenericProcedure parent, List<GenericProcedureColumn> columns)
-        {
-            parent.cacheColumns(columns);
-        }
-
-        protected JDBCPreparedStatement prepareChildrenStatement(JDBCExecutionContext context, GenericProcedure forObject)
-            throws SQLException, DBException
-        {
-            return context.getMetaData().getProcedureColumns(
-                getCatalog() == null ? null : getCatalog().getName(),
-                getSchema() == null ? null : getSchema().getName(),
-                forObject == null ? null : forObject.getName(),
-                null).getSource();
-        }
-
-        protected GenericProcedureColumn fetchChild(JDBCExecutionContext context, GenericProcedure parent, ResultSet dbResult)
-            throws SQLException, DBException
-        {
-            String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-            int columnTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_TYPE);
-            int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
-            String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
-            int columnSize = JDBCUtils.safeGetInt(dbResult, JDBCConstants.LENGTH);
-            boolean isNullable = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) != DatabaseMetaData.procedureNoNulls;
-            int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SCALE);
-            int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
-            int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
-            String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-            int position = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-            //DBSDataType dataType = getDataSourceContainer().getInfo().getSupportedDataType(typeName);
-            DBSProcedureColumnType columnType;
-            switch (columnTypeNum) {
-                case DatabaseMetaData.procedureColumnIn: columnType = DBSProcedureColumnType.IN; break;
-                case DatabaseMetaData.procedureColumnInOut: columnType = DBSProcedureColumnType.INOUT; break;
-                case DatabaseMetaData.procedureColumnOut: columnType = DBSProcedureColumnType.OUT; break;
-                case DatabaseMetaData.procedureColumnReturn: columnType = DBSProcedureColumnType.RETURN; break;
-                case DatabaseMetaData.procedureColumnResult: columnType = DBSProcedureColumnType.RESULTSET; break;
-                default: columnType = DBSProcedureColumnType.UNKNOWN; break;
-            }
-            if (CommonUtils.isEmpty(columnName) && columnType == DBSProcedureColumnType.RETURN) {
-                columnName = "RETURN";
-            }
-            return new GenericProcedureColumn(
-                parent,
-                columnName,
-                typeName,
-                valueType,
-                position,
-                columnSize,
-                scale, precision, radix, isNullable,
                 remarks,
-                columnType);
+                procedureType);
+            if (procedurePackage != null) {
+                procedurePackage.addProcedure(procedure);
+            }
+            return procedure;
+        }
+
+        public Collection<GenericPackage> getPackages(DBRProgressMonitor monitor)
+            throws DBException
+        {
+            // Check procedures are read
+            getObjects(monitor);
+            return packageMap == null ? null : packageMap.values();
         }
     }
 }

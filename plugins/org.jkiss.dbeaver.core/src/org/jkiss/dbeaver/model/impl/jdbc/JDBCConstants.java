@@ -29,6 +29,7 @@ public class JDBCConstants
     public static final String PROCEDURE_SCHEM = "PROCEDURE_SCHEM";
     public static final String PROCEDURE_NAME = "PROCEDURE_NAME";
     public static final String PROCEDURE_TYPE = "PROCEDURE_TYPE";
+    public static final String SPECIFIC_NAME = "SPECIFIC_NAME";
 
     public static final String DATA_TYPE = "DATA_TYPE";
     public static final String LENGTH = "LENGTH";
