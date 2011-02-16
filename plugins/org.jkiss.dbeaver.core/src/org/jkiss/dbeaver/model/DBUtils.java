@@ -191,7 +191,7 @@ public final class DBUtils {
      * @param objectName object name
      * @return object or null
      */
-    public static <T extends DBSObject> T findObject(Collection<T> theList, String objectName)
+    public static <T extends DBPNamedObject> T findObject(Collection<T> theList, String objectName)
     {
         if (!CommonUtils.isEmpty(theList)) {
             for (T object : theList) {
@@ -210,7 +210,7 @@ public final class DBUtils {
      * @param objectName object name
      * @return object or null
      */
-    public static <T extends DBSObject> List<T> findObjects(Collection<T> theList, String objectName)
+    public static <T extends DBPNamedObject> List<T> findObjects(Collection<T> theList, String objectName)
     {
         if (!CommonUtils.isEmpty(theList)) {
             List<T> result = new ArrayList<T>();
@@ -506,6 +506,16 @@ public final class DBUtils {
         return statement;
 */
         return context.prepareStatement(statementType, query, false, false, false);
+    }
+
+    public static <T extends DBPNamedObject> void orderObjects(List<T> objects)
+    {
+        Collections.sort(objects, new Comparator<T>() {
+            public int compare(T o1, T o2)
+            {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
     }
 
     private static class RefColumnFinder implements DBRRunnableWithProgress {

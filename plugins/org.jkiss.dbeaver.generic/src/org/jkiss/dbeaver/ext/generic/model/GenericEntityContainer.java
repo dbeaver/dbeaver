@@ -188,7 +188,7 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
      * Tables cache implementation
      */
     class TableCache extends JDBCStructCache<GenericTable, GenericTableColumn> {
-        
+
         protected TableCache()
         {
             super(getDataSource(), JDBCConstants.TABLE_NAME);
@@ -439,6 +439,15 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
                         procedures.add(procedure);
                     }
                 }
+                // Order procedures
+                if (procedures != null) {
+                    DBUtils.orderObjects(procedures);
+                }
+                if (packageMap != null) {
+                    for (GenericPackage pack : packageMap.values()) {
+                        pack.orderProcedures();
+                    }
+                }
             }
             finally {
                 dbResult.close();
@@ -449,6 +458,5 @@ public abstract class GenericEntityContainer implements DBSEntityContainer
             context.close();
         }
     }
-
 
 }

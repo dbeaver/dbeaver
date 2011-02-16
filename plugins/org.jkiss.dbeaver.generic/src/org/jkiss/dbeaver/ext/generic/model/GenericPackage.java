@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -23,7 +21,6 @@ import java.util.List;
  */
 public class GenericPackage extends GenericEntityContainer implements DBSEntityQualified, GenericStoredCode
 {
-    static final Log log = LogFactory.getLog(GenericPackage.class);
 
     private GenericEntityContainer container;
     private String packageName;
@@ -92,11 +89,6 @@ public class GenericPackage extends GenericEntityContainer implements DBSEntityQ
         return DBUtils.findObjects(procedures, name);
     }
 
-    public void addProcedure(GenericProcedure procedure)
-    {
-        procedures.add(procedure);
-    }
-
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -133,5 +125,15 @@ public class GenericPackage extends GenericEntityContainer implements DBSEntityQ
     public boolean isNameFromCatalog()
     {
         return nameFromCatalog;
+    }
+
+    void addProcedure(GenericProcedure procedure)
+    {
+        procedures.add(procedure);
+    }
+
+    void orderProcedures()
+    {
+        DBUtils.orderObjects(procedures);
     }
 }

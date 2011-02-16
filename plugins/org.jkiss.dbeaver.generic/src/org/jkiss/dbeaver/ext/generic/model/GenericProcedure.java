@@ -5,8 +5,6 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import net.sf.jkiss.utils.CommonUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -33,11 +31,9 @@ import java.util.regex.Pattern;
  */
 public class GenericProcedure extends AbstractProcedure<GenericDataSource, GenericEntityContainer> implements GenericStoredCode
 {
-    static final Log log = LogFactory.getLog(GenericProcedure.class);
-
     private static final Pattern PATTERN_COL_NAME_NUMERIC = Pattern.compile("\\$?([0-9]+)");
 
-    private String specificName;
+    private String plainName;
     private DBSProcedureType procedureType;
     private List<GenericProcedureColumn> columns;
 
@@ -48,15 +44,18 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         String description,
         DBSProcedureType procedureType)
     {
-        super(container, procedureName, description);
+        super(container, CommonUtils.isEmpty(specificName) ? procedureName : specificName, description);
         this.procedureType = procedureType;
-        this.specificName = specificName;
+        this.plainName = procedureName;
     }
 
-    public String getSpecificName()
+/*
+    @Property(name = "Plain Name", viewable = true, order = 2)
+    public String getPlainName()
     {
-        return specificName;
+        return plainName;
     }
+*/
 
     @Property(name = "Catalog", viewable = true, order = 3)
     public GenericCatalog getCatalog()
@@ -108,6 +107,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                 getName(),
                 null);
             try {
+                int previousPosition = -1;
                 while (dbResult.next()) {
                     String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
                     int columnTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_TYPE);
@@ -142,7 +142,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                         }
                     }
 
-                    if (procedure == null || (position == 0 && procIter.hasNext())) {
+                    if (procedure == null || (previousPosition >= 0 && position <= previousPosition && procIter.hasNext())) {
                         procedure = procIter.next();
                     }
                     GenericProcedureColumn column = new GenericProcedureColumn(
@@ -157,6 +157,8 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                         columnType);
 
                     procedure.addColumn(column);
+
+                    previousPosition = position;
                 }
             }
             finally {

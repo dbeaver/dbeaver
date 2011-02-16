@@ -475,7 +475,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                 setPageImage(index, PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER));
             }
             setPageToolTip(index, metaItem.getLabel());
-            editorMap.put("node." + node.getNodeName(), nodeEditor);
+            editorMap.put("node." + metaItem.getLabel(), nodeEditor);
         } catch (PartInitException ex) {
             log.error("Error adding nested editor", ex);
         }

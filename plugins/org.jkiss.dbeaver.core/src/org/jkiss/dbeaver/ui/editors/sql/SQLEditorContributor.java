@@ -225,9 +225,9 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                 gl.marginHeight = 0;
                 comboGroup.setLayout(gl);
 
-                connectionCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.FLAT | SWT.BORDER);
+                connectionCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
                 GridData gd = new GridData();
-                gd.widthHint = 100;
+                gd.widthHint = 120;
                 connectionCombo.setLayoutData(gd);
                 connectionCombo.setVisibleItemCount(15);
                 connectionCombo.setToolTipText("Active datasource");
@@ -257,9 +257,9 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor imple
                 gl.marginHeight = 0;
                 comboGroup.setLayout(gl);
 
-                databaseCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.FLAT | SWT.BORDER);
+                databaseCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
                 GridData gd = new GridData();
-                gd.widthHint = 100;
+                gd.widthHint = 120;
                 databaseCombo.setLayoutData(gd);
                 databaseCombo.setVisibleItemCount(15);
                 databaseCombo.setToolTipText("Active database");

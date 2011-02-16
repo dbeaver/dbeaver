@@ -65,7 +65,7 @@
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericStoredCode" label="Procedures" iconId="#procedures" description="Procedures">
-                            <items label="Package" path="package" property="packages" iconId="#package" optional="true">
+                            <items label="Package" path="package" property="packages" iconId="#package">
                                 <items label="Procedures" itemLabel="Procedure" path="procedure" property="procedures" iconId="#procedure">
                                     <items label="Procedure columns" itemLabel="Column" path="column" property="columns" navigable="false"/>
                                 </items>
