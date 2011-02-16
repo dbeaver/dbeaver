@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * GenericProcedure
@@ -32,6 +34,8 @@ import java.util.List;
 public class GenericProcedure extends AbstractProcedure<GenericDataSource, GenericEntityContainer> implements GenericStoredCode
 {
     static final Log log = LogFactory.getLog(GenericProcedure.class);
+
+    private static final Pattern PATTERN_COL_NAME_NUMERIC = Pattern.compile("\\$?([0-9]+)");
 
     private String specificName;
     private DBSProcedureType procedureType;
@@ -129,10 +133,16 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                     if (CommonUtils.isEmpty(columnName) && columnType == DBSProcedureColumnType.RETURN) {
                         columnName = "RETURN";
                     }
-                    if (procedure == null || position == 0) {
-                        if (!procIter.hasNext()) {
-                            log.error("Too many procedure column for '" + getName() + "'");
+                    if (position == 0) {
+                        // Some drivers do not return ordinal position (PostgreSQL) but
+                        // position is contained in column name
+                        Matcher numberMatcher = PATTERN_COL_NAME_NUMERIC.matcher(columnName);
+                        if (numberMatcher.matches()) {
+                            position = Integer.parseInt(numberMatcher.group(1));
                         }
+                    }
+
+                    if (procedure == null || (position == 0 && procIter.hasNext())) {
                         procedure = procIter.next();
                     }
                     GenericProcedureColumn column = new GenericProcedureColumn(

@@ -289,6 +289,7 @@ public class JDBCUtils
                     String colValue = dbResult.getString(i);
                     System.out.print(colValue + "\t");
                 }
+                System.out.println();
             }
             System.out.println();
         }

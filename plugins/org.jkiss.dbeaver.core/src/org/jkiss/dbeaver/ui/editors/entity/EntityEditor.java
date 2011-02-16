@@ -372,7 +372,7 @@ public class EntityEditor extends MultiPageDatabaseEditor<EntityEditorInput> imp
                     }
                 }
             } catch (DBException e) {
-                log.error("Error initializing entity editor");
+                log.error("Error initializing entity editor", e);
             }
             // Add itself as tab (if it has child items)
             if (node instanceof DBNDatabaseNode) {
