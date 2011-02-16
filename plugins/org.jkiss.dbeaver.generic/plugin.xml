@@ -64,12 +64,14 @@
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.DBSProcedure" label="Procedures" iconId="#procedures" description="Procedures">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericStoredCode" label="Procedures" iconId="#procedures" description="Procedures">
                             <items label="Package" path="package" property="packages" iconId="#package" optional="true">
-                                <items label="Procedure" path="procedure" property="procedures" iconId="#procedure">
-                                    <items label="Procedure columns" itemLabel="Column" path="column" property="columns" navigable="false">
-                                    </items>
+                                <items label="Procedures" itemLabel="Procedure" path="procedure" property="procedures" iconId="#procedure">
+                                    <items label="Procedure columns" itemLabel="Column" path="column" property="columns" navigable="false"/>
                                 </items>
+                            </items>
+                            <items label="Procedures" itemLabel="Procedure" path="procedure" property="procedures" iconId="#procedure">
+                                <items label="Procedure columns" itemLabel="Column" path="column" property="columns" navigable="false"/>
                             </items>
                         </folder>
                     </items>

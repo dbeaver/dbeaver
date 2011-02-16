@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -136,19 +137,31 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                     schema :
                     CommonUtils.isEmpty(schemaName) ? null :
                         procCatalog == null ? dataSource.getSchema(schemaName) : procCatalog.getSchema(monitor, schemaName);
-                GenericProcedure procedure;
+                Collection<GenericProcedure> procedures = null;
                 if (procSchema != null) {
-                    procedure = procSchema.getProcedure(monitor, procName);
+                    // Try to use catalog name as package name (Oracle)
+                    if (!CommonUtils.isEmpty(catalogName)) {
+                        GenericPackage procPackage = procSchema.getPackage(monitor, catalogName);
+                        if (procPackage != null) {
+                            procedures = procPackage.getProcedures(monitor, procName);
+                        }
+                    }
+                    if (procedures == null) {
+                        procedures = procSchema.getProcedures(monitor, procName);
+                    }
                 } else if (procCatalog != null) {
-                    procedure = procCatalog.getProcedure(monitor, procName);
+                    procedures = procCatalog.getProcedures(monitor, procName);
                 } else {
-                    log.debug("Couldn't find procedure '" + procName + "' in '" + catalogName + "/" + schemaName + "'");
-                    continue;
+                    procedures = dataSource.getProcedures(monitor, procName);
                 }
-                if (procedure == null) {
+                if (CommonUtils.isEmpty(procedures)) {
                     log.debug("Couldn't find procedure '" + procName + "'");
                 } else {
-                    objects.add(procedure);
+                    for (GenericProcedure proc : procedures) {
+                        if (!objects.contains(proc)) {
+                            objects.add(proc);
+                        }
+                    }
                 }
                 if (objects.size() >= maxResults) {
                     break;

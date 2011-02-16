@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * GenericPackage
  */
-public class GenericPackage extends GenericEntityContainer implements DBSEntityQualified
+public class GenericPackage extends GenericEntityContainer implements DBSEntityQualified, GenericStoredCode
 {
     static final Log log = LogFactory.getLog(GenericPackage.class);
 
@@ -80,9 +80,16 @@ public class GenericPackage extends GenericEntityContainer implements DBSEntityQ
         return this;
     }
 
-    public List<GenericProcedure> getProcedures()
+    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
+        throws DBException
     {
         return procedures;
+    }
+
+    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
+        throws DBException
+    {
+        return DBUtils.findObjects(procedures, name);
     }
 
     public void addProcedure(GenericProcedure procedure)
@@ -119,6 +126,7 @@ public class GenericPackage extends GenericEntityContainer implements DBSEntityQ
 
     public boolean refreshEntity(DBRProgressMonitor monitor) throws DBException
     {
+        procedures.clear();
         return false;
     }
 

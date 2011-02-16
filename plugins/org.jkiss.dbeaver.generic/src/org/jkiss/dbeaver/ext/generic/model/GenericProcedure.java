@@ -23,26 +23,35 @@ import org.jkiss.dbeaver.model.struct.DBSProcedureType;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * GenericProcedure
  */
-public class GenericProcedure extends AbstractProcedure<GenericDataSource, GenericEntityContainer>
+public class GenericProcedure extends AbstractProcedure<GenericDataSource, GenericEntityContainer> implements GenericStoredCode
 {
     static final Log log = LogFactory.getLog(GenericProcedure.class);
 
+    private String specificName;
     private DBSProcedureType procedureType;
     private List<GenericProcedureColumn> columns;
 
     public GenericProcedure(
         GenericEntityContainer container,
         String procedureName,
+        String specificName,
         String description,
         DBSProcedureType procedureType)
     {
         super(container, procedureName, description);
         this.procedureType = procedureType;
+        this.specificName = specificName;
+    }
+
+    public String getSpecificName()
+    {
+        return specificName;
     }
 
     @Property(name = "Catalog", viewable = true, order = 3)
@@ -58,7 +67,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     }
 
     @Property(name = "Package", viewable = true, order = 5)
-    private GenericPackage getPackage()
+    public GenericPackage getPackage()
     {
         return getContainer() instanceof GenericPackage ? (GenericPackage) getContainer() : null;
     }
@@ -73,13 +82,20 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         throws DBException
     {
         if (columns == null) {
-            loadChildren(monitor);
+            loadColumns(monitor);
         }
         return columns;
     }
 
-    private void loadChildren(DBRProgressMonitor monitor) throws DBException
+    private void loadColumns(DBRProgressMonitor monitor) throws DBException
     {
+        List<GenericProcedure> procedures = getContainer().getProcedures(monitor, getName());
+        if (procedures == null || !procedures.contains(this)) {
+            throw new DBException("Internal error - cannot read columns for procedure '" + getName() + "' because its not found in container");
+        }
+        Iterator<GenericProcedure> procIter = procedures.iterator();
+        GenericProcedure procedure = null;
+
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load procedure columns");
         try {
             final JDBCResultSet dbResult = context.getMetaData().getProcedureColumns(
@@ -113,8 +129,14 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                     if (CommonUtils.isEmpty(columnName) && columnType == DBSProcedureColumnType.RETURN) {
                         columnName = "RETURN";
                     }
+                    if (procedure == null || position == 0) {
+                        if (!procIter.hasNext()) {
+                            log.error("Too many procedure column for '" + getName() + "'");
+                        }
+                        procedure = procIter.next();
+                    }
                     GenericProcedureColumn column = new GenericProcedureColumn(
-                        this,
+                        procedure,
                         columnName,
                         typeName,
                         valueType,
@@ -124,7 +146,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                         remarks,
                         columnType);
 
-                    addColumn(column);
+                    procedure.addColumn(column);
                 }
             }
             finally {

@@ -370,7 +370,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public void runAndWait2(final DBRRunnableWithProgress runnable)
         throws InvocationTargetException, InterruptedException
     {
-        this.getWorkbench().getActiveWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
+        this.getWorkbench().getProgressService().run(true, true, new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException
             {

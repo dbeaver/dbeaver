@@ -35,6 +35,7 @@ public enum DBIcon
     TREE_REFERENCE("reference", "icons/tree/reference.png"),
     TREE_TRIGGER("trigger", "icons/tree/trigger.png"),
     TREE_USER("user", "icons/tree/user.png"),
+    TREE_PACKAGE("package", "icons/tree/package.png"),
 
     PROJECT("project", "icons/project.png"),
     PROJECTS("projects", "icons/projects.png"),

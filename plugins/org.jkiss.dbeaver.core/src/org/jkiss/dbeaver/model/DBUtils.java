@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 
 import java.lang.reflect.InvocationTargetException;
-import java.sql.CallableStatement;
-import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -201,6 +199,27 @@ public final class DBUtils {
                     return object;
                 }
             }
+        }
+        return null;
+    }
+
+    /**
+     * Finds object by its name (case insensitive)
+     *
+     * @param theList    object list
+     * @param objectName object name
+     * @return object or null
+     */
+    public static <T extends DBSObject> List<T> findObjects(Collection<T> theList, String objectName)
+    {
+        if (!CommonUtils.isEmpty(theList)) {
+            List<T> result = new ArrayList<T>();
+            for (T object : theList) {
+                if (object.getName().equalsIgnoreCase(objectName)) {
+                    result.add(object);
+                }
+            }
+            return result;
         }
         return null;
     }
@@ -447,11 +466,13 @@ public final class DBUtils {
     {
         DBCStatementType statementType = DBCStatementType.QUERY;
 
+/*
         // Check for output parameters
         String outParamName = SQLUtils.getQueryOutputParameter(context, query);
         if (outParamName != null) {
             statementType = DBCStatementType.EXEC;
         }
+*/
 /*
             // Check for EXEC query
             final List<String> executeKeywords = context.getDataSource().getInfo().getExecuteKeywords();
@@ -465,6 +486,7 @@ public final class DBUtils {
                 }
             }
 */
+/*
         final DBCStatement statement = context.prepareStatement(statementType, query, false, false, false);
         if (outParamName != null) {
             if (statement instanceof CallableStatement) {
@@ -480,6 +502,8 @@ public final class DBUtils {
             }
         }
         return statement;
+*/
+        return context.prepareStatement(statementType, query, false, false, false);
     }
 
     private static class RefColumnFinder implements DBRRunnableWithProgress {
